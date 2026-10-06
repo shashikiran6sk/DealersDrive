@@ -130,3 +130,16 @@ export async function submitAssistedDealerAction(dealerId: string): Promise<Sale
     return failure(error, SALES_ACTION_TEXT.submitFailed);
   }
 }
+
+export async function resendVerificationAction(dealerId: string): Promise<SalesActionResult> {
+  try {
+    await apiSend<SalesDealerDetail>(
+      'POST',
+      `/v1/sales/dealers/${encodeURIComponent(dealerId)}/email-verification`,
+    );
+    revalidatePath(`/sales/dealers/${dealerId}`);
+    return { ok: true, dealerId };
+  } catch (error) {
+    return failure(error, SALES_ACTION_TEXT.resendFailed);
+  }
+}

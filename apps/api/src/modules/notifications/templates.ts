@@ -13,7 +13,8 @@ export type TemplateName =
   | 'dealer.account.reinstated'
   | 'admin.profile-change.submitted'
   | 'dealer.profile-change.approved'
-  | 'dealer.profile-change.rejected';
+  | 'dealer.profile-change.rejected'
+  | 'dealer.email.verify';
 
 export interface RenderedEmail {
   subject: string;
@@ -28,6 +29,8 @@ export interface TemplateContext {
   tagline?: string | null;
   specialities?: string[];
   dealerSlug?: string | null;
+  actionUrl?: string;
+  expiresAt?: Date;
 }
 
 const CONSOLE = `${env.WEB_BASE_URL}/dealer`;
@@ -198,7 +201,31 @@ export function render(template: TemplateName, context: TemplateContext): Render
         ],
         action: { label: 'Open your profile', url: `${CONSOLE}/profile` },
       });
+
+    case 'dealer.email.verify':
+      return compose({
+        subject: `Confirm your email and claim ${context.dealerName} — Dealers-Drive`,
+        heading: 'Your dealership is set up — confirm it is yours',
+        greeting: context.contactName,
+        paragraphs: [
+          `A Dealers-Drive representative has set up ${context.dealerName} with you. Confirm this email address, then verify your mobile number, and the dealership is yours to manage.`,
+          `The link works until ${expiryOf(context)} IST and only once. If you did not meet anyone from Dealers-Drive, ignore this email — nothing happens without the code sent to the dealership's phone.`,
+        ],
+        action: { label: 'Confirm and claim', url: context.actionUrl ?? CONSOLE },
+      });
   }
+}
+
+function expiryOf(context: TemplateContext): string {
+  return context.expiresAt
+    ? context.expiresAt.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: 'numeric',
+        month: 'long',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : 'three days';
 }
 
 function publicPage(context: TemplateContext): string {

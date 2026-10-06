@@ -12,6 +12,11 @@ import {
 } from './modules/admin-members/admin-members.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
 import { createSalesService, type SalesService } from './modules/sales/sales.service.js';
+import {
+  createDealerClaimsService,
+  type DealerClaimsService,
+} from './modules/dealer-claims/dealer-claims.service.js';
+import { createIdentityService } from './modules/auth/identity.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
@@ -130,6 +135,7 @@ export interface Container {
   readonly adminSupport: AdminSupportService;
   readonly adminMembers: AdminMembersService;
   readonly sales: SalesService;
+  readonly dealerClaims: DealerClaimsService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
   readonly team: TeamService;
@@ -225,7 +231,19 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage });
-  const notifications = createNotificationsService({ prisma, queue, mailer });
+  const dealerClaims = createDealerClaimsService({
+    prisma,
+    audit,
+    sessions: sessionStore,
+    proof: createPhoneProofService({ otp: phoneOtp, cache }),
+    identities: createIdentityService({ prisma, audit }),
+  });
+  const notifications = createNotificationsService({
+    prisma,
+    queue,
+    mailer,
+    claimLinks: dealerClaims,
+  });
   const vehicles = createVehiclesService({
     prisma,
     repo: createVehiclesRepository(prisma),
@@ -288,6 +306,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
       maps,
       dealers,
     }),
+    dealerClaims,
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };

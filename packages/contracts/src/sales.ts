@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { OnboardingInput, VerifyPhoneInput } from './auth.js';
 import { Uuid } from './common.js';
+import { SalesEmailVerification } from './dealer-claims.js';
 import {
   CompletenessResponse,
   DealerDocumentDto,
@@ -120,6 +121,8 @@ export const SalesDealerDetail = SalesDealerSummary.extend({
   yardPhoto: YardPhotoDto,
   canEdit: z.boolean(),
   canSubmit: z.boolean(),
+  /** The latest verification link (**R113**); null before the first is requested. */
+  emailVerification: SalesEmailVerification.nullable(),
 });
 export type SalesDealerDetail = z.infer<typeof SalesDealerDetail>;
 

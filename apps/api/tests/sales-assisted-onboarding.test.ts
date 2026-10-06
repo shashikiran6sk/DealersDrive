@@ -277,16 +277,16 @@ describe('preparing and submitting', () => {
       emailVerified: false,
     });
 
+    await h.drainEmails();
     const before = h.mailer.sent.length;
     await sales.post(`/v1/sales/dealers/${dealer.id}/submit`).expect(200);
     await h.drainEmails();
     const mail = h.mailer.sent.slice(before);
     expect(mail.map((message) => message.to)).toEqual(
-      expect.arrayContaining([dealer.email, ...env.adminAllowlist]),
+      expect.arrayContaining([...env.adminAllowlist]),
     );
-    expect(mail.find((message) => message.to === dealer.email)?.subject).toContain(
-      'We have your application',
-    );
+    // R113: an address nobody has confirmed receives the claim link and nothing else.
+    expect(mail.map((message) => message.to)).not.toContain(dealer.email);
 
     const submitted = await h.prisma.auditLog.findFirstOrThrow({
       where: { action: 'dealer.submitted', entityId: dealer.id },
@@ -321,6 +321,10 @@ describe('preparing and submitting', () => {
     for (const doc of docs) {
       await superAdmin.post(`/v1/admin/documents/${doc.id}/verify`).send({}).expect(200);
     }
+    const link = h.mailer.sent.find((message) => message.to === dealer.email)?.text ?? '';
+    const token = /\/claim\/([A-Za-z0-9_-]+)/.exec(link)?.[1] ?? '';
+    await h.agent().post(`/v1/dealer-claims/${token}/verify-email`).send().expect(200);
+
     const beforeApproval = h.mailer.sent.length;
     await superAdmin.post(`/v1/admin/dealers/${dealer.id}/approve`).send({}).expect(200);
     await h.drainEmails();

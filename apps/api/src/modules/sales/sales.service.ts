@@ -31,6 +31,7 @@ import type { MapsPort } from '../../platform/maps/maps-link.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { AdminPrincipal, PhoneProofService } from '../auth/auth.facade.js';
+import { requestEmailVerification, withinCooldown } from '../dealer-claims/dealer-claims.facade.js';
 import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
 import { issueAssistedPhoneTicket, redeemAssistedPhoneTicket } from './assisted-phone-ticket.js';
 import {
@@ -38,6 +39,9 @@ import {
   ASSISTED_DEALER_NOT_FOUND,
   DEALER_PHONE_TAKEN,
   SALES_APPROVED_LABEL,
+  VERIFICATION_COOLDOWN,
+  VERIFICATION_NO_EMAIL,
+  VERIFICATION_NOT_EDITABLE,
 } from './sales.messages.js';
 
 export interface SalesDeps {
@@ -195,12 +199,24 @@ export function createSalesService({
 
   async function detail(principal: AdminPrincipal, dealerId: string): Promise<SalesDealerDetail> {
     const summary = await requireAssisted(principal, dealerId);
-    const [dealer, counts, completeness, documents, yardPhoto] = await Promise.all([
+    const [dealer, counts, completeness, documents, yardPhoto, verification] = await Promise.all([
       prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } }),
       listingCounts([dealerId]),
       dealers.completeness(dealerId),
       dealers.documents(dealerId),
       dealers.yardPhoto(dealerId),
+      prisma.dealerEmailVerification.findFirst({
+        where: { dealerId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          email: true,
+          createdAt: true,
+          sentAt: true,
+          expiresAt: true,
+          verifiedAt: true,
+          claimedAt: true,
+        },
+      }),
     ]);
     const editable = summary.status === 'DRAFT' && summary.members.length === 0;
 
@@ -227,6 +243,16 @@ export function createSalesService({
       yardPhoto,
       canEdit: editable,
       canSubmit: editable && completeness.canSubmit,
+      emailVerification: verification
+        ? {
+            email: verification.email,
+            sentAt: verification.sentAt?.toISOString() ?? null,
+            expiresAt: verification.expiresAt?.toISOString() ?? null,
+            verifiedAt: verification.verifiedAt?.toISOString() ?? null,
+            claimedAt: verification.claimedAt?.toISOString() ?? null,
+            canResend: summary.members.length === 0 && !withinCooldown(verification),
+          }
+        : null,
     };
   }
 
@@ -478,6 +504,12 @@ export function createSalesService({
             emailVerified: false,
           },
         });
+        await requestEmailVerification(tx, {
+          dealerId: dealer.id,
+          email: input.email,
+          memberId,
+          actorUserId: principal.userId,
+        });
 
         return dealer;
       });
@@ -554,6 +586,14 @@ export function createSalesService({
           entityId: dealerId,
           after: { fields: Object.keys(input), emailChanged },
         });
+        if (emailChanged && input.email) {
+          await requestEmailVerification(tx, {
+            dealerId,
+            email: input.email,
+            memberId: memberOf(principal),
+            actorUserId: principal.userId,
+          });
+        }
       });
 
       return detail(principal, dealerId);
@@ -604,6 +644,51 @@ export function createSalesService({
     async deleteYardPhoto(principal: AdminPrincipal, dealerId: string) {
       await requireEditable(principal, dealerId);
       await dealers.deleteYardPhoto(dealerId);
+    },
+
+    async resendEmailVerification(
+      principal: AdminPrincipal,
+      dealerId: string,
+    ): Promise<SalesDealerDetail> {
+      const memberId = memberOf(principal);
+      const summary = await requireAssisted(principal, dealerId);
+      if (summary.members.length > 0) {
+        throw new ConflictError('VERIFICATION_NOT_EDITABLE', VERIFICATION_NOT_EDITABLE);
+      }
+      await withTransaction(prisma, async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+        const dealer = await tx.dealer.findUniqueOrThrow({
+          where: { id: dealerId },
+          select: { contactEmail: true },
+        });
+        if (!dealer.contactEmail) {
+          throw new ConflictError('VERIFICATION_NO_EMAIL', VERIFICATION_NO_EMAIL);
+        }
+        const last = await tx.dealerEmailVerification.findFirst({
+          where: { dealerId },
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        });
+        if (withinCooldown(last)) {
+          throw new ConflictError('VERIFICATION_COOLDOWN', VERIFICATION_COOLDOWN);
+        }
+        await requestEmailVerification(tx, {
+          dealerId,
+          email: dealer.contactEmail,
+          memberId,
+          actorUserId: principal.userId,
+        });
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: principal.userId,
+          dealerId,
+          action: 'dealer.assisted.verification_resent',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          after: { assistedByMemberId: memberId },
+        });
+      });
+      return detail(principal, dealerId);
     },
 
     async submit(principal: AdminPrincipal, dealerId: string) {

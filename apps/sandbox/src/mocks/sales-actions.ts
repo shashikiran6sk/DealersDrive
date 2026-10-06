@@ -47,3 +47,7 @@ export function updateAssistedDealerAction(
 export function submitAssistedDealerAction(dealerId: string): Promise<SalesActionResult> {
   return settle(`submit ${dealerId}`);
 }
+
+export function resendVerificationAction(dealerId: string): Promise<SalesActionResult> {
+  return settle(`resend ${dealerId}`);
+}

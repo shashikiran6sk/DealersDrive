@@ -7,6 +7,7 @@ import { StatusTag } from '@/components/ui/primitives';
 import { DocumentUploader } from '@/features/auth/document-uploader';
 import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
+import { EmailVerificationPanel } from '@/features/sales/email-verification-panel';
 import { ASSISTED_FORM_TEXT } from '@/features/sales/assisted-dealer-form/assisted-dealer-form.constants';
 import { updateAssistedDealerAction } from '@/features/sales/sales-actions';
 import { SALES_TEXT } from '@/features/sales/sales.constants';
@@ -65,9 +66,14 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
 
       {!dealer.canEdit ? (
         <p className="rounded-[12px] border border-(--color-divider) bg-white p-4 text-[13px] ink-body">
-          {SALES_TEXT.lockedNotice}
+          {dealer.claimed ? SALES_TEXT.claimedNotice : SALES_TEXT.lockedNotice}
         </p>
       ) : null}
+
+      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
+        <h2 className="text-[17px]">{SALES_TEXT.emailHeading}</h2>
+        <EmailVerificationPanel dealerId={dealer.id} verification={dealer.emailVerification} />
+      </section>
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
         <h2 className="text-[17px]">{SALES_TEXT.detailsHeading}</h2>

@@ -10,6 +10,7 @@ import { getPhoneWidget } from './routes/get-phone-widget.js';
 import { patchDealer } from './routes/patch-dealer.js';
 import { postDealerDocumentCommit } from './routes/post-dealer-document-commit.js';
 import { postDealerDocumentPresign } from './routes/post-dealer-document-presign.js';
+import { postDealerEmailVerification } from './routes/post-dealer-email-verification.js';
 import { postDealerSubmit } from './routes/post-dealer-submit.js';
 import { postDealerYardPhotoCommit } from './routes/post-dealer-yard-photo-commit.js';
 import { postDealerYardPhotoPresign } from './routes/post-dealer-yard-photo-presign.js';
@@ -26,6 +27,7 @@ const ROUTES: SalesRoute[] = [
   postDealer,
   getDealer,
   patchDealer,
+  postDealerEmailVerification,
   postDealerDocumentPresign,
   postDealerDocumentCommit,
   deleteDealerDocument,

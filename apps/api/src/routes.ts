@@ -6,6 +6,7 @@ import { createDocsRouter } from './docs/docs.routes.js';
 import { requirePermission } from './middleware/auth.js';
 import { ADMIN_CONSOLE_REFUSAL, SALES_WORKSPACE_REFUSAL } from './platform/messages.js';
 import { createSalesRouter } from './modules/sales/sales.routes.js';
+import { createDealerClaimsRouter } from './modules/dealer-claims/dealer-claims.routes.js';
 import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
@@ -72,6 +73,7 @@ export function createRoutes(container: Container): Router {
     container.guards.requireCustomer,
     createWorkspacesRouter(container.workspaces),
   );
+  v1.use('/dealer-claims', createDealerClaimsRouter(container.dealerClaims, container.rateLimit));
   v1.use(
     '/invitations',
     container.guards.requireCustomer,

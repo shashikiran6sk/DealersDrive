@@ -5,4 +5,5 @@ export const SALES_ACTION_TEXT = {
   submitFailed: 'We could not submit the dealership.',
   unavailable: 'The API is unavailable. Try again shortly.',
   invalid: 'Check the highlighted fields.',
+  resendFailed: 'The verification email could not be sent.',
 } as const;
