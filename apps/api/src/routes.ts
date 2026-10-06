@@ -20,6 +20,7 @@ import { createInvitationsRouter } from './modules/team/invitations.routes.js';
 import { createTeamRouter } from './modules/team/team.routes.js';
 import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
+import { createAdminMembersRouter } from './modules/admin-members/admin-members.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
@@ -108,6 +109,7 @@ export function createRoutes(container: Container): Router {
   admin.use(container.guards.requireAdmin);
   admin.use(requirePermission('admin:console', ADMIN_CONSOLE_REFUSAL));
   admin.use(createAdminRouter(container.admin));
+  admin.use(createAdminMembersRouter(container.adminMembers));
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));

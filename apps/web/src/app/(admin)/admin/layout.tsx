@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 
 import { BrandLogo } from '@/components/brand-logo';
-import { AdminNav } from '@/components/admin/admin-nav';
+import { AdminNav, adminNavFor } from '@/components/admin/admin-nav';
 import { StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { ApiError, apiGet } from '@/lib/api';
@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
         <div className="max-md:ml-auto max-md:overflow-x-auto">
           <div className="max-md:flex max-md:gap-1">
-            <AdminNav />
+            <AdminNav items={adminNavFor(overview.operator.permissions)} />
           </div>
         </div>
 

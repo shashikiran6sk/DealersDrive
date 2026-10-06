@@ -1,4 +1,5 @@
 import {
+  ADMIN_ROLE_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
   DOC_TYPE_LABELS,
@@ -240,7 +241,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           label: `${pending} awaiting review`,
           tone: pending > 0 ? 'warn' : 'neutral',
         },
-        operator: { email: admin.email, adminRole: admin.adminRole },
+        operator: {
+          email: admin.email,
+          adminRole: admin.adminRole,
+          roleLabel: ADMIN_ROLE_LABELS[admin.adminRole],
+          permissions: [...admin.permissions],
+        },
       };
     },
 
