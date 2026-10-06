@@ -1,4 +1,4 @@
-# PR — Assisted dealer email verification and claim (R113)
+# PR #273 — Assisted dealer email verification and claim (R113)
 
 Driven end to end against a local API + web (`MAIL_DRIVER=console`, fake OTP
 driver, no SMS or email sent). A Sales representative created *Ramesh Car Bazaar*
