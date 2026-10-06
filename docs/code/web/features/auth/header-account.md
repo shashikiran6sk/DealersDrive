@@ -74,7 +74,7 @@ the console teaches the public pages that the person is signed in.
 
 **Logout and entering a dealership** run through `useNavigationSafeAction`, not
 `useTransition`, so a slow logout does not hold every link on the page. Logout
-announces the new hint at once.
+announces the new hint at once, which empties the saved-cars hearts too (R104).
 
 Below `sm` the greeting is visually hidden and the customer's initials stand in
 for it, because the full phrase and Logout do not fit beside the district chip

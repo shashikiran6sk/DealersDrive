@@ -274,6 +274,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R101 — Every click on a server-rendered page answers at once · `useLinkStatus` spinner (the `Button` spinner) in the console sidebar and tab bar, the header links, vehicle and dealer cards, `ButtonLink` and every `btn`/`dd-chip` link; `loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`, `/enquiries`, `/saved` (console tab feedback 228–404 → 30–63 ms; home car card 900 → 40–75 ms)
 - [x] R102 — A slow request no longer freezes every link · React 19 entangles async transitions with `<Link>` navigations; mutations run through `useNavigationSafeAction` / `useNavigationSafeFormAction` (24 `useTransition` sites, the vehicle wizard, submit and profile forms), which follow `redirect()` themselves and let the last click win (nav during a 12 s create 7.2 s → 0.4 s)
 - [x] R103 — No Login flash for a signed-in customer · a readable `dd_auth` hint (written on sign-in, sign-out and every lookup) and a pre-paint script choose Login or a 40 px placeholder before first paint; the lookup is `GET /api/account` (cancellable, not queued behind Server Actions), skipped for signed-out visitors; the home page stays ISR
+- [x] R104 — Logout clears the saved hearts, and a signed-out visit asks nothing · `SavedVehiclesProvider` follows the `dd_auth` hint: no saved-slugs Server Action for a signed-out visitor, and every heart on the page empties the moment Logout succeeds (previously the last account's hearts stayed filled until a reload)
 
 ---
 
