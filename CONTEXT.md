@@ -430,6 +430,18 @@ render, Server Action and API call on an India → US → Mumbai round trip (~20
 deploy with `curl -sI https://www.dealers-drive.com/ | grep -i x-vercel-id` — the
 middle segment is the function region.
 
+**Turbo strips undeclared variables from the web build (R106).** Turbo 2 runs in
+strict env mode: a variable not declared for a task is removed from its
+environment. `APP_ENV`, `API_BASE_URL`, `API_ORIGIN` and `WEB_BASE_URL` were set
+on Vercel and silently stripped — the first production build shipped the "not
+real data" banner, a localhost canonical and no OAuth rewrite, and was patched
+with `--env-mode=loose`. They are declared in `apps/web/turbo.json` now, and a
+test fails if the web app reads a build-time variable that is not declared there
+(or declares one nothing reads). The `--env-mode=loose` flag can be dropped
+from the Vercel project's build command; nothing else in it needs to change.
+`GIT_SHA` / `VERCEL_GIT_COMMIT_SHA` stay undeclared on purpose:
+only `/api/health` reads them, at request time.
+
 **Nothing is deployed automatically today.** Neither target exists yet — no
 Vercel project, no AWS account — so `deploy-dev` in `release.yml` is commented
 out and every merge to `main` builds the two images and stops. The block carries
