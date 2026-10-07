@@ -1,4 +1,9 @@
-import { ADMIN_PERMISSIONS, type AdminPermission } from '@dealers-drive/contracts';
+import {
+  ADMIN_PERMISSIONS,
+  formatRegistration,
+  vehicleTitle,
+  type AdminPermission,
+} from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
@@ -12,7 +17,12 @@ import { logger } from '../../platform/telemetry/logger.js';
 import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { isAdmitted } from '../auth/auth.facade.js';
 import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
-import { render, type TemplateContext, type TemplateName } from './templates.js';
+import {
+  render,
+  type ListingContext,
+  type TemplateContext,
+  type TemplateName,
+} from './templates.js';
 
 export interface NotificationsDeps {
   prisma: PrismaClient;
@@ -30,6 +40,7 @@ export interface EmailJob extends Record<string, unknown> {
   profileChangeId?: string;
   permission?: string;
   userId?: string;
+  listingId?: string;
 }
 
 export const MAX_DELIVERY_ATTEMPTS = 6;
@@ -123,6 +134,15 @@ export function createNotificationsService({
         })
       : null;
 
+    const listing = job.listingId ? await listingContext(job.listingId) : null;
+    if (job.listingId && !listing) {
+      logger.warn(
+        { template: job.template, listingId: job.listingId },
+        'email skipped — no listing',
+      );
+      return;
+    }
+
     for (const recipient of recipients) {
       await sendOne(job, recipient, {
         dealerName: dealer.brandName || dealer.legalName,
@@ -131,8 +151,38 @@ export function createNotificationsService({
         tagline: proposal ? proposal.tagline : dealer.tagline,
         specialities: proposal ? proposal.specialities : dealer.specialities,
         dealerSlug: dealer.slug,
+        ...(listing ? { listing } : {}),
       });
     }
+  }
+
+  async function listingContext(listingId: string): Promise<ListingContext | null> {
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: {
+        id: true,
+        slug: true,
+        vehicleId: true,
+        vehicle: {
+          select: {
+            manufacturingYear: true,
+            make: true,
+            model: true,
+            variant: true,
+            registrationNumber: true,
+          },
+        },
+      },
+    });
+    if (!listing) return null;
+    const plate = formatRegistration(listing.vehicle.registrationNumber);
+    return {
+      id: listing.id,
+      vehicleId: listing.vehicleId,
+      slug: listing.slug,
+      title: vehicleTitle(listing.vehicle) || plate,
+      plate,
+    };
   }
 
   async function sendClaimLink(job: EmailJob): Promise<void> {
@@ -408,6 +458,10 @@ export function jobOf(event: DomainEvent, rule: NotificationRule): EmailJob | nu
   const withReason = typeof rule.reason === 'function' ? rule.reason(event) : rule.reason;
   if (withReason) job.reason = reasonOf(event);
   else if (rule.reason !== undefined) job.reason = null;
+  if (rule.listingId) {
+    const listingId = stringOf(payload.listingId);
+    if (listingId) job.listingId = listingId;
+  }
   if (rule.profileChangeId) {
     const profileChangeId = stringOf(payload.profileChangeId);
     if (profileChangeId) job.profileChangeId = profileChangeId;

@@ -14,12 +14,28 @@ export type TemplateName =
   | 'admin.profile-change.submitted'
   | 'dealer.profile-change.approved'
   | 'dealer.profile-change.rejected'
-  | 'dealer.email.verify';
+  | 'dealer.email.verify'
+  | 'admin.listing.submitted'
+  | 'admin.listing.resubmitted'
+  | 'dealer.listing.approved'
+  | 'dealer.listing.rejected'
+  | 'dealer.listing.changes-requested'
+  | 'admin.listing.reactivation-requested'
+  | 'dealer.listing.reactivation-approved'
+  | 'dealer.listing.reactivation-rejected';
 
 export interface RenderedEmail {
   subject: string;
   html: string;
   text: string;
+}
+
+export interface ListingContext {
+  id: string;
+  vehicleId: string;
+  slug: string | null;
+  title: string;
+  plate: string;
 }
 
 export interface TemplateContext {
@@ -31,6 +47,7 @@ export interface TemplateContext {
   dealerSlug?: string | null;
   actionUrl?: string;
   expiresAt?: Date;
+  listing?: ListingContext;
 }
 
 const CONSOLE = `${env.WEB_BASE_URL}/dealer`;
@@ -213,7 +230,125 @@ export function render(template: TemplateName, context: TemplateContext): Render
         ],
         action: { label: 'Confirm and claim', url: context.actionUrl ?? CONSOLE },
       });
+
+    case 'admin.listing.submitted':
+      return compose({
+        subject: `Listing to review — ${carName(context)}`,
+        heading: 'A listing is waiting for review',
+        paragraphs: [
+          `${context.dealerName} has submitted ${carName(context)} for review.`,
+          'It is in the listings queue now. Check it against the car and its RC before it goes live.',
+        ],
+        action: { label: 'Review the listing', url: adminListingUrl(context) },
+      });
+
+    case 'admin.listing.resubmitted':
+      return compose({
+        subject: `Listing resubmitted — ${carName(context)}`,
+        heading: 'A listing is back for review',
+        paragraphs: [
+          `${context.dealerName} has made the changes you asked for on ${carName(context)} and sent it back for review.`,
+        ],
+        action: { label: 'Review the listing', url: adminListingUrl(context) },
+      });
+
+    case 'dealer.listing.approved':
+      return compose({
+        subject: `${listingOf(context).title} is live — Dealers-Drive`,
+        heading: 'Your listing is live',
+        greeting: context.contactName,
+        paragraphs: [
+          `We have checked ${carName(context)} and it is now live on Dealers-Drive. Buyers can find it and enquire.`,
+        ],
+        action: { label: 'See the listing', url: publicCarUrl(context) },
+      });
+
+    case 'dealer.listing.rejected':
+      return compose({
+        subject: `About your listing — ${listingOf(context).title}`,
+        heading: 'We could not publish this listing',
+        greeting: context.contactName,
+        paragraphs: [
+          `We have reviewed ${carName(context)} and cannot publish it. This is the reason our reviewer gave:`,
+        ],
+        quote: context.reason,
+        paragraphsAfter: ['If you think this is a mistake, reply to this email and tell us why.'],
+        action: { label: 'Open your inventory', url: `${CONSOLE}/inventory` },
+      });
+
+    case 'dealer.listing.changes-requested':
+      return compose({
+        subject: `Changes needed — ${listingOf(context).title}`,
+        heading: 'Your listing needs a few changes',
+        greeting: context.contactName,
+        paragraphs: [`Before ${carName(context)} can go live, our reviewer has asked for this:`],
+        quote: context.reason,
+        paragraphsAfter: ['Make the changes and send it back for review — nothing else is lost.'],
+        action: { label: 'Make the changes', url: dealerVehicleUrl(context) },
+      });
+
+    case 'admin.listing.reactivation-requested':
+      return compose({
+        subject: `Reactivation request — ${carName(context)}`,
+        heading: 'A dealer wants a listing back on sale',
+        paragraphs: [
+          `${context.dealerName} has asked to put ${carName(context)} back on the marketplace.`,
+        ],
+        quote: context.reason,
+        action: {
+          label: 'Open reactivation requests',
+          url: `${env.WEB_BASE_URL}/admin/listings?view=reactivation`,
+        },
+      });
+
+    case 'dealer.listing.reactivation-approved':
+      return compose({
+        subject: `${listingOf(context).title} is back on sale — Dealers-Drive`,
+        heading: 'Your listing is back on sale',
+        greeting: context.contactName,
+        paragraphs: [`${carName(context)} is live on Dealers-Drive again.`],
+        quote: context.reason,
+        action: { label: 'See the listing', url: publicCarUrl(context) },
+      });
+
+    case 'dealer.listing.reactivation-rejected':
+      return compose({
+        subject: `About your reactivation request — ${listingOf(context).title}`,
+        heading: 'We have not put this listing back on sale',
+        greeting: context.contactName,
+        paragraphs: [
+          `We have looked at your request to put ${carName(context)} back on the marketplace and have not approved it.`,
+        ],
+        quote: context.reason,
+        action: { label: 'Open your inventory', url: `${CONSOLE}/inventory` },
+      });
   }
+}
+
+function listingOf(context: TemplateContext): ListingContext {
+  return context.listing ?? { id: '', vehicleId: '', slug: null, title: 'your car', plate: '' };
+}
+
+function carName(context: TemplateContext): string {
+  const listing = listingOf(context);
+  return listing.plate ? `${listing.title} (${listing.plate})` : listing.title;
+}
+
+function dealerVehicleUrl(context: TemplateContext): string {
+  const listing = listingOf(context);
+  return listing.vehicleId
+    ? `${CONSOLE}/vehicles/${listing.vehicleId}/edit?step=review`
+    : `${CONSOLE}/inventory`;
+}
+
+function adminListingUrl(context: TemplateContext): string {
+  const listing = listingOf(context);
+  return listing.id ? `${env.WEB_BASE_URL}/admin/listings/${listing.id}` : ADMIN_QUEUE;
+}
+
+function publicCarUrl(context: TemplateContext): string {
+  const listing = listingOf(context);
+  return listing.slug ? `${env.WEB_BASE_URL}/car/${listing.slug}` : `${CONSOLE}/inventory`;
 }
 
 function expiryOf(context: TemplateContext): string {

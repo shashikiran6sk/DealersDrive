@@ -436,3 +436,24 @@ what happened instead of leaving a row PENDING forever.
 The Super-admin delivery log. It reads `notification_deliveries` on its
 existing `(status, createdAt)` index, newest first, keyset-paginated. Recipients
 are personal data, which is why `admin:notifications:read` is Super admin only.
+
+## The listing emails — R116
+
+### `ListingSubmitted`, `ListingApproved`, `ListingRejected`, `ListingChangesRequested`, `ListingReactivationRequested`, `ListingReactivationDecided`
+
+Operations is told when a listing or a reactivation needs a decision
+(`admin:listing:moderate` — Operations and Super admins, never Support or Sales);
+the dealer is told when one is made. A submission does not email the dealer:
+they pressed the button, and the screen they are on already says so. Selling,
+reserving and withdrawing email nobody — the dealer did it, and Operations has
+nothing to decide.
+
+The job carries the listing id, and the car is read at send time
+(`listingContext`): title, plate and slug. A listing deleted before the job runs
+is skipped rather than emailed about as "your car". Links go where the reader
+acts — the admin listing, the dealer's review step, the public car page once it
+is live.
+
+A listing a Sales Representative prepared for a dealership that has not been
+claimed follows R113: the dealer's mail goes to the dealership's verified
+contact address, or nowhere.
