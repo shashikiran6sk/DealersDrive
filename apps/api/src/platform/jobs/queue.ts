@@ -26,6 +26,7 @@ export const JOB_NAMES = [
   'notification.dealer-reviewed',
   'notification.invoice',
   'notification.email',
+  'notification.sms',
   'listings.expire-sweep',
   'counters.reconcile',
   'cache.sweep-counters',
@@ -43,6 +44,7 @@ const PRIORITIES: Partial<Record<JobName, number>> = {
 
 const RETRY: Partial<Record<JobName, { retryLimit: number; retryDelay: number }>> = {
   'notification.email': { retryLimit: 5, retryDelay: 30 },
+  'notification.sms': { retryLimit: 5, retryDelay: 30 },
 };
 
 export function createQueue(): Queue {

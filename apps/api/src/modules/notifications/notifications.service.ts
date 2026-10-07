@@ -14,11 +14,20 @@ import { recordNotification } from '../../platform/telemetry/metrics.js';
 import type { Queue } from '../../platform/jobs/queue.js';
 import type { MailerPort } from '../../platform/mail/mail.port.js';
 import { PermanentMailError } from '../../platform/mail/resend.adapter.js';
+import { maskPhone } from '../../platform/sms/mask.js';
+import { PermanentSmsError, type SmsPort } from '../../platform/sms/sms.port.js';
 import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { isAdmitted } from '../auth/auth.facade.js';
-import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
+import {
+  NOTIFICATION_RULES,
+  payloadOf,
+  SMS_RULES,
+  type NotificationRule,
+  type SmsRule,
+} from './notification.rules.js';
+import { SMS_TEMPLATES, type SmsTemplateName } from './sms-templates.js';
 import {
   render,
   type EnquiryContext,
@@ -31,6 +40,7 @@ export interface NotificationsDeps {
   prisma: PrismaClient;
   queue: Queue;
   mailer: MailerPort;
+  sms: SmsPort;
   claimLinks?: Pick<DealerClaimsService, 'issueLink'>;
 }
 
@@ -49,12 +59,31 @@ export interface EmailJob extends Record<string, unknown> {
   ticketStatus?: string;
 }
 
+export interface SmsJob extends Record<string, unknown> {
+  template: SmsTemplateName;
+  subjectId: string;
+  userId: string;
+  ticketId: string;
+}
+
+interface Delivery {
+  channel: 'EMAIL' | 'SMS';
+  dedupeKey: string;
+  template: string;
+  recipient: string;
+  subject: string;
+  dealerId: string | null;
+  log: Record<string, unknown>;
+  send: () => Promise<{ providerMessageId: string | null }>;
+}
+
 export const MAX_DELIVERY_ATTEMPTS = 6;
 
 export function createNotificationsService({
   prisma,
   queue,
   mailer,
+  sms,
   claimLinks,
 }: NotificationsDeps) {
   async function enqueue(job: EmailJob): Promise<void> {
@@ -65,16 +94,27 @@ export function createNotificationsService({
     );
   }
 
+  async function enqueueSms(job: SmsJob): Promise<void> {
+    await queue.send('notification.sms', job);
+    logger.info({ job: 'notification.sms', template: job.template }, 'sms queued');
+  }
+
   return {
     subscribe(bus: EventBus): void {
-      for (const [type, rules] of Object.entries(NOTIFICATION_RULES)) {
-        if (!isDomainEventType(type) || !rules) continue;
+      for (const type of EVENT_TYPES) {
+        if (!isDomainEventType(type)) continue;
+        const emails = NOTIFICATION_RULES[type] ?? [];
+        const texts = SMS_RULES[type] ?? [];
         bus.on(
           type,
           async (event) => {
-            for (const rule of rules) {
+            for (const rule of emails) {
               const job = jobOf(event, rule);
               if (job) await enqueue(job);
+            }
+            for (const rule of texts) {
+              const job = smsJobOf(event, rule);
+              if (job) await enqueueSms(job);
             }
           },
           { required: true },
@@ -87,9 +127,14 @@ export function createNotificationsService({
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pg-boss hands job data back untyped
         await handleEmailJob(data as unknown as EmailJob);
       });
+      await queue.work('notification.sms', async (data) => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pg-boss hands job data back untyped
+        await handleSmsJob(data as unknown as SmsJob);
+      });
     },
 
     handleEmailJob,
+    handleSmsJob,
   };
 
   async function handleEmailJob(job: EmailJob): Promise<void> {
@@ -306,6 +351,29 @@ export function createNotificationsService({
   ): Promise<void> {
     const dedupeKey = `${job.template}:${job.subjectId}:${recipient.email.toLowerCase()}`;
     const message = render(job.template, context);
+    await deliverOnce({
+      channel: 'EMAIL',
+      dedupeKey,
+      template: job.template,
+      recipient: recipient.email,
+      subject: message.subject,
+      dealerId: deliveryDealerId,
+      log: { channel: 'email', driver: mailer.driver, dealerId: job.dealerId },
+      send: () =>
+        mailer.send({
+          to: recipient.email,
+          subject: message.subject,
+          html: message.html,
+          text: message.text,
+          tag: job.template,
+          idempotencyKey: dedupeKey,
+        }),
+    });
+  }
+
+  async function deliverOnce(delivery: Delivery): Promise<void> {
+    const { dedupeKey } = delivery;
+    const noun = delivery.channel === 'SMS' ? 'sms' : 'email';
 
     let claimed;
     let attempts = 1;
@@ -313,10 +381,11 @@ export function createNotificationsService({
       claimed = await prisma.notificationDelivery.create({
         data: {
           dedupeKey,
-          template: job.template,
-          recipient: recipient.email,
-          subject: message.subject,
-          dealerId: deliveryDealerId,
+          template: delivery.template,
+          channel: delivery.channel,
+          recipient: delivery.recipient,
+          subject: delivery.subject,
+          dealerId: delivery.dealerId,
           attempts: 1,
         },
       });
@@ -325,8 +394,8 @@ export function createNotificationsService({
         const existing = await prisma.notificationDelivery.findUnique({ where: { dedupeKey } });
 
         if (existing?.status === 'SENT') {
-          logger.debug({ dedupeKey }, 'email already sent — skipping');
-          recordNotification(job.template, 'duplicate');
+          logger.debug({ dedupeKey }, `${noun} already sent — skipping`);
+          recordNotification(delivery.template, 'duplicate');
           return;
         }
 
@@ -342,14 +411,7 @@ export function createNotificationsService({
     }
 
     try {
-      const result = await mailer.send({
-        to: recipient.email,
-        subject: message.subject,
-        html: message.html,
-        text: message.text,
-        tag: job.template,
-        idempotencyKey: dedupeKey,
-      });
+      const result = await delivery.send();
 
       await prisma.notificationDelivery.update({
         where: { dedupeKey },
@@ -361,21 +423,20 @@ export function createNotificationsService({
         },
       });
 
-      recordNotification(job.template, 'sent');
+      recordNotification(delivery.template, 'sent');
       logger.info(
         {
-          channel: 'email',
-          driver: mailer.driver,
-          template: job.template,
-          dealerId: job.dealerId,
+          ...delivery.log,
+          template: delivery.template,
           deliveryId: claimed?.id,
           providerMessageId: result.providerMessageId,
         },
-        'email accepted by provider',
+        `${noun} accepted by provider`,
       );
     } catch (error) {
       const exhausted = attempts >= MAX_DELIVERY_ATTEMPTS;
-      const permanent = error instanceof PermanentMailError || exhausted;
+      const permanent =
+        error instanceof PermanentMailError || error instanceof PermanentSmsError || exhausted;
       const detail = error instanceof Error ? error.message.slice(0, 500) : String(error);
 
       await prisma.notificationDelivery.update({
@@ -386,22 +447,74 @@ export function createNotificationsService({
         },
       });
 
-      recordNotification(job.template, permanent ? 'failed' : 'retry');
+      recordNotification(delivery.template, permanent ? 'failed' : 'retry');
       logger.error(
         {
-          channel: 'email',
-          template: job.template,
-          dealerId: job.dealerId,
+          ...delivery.log,
+          template: delivery.template,
           permanent,
           exhausted,
           attempts,
           err: error,
         },
-        'email failed',
+        `${noun} failed`,
       );
 
       if (!permanent) throw error;
     }
+  }
+
+  async function handleSmsJob(job: SmsJob): Promise<void> {
+    if (sms.driver === 'disabled') {
+      logger.info({ template: job.template, ticketId: job.ticketId }, 'sms skipped — disabled');
+      return;
+    }
+
+    const template = SMS_TEMPLATES[job.template];
+    const templateId = template.templateId() ?? (sms.driver === 'console' ? 'unset' : null);
+    if (!templateId) {
+      logger.warn({ template: job.template }, 'sms skipped — no provider template');
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: job.userId },
+      select: { phone: true, phoneVerifiedAt: true, status: true },
+    });
+    if (!user?.phone || !user.phoneVerifiedAt || user.status !== 'ACTIVE') {
+      logger.warn({ template: job.template, ticketId: job.ticketId }, 'sms skipped — no recipient');
+      return;
+    }
+
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: job.ticketId },
+      select: { number: true },
+    });
+    if (!ticket) {
+      logger.warn({ template: job.template, ticketId: job.ticketId }, 'sms skipped — no ticket');
+      return;
+    }
+
+    const phone = user.phone;
+    const context = { reference: supportTicketReference(ticket.number) };
+    const dedupeKey = `${job.template}:${job.subjectId}:${phone}`;
+    await deliverOnce({
+      channel: 'SMS',
+      dedupeKey,
+      template: job.template,
+      recipient: phone,
+      subject: template.describe(context),
+      dealerId: null,
+      log: { channel: 'sms', driver: sms.driver, ticketId: job.ticketId, to: maskPhone(phone) },
+      send: () =>
+        sms.send({
+          to: phone,
+          templateId,
+          variables: template.variables(context),
+          tag: job.template,
+          idempotencyKey: dedupeKey,
+        }),
+    });
   }
 
   async function recipientsFor(job: EmailJob): Promise<{ email: string; name: string | null }[]> {
@@ -507,10 +620,21 @@ export function createNotificationsService({
 
 export type NotificationsService = ReturnType<typeof createNotificationsService>;
 
-const EVENT_TYPES = new Set<string>(Object.keys(NOTIFICATION_RULES));
+const EVENT_TYPES = new Set<string>([
+  ...Object.keys(NOTIFICATION_RULES),
+  ...Object.keys(SMS_RULES),
+]);
 
 function isDomainEventType(value: string): value is DomainEventType {
   return EVENT_TYPES.has(value);
+}
+
+export function smsJobOf(event: DomainEvent, rule: SmsRule): SmsJob | null {
+  const payload = payloadOf(event);
+  const userId = stringOf(payload[rule.userIdKey]);
+  const ticketId = stringOf(payload[rule.ticketIdKey]);
+  if (!userId || !ticketId) return null;
+  return { template: rule.template, subjectId: event.id, userId, ticketId };
 }
 
 export function jobOf(event: DomainEvent, rule: NotificationRule): EmailJob | null {

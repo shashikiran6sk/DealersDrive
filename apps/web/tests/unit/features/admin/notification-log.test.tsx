@@ -8,6 +8,7 @@ function row(overrides: Partial<AdminNotificationRow> = {}): AdminNotificationRo
   return {
     id: '11111111-1111-4111-8111-111111111111',
     template: 'admin.application.received',
+    channel: 'EMAIL',
     recipient: 'priya@dealers-drive.in',
     subject: 'New dealer application — Kaveri Auto Hub',
     status: 'SENT',
@@ -39,10 +40,33 @@ describe('NotificationLog', () => {
     expect(screen.getByText('priya@dealers-drive.in')).toBeInTheDocument();
     expect(screen.getByText('admin.application.received')).toBeInTheDocument();
     expect(screen.getByText('1 attempt')).toBeInTheDocument();
+    expect(screen.queryByText('SMS')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Failed 1/ })).toHaveAttribute(
       'href',
       '/admin/notifications?status=FAILED',
     );
+  });
+
+  it('marks a text message as an SMS (R118)', () => {
+    render(
+      <NotificationLog
+        deliveries={response({
+          data: [
+            row({
+              channel: 'SMS',
+              template: 'sms.support.ticket-ack',
+              recipient: '+919840012345',
+              subject: 'Support request DD-1042 received',
+              dealer: null,
+            }),
+          ],
+        })}
+        filters={{}}
+      />,
+    );
+    expect(screen.getByText('SMS')).toBeInTheDocument();
+    expect(screen.getByText('+919840012345')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Message deliveries' })).toBeInTheDocument();
   });
 
   it('shows why a delivery failed, and links to older pages keeping the filter', () => {

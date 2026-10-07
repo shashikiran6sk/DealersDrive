@@ -259,6 +259,37 @@ How long the server waits for MSG91 to say whose token this is.
 Four seconds because a dealer is watching a spinner and "try again" is one
 press away, so failing fast beats succeeding slowly.
 
+### `SMS_DRIVER: z.enum(['console', 'msg91', 'disabled']).default('console')`
+
+Who sends transactional SMS (**R118**). See `platform/sms`.
+
+- `console` logs the masked number and sends nothing.
+- `msg91` uses the Flow API with `MSG91_AUTH_KEY`.
+- `disabled` sends and records nothing.
+
+### `MSG91_TICKET_ACK_TEMPLATE_ID: optional(z.string().min(1))`
+
+The Flow template id of the DLT-approved support acknowledgement. It differs
+per MSG91 account and environment, so it is configuration and never a constant
+in code. It is not a secret: it can send nothing without the auth key.
+
+### `SMS_TIMEOUT_MS: z.coerce.number().int().positive().default(5000)`
+
+How long the worker waits for MSG91. Longer than the OTP timeout because no one
+is watching a spinner. The job is retried rather than held.
+
+### `if (value.SMS_DRIVER === 'msg91')`
+
+The driver needs both the key and the template id, so it is refused without
+either, in every environment. It is also refused under `NODE_ENV=test`,
+whatever else is set: the suite never sends a real SMS, and this makes that a
+property of the configuration rather than a habit.
+
+### `if (value.SMS_DRIVER === 'console')`
+
+Refused in production. `console` would look configured and text nobody.
+`disabled` is the honest way to run without SMS.
+
 ### `PHONE_OTP_DEV_CODE: z`
 
 The six digits the `fake` driver accepts. Never reachable in production.

@@ -496,3 +496,38 @@ The customer's own words — the subject, the enquiry message — appear only in
 the escaped body, **never in a subject line**. The subject line carries the
 reference, which is ours. The ticket description never appears at all: it is
 where people put account numbers and addresses.
+
+## The SMS acknowledgement — R118
+
+### `SMS_RULES`, `smsJobOf`, `handleSmsJob`
+
+A new support request is acknowledged by SMS as well as by email (R117). This
+reaches the customers R117 cannot: a phone-only account has no verified email,
+but every customer account has a **proved** phone. `users.phone` is written only
+by a completed OTP.
+
+- **The trigger.** `SupportTicketCreated` → `notification.sms` (its own
+  pg-boss queue, with the email retry policy) → `handleSmsJob`.
+- **Who is texted.** The number is read at send time, and only a proved number
+  on an ACTIVE account is used.
+- **What is sent.** The ticket reference is the only variable. The text is the
+  DLT-approved template held by MSG91, so no customer-written text can ever
+  reach an SMS.
+- **No other SMS.** Status changes are not texted. They are emails, to verified
+  addresses only. An SMS per status change would cost money, and would read as
+  spam for a request the customer can open in their account.
+
+### `deliverOnce`
+
+What used to be the body of `sendOne`, now shared by email and SMS:
+
+1. Claim the `dedupeKey` row.
+2. Send.
+3. Mark the row SENT, PENDING (retried) or FAILED (permanent or exhausted).
+
+The row now records its `channel`. An SMS row's `recipient` is the canonical
+number and its `subject` describes the message, because the text itself lives
+with MSG91.
+
+The email path is unchanged apart from moving into this function. The R40/R115
+unit tests that pin it pass without edits.

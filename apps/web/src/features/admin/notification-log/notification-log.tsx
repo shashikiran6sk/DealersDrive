@@ -1,4 +1,5 @@
 import {
+  NOTIFICATION_CHANNEL_LABELS,
   NOTIFICATION_STATUS_LABELS,
   type AdminNotificationsResponse,
 } from '@dealers-drive/contracts';
@@ -14,7 +15,7 @@ import { NOTIFICATION_LOG_TEXT, NOTIFICATION_TABS } from './notification-log.con
 import { logHref, type NotificationLogFilters } from './utils';
 
 const COLUMNS: TableColumn[] = [
-  { key: 'when', label: NOTIFICATION_LOG_TEXT.colWhen },
+  { key: 'when', label: NOTIFICATION_LOG_TEXT.colWhen, className: 'max-sm:hidden' },
   { key: 'to', label: NOTIFICATION_LOG_TEXT.colTo },
   { key: 'email', label: NOTIFICATION_LOG_TEXT.colEmail },
   { key: 'dealer', label: NOTIFICATION_LOG_TEXT.colDealer, className: 'max-lg:hidden' },
@@ -92,11 +93,21 @@ export function NotificationLog({
         <Table columns={COLUMNS} caption={NOTIFICATION_LOG_TEXT.caption}>
           {deliveries.data.map((row) => (
             <tr key={row.id}>
-              <td className="whitespace-nowrap text-[12px] tnum">{row.createdLabel}</td>
-              <td className="max-w-[220px] break-all text-[13px]">{row.recipient}</td>
+              <td className="whitespace-nowrap text-[12px] tnum max-sm:hidden">
+                {row.createdLabel}
+              </td>
+              <td className="min-w-[150px] max-w-[220px] text-[13px] [overflow-wrap:anywhere]">
+                {row.recipient}
+                <div className="mt-1 text-[11px] ink-muted tnum sm:hidden">{row.createdLabel}</div>
+              </td>
               <td className="text-[13px]">
                 <div className="font-medium">{row.subject}</div>
-                <div className="font-mono text-[11px] ink-muted">{row.template}</div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {row.channel === 'SMS' ? (
+                    <StatusTag tone="neutral">{NOTIFICATION_CHANNEL_LABELS.SMS}</StatusTag>
+                  ) : null}
+                  <span className="font-mono text-[11px] ink-muted">{row.template}</span>
+                </div>
                 {row.lastError ? (
                   <div className="mt-1 text-[12px] text-(--color-err)">{row.lastError}</div>
                 ) : null}

@@ -982,9 +982,9 @@ export const registry: RegistryEntry[] = [
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
-      'The Super admin read of every email delivery: status tabs with counts, search, the failure reason and attempt count, keyset paging.',
-    aliases: ['EmailLog', 'DeliveryLog', 'Notifications', 'notification-log'],
-    features: ['R115'],
+      'The Super admin read of every email and SMS delivery: status tabs with counts, search, an SMS tag, the failure reason and attempt count, keyset paging.',
+    aliases: ['EmailLog', 'SmsLog', 'DeliveryLog', 'Notifications', 'notification-log'],
+    features: ['R115', 'R118'],
     props: ['deliveries', 'filters'],
     states: ['mixed', 'failed only', 'empty search'],
     reusable: false,

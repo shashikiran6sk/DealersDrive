@@ -81,6 +81,14 @@ const ENV = {
    */
   MSG91_WIDGET_ID: '',
   MSG91_WIDGET_TOKEN: '',
+  /*
+   * Pinned for the reason `PHONE_OTP_DRIVER` is (**R118**): a developer's own
+   * `.env` configured for real SMS must never point the suite at MSG91. The
+   * console driver records instead of sending; `env.ts` additionally refuses
+   * `msg91` under test, so this cannot be overridden by accident.
+   */
+  SMS_DRIVER: 'console',
+  MSG91_TICKET_ACK_TEMPLATE_ID: '',
 };
 
 /**

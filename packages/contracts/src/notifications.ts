@@ -16,6 +16,15 @@ import { StatusTone } from './enums.js';
 export const NotificationStatus = z.enum(['PENDING', 'SENT', 'FAILED']);
 export type NotificationStatus = z.infer<typeof NotificationStatus>;
 
+/** **R118.** Email, or a transactional SMS sent through MSG91. */
+export const NotificationChannel = z.enum(['EMAIL', 'SMS']);
+export type NotificationChannel = z.infer<typeof NotificationChannel>;
+
+export const NOTIFICATION_CHANNEL_LABELS: Record<NotificationChannel, string> = {
+  EMAIL: 'Email',
+  SMS: 'SMS',
+};
+
 export const AdminNotificationsQuery = z
   .object({
     status: NotificationStatus.optional(),
@@ -29,6 +38,7 @@ export type AdminNotificationsQuery = z.infer<typeof AdminNotificationsQuery>;
 export const AdminNotificationRow = z.object({
   id: Uuid,
   template: z.string(),
+  channel: NotificationChannel,
   recipient: z.string(),
   subject: z.string(),
   status: NotificationStatus,
