@@ -22,11 +22,12 @@ export type ListingEvent =
   | 'withdraw'
   | 'relist';
 
-export type ListingActorType = 'DEALER' | 'ADMIN';
+export type ListingActorType = 'DEALER' | 'ADMIN' | 'SALES';
 
 export interface ListingActor {
   type: ListingActorType;
   id: string;
+  memberId?: string | null;
 }
 
 export interface TransitionRule {
@@ -41,14 +42,14 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
   submit: {
     from: ['DRAFT'],
     to: 'PENDING_REVIEW',
-    actors: ['DEALER'],
+    actors: ['DEALER', 'SALES'],
     action: 'listing.submitted',
     needsReason: false,
   },
   resubmit: {
     from: ['CHANGES_REQUESTED'],
     to: 'PENDING_REVIEW',
-    actors: ['DEALER'],
+    actors: ['DEALER', 'SALES'],
     action: 'listing.resubmitted',
     needsReason: false,
   },
@@ -163,6 +164,7 @@ function stampsFor(
         submittedAt: listing.submittedAt ?? now,
         lastSubmittedAt: now,
         submissionCount: listing.submissionCount + 1,
+        submittedByMemberId: actor.type === 'SALES' ? (actor.memberId ?? null) : null,
       };
     case 'requestChanges':
     case 'reject':
@@ -247,6 +249,7 @@ export async function transition(
     after: {
       status: to,
       vehicleId: listing.vehicleId,
+      ...(actor.type === 'SALES' && actor.memberId ? { assistedByMemberId: actor.memberId } : {}),
       ...(reason ? { reason } : {}),
       ...(withdrawal
         ? { withdrawalReason: withdrawal.reason, hasNote: Boolean(withdrawal.note?.trim()) }

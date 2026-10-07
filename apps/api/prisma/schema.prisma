@@ -241,6 +241,8 @@ model AdminMember {
   user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   assistedDealers        Dealer[]
   requestedVerifications DealerEmailVerification[]
+  createdVehicles        Vehicle[]                 @relation("VehicleCreatedByMember")
+  submittedListings      Listing[]                 @relation("ListingSubmittedByMember")
 
   @@index([status, role])
   @@map("admin_members")
@@ -699,17 +701,24 @@ model Vehicle {
 
   /// The dealer member who created the row. `dealerId` says whose car; this
   /// says whose hands.
-  createdBy String?  @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdBy         String?  @db.Uuid
+  /// The Sales Representative who created this vehicle on the dealer's behalf
+  /// (**R114**). NULL for every vehicle a dealer created themselves. Moderation
+  /// refuses this member every decision on its listing.
+  createdByMemberId String?  @db.Uuid
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  dealer      Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  listing     Listing?
-  photography VehiclePhotography?
-  images      VehicleMedia[]
+  dealer          Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  createdByMember AdminMember?        @relation("VehicleCreatedByMember", fields: [createdByMemberId], references: [id], onDelete: Restrict)
+  listing         Listing?
+  photography     VehiclePhotography?
+  images          VehicleMedia[]
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
+  /// A Sales Representative's drafts for one dealership.
+  @@index([createdByMemberId, dealerId])
   /// The marketplace search's brand filter and its brand and model facets
   /// (**F076**). See `migrations/20260927100000_vehicle_search_index`.
   @@index([make, model])
@@ -769,19 +778,23 @@ model Listing {
 
   /// The moderator's last decision, and the words the dealer is shown. A
   /// request for changes or a rejection always carries one; an approval clears it.
-  decisionReason String?
-  decidedBy      String?   @db.Uuid
-  decidedAt      DateTime?
+  decisionReason      String?
+  decidedBy           String?   @db.Uuid
+  decidedAt           DateTime?
+  /// The Sales Representative who made the latest submission on the dealer's
+  /// behalf (**R114**); NULL when the dealer submitted it themselves.
+  submittedByMemberId String?   @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicle       Vehicle                      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  dealer        Dealer                       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  checks        ListingCheck[]
-  enquiries     Enquiry[]
-  savedBy       SavedVehicle[]
-  reactivations ListingReactivationRequest[]
+  vehicle           Vehicle                      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  submittedByMember AdminMember?                 @relation("ListingSubmittedByMember", fields: [submittedByMemberId], references: [id], onDelete: Restrict)
+  dealer            Dealer                       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  checks            ListingCheck[]
+  enquiries         Enquiry[]
+  savedBy           SavedVehicle[]
+  reactivations     ListingReactivationRequest[]
 
   /// A dealership's inventory filtered by status, most recently touched first.
   @@index([dealerId, status, updatedAt])

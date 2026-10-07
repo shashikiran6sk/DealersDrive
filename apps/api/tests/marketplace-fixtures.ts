@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import type request from 'supertest';
 
 import { env } from '../src/config/env.js';
@@ -59,7 +61,9 @@ export function marketplaceFixtures(h: AuthHarness, label: string) {
     const agent = h.agent();
     await h.signIn(agent);
 
-    const phone = `97${String(Date.now()).slice(-5)}${String(100 + n).slice(-3)}`;
+    // Random, not clock-derived: the clock's last five digits repeat every 100 s,
+    // and two test files running in parallel then mint the same number.
+    const phone = `97${String(randomInt(0, 100_000_000)).padStart(8, '0')}`;
     await h.proveNumber(agent, phone);
     const created = await agent
       .post('/v1/auth/onboarding')

@@ -1088,6 +1088,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'auth-claimdealership',
   },
   {
+    id: 'C064k',
+    name: 'SalesVehicleList',
+    source: 'apps/web/src/features/sales/sales-vehicle-list/sales-vehicle-list.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'On an assisted dealership: the listings this representative prepared, their status and reviewer reasons, and a start button while the dealership is open.',
+    aliases: ['AssistedListings', 'SalesListings', 'sales-vehicle-list'],
+    features: ['R114'],
+    props: ['dealerId', 'listings'],
+    states: ['approved', 'before approval', 'empty', 'closed'],
+    reusable: false,
+    storyId: 'sales-salesvehiclelist',
+  },
+  {
     id: 'C066',
     name: 'Table',
     source: 'apps/web/src/components/ui/table/table.tsx',
@@ -1474,7 +1489,7 @@ export const registry: RegistryEntry[] = [
       'BasicsStep',
       'DetailsStep',
     ],
-    features: ['F060', 'F061', 'F063'],
+    features: ['F060', 'F061', 'F063', 'R114'],
     props: [
       'step',
       'vehicle',
@@ -1482,6 +1497,7 @@ export const registry: RegistryEntry[] = [
       'submitted',
       'cancelHref',
       'mayPublish — false for STAFF: no Submit, says who sends it (R95)',
+      'salesDealerId — the Sales workspace: Sales routes and links, no dealer lifecycle (R114)',
     ],
     states: [
       'new registration',
@@ -1495,6 +1511,7 @@ export const registry: RegistryEntry[] = [
       'under review (read-only)',
       'changes requested (reason shown)',
       'submitted',
+      'sales workspace before approval',
     ],
     reusable: false,
     storyId: 'vehicle-vehiclewizard',

@@ -29,6 +29,9 @@ import { assertLocalDatabase } from './dev-guard.js';
  * The in-review dealership is therefore complete in every field except that,
  * and the approved one is approved because this seed says so.
  *
+ * The approved one also has a listing draft the representative prepared
+ * (**R114**), so the Sales listings section and its edit wizard have a row.
+ *
  * ── Re-running it ───────────────────────────────────────────────────────────
  * Members upsert on the email, dealerships on the GSTIN, like `dev-dealers.ts`.
  * ────────────────────────────────────────────────────────────────────────────
@@ -194,6 +197,30 @@ async function seedAssisted(seed: SeedAssisted, memberId: string): Promise<void>
   });
 }
 
+async function seedDraftListing(gstin: string, memberId: string): Promise<void> {
+  const dealer = await prisma.dealer.findUniqueOrThrow({ where: { gstin }, select: { id: true } });
+  const registrationNumber = 'TN73SR4321';
+  const existing = await prisma.vehicle.findFirst({
+    where: { dealerId: dealer.id, registrationNumber, releasedAt: null },
+    select: { id: true },
+  });
+  if (existing) return;
+  const vehicle = await prisma.vehicle.create({
+    data: {
+      dealerId: dealer.id,
+      registrationNumber,
+      rtoCode: 'TN73',
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX',
+      manufacturingYear: 2021,
+      registrationYear: 2021,
+      createdByMemberId: memberId,
+    },
+  });
+  await prisma.listing.create({ data: { vehicleId: vehicle.id, dealerId: dealer.id } });
+}
+
 async function main(): Promise<void> {
   assertLocalDatabase('Sales members and assisted dealerships');
 
@@ -206,6 +233,8 @@ async function main(): Promise<void> {
     if (!memberId) throw new Error(`No seeded member ${seed.assistant}`);
     await seedAssisted(seed, memberId);
   }
+  const arun = members.get('arun.sales@dealers-drive.test');
+  if (arun) await seedDraftListing('33AAACK3321R1Z3', arun);
 
   console.log(
     `seeded ${String(MEMBERS.length)} admin members and ${String(ASSISTED.length)} assisted dealerships`,

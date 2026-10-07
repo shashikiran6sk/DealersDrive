@@ -152,6 +152,7 @@ const DETAIL: AdminListingDetail = {
     },
   ],
   blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
+  assisted: { createdBy: null, submittedBy: null, reviewerIsAssistant: false },
   actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
 };
 
@@ -225,6 +226,21 @@ export const ReadOnly: Story = {
       blockers: [],
       images: { ...DETAIL.images, canEdit: false },
       photography: { ...DETAIL.photography, canUpdate: false },
+      actions: { canVerify: false, canRequestChanges: false, canReject: false, canApprove: false },
+    },
+  },
+};
+
+export const PreparedBySales: Story = {
+  name: 'Prepared by Sales — the reviewer is the assistant (R114)',
+  args: {
+    detail: {
+      ...DETAIL,
+      assisted: {
+        createdBy: { name: 'Arun (Field Sales)', email: 'arun.sales@dealers-drive.in' },
+        submittedBy: { name: 'Arun (Field Sales)', email: 'arun.sales@dealers-drive.in' },
+        reviewerIsAssistant: true,
+      },
       actions: { canVerify: false, canRequestChanges: false, canReject: false, canApprove: false },
     },
   },

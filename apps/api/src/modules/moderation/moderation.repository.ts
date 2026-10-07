@@ -16,8 +16,19 @@ export const queueInclude = {
 
 export type QueueRow = Prisma.ListingGetPayload<{ include: typeof queueInclude }>;
 
+const MEMBER_IDENTITY = {
+  select: { id: true, user: { select: { fullName: true, email: true } } },
+} as const;
+
 export const detailInclude = {
-  vehicle: { include: { photography: true, _count: { select: { images: true } } } },
+  vehicle: {
+    include: {
+      photography: true,
+      _count: { select: { images: true } },
+      createdByMember: MEMBER_IDENTITY,
+    },
+  },
+  submittedByMember: MEMBER_IDENTITY,
   dealer: {
     select: {
       id: true,

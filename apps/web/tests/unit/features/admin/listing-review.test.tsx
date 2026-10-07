@@ -148,6 +148,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
       },
     ],
     blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
+    assisted: { createdBy: null, submittedBy: null, reviewerIsAssistant: false },
     actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
     ...overrides,
   };
@@ -540,5 +541,25 @@ describe('the image actions', () => {
   it('ignores a removal form without valid ids', async () => {
     await removeListingImageAction(new FormData());
     expect(apiSend).not.toHaveBeenCalled();
+  });
+});
+
+describe('a listing Sales prepared (R114)', () => {
+  it('names who prepared and submitted it, and warns a reviewer who did', () => {
+    render(
+      <ListingReview
+        detail={{
+          ...reviewDetail(),
+          assisted: {
+            createdBy: { name: 'Arun', email: 'arun@dealers-drive.in' },
+            submittedBy: { name: 'Arun', email: 'arun@dealers-drive.in' },
+            reviewerIsAssistant: true,
+          },
+        }}
+      />,
+    );
+    expect(screen.getByText('Prepared by Dealers-Drive Sales: Arun')).toBeInTheDocument();
+    expect(screen.getByText('Submitted by Dealers-Drive Sales: Arun')).toBeInTheDocument();
+    expect(screen.getByText(/another reviewer has to decide/)).toBeInTheDocument();
   });
 });

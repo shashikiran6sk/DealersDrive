@@ -5,6 +5,11 @@ import { deleteDealerDocument } from './routes/delete-dealer-document.js';
 import { deleteDealerYardPhoto } from './routes/delete-dealer-yard-photo.js';
 import { getDashboard } from './routes/get-dashboard.js';
 import { getDealer } from './routes/get-dealer.js';
+import { getDealerVehicle } from './routes/get-dealer-vehicle.js';
+import { getDealerVehicles } from './routes/get-dealer-vehicles.js';
+import { patchDealerVehicle } from './routes/patch-dealer-vehicle.js';
+import { postDealerVehicle } from './routes/post-dealer-vehicle.js';
+import { postDealerVehicleSubmit } from './routes/post-dealer-vehicle-submit.js';
 import { getDealers } from './routes/get-dealers.js';
 import { getPhoneWidget } from './routes/get-phone-widget.js';
 import { patchDealer } from './routes/patch-dealer.js';
@@ -35,6 +40,11 @@ const ROUTES: SalesRoute[] = [
   postDealerYardPhotoCommit,
   deleteDealerYardPhoto,
   postDealerSubmit,
+  getDealerVehicles,
+  postDealerVehicle,
+  getDealerVehicle,
+  patchDealerVehicle,
+  postDealerVehicleSubmit,
 ];
 
 export function createSalesRouter(service: SalesService, rateLimit: RateLimiter): Router {

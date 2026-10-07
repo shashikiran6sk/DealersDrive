@@ -19,7 +19,7 @@ const withListing = {
 
 export type VehicleWrite = Omit<
   Prisma.VehicleUncheckedUpdateInput,
-  'id' | 'dealerId' | 'createdAt' | 'updatedAt' | 'createdBy'
+  'id' | 'dealerId' | 'createdAt' | 'updatedAt' | 'createdBy' | 'createdByMemberId'
 >;
 
 export interface VehicleCreate {
@@ -27,6 +27,7 @@ export interface VehicleCreate {
   registrationNumber: string;
   rtoCode: string | null;
   createdBy: string | null;
+  createdByMemberId?: string | null;
 }
 
 export type SpelledField = 'make' | 'model';
@@ -105,6 +106,14 @@ export function createVehiclesRepository(prisma: PrismaClient) {
     async listForDealer(dealerId: string): Promise<VehicleRow[]> {
       return prisma.vehicle.findMany({
         where: { dealerId },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: withListing,
+      });
+    },
+
+    async createdByMember(dealerId: string, memberId: string): Promise<VehicleRow[]> {
+      return prisma.vehicle.findMany({
+        where: { dealerId, createdByMemberId: memberId },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         include: withListing,
       });

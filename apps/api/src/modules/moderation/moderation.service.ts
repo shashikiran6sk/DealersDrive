@@ -8,11 +8,12 @@ import type {
   ListingCheckKey,
   SetPhotographyInput,
 } from '@dealers-drive/contracts';
-import type { PrismaClient } from '@prisma/client';
+import type { Listing, PrismaClient } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import { ConflictError, NotFoundError, errorCode } from '../../platform/errors.js';
+import type { Tx } from '../../platform/db/prisma.js';
+import { ConflictError, ForbiddenError, NotFoundError, errorCode } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import type { VehicleImagesService } from '../vehicle-images/vehicle-images.facade.js';
@@ -38,7 +39,7 @@ import {
   PHOTOGRAPHY_CLOSED,
   REACTIVATION_REGISTRATION_TAKEN,
 } from './moderation.messages.js';
-import { HISTORY_LABELS } from './moderation.messages.js';
+import { HISTORY_LABELS, SELF_REVIEW_FORBIDDEN } from './moderation.messages.js';
 import {
   approvalStateOf,
   reactivationSortKeyOf,
@@ -62,14 +63,28 @@ function reactivationNotFound(): NotFoundError {
 }
 
 export function createModerationService({ prisma, repo, audit, images }: ModerationDeps) {
-  async function detail(listingId: string): Promise<AdminListingDetail> {
+  async function detail(listingId: string, viewer?: AdminPrincipal): Promise<AdminListingDetail> {
     const listing = await repo.detail(listingId);
     if (!listing) throw notFound();
     const [history, gallery] = await Promise.all([
       repo.history(listingId, Object.keys(HISTORY_LABELS)),
       images.images(listing.vehicleId, listing.status),
     ]);
-    return toAdminListingDetail(listing, history, gallery);
+    return toAdminListingDetail(listing, history, gallery, new Date(), viewer?.memberId ?? null);
+  }
+
+  async function assertNotAssistant(tx: Tx, listing: Listing, admin: AdminPrincipal) {
+    if (!admin.memberId) return;
+    const vehicle = await tx.vehicle.findUnique({
+      where: { id: listing.vehicleId },
+      select: { createdByMemberId: true },
+    });
+    if (
+      vehicle?.createdByMemberId === admin.memberId ||
+      listing.submittedByMemberId === admin.memberId
+    ) {
+      throw new ForbiddenError(SELF_REVIEW_FORBIDDEN, { code: 'SELF_REVIEW_FORBIDDEN' });
+    }
   }
 
   async function decide(
@@ -81,9 +96,10 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
     await withTransaction(prisma, async (tx) => {
       const listing = await lockListing(tx, listingId);
       if (!listing) throw notFound();
+      await assertNotAssistant(tx, listing, admin);
       await transition(tx, audit, listing, event, { type: 'ADMIN', id: admin.userId }, { reason });
     });
-    return detail(listingId);
+    return detail(listingId, admin);
   }
 
   async function reactivationRow(requestId: string): Promise<AdminReactivationRow> {
@@ -219,6 +235,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
         const listing = await lockListing(tx, listingId);
         if (!listing) throw notFound();
         assertTransition(listing.status, 'approve', 'ADMIN');
+        await assertNotAssistant(tx, listing, admin);
 
         const state = await approvalStateOf(tx, listing, minImages);
         const blockers = approvalBlockers(state);
@@ -234,7 +251,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
           });
         }
       });
-      return detail(listingId);
+      return detail(listingId, admin);
     },
 
     async requestChanges(admin: AdminPrincipal, listingId: string, reason: string) {
@@ -264,6 +281,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
             },
           );
         }
+        await assertNotAssistant(tx, listing, admin);
 
         if (checked) {
           await tx.listingCheck.upsert({

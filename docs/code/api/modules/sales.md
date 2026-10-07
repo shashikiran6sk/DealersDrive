@@ -93,3 +93,10 @@ An OTP is an SMS, so this is a spend control as much as an abuse one.
 it and never sees it — the API answers with the dealership's detail, and the
 link exists only in the dealer's inbox. Refused within a minute of the previous
 request, and once the dealer has claimed the dealership.
+
+### `async vehicles(principal: AdminPrincipal, dealerId: string): Promise<SalesVehiclesResponse>`
+
+**R114.** Scoped twice: the dealership must be one this member assisted
+(`requireAssisted`, a 404 otherwise), and the vehicles are the ones this member
+created. Writes go through `vehicles.assisted*`, which re-checks the dealership
+under its row lock.

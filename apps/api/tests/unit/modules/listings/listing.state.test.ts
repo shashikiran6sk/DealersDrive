@@ -191,6 +191,7 @@ function listing(status: ListingStatus, overrides: Partial<Listing> = {}): Listi
     decisionReason: null,
     decidedBy: null,
     decidedAt: null,
+    submittedByMemberId: null,
     createdAt: new Date(0),
     updatedAt: new Date(0),
     ...overrides,

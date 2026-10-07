@@ -4,6 +4,8 @@ export type WizardStep = 'registration' | 'basics' | 'details' | 'pricing' | 're
 
 export type WizardIntent = 'continue' | 'back' | 'draft';
 
+export type WizardScope = { kind: 'dealer' } | { kind: 'sales'; dealerId: string };
+
 export interface WizardState {
   message?: string;
   errors?: Record<string, string>;

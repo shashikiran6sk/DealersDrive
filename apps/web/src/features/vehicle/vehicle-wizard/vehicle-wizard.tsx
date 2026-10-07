@@ -21,7 +21,8 @@ import {
   VEHICLE_WIZARD_TEXT,
   WIZARD_STEPS,
 } from './vehicle-wizard.constants';
-import type { WizardState, WizardStep } from './vehicle-wizard.types';
+import type { WizardScope, WizardState, WizardStep } from './vehicle-wizard.types';
+import { DEALER_SCOPE, WizardScopeContext } from './wizard-scope';
 import { WizardFooter } from './wizard-footer';
 
 const EMPTY: WizardState = {};
@@ -35,6 +36,7 @@ export interface VehicleWizardProps {
   submitted?: boolean;
   cancelHref?: string;
   mayPublish?: boolean;
+  salesDealerId?: string;
 }
 
 function lockedBody(status: DealerVehicle['listing']['status']): string {
@@ -50,7 +52,35 @@ export function VehicleWizard({
   submitted = false,
   cancelHref = '/dealer',
   mayPublish = true,
+  salesDealerId,
 }: VehicleWizardProps) {
+  const scope: WizardScope = salesDealerId
+    ? { kind: 'sales', dealerId: salesDealerId }
+    : DEALER_SCOPE;
+  return (
+    <WizardScopeContext.Provider value={scope}>
+      <WizardBody
+        step={step}
+        vehicle={vehicle}
+        saved={saved}
+        submitted={submitted}
+        cancelHref={cancelHref}
+        mayPublish={mayPublish}
+        scope={scope}
+      />
+    </WizardScopeContext.Provider>
+  );
+}
+
+function WizardBody({
+  step,
+  vehicle,
+  saved,
+  submitted,
+  cancelHref,
+  mayPublish,
+  scope,
+}: Required<Omit<VehicleWizardProps, 'salesDealerId'>> & { scope: WizardScope }) {
   const [state, onSubmit, pending] = useNavigationSafeFormAction(
     vehicle ? saveVehicleStepAction : createVehicleAction,
     EMPTY,
@@ -62,7 +92,16 @@ export function VehicleWizard({
   const listing = vehicle?.listing;
 
   if (submitted && listing?.status === 'PENDING_REVIEW') {
-    return <SubmittedPanel doneHref={INVENTORY_HREF} />;
+    return (
+      <SubmittedPanel
+        doneHref={scope.kind === 'sales' ? cancelHref : INVENTORY_HREF}
+        doneLabel={
+          scope.kind === 'sales'
+            ? VEHICLE_WIZARD_TEXT.viewDealership
+            : VEHICLE_WIZARD_TEXT.viewInventory
+        }
+      />
+    );
   }
 
   return (
@@ -95,11 +134,13 @@ export function VehicleWizard({
         {locked ? (
           <>
             <ReviewStep vehicle={vehicle} readOnly />
-            <ListingLifecyclePanel
-              vehicleId={vehicle.id}
-              vehicleTitle={vehicle.title}
-              listing={vehicle.listing}
-            />
+            {scope.kind === 'dealer' ? (
+              <ListingLifecyclePanel
+                vehicleId={vehicle.id}
+                vehicleTitle={vehicle.title}
+                listing={vehicle.listing}
+              />
+            ) : null}
             <div className="flex flex-wrap gap-[9px] border-t border-(--color-divider) pt-[16px]">
               <ButtonLink href={cancelHref} variant="secondary" className="ml-auto">
                 {VEHICLE_WIZARD_TEXT.done}
@@ -118,6 +159,9 @@ export function VehicleWizard({
                 <input type="hidden" name="vehicleId" value={vehicle.id} />
                 <input type="hidden" name="step" value={step} />
               </>
+            ) : null}
+            {scope.kind === 'sales' ? (
+              <input type="hidden" name="salesDealerId" value={scope.dealerId} />
             ) : null}
 
             {step === 'registration' ? (

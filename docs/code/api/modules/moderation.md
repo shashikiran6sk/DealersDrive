@@ -152,3 +152,17 @@ an approval the API would refuse, nor hide one it would accept.
 
 Photography status is deliberately **not** a rule. It is the operations
 team's note; the images themselves are the evidence.
+
+## `apps/api/src/modules/moderation/moderation.service.ts` — R114
+
+### `async function assertNotAssistant(tx: Tx, listing: Listing, admin: AdminPrincipal)`
+
+Separation of duties for listings. The member who created the vehicle
+(`vehicles.createdByMemberId`) or made the latest submission
+(`listings.submittedByMemberId`) is refused approve, reject, request-changes and
+the verification checklist with `403 SELF_REVIEW_FORBIDDEN`. A Sales Representative cannot reach the console
+at all today; this guards the member who is later re-roled to Operations, and it
+reads the stored member id inside the transaction, not the role or the button.
+The detail response sets `assisted.reviewerIsAssistant` and turns every action
+off for that reviewer, so the screen says why rather than offering a button that
+fails.

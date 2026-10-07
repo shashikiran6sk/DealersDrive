@@ -207,13 +207,24 @@ export function historyOf(rows: HistoryRow[]): AdminListingDetail['history'] {
   }));
 }
 
+function identityOf(
+  member: { user: { fullName: string | null; email: string | null } } | null,
+): { name: string | null; email: string } | null {
+  return member ? { name: member.user.fullName, email: member.user.email ?? '' } : null;
+}
+
 export function toAdminListingDetail(
   listing: DetailRow,
   history: HistoryRow[],
   images: AdminVehicleImages,
   now: Date = new Date(),
+  viewerMemberId: string | null = null,
 ): AdminListingDetail {
-  const reviewing = listing.status === 'PENDING_REVIEW';
+  const assistant =
+    viewerMemberId !== null &&
+    (listing.vehicle.createdByMemberId === viewerMemberId ||
+      listing.submittedByMemberId === viewerMemberId);
+  const reviewing = listing.status === 'PENDING_REVIEW' && !assistant;
   const checked = new Map(listing.checks.map((check) => [check.key, check.checkedAt]));
   const blockers = reviewing
     ? approvalBlockers({
@@ -263,6 +274,11 @@ export function toAdminListingDetail(
     })),
     history: historyOf(history),
     blockers,
+    assisted: {
+      createdBy: identityOf(listing.vehicle.createdByMember),
+      submittedBy: identityOf(listing.submittedByMember),
+      reviewerIsAssistant: assistant,
+    },
     actions: {
       canVerify: reviewing,
       canRequestChanges: reviewing,

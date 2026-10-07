@@ -386,3 +386,53 @@ describe('a member who may not publish (R95)', () => {
     expect(screen.getByRole('button', { name: /submit for review/i })).toBeEnabled();
   });
 });
+
+describe('in the Sales workspace (R114)', () => {
+  const DEALER = '44444444-4444-4444-8444-444444444444';
+
+  it('carries the dealership on every form and links within the Sales workspace', () => {
+    const { container } = render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          complete: false,
+          issues: [{ field: 'make', message: 'Add the make.' }],
+        })}
+        salesDealerId={DEALER}
+        cancelHref={`/sales/dealers/${DEALER}`}
+      />,
+    );
+    expect(container.querySelector('input[name="salesDealerId"]')).toHaveAttribute('value', DEALER);
+    for (const link of screen.getAllByRole('link')) {
+      expect(link.getAttribute('href') ?? '').not.toMatch(/^\/dealer\//);
+    }
+  });
+
+  it('explains that submission waits for approval', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle()}
+        salesDealerId={DEALER}
+        cancelHref={`/sales/dealers/${DEALER}`}
+        mayPublish={false}
+      />,
+    );
+    expect(screen.getByText(/once the dealership is approved/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Submit/ })).toBeNull();
+  });
+
+  it('does not offer the dealer’s lifecycle actions on a locked listing', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          listing: { ...vehicle().listing, status: 'PENDING_REVIEW', canEdit: false },
+        })}
+        salesDealerId={DEALER}
+        cancelHref={`/sales/dealers/${DEALER}`}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /Mark as sold|Reserve|Withdraw/ })).toBeNull();
+  });
+});

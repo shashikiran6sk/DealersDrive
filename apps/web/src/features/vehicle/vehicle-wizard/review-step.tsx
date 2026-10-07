@@ -18,6 +18,7 @@ import { Banner, Blueprint } from '@/components/ui/primitives';
 import { FIELD_LABELS, STEP_LABELS, VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
 import type { WizardStep } from './vehicle-wizard.types';
 import { editPath, stepOfField } from './utils';
+import { useWizardScope } from './wizard-scope';
 
 interface Row {
   label: string | undefined;
@@ -104,6 +105,7 @@ export function ReviewStep({
   vehicle: DealerVehicle;
   readOnly?: boolean;
 }) {
+  const scope = useWizardScope();
   return (
     <div className="flex flex-col gap-[16px]">
       {readOnly ? null : vehicle.complete ? (
@@ -116,7 +118,7 @@ export function ReviewStep({
                 <span>{issue.message}</span>
                 <Link
                   className="relative btn btn-ghost text-[12px]"
-                  href={editPath(vehicle.id, stepOfField(issue.field))}
+                  href={editPath(vehicle.id, stepOfField(issue.field), '', scope)}
                 >
                   <LinkPendingLabel>{VEHICLE_WIZARD_TEXT.fix}</LinkPendingLabel>
                 </Link>
@@ -143,7 +145,7 @@ export function ReviewStep({
             {readOnly ? null : (
               <Link
                 className="relative btn btn-ghost text-[12px]"
-                href={editPath(vehicle.id, section.step)}
+                href={editPath(vehicle.id, section.step, '', scope)}
               >
                 <LinkPendingLabel>{VEHICLE_WIZARD_TEXT.edit}</LinkPendingLabel>
               </Link>

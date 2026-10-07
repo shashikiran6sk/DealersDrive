@@ -357,6 +357,16 @@ export const AdminListingDetail = z.object({
   ),
   /** Empty when the listing may be approved; always empty out of review. */
   blockers: z.array(ApprovalBlocker),
+  /**
+   * Who at Dealers-Drive prepared this listing on the dealer's behalf (**R114**).
+   * `reviewerIsAssistant` is true when the person reading created or submitted
+   * it — every decision is then refused, and the actions are all false.
+   */
+  assisted: z.object({
+    createdBy: z.object({ name: z.string().nullable(), email: z.string() }).nullable(),
+    submittedBy: z.object({ name: z.string().nullable(), email: z.string() }).nullable(),
+    reviewerIsAssistant: z.boolean(),
+  }),
   actions: z.object({
     canVerify: z.boolean(),
     canRequestChanges: z.boolean(),
