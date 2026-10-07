@@ -745,4 +745,51 @@ describe('the rules table (R115)', () => {
     ).toMatchObject({ subjectId: 'ver-1' });
     expect(rule && jobOf(event('DealerEmailVerificationRequested', {}), rule)).toBeNull();
   });
+  it('carries the enquiry and the listing for the dealer (R117)', () => {
+    const [rule] = NOTIFICATION_RULES.EnquiryCreated ?? [];
+    expect(
+      rule && jobOf(event('EnquiryCreated', { enquiryId: 'enq-1', listingId: 'lst-1' }), rule),
+    ).toEqual({
+      template: 'dealer.enquiry.received',
+      audience: 'dealer',
+      dealerId: 'dealer-1',
+      subjectId: 'evt-1',
+      listingId: 'lst-1',
+      enquiryId: 'enq-1',
+    });
+  });
+
+  it('sends ticket mail without a dealership, and drops a ticket event with no ticket (R117)', () => {
+    const ticketEvent = (payload: Record<string, unknown>): DomainEvent => ({
+      ...event('SupportTicketStatusChanged', payload),
+      aggregateType: 'SupportTicket',
+      aggregateId: 'tkt-1',
+      dealerId: undefined,
+    });
+    const [status] = NOTIFICATION_RULES.SupportTicketStatusChanged ?? [];
+    expect(
+      status &&
+        jobOf(ticketEvent({ ticketId: 'tkt-1', customerId: 'usr-1', status: 'RESOLVED' }), status),
+    ).toEqual({
+      template: 'customer.support.ticket-status',
+      audience: 'user',
+      dealerId: null,
+      subjectId: 'evt-1',
+      userId: 'usr-1',
+      ticketId: 'tkt-1',
+      ticketStatus: 'RESOLVED',
+    });
+    expect(status && jobOf(ticketEvent({ customerId: 'usr-1' }), status)).toBeNull();
+
+    const [desk, customer] = NOTIFICATION_RULES.SupportTicketCreated ?? [];
+    expect(
+      desk && jobOf(ticketEvent({ ticketId: 'tkt-1', customerId: 'usr-1' }), desk),
+    ).toMatchObject({
+      audience: 'admin',
+      permission: 'admin:support:manage',
+      dealerId: null,
+      ticketId: 'tkt-1',
+    });
+    expect(customer && jobOf(ticketEvent({ ticketId: 'tkt-1' }), customer)).toBeNull();
+  });
 });

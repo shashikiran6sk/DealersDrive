@@ -15,6 +15,8 @@ export interface NotificationRule {
   reason?: boolean | ((event: DomainEvent) => boolean);
   profileChangeId?: boolean;
   listingId?: boolean;
+  enquiryId?: boolean;
+  ticketId?: boolean;
   subjectKey?: string;
 }
 
@@ -35,6 +37,8 @@ const DEALER = { kind: 'dealer' } as const;
 function admins(permission: AdminPermission): NotificationAudience {
   return { kind: 'admins', permission };
 }
+
+const CUSTOMER = { kind: 'user', userIdKey: 'customerId' } as const;
 
 export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly NotificationRule[]>> = {
   DealerApplied: [
@@ -107,6 +111,20 @@ export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly Notifi
       listingId: true,
       reason: true,
     },
+  ],
+  EnquiryCreated: [
+    { template: 'dealer.enquiry.received', audience: DEALER, listingId: true, enquiryId: true },
+  ],
+  SupportTicketCreated: [
+    {
+      template: 'admin.support.ticket-created',
+      audience: admins('admin:support:manage'),
+      ticketId: true,
+    },
+    { template: 'customer.support.ticket-received', audience: CUSTOMER, ticketId: true },
+  ],
+  SupportTicketStatusChanged: [
+    { template: 'customer.support.ticket-status', audience: CUSTOMER, ticketId: true },
   ],
   DealerProfileChangeDecided: [
     {

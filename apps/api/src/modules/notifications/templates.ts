@@ -1,3 +1,10 @@
+import {
+  CUSTOMER_SUPPORT_STATUS_LABELS,
+  SUPPORT_CATEGORY_LABELS,
+  type SupportTicketCategory,
+  type SupportTicketStatus,
+} from '@dealers-drive/contracts';
+
 import { env } from '../../config/env.js';
 
 export type TemplateName =
@@ -22,7 +29,11 @@ export type TemplateName =
   | 'dealer.listing.changes-requested'
   | 'admin.listing.reactivation-requested'
   | 'dealer.listing.reactivation-approved'
-  | 'dealer.listing.reactivation-rejected';
+  | 'dealer.listing.reactivation-rejected'
+  | 'dealer.enquiry.received'
+  | 'admin.support.ticket-created'
+  | 'customer.support.ticket-received'
+  | 'customer.support.ticket-status';
 
 export interface RenderedEmail {
   subject: string;
@@ -38,6 +49,19 @@ export interface ListingContext {
   plate: string;
 }
 
+export interface EnquiryContext {
+  buyerName: string | null;
+  message: string | null;
+}
+
+export interface TicketContext {
+  id: string;
+  reference: string;
+  subject: string;
+  category: SupportTicketCategory;
+  status: SupportTicketStatus;
+}
+
 export interface TemplateContext {
   dealerName: string;
   contactName: string | null;
@@ -48,10 +72,24 @@ export interface TemplateContext {
   actionUrl?: string;
   expiresAt?: Date;
   listing?: ListingContext;
+  enquiry?: EnquiryContext;
+  ticket?: TicketContext;
 }
 
 const CONSOLE = `${env.WEB_BASE_URL}/dealer`;
 const ADMIN_QUEUE = `${env.WEB_BASE_URL}/admin/dealers`;
+const SUPPORT_REQUESTS = `${env.WEB_BASE_URL}/support-requests`;
+const ADMIN_SUPPORT = `${env.WEB_BASE_URL}/admin/support`;
+
+const TICKET_STATUS_LINES: Record<SupportTicketStatus, string> = {
+  OPEN: 'Your request has been reopened and is back with our support team.',
+  IN_PROGRESS: 'Our support team is working on your request.',
+  WAITING_FOR_CUSTOMER:
+    'We need a little more from you before we can go further. Please reply in the request.',
+  RESOLVED:
+    'We think your request is resolved. If it is not, reply in the request and it will reopen.',
+  CLOSED: 'Your request is now closed. If you need more help, open a new request.',
+};
 
 export function render(template: TemplateName, context: TemplateContext): RenderedEmail {
   switch (template) {
@@ -322,7 +360,87 @@ export function render(template: TemplateName, context: TemplateContext): Render
         quote: context.reason,
         action: { label: 'Open your inventory', url: `${CONSOLE}/inventory` },
       });
+
+    case 'dealer.enquiry.received':
+      return compose({
+        subject: `New enquiry — ${listingOf(context).title}`,
+        heading: 'A buyer is interested in your car',
+        greeting: context.contactName,
+        paragraphs: [
+          `${context.enquiry?.buyerName ?? 'A buyer'} has enquired about ${carName(context)} on Dealers-Drive.`,
+          context.enquiry?.message
+            ? 'This is what they wrote:'
+            : 'They did not leave a message — they would like you to call them back.',
+        ],
+        quote: context.enquiry?.message ?? null,
+        paragraphsAfter: [
+          'Their phone number is in your enquiries inbox. Buyers who hear back the same day are the ones who visit.',
+        ],
+        action: { label: 'Open your enquiries', url: `${CONSOLE}/enquiries` },
+      });
+
+    case 'admin.support.ticket-created': {
+      const ticket = ticketOf(context);
+      return compose({
+        subject: `New support request ${ticket.reference} — ${SUPPORT_CATEGORY_LABELS[ticket.category]}`,
+        heading: 'A customer has asked for help',
+        paragraphs: [`${ticket.reference} — ${SUPPORT_CATEGORY_LABELS[ticket.category]}:`],
+        quote: ticket.subject,
+        paragraphsAfter: ['It is in the support queue now, unassigned.'],
+        action: { label: 'Open the ticket', url: adminTicketUrl(ticket) },
+      });
+    }
+
+    case 'customer.support.ticket-received': {
+      const ticket = ticketOf(context);
+      return compose({
+        subject: `We have your request ${ticket.reference} — Dealers-Drive`,
+        heading: 'We have your support request',
+        greeting: context.contactName,
+        paragraphs: [
+          `Thank you for getting in touch. Your request ${ticket.reference} is with our support team:`,
+        ],
+        quote: ticket.subject,
+        paragraphsAfter: [
+          'We reply inside the request, and we will email you whenever its status changes. Quote the reference if you write to us about it.',
+        ],
+        action: { label: 'View your request', url: customerTicketUrl(ticket) },
+      });
+    }
+
+    case 'customer.support.ticket-status': {
+      const ticket = ticketOf(context);
+      return compose({
+        subject: `${ticket.reference}: ${CUSTOMER_SUPPORT_STATUS_LABELS[ticket.status]} — Dealers-Drive`,
+        heading: `Your request is ${CUSTOMER_SUPPORT_STATUS_LABELS[ticket.status].toLowerCase()}`,
+        greeting: context.contactName,
+        paragraphs: [`About ${ticket.reference}:`],
+        quote: ticket.subject,
+        paragraphsAfter: [TICKET_STATUS_LINES[ticket.status]],
+        action: { label: 'View your request', url: customerTicketUrl(ticket) },
+      });
+    }
   }
+}
+
+function ticketOf(context: TemplateContext): TicketContext {
+  return (
+    context.ticket ?? {
+      id: '',
+      reference: 'your request',
+      subject: '',
+      category: 'OTHER',
+      status: 'OPEN',
+    }
+  );
+}
+
+function adminTicketUrl(ticket: TicketContext): string {
+  return ticket.id ? `${ADMIN_SUPPORT}/${ticket.id}` : ADMIN_SUPPORT;
+}
+
+function customerTicketUrl(ticket: TicketContext): string {
+  return ticket.id ? `${SUPPORT_REQUESTS}/${ticket.id}` : SUPPORT_REQUESTS;
 }
 
 function listingOf(context: TemplateContext): ListingContext {

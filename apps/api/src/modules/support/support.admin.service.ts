@@ -17,9 +17,11 @@ import {
 import type { AdminRole, Prisma } from '@prisma/client';
 
 import { isAdmitted, type AdminPrincipal } from '../auth/auth.facade.js';
+import { getContext } from '../../middleware/request-context.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import {
   ADMIN_DETAIL_SELECT,
@@ -108,7 +110,13 @@ async function lockTicket(tx: Tx, ticketId: string) {
   if (locked.length === 0) throw notFound();
   return tx.supportTicket.findUniqueOrThrow({
     where: { id: ticketId },
-    select: { status: true, priority: true, assignedAdminId: true, updatedAt: true },
+    select: {
+      status: true,
+      priority: true,
+      assignedAdminId: true,
+      updatedAt: true,
+      customerId: true,
+    },
   });
 }
 
@@ -356,6 +364,19 @@ export function createAdminSupportService({ prisma, audit }: SupportDeps) {
             { status: current.status },
             { status: input.status },
           );
+          await enqueueOutbox(tx, {
+            type: 'SupportTicketStatusChanged',
+            aggregateType: 'SupportTicket',
+            aggregateId: ticketId,
+            actor: { type: 'ADMIN', id: admin.userId },
+            traceId: getContext()?.traceId ?? 'support-ticket-status-changed',
+            payload: {
+              ticketId,
+              customerId: current.customerId,
+              fromStatus: current.status,
+              status: input.status,
+            },
+          });
         }
 
         if (input.priority !== undefined && input.priority !== current.priority) {
