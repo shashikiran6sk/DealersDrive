@@ -343,6 +343,8 @@ describe('unknown throwables', () => {
     vi.stubEnv('MSG91_AUTH_KEY', 'a-real-msg91-auth-key');
     vi.stubEnv('MSG91_WIDGET_ID', 'example-widget-id');
     vi.stubEnv('MSG91_WIDGET_TOKEN', 'example-widget-token');
+    // R118 — production refuses SMS_DRIVER=console, which texts nobody.
+    vi.stubEnv('SMS_DRIVER', 'disabled');
 
     try {
       const { errorHandler: productionHandler } =

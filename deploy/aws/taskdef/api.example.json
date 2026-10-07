@@ -52,6 +52,7 @@
         { "name": "S3_BUCKET", "value": "dd-media-dev" },
         { "name": "S3_FORCE_PATH_STYLE", "value": "true" },
         { "name": "MAIL_DRIVER", "value": "console" },
+        { "name": "SMS_DRIVER", "value": "console" },
         { "name": "JOBS_ENABLED", "value": "true" },
         { "name": "WORKER_INLINE", "value": "true" },
         { "name": "RATE_LIMIT_ENABLED", "value": "true" },

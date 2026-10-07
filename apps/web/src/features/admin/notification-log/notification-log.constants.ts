@@ -1,14 +1,14 @@
 import type { NotificationStatus } from '@dealers-drive/contracts';
 
 export const NOTIFICATION_LOG_TEXT = {
-  title: 'Email deliveries',
+  title: 'Message deliveries',
   intro:
-    'Every email the platform has tried to send. Retrying ones are attempted again with backoff; failed ones will not be — a permanent refusal, or the last of six attempts.',
+    'Every email and SMS the platform has tried to send. Retrying ones are attempted again with backoff; failed ones will not be — a permanent refusal, or the last of six attempts.',
   total: (count: number) => `${count.toLocaleString('en-IN')} in all`,
-  caption: 'Email deliveries, newest first',
+  caption: 'Message deliveries, newest first',
   colWhen: 'When',
   colTo: 'To',
-  colEmail: 'Email',
+  colEmail: 'Message',
   colDealer: 'Dealership',
   colStatus: 'Status',
   attempts: (count: number) => `${count} attempt${count === 1 ? '' : 's'}`,

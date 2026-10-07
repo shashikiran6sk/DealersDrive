@@ -288,3 +288,22 @@ variable "msg91_widget_token" {
   type        = string
   default     = ""
 }
+
+variable "sms_driver" {
+  description = <<-EOT
+    Transactional SMS (**R118**): `msg91`, `disabled` or `console`.
+
+    `env.ts` refuses `console` in production — it would look configured and
+    text nobody. `disabled` is the explicit opt-out until the acknowledgement
+    template is DLT-approved; `msg91` then needs MSG91_AUTH_KEY in Parameter
+    Store (already there for the OTP widget) and msg91_ticket_ack_template_id.
+  EOT
+  type        = string
+  default     = "disabled"
+}
+
+variable "msg91_ticket_ack_template_id" {
+  description = "MSG91 Flow template id of the DLT-approved support acknowledgement (**R118**). Differs per account and environment; not a secret."
+  type        = string
+  default     = ""
+}

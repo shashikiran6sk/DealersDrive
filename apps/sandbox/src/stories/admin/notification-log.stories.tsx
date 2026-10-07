@@ -7,6 +7,7 @@ function row(overrides: Partial<AdminNotificationRow> = {}): AdminNotificationRo
   return {
     id: '11111111-1111-4111-8111-111111111111',
     template: 'admin.application.received',
+    channel: 'EMAIL',
     recipient: 'priya@dealers-drive.in',
     subject: 'New dealer application — Kaveri Auto Hub',
     status: 'SENT',
@@ -38,6 +39,14 @@ const meta = {
       data: [
         row(),
         row({
+          id: '11111111-1111-4111-8111-111111111114',
+          channel: 'SMS',
+          template: 'sms.support.ticket-ack',
+          recipient: '+919840012345',
+          subject: 'Support request DD-1042 received',
+          dealer: null,
+        }),
+        row({
           id: '11111111-1111-4111-8111-111111111112',
           template: 'dealer.email.verify',
           recipient: 'selvi@gmail.com',
@@ -63,7 +72,7 @@ const meta = {
         }),
       ],
       page: { nextCursor: 'next', hasMore: true },
-      counts: { ALL: 3, PENDING: 1, SENT: 1, FAILED: 1 },
+      counts: { ALL: 4, PENDING: 1, SENT: 2, FAILED: 1 },
     },
   },
   argTypes: { deliveries: { control: 'object' }, filters: { control: 'object' } },
