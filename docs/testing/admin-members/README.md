@@ -14,4 +14,4 @@ at most one concise screenshot; everything detailed lives here.
 | `pr7-notification-foundation/` | [#275](https://github.com/shashikiran6sk/DealersDrive/pull/275) — notification foundation |
 | `pr8-listing-emails/` | [#276](https://github.com/shashikiran6sk/DealersDrive/pull/276) — listing lifecycle emails |
 | `pr9-enquiry-support-emails/` | [#277](https://github.com/shashikiran6sk/DealersDrive/pull/277) — enquiry and support emails |
-| `pr10-msg91-ticket-ack/` | PR pending — MSG91 SMS acknowledgement (left open, not merged) |
+| `pr10-msg91-ticket-ack/` | [#278](https://github.com/shashikiran6sk/DealersDrive/pull/278) — MSG91 SMS acknowledgement (left open, not merged) |

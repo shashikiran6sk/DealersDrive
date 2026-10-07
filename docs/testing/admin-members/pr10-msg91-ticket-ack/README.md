@@ -1,4 +1,4 @@
-# PR10 — MSG91 SMS acknowledgement for support requests (R118) — NOT MERGED
+# PR #278 — MSG91 SMS acknowledgement for support requests (R118) — NOT MERGED
 
 This PR was deliberately left open for human review, as instructed.
 
