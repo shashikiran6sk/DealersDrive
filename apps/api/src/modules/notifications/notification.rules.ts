@@ -14,6 +14,7 @@ export interface NotificationRule {
   audience: NotificationAudience;
   reason?: boolean | ((event: DomainEvent) => boolean);
   profileChangeId?: boolean;
+  listingId?: boolean;
   subjectKey?: string;
 }
 
@@ -27,6 +28,7 @@ function flag(key: string) {
 
 const resubmitted = flag('resubmitted');
 const published = flag('published');
+const approved = flag('approved');
 
 const DEALER = { kind: 'dealer' } as const;
 
@@ -65,6 +67,45 @@ export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly Notifi
       template: 'admin.profile-change.submitted',
       audience: admins('admin:dealer:approve'),
       profileChangeId: true,
+    },
+  ],
+  ListingSubmitted: [
+    {
+      template: (event) =>
+        resubmitted(event) ? 'admin.listing.resubmitted' : 'admin.listing.submitted',
+      audience: admins('admin:listing:moderate'),
+      listingId: true,
+    },
+  ],
+  ListingApproved: [{ template: 'dealer.listing.approved', audience: DEALER, listingId: true }],
+  ListingRejected: [
+    { template: 'dealer.listing.rejected', audience: DEALER, listingId: true, reason: true },
+  ],
+  ListingChangesRequested: [
+    {
+      template: 'dealer.listing.changes-requested',
+      audience: DEALER,
+      listingId: true,
+      reason: true,
+    },
+  ],
+  ListingReactivationRequested: [
+    {
+      template: 'admin.listing.reactivation-requested',
+      audience: admins('admin:listing:moderate'),
+      listingId: true,
+      reason: true,
+    },
+  ],
+  ListingReactivationDecided: [
+    {
+      template: (event) =>
+        approved(event)
+          ? 'dealer.listing.reactivation-approved'
+          : 'dealer.listing.reactivation-rejected',
+      audience: DEALER,
+      listingId: true,
+      reason: true,
     },
   ],
   DealerProfileChangeDecided: [

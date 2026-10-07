@@ -29,6 +29,15 @@ const ALL: TemplateName[] = [
   'admin.profile-change.submitted',
   'dealer.profile-change.approved',
   'dealer.profile-change.rejected',
+  'dealer.email.verify',
+  'admin.listing.submitted',
+  'admin.listing.resubmitted',
+  'dealer.listing.approved',
+  'dealer.listing.rejected',
+  'dealer.listing.changes-requested',
+  'admin.listing.reactivation-requested',
+  'dealer.listing.reactivation-approved',
+  'dealer.listing.reactivation-rejected',
 ];
 
 const CONTEXT = {
@@ -38,6 +47,15 @@ const CONTEXT = {
   tagline: 'Family-run since 1998.',
   specialities: ['In-house workshop', 'RC transfer'],
   dealerSlug: 'sri-lakshmi-motors',
+  actionUrl: 'https://dealers-drive.test/claim/abc',
+  expiresAt: new Date('2026-10-09T10:00:00.000Z'),
+  listing: {
+    id: '33333333-3333-4333-8333-333333333333',
+    vehicleId: '22222222-2222-4222-8222-222222222222',
+    slug: '2022-hyundai-creta-vellore-abc123',
+    title: '2022 Hyundai Creta SX',
+    plate: 'TN 23 AB 1234',
+  },
 };
 
 describe('every template', () => {
@@ -178,5 +196,34 @@ describe('the approved message', () => {
 
     expect(email.html).not.toContain('/dealers/null');
     expect(email.html).toContain('/dealer');
+  });
+});
+
+describe('the listing emails (R116)', () => {
+  it('name the car by title and plate, and link where the reader acts', () => {
+    const submitted = render('admin.listing.submitted', CONTEXT);
+    expect(submitted.subject).toContain('2022 Hyundai Creta SX (TN 23 AB 1234)');
+    expect(submitted.text).toContain('/admin/listings/33333333-3333-4333-8333-333333333333');
+
+    const live = render('dealer.listing.approved', CONTEXT);
+    expect(live.text).toContain('/car/2022-hyundai-creta-vellore-abc123');
+
+    const changes = render('dealer.listing.changes-requested', CONTEXT);
+    expect(changes.text).toContain(
+      '/dealer/vehicles/22222222-2222-4222-8222-222222222222/edit?step=review',
+    );
+    expect(changes.text).toContain(CONTEXT.reason);
+
+    const reactivation = render('admin.listing.reactivation-requested', CONTEXT);
+    expect(reactivation.text).toContain('/admin/listings?view=reactivation');
+  });
+
+  it('fall back to the inventory when the listing is gone or unpublished', () => {
+    const email = render('dealer.listing.approved', {
+      dealerName: 'Sri Lakshmi Motors',
+      contactName: null,
+    });
+    expect(email.text).toContain('/dealer/inventory');
+    expect(email.text).toContain('your car');
   });
 });

@@ -82,7 +82,12 @@ export async function fileReactivationRequest(
     dealerId: listing.dealerId,
     actor: { type: actor.type, id: actor.id },
     traceId: getContext()?.traceId ?? 'listing-reactivation-requested',
-    payload: { requestId: request.id, listingId: listing.id, fromStatus: listing.status },
+    payload: {
+      requestId: request.id,
+      listingId: listing.id,
+      fromStatus: listing.status,
+      ...(note ? { reason: note } : {}),
+    },
   });
 
   return request;

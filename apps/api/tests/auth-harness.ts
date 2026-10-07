@@ -163,6 +163,10 @@ export interface RecordingMailer extends MailerPort {
 /** Makes each development token unique — see `proveNumber`. */
 let proofs = 0;
 
+/** The publisher's batch size, and how many ticks one drain may take. */
+const OUTBOX_BATCH = 50;
+const DRAIN_TICKS = 40;
+
 export async function createAuthHarness(
   google = createFakeGoogle(),
   mailer: RecordingMailer = createRecordingMailer(),
@@ -201,7 +205,21 @@ export async function createAuthHarness(
     prisma: container.prisma,
     google,
     mailer,
-    drainEmails: () => container.outbox.drain(),
+    /*
+     * **R116.** Successive poller ticks, not one. Listing events from every
+     * file in the run share one outbox, and a single 50-row batch, oldest
+     * first, can be all theirs. Bounded, because a row whose publish fails is
+     * retried on every tick until it runs out of attempts.
+     */
+    async drainEmails() {
+      let total = 0;
+      for (let tick = 0; tick < DRAIN_TICKS; tick += 1) {
+        const published = await container.outbox.drain();
+        total += published;
+        if (published < OUTBOX_BATCH) break;
+      }
+      return total;
+    },
     agent: () => request.agent(server),
 
     signIn: (agent, returnTo) => roundTrip(agent, '/v1/auth/google/start', returnTo),
