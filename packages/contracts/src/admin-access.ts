@@ -40,6 +40,8 @@ export const ADMIN_PERMISSIONS = {
   'admin:metrics:read': CONSOLE,
   'admin:enquiry:read': CONSOLE,
   'admin:support:manage': CONSOLE,
+  /** Read the email delivery log — recipients are personal data. */
+  'admin:notifications:read': SUPER,
   /** Enter the Sales workspace. */
   'sales:workspace': SALES,
   /** Start an assisted dealership and verify the dealer's phone. */

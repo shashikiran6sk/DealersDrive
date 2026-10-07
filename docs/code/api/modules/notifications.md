@@ -394,3 +394,45 @@ An unclaimed assisted dealership is written to at its `contactEmail` only once
 that address is verified. Until then the claim email is the only thing sent
 there — an address a Sales representative typed may be mistyped, or somebody
 else's, and status mail about a dealership is not theirs to read.
+
+## `apps/api/src/modules/notifications/notification.rules.ts` — R115
+
+### `export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly NotificationRule[]>>`
+
+Who is told what, as data. Each domain event lists the emails it causes: the
+template (or a function of the event, for the resubmitted/published variants),
+the audience, and which payload fields travel with the job. The table replaced a
+dozen hand-written `bus.on` blocks one for one — `jobOf` produces the same jobs
+they did — so adding an email is a row here and a case in `templates.ts`.
+
+An admin audience names a **permission**, not a list of addresses: the email
+goes to every ACTIVE Admin Member whose role holds it and whom `isAdmitted`
+would let into the console (a BOOTSTRAP member only while allow-listed). The
+environment allow-list is the fallback when nobody qualifies, with a warning,
+so a fresh deployment does not drop its first application on the floor.
+
+A `user` audience writes only to a verified address on an ACTIVE account. A
+customer who signed in with a phone has no address, and gets no email.
+
+## `apps/api/src/modules/notifications/notifications.service.ts` — R115
+
+### `subscribe(bus: EventBus): void`
+
+Subscribers are `required`. If enqueueing the job fails, the outbox event is
+not marked published and is tried again; every send is idempotent on its
+`dedupeKey`, so a replayed event costs a lookup, never a second email. Before
+this, a failed enqueue was logged and the email silently lost.
+
+### `export const MAX_DELIVERY_ATTEMPTS = 6`
+
+The job's first run plus pg-boss's five retries. On the sixth transient failure
+the row is marked FAILED and the error is swallowed, so the delivery log says
+what happened instead of leaving a row PENDING forever.
+
+## `apps/api/src/modules/notifications/notifications.admin.service.ts`
+
+### `export function createAdminNotificationsService({ prisma }: { prisma: PrismaClient })`
+
+The Super-admin delivery log. It reads `notification_deliveries` on its
+existing `(status, createdAt)` index, newest first, keyset-paginated. Recipients
+are personal data, which is why `admin:notifications:read` is Super admin only.

@@ -282,8 +282,10 @@ describe('preparing and submitting', () => {
     await sales.post(`/v1/sales/dealers/${dealer.id}/submit`).expect(200);
     await h.drainEmails();
     const mail = h.mailer.sent.slice(before);
+    // R115: console mail goes to admitted Admin Members who can approve dealers — the
+    // bootstrap Super admin among them — not to every allow-listed address.
     expect(mail.map((message) => message.to)).toEqual(
-      expect.arrayContaining([...env.adminAllowlist]),
+      expect.arrayContaining([env.adminAllowlist[0]]),
     );
     // R113: an address nobody has confirmed receives the claim link and nothing else.
     expect(mail.map((message) => message.to)).not.toContain(dealer.email);

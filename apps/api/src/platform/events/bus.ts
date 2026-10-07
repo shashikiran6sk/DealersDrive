@@ -13,7 +13,7 @@ export interface DomainEvent<T = unknown> {
   aggregateType: string;
   aggregateId: string;
   dealerId?: string;
-  actor: { type: 'DEALER' | 'ADMIN' | 'SYSTEM'; id?: string };
+  actor: { type: 'DEALER' | 'ADMIN' | 'SYSTEM' | 'SALES'; id?: string };
   traceId: string;
   payload: T;
 }
@@ -39,6 +39,8 @@ export type DomainEventType =
   | 'ListingChangesRequested'
   | 'ListingExpired'
   | 'ListingRemoved'
+  | 'ListingReactivationRequested'
+  | 'ListingReactivationDecided'
   | 'MediaUploaded'
   | 'MediaProcessed'
   | 'EnquiryCreated'
@@ -53,6 +55,7 @@ export type EventHandler = (event: DomainEvent) => Promise<void>;
 export interface EventBus {
   on(type: DomainEventType, handler: EventHandler, options?: { required?: boolean }): void;
   publish(event: DomainEvent): Promise<void>;
+  subscribedTypes?(): DomainEventType[];
 }
 
 export function createEventBus(): EventBus {
@@ -63,6 +66,10 @@ export function createEventBus(): EventBus {
       const existing = handlers.get(type) ?? [];
       existing.push({ handler, required: options?.required === true });
       handlers.set(type, existing);
+    },
+
+    subscribedTypes() {
+      return [...handlers.keys()];
     },
 
     async publish(event) {

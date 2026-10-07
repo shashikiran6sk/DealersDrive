@@ -976,6 +976,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-onboardingprovenance',
   },
   {
+    id: 'C064l',
+    name: 'NotificationLog',
+    source: 'apps/web/src/features/admin/notification-log/notification-log.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose:
+      'The Super admin read of every email delivery: status tabs with counts, search, the failure reason and attempt count, keyset paging.',
+    aliases: ['EmailLog', 'DeliveryLog', 'Notifications', 'notification-log'],
+    features: ['R115'],
+    props: ['deliveries', 'filters'],
+    states: ['mixed', 'failed only', 'empty search'],
+    reusable: false,
+    storyId: 'admin-notificationlog',
+  },
+  {
     id: 'C064d',
     name: 'AssistedDealerStart',
     source: 'apps/web/src/features/sales/assisted-dealer-start/assisted-dealer-start.tsx',

@@ -159,7 +159,7 @@ describe('the admin nav', () => {
    * **F048.** The first item finally points at a page. **R89** adds Enquiries
    * and **R91** Support Tickets, immediately above Configuration.
    */
-  it('offers the dashboard, listings, dealers, enquiries, support tickets, members and the settings screen', () => {
+  it('offers the dashboard, listings, dealers, enquiries, support tickets, members, email deliveries and the settings screen', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).toEqual([
       '/admin',
       '/admin/listings',
@@ -167,6 +167,7 @@ describe('the admin nav', () => {
       '/admin/enquiries',
       '/admin/support',
       '/admin/members',
+      '/admin/notifications',
       '/admin/config',
     ]);
   });

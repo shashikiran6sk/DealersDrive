@@ -15,6 +15,7 @@ const INPUT_SCHEMA_NAMES = [
   'SalesDealerDocParam',
   'ClaimTokenParam',
   'SalesVehicleParam',
+  'AdminNotificationsQuery',
   'ClaimDealerInput',
   'AdminMembersQuery',
   'InviteAdminMemberInput',

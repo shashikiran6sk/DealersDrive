@@ -183,3 +183,12 @@ say what actually happened, and so an ADMIN actor still cannot submit.
 `memberId` travels with a `SALES` actor so `transition()` can stamp
 `listings.submittedByMemberId` on a submission. A dealer's own submission clears
 it — the column means "who made the latest submission on the dealer's behalf".
+
+### `export const LISTING_DOMAIN_EVENTS: Partial<Record<ListingEvent, DomainEventType>>`
+
+**R115.** The moves somebody is told about — submission (and resubmission),
+approval, rejection, a request for changes — are published to the outbox in the
+transaction that makes them, so an email can never describe a decision that was
+rolled back, and a decision can never lose its email. Selling, reserving and
+withdrawing publish nothing: nobody is emailed about them. Reactivation requests
+and decisions publish from `listing-reactivation.ts`, for the same reason.

@@ -1,6 +1,8 @@
 import type { Listing, ListingStatus, WithdrawalReason } from '@prisma/client';
 
+import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
+import { enqueueOutbox, type DomainEventType } from '../../platform/events/bus.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError, DomainError, ForbiddenError } from '../../platform/errors.js';
 import {
@@ -29,6 +31,14 @@ export interface ListingActor {
   id: string;
   memberId?: string | null;
 }
+
+export const LISTING_DOMAIN_EVENTS: Partial<Record<ListingEvent, DomainEventType>> = {
+  submit: 'ListingSubmitted',
+  resubmit: 'ListingSubmitted',
+  approve: 'ListingApproved',
+  reject: 'ListingRejected',
+  requestChanges: 'ListingChangesRequested',
+};
 
 export interface TransitionRule {
   from: readonly ListingStatus[];
@@ -256,6 +266,26 @@ export async function transition(
         : {}),
     },
   });
+
+  const domainEvent = LISTING_DOMAIN_EVENTS[event];
+  if (domainEvent) {
+    await enqueueOutbox(tx, {
+      type: domainEvent,
+      aggregateType: 'Listing',
+      aggregateId: listing.id,
+      dealerId: listing.dealerId,
+      actor: { type: actor.type, id: actor.id },
+      traceId: getContext()?.traceId ?? `listing-${event}`,
+      payload: {
+        listingId: listing.id,
+        vehicleId: listing.vehicleId,
+        from: listing.status,
+        to,
+        resubmitted: event === 'resubmit',
+        ...(reason ? { reason } : {}),
+      },
+    });
+  }
 
   return tx.listing.findUniqueOrThrow({ where: { id: listing.id } });
 }

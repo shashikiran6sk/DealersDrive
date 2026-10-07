@@ -18,6 +18,14 @@ export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): Outb
   let running = false;
 
   async function drain(): Promise<number> {
+    const subscribed = bus.subscribedTypes?.();
+    if (subscribed) {
+      await prisma.outboxEvent.updateMany({
+        where: { publishedAt: null, eventType: { notIn: subscribed } },
+        data: { publishedAt: new Date() },
+      });
+    }
+
     const rows = await prisma.$queryRaw<
       { id: bigint; payload: unknown }[]
     >`SELECT id, payload FROM outbox_events

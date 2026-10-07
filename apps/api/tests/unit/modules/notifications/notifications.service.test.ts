@@ -6,8 +6,11 @@ import { createInlineQueue } from '../../../../src/platform/jobs/queue.js';
 import type { MailMessage, MailerPort } from '../../../../src/platform/mail/mail.port.js';
 import { PermanentMailError } from '../../../../src/platform/mail/resend.adapter.js';
 import type { ClaimLink } from '../../../../src/modules/dealer-claims/dealer-claims.facade.js';
+import { NOTIFICATION_RULES } from '../../../../src/modules/notifications/notification.rules.js';
 import {
+  MAX_DELIVERY_ATTEMPTS,
   createNotificationsService,
+  jobOf,
   type EmailJob,
 } from '../../../../src/modules/notifications/notifications.service.js';
 
@@ -54,6 +57,18 @@ function fakePrisma(
     dealer?: Record<string, unknown> | null;
     rejectedSnapshot?: Record<string, unknown> | null;
     dealerQueries?: unknown[];
+    members?: {
+      status: string;
+      source: string;
+      role: string;
+      user: { email: string | null; fullName: string | null; status: string };
+    }[];
+    user?: {
+      email: string | null;
+      emailVerifiedAt: Date | null;
+      fullName: string | null;
+      status: string;
+    } | null;
   } = {},
 ) {
   const rows = new Map<string, Row>();
@@ -87,8 +102,10 @@ function fakePrisma(
         rows.set(key, row);
         return Promise.resolve(row);
       },
-      findUnique: ({ where }: { where: { dedupeKey: string } }) =>
-        Promise.resolve(rows.get(where.dedupeKey) ?? null),
+      findUnique: ({ where }: { where: { dedupeKey: string } }) => {
+        const row = rows.get(where.dedupeKey);
+        return Promise.resolve(row ? { ...row } : null);
+      },
       findFirst: ({
         where,
       }: {
@@ -142,6 +159,15 @@ function fakePrisma(
     },
     dealerMember: {
       findFirst: () => Promise.resolve(owner === null ? null : { user: owner }),
+    },
+    adminMember: {
+      findMany: ({ where }: { where: { role: { in: string[] } } }) =>
+        Promise.resolve(
+          (options.members ?? []).filter((member) => where.role.in.includes(member.role)),
+        ),
+    },
+    user: {
+      findUnique: () => Promise.resolve(options.user ?? null),
     },
     auditLog: {
       findFirst: () =>
@@ -586,5 +612,137 @@ describe('the claim link (R113)', () => {
 
     expect(mailer.sent).toHaveLength(0);
     expect(JSON.stringify(dealerQueries)).toContain('"contactEmailVerifiedAt":{"not":null}');
+  });
+});
+
+describe('admin recipients (R115)', () => {
+  const ADMIN_JOB: EmailJob = {
+    ...JOB,
+    template: 'admin.application.received',
+    audience: 'admin',
+    permission: 'admin:dealer:approve',
+  };
+
+  function member(email: string, role: string, extra: Record<string, string> = {}) {
+    return {
+      status: 'ACTIVE',
+      source: 'INVITED',
+      role,
+      user: { email, fullName: null, status: 'ACTIVE' },
+      ...extra,
+    };
+  }
+
+  it('writes to the active members whose role holds the permission, once each', async () => {
+    const { service, mailer } = setup({
+      members: [
+        member('priya@dealers-drive.in', 'MODERATOR'),
+        member('PRIYA@dealers-drive.in', 'SUPER_ADMIN'),
+        member('desk@dealers-drive.in', 'SUPPORT'),
+        member('arun@dealers-drive.in', 'SALES_REP'),
+      ],
+    });
+    await service.handleEmailJob(ADMIN_JOB);
+    expect(mailer.sent.map((message) => message.to)).toEqual(['priya@dealers-drive.in']);
+  });
+
+  it('never writes to a bootstrap member the allow-list no longer admits', async () => {
+    const { service, mailer } = setup({
+      members: [
+        member('former@dealers-drive.in', 'SUPER_ADMIN', { source: 'BOOTSTRAP' }),
+        member('priya@dealers-drive.in', 'MODERATOR'),
+      ],
+    });
+    await service.handleEmailJob(ADMIN_JOB);
+    expect(mailer.sent.map((message) => message.to)).toEqual(['priya@dealers-drive.in']);
+  });
+
+  it('falls back to the allow-list when no member holds the permission', async () => {
+    const { service, mailer } = setup({ members: [] });
+    await service.handleEmailJob(ADMIN_JOB);
+    expect(mailer.sent.length).toBeGreaterThan(0);
+  });
+});
+
+describe('user recipients (R115)', () => {
+  const USER_JOB: EmailJob = { ...JOB, audience: 'user', userId: 'user-9' };
+
+  it('writes only to a verified address on an active account', async () => {
+    const verified = setup({
+      user: {
+        email: 'buyer@gmail.com',
+        emailVerifiedAt: new Date(),
+        fullName: 'Asha',
+        status: 'ACTIVE',
+      },
+    });
+    await verified.service.handleEmailJob(USER_JOB);
+    expect(verified.mailer.sent[0]?.to).toBe('buyer@gmail.com');
+
+    for (const user of [
+      { email: 'buyer@gmail.com', emailVerifiedAt: null, fullName: null, status: 'ACTIVE' },
+      { email: null, emailVerifiedAt: null, fullName: null, status: 'ACTIVE' },
+      {
+        email: 'buyer@gmail.com',
+        emailVerifiedAt: new Date(),
+        fullName: null,
+        status: 'SUSPENDED',
+      },
+    ]) {
+      const refused = setup({ user });
+      await refused.service.handleEmailJob(USER_JOB);
+      expect(refused.mailer.sent).toHaveLength(0);
+    }
+  });
+});
+
+describe('a transient failure that never clears (R115)', () => {
+  it('is marked FAILED on the last attempt, and stops being retried', async () => {
+    const { service, rows } = setup(
+      {},
+      recordingMailer(() => Promise.reject(new Error('Resend answered 503'))),
+    );
+    for (let attempt = 1; attempt < MAX_DELIVERY_ATTEMPTS; attempt += 1) {
+      await expect(service.handleEmailJob(JOB)).rejects.toThrow(/503/);
+    }
+    await expect(service.handleEmailJob(JOB)).resolves.toBeUndefined();
+
+    const row = [...rows.values()][0];
+    expect(row).toMatchObject({ status: 'FAILED', attempts: MAX_DELIVERY_ATTEMPTS });
+  });
+});
+
+describe('the rules table (R115)', () => {
+  it('turns each rule into the job the old hand-written subscriber produced', () => {
+    const applied = event('DealerApplied', { resubmitted: true });
+    const [dealerRule, adminRule] = NOTIFICATION_RULES.DealerApplied ?? [];
+    expect(dealerRule && jobOf(applied, dealerRule)).toEqual({
+      template: 'dealer.application.resubmitted',
+      audience: 'dealer',
+      dealerId: 'dealer-1',
+      subjectId: 'evt-1',
+    });
+    expect(adminRule && jobOf(applied, adminRule)).toMatchObject({
+      template: 'admin.application.resubmitted',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+    });
+
+    const [decided] = NOTIFICATION_RULES.DealerProfileChangeDecided ?? [];
+    expect(
+      decided && jobOf(event('DealerProfileChangeDecided', { published: true }), decided),
+    ).toMatchObject({ template: 'dealer.profile-change.approved', reason: null });
+    expect(
+      decided &&
+        jobOf(event('DealerProfileChangeDecided', { published: false, reason: 'No.' }), decided),
+    ).toMatchObject({ template: 'dealer.profile-change.rejected', reason: 'No.' });
+  });
+
+  it('keys the claim email on the verification, and drops a malformed event', () => {
+    const [rule] = NOTIFICATION_RULES.DealerEmailVerificationRequested ?? [];
+    expect(
+      rule && jobOf(event('DealerEmailVerificationRequested', { verificationId: 'ver-1' }), rule),
+    ).toMatchObject({ subjectId: 'ver-1' });
+    expect(rule && jobOf(event('DealerEmailVerificationRequested', {}), rule)).toBeNull();
   });
 });

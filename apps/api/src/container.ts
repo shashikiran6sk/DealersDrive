@@ -17,6 +17,10 @@ import {
   type DealerClaimsService,
 } from './modules/dealer-claims/dealer-claims.service.js';
 import { createIdentityService } from './modules/auth/identity.service.js';
+import {
+  createAdminNotificationsService,
+  type AdminNotificationsService,
+} from './modules/notifications/notifications.admin.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
@@ -136,6 +140,7 @@ export interface Container {
   readonly adminMembers: AdminMembersService;
   readonly sales: SalesService;
   readonly dealerClaims: DealerClaimsService;
+  readonly adminNotifications: AdminNotificationsService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
   readonly team: TeamService;
@@ -308,6 +313,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
       vehicles,
     }),
     dealerClaims,
+    adminNotifications: createAdminNotificationsService({ prisma }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };
