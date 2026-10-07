@@ -10,4 +10,4 @@ at most one concise screenshot; everything detailed lives here.
 | `pr3-member-management/` | [#271](https://github.com/shashikiran6sk/DealersDrive/pull/271) — Admin Member management |
 | `pr4-assisted-onboarding/` | [#272](https://github.com/shashikiran6sk/DealersDrive/pull/272) — Sales workspace & assisted dealer onboarding |
 | `pr5-email-verification-claim/` | [#273](https://github.com/shashikiran6sk/DealersDrive/pull/273) — assisted dealer email verification & claim |
-| `pr6-assisted-listings/` | PR6 — assisted listing creation |
+| `pr6-assisted-listings/` | [#274](https://github.com/shashikiran6sk/DealersDrive/pull/274) — assisted listing creation |
