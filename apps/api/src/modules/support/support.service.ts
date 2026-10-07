@@ -10,7 +10,9 @@ import type { PrismaClient } from '@prisma/client';
 
 import type { CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
+import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
@@ -116,6 +118,14 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
             status: 'OPEN',
             enquiryId: input.enquiryId ?? null,
           },
+        });
+        await enqueueOutbox(tx, {
+          type: 'SupportTicketCreated',
+          aggregateType: 'SupportTicket',
+          aggregateId: created.id,
+          actor: { type: 'CUSTOMER', id: customer.userId },
+          traceId: getContext()?.traceId ?? 'support-ticket-created',
+          payload: { ticketId: created.id, customerId: customer.userId },
         });
         return created;
       });

@@ -1,6 +1,8 @@
 import {
   ADMIN_PERMISSIONS,
   formatRegistration,
+  supportTicketReference,
+  SupportTicketStatus,
   vehicleTitle,
   type AdminPermission,
 } from '@dealers-drive/contracts';
@@ -19,6 +21,7 @@ import { isAdmitted } from '../auth/auth.facade.js';
 import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
 import {
   render,
+  type EnquiryContext,
   type ListingContext,
   type TemplateContext,
   type TemplateName,
@@ -33,7 +36,7 @@ export interface NotificationsDeps {
 
 export interface EmailJob extends Record<string, unknown> {
   template: TemplateName;
-  dealerId: string;
+  dealerId: string | null;
   audience: 'dealer' | 'admin' | 'user';
   subjectId: string;
   reason?: string | null;
@@ -41,6 +44,9 @@ export interface EmailJob extends Record<string, unknown> {
   permission?: string;
   userId?: string;
   listingId?: string;
+  enquiryId?: string;
+  ticketId?: string;
+  ticketStatus?: string;
 }
 
 export const MAX_DELIVERY_ATTEMPTS = 6;
@@ -92,8 +98,19 @@ export function createNotificationsService({
       return;
     }
 
+    if (job.ticketId) {
+      await sendTicketMail(job, job.ticketId);
+      return;
+    }
+
+    const dealerId = job.dealerId;
+    if (!dealerId) {
+      logger.warn({ template: job.template }, 'email skipped — no dealer');
+      return;
+    }
+
     if (job.template === 'dealer.application.rejected') {
-      const snapshot = await rejectedApplicationSnapshot(job.dealerId);
+      const snapshot = await rejectedApplicationSnapshot(dealerId);
       if (snapshot) {
         await sendOne(
           job,
@@ -119,7 +136,7 @@ export function createNotificationsService({
     }
 
     const dealer = await prisma.dealer.findUnique({
-      where: { id: job.dealerId },
+      where: { id: dealerId },
       select: { brandName: true, legalName: true, slug: true, tagline: true, specialities: true },
     });
     if (!dealer) {
@@ -143,6 +160,15 @@ export function createNotificationsService({
       return;
     }
 
+    const enquiry = job.enquiryId ? await enquiryContext(job.enquiryId) : null;
+    if (job.enquiryId && !enquiry) {
+      logger.warn(
+        { template: job.template, enquiryId: job.enquiryId },
+        'email skipped — no enquiry',
+      );
+      return;
+    }
+
     for (const recipient of recipients) {
       await sendOne(job, recipient, {
         dealerName: dealer.brandName || dealer.legalName,
@@ -152,7 +178,57 @@ export function createNotificationsService({
         specialities: proposal ? proposal.specialities : dealer.specialities,
         dealerSlug: dealer.slug,
         ...(listing ? { listing } : {}),
+        ...(enquiry ? { enquiry } : {}),
       });
+    }
+  }
+
+  async function enquiryContext(enquiryId: string): Promise<EnquiryContext | null> {
+    const enquiry = await prisma.enquiry.findUnique({
+      where: { id: enquiryId },
+      select: { message: true, customer: { select: { fullName: true } } },
+    });
+    if (!enquiry) return null;
+    return { buyerName: firstNameOf(enquiry.customer.fullName), message: enquiry.message };
+  }
+
+  async function sendTicketMail(job: EmailJob, ticketId: string): Promise<void> {
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: ticketId },
+      select: { id: true, number: true, subject: true, category: true, status: true },
+    });
+    if (!ticket) {
+      logger.warn({ template: job.template, ticketId }, 'email skipped — no ticket');
+      return;
+    }
+
+    const recipients = await recipientsFor(job);
+    if (recipients.length === 0) {
+      logger.warn(
+        { template: job.template, ticketId, audience: job.audience },
+        'email skipped — no recipient',
+      );
+      return;
+    }
+
+    const status = SupportTicketStatus.safeParse(job.ticketStatus);
+    for (const recipient of recipients) {
+      await sendOne(
+        job,
+        recipient,
+        {
+          dealerName: '',
+          contactName: job.audience === 'user' ? recipient.name : null,
+          ticket: {
+            id: ticket.id,
+            reference: supportTicketReference(ticket.number),
+            subject: ticket.subject,
+            category: ticket.category,
+            status: status.success ? status.data : ticket.status,
+          },
+        },
+        null,
+      );
     }
   }
 
@@ -331,6 +407,7 @@ export function createNotificationsService({
   async function recipientsFor(job: EmailJob): Promise<{ email: string; name: string | null }[]> {
     if (job.audience === 'admin') return adminRecipients(job.permission);
     if (job.audience === 'user') return userRecipients(job.userId);
+    if (!job.dealerId) return [];
 
     const owner = await prisma.dealerMember.findFirst({
       where: { dealerId: job.dealerId, role: 'OWNER', status: 'ACTIVE' },
@@ -446,7 +523,7 @@ export function jobOf(event: DomainEvent, rule: NotificationRule): EmailJob | nu
     template,
     audience:
       rule.audience.kind === 'admins' ? 'admin' : rule.audience.kind === 'user' ? 'user' : 'dealer',
-    dealerId: event.dealerId ?? event.aggregateId,
+    dealerId: rule.ticketId ? null : (event.dealerId ?? event.aggregateId),
     subjectId,
   };
   if (rule.audience.kind === 'admins') job.permission = rule.audience.permission;
@@ -461,6 +538,17 @@ export function jobOf(event: DomainEvent, rule: NotificationRule): EmailJob | nu
   if (rule.listingId) {
     const listingId = stringOf(payload.listingId);
     if (listingId) job.listingId = listingId;
+  }
+  if (rule.enquiryId) {
+    const enquiryId = stringOf(payload.enquiryId);
+    if (enquiryId) job.enquiryId = enquiryId;
+  }
+  if (rule.ticketId) {
+    const ticketId = stringOf(payload.ticketId);
+    if (!ticketId) return null;
+    job.ticketId = ticketId;
+    const status = stringOf(payload.status);
+    if (status) job.ticketStatus = status;
   }
   if (rule.profileChangeId) {
     const profileChangeId = stringOf(payload.profileChangeId);
@@ -484,6 +572,11 @@ function recordOf(value: unknown): Record<string, unknown> | null {
 
 function stringOf(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+function firstNameOf(fullName: string | null): string | null {
+  const first = fullName?.trim().split(/\s+/)[0];
+  return first ? first : null;
 }
 
 function isUniqueViolation(error: unknown): boolean {

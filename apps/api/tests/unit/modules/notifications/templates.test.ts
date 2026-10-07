@@ -38,6 +38,10 @@ const ALL: TemplateName[] = [
   'admin.listing.reactivation-requested',
   'dealer.listing.reactivation-approved',
   'dealer.listing.reactivation-rejected',
+  'dealer.enquiry.received',
+  'admin.support.ticket-created',
+  'customer.support.ticket-received',
+  'customer.support.ticket-status',
 ];
 
 const CONTEXT = {
@@ -55,6 +59,14 @@ const CONTEXT = {
     slug: '2022-hyundai-creta-vellore-abc123',
     title: '2022 Hyundai Creta SX',
     plate: 'TN 23 AB 1234',
+  },
+  enquiry: { buyerName: 'Asha', message: 'Is the price negotiable?' },
+  ticket: {
+    id: '44444444-4444-4444-8444-444444444444',
+    reference: 'DD-1042',
+    subject: 'The dealer has not called me back',
+    category: 'DEALER_ISSUE' as const,
+    status: 'WAITING_FOR_CUSTOMER' as const,
   },
 };
 
@@ -225,5 +237,37 @@ describe('the listing emails (R116)', () => {
     });
     expect(email.text).toContain('/dealer/inventory');
     expect(email.text).toContain('your car');
+  });
+});
+
+describe('the enquiry and support emails (R117)', () => {
+  it('tell the dealer who asked, and send them to the inbox for the number', () => {
+    const email = render('dealer.enquiry.received', CONTEXT);
+    expect(email.subject).toBe('New enquiry — 2022 Hyundai Creta SX');
+    expect(email.text).toContain('Asha has enquired about 2022 Hyundai Creta SX (TN 23 AB 1234)');
+    expect(email.text).toContain('Is the price negotiable?');
+    expect(email.text).toContain('/dealer/enquiries');
+  });
+
+  it('keep the customer’s own words out of every subject line', () => {
+    for (const template of [
+      'admin.support.ticket-created',
+      'customer.support.ticket-received',
+      'customer.support.ticket-status',
+    ] as const) {
+      const email = render(template, CONTEXT);
+      expect(email.subject).toContain('DD-1042');
+      expect(email.subject).not.toContain('called me back');
+      expect(email.text).toContain('called me back');
+    }
+  });
+
+  it('say the status in the customer’s words, and link to their request', () => {
+    const email = render('customer.support.ticket-status', CONTEXT);
+    expect(email.subject).toBe('DD-1042: Awaiting your reply — Dealers-Drive');
+    expect(email.text).toContain('/support-requests/44444444-4444-4444-8444-444444444444');
+    expect(render('admin.support.ticket-created', CONTEXT).text).toContain(
+      '/admin/support/44444444-4444-4444-8444-444444444444',
+    );
   });
 });

@@ -13,7 +13,7 @@ export interface DomainEvent<T = unknown> {
   aggregateType: string;
   aggregateId: string;
   dealerId?: string;
-  actor: { type: 'DEALER' | 'ADMIN' | 'SYSTEM' | 'SALES'; id?: string };
+  actor: { type: 'DEALER' | 'ADMIN' | 'SYSTEM' | 'SALES' | 'CUSTOMER'; id?: string };
   traceId: string;
   payload: T;
 }
@@ -44,6 +44,8 @@ export type DomainEventType =
   | 'MediaUploaded'
   | 'MediaProcessed'
   | 'EnquiryCreated'
+  | 'SupportTicketCreated'
+  | 'SupportTicketStatusChanged'
   | 'PhoneRevealed'
   | 'CreditsPurchased'
   | 'PhotoRequested'

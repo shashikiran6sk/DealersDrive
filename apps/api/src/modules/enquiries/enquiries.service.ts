@@ -16,8 +16,10 @@ import {
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { authorizeDealerWrite, type CustomerPrincipal } from '../auth/auth.facade.js';
+import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import {
   ConflictError,
   DomainError,
@@ -307,6 +309,16 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           entityType: 'Enquiry',
           entityId: enquiry.id,
           after: { listingId: available.id, hasMessage: enquiry.message !== null },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'EnquiryCreated',
+          aggregateType: 'Enquiry',
+          aggregateId: enquiry.id,
+          dealerId: available.dealerId,
+          actor: { type: 'CUSTOMER', id: customer.userId },
+          traceId: getContext()?.traceId ?? 'enquiry-created',
+          payload: { enquiryId: enquiry.id, listingId: available.id },
         });
 
         logger.info(

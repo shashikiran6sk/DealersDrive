@@ -457,3 +457,42 @@ is live.
 A listing a Sales Representative prepared for a dealership that has not been
 claimed follows R113: the dealer's mail goes to the dealership's verified
 contact address, or nowhere.
+
+## Enquiry and support emails — R117
+
+### `EnquiryCreated`
+
+Published by `enquiries.service` `create`, inside the enquiry's transaction.
+It was declared at R40 but never sent. The dealership's owner is told who asked
+about which car: the buyer's first name, their message, and a link to the
+enquiries inbox. **The buyer's phone number and surname are not in the email.**
+The inbox is where a dealer reads contact details, behind a session. An email
+is forwarded, archived and read on shared phones; it is the wrong place for a
+private buyer's number.
+
+### `SupportTicketCreated`, `SupportTicketStatusChanged`
+
+A ticket has no dealership, so these rules set `ticketId`. The job then carries
+`dealerId: null`, its delivery row has no dealership, and `sendTicketMail` builds
+the context from the ticket at send time.
+
+- **Created.** The support desk is told (`admin:support:manage`: Support,
+  Operations and Super admins, never Sales). So is the customer, as an
+  acknowledgement carrying the `DD-` reference.
+- **Status changed.** Only `support.admin.service` `update` publishes this, and
+  only when the status actually moved. The customer is told in their own words
+  (`CUSTOMER_SUPPORT_STATUS_LABELS`). The email shows the status the event
+  carried, not the ticket's status at send time: an email that arrives late
+  still says what happened when it happened.
+- **No email** for the customer's own reply, even when it reopens a resolved
+  ticket — they did it. Likewise for a priority change, an assignment or an
+  internal note, none of which the customer sees.
+
+Customer emails use the `user` audience, so they go only to a **verified**
+address on an ACTIVE account. A customer who signed up by phone alone gets no
+email. That gap is what the SMS acknowledgement (R118) is for.
+
+The customer's own words — the subject, the enquiry message — appear only in
+the escaped body, **never in a subject line**. The subject line carries the
+reference, which is ours. The ticket description never appears at all: it is
+where people put account numbers and addresses.
