@@ -117,6 +117,19 @@ const oauthAttempts = new Counter({
   registers: [metricsRegistry],
 });
 
+const notifications = new Counter({
+  name: 'dealers_drive_notifications_total',
+  help: 'Email notifications by template and outcome (sent, retry, failed, duplicate, skipped).',
+  labelNames: ['template', 'outcome'] as const,
+  registers: [metricsRegistry],
+});
+
+export type NotificationOutcome = 'sent' | 'retry' | 'failed' | 'duplicate' | 'skipped';
+
+export function recordNotification(template: string, outcome: NotificationOutcome): void {
+  notifications.inc({ template, outcome });
+}
+
 export interface HttpObservation {
   method: string;
   route: string;
@@ -268,6 +281,7 @@ export function resetApplicationMetrics(): void {
     dbErrors,
     dbSlowOperations,
     oauthAttempts,
+    notifications,
   ]) {
     metric.reset();
   }

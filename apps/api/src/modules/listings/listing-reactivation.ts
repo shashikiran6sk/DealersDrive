@@ -1,6 +1,8 @@
 import type { Listing, ListingReactivationRequest } from '@prisma/client';
 
+import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError, errorCode } from '../../platform/errors.js';
 import { REACTIVATION_SOURCES, transition, type ListingActor } from './listing.state.js';
@@ -73,6 +75,15 @@ export async function fileReactivationRequest(
     before: { status: listing.status },
     after: { status: listing.status, requestId: request.id, ...(note ? { reason: note } : {}) },
   });
+  await enqueueOutbox(tx, {
+    type: 'ListingReactivationRequested',
+    aggregateType: 'ListingReactivationRequest',
+    aggregateId: request.id,
+    dealerId: listing.dealerId,
+    actor: { type: actor.type, id: actor.id },
+    traceId: getContext()?.traceId ?? 'listing-reactivation-requested',
+    payload: { requestId: request.id, listingId: listing.id, fromStatus: listing.status },
+  });
 
   return request;
 }
@@ -131,6 +142,20 @@ export async function decideReactivationRequest(
     entityId: listing.id,
     before: { status: listing.status },
     after: { status: result.status, requestId: request.id, ...(note ? { reason: note } : {}) },
+  });
+  await enqueueOutbox(tx, {
+    type: 'ListingReactivationDecided',
+    aggregateType: 'ListingReactivationRequest',
+    aggregateId: request.id,
+    dealerId: listing.dealerId,
+    actor: { type: actor.type, id: actor.id },
+    traceId: getContext()?.traceId ?? 'listing-reactivation-decided',
+    payload: {
+      requestId: request.id,
+      listingId: listing.id,
+      approved: decision === 'approve',
+      ...(note ? { reason: note } : {}),
+    },
   });
 
   return result;

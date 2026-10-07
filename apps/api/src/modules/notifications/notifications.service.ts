@@ -1,13 +1,17 @@
+import { ADMIN_PERMISSIONS, type AdminPermission } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
-import type { DomainEvent, EventBus } from '../../platform/events/bus.js';
+import type { DomainEvent, DomainEventType, EventBus } from '../../platform/events/bus.js';
+import { recordNotification } from '../../platform/telemetry/metrics.js';
 import type { Queue } from '../../platform/jobs/queue.js';
 import type { MailerPort } from '../../platform/mail/mail.port.js';
 import { PermanentMailError } from '../../platform/mail/resend.adapter.js';
 import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
+import { isAdmitted } from '../auth/auth.facade.js';
+import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
 import { render, type TemplateContext, type TemplateName } from './templates.js';
 
 export interface NotificationsDeps {
@@ -20,11 +24,15 @@ export interface NotificationsDeps {
 export interface EmailJob extends Record<string, unknown> {
   template: TemplateName;
   dealerId: string;
-  audience: 'dealer' | 'admin';
+  audience: 'dealer' | 'admin' | 'user';
   subjectId: string;
   reason?: string | null;
   profileChangeId?: string;
+  permission?: string;
+  userId?: string;
 }
+
+export const MAX_DELIVERY_ATTEMPTS = 6;
 
 export function createNotificationsService({
   prisma,
@@ -42,92 +50,19 @@ export function createNotificationsService({
 
   return {
     subscribe(bus: EventBus): void {
-      bus.on('DealerApplied', async (event) => {
-        const resubmitted = recordOf(event.payload)?.resubmitted === true;
-        await enqueue(
-          base(
-            event,
-            resubmitted ? 'dealer.application.resubmitted' : 'dealer.application.received',
-            'dealer',
-          ),
+      for (const [type, rules] of Object.entries(NOTIFICATION_RULES)) {
+        if (!isDomainEventType(type) || !rules) continue;
+        bus.on(
+          type,
+          async (event) => {
+            for (const rule of rules) {
+              const job = jobOf(event, rule);
+              if (job) await enqueue(job);
+            }
+          },
+          { required: true },
         );
-        await enqueue(
-          base(
-            event,
-            resubmitted ? 'admin.application.resubmitted' : 'admin.application.received',
-            'admin',
-          ),
-        );
-      });
-
-      bus.on('DealerApproved', async (event) => {
-        await enqueue(base(event, 'dealer.application.approved', 'dealer'));
-      });
-
-      bus.on('DealerRejected', async (event) => {
-        await enqueue({
-          ...base(event, 'dealer.application.rejected', 'dealer'),
-          reason: reasonOf(event),
-        });
-      });
-
-      bus.on('DealerChangesRequested', async (event) => {
-        await enqueue({
-          ...base(event, 'dealer.application.changes-requested', 'dealer'),
-          reason: reasonOf(event),
-        });
-      });
-
-      bus.on('DealerApplicationClosed', async (event) => {
-        await enqueue({
-          ...base(event, 'dealer.application.closed', 'dealer'),
-          reason: reasonOf(event),
-        });
-      });
-
-      bus.on('DealerSuspended', async (event) => {
-        await enqueue({
-          ...base(event, 'dealer.account.suspended', 'dealer'),
-          reason: reasonOf(event),
-        });
-      });
-
-      bus.on('DealerReinstated', async (event) => {
-        await enqueue(base(event, 'dealer.account.reinstated', 'dealer'));
-      });
-
-      bus.on('DealerEmailVerificationRequested', async (event) => {
-        const verificationId = recordOf(event.payload)?.verificationId;
-        if (typeof verificationId !== 'string') return;
-        await enqueue({
-          template: 'dealer.email.verify',
-          audience: 'dealer',
-          dealerId: event.dealerId ?? event.aggregateId,
-          subjectId: verificationId,
-        });
-      });
-
-      bus.on('DealerProfileChangeSubmitted', async (event) => {
-        const payload = recordOf(event.payload) ?? {};
-        await enqueue({
-          ...base(event, 'admin.profile-change.submitted', 'admin'),
-          ...(typeof payload.profileChangeId === 'string'
-            ? { profileChangeId: payload.profileChangeId }
-            : {}),
-        });
-      });
-
-      bus.on('DealerProfileChangeDecided', async (event) => {
-        const published = recordOf(event.payload)?.published === true;
-        await enqueue({
-          ...base(
-            event,
-            published ? 'dealer.profile-change.approved' : 'dealer.profile-change.rejected',
-            'dealer',
-          ),
-          reason: published ? null : reasonOf(event),
-        });
-      });
+      }
     },
 
     async work(): Promise<void> {
@@ -247,6 +182,7 @@ export function createNotificationsService({
     const message = render(job.template, context);
 
     let claimed;
+    let attempts = 1;
     try {
       claimed = await prisma.notificationDelivery.create({
         data: {
@@ -264,6 +200,7 @@ export function createNotificationsService({
 
         if (existing?.status === 'SENT') {
           logger.debug({ dedupeKey }, 'email already sent — skipping');
+          recordNotification(job.template, 'duplicate');
           return;
         }
 
@@ -272,6 +209,7 @@ export function createNotificationsService({
           data: { attempts: { increment: 1 }, status: 'PENDING' },
         });
         claimed = existing;
+        attempts = (existing?.attempts ?? 0) + 1;
       } else {
         throw error;
       }
@@ -297,6 +235,7 @@ export function createNotificationsService({
         },
       });
 
+      recordNotification(job.template, 'sent');
       logger.info(
         {
           channel: 'email',
@@ -309,7 +248,8 @@ export function createNotificationsService({
         'email accepted by provider',
       );
     } catch (error) {
-      const permanent = error instanceof PermanentMailError;
+      const exhausted = attempts >= MAX_DELIVERY_ATTEMPTS;
+      const permanent = error instanceof PermanentMailError || exhausted;
       const detail = error instanceof Error ? error.message.slice(0, 500) : String(error);
 
       await prisma.notificationDelivery.update({
@@ -320,8 +260,17 @@ export function createNotificationsService({
         },
       });
 
+      recordNotification(job.template, permanent ? 'failed' : 'retry');
       logger.error(
-        { channel: 'email', template: job.template, dealerId: job.dealerId, permanent, err: error },
+        {
+          channel: 'email',
+          template: job.template,
+          dealerId: job.dealerId,
+          permanent,
+          exhausted,
+          attempts,
+          err: error,
+        },
         'email failed',
       );
 
@@ -330,9 +279,8 @@ export function createNotificationsService({
   }
 
   async function recipientsFor(job: EmailJob): Promise<{ email: string; name: string | null }[]> {
-    if (job.audience === 'admin') {
-      return env.adminAllowlist.map((email) => ({ email, name: null }));
-    }
+    if (job.audience === 'admin') return adminRecipients(job.permission);
+    if (job.audience === 'user') return userRecipients(job.userId);
 
     const owner = await prisma.dealerMember.findFirst({
       where: { dealerId: job.dealerId, role: 'OWNER', status: 'ACTIVE' },
@@ -354,6 +302,51 @@ export function createNotificationsService({
     return assisted?.contactEmail
       ? [{ email: assisted.contactEmail, name: assisted.contactName }]
       : [];
+  }
+
+  async function adminRecipients(
+    permission: string | undefined,
+  ): Promise<{ email: string; name: string | null }[]> {
+    const allowlist = env.adminAllowlist.map((email) => ({ email, name: null }));
+    const roles =
+      permission && isAdminPermission(permission) ? ADMIN_PERMISSIONS[permission] : null;
+    if (!roles) return allowlist;
+
+    const members = await prisma.adminMember.findMany({
+      where: { status: 'ACTIVE', role: { in: [...roles] } },
+      select: {
+        status: true,
+        source: true,
+        role: true,
+        user: { select: { email: true, fullName: true, status: true } },
+      },
+    });
+    const seen = new Set<string>();
+    const recipients: { email: string; name: string | null }[] = [];
+    for (const member of members) {
+      const email = member.user.email;
+      if (!email || !isAdmitted({ email, status: member.user.status, member })) continue;
+      const key = email.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      recipients.push({ email, name: member.user.fullName });
+    }
+    if (recipients.length > 0) return recipients;
+
+    logger.warn({ permission }, 'no admin member holds this permission — using the allow-list');
+    return allowlist;
+  }
+
+  async function userRecipients(
+    userId: string | undefined,
+  ): Promise<{ email: string; name: string | null }[]> {
+    if (!userId) return [];
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, emailVerifiedAt: true, fullName: true, status: true },
+    });
+    if (!user?.email || !user.emailVerifiedAt || user.status !== 'ACTIVE') return [];
+    return [{ email: user.email, name: user.fullName }];
   }
 
   async function rejectedApplicationSnapshot(dealerId: string): Promise<{
@@ -387,18 +380,48 @@ export function createNotificationsService({
 
 export type NotificationsService = ReturnType<typeof createNotificationsService>;
 
-function base(event: DomainEvent, template: TemplateName, audience: 'dealer' | 'admin'): EmailJob {
-  return {
+const EVENT_TYPES = new Set<string>(Object.keys(NOTIFICATION_RULES));
+
+function isDomainEventType(value: string): value is DomainEventType {
+  return EVENT_TYPES.has(value);
+}
+
+export function jobOf(event: DomainEvent, rule: NotificationRule): EmailJob | null {
+  const payload = payloadOf(event);
+  const template = typeof rule.template === 'function' ? rule.template(event) : rule.template;
+  const subjectId = rule.subjectKey ? stringOf(payload[rule.subjectKey]) : event.id;
+  if (!subjectId) return null;
+
+  const job: EmailJob = {
     template,
-    audience,
+    audience:
+      rule.audience.kind === 'admins' ? 'admin' : rule.audience.kind === 'user' ? 'user' : 'dealer',
     dealerId: event.dealerId ?? event.aggregateId,
-    subjectId: event.id,
+    subjectId,
   };
+  if (rule.audience.kind === 'admins') job.permission = rule.audience.permission;
+  if (rule.audience.kind === 'user') {
+    const userId = stringOf(payload[rule.audience.userIdKey]);
+    if (!userId) return null;
+    job.userId = userId;
+  }
+  const withReason = typeof rule.reason === 'function' ? rule.reason(event) : rule.reason;
+  if (withReason) job.reason = reasonOf(event);
+  else if (rule.reason !== undefined) job.reason = null;
+  if (rule.profileChangeId) {
+    const profileChangeId = stringOf(payload.profileChangeId);
+    if (profileChangeId) job.profileChangeId = profileChangeId;
+  }
+  return job;
 }
 
 function reasonOf(event: DomainEvent): string | null {
-  const reason = recordOf(event.payload)?.reason;
+  const reason = payloadOf(event).reason;
   return typeof reason === 'string' ? reason : null;
+}
+
+function isAdminPermission(value: string): value is AdminPermission {
+  return Object.hasOwn(ADMIN_PERMISSIONS, value);
 }
 
 function recordOf(value: unknown): Record<string, unknown> | null {

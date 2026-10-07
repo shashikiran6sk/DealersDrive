@@ -8,6 +8,11 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: '/admin/enquiries', label: 'Enquiries' },
   { href: '/admin/support', label: 'Support Tickets' },
   { href: '/admin/members', label: 'Members', permission: 'admin:access:manage' },
+  {
+    href: '/admin/notifications',
+    label: 'Email deliveries',
+    permission: 'admin:notifications:read',
+  },
   { href: '/admin/config', label: 'Configuration', permission: 'admin:config:write' },
 ];
 

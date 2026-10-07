@@ -7,6 +7,7 @@ import { requirePermission } from './middleware/auth.js';
 import { ADMIN_CONSOLE_REFUSAL, SALES_WORKSPACE_REFUSAL } from './platform/messages.js';
 import { createSalesRouter } from './modules/sales/sales.routes.js';
 import { createDealerClaimsRouter } from './modules/dealer-claims/dealer-claims.routes.js';
+import { createAdminNotificationsRouter } from './modules/notifications/notifications.admin.routes.js';
 import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
@@ -117,6 +118,7 @@ export function createRoutes(container: Container): Router {
   admin.use(createVehicleImagesRouter(container.vehicleImages));
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
   admin.use(createAdminSupportRouter(container.adminSupport));
+  admin.use(createAdminNotificationsRouter(container.adminNotifications));
   v1.use('/admin', admin);
 
   const sales = Router();

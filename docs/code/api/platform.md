@@ -165,3 +165,14 @@ The ledger paginates on its append sequence, not on a timestamp.
 ### `decodeKeysetOrDateCursor(cursor)`
 
 Saved Cars, customer enquiry history and the dealer inbox emit timestamp/UUID keysets. Their database ordering is createdAt DESC, id DESC, so the next boundary must include both fields to retain millisecond ties. The decoder validates a keyset through the existing UUID/date decoder and rejects extra fields. Date-only cursors issued before BUG-003 remain accepted with id null and the original strict-before-date behavior. Their missing secondary key cannot be recovered; refreshing starts a new traversal with the corrected boundary. Existing date, sequence and strict Admin keyset decoders keep their behavior. A cursor is a position, not authority: ownership and status predicates must still apply to every page.
+
+## `apps/api/src/platform/events/outbox-publisher.ts` — R115
+
+### `async function drain(): Promise<number>`
+
+Before claiming a batch, every unpublished event that no subscriber listens to
+is marked published in one statement. Listing moves are published for the
+notification rules that arrive later (R115), and until a rule exists for one of
+them its rows would otherwise sit in the oldest-first batch of fifty and delay
+the events that do have subscribers behind them — an application's email waiting
+on a queue of listing moves nobody reads.

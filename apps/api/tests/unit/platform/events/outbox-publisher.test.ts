@@ -309,3 +309,36 @@ describe('createOutboxPublisher', () => {
     });
   });
 });
+
+describe('events nobody listens to (R115)', () => {
+  it('are marked published in bulk before the batch is claimed, so they never block one', async () => {
+    const calls: string[] = [];
+    let marked: unknown = null;
+    const prisma = {
+      outboxEvent: {
+        updateMany: (args: unknown) => {
+          calls.push('updateMany');
+          marked = args;
+          return Promise.resolve({ count: 3 });
+        },
+        update: () => Promise.resolve({}),
+      },
+      $queryRaw: () => {
+        calls.push('select');
+        return Promise.resolve([]);
+      },
+    } as unknown as PrismaClient;
+    const bus: EventBus = {
+      on: () => undefined,
+      publish: () => Promise.resolve(),
+      subscribedTypes: () => ['DealerApplied'],
+    };
+
+    await createOutboxPublisher(prisma, bus).drain();
+
+    expect(calls).toEqual(['updateMany', 'select']);
+    expect(marked).toMatchObject({
+      where: { publishedAt: null, eventType: { notIn: ['DealerApplied'] } },
+    });
+  });
+});

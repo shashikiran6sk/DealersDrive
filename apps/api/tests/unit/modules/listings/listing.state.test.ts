@@ -204,14 +204,16 @@ function fakeTx(count = 1) {
   const findUniqueOrThrow = vi.fn(async () => listing('ACTIVE'));
   const clearChecks = vi.fn(async () => ({ count: 0 }));
   const cancelRequests = vi.fn(async () => ({ count: 0 }));
+  const outbox = vi.fn(async (_args: { data: { eventType: string; payload: unknown } }) => ({}));
   const tx = {
+    outboxEvent: { create: outbox },
     listing: { updateMany, findUniqueOrThrow },
     vehicle: { update: vehicleUpdate },
     listingCheck: { deleteMany: clearChecks },
     listingReactivationRequest: { updateMany: cancelRequests },
   } as unknown as Tx;
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };
-  return { tx, audit, updateMany, vehicleUpdate, clearChecks, cancelRequests };
+  return { tx, audit, updateMany, vehicleUpdate, clearChecks, cancelRequests, outbox };
 }
 
 const NOW = new Date('2026-09-26T10:00:00Z');
@@ -487,5 +489,48 @@ describe('the checklist and resubmission (F070)', () => {
     const { tx, audit, clearChecks } = fakeTx();
     await transition(tx, audit, listing('PENDING_REVIEW'), 'approve', ADMIN);
     expect(clearChecks).not.toHaveBeenCalled();
+  });
+});
+
+describe('domain events (R115)', () => {
+  it('publishes the moves people are told about, in the same transaction', async () => {
+    const cases = [
+      ['DRAFT', 'submit', DEALER, 'ListingSubmitted'],
+      ['CHANGES_REQUESTED', 'resubmit', DEALER, 'ListingSubmitted'],
+      ['PENDING_REVIEW', 'approve', ADMIN, 'ListingApproved'],
+      ['PENDING_REVIEW', 'reject', ADMIN, 'ListingRejected'],
+      ['PENDING_REVIEW', 'requestChanges', ADMIN, 'ListingChangesRequested'],
+    ] as const;
+    for (const [from, event, actor, type] of cases) {
+      const { tx, audit, outbox } = fakeTx();
+      await transition(tx, audit, listing(from), event, actor, {
+        now: NOW,
+        reason: 'A reason.',
+      });
+      expect(outbox, event).toHaveBeenCalledTimes(1);
+      const written = outbox.mock.calls[0]?.[0].data;
+      expect(written?.eventType, event).toBe(type);
+      expect(written?.payload, event).toMatchObject({
+        type,
+        dealerId: 'dealer-1',
+        actor: { type: actor.type, id: actor.id },
+      });
+      expect((written?.payload as { payload: unknown }).payload, event).toMatchObject({
+        listingId: 'listing-1',
+        to: LISTING_TRANSITIONS[event].to,
+        resubmitted: event === 'resubmit',
+      });
+    }
+  });
+
+  it('publishes nothing for a sale, a reservation or a withdrawal', async () => {
+    for (const [from, event] of [
+      ['ACTIVE', 'markSold'],
+      ['ACTIVE', 'reserve'],
+    ] as const) {
+      const { tx, audit, outbox } = fakeTx();
+      await transition(tx, audit, listing(from), event, DEALER, { now: NOW });
+      expect(outbox, event).not.toHaveBeenCalled();
+    }
   });
 });
