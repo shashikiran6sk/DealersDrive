@@ -1,0 +1,15 @@
+Subject: About your reactivation request — 2023 Hyundai Creta SX(O)
+
+We have not put this listing back on sale
+
+Hi Lakshmi,
+
+We have looked at your request to put 2023 Hyundai Creta SX(O) (KA 05 MR 8801) back on the marketplace and have not approved it.
+
+  Add a photo of the odometer.
+
+Open your inventory: http://localhost:3000/dealer/inventory
+
+—
+Dealers-Drive
+Questions? support@example.com

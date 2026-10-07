@@ -12,3 +12,4 @@ at most one concise screenshot; everything detailed lives here.
 | `pr5-email-verification-claim/` | [#273](https://github.com/shashikiran6sk/DealersDrive/pull/273) — assisted dealer email verification & claim |
 | `pr6-assisted-listings/` | [#274](https://github.com/shashikiran6sk/DealersDrive/pull/274) — assisted listing creation |
 | `pr7-notification-foundation/` | [#275](https://github.com/shashikiran6sk/DealersDrive/pull/275) — notification foundation |
+| `pr8-listing-emails/` | PR pending — listing lifecycle emails |
