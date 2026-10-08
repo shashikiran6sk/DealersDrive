@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dealers-drive/contracts": "workspace:*",
+    "@dealers-drive/storefront-ui": "workspace:*",
     "next": "^15.5.27",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

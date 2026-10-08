@@ -164,6 +164,21 @@ const management: OperationSpec[] = [
 const publicOperations: OperationSpec[] = [
   {
     method: 'get',
+    path: '/v1/storefront/sitemap',
+    operationId: 'getStorefrontSitemap',
+    tag: DOC_TAGS.storefront,
+    summary: 'Tenant sitemap entries',
+    description:
+      'Trusted-host, 1,000-entry pages of only this dealership’s ACTIVE website-published cars, with current inventory timestamps and total pages. No-store, same domain/website visibility as ordinary public reads.',
+    audience: 'internal',
+    query: 'StorefrontSitemapQuery',
+    responses: [
+      { status: 200, description: 'Tenant sitemap page.', schema: 'StorefrontSitemapResponse' },
+    ],
+    errors: [401, 404, 429, 503],
+  },
+  {
+    method: 'get',
     path: '/v1/storefront/site',
     operationId: 'resolvePublicStorefront',
     tag: DOC_TAGS.storefront,

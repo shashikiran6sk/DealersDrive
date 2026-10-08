@@ -21,6 +21,21 @@ export interface RegistryEntry {
 
 export const registry: RegistryEntry[] = [
   {
+    id: 'storefront-website',
+    name: 'StorefrontShell / StorefrontHome',
+    source: 'packages/storefront-ui/src/components/storefront-shell/storefront-shell.tsx',
+    category: 'Layout',
+    ownership: 'Shared',
+    purpose:
+      'The same dealer-branded Light/Dark presentation used by the shared storefront application and authenticated dashboard preview. Includes navigation, tenant inventory cards and service-provider disclosure; no marketplace competitor attribution.',
+    aliases: ['DealerWebsite', 'WhiteLabelWebsite', 'WebsitePreview'],
+    features: ['WhiteLabelV1'],
+    props: ['site', 'inventory', 'preview'],
+    states: ['light', 'dark', 'empty', 'missing-photography', 'long-name', 'private-preview'],
+    reusable: true,
+    storyId: 'storefront-dealerwebsite',
+  },
+  {
     id: 'brand-logo',
     name: 'BrandLogo',
     source: 'apps/web/src/components/brand-logo/brand-logo.tsx',

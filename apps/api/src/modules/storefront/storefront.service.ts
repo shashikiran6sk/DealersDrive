@@ -263,6 +263,36 @@ export function createStorefrontService({ prisma, audit, config }: StorefrontDep
       return publicRead.site(row, hostname);
     },
 
+    async sitemap(hostname: string, page: number) {
+      const site = await publicRead.resolve(hostname);
+      const where = {
+        dealerId: site.dealerId,
+        status: 'ACTIVE' as const,
+        storefrontPublished: true,
+        slug: { not: null },
+        dealer: { status: 'ACTIVE' as const },
+      };
+      const [rows, total] = await Promise.all([
+        prisma.listing.findMany({
+          where,
+          select: { slug: true, updatedAt: true, vehicle: { select: { updatedAt: true } } },
+          orderBy: { id: 'asc' },
+          skip: (page - 1) * 1000,
+          take: 1000,
+        }),
+        prisma.listing.count({ where }),
+      ]);
+      return {
+        entries: rows.map((row) => ({
+          slug: row.slug ?? '',
+          lastModified: new Date(
+            Math.max(row.updatedAt.getTime(), row.vehicle.updatedAt.getTime()),
+          ).toISOString(),
+        })),
+        page: { page, limit: 1000, total, totalPages: Math.max(1, Math.ceil(total / 1000)) },
+      };
+    },
+
     async inventory(hostname: string, query: StorefrontInventoryQuery) {
       const row = await publicRead.resolve(hostname);
       return publicRead.inventory(row.dealerId, query);
