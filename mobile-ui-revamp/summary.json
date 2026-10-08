@@ -27,7 +27,9 @@
     "OTP keyboard typing/backspace/paste",
     "drawer focus trap/Escape/return focus",
     "customer wrong OTP/retry/cooldown/success",
-    "gallery keyboard/thumbnail/Escape/focus interactions"
+    "gallery keyboard/thumbnail/Escape/focus interactions",
+    "customer registration, persistent save and enquiry submission",
+    "persistent unsave, live filters, clear filters, sheet dismissal and URL sorting"
   ],
   "limitations": [
     "Real mobile hardware and virtual keyboard were not available.",
@@ -35,5 +37,7 @@
     "Expected guest redirects and seeded workspace authorization are identified in the page reports.",
     "Business mutations are verified by existing regression tests; this is not a claim of every authenticated workflow being executed in a browser."
   ],
-  "implementationCommit": "2b5561b2e36e175fee97e2b65fec28b9637e260e"
+  "implementationCommit": "2b5561b2e36e175fee97e2b65fec28b9637e260e",
+  "nativeBrowserAssertions": 33,
+  "remoteCI": "All checks passed for 2b5561b2e36e175fee97e2b65fec28b9637e260e"
 }

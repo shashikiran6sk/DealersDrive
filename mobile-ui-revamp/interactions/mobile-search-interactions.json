@@ -1,0 +1,11 @@
+[
+  "Unsave updates the existing pressed state",
+  "Unsave persists and reload renders empty state",
+  "Mobile search filter sheet opens",
+  "Facet selection updates live search URL",
+  "Live filter update keeps sheet open",
+  "Clear filters restores unfiltered URL",
+  "Show cars closes filter sheet",
+  "Sort selection updates URL",
+  "Filtered listings fit 320px viewport"
+]
