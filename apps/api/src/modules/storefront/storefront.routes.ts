@@ -17,6 +17,7 @@ import type { StorefrontMediaService } from './storefront.media.js';
 import { postMediaPresign } from './routes/post-media-presign.js';
 import { postMediaCommit } from './routes/post-media-commit.js';
 import { getMediaPreview } from './routes/get-media-preview.js';
+import { getSitemap } from './routes/get-sitemap.js';
 
 export function createStorefrontManagementRouter(
   service: StorefrontService,
@@ -45,7 +46,7 @@ export function createStorefrontPublicRouter(
 ): Router {
   const router = Router();
   router.use('/storefront', rateLimit('storefront.public', { limit: 240, windowSeconds: 60 }));
-  for (const route of [getSite, getCars, getCar, postIntent, getIntent])
+  for (const route of [getSite, getCars, getCar, postIntent, getIntent, getSitemap])
     route(router, { service, rateLimit, media });
   return router;
 }

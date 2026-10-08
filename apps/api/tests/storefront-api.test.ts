@@ -278,6 +278,15 @@ describe('authorized website control plane', () => {
 });
 
 describe('trusted public tenant boundary', () => {
+  it('paginates tenant-only sitemap entries and excludes unavailable cars', async () => {
+    const alpha = await publicGet('/sitemap').expect(200);
+    const beta = await publicGet('/sitemap', b).expect(200);
+    expect(alpha.body.entries.map((row: { slug: string }) => row.slug)).toEqual([liveA.slug]);
+    expect(beta.body.entries.map((row: { slug: string }) => row.slug)).toEqual([liveB.slug]);
+    expect(alpha.body.page).toMatchObject({ page: 1, limit: 1000, total: 1 });
+    await publicGet('/sitemap?page=0').expect(400);
+    await publicGet('/sitemap?dealer=beta').expect(400);
+  });
   it('fails closed for unverified and expired custom domains', async () => {
     const site = await h.prisma.dealerStorefront.findUniqueOrThrow({ where: { dealerId: a.id } });
     const hostname = `cars-${stamp}.example.com`;

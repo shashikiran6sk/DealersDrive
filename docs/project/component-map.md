@@ -1718,3 +1718,23 @@ as make and model.
 be wrong for the target state. Their stories should be written **after** F060
 settles the input shape, not before — or written now against free text, which is
 the decided direction. Everything else in this map is stable under D1.
+
+## White-label website presentation (V1)
+
+`packages/storefront-ui` contains the shared Light/Dark presentation consumed by
+`apps/storefront` and the authenticated dashboard preview. StorefrontShell,
+StorefrontHome, StorefrontInventory, StorefrontVehicle, StorefrontGallery,
+StorefrontContact and StorefrontAbout use the existing public vehicle contracts.
+They intentionally omit marketplace dealer-directory/competitor attribution.
+The existing sandbox UI was audited; dashboard primitives and CustomerLogin
+are reused in control-plane and enquiry flows. Storefront presentation is a
+separate branded product surface with scoped CSS, not a duplicate marketplace
+business-logic layer.
+
+Sandbox: Storefront/DealerWebsite — Light, Dark, Empty, PrivatePreview,
+MissingPhotography and LongBusinessName. Props: validated public site,
+tenant inventory, vehicle/detail and read-only preview. Component tests cover
+keyboard navigation, reserved cards, native fullscreen dialog, image errors,
+filters/pagination, missing contact data and accent contrast. WebsiteEnquiry
+reuses the existing dashboard Button and verified-customer login; it captures
+explicit consent and calls the existing source-bound enquiry endpoint.

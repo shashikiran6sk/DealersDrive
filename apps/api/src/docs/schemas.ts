@@ -20,6 +20,7 @@ const INPUT_SCHEMA_NAMES = [
   'StorefrontMediaPresignInput',
   'StorefrontMediaCommitInput',
   'StorefrontMediaParam',
+  'StorefrontSitemapQuery',
   'SalesPhoneVerifyInput',
   'CreateAssistedDealerInput',
   'UpdateAssistedDealerInput',

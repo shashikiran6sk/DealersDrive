@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["API_BASE_URL", "APP_ENV"],
+      "passThroughEnv": ["STOREFRONT_SERVICE_SECRET", "CLIENT_IP_FORWARD_SECRET"]
+    }
+  }
+}

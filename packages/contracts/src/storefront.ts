@@ -343,3 +343,12 @@ export const StorefrontMediaParam = z
   })
   .strict();
 export type StorefrontMediaParam = z.infer<typeof StorefrontMediaParam>;
+export const StorefrontSitemapQuery = z
+  .object({ page: z.coerce.number().int().min(1).max(1000).default(1) })
+  .strict();
+export type StorefrontSitemapQuery = z.infer<typeof StorefrontSitemapQuery>;
+export const StorefrontSitemapResponse = z.object({
+  entries: z.array(z.object({ slug: z.string(), lastModified: z.string() })).max(1000),
+  page: OffsetPage,
+});
+export type StorefrontSitemapResponse = z.infer<typeof StorefrontSitemapResponse>;

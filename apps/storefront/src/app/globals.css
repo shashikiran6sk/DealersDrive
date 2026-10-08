@@ -1,0 +1,47 @@
+html {
+  margin: 0;
+  padding: 0;
+}
+body {
+  margin: 0;
+  min-width: 0;
+  background: #fcfcf9;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+.wl-system-error {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  max-width: 680px;
+  margin: auto;
+  padding: 32px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172526;
+}
+.wl-system-error h1 {
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.wl-system-error p {
+  line-height: 1.7;
+}
+.wl-system-error button,
+.wl-system-error a {
+  padding: 12px 20px;
+  border: 1px solid #172526;
+  color: #172526;
+  background: #fff;
+  text-decoration: none;
+  width: fit-content;
+  min-height: 44px;
+  cursor: pointer;
+}
