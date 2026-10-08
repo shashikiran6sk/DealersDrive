@@ -46,6 +46,17 @@ const envSchema = z.object({
   WEB_BASE_URL: required('http://localhost:3000'),
   API_BASE_URL: required('http://localhost:4000'),
 
+  STOREFRONT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  STOREFRONT_ROOT_HOSTNAME: z.string().default('dealers-drive.com'),
+  STOREFRONT_DEFAULT_DOMAIN_READY: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  STOREFRONT_SERVICE_SECRET: optional(z.string().min(32)),
+
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
 
   DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
@@ -174,6 +185,15 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   };
 
   const production = value.NODE_ENV === 'production';
+
+  if (
+    !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(value.STOREFRONT_ROOT_HOSTNAME)
+  ) {
+    require('STOREFRONT_ROOT_HOSTNAME', 'must be a normalized public hostname.');
+  }
+  if (value.STOREFRONT_ENABLED && !value.STOREFRONT_SERVICE_SECRET) {
+    require('STOREFRONT_SERVICE_SECRET', 'is required when STOREFRONT_ENABLED=true.');
+  }
 
   if (production && value.AUTH_MODE === 'dev') {
     require('AUTH_MODE', 'must be `cookie` in production — `dev` bypasses identity verification.');

@@ -174,6 +174,8 @@ describe('assertTransition', () => {
 
 function listing(status: ListingStatus, overrides: Partial<Listing> = {}): Listing {
   return {
+    marketplacePublished: true,
+    storefrontPublished: true,
     id: 'listing-1',
     vehicleId: 'vehicle-1',
     dealerId: 'dealer-1',

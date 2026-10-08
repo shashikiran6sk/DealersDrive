@@ -9,6 +9,8 @@ const ID = '22222222-2222-4222-8222-222222222222';
 
 function listing(status: ListingStatus = 'DRAFT'): Listing {
   return {
+    marketplacePublished: true,
+    storefrontPublished: true,
     id: '33333333-3333-4333-8333-333333333333',
     vehicleId: ID,
     dealerId: ACTOR.dealerId,

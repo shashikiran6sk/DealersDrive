@@ -41,6 +41,9 @@ export const DEALER_PERMISSIONS = {
   'enquiry:close': RUNS_STOCK,
   'photo:request': RUNS_STOCK,
   'dealer:update': OWNER_ONLY,
+  'storefront:read': RUNS_STOCK,
+  'storefront:manage': OWNER_ONLY,
+  'storefront:domain': OWNER_ONLY,
   /** The dealership's KYC documents and verification. */
   'document:upload': OWNER_ONLY,
   'billing:read': RUNS_STOCK,
