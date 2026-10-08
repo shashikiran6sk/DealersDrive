@@ -1,0 +1,578 @@
+semgrep	Set up job	﻿2026-10-08T14:25:59.1647760Z Current runner version: '2.337.0'
+semgrep	Set up job	2026-10-08T14:25:59.1671317Z ##[group]Runner Image Provisioner
+semgrep	Set up job	2026-10-08T14:25:59.1672227Z Hosted Compute Agent
+semgrep	Set up job	2026-10-08T14:25:59.1672773Z Version: 20261002.596
+semgrep	Set up job	2026-10-08T14:25:59.1673391Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+semgrep	Set up job	2026-10-08T14:25:59.1674101Z Build Date: 2026-10-02T22:28:27Z
+semgrep	Set up job	2026-10-08T14:25:59.1674716Z Worker ID: {70aed8fa-6c24-46ed-a635-6fa121c6ac50}
+semgrep	Set up job	2026-10-08T14:25:59.1675357Z Region: westus3
+semgrep	Set up job	2026-10-08T14:25:59.1675880Z Cloud: Azure
+semgrep	Set up job	2026-10-08T14:25:59.1676399Z ##[endgroup]
+semgrep	Set up job	2026-10-08T14:25:59.1677804Z ##[group]Operating System
+semgrep	Set up job	2026-10-08T14:25:59.1678375Z Ubuntu
+semgrep	Set up job	2026-10-08T14:25:59.1678843Z 24.04.5
+semgrep	Set up job	2026-10-08T14:25:59.1679348Z LTS
+semgrep	Set up job	2026-10-08T14:25:59.1679876Z ##[endgroup]
+semgrep	Set up job	2026-10-08T14:25:59.1680407Z ##[group]Runner Image
+semgrep	Set up job	2026-10-08T14:25:59.1680953Z Image: ubuntu-24.04
+semgrep	Set up job	2026-10-08T14:25:59.1681457Z Version: 20261004.327.1
+semgrep	Set up job	2026-10-08T14:25:59.1682492Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+semgrep	Set up job	2026-10-08T14:25:59.1684127Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+semgrep	Set up job	2026-10-08T14:25:59.1684981Z ##[endgroup]
+semgrep	Set up job	2026-10-08T14:25:59.1685960Z ##[group]GITHUB_TOKEN Permissions
+semgrep	Set up job	2026-10-08T14:25:59.1688189Z Contents: read
+semgrep	Set up job	2026-10-08T14:25:59.1688728Z Metadata: read
+semgrep	Set up job	2026-10-08T14:25:59.1689276Z ##[endgroup]
+semgrep	Set up job	2026-10-08T14:25:59.1691147Z Secret source: Actions
+semgrep	Set up job	2026-10-08T14:25:59.1692015Z Cache mode: write
+semgrep	Set up job	2026-10-08T14:25:59.1692752Z Prepare workflow directory
+semgrep	Set up job	2026-10-08T14:25:59.2062814Z Prepare all required actions
+semgrep	Set up job	2026-10-08T14:25:59.2110516Z Getting action download info
+semgrep	Set up job	2026-10-08T14:25:59.5275875Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+semgrep	Set up job	2026-10-08T14:25:59.6905711Z Complete job name: semgrep
+semgrep	Initialize containers	﻿2026-10-08T14:25:59.7319586Z ##[group]Checking docker version
+semgrep	Initialize containers	2026-10-08T14:25:59.7331300Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+semgrep	Initialize containers	2026-10-08T14:25:59.8133617Z '1.48'
+semgrep	Initialize containers	2026-10-08T14:25:59.8147552Z Docker daemon API version: '1.48'
+semgrep	Initialize containers	2026-10-08T14:25:59.8149395Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+semgrep	Initialize containers	2026-10-08T14:25:59.8316054Z '1.48'
+semgrep	Initialize containers	2026-10-08T14:25:59.8324952Z Docker client API version: '1.48'
+semgrep	Initialize containers	2026-10-08T14:25:59.8330128Z ##[endgroup]
+semgrep	Initialize containers	2026-10-08T14:25:59.8332300Z ##[group]Clean up resources from previous jobs
+semgrep	Initialize containers	2026-10-08T14:25:59.8337606Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=c18b22"
+semgrep	Initialize containers	2026-10-08T14:25:59.8481024Z ##[command]/usr/bin/docker network prune --force --filter "label=c18b22"
+semgrep	Initialize containers	2026-10-08T14:25:59.8608000Z ##[endgroup]
+semgrep	Initialize containers	2026-10-08T14:25:59.8608640Z ##[group]Create local container network
+semgrep	Initialize containers	2026-10-08T14:25:59.8618048Z ##[command]/usr/bin/docker network create --label c18b22 github_network_53f8c95d12bc42ccae7a41a88d2737a2
+semgrep	Initialize containers	2026-10-08T14:25:59.9441437Z b8561685a5652d860435263f7806f66121ebd7fc9a4d830c6699354079b02bd2
+semgrep	Initialize containers	2026-10-08T14:25:59.9457641Z ##[endgroup]
+semgrep	Initialize containers	2026-10-08T14:25:59.9482720Z ##[group]Starting job container
+semgrep	Initialize containers	2026-10-08T14:25:59.9503969Z ##[command]/usr/bin/docker pull semgrep/semgrep
+semgrep	Initialize containers	2026-10-08T14:25:59.9611042Z Using default tag: latest
+semgrep	Initialize containers	2026-10-08T14:26:00.7329762Z latest: Pulling from semgrep/semgrep
+semgrep	Initialize containers	2026-10-08T14:26:00.9448189Z d0c1d894c237: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9449660Z cb88209dc440: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9450705Z bd9ddc54bea9: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9451868Z d9e25de4c360: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9452970Z 168751c87b5b: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9454039Z f9436dbf5054: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9455073Z a1c697b34ad1: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9456127Z a202b3be6029: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9457397Z 448dbe236007: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9458498Z 4ecbb1dfaaee: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9459571Z ac9c084ff4d3: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9460797Z 839b0f5e23cb: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9461932Z f9f5827a1952: Pulling fs layer
+semgrep	Initialize containers	2026-10-08T14:26:00.9462999Z 448dbe236007: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9464240Z 4ecbb1dfaaee: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9465179Z ac9c084ff4d3: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9466146Z 839b0f5e23cb: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9467099Z f9f5827a1952: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9468173Z 168751c87b5b: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9469179Z f9436dbf5054: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9470406Z a1c697b34ad1: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9471632Z a202b3be6029: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:00.9472913Z d9e25de4c360: Waiting
+semgrep	Initialize containers	2026-10-08T14:26:01.1224770Z bd9ddc54bea9: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.1444552Z d0c1d894c237: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.1453599Z d0c1d894c237: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.2552003Z cb88209dc440: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.2555971Z cb88209dc440: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.2562175Z d0c1d894c237: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:01.3384475Z d9e25de4c360: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.5614109Z a1c697b34ad1: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.5616333Z a1c697b34ad1: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.7465950Z a202b3be6029: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.7791531Z 168751c87b5b: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.7792866Z 168751c87b5b: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.9181553Z 448dbe236007: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.9183142Z 448dbe236007: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:01.9543077Z 4ecbb1dfaaee: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:01.9567466Z 4ecbb1dfaaee: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:02.0376059Z f9436dbf5054: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:02.1003950Z ac9c084ff4d3: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:02.1005308Z ac9c084ff4d3: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:02.1334604Z 839b0f5e23cb: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:02.2259265Z f9f5827a1952: Verifying Checksum
+semgrep	Initialize containers	2026-10-08T14:26:02.2261598Z f9f5827a1952: Download complete
+semgrep	Initialize containers	2026-10-08T14:26:10.5547076Z cb88209dc440: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:10.5663321Z bd9ddc54bea9: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:10.6122861Z d9e25de4c360: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:12.0521168Z 168751c87b5b: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.3185789Z f9436dbf5054: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.4290824Z a1c697b34ad1: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.4412890Z a202b3be6029: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.4731024Z 448dbe236007: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.4829329Z 4ecbb1dfaaee: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.4938206Z ac9c084ff4d3: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.5018407Z 839b0f5e23cb: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.5115214Z f9f5827a1952: Pull complete
+semgrep	Initialize containers	2026-10-08T14:26:20.5152550Z Digest: sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
+semgrep	Initialize containers	2026-10-08T14:26:20.5164458Z Status: Downloaded newer image for semgrep/semgrep:latest
+semgrep	Initialize containers	2026-10-08T14:26:20.5176049Z docker.io/semgrep/semgrep:latest
+semgrep	Initialize containers	2026-10-08T14:26:20.5250217Z ##[command]/usr/bin/docker create --name 6a6e0e34abc7426289b1f3e9706178ff_semgrepsemgrep_309e48 --label c18b22 --workdir /__w/DealersDrive/DealersDrive --network github_network_53f8c95d12bc42ccae7a41a88d2737a2  -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/2.337.0/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" semgrep/semgrep "-f" "/dev/null"
+semgrep	Initialize containers	2026-10-08T14:26:20.5476308Z 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Initialize containers	2026-10-08T14:26:20.5493181Z ##[command]/usr/bin/docker start 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Initialize containers	2026-10-08T14:26:20.7309205Z 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Initialize containers	2026-10-08T14:26:20.7330566Z ##[command]/usr/bin/docker ps --all --filter id=3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+semgrep	Initialize containers	2026-10-08T14:26:20.7456262Z 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96 Up Less than a second
+semgrep	Initialize containers	2026-10-08T14:26:20.7470309Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Initialize containers	2026-10-08T14:26:20.7597511Z HOME=/github/home
+semgrep	Initialize containers	2026-10-08T14:26:20.7598331Z GITHUB_ACTIONS=true
+semgrep	Initialize containers	2026-10-08T14:26:20.7598772Z CI=true
+semgrep	Initialize containers	2026-10-08T14:26:20.7599335Z PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+semgrep	Initialize containers	2026-10-08T14:26:20.7599977Z SEMGREP_IN_DOCKER=1
+semgrep	Initialize containers	2026-10-08T14:26:20.7600381Z SEMGREP_USER_AGENT_APPEND=Docker
+semgrep	Initialize containers	2026-10-08T14:26:20.7600848Z PYTHONIOENCODING=utf8
+semgrep	Initialize containers	2026-10-08T14:26:20.7601256Z PYTHONUNBUFFERED=1
+semgrep	Initialize containers	2026-10-08T14:26:20.7602498Z DOCKER_OTEL_RESOURCE_ATTRIBUTES=vcs.ref.head.name=release-1.179.0,vcs.ref.head.revision=8fa217f125e9c6f815a9ddea80b5b1c4a559ed10,vcs.repository.url.full=github.com/semgrep/semgrep-proprietary,docker.base_image=alpine:3.23
+semgrep	Initialize containers	2026-10-08T14:26:20.7604048Z DD_SERVICE=semgrep-core
+semgrep	Initialize containers	2026-10-08T14:26:20.7604552Z TSAN_OPTIONS=exitcode=0 report_signal_unsafe=0
+semgrep	Initialize containers	2026-10-08T14:26:20.7614403Z ##[endgroup]
+semgrep	Initialize containers	2026-10-08T14:26:20.7623541Z ##[group]Waiting for all services to be ready
+semgrep	Initialize containers	2026-10-08T14:26:20.7625262Z ##[endgroup]
+semgrep	Run actions/checkout@v7	﻿2026-10-08T14:26:20.7905206Z ##[group]Run actions/checkout@v7
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7905804Z with:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7906165Z   repository: shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7908845Z   token: ***
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7909170Z   ssh-strict: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7909450Z   ssh-user: git
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7909730Z   persist-credentials: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7910124Z   clean: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7910406Z   sparse-checkout-cone-mode: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7910740Z   fetch-depth: 1
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7911014Z   fetch-tags: false
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7911280Z   show-progress: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7911612Z   lfs: false
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7911876Z   submodules: false
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7912162Z   set-safe-directory: true
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7912492Z   allow-unsafe-pr-checkout: false
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7913001Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.7968997Z ##[command]/usr/bin/docker exec  3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96 sh -c "cat /etc/*release | grep ^ID"
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9954934Z Syncing repository: shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9957634Z ##[group]Getting Git version info
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9958290Z Working directory is '/__w/DealersDrive/DealersDrive'
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9959361Z [command]/usr/bin/git version
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9962000Z git version 2.52.0
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9963903Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9969854Z Temporarily overriding HOME='/__w/_temp/f4817b4c-c3fb-4f56-8e07-ab83aa81a97e' before making global git config changes
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9971032Z Adding repository directory to the temporary git global config as a safe directory
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9972240Z [command]/usr/bin/git config --global --add safe.directory /__w/DealersDrive/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9995682Z Deleting the contents of '/__w/DealersDrive/DealersDrive'
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9997352Z ##[group]Determining repository object format
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9998358Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9999099Z ##[group]Initializing the repository
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:20.9999750Z [command]/usr/bin/git init /__w/DealersDrive/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0030260Z hint: Using 'master' as the name for the initial branch. This default branch name
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0032084Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0032884Z hint: to use in all of your new repositories, which will suppress this warning,
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0033607Z hint: call:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0034040Z hint:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0034609Z hint: 	git config --global init.defaultBranch <name>
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0035226Z hint:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0035831Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0036614Z hint: 'development'. The just-created branch can be renamed via this command:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0041972Z hint:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0042493Z hint: 	git branch -m <name>
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0043016Z hint:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0043746Z hint: Disable this message with "git config set advice.defaultBranchName false"
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0044775Z Initialized empty Git repository in /__w/DealersDrive/DealersDrive/.git/
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0047257Z [command]/usr/bin/git remote add origin https://github.com/shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0075367Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0076151Z ##[group]Disabling automatic garbage collection
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0079721Z [command]/usr/bin/git config --local gc.auto 0
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0104758Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0105508Z ##[group]Setting up auth
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0106068Z Removing SSH command configuration
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0111596Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0142155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0288907Z Removing HTTP extra header
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0294090Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0329568Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0470398Z Removing includeIf entries pointing to credentials config files
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0480889Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0508331Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0673037Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0714727Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/DealersDrive/DealersDrive/.git.path /__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0743676Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/DealersDrive/DealersDrive/.git/worktrees/*.path /__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0771510Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0799163Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0821158Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0821990Z ##[group]Fetching the repository
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:21.0829356Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0c437cd31f87e058399194667c31041bfdbc7cb2:refs/remotes/pull/282/merge
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9915631Z From https://github.com/shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9916782Z  * [new ref]         0c437cd31f87e058399194667c31041bfdbc7cb2 -> pull/282/merge
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9939499Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9940090Z ##[group]Determining the checkout info
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9940728Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9943599Z [command]/usr/bin/git sparse-checkout disable
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:22.9991572Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.0011295Z ##[group]Checking out the ref
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.0035418Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/282/merge
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2341251Z Note: switching to 'refs/remotes/pull/282/merge'.
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2341730Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2342070Z You are in 'detached HEAD' state. You can look around, make experimental
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2343256Z changes and commit them, and you can discard any commits you make in this
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2343842Z state without impacting any branches by switching back to a branch.
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2344366Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2344667Z If you want to create a new branch to retain commits you create, you may
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2345226Z do so (now or later) by using -c with the switch command. Example:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2345484Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2345633Z   git switch -c <new-branch-name>
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2345846Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2346018Z Or undo this operation with:
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2346279Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2346394Z   git switch -
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2346575Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2346932Z Turn off this advice by setting config variable advice.detachedHead to false
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2347649Z 
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2348271Z HEAD is now at 0c437cd Merge 497e7a5247ae6a5da1d04004641cceb1b4ce70fd into 2d2f487a6bf1b2cb41e59189f503cc1b647cec8f
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2350054Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2384431Z [command]/usr/bin/git log -1 --format=%H
+semgrep	Run actions/checkout@v7	2026-10-08T14:26:23.2410097Z 0c437cd31f87e058399194667c31041bfdbc7cb2
+semgrep	Scan	﻿2026-10-08T14:26:23.2629151Z ##[group]Run set -uo pipefail
+semgrep	Scan	2026-10-08T14:26:23.2629732Z ^[[36;1mset -uo pipefail^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2630088Z ^[[36;1msemgrep scan \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2630413Z ^[[36;1m  --config p/default \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2630755Z ^[[36;1m  --config p/typescript \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2631087Z ^[[36;1m  --config p/react \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2631420Z ^[[36;1m  --config p/nodejs \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2631791Z ^[[36;1m  --config p/secrets \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2632130Z ^[[36;1m  --config p/github-actions \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2632477Z ^[[36;1m  --config p/dockerfile \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2632795Z ^[[36;1m  --metrics=off \^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2633128Z ^[[36;1m  --json --output semgrep.json^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2633487Z ^[[36;1mecho "scan complete"^[[0m
+semgrep	Scan	2026-10-08T14:26:23.2636578Z shell: sh -e {0}
+semgrep	Scan	2026-10-08T14:26:23.2636944Z ##[endgroup]
+semgrep	Scan	2026-10-08T14:26:29.1458360Z                
+semgrep	Scan	2026-10-08T14:26:29.1458952Z                
+semgrep	Scan	2026-10-08T14:26:29.1459789Z ┌─────────────┐
+semgrep	Scan	2026-10-08T14:26:29.1460446Z │ Scan Status │
+semgrep	Scan	2026-10-08T14:26:29.1460831Z └─────────────┘
+semgrep	Scan	2026-10-08T14:26:29.1461198Z   Scanning 1834 files tracked by git with 1080 Code rules:
+semgrep	Scan	2026-10-08T14:26:29.5750657Z                                                                                                                         
+semgrep	Scan	2026-10-08T14:26:29.5751700Z   Language      Rules   Files          Origin      Rules                                                                
+semgrep	Scan	2026-10-08T14:26:29.5753110Z  ─────────────────────────────        ───────────────────                                                               
+semgrep	Scan	2026-10-08T14:26:29.5754122Z   ts              164    1671          Community    1080                                                                
+semgrep	Scan	2026-10-08T14:26:29.5755065Z   <multilang>      62    1223                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5756026Z   json              4      35                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5756868Z   js              154      20                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5757883Z   terraform       101      13                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5758811Z   yaml             41      10                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5759599Z   bash              4       4                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5760417Z   dockerfile        7       2                                                                                           
+semgrep	Scan	2026-10-08T14:26:29.5761239Z                                                                                                                         
+semgrep	Scan	2026-10-08T14:27:08.4893141Z                 
+semgrep	Scan	2026-10-08T14:27:08.4893701Z                 
+semgrep	Scan	2026-10-08T14:27:08.4894557Z ┌──────────────┐
+semgrep	Scan	2026-10-08T14:27:08.4895076Z │ Scan Summary │
+semgrep	Scan	2026-10-08T14:27:08.4895504Z └──────────────┘
+semgrep	Scan	2026-10-08T14:27:08.4895988Z ✅ Scan completed successfully.
+semgrep	Scan	2026-10-08T14:27:08.4896552Z  • Findings: 39 (39 blocking)
+semgrep	Scan	2026-10-08T14:27:08.4896991Z  • Rules run: 379
+semgrep	Scan	2026-10-08T14:27:08.4897677Z  • Targets scanned: 1834
+semgrep	Scan	2026-10-08T14:27:08.4898180Z  • Parsed lines: ~99.9%
+semgrep	Scan	2026-10-08T14:27:08.4898652Z  • Scan skipped: 
+semgrep	Scan	2026-10-08T14:27:08.4899163Z    ◦ Files matching .semgrepignore patterns: 283
+semgrep	Scan	2026-10-08T14:27:08.4899735Z  • Scan was limited to files tracked by git
+semgrep	Scan	2026-10-08T14:27:08.4900670Z  • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+semgrep	Scan	2026-10-08T14:27:08.4901296Z Ran 379 rules on 1834 files: 39 findings.
+semgrep	Scan	2026-10-08T14:27:08.4950838Z 
+semgrep	Scan	2026-10-08T14:27:08.4952475Z 📢 Too many findings? Try Semgrep Pro for more powerful queries and less noise.
+semgrep	Scan	2026-10-08T14:27:08.4953256Z    See https://sg.run/false-positives.
+semgrep	Scan	2026-10-08T14:27:08.7442920Z scan complete
+semgrep	Report	﻿2026-10-08T14:27:08.7510103Z ##[group]Run set -euo pipefail
+semgrep	Report	2026-10-08T14:27:08.7510581Z ^[[36;1mset -euo pipefail^[[0m
+semgrep	Report	2026-10-08T14:27:08.7510907Z ^[[36;1m^[[0m
+semgrep	Report	2026-10-08T14:27:08.7511185Z ^[[36;1mblocking() {^[[0m
+semgrep	Report	2026-10-08T14:27:08.7511498Z ^[[36;1m  jq -r '.results[]^[[0m
+semgrep	Report	2026-10-08T14:27:08.7512011Z ^[[36;1m    | select(.extra.severity == "ERROR" or .extra.severity == "HIGH" or .extra.severity == "CRITICAL")^[[0m
+semgrep	Report	2026-10-08T14:27:08.7512848Z ^[[36;1m    | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)\n    \(.extra.message | gsub("\n"; " ") | .[0:160])"' semgrep.json^[[0m
+semgrep	Report	2026-10-08T14:27:08.7513471Z ^[[36;1m}^[[0m
+semgrep	Report	2026-10-08T14:27:08.7513727Z ^[[36;1madvisory() {^[[0m
+semgrep	Report	2026-10-08T14:27:08.7514081Z ^[[36;1m  jq -r '.results[]^[[0m
+semgrep	Report	2026-10-08T14:27:08.7514560Z ^[[36;1m    | select(.extra.severity != "ERROR" and .extra.severity != "HIGH" and .extra.severity != "CRITICAL")^[[0m
+semgrep	Report	2026-10-08T14:27:08.7515252Z ^[[36;1m    | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)"' semgrep.json^[[0m
+semgrep	Report	2026-10-08T14:27:08.7515846Z ^[[36;1m}^[[0m
+semgrep	Report	2026-10-08T14:27:08.7516112Z ^[[36;1m^[[0m
+semgrep	Report	2026-10-08T14:27:08.7516357Z ^[[36;1m{^[[0m
+semgrep	Report	2026-10-08T14:27:08.7516604Z ^[[36;1m  echo "### Semgrep"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7516947Z ^[[36;1m  echo^[[0m
+semgrep	Report	2026-10-08T14:27:08.7517370Z ^[[36;1m  echo "\`\`\`"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7517700Z ^[[36;1m  blocking | sed 's/^/  /' || true^[[0m
+semgrep	Report	2026-10-08T14:27:08.7518091Z ^[[36;1m  echo "\`\`\`"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7518358Z ^[[36;1m  echo^[[0m
+semgrep	Report	2026-10-08T14:27:08.7518776Z ^[[36;1m  echo "<details><summary>Advisory findings (not blocking)</summary>"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7519189Z ^[[36;1m  echo^[[0m
+semgrep	Report	2026-10-08T14:27:08.7519459Z ^[[36;1m  echo "\`\`\`"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7519760Z ^[[36;1m  advisory || true^[[0m
+semgrep	Report	2026-10-08T14:27:08.7520052Z ^[[36;1m  echo "\`\`\`"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7520383Z ^[[36;1m  echo "</details>"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7520691Z ^[[36;1m} >> "$GITHUB_STEP_SUMMARY"^[[0m
+semgrep	Report	2026-10-08T14:27:08.7521032Z ^[[36;1m^[[0m
+semgrep	Report	2026-10-08T14:27:08.7521377Z ^[[36;1mCOUNT=$(blocking | grep -c '^[^ ]' || true)^[[0m
+semgrep	Report	2026-10-08T14:27:08.7521756Z ^[[36;1mif [ "${COUNT:-0}" -gt 0 ]; then^[[0m
+semgrep	Report	2026-10-08T14:27:08.7522204Z ^[[36;1m  echo "::error::$COUNT blocking finding(s). See the job summary."^[[0m
+semgrep	Report	2026-10-08T14:27:08.7522610Z ^[[36;1m  blocking^[[0m
+semgrep	Report	2026-10-08T14:27:08.7522870Z ^[[36;1m  exit 1^[[0m
+semgrep	Report	2026-10-08T14:27:08.7523160Z ^[[36;1mfi^[[0m
+semgrep	Report	2026-10-08T14:27:08.7523437Z ^[[36;1mecho "No blocking findings."^[[0m
+semgrep	Report	2026-10-08T14:27:08.7523888Z shell: sh -e {0}
+semgrep	Report	2026-10-08T14:27:08.7524240Z ##[endgroup]
+semgrep	Report	2026-10-08T14:27:08.8206630Z No blocking findings.
+semgrep	Post Run actions/checkout@v7	﻿2026-10-08T14:27:08.8379216Z Post job cleanup.
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:08.8388712Z ##[command]/usr/bin/docker exec  3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96 sh -c "cat /etc/*release | grep ^ID"
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0270984Z [command]/usr/bin/git version
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0329490Z git version 2.52.0
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0411511Z Copying '/github/home/.gitconfig' to '/__w/_temp/7c093097-a167-4f10-b4c8-64ac3cc426c3/.gitconfig'
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0431077Z Temporarily overriding HOME='/__w/_temp/7c093097-a167-4f10-b4c8-64ac3cc426c3' before making global git config changes
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0434087Z Adding repository directory to the temporary git global config as a safe directory
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0440244Z [command]/usr/bin/git config --global --add safe.directory /__w/DealersDrive/DealersDrive
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0508056Z Removing SSH command configuration
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0508914Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0538909Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0752570Z Removing HTTP extra header
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0757607Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.0795963Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1004062Z Removing includeIf entries pointing to credentials config files
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1009400Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1028203Z includeif.gitdir:/__w/DealersDrive/DealersDrive/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1035571Z includeif.gitdir:/__w/DealersDrive/DealersDrive/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1036448Z includeif.gitdir:/github/workspace/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1037468Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1039869Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/DealersDrive/DealersDrive/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1056473Z /__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1069803Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/DealersDrive/DealersDrive/.git.path \/__w\/_temp\/git\-credentials\-e629efad\-92d2\-4201\-b7b5\-2ac4696194f7\.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1116805Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/DealersDrive/DealersDrive/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1141432Z /__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1152242Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/DealersDrive/DealersDrive/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-e629efad\-92d2\-4201\-b7b5\-2ac4696194f7\.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1186205Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1204743Z /github/runner_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1216366Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-e629efad\-92d2\-4201\-b7b5\-2ac4696194f7\.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1256974Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1275748Z /github/runner_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1285865Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-e629efad\-92d2\-4201\-b7b5\-2ac4696194f7\.config
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1321736Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+semgrep	Post Run actions/checkout@v7	2026-10-08T14:27:09.1480070Z Removing credentials config '/__w/_temp/git-credentials-e629efad-92d2-4201-b7b5-2ac4696194f7.config'
+semgrep	Stop containers	﻿2026-10-08T14:27:09.1614217Z Stop and remove container: 6a6e0e34abc7426289b1f3e9706178ff_semgrepsemgrep_309e48
+semgrep	Stop containers	2026-10-08T14:27:09.1618636Z ##[command]/usr/bin/docker rm --force 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Stop containers	2026-10-08T14:27:09.2762447Z 3a03d9cc382de815ee5e6756cc5a6300e0e84b06943396c3ff5d548d604bbf96
+semgrep	Stop containers	2026-10-08T14:27:09.2785122Z Remove container network: github_network_53f8c95d12bc42ccae7a41a88d2737a2
+semgrep	Stop containers	2026-10-08T14:27:09.2789684Z ##[command]/usr/bin/docker network rm github_network_53f8c95d12bc42ccae7a41a88d2737a2
+semgrep	Stop containers	2026-10-08T14:27:09.3739302Z github_network_53f8c95d12bc42ccae7a41a88d2737a2
+semgrep	Complete job	﻿2026-10-08T14:27:09.3808034Z Cleaning up orphan processes
+gitleaks	Set up job	﻿2026-10-08T14:25:59.0136270Z Current runner version: '2.337.0'
+gitleaks	Set up job	2026-10-08T14:25:59.0160856Z ##[group]Runner Image Provisioner
+gitleaks	Set up job	2026-10-08T14:25:59.0161821Z Hosted Compute Agent
+gitleaks	Set up job	2026-10-08T14:25:59.0162410Z Version: 20261002.596
+gitleaks	Set up job	2026-10-08T14:25:59.0163066Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+gitleaks	Set up job	2026-10-08T14:25:59.0163837Z Build Date: 2026-10-02T22:28:27Z
+gitleaks	Set up job	2026-10-08T14:25:59.0164561Z Worker ID: {079d6c05-85e2-460a-81d2-09c134ae1fdc}
+gitleaks	Set up job	2026-10-08T14:25:59.0165282Z Region: centralus
+gitleaks	Set up job	2026-10-08T14:25:59.0165848Z Cloud: Azure
+gitleaks	Set up job	2026-10-08T14:25:59.0166400Z ##[endgroup]
+gitleaks	Set up job	2026-10-08T14:25:59.0168025Z ##[group]Operating System
+gitleaks	Set up job	2026-10-08T14:25:59.0168672Z Ubuntu
+gitleaks	Set up job	2026-10-08T14:25:59.0169258Z 24.04.5
+gitleaks	Set up job	2026-10-08T14:25:59.0169765Z LTS
+gitleaks	Set up job	2026-10-08T14:25:59.0170286Z ##[endgroup]
+gitleaks	Set up job	2026-10-08T14:25:59.0170914Z ##[group]Runner Image
+gitleaks	Set up job	2026-10-08T14:25:59.0171563Z Image: ubuntu-24.04
+gitleaks	Set up job	2026-10-08T14:25:59.0172176Z Version: 20261004.327.1
+gitleaks	Set up job	2026-10-08T14:25:59.0173233Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+gitleaks	Set up job	2026-10-08T14:25:59.0174975Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+gitleaks	Set up job	2026-10-08T14:25:59.0175937Z ##[endgroup]
+gitleaks	Set up job	2026-10-08T14:25:59.0177460Z ##[group]GITHUB_TOKEN Permissions
+gitleaks	Set up job	2026-10-08T14:25:59.0179583Z Contents: read
+gitleaks	Set up job	2026-10-08T14:25:59.0180212Z Metadata: read
+gitleaks	Set up job	2026-10-08T14:25:59.0180787Z ##[endgroup]
+gitleaks	Set up job	2026-10-08T14:25:59.0182869Z Secret source: Actions
+gitleaks	Set up job	2026-10-08T14:25:59.0183796Z Cache mode: write
+gitleaks	Set up job	2026-10-08T14:25:59.0184474Z Prepare workflow directory
+gitleaks	Set up job	2026-10-08T14:25:59.0506103Z Prepare all required actions
+gitleaks	Set up job	2026-10-08T14:25:59.0552975Z Getting action download info
+gitleaks	Set up job	2026-10-08T14:25:59.3539692Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+gitleaks	Set up job	2026-10-08T14:25:59.5621849Z Complete job name: gitleaks
+gitleaks	Run actions/checkout@v7	﻿2026-10-08T14:25:59.6318192Z ##[group]Run actions/checkout@v7
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6319097Z with:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6319657Z   fetch-depth: 0
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6320199Z   repository: shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6324136Z   token: ***
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6324697Z   ssh-strict: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6325199Z   ssh-user: git
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6325760Z   persist-credentials: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6326309Z   clean: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6326801Z   sparse-checkout-cone-mode: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6327579Z   fetch-tags: false
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6328100Z   show-progress: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6328615Z   lfs: false
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6329107Z   submodules: false
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6329634Z   set-safe-directory: true
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6330243Z   allow-unsafe-pr-checkout: false
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.6330981Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7351904Z Syncing repository: shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7354783Z ##[group]Getting Git version info
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7355819Z Working directory is '/home/runner/work/DealersDrive/DealersDrive'
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7357480Z [command]/usr/bin/git version
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7421012Z git version 2.55.0
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7440988Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7452204Z Temporarily overriding HOME='/home/runner/work/_temp/ff0b44ff-a54b-42bc-8072-67637581f9d0' before making global git config changes
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7454233Z Adding repository directory to the temporary git global config as a safe directory
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7458458Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7509583Z Deleting the contents of '/home/runner/work/DealersDrive/DealersDrive'
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7513529Z ##[group]Determining repository object format
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7515353Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7516224Z ##[group]Initializing the repository
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7521824Z [command]/usr/bin/git init /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7626899Z hint: Using 'master' as the name for the initial branch. This default branch name
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7629548Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7631567Z hint: to use in all of your new repositories, which will suppress this warning,
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7633000Z hint: call:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7633820Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7634847Z hint: 	git config --global init.defaultBranch <name>
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7635886Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7637574Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7639269Z hint: 'development'. The just-created branch can be renamed via this command:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7640731Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7641745Z hint: 	git branch -m <name>
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7642911Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7644125Z hint: Disable this message with "git config set advice.defaultBranchName false"
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7646531Z Initialized empty Git repository in /home/runner/work/DealersDrive/DealersDrive/.git/
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7650390Z [command]/usr/bin/git remote add origin https://github.com/shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7697827Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7698954Z ##[group]Disabling automatic garbage collection
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7703077Z [command]/usr/bin/git config --local gc.auto 0
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7735739Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7736981Z ##[group]Setting up auth
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7738155Z Removing SSH command configuration
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7742685Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.7778043Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8102649Z Removing HTTP extra header
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8108188Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8137579Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8341466Z Removing includeIf entries pointing to credentials config files
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8346165Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8381850Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8566336Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8601840Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path /home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8633401Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8666551Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8700022Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8726872Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8728447Z ##[group]Fetching the repository
+gitleaks	Run actions/checkout@v7	2026-10-08T14:25:59.8734982Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +0c437cd31f87e058399194667c31041bfdbc7cb2:refs/remotes/pull/282/merge
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0761658Z From https://github.com/shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0764129Z  * [new branch]        claude/dealers-drive-promo-video-m2nu5i  -> origin/claude/dealers-drive-promo-video-m2nu5i
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0766671Z  * [new branch]        claude/practical-hamilton-raxgvi         -> origin/claude/practical-hamilton-raxgvi
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0768929Z  * [new branch]        claude/production-performance-audit-7i0a6z -> origin/claude/production-performance-audit-7i0a6z
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0771253Z  * [new branch]        codex/environment-config                 -> origin/codex/environment-config
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0772937Z  * [new branch]        feat/msg91-ticket-acknowledgement        -> origin/feat/msg91-ticket-acknowledgement
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0774905Z  * [new branch]        feat/production-deployment-architecture  -> origin/feat/production-deployment-architecture
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0777310Z  * [new branch]        feat/r39-firebase-phone-otp              -> origin/feat/r39-firebase-phone-otp
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0779116Z  * [new branch]        feat/r39-msg91-onboarding-otp            -> origin/feat/r39-msg91-onboarding-otp
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0781018Z  * [new branch]        feat/white-label-01-foundation           -> origin/feat/white-label-01-foundation
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0782894Z  * [new branch]        feat/white-label-02-backend              -> origin/feat/white-label-02-backend
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0784863Z  * [new branch]        feat/white-label-03-storefront           -> origin/feat/white-label-03-storefront
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0787227Z  * [new branch]        feature/legal-compliance-and-consent-v1  -> origin/feature/legal-compliance-and-consent-v1
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0789500Z  * [new branch]        feature/whatsapp-otp-channel             -> origin/feature/whatsapp-otp-channel
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0791651Z  * [new branch]        feature/whatsapp-otp-logo-toggle         -> origin/feature/whatsapp-otp-logo-toggle
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0793954Z  * [new branch]        legacy_branch                            -> origin/legacy_branch
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0796018Z  * [new branch]        main                                     -> origin/main
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0798022Z  * [new branch]        pr-screenshots                           -> origin/pr-screenshots
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0800492Z  * [new branch]        refactor/api-routing-and-comment-migration -> origin/refactor/api-routing-and-comment-migration
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0803010Z  * [new branch]        testing_branch                           -> origin/testing_branch
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0805048Z  * [new branch]        testing_evidence                         -> origin/testing_evidence
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0806941Z  * [new branch]        video_generator                          -> origin/video_generator
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0808857Z  * [new ref]           0c437cd31f87e058399194667c31041bfdbc7cb2 -> pull/282/merge
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0812279Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0813469Z ##[group]Determining the checkout info
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0814992Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0815843Z [command]/usr/bin/git sparse-checkout disable
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0824509Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0857656Z ##[group]Checking out the ref
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.0861703Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/282/merge
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2806867Z Note: switching to 'refs/remotes/pull/282/merge'.
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2808381Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2809158Z You are in 'detached HEAD' state. You can look around, make experimental
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2811384Z changes and commit them, and you can discard any commits you make in this
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2813518Z state without impacting any branches by switching back to a branch.
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2814948Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2816068Z If you want to create a new branch to retain commits you create, you may
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2818396Z do so (now or later) by using -c with the switch command. Example:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2819730Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2820479Z   git switch -c <new-branch-name>
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2821698Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2822377Z Or undo this operation with:
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2823764Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2824290Z   git switch -
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2825062Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2826582Z Turn off this advice by setting config variable advice.detachedHead to false
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2828715Z 
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2830745Z HEAD is now at 0c437cd3 Merge 497e7a5247ae6a5da1d04004641cceb1b4ce70fd into 2d2f487a6bf1b2cb41e59189f503cc1b647cec8f
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.2837716Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.3049382Z [command]/usr/bin/git log -1 --format=%H
+gitleaks	Run actions/checkout@v7	2026-10-08T14:26:05.3074566Z 0c437cd31f87e058399194667c31041bfdbc7cb2
+gitleaks	Scan the repository and its history	﻿2026-10-08T14:26:05.3391243Z ##[group]Run docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.3393581Z ^[[36;1mdocker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \^[[0m
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.3395685Z ^[[36;1m  detect --source=/repo --config=/repo/.gitleaks.toml \^[[0m
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.3397586Z ^[[36;1m  --redact --no-banner --verbose^[[0m
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.3576826Z shell: /usr/bin/bash -e {0}
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.3578317Z ##[endgroup]
+gitleaks	Scan the repository and its history	2026-10-08T14:26:05.4451923Z Unable to find image 'zricethezav/gitleaks:latest' locally
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.0299911Z latest: Pulling from zricethezav/gitleaks
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.2125979Z d49a2dee86fb: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.2127653Z d92b655ae8e2: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.2128423Z 61fdfd7c0175: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.2129278Z a43ab0c74cc4: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.2130068Z a43ab0c74cc4: Waiting
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4301345Z d49a2dee86fb: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4302450Z d49a2dee86fb: Download complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4491204Z d92b655ae8e2: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4491903Z d92b655ae8e2: Download complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4706138Z 61fdfd7c0175: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.4706813Z 61fdfd7c0175: Download complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.5403676Z d49a2dee86fb: Pull complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.5583145Z a43ab0c74cc4: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-08T14:26:06.5583686Z a43ab0c74cc4: Download complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:07.2631340Z d92b655ae8e2: Pull complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:07.5328663Z 61fdfd7c0175: Pull complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:07.5426296Z a43ab0c74cc4: Pull complete
+gitleaks	Scan the repository and its history	2026-10-08T14:26:07.5496133Z Digest: sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+gitleaks	Scan the repository and its history	2026-10-08T14:26:07.5517889Z Status: Downloaded newer image for zricethezav/gitleaks:latest
+gitleaks	Scan the repository and its history	2026-10-08T14:26:40.3880015Z ^[[90m2:26PM^[[0m ^[[32mINF^[[0m ^[[1m372 commits scanned.^[[0m
+gitleaks	Scan the repository and its history	2026-10-08T14:26:40.3880789Z ^[[90m2:26PM^[[0m ^[[32mINF^[[0m ^[[1mscanned ~77365833 bytes (77.37 MB) in 32.7s^[[0m
+gitleaks	Scan the repository and its history	2026-10-08T14:26:40.3881308Z ^[[90m2:26PM^[[0m ^[[32mINF^[[0m ^[[1mno leaks found^[[0m
+gitleaks	Post Run actions/checkout@v7	﻿2026-10-08T14:26:40.5171251Z Post job cleanup.
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.5992066Z [command]/usr/bin/git version
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6041259Z git version 2.55.0
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6077338Z Temporarily overriding HOME='/home/runner/work/_temp/a82430ce-387e-472a-a1f1-42bca0a0981a' before making global git config changes
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6078803Z Adding repository directory to the temporary git global config as a safe directory
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6080878Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6113343Z Removing SSH command configuration
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6118982Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6150713Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6352938Z Removing HTTP extra header
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6359376Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6391543Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6621735Z Removing includeIf entries pointing to credentials config files
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6627856Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6656232Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6657625Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6658556Z includeif.gitdir:/github/workspace/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6659165Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6665211Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6686457Z /home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6695251Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-c25c62b1\-2c4c\-4c18\-95db\-bd6ad52a9e71\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6730465Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6750655Z /home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6767417Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-c25c62b1\-2c4c\-4c18\-95db\-bd6ad52a9e71\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6800708Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6820309Z /github/runner_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6826329Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-c25c62b1\-2c4c\-4c18\-95db\-bd6ad52a9e71\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6858922Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6883146Z /github/runner_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6886690Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-c25c62b1\-2c4c\-4c18\-95db\-bd6ad52a9e71\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.6919757Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gitleaks	Post Run actions/checkout@v7	2026-10-08T14:26:40.7131972Z Removing credentials config '/home/runner/work/_temp/git-credentials-c25c62b1-2c4c-4c18-95db-bd6ad52a9e71.config'
+gitleaks	Complete job	﻿2026-10-08T14:26:40.7279789Z Cleaning up orphan processes
