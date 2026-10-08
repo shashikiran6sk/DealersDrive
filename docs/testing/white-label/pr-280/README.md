@@ -38,4 +38,8 @@ disabled and no coverage/type/lint gates were lowered.
 
 No UI/screenshots apply. No production migrations, provider calls, DNS changes,
 merges or production deployments were performed. GitHub final-head results
-will be recorded once completed; pending checks are not counted as passes.
+are verified successful on the final head: lint/typecheck/test/build, dependency
+audit, Gitleaks and Semgrep, plus Terraform validation and Vercel preview. CI run
+37777766736 and Security run 37777766703 completed successfully. PR #280 is OPEN,
+unmerged and has no auto-merge request. Full logs and final GitHub JSON are beside
+this file.
