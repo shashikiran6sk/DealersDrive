@@ -18,11 +18,18 @@ import { postMediaPresign } from './routes/post-media-presign.js';
 import { postMediaCommit } from './routes/post-media-commit.js';
 import { getMediaPreview } from './routes/get-media-preview.js';
 import { getSitemap } from './routes/get-sitemap.js';
+import { getPublication } from './routes/get-publication.js';
+import { postDomain } from './routes/post-domain.js';
+import { postDomainRefresh } from './routes/post-domain-refresh.js';
+import { putDomainPrimary } from './routes/put-domain-primary.js';
+import { deleteDomain } from './routes/delete-domain.js';
+import type { StorefrontDomainsService } from './storefront.domains.js';
 
 export function createStorefrontManagementRouter(
   service: StorefrontService,
   rateLimit: RateLimiter,
   media: StorefrontMediaService,
+  domains: StorefrontDomainsService,
 ): Router {
   const router = Router();
   for (const route of [
@@ -35,18 +42,24 @@ export function createStorefrontManagementRouter(
     postMediaPresign,
     postMediaCommit,
     getMediaPreview,
+    getPublication,
+    postDomain,
+    postDomainRefresh,
+    putDomainPrimary,
+    deleteDomain,
   ])
-    route(router, { service, rateLimit, media });
+    route(router, { service, rateLimit, media, domains });
   return router;
 }
 export function createStorefrontPublicRouter(
   service: StorefrontService,
   rateLimit: RateLimiter,
   media: StorefrontMediaService,
+  domains: StorefrontDomainsService,
 ): Router {
   const router = Router();
   router.use('/storefront', rateLimit('storefront.public', { limit: 240, windowSeconds: 60 }));
   for (const route of [getSite, getCars, getCar, postIntent, getIntent, getSitemap])
-    route(router, { service, rateLimit, media });
+    route(router, { service, rateLimit, media, domains });
   return router;
 }

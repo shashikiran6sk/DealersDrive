@@ -63,6 +63,7 @@ export function createRoutes(container: Container): Router {
       container.storefront,
       container.rateLimit,
       container.storefrontMedia,
+      container.storefrontDomains,
     ),
   );
 
@@ -123,6 +124,7 @@ export function createRoutes(container: Container): Router {
       container.storefront,
       container.rateLimit,
       container.storefrontMedia,
+      container.storefrontDomains,
     ),
   );
   v1.use('/dealer', dealer);

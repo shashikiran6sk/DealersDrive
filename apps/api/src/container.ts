@@ -6,8 +6,12 @@ import { env, type Env } from './config/env.js';
 import {
   createStorefrontService,
   createStorefrontMedia,
+  createStorefrontDomains,
+  createVercelDomainProvider,
   type StorefrontService,
   type StorefrontMediaService,
+  type StorefrontDomainsService,
+  type DomainProvider,
 } from './modules/storefront/storefront.facade.js';
 import { createAuthMiddleware, createCustomerGuard } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
@@ -141,6 +145,7 @@ export interface Container {
   readonly enquiries: EnquiriesService;
   readonly storefront: StorefrontService;
   readonly storefrontMedia: StorefrontMediaService;
+  readonly storefrontDomains: StorefrontDomainsService;
   readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
   readonly support: SupportService;
@@ -165,6 +170,7 @@ export interface Container {
 }
 
 export interface ContainerOverrides {
+  readonly domainProvider?: DomainProvider;
   readonly env?: Env;
   readonly prisma?: PrismaClient;
   readonly cache?: CachePort;
@@ -279,6 +285,12 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const storefront = createStorefrontService({ prisma, audit, config: overrides.env ?? env });
   const storefrontMedia = createStorefrontMedia(storage, storefront);
+  const storefrontDomains = createStorefrontDomains(
+    prisma,
+    audit,
+    storefront,
+    overrides.domainProvider ?? createVercelDomainProvider(overrides.env ?? env),
+  );
 
   return {
     env: overrides.env ?? env,
@@ -316,6 +328,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     enquiries,
     storefront,
     storefrontMedia,
+    storefrontDomains,
     adminEnquiries: createAdminEnquiriesService({ prisma }),
     support: createSupportService({ prisma, audit }),
     adminSupport: createAdminSupportService({ prisma, audit }),
@@ -369,6 +382,8 @@ export async function startBackground(container: Container): Promise<void> {
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
+  await container.queue.work('storefront.domains-sweep', () => container.storefrontDomains.sweep());
+  await container.queue.schedule('storefront.domains-sweep', '0 * * * *');
   container.outbox.start();
 
   logger.info(

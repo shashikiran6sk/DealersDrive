@@ -21,6 +21,21 @@ export interface RegistryEntry {
 
 export const registry: RegistryEntry[] = [
   {
+    id: 'storefront-settings',
+    name: 'WebsiteActionForm / WebsiteLink / WebsiteMediaPicker',
+    source: 'apps/web/src/features/website/action-form/action-form.tsx',
+    category: 'Console',
+    ownership: 'Feature-shared',
+    purpose:
+      'Owner-authorized website saves, private branding image selection and live-link copy/open actions using existing dashboard primitives.',
+    aliases: ['MyWebsite', 'DealerWebsiteSettings'],
+    features: ['WhiteLabelV1'],
+    props: ['action', 'label', 'disabled', 'children', 'url', 'initialIds', 'multiple'],
+    states: ['editable-owner', 'read-only-manager', 'failed-save', 'upload-pending', 'saved'],
+    reusable: true,
+    storyId: 'storefront-websitesettings',
+  },
+  {
     id: 'storefront-website',
     name: 'StorefrontShell / StorefrontHome',
     source: 'packages/storefront-ui/src/components/storefront-shell/storefront-shell.tsx',

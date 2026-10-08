@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@dealers-drive/contracts": "workspace:*",
+    "@dealers-drive/storefront-ui": "workspace:*",
     "@hookform/resolvers": "^5.9.1",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-popover": "^1.1.23",

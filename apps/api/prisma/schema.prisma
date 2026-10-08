@@ -1330,6 +1330,7 @@ model StorefrontDomain {
   verifiedAt          DateTime?
   checkedAt           DateTime?
   certificateReady    Boolean                @default(false)
+  providerAttachedAt  DateTime?
   /// Provider-derived records, never guessed from a shared CNAME constant.
   verificationName    String?
   verificationValue   String?

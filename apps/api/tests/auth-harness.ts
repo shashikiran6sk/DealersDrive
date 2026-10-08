@@ -6,6 +6,7 @@ import request from 'supertest';
 
 import { env } from '../src/config/env.js';
 import type { Env } from '../src/config/env.js';
+import type { DomainProvider } from '../src/modules/storefront/storefront.facade.js';
 import { buildContainer } from '../src/container.js';
 import type {
   AuthorizationRequest,
@@ -172,6 +173,7 @@ export async function createAuthHarness(
   google = createFakeGoogle(),
   mailer: RecordingMailer = createRecordingMailer(),
   envOverrides: Partial<Env> = {},
+  domainProvider?: DomainProvider,
 ): Promise<AuthHarness> {
   /*
    * No Maps lookup, for the same reason the OAuth provider above is a fake:
@@ -186,6 +188,7 @@ export async function createAuthHarness(
     maps: noMapsLookup,
     mailer,
     env: { ...env, ...envOverrides },
+    ...(domainProvider ? { domainProvider } : {}),
   });
   const app = createApp(container);
   // One listener for the whole file — see `AuthHarness.server`.

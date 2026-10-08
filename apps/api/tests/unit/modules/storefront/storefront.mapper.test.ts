@@ -11,6 +11,7 @@ import {
 
 function domain(overrides: Partial<StorefrontDomain> = {}): StorefrontDomain {
   return {
+    providerAttachedAt: null,
     id: 'domain',
     storefrontId: 'site',
     hostname: 'alpha.example.com',

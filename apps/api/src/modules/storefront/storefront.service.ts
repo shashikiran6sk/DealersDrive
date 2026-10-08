@@ -8,6 +8,8 @@ import {
   type StorefrontInventoryQuery,
   type StorefrontManagementResponse,
   type StorefrontPreviewResponse,
+  type StorefrontPublicationResponse,
+  vehicleTitle,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
@@ -256,6 +258,38 @@ export function createStorefrontService({ prisma, audit, config }: StorefrontDep
         publicRead.inventory(actor.dealerId, { page: 1, limit: 6, sort: 'newest' }),
       ]);
       return { site, inventory };
+    },
+
+    async publications(
+      actor: DealerWriteActor,
+      page: number,
+    ): Promise<StorefrontPublicationResponse> {
+      return read(actor, async (tx) => {
+        const [rows, total] = await Promise.all([
+          tx.listing.findMany({
+            where: { dealerId: actor.dealerId },
+            include: {
+              vehicle: {
+                select: { make: true, model: true, variant: true, manufacturingYear: true },
+              },
+            },
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+            skip: (page - 1) * 24,
+            take: 24,
+          }),
+          tx.listing.count({ where: { dealerId: actor.dealerId } }),
+        ]);
+        return {
+          data: rows.map((row) => ({
+            id: row.id,
+            title: vehicleTitle(row.vehicle) || 'Vehicle draft',
+            status: row.status,
+            marketplacePublished: row.marketplacePublished,
+            storefrontPublished: row.storefrontPublished,
+          })),
+          page: { page, limit: 24, total, totalPages: Math.max(1, Math.ceil(total / 24)) },
+        };
+      });
     },
 
     async site(hostname: string): Promise<PublicStorefrontDto> {

@@ -53,6 +53,12 @@ export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
               </p>
             </div>
             <dl>
+              {enquiry.sourceLabel ? (
+                <DetailRow label="Source">
+                  {enquiry.sourceLabel}
+                  {enquiry.storefrontHostname ? ` · ${enquiry.storefrontHostname}` : ''}
+                </DetailRow>
+              ) : null}
               <DetailRow label={ENQUIRY_DETAIL_TEXT.status}>
                 <StatusTag tone={enquiry.statusTone}>{enquiry.statusLabel}</StatusTag>
               </DetailRow>

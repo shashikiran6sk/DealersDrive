@@ -56,6 +56,10 @@ const envSchema = z.object({
     .default('false')
     .transform((value) => value === 'true'),
   STOREFRONT_SERVICE_SECRET: optional(z.string().min(32)),
+  STOREFRONT_DOMAIN_PROVIDER: z.enum(['disabled', 'vercel']).default('disabled'),
+  STOREFRONT_VERCEL_TOKEN: optional(z.string().min(1)),
+  STOREFRONT_VERCEL_PROJECT_ID: optional(z.string().min(1)),
+  STOREFRONT_VERCEL_TEAM_ID: optional(z.string().min(1)),
 
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
 
@@ -185,6 +189,14 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   };
 
   const production = value.NODE_ENV === 'production';
+  if (
+    value.STOREFRONT_DOMAIN_PROVIDER === 'vercel' &&
+    (!value.STOREFRONT_VERCEL_TOKEN ||
+      !value.STOREFRONT_VERCEL_PROJECT_ID ||
+      !value.STOREFRONT_VERCEL_TEAM_ID)
+  ) {
+    require('STOREFRONT_DOMAIN_PROVIDER', 'Vercel requires a dedicated storefront token, project ID and team ID.');
+  }
 
   if (
     !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(value.STOREFRONT_ROOT_HOSTNAME)
