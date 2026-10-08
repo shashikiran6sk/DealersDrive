@@ -10,7 +10,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
   const actual = await importOriginal<typeof apiModule>();
   return { ...actual, apiSend: vi.fn() };
 });
-const ticket = 'eyJ0ZXN0IjoidGVzdCJ9.signature0123456789';
+const ticket = `${Buffer.from(JSON.stringify({ test: 'synthetic-intent' })).toString('base64url')}.signature0123456789`;
 const context = {
   dealerName: 'Alpha Motors',
   vehicleTitle: 'Honda City',

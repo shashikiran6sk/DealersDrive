@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { verifiedEnquiryUrl } from '../src/lib/enquiry-url.js';
 
-const ticket = 'eyJ0ZXN0IjoidGVzdCJ9.signature0123456789';
+const ticket = `${Buffer.from(JSON.stringify({ test: 'synthetic-intent' })).toString('base64url')}.signature0123456789`;
 describe('central enquiry redirect boundary', () => {
   it('accepts only the configured central flow and a valid intent', () => {
     const raw = `https://dealers-drive.com/website-enquiry?ticket=${ticket}`;
