@@ -22,6 +22,7 @@ export interface SupportRequestRowProps {
 
 export interface SupportRequestFormProps {
   enquiries: CustomerEnquiry[];
+  initialSubject?: string;
   initialCategory?: SupportTicketCategory;
   initialEnquiryId?: string;
   submit?: (draft: SupportRequestDraft) => Promise<CreateSupportRequestResult>;

@@ -23,6 +23,7 @@ export const INBOX_SELECT = {
   id: true,
   status: true,
   message: true,
+  sharingWithdrawnAt: true,
   createdAt: true,
   contactedAt: true,
   closedAt: true,
@@ -66,8 +67,10 @@ function movedBy(
 }
 
 export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEnquiry {
-  const name = row.customer.fullName?.trim() || UNNAMED_CUSTOMER;
-  const phone = row.customer.phone;
+  const name = row.sharingWithdrawnAt
+    ? 'Sharing withdrawn'
+    : row.customer.fullName?.trim() || UNNAMED_CUSTOMER;
+  const phone = row.sharingWithdrawnAt ? null : row.customer.phone;
   const vehicle = row.listing.vehicle;
   const registrationDisplay = formatRegistration(vehicle.registrationNumber);
 
@@ -76,7 +79,7 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
     status: row.status,
     statusLabel: ENQUIRY_STATUS_LABELS[row.status],
     statusTone: ENQUIRY_STATUS_TONES[row.status],
-    message: row.message,
+    message: row.sharingWithdrawnAt ? null : row.message,
     createdAt: row.createdAt.toISOString(),
     createdLabel: formatDate(row.createdAt),
     timeAgoLabel: timeAgo(row.createdAt, now),

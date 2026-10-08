@@ -8,6 +8,7 @@ import type {
   PhoneOtpWidget,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
+import { LegalCheck } from '@/features/legal/legal-check';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
@@ -180,6 +181,11 @@ export function OnboardingWizard({
             />
           </div>
 
+          {!edit ? (
+            <div hidden={local === 0}>
+              <LegalCheck kind="dealer" />
+            </div>
+          ) : null}
           <div className="flex gap-[8px]" hidden={local === 0}>
             <button
               type="button"

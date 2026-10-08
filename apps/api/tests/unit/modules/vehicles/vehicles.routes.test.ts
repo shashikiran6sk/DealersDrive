@@ -21,6 +21,7 @@ describe('the surface', () => {
       'PATCH /vehicles/:id',
       'DELETE /vehicles/:id',
       'POST /vehicles/:id/submit',
+      'POST /vehicles/:id/certify',
       'POST /vehicles/:id/reserve',
       'POST /vehicles/:id/mark-sold',
       'POST /vehicles/:id/withdraw',

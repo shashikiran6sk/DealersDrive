@@ -5,6 +5,7 @@ import {
   SupportTicketCategory,
   type SupportTicketCategory as Category,
 } from '@dealers-drive/contracts';
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
@@ -28,15 +29,17 @@ import { supportRequestHref } from './utils';
 
 export function SupportRequestForm({
   enquiries,
+  initialSubject = '',
   initialCategory,
   initialEnquiryId,
   submit = createSupportRequestAction,
 }: SupportRequestFormProps) {
   const id = useId();
+  const legal = useLegalEnabled();
   const router = useRouter();
   const [category, setCategory] = useState<Category | ''>(initialCategory ?? '');
   const [enquiryId, setEnquiryId] = useState(initialEnquiryId ?? '');
-  const [subject, setSubject] = useState('');
+  const [subject, setSubject] = useState(initialSubject);
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -86,6 +89,17 @@ export function SupportRequestForm({
         {SUPPORT_FORM_TEXT.title}
       </h2>
 
+      {legal ? (
+        <p className="text-[13px] leading-[1.7]">
+          We use your account details and this complaint to investigate and respond. Relevant
+          details may need to be shared with the dealer concerned; avoid passwords, OTPs, full
+          payment card numbers or unnecessary identity documents.{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+            Privacy Policy (opens in a new tab)
+          </a>
+          . No new Terms acceptance is required to submit a complaint.
+        </p>
+      ) : null}
       <Field id={fieldId('category')} label={SUPPORT_FORM_TEXT.category} error={errors.category}>
         <Select
           id={fieldId('category')}

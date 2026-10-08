@@ -6,6 +6,8 @@ import {
   type AuthSession,
   type DealerSubmitResponse,
 } from '@dealers-drive/contracts';
+import { legalEnforcementEnabled } from '@/lib/legal-release';
+import { dealerAgreement } from '@/features/legal/legal-form-input';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -44,7 +46,14 @@ export async function onboardingAction(
     ONBOARDING_FIELDS.map((field) => [field, text(formData, field)]),
   );
 
+  const agreement = dealerAgreement(formData);
+  if (legalEnforcementEnabled() && !agreement.success)
+    return {
+      message:
+        'Accept the agreements, acknowledge the Privacy Policy and confirm your authority before creating the dealership.',
+    };
   const parsed = OnboardingInput.safeParse({
+    ...(legalEnforcementEnabled() && agreement.success ? { agreement: agreement.data } : {}),
     fullName: text(formData, 'fullName').trim(),
     phone: text(formData, 'phone').trim(),
     legalName: text(formData, 'legalName').trim(),
@@ -165,9 +174,16 @@ export async function saveBusinessIdsAction(
   return { values, saved: true };
 }
 
-export async function submitForVerificationAction(): Promise<ActionState> {
+export async function submitForVerificationAction(formData?: FormData): Promise<ActionState> {
   try {
-    await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
+    const agreement = dealerAgreement(formData);
+    if (legalEnforcementEnabled() && !agreement.success)
+      return { message: 'Accept the agreements and confirm your authority before submitting.' };
+    if (legalEnforcementEnabled() && agreement.success)
+      await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit', {
+        agreement: agreement.data,
+      });
+    else await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
   } catch (error) {
     if (error instanceof ApiError) {
       return { message: error.userMessage('That could not be submitted yet.') };

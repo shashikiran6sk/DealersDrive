@@ -72,6 +72,7 @@ vi.mock('dotenv', () => ({ default: { config: () => ({ parsed: {} }) } }));
  * observed through a value that is already set.
  */
 const SCHEMA_KEYS = [
+  'LEGAL_ENFORCEMENT_ENABLED',
   'NODE_ENV',
   'APP_ENV',
   'PORT',
@@ -557,6 +558,29 @@ describe('configurations that must not boot', () => {
       error.mockRestore();
     }
   }
+
+  it.each<Record<string, string>>([
+    { NODE_ENV: 'development', APP_ENV: 'production' },
+    { NODE_ENV: 'production' },
+    { NODE_ENV: 'production', APP_ENV: 'production' },
+  ])('refuses draft agreement collection in production: %j', async (environment) => {
+    const message = await refuses({
+      ...PRODUCTION_REQUIRED,
+      ...environment,
+      LEGAL_ENFORCEMENT_ENABLED: 'true',
+    });
+    expect(message).toContain('LEGAL_ENFORCEMENT_ENABLED');
+    expect(message).toContain('owner/counsel approval');
+  });
+
+  it('permits isolated draft collection in an explicit preview', async () => {
+    const loaded = await loadEnv({
+      NODE_ENV: 'development',
+      APP_ENV: 'preview',
+      LEGAL_ENFORCEMENT_ENABLED: 'true',
+    });
+    expect(loaded.LEGAL_ENFORCEMENT_ENABLED).toBe(true);
+  });
 
   it('refuses object storage without credentials, whatever the environment', async () => {
     const message = await refuses({ STORAGE_DRIVER: 'minio' });

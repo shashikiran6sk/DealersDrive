@@ -154,7 +154,7 @@ export const vehiclesDocs: ModuleDocs = {
       summary: 'Submit a vehicle for review',
       description:
         'Moves the listing from `DRAFT` (or `CHANGES_REQUESTED`, as a resubmission) to ' +
-        '`PENDING_REVIEW` (**F065**, **R47**). No body: the vehicle is submitted as it is ' +
+        '`PENDING_REVIEW` (**F065**, **R47**). When legal enforcement is active, requires the current listing certification, account Terms and Dealer Agreement. The vehicle is submitted as it is ' +
         'stored.\n\n' +
         '**Complete or refused.** The same `vehicleIssues()` the wizard shows decides it; ' +
         'anything missing is a `422 VEHICLE_INCOMPLETE` with one entry per field in `errors`.\n\n' +
@@ -170,6 +170,7 @@ export const vehiclesDocs: ModuleDocs = {
       permission: 'listing:submit',
       requiresActiveDealer: true,
       params: 'IdParam',
+      requestBody: { schema: 'SubmitVehicleInput', required: false },
       responses: [
         {
           status: 200,

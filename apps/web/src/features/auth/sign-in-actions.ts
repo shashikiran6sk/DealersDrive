@@ -1,6 +1,8 @@
 'use server';
 
 import {
+  TermsAcceptanceInput,
+  type AgreementAcceptance,
   CustomerName,
   CustomerSignInInput,
   PhoneSignInInput,
@@ -10,6 +12,7 @@ import {
 } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
 
+import { legalEnforcementEnabled } from '@/lib/legal-release';
 import { ApiError, apiSend } from '@/lib/api';
 import { relaySessionCookie } from '@/lib/session-cookie';
 
@@ -108,7 +111,14 @@ export async function customerPhoneSignInAction(
   }
 }
 
-export async function customerSignUpAction(fullName: string): Promise<CustomerSignUpState> {
+export async function customerSignUpAction(
+  fullName: string,
+  agreement?: AgreementAcceptance,
+): Promise<CustomerSignUpState> {
+  if (agreement && !legalEnforcementEnabled())
+    return { error: 'Agreement collection has changed. Refresh before continuing.' };
+  if (legalEnforcementEnabled() && !TermsAcceptanceInput.safeParse(agreement).success)
+    return { error: 'Accept the Terms and acknowledge the Privacy Policy to create your account.' };
   const name = CustomerName.safeParse(fullName);
   if (!name.success) {
     return { fieldError: name.error.issues[0]?.message ?? SIGN_IN_ACTION_TEXT.nameRequired };
@@ -123,7 +133,7 @@ export async function customerSignUpAction(fullName: string): Promise<CustomerSi
     await apiSend<CustomerSession>(
       'POST',
       '/v1/auth/sign-up/customer',
-      { signUpToken, fullName: name.data },
+      { signUpToken, fullName: name.data, ...(legalEnforcementEnabled() ? { agreement } : {}) },
       { onSetCookie: (received) => (setCookies = received) },
     );
   } catch (error) {

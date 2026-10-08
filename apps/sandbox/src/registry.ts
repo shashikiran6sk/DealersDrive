@@ -21,6 +21,35 @@ export interface RegistryEntry {
 
 export const registry: RegistryEntry[] = [
   {
+    id: 'legal-check',
+    name: 'LegalCheck',
+    source: 'apps/web/src/features/legal/legal-check/legal-check.tsx',
+    category: 'Forms',
+    ownership: 'Feature-shared',
+    purpose: 'Separate unticked contract, notice, authority, sharing and listing declarations.',
+    aliases: ['AgreementChoice'],
+    features: ['Legal V1'],
+    props: ['kind', 'dealerName', 'onCompleteChange'],
+    states: ['account', 'dealer', 'enquiry', 'certification', 'disabled'],
+    reusable: true,
+    storyId: 'forms-legalcheck',
+  },
+  {
+    id: 'legal-document',
+    name: 'LegalDocument',
+    source: 'apps/web/src/features/legal/legal-document/legal-document.tsx',
+    category: 'Layout',
+    ownership: 'Feature-shared',
+    purpose: 'Readable numbered legal clauses with version metadata and contents navigation.',
+    aliases: ['LegalPage'],
+    features: ['Legal V1'],
+    props: ['documentId', 'archived', 'version', 'controls'],
+    states: ['draft', 'archive', 'mobile'],
+    reusable: true,
+    storyId: 'layout-legaldocument',
+  },
+
+  {
     id: 'brand-logo',
     name: 'BrandLogo',
     source: 'apps/web/src/components/brand-logo/brand-logo.tsx',

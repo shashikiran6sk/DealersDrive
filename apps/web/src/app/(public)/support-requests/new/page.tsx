@@ -60,6 +60,9 @@ export default async function NewSupportRequestPage({
         <p className="mt-[6px] max-w-[60ch] text-[14px] ink-muted">{SUPPORT_FORM_TEXT.intro}</p>
       </div>
       <SupportRequestForm
+        initialSubject={
+          typeof params.subject === 'string' ? params.subject.slice(0, 160) : undefined
+        }
         enquiries={enquiries.data}
         initialCategory={initialEnquiryId ? (initialCategory ?? 'ENQUIRY_ISSUE') : initialCategory}
         initialEnquiryId={initialEnquiryId}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EnquirySharingPermission } from './legal.js';
 
 import { CursorPage, Uuid } from './common.js';
 import { EnquiryStatus, ListingStatus, StatusTone } from './enums.js';
@@ -47,6 +48,7 @@ export const CreateEnquiryInput = z
   .object({
     listingSlug: z.string().trim().min(1, 'Choose a car to enquire about.').max(200),
     message: EnquiryMessage,
+    sharing: EnquirySharingPermission.optional(),
   })
   .strict();
 export type CreateEnquiryInput = z.infer<typeof CreateEnquiryInput>;

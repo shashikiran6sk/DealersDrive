@@ -18,6 +18,7 @@ import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { isAdmitted } from '../auth/auth.facade.js';
+import { hasDealerAgreement } from '../legal/legal.facade.js';
 import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
 import {
   render,
@@ -109,6 +110,18 @@ export function createNotificationsService({
       return;
     }
 
+    if (
+      job.enquiryId &&
+      job.audience === 'dealer' &&
+      !(await hasDealerAgreement(prisma, dealerId))
+    ) {
+      logger.info(
+        { template: job.template, dealerId },
+        'email skipped — dealership agreement required before enquiry disclosure',
+      );
+      return;
+    }
+
     if (job.template === 'dealer.application.rejected') {
       const snapshot = await rejectedApplicationSnapshot(dealerId);
       if (snapshot) {
@@ -186,9 +199,9 @@ export function createNotificationsService({
   async function enquiryContext(enquiryId: string): Promise<EnquiryContext | null> {
     const enquiry = await prisma.enquiry.findUnique({
       where: { id: enquiryId },
-      select: { message: true, customer: { select: { fullName: true } } },
+      select: { message: true, sharingWithdrawnAt: true, customer: { select: { fullName: true } } },
     });
-    if (!enquiry) return null;
+    if (!enquiry || enquiry.sharingWithdrawnAt) return null;
     return { buyerName: firstNameOf(enquiry.customer.fullName), message: enquiry.message };
   }
 

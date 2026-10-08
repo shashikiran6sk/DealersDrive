@@ -970,6 +970,7 @@ enum ListingCheckKey {
 /// `dealerId` is the listing's, copied on write and never accepted from a
 /// request — it is the tenant key every dealer read filters on (rule 1).
 model Enquiry {
+  sharingWithdrawnAt DateTime?
   id            String        @id @default(uuid()) @db.Uuid
   customerId    String        @db.Uuid
   dealerId      String        @db.Uuid
@@ -1447,4 +1448,22 @@ model DealerEmailVerification {
 
   @@index([dealerId, createdAt])
   @@map("dealer_email_verifications")
+}
+
+model LegalEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String   @db.Uuid
+  subjectType String
+  subjectId   String   @db.Uuid
+  documentId  String
+  version     String
+  digest      String
+  action      String
+  context     String
+  eventKey    String   @unique
+  createdAt   DateTime @default(now())
+
+  @@index([subjectType, subjectId, documentId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("legal_events")
 }

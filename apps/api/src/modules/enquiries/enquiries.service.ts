@@ -1,4 +1,11 @@
 import {
+  legalEnabled,
+  requireCurrentVersion,
+  requireTerms,
+  requireDealerAgreement,
+  recordEvidence,
+} from '../legal/legal.facade.js';
+import {
   enquiryTransitionPermission,
   formatRegistration,
   vehicleTitle,
@@ -149,7 +156,17 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       };
     },
 
+    async one(customer: CustomerPrincipal, id: string) {
+      const row = await prisma.enquiry.findFirst({
+        where: { id, customerId: customer.userId },
+        select: CUSTOMER_SELECT,
+      });
+      if (!row) throw notFound();
+      return toCustomerEnquiry(row);
+    },
+
     async inbox(dealerId: string, query: DealerEnquiryQuery): Promise<DealerEnquiriesResponse> {
+      await requireDealerAgreement(prisma, dealerId);
       const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const [rows, tabs] = await Promise.all([
         prisma.enquiry.findMany({
@@ -199,6 +216,8 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           FOR UPDATE`;
         if (locked.length === 0) throw notFound();
         const permissions = await authorizeDealerWrite(tx, actor, 'enquiry:contact');
+        await requireDealerAgreement(tx, actor.dealerId);
+        await requireTerms(tx, actor.userId);
 
         const current = await tx.enquiry.findUniqueOrThrow({
           where: { id: enquiryId },
@@ -239,7 +258,38 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       });
     },
 
+    async withdrawSharing(
+      customer: CustomerPrincipal,
+      enquiryId: string,
+    ): Promise<{ withdrawn: true }> {
+      return withTransaction(prisma, async (tx) => {
+        const rows = await tx.$queryRaw<{ id: string }[]>`
+          SELECT "id" FROM "enquiries" WHERE "id" = ${enquiryId}::uuid
+          AND "customerId" = ${customer.userId}::uuid FOR UPDATE`;
+        if (rows.length === 0) throw notFound();
+        await tx.enquiry.updateMany({
+          where: { id: enquiryId, sharingWithdrawnAt: null },
+          data: { sharingWithdrawnAt: new Date() },
+        });
+        await recordEvidence(tx, {
+          actorId: customer.userId,
+          subjectType: 'ENQUIRY',
+          subjectId: enquiryId,
+          documentId: 'enquiry',
+          action: 'WITHDRAW',
+          context: 'future-dealer-disclosure-withdrawn',
+        });
+        return { withdrawn: true };
+      });
+    },
+
     async create(customer: CustomerPrincipal, input: CreateEnquiryInput): Promise<EnquiryReceipt> {
+      if (legalEnabled() && !input.sharing?.granted)
+        throw new DomainError(
+          'ENQUIRY_PERMISSION_REQUIRED',
+          'Choose whether to share your details with this dealership before sending.',
+        );
+      requireCurrentVersion(input.sharing?.version);
       const listing = await prisma.listing.findUnique({
         where: { slug: input.listingSlug },
         select: { id: true },
@@ -274,6 +324,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
             : new ConflictError('LISTING_NOT_AVAILABLE', LISTING_NOT_AVAILABLE);
         }
 
+        await requireTerms(tx, customer.userId);
         const ownDealership = await tx.dealerMember.findFirst({
           where: { userId: customer.userId, dealerId: available.dealerId, status: 'ACTIVE' },
           select: { id: true },
@@ -301,6 +352,14 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           },
         });
 
+        await recordEvidence(tx, {
+          actorId: customer.userId,
+          subjectType: 'ENQUIRY',
+          subjectId: enquiry.id,
+          documentId: 'enquiry',
+          action: 'GRANT',
+          context: 'named-listing-dealer-disclosure',
+        });
         await audit.record(tx, {
           actorType: 'CUSTOMER',
           actorId: customer.userId,
