@@ -18,6 +18,8 @@ The migration adds `legal_events` and a nullable enquiry withdrawal timestamp. E
 
 For assisted onboarding, a salesperson's OTP cooperation or document collection does not bind a dealer. The dealer must claim the dealership and an authorized owner must accept the agreement before verification submission or approval. An assisted listing needs an owner declaration for the exact current vehicle contents and next submission number. Editing material fields invalidates that declaration. Reviewers must request changes and obtain a fresh declaration when required. This adds no V2 inspection or mechanical/title certification.
 
+Lead email delivery checks the current dealership agreement as well as withdrawal status. When enforcement is active, an email containing enquiry details is skipped for a dealership without the current agreement. The enquiry remains in the protected inbox and becomes accessible after the owner accepts; skipped old email jobs are not automatically replayed. This prevents email from bypassing the inbox checkpoint. Authentication, claim links and required support communications remain separate.
+
 ## Evidence and access
 
 Receipts use authenticated actor identifiers, server time, subject scope, action, context, version and SHA-256 digest. Personal Terms acceptance, Privacy acknowledgement, dealership acceptance, enquiry permission, withdrawal and listing declaration are distinct events. No IP address, user agent, email, phone, document bytes or token is copied into this table. Unique event keys make retries idempotent. Listing contexts bind the declaration to a material-field fingerprint and submission cycle. Historical versions remain addressable even after a new version is introduced.

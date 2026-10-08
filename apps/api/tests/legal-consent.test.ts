@@ -248,6 +248,52 @@ describe('listing certification', () => {
 });
 
 describe('sharing and withdrawal', () => {
+  it('blocks lead email disclosure to a legacy dealership until its owner accepts', async () => {
+    const owner = await dealer();
+    const legacy = await h.prisma.dealer.create({
+      data: {
+        slug: `legacy-${randomUUID()}`,
+        brandName: 'Legacy Fixture Motors',
+        legalName: `Legacy Fixture Motors ${randomUUID()}`,
+        status: 'ACTIVE',
+        approvedAt: new Date(),
+        specialities: [],
+      },
+    });
+    await h.prisma.dealerMember.create({
+      data: { dealerId: legacy.id, userId: owner.userId, role: 'OWNER', permissions: [] },
+    });
+    await h.prisma.session.updateMany({
+      where: { userId: owner.userId },
+      data: { activeDealerId: legacy.id },
+    });
+    const buyer = await customer();
+    const listing = await publicListing(legacy.id);
+    await buyer.agent
+      .post('/v1/enquiries')
+      .send({ listingSlug: listing.slug, message: 'Blocked legacy disclosure', sharing })
+      .expect(201);
+    await owner.agent.get('/v1/dealer/enquiries').expect(422);
+    await h.drainEmails();
+    expect(
+      h.mailer.sent.some((mail) => JSON.stringify(mail).includes('Blocked legacy disclosure')),
+    ).toBe(false);
+    await owner.agent.post('/v1/legal/dealer/dealer-agreement').send(agreement).expect(200);
+    const inbox = await owner.agent.get('/v1/dealer/enquiries').expect(200);
+    expect(inbox.body.data[0]?.message).toBe('Blocked legacy disclosure');
+    const next = await publicListing(legacy.id);
+    await buyer.agent
+      .post('/v1/enquiries')
+      .send({ listingSlug: next.slug, message: 'Permitted current agreement disclosure', sharing })
+      .expect(201);
+    await h.drainEmails();
+    expect(
+      h.mailer.sent.some((mail) =>
+        JSON.stringify(mail).includes('Permitted current agreement disclosure'),
+      ),
+    ).toBe(true);
+  });
+
   it('requires an explicit current sharing choice, scopes withdrawal and suppresses future dealer disclosure', async () => {
     const owner = await dealer();
     const buyer = await customer();

@@ -18,6 +18,7 @@ import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { isAdmitted } from '../auth/auth.facade.js';
+import { hasDealerAgreement } from '../legal/legal.facade.js';
 import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
 import {
   render,
@@ -106,6 +107,18 @@ export function createNotificationsService({
     const dealerId = job.dealerId;
     if (!dealerId) {
       logger.warn({ template: job.template }, 'email skipped — no dealer');
+      return;
+    }
+
+    if (
+      job.enquiryId &&
+      job.audience === 'dealer' &&
+      !(await hasDealerAgreement(prisma, dealerId))
+    ) {
+      logger.info(
+        { template: job.template, dealerId },
+        'email skipped — dealership agreement required before enquiry disclosure',
+      );
       return;
     }
 
