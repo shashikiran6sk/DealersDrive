@@ -1,0 +1,228 @@
+{
+  "darkHome": [
+    {
+      "overflow": false,
+      "scrollWidth": 320,
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "scrollWidth": 390,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "scrollWidth": 768,
+      "theme": "dark",
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "scrollWidth": 1024,
+      "theme": "dark",
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "scrollWidth": 1440,
+      "theme": "dark",
+      "width": 1440
+    }
+  ],
+  "darkInventory": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ],
+  "darkVehicle": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ],
+  "lightHome": [
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "theme": "light",
+      "width": 1440
+    }
+  ],
+  "lightInventory": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ],
+  "lightVehicle": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ],
+  "dashboard": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ],
+  "enquiry": [
+    {
+      "overflow": false,
+      "width": 320
+    },
+    {
+      "overflow": false,
+      "width": 375
+    },
+    {
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "overflow": false,
+      "width": 1024
+    },
+    {
+      "overflow": false,
+      "width": 1440
+    }
+  ]
+}

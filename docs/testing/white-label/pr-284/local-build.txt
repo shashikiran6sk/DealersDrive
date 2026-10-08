@@ -13,13 +13,17 @@
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
 @dealers-drive/contracts:build:
-@dealers-drive/api:build: cache miss, executing ed8564bb4c04fe02
-@dealers-drive/storefront-ui:build: cache hit, replaying logs fe1e810290e300c3
+@dealers-drive/storefront-ui:build: cache hit, replaying logs 007f62680a433551
 @dealers-drive/storefront-ui:build:
 @dealers-drive/storefront-ui:build: > @dealers-drive/storefront-ui@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
 @dealers-drive/storefront-ui:build: > tsc --noEmit
 @dealers-drive/storefront-ui:build:
-@dealers-drive/storefront:build: cache hit, replaying logs 6dde1dd8a84ac67d
+@dealers-drive/api:build: cache hit, replaying logs 343499bc5d847644
+@dealers-drive/api:build:
+@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /Users/shashikiran/Development/dealers-drive/apps/api
+@dealers-drive/api:build: > tsc -p tsconfig.build.json
+@dealers-drive/api:build:
+@dealers-drive/storefront:build: cache hit, replaying logs 59d9295ed18c2d1a
 @dealers-drive/storefront:build:
 @dealers-drive/storefront:build: > @dealers-drive/storefront@0.0.0 build /Users/shashikiran/Development/dealers-drive/apps/storefront
 @dealers-drive/storefront:build: > next build
@@ -27,7 +31,29 @@
 @dealers-drive/storefront:build:    ▲ Next.js 15.5.27
 @dealers-drive/storefront:build:
 @dealers-drive/storefront:build:    Creating an optimized production build ...
-@dealers-drive/storefront:build:  ✓ Compiled successfully in 3.6s
+@dealers-drive/storefront:build: <w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|/Users/shashikiran/Development/dealers-drive/node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!/Users/shashikiran/Development/dealers-drive/node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!/Users/shashikiran/Development/dealers-drive/packages/storefront-ui/src/styles.css': No serializer registered for Warning
+@dealers-drive/storefront:build: <w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> Array { 2 items } -> webpack/lib/ModuleWarning -> Warning
+@dealers-drive/storefront:build:  ⚠ Compiled with warnings in 432ms
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build: Warning
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: (274:3) autoprefixer: end value has mixed support, consider using flex-end instead
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: Import trace for requested module:
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build: Warning
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: (446:3) autoprefixer: end value has mixed support, consider using flex-end instead
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build: Import trace for requested module:
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.27_@opentelemetry+api@1.9.1_@types+node@24.13.3_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build: ../../packages/storefront-ui/src/styles.css
+@dealers-drive/storefront:build:
+@dealers-drive/storefront:build:  ✓ Compiled successfully in 1307ms
 @dealers-drive/storefront:build:    Skipping linting
 @dealers-drive/storefront:build:    Checking validity of types ...
 @dealers-drive/storefront:build:    Collecting page data ...
@@ -40,12 +66,12 @@
 @dealers-drive/storefront:build:    Collecting build traces ...
 @dealers-drive/storefront:build:
 @dealers-drive/storefront:build: Route (app)                                 Size  First Load JS
-@dealers-drive/storefront:build: ┌ ƒ /                                    1.27 kB         103 kB
+@dealers-drive/storefront:build: ┌ ƒ /                                    1.31 kB         103 kB
 @dealers-drive/storefront:build: ├ ƒ /_not-found                            145 B         102 kB
-@dealers-drive/storefront:build: ├ ƒ /about                               1.27 kB         103 kB
-@dealers-drive/storefront:build: ├ ƒ /car/[slug]                          1.27 kB         103 kB
-@dealers-drive/storefront:build: ├ ƒ /cars                                1.27 kB         103 kB
-@dealers-drive/storefront:build: ├ ƒ /contact                             1.27 kB         103 kB
+@dealers-drive/storefront:build: ├ ƒ /about                               1.31 kB         103 kB
+@dealers-drive/storefront:build: ├ ƒ /car/[slug]                          1.31 kB         103 kB
+@dealers-drive/storefront:build: ├ ƒ /cars                                1.31 kB         103 kB
+@dealers-drive/storefront:build: ├ ƒ /contact                             1.31 kB         103 kB
 @dealers-drive/storefront:build: ├ ƒ /enquire/[slug]                        145 B         102 kB
 @dealers-drive/storefront:build: ├ ƒ /privacy                               145 B         102 kB
 @dealers-drive/storefront:build: ├ ƒ /robots.txt                            145 B         102 kB
@@ -58,11 +84,11 @@
 @dealers-drive/storefront:build:   └ other shared chunks (total)           1.9 kB
 @dealers-drive/storefront:build:
 @dealers-drive/storefront:build:
-@dealers-drive/storefront:build: ƒ Middleware                             32.2 kB
+@dealers-drive/storefront:build: ƒ Middleware                             71.5 kB
 @dealers-drive/storefront:build:
 @dealers-drive/storefront:build: ƒ  (Dynamic)  server-rendered on demand
 @dealers-drive/storefront:build:
-@dealers-drive/web:build: cache hit, replaying logs 8a79a47bd8a2098c
+@dealers-drive/web:build: cache hit, replaying logs 10e5411028457fe2
 @dealers-drive/web:build:
 @dealers-drive/web:build: > @dealers-drive/web@0.0.0 build /Users/shashikiran/Development/dealers-drive/apps/web
 @dealers-drive/web:build: > next build
@@ -70,7 +96,7 @@
 @dealers-drive/web:build:    ▲ Next.js 15.5.27
 @dealers-drive/web:build:
 @dealers-drive/web:build:    Creating an optimized production build ...
-@dealers-drive/web:build:  ✓ Compiled successfully in 7.8s
+@dealers-drive/web:build:  ✓ Compiled successfully in 4.5s
 @dealers-drive/web:build:    Skipping linting
 @dealers-drive/web:build:    Checking validity of types ...
 @dealers-drive/web:build:    Collecting page data ...
@@ -102,22 +128,22 @@
 @dealers-drive/web:build: [TypeError: fetch failed] {
 @dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
 @dealers-drive/web:build: }
+@dealers-drive/web:build: [TypeError: fetch failed] {
+@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+@dealers-drive/web:build: }
+@dealers-drive/web:build: [TypeError: fetch failed] {
+@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+@dealers-drive/web:build: }
+@dealers-drive/web:build: [TypeError: fetch failed] {
+@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+@dealers-drive/web:build: }
+@dealers-drive/web:build: [TypeError: fetch failed] {
+@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+@dealers-drive/web:build: }
+@dealers-drive/web:build: [TypeError: fetch failed] {
+@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+@dealers-drive/web:build: }
 @dealers-drive/web:build:  ✓ Generating static pages (18/18)
-@dealers-drive/web:build: [TypeError: fetch failed] {
-@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
-@dealers-drive/web:build: }
-@dealers-drive/web:build: [TypeError: fetch failed] {
-@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
-@dealers-drive/web:build: }
-@dealers-drive/web:build: [TypeError: fetch failed] {
-@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
-@dealers-drive/web:build: }
-@dealers-drive/web:build: [TypeError: fetch failed] {
-@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
-@dealers-drive/web:build: }
-@dealers-drive/web:build: [TypeError: fetch failed] {
-@dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
-@dealers-drive/web:build: }
 @dealers-drive/web:build:    Finalizing page optimization ...
 @dealers-drive/web:build:    Collecting build traces ...
 @dealers-drive/web:build:
@@ -171,7 +197,7 @@
 @dealers-drive/web:build: ├ ƒ /dealer/vehicles/[id]/edit                         189 B         185 kB
 @dealers-drive/web:build: ├ ƒ /dealer/vehicles/new                               189 B         185 kB
 @dealers-drive/web:build: ├ ƒ /dealer/website                                  3.49 kB         118 kB
-@dealers-drive/web:build: ├ ƒ /dealer/website/preview                          1.28 kB         104 kB
+@dealers-drive/web:build: ├ ƒ /dealer/website/preview                          1.32 kB         104 kB
 @dealers-drive/web:build: ├ ƒ /dealers                                         8.67 kB         139 kB
 @dealers-drive/web:build: ├ ƒ /dealers/[slug]                                  1.72 kB         182 kB
 @dealers-drive/web:build: ├ ƒ /enquiries                                         822 B         107 kB
@@ -201,11 +227,7 @@
 @dealers-drive/web:build: ○  (Static)   prerendered as static content
 @dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
 @dealers-drive/web:build:
-@dealers-drive/api:build:
-@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /Users/shashikiran/Development/dealers-drive/apps/api
-@dealers-drive/api:build: > tsc -p tsconfig.build.json
-@dealers-drive/api:build:
 
  Tasks:    5 successful, 5 total
-Cached:    4 cached, 5 total
-  Time:    4.276s
+Cached:    5 cached, 5 total
+  Time:    203ms >>> FULL TURBO

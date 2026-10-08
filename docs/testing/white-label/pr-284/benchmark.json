@@ -1,0 +1,13 @@
+{
+  "event": "storefront.benchmark",
+  "environment": "isolated-local-postgres",
+  "inventory": 320,
+  "pageSize": 24,
+  "samples": 12,
+  "p50Ms": 18.44,
+  "p95Ms": 21.73,
+  "cachePolicy": "private, no-store",
+  "crossTenantFilter": "zero-results",
+  "network": "local-only",
+  "browserPerformance": "not measured"
+}

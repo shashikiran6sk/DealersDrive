@@ -160,4 +160,3 @@ seeded 1 admin and 1 dealership
       Tests  11 passed (11)
    Start at  20:17:03
    Duration  3.50s (transform 41%, tests 39%, import 20%)
-

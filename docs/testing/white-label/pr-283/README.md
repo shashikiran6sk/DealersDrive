@@ -35,5 +35,5 @@ and live TLS integration are unavailable/unverified. No live provider write,
 production database migration, DNS change, merge or production deployment.
 Qualified legal review and PR #279 reconciliation remain prerequisites.
 
-GitHub checks are pending until final-head logs/status are added. Verified
+GitHub CI/security checks and Terraform passed at the final head. Logs and final GitHub status are recorded alongside this file. Verified
 OPEN, unmerged, correctly stacked and with no auto-merge request.

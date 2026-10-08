@@ -10,56 +10,56 @@
 
 @dealers-drive/contracts:test: cache bypass, force executing c75da3ebcd52ec0e
 @dealers-drive/contracts:build: cache hit, replaying logs ecae0a5ea29acb4d
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/api:test: cache bypass, force executing d8a0961802f884b3
 @dealers-drive/storefront-ui:build: cache hit, replaying logs fe1e810290e300c3
-@dealers-drive/storefront-ui:build: 
+@dealers-drive/storefront-ui:build:
 @dealers-drive/storefront-ui:build: > @dealers-drive/storefront-ui@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
 @dealers-drive/storefront-ui:build: > tsc --noEmit
-@dealers-drive/storefront-ui:build: 
+@dealers-drive/storefront-ui:build:
 @dealers-drive/storefront-ui:test: cache bypass, force executing efe6063c6408ebd0
 @dealers-drive/storefront:test: cache bypass, force executing 321bcaa730dacccf
 @dealers-drive/web:test: cache bypass, force executing 19aedf9a5ab7aba7
-@dealers-drive/storefront-ui:test: 
+@dealers-drive/storefront-ui:test:
 @dealers-drive/storefront-ui:test: > @dealers-drive/storefront-ui@0.0.0 test /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
 @dealers-drive/storefront-ui:test: > vitest run
-@dealers-drive/storefront-ui:test: 
-@dealers-drive/storefront:test: 
+@dealers-drive/storefront-ui:test:
+@dealers-drive/storefront:test:
 @dealers-drive/storefront:test: > @dealers-drive/storefront@0.0.0 test /Users/shashikiran/Development/dealers-drive/apps/storefront
 @dealers-drive/storefront:test: > vitest run
-@dealers-drive/storefront:test: 
-@dealers-drive/api:test: 
+@dealers-drive/storefront:test:
+@dealers-drive/api:test:
 @dealers-drive/api:test: > @dealers-drive/api@0.0.0 test /Users/shashikiran/Development/dealers-drive/apps/api
 @dealers-drive/api:test: > vitest run --coverage
-@dealers-drive/api:test: 
-@dealers-drive/web:test: 
+@dealers-drive/api:test:
+@dealers-drive/web:test:
 @dealers-drive/web:test: > @dealers-drive/web@0.0.0 test /Users/shashikiran/Development/dealers-drive/apps/web
 @dealers-drive/web:test: > vitest run
-@dealers-drive/web:test: 
-@dealers-drive/contracts:test: 
+@dealers-drive/web:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test: > @dealers-drive/contracts@0.0.0 test /Users/shashikiran/Development/dealers-drive/packages/contracts
 @dealers-drive/contracts:test: > vitest run --coverage
-@dealers-drive/contracts:test: 
-@dealers-drive/storefront-ui:test: 
+@dealers-drive/contracts:test:
+@dealers-drive/storefront-ui:test:
 @dealers-drive/storefront-ui:test:  RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
-@dealers-drive/storefront-ui:test: 
-@dealers-drive/web:test: 
+@dealers-drive/storefront-ui:test:
+@dealers-drive/web:test:
 @dealers-drive/web:test:  RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/apps/web
-@dealers-drive/web:test: 
-@dealers-drive/storefront:test: 
+@dealers-drive/web:test:
+@dealers-drive/storefront:test:
 @dealers-drive/storefront:test:  RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/apps/storefront
-@dealers-drive/storefront:test: 
-@dealers-drive/contracts:test: 
+@dealers-drive/storefront:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/packages/contracts
 @dealers-drive/contracts:test:       Coverage enabled with v8
-@dealers-drive/contracts:test: 
-@dealers-drive/api:test: 
+@dealers-drive/contracts:test:
+@dealers-drive/api:test:
 @dealers-drive/api:test:  RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/apps/api
 @dealers-drive/api:test:       Coverage enabled with v8
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/contracts:test:  ✓ tests/unit/enquiry.test.ts (23 tests) 21ms
 @dealers-drive/storefront:test:  ✓ tests/enquiry-url.test.ts (1 test) 3ms
 @dealers-drive/contracts:test:  ✓ tests/unit/common.test.ts (101 tests) 76ms
@@ -69,12 +69,12 @@
 @dealers-drive/storefront:test: {"event":"storefront.api","requestId":"f6d1b25f-76b1-445b-a2c0-69da3b2915b5","route":"/site","status":200,"durationMs":0}
 @dealers-drive/storefront:test:  ✓ tests/api.test.ts (2 tests) 11ms
 @dealers-drive/storefront:test:  ✓ tests/hostname-seo.test.ts (5 tests) 12ms
-@dealers-drive/storefront:test: 
+@dealers-drive/storefront:test:
 @dealers-drive/storefront:test:  Test Files  3 passed (3)
 @dealers-drive/storefront:test:       Tests  8 passed (8)
 @dealers-drive/storefront:test:    Start at  20:25:29
 @dealers-drive/storefront:test:    Duration  588ms (transform 49%, import 47%, tests 2%, worker 1%)
-@dealers-drive/storefront:test: 
+@dealers-drive/storefront:test:
 @dealers-drive/contracts:test:  ✓ tests/unit/vehicle-color.test.ts (25 tests) 5ms
 @dealers-drive/contracts:test:  ✓ tests/unit/dealer-messages.test.ts (11 tests) 9ms
 @dealers-drive/contracts:test:  ✓ tests/unit/enums.test.ts (57 tests) 59ms
@@ -88,18 +88,18 @@
 @dealers-drive/contracts:test:  ✓ tests/unit/index.test.ts (4 tests) 7ms
 @dealers-drive/contracts:test:  ✓ tests/unit/admin-access.test.ts (6 tests) 5ms
 @dealers-drive/contracts:test:  ✓ tests/unit/listing.test.ts (13 tests) 12ms
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  Test Files  16 passed (16)
 @dealers-drive/contracts:test:       Tests  511 passed (511)
 @dealers-drive/contracts:test:    Start at  20:25:30
 @dealers-drive/contracts:test:    Duration  1.16s (transform 45%, import 36%, worker 12%, tests 7%)
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:   Transform  transforming modules took 2.34s · 45% of tracked time, re-done on every run
 @dealers-drive/contracts:test:              persist transforms across runs with fsModuleCache: true
 @dealers-drive/contracts:test:              learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  % Coverage report from v8
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test: =============================== Coverage summary ===============================
 @dealers-drive/contracts:test: Statements   : 98.21% ( 715/728 )
 @dealers-drive/contracts:test: Branches     : 95.11% ( 253/266 )
@@ -107,19 +107,19 @@
 @dealers-drive/contracts:test: Lines        : 98.68% ( 678/687 )
 @dealers-drive/contracts:test: ================================================================================
 @dealers-drive/api:test: Loaded Prisma config from prisma.config.ts.
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: Prisma schema loaded from prisma/schema.prisma.
 @dealers-drive/api:test: Datasource "db": PostgreSQL database "dealersdrive_test", schema "public" at "localhost:5432"
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: 46 migrations found in prisma/migrations
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/storefront-ui:test:  ✓ tests/templates.test.tsx (17 tests) 689ms
-@dealers-drive/storefront-ui:test: 
+@dealers-drive/storefront-ui:test:
 @dealers-drive/storefront-ui:test:  Test Files  1 passed (1)
 @dealers-drive/storefront-ui:test:       Tests  17 passed (17)
 @dealers-drive/storefront-ui:test:    Start at  20:25:29
 @dealers-drive/storefront-ui:test:    Duration  2.12s (environment 48%, tests 34%, setup 8%, transform 7%, import 3%)
-@dealers-drive/storefront-ui:test: 
+@dealers-drive/storefront-ui:test:
 @dealers-drive/api:test: Applying migration `20260903095253_identity`
 @dealers-drive/api:test: Applying migration `20260903100216_cache_shared_state`
 @dealers-drive/api:test: Applying migration `20260903100656_audit_log`
@@ -166,9 +166,9 @@
 @dealers-drive/api:test: Applying migration `20261006130000_assisted_listings`
 @dealers-drive/api:test: Applying migration `20261008120000_white_label_foundation`
 @dealers-drive/api:test: Applying migration `20261008170000_storefront_domain_provider`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: The following migration(s) have been applied:
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: migrations/
 @dealers-drive/api:test:   └─ 20260903095253_identity/
 @dealers-drive/api:test:     └─ migration.sql
@@ -262,32 +262,32 @@
 @dealers-drive/api:test:     └─ migration.sql
 @dealers-drive/api:test:   └─ 20261008170000_storefront_domain_provider/
 @dealers-drive/api:test:     └─ migration.sql
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: All migrations have been successfully applied.
 @dealers-drive/web:test: stderr | tests/unit/components/dealers/dealer-search-box.test.tsx > asking the API > does not ask at all for an empty box
 @dealers-drive/web:test: An update to DealerSearchBox inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: stderr | tests/unit/components/dealers/dealer-search-box.test.tsx > asking the API > does not ask at all for an empty box
 @dealers-drive/web:test: An update to DealerSearchBox inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  ✓ tests/unit/components/dealers/directory.test.tsx (38 tests) 1157ms
 @dealers-drive/web:test:    ✓ DirectoryFilters (16)
 @dealers-drive/web:test:      ✓ carries the district through a chip and a search 383ms
@@ -350,16 +350,16 @@
 @dealers-drive/api:test:  ✓ |unit| tests/unit/modules/media/media-image-cache.test.ts (12 tests) 79ms
 @dealers-drive/web:test: stderr | tests/unit/features/support/support-requests.test.tsx > SupportRequestForm > sends one request for a double press
 @dealers-drive/web:test: An update to SupportRequestForm inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  ✓ tests/unit/features/admin/listing-decisions.test.tsx (7 tests) 1050ms
 @dealers-drive/web:test:    ✓ DecisionDialog (3)
 @dealers-drive/web:test:      ✓ opens on its trigger and will not confirm until the reason is meaningful 536ms
@@ -394,16 +394,16 @@
 @dealers-drive/api:test:  ✓ |unit| tests/unit/middleware/rate-limit.test.ts (30 tests) 99ms
 @dealers-drive/web:test: stderr | tests/unit/components/dealers/dealer-search-box.test.tsx > the pointer > does not re-ask for a dealership that was just chosen
 @dealers-drive/web:test: An update to DealerSearchBox inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/api:test:  ✓ |unit| tests/unit/modules/auth/roles.test.ts (16 tests) 10ms
 @dealers-drive/api:test:  ✓ |unit| tests/unit/modules/storefront/storefront.mapper.test.ts (4 tests) 5ms
 @dealers-drive/api:test:  ✓ |unit| tests/unit/platform/telemetry/logger.test.ts (22 tests) 74ms
@@ -529,26 +529,26 @@
 @dealers-drive/web:test:  ✓ tests/unit/features/claim/claim-dealership.test.tsx (7 tests) 544ms
 @dealers-drive/web:test: stderr | tests/unit/components/ui/service-input.test.tsx > what reaches the server > commits a draft the dealer typed but did not add
 @dealers-drive/web:test: An update to ServiceInput inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
 @dealers-drive/web:test: An update to ServiceInput inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  ✓ tests/unit/features/auth/header-account.test.tsx (31 tests) 982ms
 @dealers-drive/web:test:  ✓ tests/unit/components/ui/service-input.test.tsx (14 tests) 910ms
 @dealers-drive/web:test:  ✓ tests/unit/features/enquiry/enquiry-panel.test.tsx (14 tests) 755ms
@@ -562,30 +562,30 @@
 @dealers-drive/web:test:      ✓ keeps a list it was opened to, and is the same element 364ms
 @dealers-drive/api:test: stdout | tests/membership-commit-guard.test.ts > denies a queued listing submission when the owner removes its manager before the listing lock is released (BUG-005)
 @dealers-drive/api:test: {"bug":"BUG-005","canonicalTests":["CONCURRENCY-007","CROSS-019"],"lockWaitProven":true,"revocationHttp":204,"membership":"REMOVED","submissionHttp":401,"listing":"DRAFT","nextDealerRequest":401}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/web:test:  ✓ tests/unit/features/admin/listing-images.test.tsx (14 tests) 663ms
 @dealers-drive/web:test: stderr | tests/unit/features/vehicle/vehicle-wizard.test.tsx > a saved vehicle > fills the step from what was saved and names the vehicle and step it posts
 @dealers-drive/web:test: An update to SuggestInput inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
 @dealers-drive/web:test: An update to SuggestInput inside a test was not wrapped in act(...).
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: When testing, code that causes React state updates should be wrapped into act(...):
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: act(() => {
 @dealers-drive/web:test:   /* fire events that update state */
 @dealers-drive/web:test: });
 @dealers-drive/web:test: /* assert on the output */
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  ✓ tests/unit/features/sales/assisted-dealer-start.test.tsx (3 tests) 710ms
 @dealers-drive/web:test:    ✓ AssistedDealerStart (3)
 @dealers-drive/web:test:      ✓ verifies with consent, then creates the dealership with the ticket 408ms
@@ -698,25 +698,25 @@
 @dealers-drive/web:test:  ✓ tests/unit/styles/filter-rail.test.ts (3 tests) 4ms
 @dealers-drive/web:test:  ✓ tests/unit/features/auth/phone-identifier.test.ts (8 tests) 4ms
 @dealers-drive/web:test:  ✓ tests/unit/vercel-config.test.ts (2 tests) 3ms
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  Test Files  123 passed (123)
 @dealers-drive/web:test:       Tests  1482 passed (1482)
 @dealers-drive/web:test:    Start at  20:25:30
 @dealers-drive/web:test:    Duration  26.63s (environment 44%, tests 32%, setup 10%, import 8%, transform 6%, worker 1%)
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: Environment  jsdom was created 123 times · 98.07s total, 44% of tracked time
 @dealers-drive/web:test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 @dealers-drive/web:test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/api:test: stdout | tests/stable-pagination.test.ts > visits every equal-time row once in the saved collection (BUG-003)
 @dealers-drive/api:test: {"finding":"BUG-003","collection":"saved","expected":["2023-hyundai-creta-sx-o-katpadi-3ae4dc9a","2023-hyundai-creta-sx-o-katpadi-5b45b24f","2023-hyundai-creta-sx-o-katpadi-7ee6fce0"],"visited":["2023-hyundai-creta-sx-o-katpadi-3ae4dc9a","2023-hyundai-creta-sx-o-katpadi-5b45b24f","2023-hyundai-creta-sx-o-katpadi-7ee6fce0"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/stable-pagination.test.ts > visits every equal-time row once in the customer collection (BUG-003)
 @dealers-drive/api:test: {"finding":"BUG-003","collection":"customer","expected":["7da62a89-55a0-4614-86d2-aef9c8932661","288a4ebe-5eaf-4a26-b591-26462db70699","078440ba-62b5-460d-8c8f-3d5798cd1979"],"visited":["7da62a89-55a0-4614-86d2-aef9c8932661","288a4ebe-5eaf-4a26-b591-26462db70699","078440ba-62b5-460d-8c8f-3d5798cd1979"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/stable-pagination.test.ts > visits every equal-time row once in the inbox collection (BUG-003)
 @dealers-drive/api:test: {"finding":"BUG-003","collection":"inbox","expected":["7da62a89-55a0-4614-86d2-aef9c8932661","288a4ebe-5eaf-4a26-b591-26462db70699","078440ba-62b5-460d-8c8f-3d5798cd1979"],"visited":["7da62a89-55a0-4614-86d2-aef9c8932661","288a4ebe-5eaf-4a26-b591-26462db70699","078440ba-62b5-460d-8c8f-3d5798cd1979"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: (node:12934) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/stable-pagination.test.ts (15 tests) 5459ms
@@ -735,36 +735,36 @@
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test: stdout | tests/dealer-rejection-atomicity.test.ts > rejection must not purge a dealer after approval has passed upload checks
 @dealers-drive/api:test: {"finding":"approval-versus-destructive-rejection","approvalHttp":200,"rejectionHttp":422,"dealerExists":true,"finalStatus":"ACTIVE","approvedAudit":1,"rejectedAudit":0}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/dealer-rejection-atomicity.test.ts > a rolled-back rejection retains all stored uploads and produces no rejection history
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `tx.outboxEvent.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/platform/events/bus.ts:118:24
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   115   payload: write.payload,
 @dealers-drive/api:test:   116 };
-@dealers-drive/api:test:   117 
+@dealers-drive/api:test:   117
 @dealers-drive/api:test: → 118 await tx.outboxEvent.create(
 @dealers-drive/api:test: Database error. Code: `P0001`. Message: `certification rejection rollback`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/dealer-rejection-atomicity.test.ts > a rolled-back rejection retains all stored uploads and produces no rejection history
 @dealers-drive/api:test: {"finding":"rejection-rollback-storage","status":"PENDING_APPROVAL","storedUploads":4,"expectedUploads":4}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-rejection-atomicity.test.ts (15 tests) 3359ms
 @dealers-drive/api:test:    ✓ rejection must not purge a dealer after approval has passed upload checks 443ms
 @dealers-drive/api:test:    ✓ protects ACTIVE dealer history with ACTIVE stock from rejection 370ms
 @dealers-drive/api:test:    ✓ protects ACTIVE dealer history with RESERVED stock from rejection 308ms
 @dealers-drive/api:test: stdout | tests/listing-reactivation.test.ts > approval > refuses a car another dealership has claimed since, and moves nothing
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `tx.vehicle.update()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/listings/listing-reactivation.ts:133:26
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   130   select: { releasedAt: true },
 @dealers-drive/api:test:   131 });
 @dealers-drive/api:test:   132 if (vehicle.releasedAt) {
 @dealers-drive/api:test: → 133   await tx.vehicle.update(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `vehicles_registrationNumber_claimed_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/listing-reactivation.test.ts (27 tests) 2438ms
 @dealers-drive/api:test: (node:13063) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
@@ -775,10 +775,10 @@
 @dealers-drive/api:test:  ✓ |integration| tests/public-vehicles.test.ts (25 tests) 1641ms
 @dealers-drive/api:test: stdout | tests/public-media-visibility.test.ts > refuses a previously public vehicle image immediately after dealer suspension (BUG-004)
 @dealers-drive/api:test: {"bug":"BUG-004","canonical":"SEC-DISC-002","beforeImage":200,"dealer":"SUSPENDED","listing":404,"afterImage":404,"cacheControl":"no-store"}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/public-media-visibility.test.ts > does not permit reusable cached vehicle responses to bypass mutable visibility
 @dealers-drive/api:test: {"bug":"BUG-004","case":"cache policy","cacheControl":"no-cache"}
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: (node:13078) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/public-media-visibility.test.ts (10 tests) 1692ms
@@ -805,93 +805,93 @@
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/admin-enquiries.test.ts (26 tests) 744ms
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.notificationDelivery.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/notifications/notifications.service.ts:313:51
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   310 let claimed;
 @dealers-drive/api:test:   311 let attempts = 1;
 @dealers-drive/api:test:   312 try {
 @dealers-drive/api:test: → 313   claimed = await prisma.notificationDelivery.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `notification_deliveries_dedupeKey_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/notification-foundation.test.ts (6 tests) 480ms
 @dealers-drive/api:test: (node:13100) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
@@ -900,16 +900,16 @@
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-enquiries.test.ts (26 tests) 826ms
 @dealers-drive/api:test: stdout | tests/storefront-api.test.ts > authorized website control plane > rejects cross-tenant collisions, identity changes and mass assignment
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `tx.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/storefront/storefront.foundation.ts:30:30
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   27   }
 @dealers-drive/api:test:   28   return existing;
 @dealers-drive/api:test:   29 }
 @dealers-drive/api:test: → 30 return tx.dealerStorefront.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `dealer_storefronts_subdomain_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: (node:13102) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/storefront-api.test.ts (25 tests) 944ms
@@ -920,47 +920,47 @@
 @dealers-drive/api:test: (node:13107) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test: stdout | tests/dealer-claims.test.ts > claiming > owns the dealership once, whatever the race
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.user.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/auth/identity.service.ts:83:40
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   80   profile: { fullName?: string | null } = {},
 @dealers-drive/api:test:   81 ): Promise<PhoneAccount> {
 @dealers-drive/api:test:   82   try {
 @dealers-drive/api:test: → 83     const user = await prisma.user.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `users_phone_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-claims.test.ts (14 tests) 914ms
 @dealers-drive/api:test:    ✓ the verification email (4)
 @dealers-drive/api:test:      ✓ is sent on creation, to the typed address, with a link only the email holds 306ms
 @dealers-drive/api:test:  ✓ |integration| tests/admin-support.test.ts (23 tests) 795ms
 @dealers-drive/api:test: stdout | tests/vehicle-images-order.test.ts > the primary image > is refused by the database, not only by the service, as a second primary
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `h.prisma.vehicleMedia.update()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/vehicle-images-order.test.ts:213:29
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   210 const { vehicleId, mediaIds } = await gallery(2);
-@dealers-drive/api:test:   211 
+@dealers-drive/api:test:   211
 @dealers-drive/api:test:   212 await expect(
 @dealers-drive/api:test: → 213   h.prisma.vehicleMedia.update(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `vehicle_media_one_primary`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/vehicle-images-order.test.ts (15 tests) 875ms
 @dealers-drive/api:test: (node:13112) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/auth.test.ts (48 tests) 874ms
 @dealers-drive/api:test:  ✓ |integration| tests/sales-assisted-listings.test.ts (10 tests) 1489ms
 @dealers-drive/api:test: stdout | tests/listing-submission.test.ts > one car on the marketplace once > refuses a second dealership submitting a car already in review
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `client.vehicle.updateMany()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/vehicles/vehicles.repository.ts:77:43
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   74   tx?: Tx,
 @dealers-drive/api:test:   75 ): Promise<VehicleRow | null> {
 @dealers-drive/api:test:   76   const client = tx ?? prisma;
 @dealers-drive/api:test: → 77   const result = await client.vehicle.updateMany(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `vehicles_registrationNumber_claimed_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/listing-submission.test.ts (12 tests) 1037ms
 @dealers-drive/api:test: (node:13142) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
@@ -969,16 +969,16 @@
 @dealers-drive/api:test:      ✓ refuses to presign over a VERIFIED document of an ACTIVE dealer, and keeps the file 480ms
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-team.test.ts (23 tests) 1260ms
 @dealers-drive/api:test: stdout | tests/dealer-phone-sign-in.test.ts > what it refuses > a number an account holds but never verified
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.user.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/auth/identity.service.ts:83:40
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   80   profile: { fullName?: string | null } = {},
 @dealers-drive/api:test:   81 ): Promise<PhoneAccount> {
 @dealers-drive/api:test:   82   try {
 @dealers-drive/api:test: → 83     const user = await prisma.user.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `users_phone_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-phone-sign-in.test.ts (22 tests) 1097ms
 @dealers-drive/api:test: (node:13147) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
@@ -1026,16 +1026,16 @@
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-role-actions.test.ts (5 tests) 433ms
 @dealers-drive/api:test: stdout | tests/customer-auth.test.ts > the sign-up ticket > makes one account when two tickets for one number race
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.user.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/auth/identity.service.ts:83:40
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   80   profile: { fullName?: string | null } = {},
 @dealers-drive/api:test:   81 ): Promise<PhoneAccount> {
 @dealers-drive/api:test:   82   try {
 @dealers-drive/api:test: → 83     const user = await prisma.user.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `users_phone_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/customer-auth.test.ts (29 tests) 376ms
 @dealers-drive/api:test:  ✓ |integration| tests/vehicle-color.test.ts (8 tests) 299ms
 @dealers-drive/api:test:  ✓ |integration| tests/dealer-membership-migration.test.ts (6 tests) 240ms
@@ -1045,135 +1045,135 @@
 @dealers-drive/api:test:  ✓ |integration| tests/listing-lifecycle.test.ts (7 tests) 215ms
 @dealers-drive/api:test:  ✓ |integration| tests/identity-linking.test.ts (18 tests) 223ms
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > enforces globally unique reservations at the database
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `tx.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/src/modules/storefront/storefront.foundation.ts:30:30
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   27   }
 @dealers-drive/api:test:   28   return existing;
 @dealers-drive/api:test:   29 }
 @dealers-drive/api:test: → 30 return tx.dealerStorefront.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `dealer_storefronts_subdomain_key`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:75:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   72 it('rejects malformed and reserved identities even without application validation', async () => {
 @dealers-drive/api:test:   73   for (const name of ['www', 'api', 'Mixed-Case', 'abc--motors']) {
 @dealers-drive/api:test:   74     await expect(
 @dealers-drive/api:test: → 75       prisma.dealerStorefront.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "dealer_storefronts" violates check constraint "storefront_subdomain_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:75:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   72 it('rejects malformed and reserved identities even without application validation', async () => {
 @dealers-drive/api:test:   73   for (const name of ['www', 'api', 'Mixed-Case', 'abc--motors']) {
 @dealers-drive/api:test:   74     await expect(
 @dealers-drive/api:test: → 75       prisma.dealerStorefront.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "dealer_storefronts" violates check constraint "storefront_subdomain_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:75:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   72 it('rejects malformed and reserved identities even without application validation', async () => {
 @dealers-drive/api:test:   73   for (const name of ['www', 'api', 'Mixed-Case', 'abc--motors']) {
 @dealers-drive/api:test:   74     await expect(
 @dealers-drive/api:test: → 75       prisma.dealerStorefront.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "dealer_storefronts" violates check constraint "storefront_subdomain_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.dealerStorefront.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:75:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   72 it('rejects malformed and reserved identities even without application validation', async () => {
 @dealers-drive/api:test:   73   for (const name of ['www', 'api', 'Mixed-Case', 'abc--motors']) {
 @dealers-drive/api:test:   74     await expect(
 @dealers-drive/api:test: → 75       prisma.dealerStorefront.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "dealer_storefronts" violates check constraint "storefront_subdomain_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:82:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   79 }
 @dealers-drive/api:test:   80 for (const hostname of ['UPPER.example.com', 'http://bad.com', 'bad.com:443', 'xn--abc.com']) {
 @dealers-drive/api:test:   81   await expect(
 @dealers-drive/api:test: → 82     prisma.storefrontDomain.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "storefront_domains" violates check constraint "storefront_hostname_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:82:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   79 }
 @dealers-drive/api:test:   80 for (const hostname of ['UPPER.example.com', 'http://bad.com', 'bad.com:443', 'xn--abc.com']) {
 @dealers-drive/api:test:   81   await expect(
 @dealers-drive/api:test: → 82     prisma.storefrontDomain.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "storefront_domains" violates check constraint "storefront_hostname_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:82:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   79 }
 @dealers-drive/api:test:   80 for (const hostname of ['UPPER.example.com', 'http://bad.com', 'bad.com:443', 'xn--abc.com']) {
 @dealers-drive/api:test:   81   await expect(
 @dealers-drive/api:test: → 82     prisma.storefrontDomain.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "storefront_domains" violates check constraint "storefront_hostname_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > rejects malformed and reserved identities even without application validation
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:82:33
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   79 }
 @dealers-drive/api:test:   80 for (const hostname of ['UPPER.example.com', 'http://bad.com', 'bad.com:443', 'xn--abc.com']) {
 @dealers-drive/api:test:   81   await expect(
 @dealers-drive/api:test: → 82     prisma.storefrontDomain.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "storefront_domains" violates check constraint "storefront_hostname_normalized"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > refuses unverified ACTIVE domains at the database
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:97:31
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   94 });
 @dealers-drive/api:test:   95 it('refuses unverified ACTIVE domains at the database', async () => {
 @dealers-drive/api:test:   96   await expect(
 @dealers-drive/api:test: → 97     prisma.storefrontDomain.create(
 @dealers-drive/api:test: Database error. Code: `23514`. Message: `new row for relation "storefront_domains" violates check constraint "storefront_active_domain_verified"`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: stdout | tests/storefront-foundation.test.ts > database tenant and reservation invariants > permits a verified primary, but never two primaries
-@dealers-drive/api:test: prisma:error 
+@dealers-drive/api:test: prisma:error
 @dealers-drive/api:test: Invalid `prisma.storefrontDomain.create()` invocation in
 @dealers-drive/api:test: /Users/shashikiran/Development/dealers-drive/apps/api/tests/storefront-foundation.test.ts:114:31
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:   111   data: { status: 'ACTIVE', isPrimary: true, verifiedAt: new Date(), certificateReady: true },
 @dealers-drive/api:test:   112 });
 @dealers-drive/api:test:   113 await expect(
 @dealers-drive/api:test: → 114   prisma.storefrontDomain.create(
 @dealers-drive/api:test: Unique constraint failed on the constraint: `storefront_one_primary_domain`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  ✓ |integration| tests/storefront-foundation.test.ts (9 tests) 220ms
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  Test Files  159 passed (159)
 @dealers-drive/api:test:       Tests  3111 passed (3111)
 @dealers-drive/api:test:    Start at  20:25:30
 @dealers-drive/api:test:    Duration  118.49s (tests 57%, import 30%, transform 11%, worker 2%)
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  % Coverage report from v8
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: =============================== Coverage summary ===============================
 @dealers-drive/api:test: Statements   : 95.97% ( 6885/7174 )
 @dealers-drive/api:test: Branches     : 90.35% ( 4581/5070 )
@@ -1183,5 +1183,4 @@
 
  Tasks:    7 successful, 7 total
 Cached:    2 cached, 7 total
-  Time:    1m59.101s 
-
+  Time:    1m59.101s

@@ -21,36 +21,40 @@ All matched files use Prettier code style!
 @dealers-drive/config:lint: > echo "@dealers-drive/config: nothing to lint"
 @dealers-drive/config:lint:
 @dealers-drive/config:lint: @dealers-drive/config: nothing to lint
+@dealers-drive/contracts:lint:
+@dealers-drive/contracts:lint: > @dealers-drive/contracts@0.0.0 lint /Users/shashikiran/Development/dealers-drive/packages/contracts
+@dealers-drive/contracts:lint: > eslint .
+@dealers-drive/contracts:lint:
 @dealers-drive/contracts:build: cache hit, replaying logs ecae0a5ea29acb4d
 @dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
 @dealers-drive/contracts:build:
-@dealers-drive/contracts:lint:
-@dealers-drive/contracts:lint: > @dealers-drive/contracts@0.0.0 lint /Users/shashikiran/Development/dealers-drive/packages/contracts
-@dealers-drive/contracts:lint: > eslint .
-@dealers-drive/contracts:lint:
-@dealers-drive/api:lint: cache miss, executing 427ce8da6d3a7d20
-@dealers-drive/storefront-ui:build: cache hit, replaying logs fe1e810290e300c3
-@dealers-drive/storefront-ui:build:
-@dealers-drive/storefront-ui:build: > @dealers-drive/storefront-ui@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
-@dealers-drive/storefront-ui:build: > tsc --noEmit
-@dealers-drive/storefront-ui:build:
-@dealers-drive/storefront-ui:lint: cache hit, replaying logs f7a579fd8f9d4cfc
+@dealers-drive/storefront-ui:build: cache hit, replaying logs 007f62680a433551
+@dealers-drive/storefront-ui:lint: cache hit, replaying logs 6f8b8b927bc39fde
+@dealers-drive/api:lint: cache hit, replaying logs 4e51e23939c38e3c
 @dealers-drive/storefront-ui:lint:
 @dealers-drive/storefront-ui:lint: > @dealers-drive/storefront-ui@0.0.0 lint /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
+@dealers-drive/api:lint:
+@dealers-drive/api:lint: > @dealers-drive/api@0.0.0 lint /Users/shashikiran/Development/dealers-drive/apps/api
 @dealers-drive/storefront-ui:lint: > eslint .
 @dealers-drive/storefront-ui:lint:
 @dealers-drive/storefront-ui:lint: Pages directory cannot be found at /Users/shashikiran/Development/dealers-drive/packages/storefront-ui/pages or /Users/shashikiran/Development/dealers-drive/packages/storefront-ui/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
 @dealers-drive/storefront-ui:lint:
 @dealers-drive/storefront-ui:lint: /Users/shashikiran/Development/dealers-drive/packages/storefront-ui/src/components/storefront-image/storefront-image.tsx
 @dealers-drive/storefront-ui:lint:   31:5  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+@dealers-drive/api:lint: > eslint .
+@dealers-drive/api:lint:
 @dealers-drive/storefront-ui:lint:
 @dealers-drive/storefront-ui:lint: ✖ 1 problem (0 errors, 1 warning)
 @dealers-drive/storefront-ui:lint:
-@dealers-drive/web:lint: cache hit, replaying logs 476f2d99597d06e7
-@dealers-drive/sandbox:lint: cache hit, replaying logs 524be76f3310c423
-@dealers-drive/storefront:lint: cache hit, replaying logs 7e6ab8b2ebf65ce3
+@dealers-drive/storefront-ui:build:
+@dealers-drive/storefront-ui:build: > @dealers-drive/storefront-ui@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
+@dealers-drive/storefront-ui:build: > tsc --noEmit
+@dealers-drive/storefront-ui:build:
+@dealers-drive/web:lint: cache hit, replaying logs 139883c47b9f253d
+@dealers-drive/sandbox:lint: cache hit, replaying logs c1cdabbd076f5a2f
+@dealers-drive/storefront:lint: cache hit, replaying logs d30392315270e41e
 @dealers-drive/web:lint:
 @dealers-drive/web:lint: > @dealers-drive/web@0.0.0 lint /Users/shashikiran/Development/dealers-drive/apps/web
 @dealers-drive/web:lint: > eslint .
@@ -70,14 +74,10 @@ All matched files use Prettier code style!
 @dealers-drive/sandbox:lint: > eslint .
 @dealers-drive/sandbox:lint:
 @dealers-drive/sandbox:lint: Pages directory cannot be found at /Users/shashikiran/Development/dealers-drive/apps/sandbox/pages or /Users/shashikiran/Development/dealers-drive/apps/sandbox/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
-@dealers-drive/api:lint:
-@dealers-drive/api:lint: > @dealers-drive/api@0.0.0 lint /Users/shashikiran/Development/dealers-drive/apps/api
-@dealers-drive/api:lint: > eslint .
-@dealers-drive/api:lint:
 
  Tasks:    9 successful, 9 total
-Cached:    8 cached, 9 total
-  Time:    10.117s
+Cached:    9 cached, 9 total
+  Time:    23ms >>> FULL TURBO
 
 
 > dealers-drive@0.0.0 docs:check /Users/shashikiran/Development/dealers-drive
