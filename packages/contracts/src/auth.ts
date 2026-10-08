@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DealerAcceptanceInput, AgreementAcceptance } from './legal.js';
 
 import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
 import { AdminRole, DealerRole, DealerStatus } from './enums.js';
@@ -85,6 +86,7 @@ export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponse>;
  */
 export const OnboardingInput = z
   .object({
+    agreement: DealerAcceptanceInput.optional(),
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
     phone: IndianMobile,
     /**
@@ -517,6 +519,7 @@ export const CustomerSignUpInput = z
   .object({
     signUpToken: z.string().trim().min(1).max(2048),
     fullName: CustomerName,
+    agreement: AgreementAcceptance.optional(),
   })
   .strict();
 export type CustomerSignUpInput = z.infer<typeof CustomerSignUpInput>;

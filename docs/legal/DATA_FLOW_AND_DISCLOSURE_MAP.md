@@ -1,0 +1,32 @@
+# Data flow and disclosure map — internal review
+
+## Confirmed paths
+
+1. Visitor → public Next pages/search → public DTOs (approved dealer and listing visibility predicates). No public acceptance gate.
+2. Browser → Google state/nonce/PKCE → API identity/session → BFF cookie relay. Dealer/admin audiences and linking are distinct. Google authorization does not accept platform agreements.
+3. Browser → MSG91 widget (phone, OTP/CAPTCHA, browser network metadata) → opaque proof → API provider verification and replay defence → existing account/session or expiring customer name ticket. Fake adapter is local/test only.
+4. Dealer → validated onboarding, business IDs → Postgres; signed object upload → private KYC storage → authorized dealer/admin read → manual document decisions. Dealer status gates publication.
+5. Sales representative → proved contact ticket → assisted dealer draft/docs → verified-email ownership claim → actual dealer owner account. OTP cooperation is not agreement acceptance or authority to bind.
+6. Dealer/authorized sales → draft vehicle fields → final submit/resubmit → moderation/photography/checks → approved public listing. Local sharp transforms resize/encode images. No independent V1 condition inspection or external AI processing integration.
+7. Customer → enquiry notice/affirmative sharing → enquiry/consent receipt in one transaction → relevant dealer inbox name/phone/message → verified-address owner email (first name/message, not phone/surname) via outbox/Resend. Admin oversight separately permissioned. Withdrawal prevents subsequent platform dealer disclosures; cannot recall information already received by dealer.
+8. Customer → support ticket/replies → own thread and authorized support/admin → notification email excluding detailed description. Email/phone support remains available to people unable to sign in.
+9. Team/admin invitation and account changes → membership/seat checks → session revocation/transactional reauthorization → audit history.
+
+## Provider matrix
+
+Presence/guards below CONFIRMED IN CODE. Actual enabled production services, contracts, region, subprocessors and account retention are BUSINESS CONFIRMATION REQUIRED. Infrastructure declarations are CONFIRMED BY RELIABLE DOCUMENTATION, not runtime attestation.
+
+| Provider                      | Information/purpose                                                      | Storage/geography and review                                                                                           | Source/documentation                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Google OAuth                  | Verified identity, email/name/picture, authentication network metadata   | Google identity service; processing region/retention not established; no Google tokens retained as acceptance evidence | auth/google.provider.ts; https://developers.google.com/identity/protocols/oauth2              |
+| MSG91                         | Phone/OTP/widget proof and browser CAPTCHA/network metadata              | Provider verification; SMS/WhatsApp channel depends on actual widget configuration; confirm DLT/template/retention     | platform/phone-otp/msg91.adapter.ts; https://docs.msg91.com/                                  |
+| Cloudflare R2 (S3 interface)  | KYC, original/derived photos                                             | env rejects local/MinIO in production; bucket/account jurisdiction and deletion/backups unknown                        | platform/storage/s3.adapter.ts; https://developers.cloudflare.com/r2/reference/data-location/ |
+| AWS                           | API/database/infrastructure logs                                         | Terraform defines services/regions; does not attest deployed region or security/retention                              | deploy/terraform; https://aws.amazon.com/compliance/data-privacy/                             |
+| Vercel                        | Web requests, cookie/BFF transit                                         | Web deployment config; logs/processing region and agreement require confirmation                                       | apps/web/vercel.json; https://vercel.com/docs/security/privacy-policy                         |
+| Resend                        | Verified-address service mail, name/enquiry/support subject and links    | Delivery record stored in Postgres; provider retention/region unknown                                                  | platform/mail/resend.adapter.ts; https://resend.com/legal/dpa                                 |
+| Google Maps                   | Dealer share link/coordinates; visitor IP/browser data on external embed | Links resolved only on host allow-list; embeds independently contact Google                                            | platform/maps/maps-link.ts; Google privacy policy                                             |
+| Grafana Cloud Loki (optional) | Redacted application logs                                                | Enabled by deployment settings only; exact region/retention unknown                                                    | platform/telemetry/logger.ts; https://grafana.com/legal/privacy-policy/                       |
+| WhatsApp support link         | Contact/message intentionally sent when visitor opens service            | External application, not platform marketing subscription                                                              | web/features/support; https://www.whatsapp.com/legal/privacy-policy                           |
+| Local/MinIO/console/fake      | Development test data only                                               | Never assert these are live vendors                                                                                    | config/env.ts                                                                                 |
+
+No discovered payment, external inspection, advertising analytics, SMTP implementation or external AI image-processing service. No secrets, signed URLs, private documents or production records form part of this audit.

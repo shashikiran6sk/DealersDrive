@@ -1,3 +1,6 @@
+import { getAdminHistory } from './modules/legal/routes/get-admin-history.js';
+import { createLegalRouter } from './modules/legal/legal.routes.js';
+import { createLegalService } from './modules/legal/legal.service.js';
 import { Router } from 'express';
 
 import { env } from './config/env.js';
@@ -50,6 +53,10 @@ export function createRoutes(container: Container): Router {
   }
 
   const v1 = Router();
+  const legal = createLegalService(container.prisma);
+  v1.use('/legal/account', container.guards.requireSignedIn, createLegalRouter(legal));
+  v1.use('/legal/customer', container.guards.requireCustomer, createLegalRouter(legal));
+  v1.use('/legal/dealer', container.guards.requireDealer, createLegalRouter(legal, true));
 
   v1.use(createConfigRouter(container.publicConfig));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
@@ -112,6 +119,7 @@ export function createRoutes(container: Container): Router {
   const admin = Router();
   admin.use(container.guards.requireAdmin);
   admin.use(requirePermission('admin:console', ADMIN_CONSOLE_REFUSAL));
+  getAdminHistory(admin, legal);
   admin.use(createAdminRouter(container.admin));
   admin.use(createAdminMembersRouter(container.adminMembers));
   admin.use(createModerationRouter(container.moderation));

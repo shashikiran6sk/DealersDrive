@@ -1,4 +1,12 @@
 import {
+  acceptDealer,
+  hasDealerAgreement,
+  requireDealerAgreement,
+  legalEnabled,
+} from '../legal/legal.facade.js';
+import { authorizeDealerWrite } from '../auth/auth.facade.js';
+import type { DealerSubmitInput } from '@dealers-drive/contracts';
+import {
   dealerSessionNext,
   DEALER_STATUS_LABELS,
   distinctServices,
@@ -569,6 +577,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async submitForVerification(
       dealerId: string,
       actor: SubmissionActor = { type: 'DEALER', id: null },
+      input: DealerSubmitInput = {},
     ): Promise<DealerSubmitResponse> {
       const dealer = await requireDealer(dealerId);
       assertSubmittable(dealer.status);
@@ -590,6 +599,11 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
+        if (legalEnabled() && actor.type === 'DEALER' && actor.id) {
+          await authorizeDealerWrite(tx, { userId: actor.id, dealerId }, 'dealer:update');
+          if (input.agreement) await acceptDealer(tx, actor.id, dealerId, input.agreement);
+        }
+        await requireDealerAgreement(tx, dealerId);
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,
@@ -858,7 +872,9 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         repo.viewRollups(dealerId, weekStart),
         repo.previousWeekViews(dealerId, weekStart),
         repo.enquiryCounts(dealerId, weekStart),
-        repo.recentEnquiries(dealerId, 4),
+        (await hasDealerAgreement(prisma, dealerId))
+          ? repo.recentEnquiries(dealerId, 4)
+          : Promise.resolve([]),
         repo.expiringListingCount(dealerId, new Date(Date.now() + 7 * 86_400_000)),
         repo.weeklyActivity(dealerId, weekStart, startOfMonthUtc()),
         repo.listingCounts(dealerId),

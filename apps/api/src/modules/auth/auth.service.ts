@@ -1,3 +1,4 @@
+import { acceptDealer, requireCurrentAcceptance } from '../legal/legal.facade.js';
 import {
   adminHomeFor,
   formatPhone,
@@ -265,6 +266,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     },
 
     async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
+      requireCurrentAcceptance(input.agreement);
       const linked = await identities.identitiesOf(principal.userId);
       if (!linked.google) {
         throw new DomainError('ONBOARDING_IDENTITY_INCOMPLETE', IDENTITY_INCOMPLETE, {
@@ -358,6 +360,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
         });
 
+        await acceptDealer(tx, principal.userId, dealer.id, input.agreement);
         await tx.dealerDocument.createMany({
           data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
             dealerId: dealer.id,

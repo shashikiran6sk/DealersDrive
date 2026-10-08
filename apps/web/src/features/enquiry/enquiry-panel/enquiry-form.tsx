@@ -1,5 +1,8 @@
 'use client';
 
+import { LEGAL_VERSION } from '@dealers-drive/contracts';
+import { LegalCheck } from '@/features/legal/legal-check';
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +14,8 @@ import type { EnquiryFormProps } from './enquiry-panel.types';
 
 export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryFormProps) {
   const id = useId();
+  const legal = useLegalEnabled();
+  const [permitted, setPermitted] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useNavigationSafeAction();
@@ -23,11 +28,17 @@ export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryF
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
+        if (legal && !permitted) {
+          setError('Choose whether to share your details before sending.');
+          return;
+        }
         if (inFlight.current) return;
         inFlight.current = true;
         setError(null);
         startTransition(async () => {
-          const result = await onSend(message);
+          const result = legal
+            ? await onSend(message, { version: LEGAL_VERSION, granted: true })
+            : await onSend(message);
           inFlight.current = false;
           if (result.status === 'invalid') setError(result.message);
           if (result.status === 'refused') setError(result.message);
@@ -72,6 +83,18 @@ export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryF
 
       <p className="m-0 text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.shareNote(dealerName)}</p>
 
+      <LegalCheck kind="enquiry" dealerName={dealerName} onCompleteChange={setPermitted} />
+      {legal ? (
+        <p className="text-[12px]">
+          <a href="/agreements" className="underline">
+            Review your account agreements
+          </a>{' '}
+          ·{' '}
+          <a href="/data-rights" className="underline">
+            Withdraw future sharing
+          </a>
+        </p>
+      ) : null}
       {error ? (
         <p role="alert" className="m-0 text-[12px] text-(--color-err)">
           {error}

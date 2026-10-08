@@ -5,7 +5,7 @@ import type {
 } from '@dealers-drive/contracts';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
 import userEvent from '@testing-library/user-event';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
@@ -289,7 +289,8 @@ describe('the dealership card', () => {
 
     const cards = container.querySelectorAll('section:not(#inventory)');
     expect(cards).toHaveLength(2);
-    expect(cards[1]).toContainElement(container.querySelector('iframe'));
+    expect(cards[1]).toContainElement(screen.getByRole('button', { name: 'Load Google Maps' }));
+    expect(container.querySelector('iframe')).toBeNull();
   });
 
   it('renders every service the dealership listed', async () => {
@@ -349,6 +350,7 @@ describe('the location map', () => {
     serve(DEALER);
     const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
+    fireEvent.click(screen.getByRole('button', { name: 'Load Google Maps' }));
     const frame = container.querySelector('iframe');
     expect(frame?.getAttribute('src')).toBe(DEALER.address.embedUrl);
     // Named for a screen reader, which otherwise announces "iframe".

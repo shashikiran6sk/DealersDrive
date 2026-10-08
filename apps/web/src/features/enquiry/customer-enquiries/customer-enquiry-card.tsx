@@ -1,3 +1,5 @@
+'use client';
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import Link from 'next/link';
 
 import { StatusTag } from '@/components/ui/primitives';
@@ -6,6 +8,7 @@ import { CUSTOMER_ENQUIRIES_TEXT } from './customer-enquiries.constants';
 import type { CustomerEnquiryCardProps } from './customer-enquiries.types';
 
 export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
+  const legal = useLegalEnabled();
   return (
     <li className="card flex flex-col gap-[10px] bg-white p-[18px]">
       <div className="flex flex-wrap items-start justify-between gap-[10px]">
@@ -33,6 +36,11 @@ export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
         {enquiry.message ?? <span className="ink-subtle">{CUSTOMER_ENQUIRIES_TEXT.noMessage}</span>}
       </p>
       <div className="flex flex-wrap items-center justify-between gap-[8px] border-t border-(--color-divider) pt-[9px] text-[12px]">
+        {legal ? (
+          <Link href={`/data-rights?enquiry=${enquiry.id}`} className="underline">
+            Sharing choices
+          </Link>
+        ) : null}
         <time dateTime={enquiry.createdAt} className="ink-muted tnum">
           {CUSTOMER_ENQUIRIES_TEXT.sentOn(enquiry.createdLabel)}
         </time>

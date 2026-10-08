@@ -17,6 +17,7 @@ import { Blueprint, StatusTag } from '@/components/ui/primitives';
 import { customerAccountAction } from '@/features/auth/customer-account-actions';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { SignOutButton } from '@/features/auth/sign-out';
+import { legalPagesVisible } from '@/lib/legal-release';
 import { apiGet } from '@/lib/api';
 import { currentSession, hasSession } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
@@ -88,6 +89,21 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           )}
         </header>
 
+        {legalPagesVisible() ? (
+          <div className="border-b border-(--color-divider) px-4 py-3 text-[13px] md:px-8">
+            <Link href="/agreements" className="underline">
+              My agreements
+            </Link>{' '}
+            ·{' '}
+            <Link href="/data-rights" className="underline">
+              Privacy requests
+            </Link>{' '}
+            ·{' '}
+            <Link href="/contact" className="underline">
+              Support
+            </Link>
+          </div>
+        ) : null}
         <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
       </div>
 

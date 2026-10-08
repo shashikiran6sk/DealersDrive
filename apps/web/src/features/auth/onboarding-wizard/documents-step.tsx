@@ -6,6 +6,7 @@ import type {
   DealerProfile,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useActionState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
@@ -34,6 +35,7 @@ export function DocumentsStep({
   onBack,
   onDone,
 }: DocumentsStepProps) {
+  const legal = useLegalEnabled();
   const [state, submit, pending] = useActionState<ActionState, FormData>(saveBusinessIdsAction, {});
   const values = state.values ?? {};
 
@@ -50,6 +52,17 @@ export function DocumentsStep({
         <p className="mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.documentsIntro}</p>
       </div>
 
+      {legal ? (
+        <p className="text-[13px] leading-[1.7]">
+          We use these documents to review dealership identity and business details. They are
+          accessible to authorized reviewers and are not published as listing photos. Upload only
+          the documents requested and redact unrelated personal details where possible.{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+            Privacy Policy (opens in a new tab)
+          </a>
+          .
+        </p>
+      ) : null}
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
       {state.saved ? <Banner tone="ok">{ONBOARDING_TEXT.saved}</Banner> : null}
 

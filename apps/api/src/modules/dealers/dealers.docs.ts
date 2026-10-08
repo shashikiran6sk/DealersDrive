@@ -224,13 +224,14 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'Submit for verification',
       description:
-        'Hands the dealership to the moderation queue. Takes no body — everything it needs ' +
+        'Hands the dealership to the moderation queue. Requires a current owner Dealer Agreement when legal enforcement is active; an explicit agreement may be supplied here. Profile information ' +
         'is already on the record.\n\n' +
         'Rejected with 422 if the profile or the KYC documents are incomplete; ' +
         '`GET /v1/dealer/completeness` says what is missing before you try.\n\n' +
         'OWNER only (`dealer:update`).',
       audience: 'dealer',
       permission: 'dealer:update',
+      requestBody: { schema: 'DealerSubmitInput', required: false },
       responses: [
         {
           status: 200,

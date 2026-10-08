@@ -33,6 +33,10 @@ export async function suspendDealerAction(dealerId: string, input: unknown) {
   return respond('suspendDealer', dealerId, input);
 }
 
+export async function closeDealerAction(dealerId: string, input: unknown) {
+  return respond('closeDealer', dealerId, input);
+}
+
 export async function reinstateDealerAction(dealerId: string, input: unknown) {
   return respond('reinstateDealer', dealerId, input);
 }

@@ -1,3 +1,4 @@
+import { requireDealerAgreement } from '../legal/legal.facade.js';
 import {
   ADMIN_ROLE_LABELS,
   DEALER_STATUS_LABELS,
@@ -521,6 +522,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'Only a submitted application can be approved.',
           );
         }
+        await requireDealerAgreement(tx, dealerId);
         await tx.$queryRaw`
           SELECT "id" FROM "dealer_documents" WHERE "dealerId" = ${dealerId}::uuid
           ORDER BY "id" FOR UPDATE`;

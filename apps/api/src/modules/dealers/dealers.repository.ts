@@ -241,7 +241,7 @@ export function createDealersRepository(prisma: PrismaClient) {
 
     async recentEnquiries(dealerId: string, limit: number): Promise<RecentEnquiryRow[]> {
       const rows = await prisma.enquiry.findMany({
-        where: { dealerId, status: { not: 'SPAM' } },
+        where: { dealerId, status: { not: 'SPAM' }, sharingWithdrawnAt: null },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit,
         select: {

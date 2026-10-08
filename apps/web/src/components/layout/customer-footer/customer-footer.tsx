@@ -1,15 +1,26 @@
 import { BrandLogo } from '@/components/brand-logo';
 
-import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT, SUPPORT_LINKS } from './customer-footer.constants';
+import {
+  BUYER_LINKS,
+  DEALER_LINKS,
+  FOOTER_TEXT,
+  SUPPORT_LINKS,
+  LEGAL_LINKS,
+} from './customer-footer.constants';
 import type { CustomerFooterProps } from './customer-footer.types';
 import { FooterColumn } from './footer-column';
 import { FooterLinkItem } from './footer-link-item';
 import { SocialRow } from './social-row';
 
-export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerFooterProps) {
+export function CustomerFooter({
+  social,
+  supportEmail,
+  supportPhone,
+  legalVisible = false,
+}: CustomerFooterProps) {
   return (
     <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
+      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
         <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-[10px]">
             <BrandLogo variant="dark" />
@@ -63,6 +74,13 @@ export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerF
             </li>
           ) : null}
         </FooterColumn>
+        {legalVisible ? (
+          <FooterColumn title="Legal & privacy">
+            {LEGAL_LINKS.map((link) => (
+              <FooterLinkItem key={link.href} {...link} />
+            ))}
+          </FooterColumn>
+        ) : null}
       </div>
 
       <div className="border-t border-(--color-rule)">

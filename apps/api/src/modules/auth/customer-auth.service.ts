@@ -1,3 +1,5 @@
+import { requireCurrentAcceptance, acceptTerms } from '../legal/legal.facade.js';
+import { withTransaction } from '../../platform/db/tenant-tx.js';
 import {
   formatPhone,
   type CustomerProfile,
@@ -146,6 +148,7 @@ export function createCustomerAuthService({
       input: CustomerSignUpInput,
       context: SignInContext = {},
     ): Promise<{ customer: CustomerProfile; session: IssuedCustomerSession }> {
+      requireCurrentAcceptance(input.agreement);
       const ticket = await redeemSignUpTicket(cache, input.signUpToken);
 
       const account = await identities.createWithPhone(
@@ -166,6 +169,10 @@ export function createCustomerAuthService({
             data: { fullName: input.fullName },
             include: { roles: true },
           });
+
+      await withTransaction(prisma, async (tx) => {
+        await acceptTerms(tx, named.id, input.agreement, 'customer-registration');
+      });
 
       return open(
         { ...named, fullName: named.fullName ?? input.fullName, phone: ticket.phone },

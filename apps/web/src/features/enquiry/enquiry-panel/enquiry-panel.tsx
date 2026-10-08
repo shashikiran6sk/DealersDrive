@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { EnquirySharingPermission } from '@dealers-drive/contracts';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -66,10 +67,15 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     // eslint-disable-next-line react-hooks/exhaustive-deps -- asked once on mount; autoOpen asks through open()
   }, []);
 
-  async function send(message: string): Promise<SendEnquiryState> {
+  async function send(
+    message: string,
+    sharing?: EnquirySharingPermission,
+  ): Promise<SendEnquiryState> {
     let result: SendEnquiryState;
     try {
-      result = await sendEnquiryAction(listingSlug, message);
+      result = sharing
+        ? await sendEnquiryAction(listingSlug, message, sharing)
+        : await sendEnquiryAction(listingSlug, message);
     } catch {
       return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_PANEL_TEXT.sendFailed };
     }

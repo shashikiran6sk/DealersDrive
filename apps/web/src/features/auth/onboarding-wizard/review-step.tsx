@@ -1,6 +1,8 @@
 'use client';
 
 import type { AuthSession, CompletenessResponse } from '@dealers-drive/contracts';
+import { LegalCheck } from '@/features/legal/legal-check';
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useActionState } from 'react';
 
 import { Blueprint, Banner, StatusTag } from '@/components/ui/primitives';
@@ -15,8 +17,10 @@ export interface ReviewStepProps {
 }
 
 export function ReviewStep({ session, completeness }: ReviewStepProps) {
+  const legal = useLegalEnabled();
   const [state, submit, pending] = useActionState<ActionState, FormData>(
-    async () => submitForVerificationAction(),
+    async (_previous, formData) =>
+      legal ? submitForVerificationAction(formData) : submitForVerificationAction(),
     {},
   );
   const submitted = session.dealer?.status === 'PENDING_APPROVAL';
@@ -52,13 +56,23 @@ export function ReviewStep({ session, completeness }: ReviewStepProps) {
         <p className="mt-[8px] text-[14px] leading-[1.6] ink-body">{ONBOARDING_TEXT.prepareNote}</p>
       </Blueprint>
 
-      <form action={submit} className="flex gap-[8px]">
+      <form action={submit} className="flex flex-col gap-[8px]">
         {submitted ? (
           <a href={ONBOARDING_PATH.dashboard} className="btn btn-primary h-[42px] flex-1">
             {ONBOARDING_TEXT.goToDashboard}
           </a>
         ) : (
           <>
+            {session.role === 'OWNER' ? (
+              <LegalCheck kind="dealer" />
+            ) : legal ? (
+              <p>
+                The dealership owner must accept the Dealer Agreement.{' '}
+                <a href="/agreements" className="underline">
+                  My agreements
+                </a>
+              </p>
+            ) : null}
             <a href={ONBOARDING_PATH.documents} className="btn btn-secondary h-[42px] px-[18px]">
               {ONBOARDING_TEXT.back}
             </a>

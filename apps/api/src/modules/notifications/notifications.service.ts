@@ -186,9 +186,9 @@ export function createNotificationsService({
   async function enquiryContext(enquiryId: string): Promise<EnquiryContext | null> {
     const enquiry = await prisma.enquiry.findUnique({
       where: { id: enquiryId },
-      select: { message: true, customer: { select: { fullName: true } } },
+      select: { message: true, sharingWithdrawnAt: true, customer: { select: { fullName: true } } },
     });
-    if (!enquiry) return null;
+    if (!enquiry || enquiry.sharingWithdrawnAt) return null;
     return { buyerName: firstNameOf(enquiry.customer.fullName), message: enquiry.message };
   }
 

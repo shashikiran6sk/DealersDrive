@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { LocationCard } from '@/components/dealers/location-card';
@@ -36,6 +36,8 @@ describe('LocationCard', () => {
   it('points the frame at the URL the API composed, and nothing else', () => {
     const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
 
+    expect(container.querySelector('iframe')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Load Google Maps' }));
     const frame = container.querySelector('iframe');
     // Verbatim. The card does not build, rewrite or second-guess this URL —
     // which is what lets the API change the shape of the map (R14) without the
@@ -47,6 +49,7 @@ describe('LocationCard', () => {
   it('names the frame, because a screen reader otherwise announces "iframe"', () => {
     const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Load Google Maps' }));
     expect(container.querySelector('iframe')?.getAttribute('title')).toBe(
       'Map showing Sri Lakshmi Motors in Vellore',
     );
@@ -83,6 +86,8 @@ describe('LocationCard', () => {
       <LocationCard address={{ ...ADDRESS, mapsUrl: null }} brandName="Sri Lakshmi Motors" />,
     );
 
+    expect(container.querySelector('iframe')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Load Google Maps' }));
     expect(container.querySelector('iframe')).not.toBeNull();
     expect(screen.queryByRole('link', { name: /get directions/i })).toBeNull();
   });

@@ -1,9 +1,15 @@
 'use server';
 
-import { CreateEnquiryInput, CustomerSession, type EnquiryReceipt } from '@dealers-drive/contracts';
+import {
+  CreateEnquiryInput,
+  CustomerSession,
+  type EnquirySharingPermission,
+  type EnquiryReceipt,
+} from '@dealers-drive/contracts';
 
 import { cookies } from 'next/headers';
 
+import { legalEnforcementEnabled } from '@/lib/legal-release';
 import { ApiError, apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 import { ENQUIRY_ACTION_TEXT } from './actions.constants';
@@ -38,8 +44,20 @@ export async function enquiryCustomerAction(): Promise<EnquiryCustomer | null> {
 export async function sendEnquiryAction(
   listingSlug: string,
   message: string,
+  sharing?: EnquirySharingPermission,
 ): Promise<SendEnquiryState> {
-  const parsed = CreateEnquiryInput.safeParse({ listingSlug, message });
+  if (sharing && !legalEnforcementEnabled())
+    return {
+      status: 'invalid',
+      message: 'Sharing collection has changed. Refresh before continuing.',
+    };
+  if (legalEnforcementEnabled() && !sharing?.granted)
+    return { status: 'invalid', message: 'Choose whether to share your details before sending.' };
+  const parsed = CreateEnquiryInput.safeParse({
+    listingSlug,
+    message,
+    ...(legalEnforcementEnabled() ? { sharing } : {}),
+  });
   if (!parsed.success) {
     return {
       status: 'invalid',

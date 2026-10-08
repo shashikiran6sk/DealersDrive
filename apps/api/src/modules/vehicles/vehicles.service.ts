@@ -1,4 +1,15 @@
 import {
+  certificationContext,
+  documentDigest,
+  legalEnabled,
+  requireCurrentVersion,
+  requireDealerAgreement,
+  requireTerms,
+  recordEvidence,
+} from '../legal/legal.facade.js';
+import type { SubmitVehicleInput } from '@dealers-drive/contracts';
+import {
+  LEGAL_VERSION,
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
@@ -353,7 +364,11 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       });
     },
 
-    async submit(actor: VehicleActor, vehicleId: string): Promise<DealerVehicle> {
+    async submit(
+      actor: VehicleActor,
+      vehicleId: string,
+      input: SubmitVehicleInput = {},
+    ): Promise<DealerVehicle> {
       await requireOwned(actor.dealerId, vehicleId);
 
       try {
@@ -363,6 +378,14 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           if (!listing || !vehicle) throw notFound();
           const permissions = await authorizeDealerWrite(tx, actor, 'listing:submit', true);
 
+          await requireDealerAgreement(tx, actor.dealerId);
+          await requireTerms(tx, actor.userId);
+          if (legalEnabled() && !input.certification?.certified)
+            throw new DomainError(
+              'CERTIFICATION_REQUIRED',
+              'Certify your authority and the listing information before submission.',
+            );
+          requireCurrentVersion(input.certification?.version);
           const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
           assertTransition(listing.status, event, 'DEALER');
 
@@ -385,6 +408,15 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           const moved = await transition(tx, audit, listing, event, {
             type: 'DEALER',
             id: actor.userId,
+          });
+          await recordEvidence(tx, {
+            actorId: actor.userId,
+            subjectType: 'LISTING',
+            subjectId: listing.id,
+            documentId: 'certification',
+            action: 'CERTIFY',
+            context: certificationContext(vehicle, moved.submissionCount, false),
+            occurrence: String(moved.submissionCount),
           });
           return { vehicle: { ...vehicle, claimedAt, listing: moved }, permissions };
         });
@@ -503,6 +535,58 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       }
     },
 
+    async certifyAssisted(
+      actor: VehicleActor,
+      vehicleId: string,
+      input: SubmitVehicleInput,
+    ): Promise<{ certified: true }> {
+      if (!legalEnabled())
+        throw new DomainError(
+          'LEGAL_NOT_ACTIVE',
+          'Legal acceptance has not been activated for this deployment.',
+        );
+      return withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!listing || !vehicle) throw notFound();
+        await authorizeDealerWrite(tx, actor, 'listing:submit', true);
+        await requireDealerAgreement(tx, actor.dealerId);
+        await requireTerms(tx, actor.userId);
+        const membership = await tx.dealerMember.findUnique({
+          where: { dealerId_userId: { dealerId: actor.dealerId, userId: actor.userId } },
+        });
+        if (membership?.role !== 'OWNER' || membership.status !== 'ACTIVE')
+          throw new DomainError(
+            'DEALER_AUTHORITY_REQUIRED',
+            'The dealership owner must certify an assisted listing.',
+          );
+        if (!vehicle.createdByMemberId || !isListingEditable(listing.status))
+          throw new DomainError(
+            'CERTIFICATION_NOT_AVAILABLE',
+            'Only an editable assisted draft can be certified here.',
+          );
+        if (!input.certification?.certified)
+          throw new DomainError(
+            'CERTIFICATION_REQUIRED',
+            'Confirm the listing declaration before continuing.',
+          );
+        requireCurrentVersion(input.certification.version);
+        const refusal = incomplete(vehicle);
+        if (refusal) throw refusal;
+        const context = certificationContext(vehicle, listing.submissionCount + 1, true);
+        await recordEvidence(tx, {
+          actorId: actor.userId,
+          subjectType: 'LISTING',
+          subjectId: listing.id,
+          documentId: 'certification',
+          action: 'CERTIFY',
+          context,
+          occurrence: context,
+        });
+        return { certified: true };
+      });
+    },
+
     async assistedSubmit(actor: AssistedVehicleActor, vehicleId: string): Promise<DealerVehicle> {
       await requireAssistedVehicle(actor, vehicleId);
       try {
@@ -511,6 +595,25 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           const vehicle = await requireAssistedVehicle(actor, vehicleId, tx);
           if (!listing) throw notFound();
           const permissions = await authorizeAssisted(tx, actor, true);
+          await requireDealerAgreement(tx, actor.dealerId);
+          if (legalEnabled()) {
+            const certification = await tx.legalEvent.count({
+              where: {
+                subjectType: 'LISTING',
+                subjectId: listing.id,
+                documentId: 'certification',
+                version: LEGAL_VERSION,
+                digest: documentDigest('certification'),
+                action: 'CERTIFY',
+                context: certificationContext(vehicle, listing.submissionCount + 1, true),
+              },
+            });
+            if (certification === 0)
+              throw new DomainError(
+                'DEALER_CERTIFICATION_REQUIRED',
+                'Ask the dealership owner to review and certify this assisted draft in their workspace. Changes require a fresh certification.',
+              );
+          }
 
           const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
           assertTransition(listing.status, event, 'SALES');
