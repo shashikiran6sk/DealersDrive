@@ -16,6 +16,7 @@ export interface Queue {
 }
 
 export const JOB_NAMES = [
+  'storefront.domains-sweep',
   'media.process',
   'media.gc-orphans',
   'search.index-listing',

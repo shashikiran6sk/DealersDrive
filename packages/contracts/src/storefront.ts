@@ -352,3 +352,22 @@ export const StorefrontSitemapResponse = z.object({
   page: OffsetPage,
 });
 export type StorefrontSitemapResponse = z.infer<typeof StorefrontSitemapResponse>;
+export const StorefrontPublicationQuery = z
+  .object({ page: z.coerce.number().int().min(1).max(1000).default(1) })
+  .strict();
+export type StorefrontPublicationQuery = z.infer<typeof StorefrontPublicationQuery>;
+export const StorefrontPublicationResponse = z.object({
+  data: z
+    .array(
+      z.object({
+        id: Uuid,
+        title: z.string(),
+        status: z.string(),
+        marketplacePublished: z.boolean(),
+        storefrontPublished: z.boolean(),
+      }),
+    )
+    .max(24),
+  page: OffsetPage,
+});
+export type StorefrontPublicationResponse = z.infer<typeof StorefrontPublicationResponse>;

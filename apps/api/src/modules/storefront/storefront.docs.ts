@@ -4,6 +4,105 @@ import { DOC_TAGS } from '../../docs/tags.js';
 const management: OperationSpec[] = [
   {
     method: 'get',
+    path: '/v1/dealer/storefront/publication',
+    operationId: 'listWebsitePublication',
+    tag: DOC_TAGS.storefront,
+    summary: 'Listing publication destinations',
+    description:
+      'Authenticated session-scoped inventory destination settings, 24 rows per page. Moderation and listing lifecycle remain authoritative.',
+    audience: 'dealer',
+    permission: 'storefront:read',
+    query: 'StorefrontPublicationQuery',
+    responses: [
+      {
+        status: 200,
+        description: 'Publication settings.',
+        schema: 'StorefrontPublicationResponse',
+      },
+    ],
+  },
+  {
+    method: 'post',
+    path: '/v1/dealer/storefront/domains',
+    operationId: 'reserveWebsiteDomain',
+    tag: DOC_TAGS.storefront,
+    summary: 'Reserve a custom domain',
+    description:
+      'Owner-only unique normalized domain reservation. Returns fresh dealership-bound ownership TXT proof; domain remains unverified. Retains tombstones and prevents cross-tenant reassignment. Three pending/active custom domains maximum.',
+    audience: 'dealer',
+    permission: 'storefront:domain',
+    requestBody: { schema: 'AddStorefrontDomainInput', required: true },
+    responses: [
+      {
+        status: 201,
+        description: 'Domain reserved or identical reservation retry.',
+        schema: 'StorefrontManagementResponse',
+      },
+    ],
+    errors: [404, 409, 422, 429, 503],
+  },
+  {
+    method: 'post',
+    path: '/v1/dealer/storefront/domains/:id/refresh',
+    operationId: 'verifyWebsiteDomain',
+    tag: DOC_TAGS.storefront,
+    summary: 'Refresh domain ownership and hosting',
+    description:
+      'Checks fresh TXT ownership before provider attachment. Existing provider assignments are refused, never transferred. Provider verification/config-derived DNS and pinned public-IP TLS handshake must all succeed for ACTIVE. Failures persist truthful pending/failed states and revoke stale primary eligibility.',
+    audience: 'dealer',
+    permission: 'storefront:domain',
+    params: 'IdParam',
+    responses: [
+      {
+        status: 200,
+        description: 'Current domain status and actual DNS instructions.',
+        schema: 'StorefrontManagementResponse',
+      },
+    ],
+    errors: [404, 422, 429, 503],
+  },
+  {
+    method: 'put',
+    path: '/v1/dealer/storefront/domains/:id/primary',
+    operationId: 'setWebsitePrimaryDomain',
+    tag: DOC_TAGS.storefront,
+    summary: 'Choose the primary website domain',
+    description:
+      'Owner-only current verified ACTIVE domain. Atomic unique-primary update; secondary hosts redirect to it in the shared storefront.',
+    audience: 'dealer',
+    permission: 'storefront:domain',
+    params: 'IdParam',
+    responses: [
+      {
+        status: 200,
+        description: 'Primary domain selected.',
+        schema: 'StorefrontManagementResponse',
+      },
+    ],
+    errors: [404, 422, 503],
+  },
+  {
+    method: 'delete',
+    path: '/v1/dealer/storefront/domains/:id',
+    operationId: 'removeWebsiteDomain',
+    tag: DOC_TAGS.storefront,
+    summary: 'Remove a custom domain safely',
+    description:
+      'Revokes public access and selects an eligible fallback primary before provider deletion. Provider outage retains REMOVAL_PENDING for retry; hostname tombstone remains tenant-bound. Default reservations are never deleted.',
+    audience: 'dealer',
+    permission: 'storefront:domain',
+    params: 'IdParam',
+    responses: [
+      {
+        status: 200,
+        description: 'Removed or safely removal-pending.',
+        schema: 'StorefrontManagementResponse',
+      },
+    ],
+    errors: [404, 422, 429, 503],
+  },
+  {
+    method: 'get',
     path: '/v1/dealer/storefront/media/:mediaId/:width.webp',
     operationId: 'getStorefrontPreviewImage',
     tag: DOC_TAGS.storefront,

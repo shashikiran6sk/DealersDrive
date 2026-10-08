@@ -38,6 +38,9 @@ export function EnquiryCard({ enquiry, permissions }: EnquiryCardProps) {
       </div>
 
       <p className="m-0 text-[13px] ink-muted">
+        {enquiry.sourceLabel ? (
+          <span className="mr-2 text-[11px] font-semibold">{enquiry.sourceLabel}</span>
+        ) : null}
         {ENQUIRIES_TEXT.about}{' '}
         {vehicle.href ? (
           <Link href={vehicle.href} className="font-semibold text-(--color-ink)">

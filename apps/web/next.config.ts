@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   /** Workspace packages ship TypeScript-adjacent ESM; let Next compile them. */
-  transpilePackages: ['@dealers-drive/contracts'],
+  transpilePackages: ['@dealers-drive/contracts', '@dealers-drive/storefront-ui'],
 
   /** A type error must fail the build, in CI and locally. */
   typescript: { ignoreBuildErrors: false },

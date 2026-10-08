@@ -21,6 +21,13 @@ import { defineConfig } from 'vitest/config';
  */
 const ENV = {
   TZ: 'UTC',
+  STOREFRONT_ENABLED: 'false',
+  STOREFRONT_DEFAULT_DOMAIN_READY: 'false',
+  STOREFRONT_SERVICE_SECRET: '',
+  STOREFRONT_DOMAIN_PROVIDER: 'disabled',
+  STOREFRONT_VERCEL_TOKEN: '',
+  STOREFRONT_VERCEL_PROJECT_ID: '',
+  STOREFRONT_VERCEL_TEAM_ID: '',
   NODE_ENV: 'test',
   DATABASE_URL: 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive_test',
   // pg-boss off: the suite drives handlers directly where it needs them, and a

@@ -1738,3 +1738,15 @@ keyboard navigation, reserved cards, native fullscreen dialog, image errors,
 filters/pagination, missing contact data and accent contrast. WebsiteEnquiry
 reuses the existing dashboard Button and verified-customer login; it captures
 explicit consent and calls the existing source-bound enquiry endpoint.
+
+### My Website control plane
+
+WebsiteActionForm wraps existing Button and dashboard form styles, with real
+pending/saved/error feedback and disabled manager state. WebsiteMediaPicker
+uploads through the approved storage API, blocks Save during processing, shows
+private thumbnails and explicit remove controls. WebsiteLink copies/opens the
+actual verified public URL. Sandbox Storefront/WebsiteSettings exercises owner,
+read-only manager and failed-save states. Existing ConsoleTabBar gains an
+accessible More disclosure only when website navigation needs additional space;
+profile and team remain reachable. Existing dealer/admin enquiry cards now show
+the additive source attribution when available.
