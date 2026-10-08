@@ -107,6 +107,9 @@ export type DealerEnquiryCounts = z.infer<typeof DealerEnquiryCounts>;
  */
 export const DealerEnquiry = z.object({
   id: Uuid,
+  source: z.enum(['MARKETPLACE', 'DEALER_WEBSITE']).optional(),
+  sourceLabel: z.string().optional(),
+  storefrontHostname: z.string().nullable().optional(),
   status: EnquiryStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,
@@ -274,6 +277,8 @@ export type AdminEnquiryVehicle = z.infer<typeof AdminEnquiryVehicle>;
  */
 export const AdminEnquiryRow = z.object({
   id: Uuid,
+  source: z.enum(['MARKETPLACE', 'DEALER_WEBSITE']).optional(),
+  sourceLabel: z.string().optional(),
   status: EnquiryStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,
@@ -330,6 +335,9 @@ export type AdminEnquiryHistoryEntry = z.infer<typeof AdminEnquiryHistoryEntry>;
  */
 export const AdminEnquiryDetail = z.object({
   id: Uuid,
+  source: z.enum(['MARKETPLACE', 'DEALER_WEBSITE']).optional(),
+  sourceLabel: z.string().optional(),
+  storefrontHostname: z.string().nullable().optional(),
   status: EnquiryStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,

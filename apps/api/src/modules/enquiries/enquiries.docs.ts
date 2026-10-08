@@ -19,6 +19,26 @@ export const enquiriesDocs: ModuleDocs = {
     'dealership’s inbox stays the only place its status moves.',
   operations: [
     {
+      method: 'post',
+      path: '/v1/enquiries/storefront',
+      operationId: 'createStorefrontEnquiry',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Enquire through a verified dealership website',
+      description:
+        'Requires the existing verified customer session, a signed expiring intent and explicit disclosure consent. Rechecks website/domain/dealer/listing state under locks, derives dealer ownership from the listing and reuses the existing duplicate guard, inbox, audit and notification outbox.',
+      audience: 'customer',
+      requestBody: { schema: 'CreateStorefrontEnquiryInput', required: true },
+      responses: [
+        {
+          status: 201,
+          description: 'Enquiry recorded in the existing dealer inbox.',
+          schema: 'EnquiryReceipt',
+        },
+      ],
+      errors: [404, 409, 429, 503],
+      rateLimit: 'The same customer and IP buckets as marketplace enquiries.',
+    },
+    {
       method: 'get',
       path: '/v1/enquiries',
       operationId: 'listMyEnquiries',

@@ -360,6 +360,20 @@ describe('the middleware', () => {
     await expect(call(handler)).resolves.toBeUndefined();
     await expect(call(handler)).resolves.toBeUndefined();
   });
+
+  it('fails closed for sensitive storefront writes when the counter backend is down', async () => {
+    const broken: CachePort = {
+      ...createMemoryCache(),
+      increment: () => Promise.reject(new Error('connection refused')),
+    };
+    const handler = limiter.createRateLimiter(broken)('storefront.write', {
+      limit: 1,
+      windowSeconds: 60,
+      failClosed: true,
+    });
+    const result = await call(handler);
+    expect(result).toMatchObject({ status: 503, code: 'UPSTREAM_UNAVAILABLE' });
+  });
 });
 
 describe('RATE_LIMIT_ENABLED=false', () => {

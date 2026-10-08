@@ -3,6 +3,12 @@ import type { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
 
 import { env, type Env } from './config/env.js';
+import {
+  createStorefrontService,
+  createStorefrontMedia,
+  type StorefrontService,
+  type StorefrontMediaService,
+} from './modules/storefront/storefront.facade.js';
 import { createAuthMiddleware, createCustomerGuard } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
@@ -133,6 +139,8 @@ export interface Container {
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
   readonly enquiries: EnquiriesService;
+  readonly storefront: StorefrontService;
+  readonly storefrontMedia: StorefrontMediaService;
   readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
   readonly support: SupportService;
@@ -235,7 +243,12 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
-  const media = createMediaService({ prisma, storage });
+  const media = createMediaService({
+    prisma,
+    storage,
+    storefrontEnabled: (overrides.env ?? env).STOREFRONT_ENABLED,
+    defaultDomainReady: (overrides.env ?? env).STOREFRONT_DEFAULT_DOMAIN_READY,
+  });
   const dealerClaims = createDealerClaimsService({
     prisma,
     audit,
@@ -263,6 +276,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     audit,
     images: vehicleImages,
   });
+
+  const storefront = createStorefrontService({ prisma, audit, config: overrides.env ?? env });
+  const storefrontMedia = createStorefrontMedia(storage, storefront);
 
   return {
     env: overrides.env ?? env,
@@ -298,6 +314,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     moderation,
     vehicleImages,
     enquiries,
+    storefront,
+    storefrontMedia,
     adminEnquiries: createAdminEnquiriesService({ prisma }),
     support: createSupportService({ prisma, audit }),
     adminSupport: createAdminSupportService({ prisma, audit }),

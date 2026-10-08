@@ -46,6 +46,7 @@ const VEHICLE_SELECT = {
 
 export const ADMIN_ROW_SELECT = {
   id: true,
+  source: true,
   status: true,
   message: true,
   createdAt: true,
@@ -58,6 +59,8 @@ export type AdminRowSource = Prisma.EnquiryGetPayload<{ select: typeof ADMIN_ROW
 
 export const ADMIN_DETAIL_SELECT = {
   id: true,
+  source: true,
+  storefrontHostname: true,
   status: true,
   message: true,
   createdAt: true,
@@ -131,6 +134,8 @@ function vehicleOf(listing: AdminRowSource['listing']): AdminEnquiryVehicle {
 export function toAdminEnquiryRow(row: AdminRowSource): AdminEnquiryRow {
   return {
     id: row.id,
+    source: row.source ?? 'MARKETPLACE',
+    sourceLabel: row.source === 'DEALER_WEBSITE' ? 'Dealer website' : 'Marketplace',
     status: row.status,
     statusLabel: ENQUIRY_STATUS_LABELS[row.status],
     statusTone: ENQUIRY_STATUS_TONES[row.status],
@@ -196,6 +201,9 @@ export function toAdminEnquiryDetail(
 
   return {
     id: row.id,
+    source: row.source ?? 'MARKETPLACE',
+    sourceLabel: row.source === 'DEALER_WEBSITE' ? 'Dealer website' : 'Marketplace',
+    storefrontHostname: row.storefrontHostname ?? null,
     status: row.status,
     statusLabel: ENQUIRY_STATUS_LABELS[row.status],
     statusTone: ENQUIRY_STATUS_TONES[row.status],

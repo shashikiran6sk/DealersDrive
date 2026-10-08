@@ -24,6 +24,7 @@ import { savedVehiclesDocs } from '../modules/saved-vehicles/saved-vehicles.docs
 import { supportAdminDocs } from '../modules/support/support.admin.docs.js';
 import { supportDocs } from '../modules/support/support.docs.js';
 import { teamDocs } from '../modules/team/team.docs.js';
+import { storefrontDocs } from '../modules/storefront/storefront.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -40,6 +41,7 @@ const MODULES: ModuleDocs[] = [
   vehiclesDocs,
   enquiriesDocs,
   teamDocs,
+  storefrontDocs,
   savedVehiclesDocs,
   supportDocs,
   adminDocs,

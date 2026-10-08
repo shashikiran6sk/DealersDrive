@@ -33,6 +33,7 @@ import {
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
 import type { DealerDocument, PrismaClient } from '@prisma/client';
+import { suspendDealerStorefront } from '../storefront/storefront.facade.js';
 
 import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
@@ -912,6 +913,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
 
         const listings = 0;
+        if (status === 'SUSPENDED') await suspendDealerStorefront(tx, dealerId);
 
         if (status === 'ACTIVE' && memberUserIds.length > 0) {
           await setSeatStatus(tx, {

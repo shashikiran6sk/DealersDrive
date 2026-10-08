@@ -2,7 +2,7 @@ import type { Request, RequestHandler } from 'express';
 
 import { env } from '../config/env.js';
 import type { CachePort } from '../platform/cache/cache.port.js';
-import { RateLimitError } from '../platform/errors.js';
+import { RateLimitError, UpstreamUnavailableError } from '../platform/errors.js';
 import { logger } from '../platform/telemetry/logger.js';
 
 export interface RateLimitOptions {
@@ -11,6 +11,7 @@ export interface RateLimitOptions {
   keyBy?: (req: Request) => string;
   code?: string;
   message?: string;
+  failClosed?: boolean;
 }
 
 export type RateLimiter = (name: string, options: RateLimitOptions) => RequestHandler;
@@ -54,6 +55,11 @@ export function createRateLimiter(cache: CachePort): RateLimiter {
         try {
           result = await consumeRateLimit(cache, key, options.limit, options.windowSeconds);
         } catch (error) {
+          if (options.failClosed) {
+            logger.warn({ err: error, limiter: name }, 'rate limit backend unavailable');
+            next(new UpstreamUnavailableError('Please try again shortly.'));
+            return;
+          }
           logger.warn(
             { err: error, limiter: name },
             'rate limit backend unavailable — allowing the request',

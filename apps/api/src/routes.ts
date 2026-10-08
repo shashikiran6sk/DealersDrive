@@ -6,6 +6,10 @@ import { createDocsRouter } from './docs/docs.routes.js';
 import { requirePermission } from './middleware/auth.js';
 import { ADMIN_CONSOLE_REFUSAL, SALES_WORKSPACE_REFUSAL } from './platform/messages.js';
 import { createSalesRouter } from './modules/sales/sales.routes.js';
+import {
+  createStorefrontManagementRouter,
+  createStorefrontPublicRouter,
+} from './modules/storefront/storefront.routes.js';
 import { createDealerClaimsRouter } from './modules/dealer-claims/dealer-claims.routes.js';
 import { createAdminNotificationsRouter } from './modules/notifications/notifications.admin.routes.js';
 import {
@@ -54,6 +58,13 @@ export function createRoutes(container: Container): Router {
   v1.use(createConfigRouter(container.publicConfig));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
   v1.use(createSearchRouter(container.search, container.rateLimit));
+  v1.use(
+    createStorefrontPublicRouter(
+      container.storefront,
+      container.rateLimit,
+      container.storefrontMedia,
+    ),
+  );
 
   v1.use(
     '/auth',
@@ -83,7 +94,7 @@ export function createRoutes(container: Container): Router {
   v1.use(
     '/enquiries',
     container.guards.requireCustomer,
-    createEnquiriesRouter(container.enquiries, container.rateLimit),
+    createEnquiriesRouter(container.enquiries, container.rateLimit, container.storefront),
   );
   v1.use(
     '/saved-vehicles',
@@ -107,6 +118,13 @@ export function createRoutes(container: Container): Router {
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
   dealer.use(createTeamRouter(container.team));
+  dealer.use(
+    createStorefrontManagementRouter(
+      container.storefront,
+      container.rateLimit,
+      container.storefrontMedia,
+    ),
+  );
   v1.use('/dealer', dealer);
 
   const admin = Router();

@@ -15,12 +15,14 @@ import type { SuggestRow } from './search.suggest.js';
 export const PUBLIC_DEALER_STATUS = 'ACTIVE' as const;
 
 export const PUBLIC_VISIBLE_LISTING_WHERE = {
+  marketplacePublished: true,
   status: { in: ['ACTIVE', 'RESERVED'] },
   slug: { not: null },
   dealer: { status: PUBLIC_DEALER_STATUS },
 } satisfies Prisma.ListingWhereInput;
 
 export const PUBLIC_AVAILABLE_LISTING_WHERE = {
+  marketplacePublished: true,
   status: 'ACTIVE',
   slug: { not: null },
   dealer: { status: PUBLIC_DEALER_STATUS },

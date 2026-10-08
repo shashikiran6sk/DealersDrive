@@ -87,6 +87,7 @@ describe('toVehicleCard', () => {
 describe('who is public (R71)', () => {
   it('shows an ACTIVE or RESERVED listing, with a slug, of an ACTIVE dealership — nothing else', () => {
     expect(PUBLIC_VISIBLE_LISTING_WHERE).toEqual({
+      marketplacePublished: true,
       status: { in: ['ACTIVE', 'RESERVED'] },
       slug: { not: null },
       dealer: { status: 'ACTIVE' },
@@ -95,6 +96,7 @@ describe('who is public (R71)', () => {
 
   it('counts as available only an ACTIVE listing, with a slug, of an ACTIVE dealership', () => {
     expect(PUBLIC_AVAILABLE_LISTING_WHERE).toEqual({
+      marketplacePublished: true,
       status: 'ACTIVE',
       slug: { not: null },
       dealer: { status: 'ACTIVE' },

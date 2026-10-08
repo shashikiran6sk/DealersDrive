@@ -14,6 +14,7 @@ import {
   type UpdateEnquiryInput,
 } from '@dealers-drive/contracts';
 import type { Prisma, PrismaClient } from '@prisma/client';
+import { lockStorefrontOrigin, type StorefrontOrigin } from '../storefront/storefront.facade.js';
 
 import { authorizeDealerWrite, type CustomerPrincipal } from '../auth/auth.facade.js';
 import { getContext } from '../../middleware/request-context.js';
@@ -239,7 +240,11 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       });
     },
 
-    async create(customer: CustomerPrincipal, input: CreateEnquiryInput): Promise<EnquiryReceipt> {
+    async create(
+      customer: CustomerPrincipal,
+      input: CreateEnquiryInput,
+      origin?: StorefrontOrigin,
+    ): Promise<EnquiryReceipt> {
       const listing = await prisma.listing.findUnique({
         where: { slug: input.listingSlug },
         select: { id: true },
@@ -247,9 +252,21 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       if (!listing) throw new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
 
       return withTransaction(prisma, async (tx) => {
+        if (origin) await lockStorefrontOrigin(tx, origin);
         await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
         const available = await tx.listing.findFirst({
-          where: { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: listing.id },
+          where: {
+            ...(origin
+              ? {
+                  status: 'ACTIVE',
+                  slug: { not: null },
+                  dealerId: origin.dealerId,
+                  storefrontPublished: true,
+                  dealer: { status: 'ACTIVE' },
+                }
+              : PUBLIC_AVAILABLE_LISTING_WHERE),
+            id: listing.id,
+          },
           select: {
             id: true,
             dealerId: true,
@@ -298,6 +315,15 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
             dealerId: available.dealerId,
             listingId: available.id,
             message: input.message ?? null,
+            ...(origin
+              ? {
+                  source: 'DEALER_WEBSITE',
+                  storefrontId: origin.storefrontId,
+                  storefrontHostname: origin.hostname,
+                  consentAt: new Date(),
+                  consentVersion: 'storefront-enquiry-v1',
+                }
+              : {}),
           },
         });
 
