@@ -371,6 +371,7 @@ model Dealer {
   enquiries          Enquiry[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
+  storefront         DealerStorefront?
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -749,10 +750,12 @@ model Vehicle {
 /// (so two racing decisions cannot both win), and writes the audit row in the
 /// same transaction.
 model Listing {
-  id        String        @id @default(uuid()) @db.Uuid
-  vehicleId String        @unique @db.Uuid
-  dealerId  String        @db.Uuid
-  status    ListingStatus @default(DRAFT)
+  id                   String        @id @default(uuid()) @db.Uuid
+  vehicleId            String        @unique @db.Uuid
+  dealerId             String        @db.Uuid
+  status               ListingStatus @default(DRAFT)
+  marketplacePublished Boolean       @default(true)
+  storefrontPublished  Boolean       @default(true)
 
   /// The first submission. `lastSubmittedAt` moves on every resubmission and
   /// orders the moderation queue; this one does not.
@@ -970,27 +973,33 @@ enum ListingCheckKey {
 /// `dealerId` is the listing's, copied on write and never accepted from a
 /// request — it is the tenant key every dealer read filters on (rule 1).
 model Enquiry {
-  id            String        @id @default(uuid()) @db.Uuid
-  customerId    String        @db.Uuid
-  dealerId      String        @db.Uuid
-  listingId     String        @db.Uuid
+  id                 String        @id @default(uuid()) @db.Uuid
+  customerId         String        @db.Uuid
+  dealerId           String        @db.Uuid
+  listingId          String        @db.Uuid
   /// Optional. A customer who only wants a call back sends no text at all.
-  message       String?
-  status        EnquiryStatus @default(NEW)
-  contactedAt   DateTime?
-  closedAt      DateTime?
+  message            String?
+  status             EnquiryStatus @default(NEW)
+  contactedAt        DateTime?
+  closedAt           DateTime?
   /// The member who marked it CONTACTED, and who closed it (**R92**). NULL on
   /// rows from before R92, and when that person's account is deleted.
-  contactedById String?       @db.Uuid
-  closedById    String?       @db.Uuid
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  contactedById      String?       @db.Uuid
+  closedById         String?       @db.Uuid
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  source             EnquirySource @default(MARKETPLACE)
+  storefrontId       String?       @db.Uuid
+  storefrontHostname String?
+  consentAt          DateTime?
+  consentVersion     String?
 
-  customer    User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  contactedBy User?   @relation("EnquiryContactedBy", fields: [contactedById], references: [id], onDelete: SetNull)
-  closedBy    User?   @relation("EnquiryClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
-  dealer      Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  listing     Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  customer    User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactedBy User?             @relation("EnquiryContactedBy", fields: [contactedById], references: [id], onDelete: SetNull)
+  closedBy    User?             @relation("EnquiryClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  dealer      Dealer            @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing     Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  storefront  DealerStorefront? @relation(fields: [storefrontId], references: [id], onDelete: Restrict)
 
   supportTickets SupportTicket[]
 
@@ -1003,6 +1012,7 @@ model Enquiry {
   /// Admin oversight (R89): every enquiry newest first, and one status tab.
   @@index([createdAt])
   @@index([status, createdAt])
+  @@index([storefrontId, createdAt])
   @@map("enquiries")
 }
 
@@ -1242,6 +1252,99 @@ enum InsuranceType {
 enum PriceNegotiability {
   SLIGHTLY
   FIXED
+}
+
+enum StorefrontTheme {
+  LIGHT
+  DARK
+}
+
+enum StorefrontStatus {
+  DRAFT
+  PENDING_ACTIVATION
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum StorefrontDomainKind {
+  DEFAULT
+  CUSTOM
+}
+
+enum StorefrontDomainStatus {
+  PENDING
+  VERIFICATION_REQUIRED
+  ACTIVE
+  FAILED
+  REMOVAL_PENDING
+  REMOVED
+}
+
+enum EnquirySource {
+  MARKETPLACE
+  DEALER_WEBSITE
+}
+
+model DealerStorefront {
+  id             String           @id @default(uuid()) @db.Uuid
+  dealerId       String           @unique @db.Uuid
+  subdomain      String           @unique @db.VarChar(63)
+  status         StorefrontStatus @default(DRAFT)
+  theme          StorefrontTheme  @default(LIGHT)
+  displayName    String           @db.VarChar(100)
+  accentColor    String           @default("#155e75") @db.VarChar(7)
+  headline       String           @default("") @db.VarChar(140)
+  description    String           @default("") @db.VarChar(500)
+  about          String           @default("") @db.VarChar(3000)
+  contactPhone   String?
+  whatsappPhone  String?
+  mapsUrl        String?
+  socialUrls     String[]         @default([])
+  seoTitle       String           @default("") @db.VarChar(70)
+  seoDescription String           @default("") @db.VarChar(160)
+  logoMediaId    String?          @db.Uuid
+  heroMediaId    String?          @db.Uuid
+  yardMediaIds   String[]         @default([]) @db.Uuid
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  dealer    Dealer             @relation(fields: [dealerId], references: [id], onDelete: Restrict)
+  domains   StorefrontDomain[]
+  enquiries Enquiry[]
+
+  @@index([status, dealerId])
+  @@map("dealer_storefronts")
+}
+
+model StorefrontDomain {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  storefrontId        String                 @db.Uuid
+  hostname            String                 @unique @db.VarChar(253)
+  kind                StorefrontDomainKind
+  status              StorefrontDomainStatus @default(PENDING)
+  isPrimary           Boolean                @default(false)
+  /// A fresh, random TXT value on every ownership-verification generation.
+  ownershipToken      String?
+  ownershipVerifiedAt DateTime?
+  verifiedAt          DateTime?
+  checkedAt           DateTime?
+  certificateReady    Boolean                @default(false)
+  /// Provider-derived records, never guessed from a shared CNAME constant.
+  verificationName    String?
+  verificationValue   String?
+  routingType         String?
+  routingName         String?
+  routingValue        String?
+  lastError           String?
+  removedAt           DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  storefront DealerStorefront @relation(fields: [storefrontId], references: [id], onDelete: Restrict)
+
+  @@index([storefrontId, status])
+  @@map("storefront_domains")
 }
 
 model PlatformConfig {

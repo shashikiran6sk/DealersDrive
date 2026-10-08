@@ -20,6 +20,7 @@ import { defineConfig } from 'vitest/config';
  * Run one or the other with `vitest run --project unit`.
  */
 const ENV = {
+  TZ: 'UTC',
   NODE_ENV: 'test',
   DATABASE_URL: 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive_test',
   // pg-boss off: the suite drives handlers directly where it needs them, and a

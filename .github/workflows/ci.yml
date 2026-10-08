@@ -36,7 +36,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 'feat/white-label-*']
 
 # One run per branch. A force-push mid-review should not leave two suites
 # racing, and the newer commit is the only one anybody cares about.

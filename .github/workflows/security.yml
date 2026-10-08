@@ -21,7 +21,7 @@ name: Security
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 'feat/white-label-*']
   push:
     branches: [main]
   schedule:
