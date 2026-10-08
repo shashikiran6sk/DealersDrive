@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { GoogleMapsUrl, IndianMobile, OffsetPage, Uuid, toE164 } from './common.js';
 import { DealerVehicleQuery, PublicVehicleDetail, VehicleCardDto } from './public.js';
+import { EnquiryMessage } from './enquiry.js';
+import { YardPhotoPresignInput } from './dealer.js';
 
 export const STOREFRONT_RESERVED_SLUGS = [
   'www',
@@ -288,3 +290,56 @@ export const StorefrontInventoryResponse = z.object({
 export type StorefrontInventoryResponse = z.infer<typeof StorefrontInventoryResponse>;
 export const StorefrontVehicleResponse = PublicVehicleDetail;
 export type StorefrontVehicleResponse = z.infer<typeof StorefrontVehicleResponse>;
+
+export const StorefrontPreviewResponse = z.object({
+  site: PublicStorefrontDto,
+  inventory: StorefrontInventoryResponse,
+});
+export type StorefrontPreviewResponse = z.infer<typeof StorefrontPreviewResponse>;
+export const StorefrontIntentInput = z.object({ listingSlug: z.string().min(1).max(200) }).strict();
+export type StorefrontIntentInput = z.infer<typeof StorefrontIntentInput>;
+export const StorefrontIntentParam = z
+  .object({
+    ticket: z
+      .string()
+      .min(20)
+      .max(1500)
+      .regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/),
+  })
+  .strict();
+export type StorefrontIntentParam = z.infer<typeof StorefrontIntentParam>;
+export const StorefrontIntentResponse = z.object({ url: z.string() });
+export type StorefrontIntentResponse = z.infer<typeof StorefrontIntentResponse>;
+export const StorefrontEnquiryContext = z.object({
+  dealerName: z.string(),
+  vehicleTitle: z.string(),
+  returnUrl: z.string(),
+});
+export type StorefrontEnquiryContext = z.infer<typeof StorefrontEnquiryContext>;
+export const CreateStorefrontEnquiryInput = z
+  .object({
+    ticket: StorefrontIntentParam.shape.ticket,
+    message: EnquiryMessage,
+    consent: z.literal(true),
+  })
+  .strict();
+export type CreateStorefrontEnquiryInput = z.infer<typeof CreateStorefrontEnquiryInput>;
+export const STOREFRONT_MEDIA_MAX_BYTES = 8 * 1024 * 1024;
+export const StorefrontMediaPresignInput = YardPhotoPresignInput.extend({
+  bytes: z.number().int().min(1).max(STOREFRONT_MEDIA_MAX_BYTES),
+});
+export type StorefrontMediaPresignInput = z.infer<typeof StorefrontMediaPresignInput>;
+export const StorefrontMediaCommitInput = z.object({ mediaId: Uuid }).strict();
+export type StorefrontMediaCommitInput = z.infer<typeof StorefrontMediaCommitInput>;
+export const StorefrontMediaReceipt = z.object({ mediaId: Uuid });
+export type StorefrontMediaReceipt = z.infer<typeof StorefrontMediaReceipt>;
+export const StorefrontMediaParam = z
+  .object({
+    mediaId: Uuid,
+    width: z.coerce
+      .number()
+      .int()
+      .refine((value) => [320, 640, 1024, 1600].includes(value)),
+  })
+  .strict();
+export type StorefrontMediaParam = z.infer<typeof StorefrontMediaParam>;

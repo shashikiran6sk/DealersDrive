@@ -5,12 +5,21 @@ import type { DealerStatus, ListingStatus, MediaOwner, PrismaClient } from '@pri
 
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { PUBLIC_DEALER_STATUS } from '../search/search.facade.js';
+import { liveStorefrontWhere } from '../storefront/storefront.facade.js';
 
 interface ServableMedia {
   id: string;
+  dealerId: string | null;
   ownerType: MediaOwner;
   attachment: {
-    vehicle: { listing: { status: ListingStatus; dealer: { status: DealerStatus } } | null };
+    vehicle: {
+      listing: {
+        status: ListingStatus;
+        marketplacePublished: boolean;
+        storefrontPublished: boolean;
+        dealer: { status: DealerStatus };
+      } | null;
+    };
   } | null;
 }
 
@@ -28,24 +37,56 @@ export function imageEtag(mediaId: string, key: string): string {
 export interface MediaDeps {
   prisma: PrismaClient;
   storage: StoragePort;
+  storefrontEnabled?: boolean;
+  defaultDomainReady?: boolean;
 }
 
-export function createMediaService({ prisma, storage }: MediaDeps) {
+export function createMediaService({
+  prisma,
+  storage,
+  storefrontEnabled = false,
+  defaultDomainReady = false,
+}: MediaDeps) {
+  async function websiteOwns(media: ServableMedia, vehicle = false): Promise<boolean> {
+    if (!storefrontEnabled || !media.dealerId) return false;
+    const count = await prisma.dealerStorefront.count({
+      where: {
+        dealerId: media.dealerId,
+        ...liveStorefrontWhere(defaultDomainReady),
+        ...(vehicle
+          ? {}
+          : {
+              OR: [
+                { logoMediaId: media.id },
+                { heroMediaId: media.id },
+                { yardMediaIds: { has: media.id } },
+              ],
+            }),
+      },
+    });
+    return count > 0;
+  }
   async function isPubliclyServable(media: ServableMedia): Promise<boolean> {
     if (media.ownerType === 'VEHICLE') {
       const listing = media.attachment?.vehicle.listing;
-      return Boolean(
-        listing &&
-        isListingPubliclyVisible(listing.status) &&
-        listing.dealer.status === PUBLIC_DEALER_STATUS,
+      if (
+        !listing ||
+        !isListingPubliclyVisible(listing.status) ||
+        listing.dealer.status !== PUBLIC_DEALER_STATUS
+      )
+        return false;
+      return (
+        listing.marketplacePublished ||
+        (listing.storefrontPublished && (await websiteOwns(media, true)))
       );
     }
     if (media.ownerType === 'DEALER_COVER') {
       const owners = await prisma.dealer.count({
         where: { coverMediaId: media.id, status: PUBLIC_DEALER_STATUS },
       });
-      return owners > 0;
+      return owners > 0 || (await websiteOwns(media));
     }
+    if (media.ownerType === 'DEALER_LOGO') return websiteOwns(media);
     return false;
   }
 

@@ -3,7 +3,9 @@ export {
   PUBLIC_DEALER_STATUS,
   PUBLIC_VISIBLE_LISTING_WHERE,
   cardInclude,
+  detailInclude,
   type CardRow,
 } from './search.repository.js';
-export { toVehicleCard } from './search.mapper.js';
+export { toVehicleCard, toPublicVehicleDetail } from './search.mapper.js';
+export { resolveFilters, vehicleWhere, orderOf, needsVocabulary } from './search.filters.js';
 export { createPublicInventoryStats } from './search.stats.js';

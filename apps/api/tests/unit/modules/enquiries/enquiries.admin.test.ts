@@ -19,6 +19,7 @@ import {
 const AT = new Date('2026-09-26T09:02:00.000Z');
 
 const ROW: AdminRowSource = {
+  source: 'MARKETPLACE',
   id: '11111111-1111-4111-8111-111111111111',
   status: 'NEW',
   message: null,
@@ -44,6 +45,8 @@ const ROW: AdminRowSource = {
 
 function detail(overrides: Partial<AdminDetailSource> = {}): AdminDetailSource {
   return {
+    source: 'MARKETPLACE',
+    storefrontHostname: null,
     id: ROW.id,
     status: 'CLOSED',
     message: 'Hello',

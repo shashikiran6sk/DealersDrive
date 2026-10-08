@@ -33,6 +33,9 @@ export const LOGGER_OPTIONS: LoggerOptions = {
     paths: [
       'req.headers.authorization',
       'req.headers.cookie',
+      'req.headers["x-dd-storefront-secret"]',
+      '*.ticket',
+      'ticket',
       'res.headers["set-cookie"]',
       '*.password',
       '*.passwordHash',

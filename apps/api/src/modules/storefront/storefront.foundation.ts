@@ -74,3 +74,10 @@ export async function transitionStorefront(
   }
   return tx.dealerStorefront.update({ where: { id: current.id }, data: { status: next } });
 }
+
+export async function suspendDealerStorefront(tx: Tx, dealerId: string): Promise<void> {
+  await tx.dealerStorefront.updateMany({
+    where: { dealerId, status: { in: ['ACTIVE', 'PENDING_ACTIVATION'] } },
+    data: { status: 'SUSPENDED' },
+  });
+}

@@ -134,6 +134,7 @@ function setup(options: Options = {}) {
 
   const tx = {
     $queryRaw: () => Promise.resolve([]),
+    dealerStorefront: { updateMany: () => Promise.resolve({ count: 0 }) },
     dealerDocument: {
       findUnique: () =>
         Promise.resolve(options.document === undefined ? DOCUMENT : options.document),

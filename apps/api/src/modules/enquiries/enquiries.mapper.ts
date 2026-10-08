@@ -21,6 +21,8 @@ import { UNNAMED_CUSTOMER, UNNAMED_MEMBER } from '../../platform/messages.js';
 
 export const INBOX_SELECT = {
   id: true,
+  source: true,
+  storefrontHostname: true,
   status: true,
   message: true,
   createdAt: true,
@@ -73,6 +75,9 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
 
   return {
     id: row.id,
+    source: row.source ?? 'MARKETPLACE',
+    sourceLabel: row.source === 'DEALER_WEBSITE' ? 'Dealer website' : 'Marketplace',
+    storefrontHostname: row.storefrontHostname ?? null,
     status: row.status,
     statusLabel: ENQUIRY_STATUS_LABELS[row.status],
     statusTone: ENQUIRY_STATUS_TONES[row.status],

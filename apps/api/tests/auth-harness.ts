@@ -5,6 +5,7 @@ import type { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
 import { env } from '../src/config/env.js';
+import type { Env } from '../src/config/env.js';
 import { buildContainer } from '../src/container.js';
 import type {
   AuthorizationRequest,
@@ -170,6 +171,7 @@ const DRAIN_TICKS = 40;
 export async function createAuthHarness(
   google = createFakeGoogle(),
   mailer: RecordingMailer = createRecordingMailer(),
+  envOverrides: Partial<Env> = {},
 ): Promise<AuthHarness> {
   /*
    * No Maps lookup, for the same reason the OAuth provider above is a fake:
@@ -179,7 +181,12 @@ export async function createAuthHarness(
    * onboarding cases below exercise a shape the product has rather than a
    * disabled one.
    */
-  const container = await buildContainer({ oauth: google, maps: noMapsLookup, mailer });
+  const container = await buildContainer({
+    oauth: google,
+    maps: noMapsLookup,
+    mailer,
+    env: { ...env, ...envOverrides },
+  });
   const app = createApp(container);
   // One listener for the whole file — see `AuthHarness.server`.
   const server = app.listen(0);

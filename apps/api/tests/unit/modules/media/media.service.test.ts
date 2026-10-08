@@ -22,7 +22,14 @@ interface Row {
   status: string;
   variants: unknown;
   attachment: {
-    vehicle: { listing: { status: string; dealer: { status: string } } | null };
+    vehicle: {
+      listing: {
+        status: string;
+        marketplacePublished: boolean;
+        storefrontPublished: boolean;
+        dealer: { status: string };
+      } | null;
+    };
   } | null;
 }
 
@@ -35,7 +42,16 @@ function mediaRow(overrides: Partial<Row> = {}): Row {
     mimeType: 'image/jpeg',
     status: 'READY',
     variants: {},
-    attachment: { vehicle: { listing: { status: 'ACTIVE', dealer: { status: 'ACTIVE' } } } },
+    attachment: {
+      vehicle: {
+        listing: {
+          status: 'ACTIVE',
+          marketplacePublished: true,
+          storefrontPublished: true,
+          dealer: { status: 'ACTIVE' },
+        },
+      },
+    },
     ...overrides,
   };
 }
@@ -120,7 +136,18 @@ describe('serve, for a vehicle image (R45)', () => {
     async (status) => {
       const h = setup({
         objectBody: Buffer.from('x'),
-        media: { attachment: { vehicle: { listing: { status, dealer: { status: 'ACTIVE' } } } } },
+        media: {
+          attachment: {
+            vehicle: {
+              listing: {
+                status,
+                marketplacePublished: true,
+                storefrontPublished: true,
+                dealer: { status: 'ACTIVE' },
+              },
+            },
+          },
+        },
       });
 
       expect(await h.service.serve('media-1', 640)).toBeNull();
@@ -147,7 +174,18 @@ describe('serve, for a vehicle image (R45)', () => {
     async (status) => {
       const h = setup({
         objectBody: Buffer.from('x'),
-        media: { attachment: { vehicle: { listing: { status, dealer: { status: 'ACTIVE' } } } } },
+        media: {
+          attachment: {
+            vehicle: {
+              listing: {
+                status,
+                marketplacePublished: true,
+                storefrontPublished: true,
+                dealer: { status: 'ACTIVE' },
+              },
+            },
+          },
+        },
       });
 
       expect(await h.service.serve('media-1', 640)).toBeTruthy();
@@ -161,7 +199,14 @@ describe('serve, for a vehicle image (R45)', () => {
         objectBody: Buffer.from('x'),
         media: {
           attachment: {
-            vehicle: { listing: { status: 'ACTIVE', dealer: { status: dealerStatus } } },
+            vehicle: {
+              listing: {
+                status: 'ACTIVE',
+                marketplacePublished: true,
+                storefrontPublished: true,
+                dealer: { status: dealerStatus },
+              },
+            },
           },
         },
       });
