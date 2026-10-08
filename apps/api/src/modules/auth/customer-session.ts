@@ -19,6 +19,7 @@ export function createCustomerResolver(sessions: SessionService): CustomerResolv
 
     return {
       kind: 'CUSTOMER',
+      sessionId: session.id,
       userId: user.id,
       fullName: user.fullName,
       phone: user.phone,

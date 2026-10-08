@@ -36,6 +36,26 @@ export function StorefrontHome({
                 Plan your visit
               </a>
             </div>
+            <form
+              action="/cars"
+              method="get"
+              className="wl-home-search"
+              aria-label="Search our cars"
+            >
+              <label htmlFor="wl-home-search">Search our inventory</label>
+              <div>
+                <input
+                  id="wl-home-search"
+                  name="q"
+                  type="search"
+                  maxLength={120}
+                  placeholder="Make, model or variant"
+                />
+                <button className="wl-button" type="submit">
+                  Search
+                </button>
+              </div>
+            </form>
             <div className="wl-hero-notes">
               {site.isVerified ? <span>✓ Verified dealership on Dealers-Drive</span> : null}
               <span>{inventory.page.total} cars in our current inventory</span>

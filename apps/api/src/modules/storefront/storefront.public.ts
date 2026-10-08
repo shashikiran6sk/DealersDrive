@@ -119,9 +119,20 @@ export function createStorefrontPublic(prisma: PrismaClient, config: StorefrontE
           ...cardInclude.vehicle.include,
           images: {
             ...cardInclude.vehicle.include.images,
-            where: { isPrimary: true, media: { status: 'READY', dealerId } },
+            where: {
+              isPrimary: true,
+              media: { status: 'READY', dealerId, ownerType: 'VEHICLE', uploadedByAdmin: true },
+            },
           },
-          _count: { select: { images: { where: { media: { status: 'READY', dealerId } } } } },
+          _count: {
+            select: {
+              images: {
+                where: {
+                  media: { status: 'READY', dealerId, ownerType: 'VEHICLE', uploadedByAdmin: true },
+                },
+              },
+            },
+          },
         },
       },
     } satisfies Prisma.ListingInclude;
@@ -164,7 +175,9 @@ export function createStorefrontPublic(prisma: PrismaClient, config: StorefrontE
           include: {
             images: {
               ...detailInclude.vehicle.include.images,
-              where: { media: { status: 'READY', dealerId } },
+              where: {
+                media: { status: 'READY', dealerId, ownerType: 'VEHICLE', uploadedByAdmin: true },
+              },
             },
           },
         },

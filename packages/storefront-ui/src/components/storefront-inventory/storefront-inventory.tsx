@@ -62,6 +62,28 @@ export function StorefrontInventory({
           </select>
         </label>
         <label>
+          Budget
+          <select name="maxPrice" defaultValue={query.maxPrice ?? ''}>
+            <option value="">Any budget</option>
+            <option value="50000000">Up to ₹5 lakh</option>
+            <option value="100000000">Up to ₹10 lakh</option>
+            <option value="150000000">Up to ₹15 lakh</option>
+            <option value="250000000">Up to ₹25 lakh</option>
+            <option value="500000000">Up to ₹50 lakh</option>
+          </select>
+        </label>
+        <label>
+          Year from
+          <select name="minYear" defaultValue={query.minYear ?? ''}>
+            <option value="">Any year</option>
+            {[2025, 2023, 2020, 2015, 2010].map((year) => (
+              <option key={year} value={year}>
+                {year} onwards
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           Sort
           <select name="sort" defaultValue={query.sort ?? 'newest'}>
             <option value="newest">Latest arrivals</option>

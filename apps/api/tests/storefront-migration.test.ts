@@ -78,4 +78,45 @@ describe('white-label additive migration on pre-existing data', () => {
     );
     expect(rows).toEqual([{ sites: '0', domains: '0' }]);
   });
+  it('adds provider tracking without changing an existing domain reservation', async () => {
+    await db.query(
+      `INSERT INTO dealer_storefronts (id, "dealerId", subdomain, "displayName", "updatedAt") VALUES ('66666666-6666-4666-8666-666666666666', '22222222-2222-4222-8222-222222222222', 'provider-migration', 'Migration Motors', now()); INSERT INTO storefront_domains (id, "storefrontId", hostname, kind, status, "ownershipToken", "updatedAt") VALUES ('77777777-7777-4777-8777-777777777777', '66666666-6666-4666-8666-666666666666', 'provider-migration.example.com', 'CUSTOM', 'VERIFICATION_REQUIRED', 'synthetic-migration-proof', now());`,
+    );
+    await db.query(
+      readFileSync(
+        join(ROOT, '20261008170000_storefront_domain_provider', 'migration.sql'),
+        'utf8',
+      ),
+    );
+    const { rows } = await db.query(
+      `SELECT hostname, status::text, "ownershipToken", "providerAttachedAt" FROM storefront_domains`,
+    );
+    expect(rows).toEqual([
+      {
+        hostname: 'provider-migration.example.com',
+        status: 'VERIFICATION_REQUIRED',
+        ownershipToken: 'synthetic-migration-proof',
+        providerAttachedAt: null,
+      },
+    ]);
+  });
+  it('adds derivative retry metadata without rewriting existing approved media', async () => {
+    await db.query(
+      `INSERT INTO media (id, "dealerId", "ownerType", "storageKey", "mimeType", bytes, warnings, status) VALUES ('88888888-8888-4888-8888-888888888888', '22222222-2222-4222-8222-222222222222', 'VEHICLE', 'synthetic/approved.jpg', 'image/jpeg', 100, '{}', 'READY');`,
+    );
+    await db.query(
+      readFileSync(join(ROOT, '20261008190000_media_derivative_retry', 'migration.sql'), 'utf8'),
+    );
+    const { rows } = await db.query(
+      `SELECT status::text, "storageKey", bytes, "derivativesRetryAt" FROM media`,
+    );
+    expect(rows).toEqual([
+      {
+        status: 'READY',
+        storageKey: 'synthetic/approved.jpg',
+        bytes: 100,
+        derivativesRetryAt: null,
+      },
+    ]);
+  });
 });

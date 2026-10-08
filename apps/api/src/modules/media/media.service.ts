@@ -60,6 +60,8 @@ export function createMediaService({
                 { logoMediaId: media.id },
                 { heroMediaId: media.id },
                 { yardMediaIds: { has: media.id } },
+                { logoMediaId: null, dealer: { logoMediaId: media.id, status: 'ACTIVE' } },
+                { heroMediaId: null, dealer: { coverMediaId: media.id, status: 'ACTIVE' } },
               ],
             }),
       },

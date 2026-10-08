@@ -12,6 +12,7 @@ import { certificateReady, domainOwnership } from './domain-network.js';
 import type { DomainProvider } from './domain-provider.port.js';
 
 const ProjectDomain = z.object({
+  apexName: z.string().optional(),
   name: z.string(),
   projectId: z.string(),
   verified: z.boolean(),
@@ -138,11 +139,14 @@ export function createVercelDomainProvider(
       );
       const cname = [...settings.recommendedCNAME].sort((a, b) => a.rank - b.rank)[0]?.value;
       const address = [...settings.recommendedIPv4].sort((a, b) => a.rank - b.rank)[0]?.value[0];
-      const routing = cname
-        ? { type: 'CNAME' as const, name: hostname, value: cname }
-        : address
+      const routing =
+        domain.apexName === hostname && address
           ? { type: 'A' as const, name: hostname, value: address }
-          : null;
+          : cname
+            ? { type: 'CNAME' as const, name: hostname, value: cname }
+            : address
+              ? { type: 'A' as const, name: hostname, value: address }
+              : null;
       return {
         verified: domain.verified,
         configured: !settings.misconfigured,

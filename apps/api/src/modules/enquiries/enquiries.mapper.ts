@@ -34,6 +34,7 @@ export const INBOX_SELECT = {
   listing: {
     select: {
       status: true,
+      marketplacePublished: true,
       slug: true,
       dealer: { select: { status: true } },
       vehicle: {
@@ -53,9 +54,12 @@ export const INBOX_SELECT = {
 export type InboxRow = Prisma.EnquiryGetPayload<{ select: typeof INBOX_SELECT }>;
 
 function publicHref(
-  listing: Pick<InboxRow['listing'], 'status' | 'slug' | 'dealer'>,
+  listing: Pick<InboxRow['listing'], 'status' | 'slug' | 'dealer' | 'marketplacePublished'>,
 ): string | null {
-  const live = isListingPubliclyVisible(listing.status) && listing.dealer.status === 'ACTIVE';
+  const live =
+    listing.marketplacePublished &&
+    isListingPubliclyVisible(listing.status) &&
+    listing.dealer.status === 'ACTIVE';
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
 
@@ -115,6 +119,7 @@ export const CUSTOMER_SELECT = {
   listing: {
     select: {
       status: true,
+      marketplacePublished: true,
       slug: true,
       dealer: { select: { status: true } },
       vehicle: {

@@ -29,6 +29,9 @@ export function StorefrontImage({
     );
   return (
     <img
+      ref={(image) => {
+        if (image?.complete && image.naturalWidth === 0) setFailed(src);
+      }}
       className={className}
       src={src}
       srcSet={responsiveImageSet(src)}

@@ -44,6 +44,7 @@ describe('the exported surface', () => {
       [
         'assertPhoneVerified',
         'authorizeDealerWrite',
+        'authorizeCustomerWrite',
         'ensureSeat',
         'findMemberByUser',
         'grantSeat',

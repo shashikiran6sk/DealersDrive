@@ -3,11 +3,13 @@ import type { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
 
 import { env, type Env } from './config/env.js';
+import { createVehicleDerivativeWorker } from './modules/media/media.derivatives.js';
 import {
   createStorefrontService,
   createStorefrontMedia,
   createStorefrontDomains,
   createVercelDomainProvider,
+  createStorefrontMediaCleanup,
   type StorefrontService,
   type StorefrontMediaService,
   type StorefrontDomainsService,
@@ -146,6 +148,8 @@ export interface Container {
   readonly storefront: StorefrontService;
   readonly storefrontMedia: StorefrontMediaService;
   readonly storefrontDomains: StorefrontDomainsService;
+  readonly storefrontMediaCleanup: () => Promise<void>;
+  readonly vehicleDerivatives: () => Promise<void>;
   readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
   readonly support: SupportService;
@@ -329,6 +333,11 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     storefront,
     storefrontMedia,
     storefrontDomains,
+    storefrontMediaCleanup: createStorefrontMediaCleanup(prisma, storage),
+    vehicleDerivatives: async () => {
+      if ((overrides.env ?? env).STOREFRONT_ENABLED)
+        await createVehicleDerivativeWorker(prisma, storage)();
+    },
     adminEnquiries: createAdminEnquiriesService({ prisma }),
     support: createSupportService({ prisma, audit }),
     adminSupport: createAdminSupportService({ prisma, audit }),
@@ -384,6 +393,10 @@ export async function startWorker(container: Container): Promise<void> {
   await container.notifications.work();
   await container.queue.work('storefront.domains-sweep', () => container.storefrontDomains.sweep());
   await container.queue.schedule('storefront.domains-sweep', '0 * * * *');
+  await container.queue.work('media.gc-orphans', () => container.storefrontMediaCleanup());
+  await container.queue.schedule('media.gc-orphans', '30 * * * *');
+  await container.queue.work('media.process', () => container.vehicleDerivatives());
+  await container.queue.schedule('media.process', '* * * * *');
   container.outbox.start();
 
   logger.info(

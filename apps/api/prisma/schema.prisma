@@ -1364,21 +1364,22 @@ model PlatformConfig {
 // never has to be invalidated. `variants` maps a width to a storage key, and
 // is written by the processing job — F034.
 model Media {
-  id              String      @id @default(uuid()) @db.Uuid
-  dealerId        String?     @db.Uuid
-  ownerType       MediaOwner
-  storageKey      String      @unique
-  mimeType        String
-  bytes           Int
-  width           Int?
-  height          Int?
-  blurhash        String?
-  variants        Json        @default("{}")
-  fileName        String?
-  warnings        String[]
-  uploadedByAdmin Boolean     @default(false)
-  status          MediaStatus @default(PENDING)
-  createdAt       DateTime    @default(now())
+  id                 String      @id @default(uuid()) @db.Uuid
+  dealerId           String?     @db.Uuid
+  ownerType          MediaOwner
+  storageKey         String      @unique
+  mimeType           String
+  bytes              Int
+  width              Int?
+  height             Int?
+  blurhash           String?
+  variants           Json        @default("{}")
+  fileName           String?
+  warnings           String[]
+  uploadedByAdmin    Boolean     @default(false)
+  status             MediaStatus @default(PENDING)
+  derivativesRetryAt DateTime?
+  createdAt          DateTime    @default(now())
 
   attachment VehicleMedia?
 

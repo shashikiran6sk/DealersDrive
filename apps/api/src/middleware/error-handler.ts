@@ -176,5 +176,6 @@ export function errorHandler(
     res.setHeader('Retry-After', String(error.retryAfterSeconds));
   }
 
+  res.setHeader('Cache-Control', 'no-store');
   res.status(problem.status).type(PROBLEM_CONTENT_TYPE).json(problem);
 }
