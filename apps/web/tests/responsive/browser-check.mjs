@@ -74,6 +74,9 @@ const availableStories = [
   'dealer-enquiryinbox--new',
   'dealer-dealerprofileform--populated',
   'dealer-team--owner-with-team',
+  'vehicle-vehiclegallery--twenty',
+  'vehicle-vehiclegallery--portrait',
+  'vehicle-vehiclegallery--one-photo',
   'vehicle-vehiclecard--long-title',
   'vehicle-vehiclecard--reserved',
   'vehicle-vehiclecard--sold',
@@ -98,6 +101,7 @@ const availableStories = [
   'search-mobilefiltersheet--with-filters-applied',
   'layout-mobilenav--dealer',
   'layout-mobilenav--admin',
+  'layout-mobilenav--restricted-admin',
   'layout-mobilenav--sales',
 ];
 const stories = process.env.RESPONSIVE_STORIES?.split(',') ?? availableStories;
@@ -142,6 +146,7 @@ for (const story of stories) {
     continue;
   }
   const dialogStory =
+    story.startsWith('vehicle-vehiclegallery') ||
     story.startsWith('layout-mobilenav') ||
     story.startsWith('primitives-dialog') ||
     story.startsWith('search-mobilefilter');

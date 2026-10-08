@@ -110,3 +110,36 @@ Use a dedicated Chromium with background throttling disabled for long sweeps.
 Evidence includes both actual pages and deterministic component fixtures;
 redirected guest pages are identified in the page report rather than counted
 as successful authenticated journeys.
+
+## Recorded verification
+
+- Repository lint and typecheck passed.
+- All 4,916 repository tests passed: 1,475 web, 427 contracts, 3,014 API.
+- Production build passed. Local Turbo build/test used `--env-mode=loose` to
+  preserve the managed proxy; tests used two workers to avoid resource contention.
+- 459 component viewport checks passed across 51 fixtures and nine widths.
+- 297 actual-page viewport checks passed across 33 requested paths. Expected
+  authentication redirects are recorded explicitly; 24 distinct destinations
+  rendered. Sales pages used a seeded local sales cookie session.
+- All 66 desktop comparisons at 1280px and 1440px are pixel-identical to main.
+- Native Chromium checks passed OTP typing, backspace, paste, drawer focus
+  trapping, Escape, focus return, and a short 320px viewport. Customer OTP
+  checks passed wrong-code feedback, retry, resend cooldown, and successful
+  verification using the existing fake driver.
+- Gallery checks passed mobile opening, bottom thumbnails, keyboard arrows,
+  last-photo selection, bounded rail scrolling, Escape, and focus return.
+- Backend endpoints, schema/migrations, contracts, auth/business handlers,
+  and dependency lockfile have no diff from the main baseline.
+
+Full screenshots and machine-readable reports live on the separate
+[evidence branch](https://github.com/shashikiran6sk/DealersDrive/tree/evidence/mobile-ui-responsive-revamp/mobile-ui-revamp),
+linked from [PR #285](https://github.com/shashikiran6sk/DealersDrive/pull/285).
+This branch is for review artifacts and is not part of the production PR.
+
+Initial baseline/client-generation mismatches were resolved by rebuilding
+local generated contracts and Prisma clients. Early browser fixtures exposed
+an outdated action mock and an artificial fixed-width decorator; both fixtures
+were repaired. Guest redirects were recaptured after settling; blinking carets
+were blurred; exhausted isolated OTP request counters were reset by restarting
+the local API. The passing reports reflect the final recaptures. No application
+rate limits or existing tests were weakened.

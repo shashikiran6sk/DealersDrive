@@ -25,6 +25,7 @@ function row(overrides: Partial<AdminNotificationRow> = {}): AdminNotificationRo
 const meta = {
   title: 'Admin/NotificationLog',
   component: NotificationLog,
+  parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
       <div className="p-[20px]">

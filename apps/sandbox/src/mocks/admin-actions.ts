@@ -37,6 +37,10 @@ export async function reinstateDealerAction(dealerId: string, input: unknown) {
   return respond('reinstateDealer', dealerId, input);
 }
 
+export async function closeDealerAction(dealerId: string, input: unknown) {
+  return respond('closeDealer', dealerId, input);
+}
+
 export async function verifyDocumentAction(documentId: string) {
   return respond('verifyDocument', documentId, undefined);
 }

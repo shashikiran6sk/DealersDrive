@@ -17,7 +17,11 @@ const COLUMNS: TableColumn[] = [
   { key: 'when', label: NOTIFICATION_LOG_TEXT.colWhen },
   { key: 'to', label: NOTIFICATION_LOG_TEXT.colTo },
   { key: 'email', label: NOTIFICATION_LOG_TEXT.colEmail },
-  { key: 'dealer', label: NOTIFICATION_LOG_TEXT.colDealer, className: 'max-lg:hidden' },
+  {
+    key: 'dealer',
+    label: NOTIFICATION_LOG_TEXT.colDealer,
+    className: 'max-lg:hidden max-md:table-cell',
+  },
   { key: 'status', label: NOTIFICATION_LOG_TEXT.colStatus },
 ];
 
@@ -29,7 +33,7 @@ export function NotificationLog({
   filters: NotificationLogFilters;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-md:min-w-0">
       <div className="flex flex-col gap-[6px]">
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="text-[26px]">{NOTIFICATION_LOG_TEXT.title}</h1>
@@ -89,7 +93,11 @@ export function NotificationLog({
           message={NOTIFICATION_LOG_TEXT.emptyMessage}
         />
       ) : (
-        <Table columns={COLUMNS} caption={NOTIFICATION_LOG_TEXT.caption}>
+        <Table
+          columns={COLUMNS}
+          caption={NOTIFICATION_LOG_TEXT.caption}
+          className="max-md:min-w-[640px]"
+        >
           {deliveries.data.map((row) => (
             <tr key={row.id}>
               <td className="whitespace-nowrap text-[12px] tnum">{row.createdLabel}</td>
@@ -101,7 +109,9 @@ export function NotificationLog({
                   <div className="mt-1 text-[12px] text-(--color-err)">{row.lastError}</div>
                 ) : null}
               </td>
-              <td className="text-[13px] max-lg:hidden">{row.dealer?.name ?? '—'}</td>
+              <td className="text-[13px] max-lg:hidden max-md:table-cell">
+                {row.dealer?.name ?? '—'}
+              </td>
               <td>
                 <StatusTag tone={row.statusTone}>{row.statusLabel}</StatusTag>
                 <div className="mt-1 text-[11px] ink-muted">
