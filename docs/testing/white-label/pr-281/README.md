@@ -34,6 +34,8 @@ storefront UI follow in PR 3; provider onboarding/renewal follows in PR 4.
 No live provider/DNS/TLS verification is claimed. Legal disclosure review and
 reconciliation with PR #279 are rollout prerequisites.
 
-GitHub checks are pending until final-head results are recorded. PR #281 was
-verified OPEN, unmerged, correctly based on PR #280, with no auto-merge request.
+All required GitHub checks passed on this final head: lint/typecheck/test/build,
+dependency audit, Semgrep and Gitleaks. Terraform validation and Vercel preview
+also passed. CI run 37782936156 and Security run 37782936363 are successful.
+PR #281 was verified OPEN, unmerged, correctly based on PR #280, with no auto-merge request.
 No production migration, DNS/provider write, merge or production deployment.
