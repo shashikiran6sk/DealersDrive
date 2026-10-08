@@ -1,0 +1,224 @@
+[
+  {
+    "clientWidth": 320,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "clientWidth": 375,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": false
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": false
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": false
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": false
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": false
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": false
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": false
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "clientWidth": 390,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "width": 390
+  },
+  {
+    "clientWidth": 768,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "width": 768
+  },
+  {
+    "clientWidth": 1024,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "width": 1024
+  },
+  {
+    "clientWidth": 1440,
+    "heading": "A car for your next chapter.",
+    "images": [
+      {
+        "alt": "Alpha Motors (Test) dealership",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2022 Honda Jazz Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2023 Honda City Synthetic test car, the primary photograph",
+        "loaded": true
+      },
+      {
+        "alt": "2021 Honda Amaze Synthetic test car, the primary photograph",
+        "loaded": true
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "width": 1440
+  }
+]

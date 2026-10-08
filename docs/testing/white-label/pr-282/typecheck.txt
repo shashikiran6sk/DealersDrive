@@ -1,0 +1,61 @@
+
+> dealers-drive@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive
+> turbo run typecheck
+
+
+   • turbo 2.11.7
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/storefront, @dealers-drive/storefront-ui, @dealers-drive/web
+   • Running typecheck in 7 packages
+   • Remote caching disabled
+
+@dealers-drive/config:typecheck: cache hit, replaying logs 714ad47a78b1ca65
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/contracts:typecheck: cache hit, replaying logs e7cf0ffd10b5a3ee
+@dealers-drive/contracts:build: cache hit, replaying logs 18cb97a27c6a6f75
+@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/contracts
+@dealers-drive/contracts:typecheck: 
+@dealers-drive/contracts:typecheck: > @dealers-drive/contracts@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build: 
+@dealers-drive/contracts:typecheck: > tsc -p tsconfig.json
+@dealers-drive/contracts:typecheck: 
+@dealers-drive/storefront-ui:typecheck: cache miss, executing dcc2785af95b592d
+@dealers-drive/storefront-ui:build: cache hit, replaying logs cce6045d82daeab4
+@dealers-drive/web:typecheck: cache hit, replaying logs d2a7268224eb0a64
+@dealers-drive/storefront-ui:build: 
+@dealers-drive/storefront-ui:build: > @dealers-drive/storefront-ui@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
+@dealers-drive/storefront-ui:build: > tsc --noEmit
+@dealers-drive/storefront-ui:build: 
+@dealers-drive/web:typecheck: 
+@dealers-drive/web:typecheck: > @dealers-drive/web@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/web
+@dealers-drive/web:typecheck: > tsc --noEmit
+@dealers-drive/web:typecheck: 
+@dealers-drive/sandbox:typecheck: cache miss, executing c28cd6535717b854
+@dealers-drive/storefront:typecheck: cache miss, executing 99b5cbd129aedddd
+@dealers-drive/api:typecheck: cache hit, replaying logs b38b0a097abdcfcf
+@dealers-drive/api:typecheck: 
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck: 
+@dealers-drive/storefront-ui:typecheck: 
+@dealers-drive/storefront-ui:typecheck: > @dealers-drive/storefront-ui@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/packages/storefront-ui
+@dealers-drive/storefront-ui:typecheck: > tsc --noEmit
+@dealers-drive/storefront-ui:typecheck: 
+@dealers-drive/storefront:typecheck: 
+@dealers-drive/storefront:typecheck: > @dealers-drive/storefront@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/storefront
+@dealers-drive/storefront:typecheck: > tsc --noEmit
+@dealers-drive/storefront:typecheck: 
+@dealers-drive/sandbox:typecheck: 
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck: 
+
+ Tasks:    9 successful, 9 total
+Cached:    6 cached, 9 total
+  Time:    1.807s 
+
