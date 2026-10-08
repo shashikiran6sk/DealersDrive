@@ -8,21 +8,17 @@
    • Running build in 5 packages
    • Remote caching disabled
 
-@dealers-drive/contracts:build: cache miss, executing 3b3a16232d799f93
+@dealers-drive/contracts:build: cache hit, replaying logs 3b3a16232d799f93
 @dealers-drive/contracts:build: 
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /workspace/DealersDrive/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
 @dealers-drive/contracts:build: 
-@dealers-drive/web:build: cache miss, executing 34ebe2cf13957964
-@dealers-drive/api:build: cache miss, executing 1c786724a4dc4391
+@dealers-drive/api:build: cache miss, executing 7c6015a7b867da7d
+@dealers-drive/web:build: cache hit, replaying logs 34ebe2cf13957964
 @dealers-drive/web:build: 
 @dealers-drive/web:build: > @dealers-drive/web@0.0.0 build /workspace/DealersDrive/apps/web
 @dealers-drive/web:build: > next build
 @dealers-drive/web:build: 
-@dealers-drive/api:build: 
-@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /workspace/DealersDrive/apps/api
-@dealers-drive/api:build: > tsc -p tsconfig.build.json
-@dealers-drive/api:build: 
 @dealers-drive/web:build:    ▲ Next.js 15.5.27
 @dealers-drive/web:build: 
 @dealers-drive/web:build:    Creating an optimized production build ...
@@ -162,8 +158,12 @@
 @dealers-drive/web:build: ○  (Static)   prerendered as static content
 @dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
 @dealers-drive/web:build: 
+@dealers-drive/api:build: 
+@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /workspace/DealersDrive/apps/api
+@dealers-drive/api:build: > tsc -p tsconfig.build.json
+@dealers-drive/api:build: 
 
  Tasks:    3 successful, 3 total
-Cached:    0 cached, 3 total
-  Time:    1m11.904s 
+Cached:    2 cached, 3 total
+  Time:    5.819s 
 
