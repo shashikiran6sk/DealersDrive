@@ -116,7 +116,7 @@ export function DealerInventory({
 
             <SearchResultsRegion>
               {inventory.data.length > 0 ? (
-                <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
+                <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr))]">
                   {inventory.data.map((vehicle, index) => (
                     <VehicleCard
                       key={vehicle.slug}

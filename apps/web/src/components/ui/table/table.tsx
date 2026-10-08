@@ -1,6 +1,7 @@
 import { cn } from '@/lib/cn';
 
 import type { TableProps } from './table.types';
+import { TABLE_TEXT } from './table.constants';
 
 export function Table({
   columns,
@@ -12,8 +13,11 @@ export function Table({
 }: TableProps) {
   return (
     <div
+      role="region"
+      aria-label={caption ?? TABLE_TEXT.scrollRegion}
+      tabIndex={0}
       className={cn(
-        'overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white',
+        'overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white max-md:min-w-0 max-md:max-w-full max-md:overscroll-x-contain',
         containerClassName,
       )}
     >

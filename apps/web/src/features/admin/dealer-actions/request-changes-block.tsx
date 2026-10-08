@@ -28,7 +28,7 @@ export function RequestChangesBlock({
       <Field
         id="changesReason"
         label={DEALER_ACTIONS_TEXT.changesLabel}
-        className="min-w-[240px] flex-1"
+        className="min-w-[240px] max-md:min-w-0 max-md:max-w-full flex-1"
       >
         <Input
           id="changesReason"

@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 
 import { redirect } from 'next/navigation';
 
+import { MobileNav } from '@/components/layout/mobile-nav';
+import { ADMIN_NAV_LABEL, ADMIN_ROOT_HREF } from '@/components/admin/admin-nav/admin-nav.constants';
 import { BrandLogo } from '@/components/brand-logo';
 import { AdminNav, adminNavFor } from '@/components/admin/admin-nav';
 import { StatusTag } from '@/components/ui/primitives';
@@ -25,14 +27,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="flex min-h-dvh bg-(--color-neutral-100) max-md:flex-col">
-      <aside className="flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3">
+      <aside className="hidden w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white md:flex">
         <Link href="/admin" className="flex items-center gap-[9px] no-underline">
           <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
           <span className="font-heading text-[15px] font-extrabold text-white">Admin console</span>
         </Link>
 
-        <div className="max-md:ml-auto max-md:overflow-x-auto">
-          <div className="max-md:flex max-md:gap-1">
+        <div>
+          <div>
             <AdminNav items={adminNavFor(overview.operator.permissions)} />
           </div>
         </div>
@@ -45,14 +47,19 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3">
+        <header className="sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-md:h-auto max-md:flex-wrap max-md:gap-2 max-md:px-4 max-md:py-2">
+          <MobileNav
+            items={adminNavFor(overview.operator.permissions)}
+            label={ADMIN_NAV_LABEL}
+            rootHref={ADMIN_ROOT_HREF}
+          />
           <span className="text-[14px] font-semibold">Operations</span>
 
-          <div className="ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="ml-auto flex min-w-0 items-center gap-3 max-md:ml-0 max-md:grid max-md:w-full max-md:grid-cols-[minmax(0,1fr)_auto]">
             {overview.headerBadge.count > 0 ? (
               <Link
                 href="/admin/listings"
-                className="no-underline max-sm:col-span-2 max-sm:justify-self-start"
+                className="no-underline max-md:col-span-2 max-md:justify-self-start"
               >
                 <StatusTag tone={overview.headerBadge.tone}>{overview.headerBadge.label}</StatusTag>
               </Link>

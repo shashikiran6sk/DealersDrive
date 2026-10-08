@@ -51,7 +51,7 @@ export function SavedList({ saved }: SavedListProps) {
                 </h2>
                 {group.note ? <p className="text-[13px] ink-muted">{group.note}</p> : null}
               </div>
-              <div className="grid items-stretch gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+              <div className="grid items-stretch gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr))]">
                 {rows.map((row) => (
                   <VehicleCard key={row.vehicle.slug} vehicle={row.vehicle} />
                 ))}

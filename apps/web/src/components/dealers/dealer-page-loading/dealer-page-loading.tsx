@@ -21,7 +21,7 @@ export function DealerPageLoading() {
           <div className="h-[440px] rounded-[14px] bg-(--color-neutral-150) max-lg:h-[340px] max-md:h-[240px]" />
         </div>
       </div>
-      <div className="mx-auto grid max-w-[1280px] gap-[18px] px-6 pt-6 [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">
+      <div className="mx-auto grid max-w-[1280px] gap-[18px] px-6 pt-6 [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(262px,100%),1fr))]">
         {Array.from({ length: DEALER_LOADING_CARDS }, (_, index) => (
           <VehicleCardSkeleton key={index} />
         ))}

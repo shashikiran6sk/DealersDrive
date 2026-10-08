@@ -160,7 +160,7 @@ export default async function CarsPage({
 
           <SearchResultsRegion>
             {listing.data.length > 0 ? (
-              <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(258px,1fr))]">
+              <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(258px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(258px,100%),1fr))]">
                 {listing.data.map((vehicle, index) => (
                   <VehicleCard key={vehicle.slug} vehicle={vehicle} priority={index < 4} />
                 ))}

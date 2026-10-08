@@ -11,6 +11,11 @@ import {
   ConsoleTabBar,
   consoleNavFor,
 } from '@/components/dealer/console-nav';
+import { MobileNav } from '@/components/layout/mobile-nav';
+import {
+  DEALER_NAV_LABEL,
+  DEALER_ROOT_HREF,
+} from '@/components/dealer/console-nav/console-nav.constants';
 import { ButtonLink } from '@/components/ui/button';
 import { BrandLogo } from '@/components/brand-logo';
 import { Blueprint, StatusTag } from '@/components/ui/primitives';
@@ -68,14 +73,28 @@ export default async function DealerLayout({ children }: { children: ReactNode }
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-[15] flex h-[64px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-4 md:h-[70px] md:px-8">
-          <span className="min-w-0 truncate font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+          <MobileNav items={nav} label={DEALER_NAV_LABEL} rootHref={DEALER_ROOT_HREF}>
+            <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}>
+              {dealer.statusLabel}
+            </StatusTag>
+            <p className="mt-3 text-[13px] tnum">{dealer.creditBalance} credits</p>
+            {dealer.creditsHeld > 0 ? (
+              <p className="mt-1 text-[12px] ink-muted">
+                {dealer.creditsHeld} held for cars under review
+              </p>
+            ) : null}
+          </MobileNav>
+          <span className="min-w-0 truncate font-heading text-[16px] max-md:flex-1 font-extrabold tracking-[-0.02em]">
             {dealer.brandName}
           </span>
-          <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'} className="flex-none">
+          <StatusTag
+            tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}
+            className="flex-none max-md:hidden"
+          >
             {dealer.statusLabel}
           </StatusTag>
 
-          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum">
+          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum max-md:hidden">
             {dealer.creditBalance} credits
           </span>
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
@@ -88,7 +107,9 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           )}
         </header>
 
-        <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+          {children}
+        </main>
       </div>
 
       <ConsoleTabBar items={nav} />

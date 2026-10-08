@@ -144,7 +144,7 @@ export default async function DealerDirectoryPage({
       />
 
       {directory.data.length > 0 ? (
-        <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
+        <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
           {directory.data.map((dealer) => (
             <DirectoryCard key={dealer.slug} dealer={dealer} />
           ))}

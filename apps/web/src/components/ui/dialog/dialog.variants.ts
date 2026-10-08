@@ -1,4 +1,4 @@
-export type DialogVariant = 'card' | 'fullscreen' | 'sheet';
+export type DialogVariant = 'card' | 'fullscreen' | 'sheet' | 'drawer';
 
 export interface DialogVariantClasses {
   overlay: string;
@@ -12,6 +12,18 @@ export interface DialogVariantClasses {
 }
 
 export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses> = {
+  drawer: {
+    overlay: 'fixed inset-0 z-70 bg-black/45 md:hidden',
+    content:
+      'fixed inset-y-0 left-0 z-71 flex w-[min(320px,calc(100vw-32px))] flex-col overflow-hidden bg-white shadow-lg md:hidden dd-mobile-drawer',
+    header:
+      'flex flex-none items-center justify-between gap-3 border-b border-(--color-divider) p-4',
+    title: 'text-[18px]',
+    description: 'text-[13px] ink-muted',
+    close: 'btn btn-secondary size-11 flex-none rounded-full border-transparent p-0 text-[15px]',
+    body: 'min-h-0 flex-1 overflow-y-auto overscroll-contain p-4',
+    closeShowsLabel: false,
+  },
   card: {
     overlay: 'dialog-backdrop',
     content:

@@ -22,7 +22,7 @@ export function CloseBlock({ dealer, pending, run, reason, onReasonChange }: Clo
       <Field
         id="closeReason"
         label={DEALER_ACTIONS_TEXT.closeLabel}
-        className="min-w-[240px] flex-1"
+        className="min-w-[240px] max-md:min-w-0 max-md:max-w-full flex-1"
       >
         <Input
           id="closeReason"

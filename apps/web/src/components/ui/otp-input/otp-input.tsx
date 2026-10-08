@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ClipboardEvent, type KeyboardEvent } from 'react';
+import { useRef, type ClipboardEvent, type CSSProperties, type KeyboardEvent } from 'react';
 
 import { cn } from '@/lib/cn';
 
@@ -20,6 +20,7 @@ export function OtpInput({
   onComplete,
 }: OtpInputProps) {
   const boxes = useRef<(HTMLInputElement | null)[]>([]);
+  const rowStyle: CSSProperties & { '--otp-length': number } = { '--otp-length': length };
 
   function focus(index: number): void {
     boxes.current[clampIndex(index, length)]?.focus();
@@ -73,7 +74,8 @@ export function OtpInput({
     <div
       role="group"
       aria-label={label}
-      className="flex flex-wrap items-center gap-[10px] py-[4px]"
+      className="dd-otp-row flex flex-wrap items-center gap-[10px] py-[4px]"
+      style={rowStyle}
     >
       {Array.from({ length }, (_, index) => (
         <input

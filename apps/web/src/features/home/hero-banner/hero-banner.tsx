@@ -34,7 +34,7 @@ export function HeroBanner({ image, children }: HeroBannerProps) {
         />
       </div>
 
-      <div className="mx-auto flex min-h-[500px] max-w-[1440px] items-center px-4 py-12 sm:px-6 md:min-h-[560px] md:py-16 lg:px-10">
+      <div className="mx-auto flex min-h-[500px] max-w-[1440px] max-md:min-h-[380px] max-md:py-8 items-center px-4 py-12 sm:px-6 md:min-h-[560px] md:py-16 lg:px-10">
         <div className="w-full max-w-[640px] min-w-0">{children}</div>
       </div>
     </section>

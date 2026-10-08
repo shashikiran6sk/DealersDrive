@@ -55,7 +55,7 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
         </Banner>
       ) : null}
 
-      <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
+      <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr))]">
         <div className="flex min-w-0 flex-col gap-5">
           <section aria-labelledby="dealer-heading" className="card gap-[8px] bg-white p-4">
             <h2 id="dealer-heading" className="text-[16px]">

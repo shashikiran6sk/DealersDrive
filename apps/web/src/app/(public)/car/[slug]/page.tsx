@@ -113,7 +113,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   const similar = vehicle.slug === slug ? await similarForSlug : await loadSimilar(vehicle.slug);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] sm:px-6 lg:pb-[64px]">
+    <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] max-lg:pb-[calc(88px+env(safe-area-inset-bottom))] sm:px-6 lg:pb-[64px]">
       <JsonLd
         nodes={[
           vehicleSchema(vehicle),

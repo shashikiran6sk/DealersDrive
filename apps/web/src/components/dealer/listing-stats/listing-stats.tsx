@@ -9,7 +9,7 @@ export function ListingStats({ stats }: { stats: DashboardResponse['listingStats
   return (
     <nav
       aria-label={LISTING_STATS_LABEL}
-      className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]"
+      className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))] max-md:grid-cols-2 max-md:gap-3"
     >
       {stats.map((stat) => (
         <Link

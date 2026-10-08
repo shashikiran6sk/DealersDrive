@@ -8,7 +8,7 @@ import { displayValue } from './utils';
 export function PlaceholderRow({ entry }: { entry: ConfigEntry }) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-(--color-divider) px-4 py-3 last:border-b-0">
-      <div className="min-w-[220px] flex-1">
+      <div className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1">
         <div className="text-[12px] ink-secondary">{entry.label}</div>
         <div className="font-mono text-[11px] ink-faint">{entry.key}</div>
       </div>

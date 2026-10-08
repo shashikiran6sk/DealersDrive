@@ -38,7 +38,7 @@ export function EnquiryOversightRow({ row, filters }: EnquiryOversightRowProps) 
           {dealer.name}
         </Link>
       </td>
-      <td className="max-w-[260px] max-xl:hidden">
+      <td className="max-w-[260px] max-xl:hidden max-md:table-cell">
         <p className="m-0 truncate text-[12px] ink-muted" title={row.messagePreview ?? undefined}>
           {row.messagePreview || (
             <span className="ink-faint">{ENQUIRY_OVERSIGHT_TEXT.noMessage}</span>

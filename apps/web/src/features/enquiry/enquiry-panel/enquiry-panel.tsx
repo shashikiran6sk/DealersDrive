@@ -117,7 +117,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
               {ENQUIRY_PANEL_TEXT.requiresLogin}
             </p>
           )}
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] shadow-(--shadow-lg) lg:hidden">
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] max-lg:pb-[max(10px,env(safe-area-inset-bottom))] shadow-(--shadow-lg) lg:hidden">
             <Button
               variant="primary"
               size="md"

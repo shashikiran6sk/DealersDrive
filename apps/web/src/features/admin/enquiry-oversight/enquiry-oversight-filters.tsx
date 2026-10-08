@@ -26,7 +26,7 @@ export function EnquiryOversightFilters({
         {filters.status ? <input type="hidden" name="status" value={filters.status} /> : null}
         {filters.dealer ? <input type="hidden" name="dealer" value={filters.dealer} /> : null}
 
-        <label className="flex min-w-[220px] flex-1 flex-col gap-[4px] text-[11px] uppercase tracking-[0.08em] ink-subtle sm:max-w-[320px]">
+        <label className="flex min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1 flex-col gap-[4px] text-[11px] uppercase tracking-[0.08em] ink-subtle sm:max-w-[320px]">
           {ENQUIRY_OVERSIGHT_TEXT.searchLabel}
           <Input
             name="q"

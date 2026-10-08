@@ -65,7 +65,7 @@ export function NotificationLog({
 
       <form action={logHref({})} method="get" className="flex flex-wrap items-end gap-2">
         {filters.status ? <input type="hidden" name="status" value={filters.status} /> : null}
-        <label className="flex min-w-[240px] flex-1 flex-col gap-1 text-[12px] ink-muted">
+        <label className="flex min-w-[240px] max-md:min-w-0 max-md:max-w-full flex-1 flex-col gap-1 text-[12px] ink-muted">
           {NOTIFICATION_LOG_TEXT.searchLabel}
           <Input
             name="q"

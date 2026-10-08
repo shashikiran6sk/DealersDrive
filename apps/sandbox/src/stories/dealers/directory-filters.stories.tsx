@@ -30,7 +30,7 @@ const meta = {
   parameters: { layout: 'padded', nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
-      <div style={{ width: 900 }}>
+      <div style={{ width: 'min(900px, 100%)' }}>
         <Story />
       </div>
     ),

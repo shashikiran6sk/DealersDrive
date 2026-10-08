@@ -156,14 +156,14 @@ export default async function DealerPortfolioPage({
           </Link>
         </div>
 
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px]">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px] max-md:px-4">
           <LogoTile
             initials={dealer.initials}
             size={78}
             className="max-md:h-[60px] max-md:w-[60px]"
           />
 
-          <div className="min-w-[260px] flex-1">
+          <div className="min-w-[260px] flex-1 max-md:min-w-0 max-md:basis-full max-md:[overflow-wrap:anywhere]">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] sm:text-[34px]">
                 {dealer.brandName}
@@ -197,7 +197,7 @@ export default async function DealerPortfolioPage({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))]">
         <section className="card p-[18px]">
           <h2 className="eyebrow">Dealership details</h2>
 
