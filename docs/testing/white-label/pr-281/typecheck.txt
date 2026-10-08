@@ -1,0 +1,46 @@
+
+> dealers-drive@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive
+> turbo run typecheck
+
+
+   • turbo 2.11.7
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running typecheck in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/contracts:typecheck: cache miss, executing 4ea068b7849ea723
+@dealers-drive/config:typecheck: cache hit, replaying logs 4e2f52d0d20c51e5
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/contracts:build: cache hit, replaying logs 1774bd8f75c24693
+@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /Users/shashikiran/Development/dealers-drive/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build: 
+@dealers-drive/api:typecheck: cache miss, executing 879d9da0b09a4cb3
+@dealers-drive/sandbox:typecheck: cache miss, executing 656939b14b127779
+@dealers-drive/web:typecheck: cache miss, executing d4d8aaf86a3b291a
+@dealers-drive/contracts:typecheck: 
+@dealers-drive/contracts:typecheck: > @dealers-drive/contracts@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/packages/contracts
+@dealers-drive/contracts:typecheck: > tsc -p tsconfig.json
+@dealers-drive/contracts:typecheck: 
+@dealers-drive/sandbox:typecheck: 
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck: 
+@dealers-drive/web:typecheck: 
+@dealers-drive/web:typecheck: > @dealers-drive/web@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/web
+@dealers-drive/web:typecheck: > tsc --noEmit
+@dealers-drive/web:typecheck: 
+@dealers-drive/api:typecheck: 
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck /Users/shashikiran/Development/dealers-drive/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck: 
+
+ Tasks:    6 successful, 6 total
+Cached:    2 cached, 6 total
+  Time:    5.352s 
+
