@@ -155,6 +155,19 @@ describe('supported Vercel provider API boundary', () => {
     });
     expect(h.tls).not.toHaveBeenCalled();
   });
+  it('uses provider recommended A records for an apex hostname', async () => {
+    const h = harness();
+    h.transport
+      .mockResolvedValueOnce(Response.json({ ...project, apexName: host }))
+      .mockResolvedValueOnce(
+        Response.json({ ...settings, recommendedIPv4: [{ rank: 1, value: ['76.76.21.21'] }] }),
+      );
+    expect((await h.provider.inspect(host)).routing).toEqual({
+      type: 'A',
+      name: host,
+      value: '76.76.21.21',
+    });
+  });
   it('refuses wrong-project and malformed provider responses', async () => {
     const h = harness();
     h.transport

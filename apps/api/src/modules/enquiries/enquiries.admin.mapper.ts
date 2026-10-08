@@ -83,6 +83,7 @@ export const ADMIN_DETAIL_SELECT = {
   listing: {
     select: {
       id: true,
+      marketplacePublished: true,
       status: true,
       slug: true,
       dealer: { select: { status: true } },
@@ -178,7 +179,10 @@ function locationOf(dealer: AdminDetailSource['dealer']): string | null {
 }
 
 function publicHrefOf(listing: AdminDetailSource['listing']): string | null {
-  const live = isListingPubliclyVisible(listing.status) && listing.dealer.status === 'ACTIVE';
+  const live =
+    listing.marketplacePublished &&
+    isListingPubliclyVisible(listing.status) &&
+    listing.dealer.status === 'ACTIVE';
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
 

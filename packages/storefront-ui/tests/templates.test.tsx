@@ -170,6 +170,17 @@ describe.each(['LIGHT', 'DARK'] as const)('%s presentation and accessibility', (
 });
 
 describe('media and contrast boundaries', () => {
+  it('recovers when an image failed before client hydration attached its error listener', () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+    try {
+      render(<StorefrontImage src="/unavailable.webp" alt="Unavailable test photo" />);
+      expect(screen.getByText('Photograph unavailable')).toBeInTheDocument();
+    } finally {
+      complete.mockRestore();
+      width.mockRestore();
+    }
+  });
   it('provides authorized derivatives and a safe fallback after storage errors', () => {
     const url =
       'https://api.example.com/media/by-media/11111111-1111-4111-8111-111111111111/1600.webp';

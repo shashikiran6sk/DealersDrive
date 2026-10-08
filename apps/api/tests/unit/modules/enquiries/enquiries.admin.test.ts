@@ -65,6 +65,7 @@ function detail(overrides: Partial<AdminDetailSource> = {}): AdminDetailSource {
     },
     listing: {
       id: ROW.listing.id,
+      marketplacePublished: true,
       status: 'ACTIVE',
       slug: 'a-car',
       dealer: { status: 'SUSPENDED' },

@@ -21,6 +21,7 @@ export type SavedRow = Prisma.SavedVehicleGetPayload<{ include: typeof savedIncl
 
 export function savedAvailability(listing: SavedRow['listing']): PublicAvailability {
   const onMarketplace =
+    listing.marketplacePublished &&
     isListingPubliclyVisible(listing.status) &&
     listing.dealer.status === PUBLIC_DEALER_STATUS &&
     listing.slug !== null;

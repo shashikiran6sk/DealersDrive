@@ -25,6 +25,7 @@ export type { IdentityService } from './identity.service.js';
 export type { SessionService } from './session.service.js';
 
 export { authorizeDealerWrite, type DealerWriteActor } from './dealer-write-authorization.js';
+export { authorizeCustomerWrite } from './customer-write-authorization.js';
 
 export {
   findMemberByUser,

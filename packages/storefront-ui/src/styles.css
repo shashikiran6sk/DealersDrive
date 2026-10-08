@@ -690,7 +690,7 @@
 }
 .wl-site[data-theme='dark'] .wl-photo-caption {
   z-index: 1;
-  background: transparent;
+  background: #080e10;
   justify-content: flex-end;
 }
 .wl-site[data-theme='dark'] .wl-photo-caption span:first-child {
@@ -1011,5 +1011,41 @@
 @media (prefers-reduced-motion: reduce) {
   .wl-car-card {
     transition: none;
+  }
+}
+
+.wl-home-search {
+  margin-top: 28px;
+  max-width: 550px;
+}
+.wl-home-search label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.wl-home-search > div {
+  display: flex;
+  gap: 10px;
+}
+.wl-home-search input {
+  min-width: 0;
+  flex: 1;
+  min-height: 48px;
+  border: 1px solid var(--wl-line);
+  border-radius: 4px;
+  background: var(--wl-surface);
+  color: var(--wl-ink);
+  padding: 12px;
+}
+.wl-site[data-theme='dark'] .wl-home-search label {
+  color: #fff;
+}
+@media (max-width: 479px) {
+  .wl-home-search > div {
+    flex-direction: column;
+  }
+  .wl-site[data-theme='dark'] .wl-hero-grid {
+    min-height: 750px;
   }
 }

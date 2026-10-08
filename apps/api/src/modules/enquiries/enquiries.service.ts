@@ -16,7 +16,11 @@ import {
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { lockStorefrontOrigin, type StorefrontOrigin } from '../storefront/storefront.facade.js';
 
-import { authorizeDealerWrite, type CustomerPrincipal } from '../auth/auth.facade.js';
+import {
+  authorizeCustomerWrite,
+  authorizeDealerWrite,
+  type CustomerPrincipal,
+} from '../auth/auth.facade.js';
 import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
@@ -291,6 +295,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
             : new ConflictError('LISTING_NOT_AVAILABLE', LISTING_NOT_AVAILABLE);
         }
 
+        if (origin) await authorizeCustomerWrite(tx, customer);
         const ownDealership = await tx.dealerMember.findFirst({
           where: { userId: customer.userId, dealerId: available.dealerId, status: 'ACTIVE' },
           select: { id: true },

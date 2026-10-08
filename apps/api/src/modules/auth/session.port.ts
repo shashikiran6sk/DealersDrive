@@ -41,6 +41,7 @@ export interface AdminPrincipal {
 
 export interface CustomerPrincipal {
   kind: 'CUSTOMER';
+  sessionId?: string;
   userId: string;
   fullName: string;
   phone: string;

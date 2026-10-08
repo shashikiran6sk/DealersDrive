@@ -18,6 +18,7 @@ function row(
     listingId: 'listing-1',
     createdAt: new Date('2026-09-20T10:00:00Z'),
     listing: {
+      marketplacePublished: true,
       id: 'listing-1',
       slug,
       status,
@@ -46,6 +47,12 @@ function row(
 }
 
 describe('savedAvailability (R74)', () => {
+  it('does not offer a marketplace link or image after marketplace publication is revoked', () => {
+    const saved = row('ACTIVE');
+    saved.listing.marketplacePublished = false;
+    expect(savedAvailability(saved.listing)).toBe('UNAVAILABLE');
+    expect(toSavedVehicle(saved).vehicle.image).toBeNull();
+  });
   it.each([
     ['ACTIVE', 'AVAILABLE'],
     ['RESERVED', 'RESERVED'],
