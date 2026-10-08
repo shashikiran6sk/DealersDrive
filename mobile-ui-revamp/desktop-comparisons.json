@@ -1,0 +1,332 @@
+[
+  {
+    "route": "/",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/config",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/config",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/dealers/af0a8a18-b3c3-4f91-b686-a60860c54893",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/dealers/af0a8a18-b3c3-4f91-b686-a60860c54893",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/dealers",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/dealers",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/enquiries",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/enquiries",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/listings",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/listings",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/login",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/login",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/members",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/members",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/notifications",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/notifications",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/support",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin/support",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/admin",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/car/2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/car/2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/cars",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/cars",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/contact",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/contact",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/login",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/login",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/onboarding",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/onboarding",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/team",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/team",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/vehicles/new",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer/vehicles/new",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealer",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealers/sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealers/sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealers",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/dealers",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/enquiries",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/enquiries",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/invitations",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/invitations",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/login",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/login",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales/dealers/new",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales/dealers/new",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales/dealers",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales/dealers",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/sales",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/saved",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/saved",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/support-requests/new",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/support-requests/new",
+    "width": 1440,
+    "differingPixels": 0
+  },
+  {
+    "route": "/support-requests",
+    "width": 1280,
+    "differingPixels": 0
+  },
+  {
+    "route": "/support-requests",
+    "width": 1440,
+    "differingPixels": 0
+  }
+]

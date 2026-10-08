@@ -1,0 +1,39 @@
+{
+  "baseCommit": "2a1845abcab9a6cf8b9fc3658cb5c92bf3c92566",
+  "componentStories": 51,
+  "componentViewportChecks": 459,
+  "pagePathsRequested": 33,
+  "pageViewportChecks": 297,
+  "distinctRenderedDestinations": 24,
+  "desktopComparisonPairs": 66,
+  "documentOverflowFailures": 0,
+  "tests": {
+    "web": 1475,
+    "contracts": 427,
+    "api": 3014,
+    "total": 4916
+  },
+  "apiCoverage": {
+    "statements": 96.01,
+    "branches": 90.47,
+    "functions": 97.9,
+    "lines": 97.06
+  },
+  "localChecks": [
+    "repository lint",
+    "repository typecheck",
+    "repository unit and integration tests",
+    "production build",
+    "OTP keyboard typing/backspace/paste",
+    "drawer focus trap/Escape/return focus",
+    "customer wrong OTP/retry/cooldown/success",
+    "gallery keyboard/thumbnail/Escape/focus interactions"
+  ],
+  "limitations": [
+    "Real mobile hardware and virtual keyboard were not available.",
+    "Real Google OAuth and production SMS were not exercised.",
+    "Expected guest redirects and seeded workspace authorization are identified in the page reports.",
+    "Business mutations are verified by existing regression tests; this is not a claim of every authenticated workflow being executed in a browser."
+  ],
+  "implementationCommit": "2b5561b2e36e175fee97e2b65fec28b9637e260e"
+}

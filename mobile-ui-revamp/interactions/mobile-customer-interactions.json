@@ -1,0 +1,12 @@
+[
+  "Actual customer sign-in opens six-digit OTP",
+  "Wrong OTP displays retry state",
+  "Resend respects existing cooldown",
+  "Correct development OTP verifies customer number",
+  "Customer account creation returns to marketplace",
+  "Saving vehicle updates pressed state",
+  "Saved vehicle persists on saved page",
+  "Authenticated saved page fits mobile viewport",
+  "Enquiry opens for verified customer",
+  "Enquiry submission succeeds against isolated API"
+]

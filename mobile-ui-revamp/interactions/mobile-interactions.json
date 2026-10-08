@@ -1,0 +1,10 @@
+[
+  "OTP typing advances and preserves digits",
+  "OTP backspace removes preceding digit",
+  "OTP paste populates six digits",
+  "Dealer drawer exposes Team",
+  "Drawer moves focus inside",
+  "Drawer traps keyboard focus",
+  "Drawer fits short mobile viewport",
+  "Escape closes drawer and returns focus"
+]

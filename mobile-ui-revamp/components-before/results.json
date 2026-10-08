@@ -1,0 +1,1073 @@
+[
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 320,
+    "scroll": 320,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 360,
+    "scroll": 360,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 375,
+    "scroll": 375,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 390,
+    "scroll": 390,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 430,
+    "scroll": 430,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 768,
+    "scroll": 768,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "admin-adminnav--dashboard",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Dashboard\nListings\nDealers\nPayments\nEnquiries\nSupport Tickets\nMembers\nEmail deliveries\nConfiguration",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 320,
+    "scroll": 320,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 360,
+    "scroll": 360,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 375,
+    "scroll": 375,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 390,
+    "scroll": 390,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 430,
+    "scroll": 430,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 768,
+    "scroll": 768,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-dashboardpanels--long-names-at-phone-width",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Recent enquiries\nAll enquiries →\nMB\nMohammed Basheer Abdul Rahman\n2018 Honda City ZX CVT Petrol Anniversary Edition\n2 days ago\nCall",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 320,
+    "scroll": 305,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 360,
+    "scroll": 345,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 375,
+    "scroll": 360,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 390,
+    "scroll": 375,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 430,
+    "scroll": 415,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 768,
+    "scroll": 753,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "dealer-inventoryview--every-status",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Inventory\n\n14 vehicles\n\nAdd vehicle\nAll\n14\nDraft\n1\nPending review\n1\nChanges requested\n1\nActive\n7\nReserved\n1\nSold\n2\nWithdrawn\n1\nSearch your i",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 320,
+    "scroll": 305,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 360,
+    "scroll": 345,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 375,
+    "scroll": 360,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 390,
+    "scroll": 375,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 430,
+    "scroll": 415,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 768,
+    "scroll": 768,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-discoveryrow--four-cars",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "SUVs\nView all →\nPhotographs coming soon\n2022\n2022\nHyundai Creta SX 1\n₹12,40,000\n31,000 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Moto",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 320,
+    "scroll": 320,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 360,
+    "scroll": 360,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 375,
+    "scroll": 375,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 390,
+    "scroll": 390,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 430,
+    "scroll": 430,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 768,
+    "scroll": 768,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-herobanner--no-photograph",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "INDEPENDENT DEALERS · ONE TRUSTED PLATFORM\nFind your next car\n\nUsed cars from verified independent dealerships, photographed by Dealers-Driv",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 320,
+    "scroll": 305,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 360,
+    "scroll": 345,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 375,
+    "scroll": 360,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 390,
+    "scroll": 375,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 430,
+    "scroll": 415,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 768,
+    "scroll": 753,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 1024,
+    "scroll": 1009,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 1280,
+    "scroll": 1265,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "home-informationsections--mobile",
+    "width": 1440,
+    "scroll": 1425,
+    "text": "YOUR JOURNEY\nFrom local discovery to a real conversation\n\nDealers-Drive is designed to help buyers make an informed shortlist while keeping ",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 320,
+    "scroll": 320,
+    "text": "Dealers-Drive\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 360,
+    "scroll": 360,
+    "text": "Dealers-Drive\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 375,
+    "scroll": 375,
+    "text": "Dealers-Drive\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 390,
+    "scroll": 390,
+    "text": "Dealers-Drive\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 430,
+    "scroll": 430,
+    "text": "Dealers-Drive\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 768,
+    "scroll": 768,
+    "text": "Dealers-Drive\nBuy cars\nDealers\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Dealers-Drive\nBuy cars\nDealers\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Dealers-Drive\nBuy cars\nDealers\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "layout-customerheader--home",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Dealers-Drive\nBuy cars\nDealers\nSelect district\n▾\nLogin",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 320,
+    "scroll": 320,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 360,
+    "scroll": 360,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 375,
+    "scroll": 375,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 390,
+    "scroll": 390,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 430,
+    "scroll": 430,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 768,
+    "scroll": 768,
+    "text": "Filters",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "search-mobilefiltersheet--closed",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 320,
+    "scroll": 320,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 360,
+    "scroll": 360,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 375,
+    "scroll": 375,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 390,
+    "scroll": 390,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 430,
+    "scroll": 430,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 768,
+    "scroll": 768,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "primitives-dialog--default",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Open dialog",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 320,
+    "scroll": 320,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 40,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 164,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 226,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 40,
+        "y": 439.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 439.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 360,
+    "scroll": 360,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 40,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 164,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 226,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 40,
+        "y": 439.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 439.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 375,
+    "scroll": 375,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 40,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 164,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 226,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 40,
+        "y": 439.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 439.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 390,
+    "scroll": 390,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 40,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 164,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 226,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 288,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 40,
+        "y": 439.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 430,
+    "scroll": 430,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 40,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 102,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 164,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 226,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 288,
+        "y": 371.703125,
+        "width": 52
+      },
+      {
+        "x": 40,
+        "y": 439.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 768,
+    "scroll": 768,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 203,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 265,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 327,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 389,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 451,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 513,
+        "y": 405.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 331,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 393,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 455,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 517,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 579,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 641,
+        "y": 405.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 459,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 521,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 583,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 645,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 707,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 769,
+        "y": 405.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "forms-otpinput--empty",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "Value: —",
+    "overflow": [],
+    "otp": [
+      {
+        "x": 539,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 601,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 663,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 725,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 787,
+        "y": 405.703125,
+        "width": 52
+      },
+      {
+        "x": 849,
+        "y": 405.703125,
+        "width": 52
+      }
+    ]
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 320,
+    "scroll": 320,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 360,
+    "scroll": 360,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 375,
+    "scroll": 375,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 390,
+    "scroll": 390,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 430,
+    "scroll": 430,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 768,
+    "scroll": 768,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 1024,
+    "scroll": 1024,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 1280,
+    "scroll": 1280,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  },
+  {
+    "story": "vehicle-vehiclecard--playground",
+    "width": 1440,
+    "scroll": 1440,
+    "text": "2023\n2023\nHyundai Creta SX(O)\n₹14,50,000\n22,400 km · Petrol · Automatic · Katpadi\nSL\nSri Lakshmi Motors\nVerified",
+    "overflow": [],
+    "otp": []
+  }
+]
