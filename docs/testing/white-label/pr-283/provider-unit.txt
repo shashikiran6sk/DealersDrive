@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /Users/shashikiran/Development/dealers-drive/apps/api
+
+
+ Test Files  2 passed (2)
+      Tests  38 passed (38)
+   Start at  20:18:11
+   Duration  189ms (transform 51%, import 40%, tests 7%, worker 1%)
+
