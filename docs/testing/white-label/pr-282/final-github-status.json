@@ -1,1 +1,81 @@
-{"autoMergeRequest":null,"baseRefName":"feat/white-label-02-backend","baseRefOid":"2d2f487a6bf1b2cb41e59189f503cc1b647cec8f","headRefName":"feat/white-label-03-storefront","headRefOid":"497e7a5247ae6a5da1d04004641cceb1b4ce70fd","mergedAt":null,"number":282,"state":"OPEN","statusCheckRollup":[{"__typename":"CheckRun","completedAt":"2026-10-08T14:34:02Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207734","name":"lint · typecheck · test · build","startedAt":"2026-10-08T14:26:31Z","status":"COMPLETED","workflowName":"CI"},{"__typename":"CheckRun","completedAt":"2026-10-08T14:27:12Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399110/job/113362941727","name":"semgrep","startedAt":"2026-10-08T14:25:58Z","status":"COMPLETED","workflowName":"Security"},{"__typename":"CheckRun","completedAt":"2026-10-08T14:26:42Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207747","name":"terraform fmt / validate","startedAt":"2026-10-08T14:26:31Z","status":"COMPLETED","workflowName":"CI"},{"__typename":"CheckRun","completedAt":"2026-10-08T14:26:43Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399110/job/113362942333","name":"gitleaks","startedAt":"2026-10-08T14:25:58Z","status":"COMPLETED","workflowName":"Security"},{"__typename":"CheckRun","completedAt":"2026-10-08T14:26:56Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207013","name":"dependency audit","startedAt":"2026-10-08T14:26:31Z","status":"COMPLETED","workflowName":"CI"},{"__typename":"StatusContext","context":"Vercel","startedAt":"2026-10-08T14:27:32Z","state":"SUCCESS","targetUrl":"https://vercel.com/dealers-drive/dealersdrive-prod-web/1eGZXce7DMSVEkhCG5JRhKY4w6Ym"},{"__typename":"CheckRun","completedAt":"2026-10-08T14:27:33Z","conclusion":"SUCCESS","detailsUrl":"https://vercel.com/github","name":"Vercel Preview Comments","startedAt":"2026-10-08T14:27:33Z","status":"COMPLETED","workflowName":""}],"url":"https://github.com/shashikiran6sk/DealersDrive/pull/282"}
+{
+  "autoMergeRequest": null,
+  "baseRefName": "feat/white-label-02-backend",
+  "baseRefOid": "2d2f487a6bf1b2cb41e59189f503cc1b647cec8f",
+  "headRefName": "feat/white-label-03-storefront",
+  "headRefOid": "497e7a5247ae6a5da1d04004641cceb1b4ce70fd",
+  "mergedAt": null,
+  "number": 282,
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:34:02Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207734",
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "startedAt": "2026-10-08T14:26:31Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:27:12Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399110/job/113362941727",
+      "name": "semgrep",
+      "startedAt": "2026-10-08T14:25:58Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:26:42Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207747",
+      "name": "terraform fmt / validate",
+      "startedAt": "2026-10-08T14:26:31Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:26:43Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399110/job/113362942333",
+      "name": "gitleaks",
+      "startedAt": "2026-10-08T14:25:58Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:26:56Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37792399565/job/113363207013",
+      "name": "dependency audit",
+      "startedAt": "2026-10-08T14:26:31Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-10-08T14:27:32Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/1eGZXce7DMSVEkhCG5JRhKY4w6Ym"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T14:27:33Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "startedAt": "2026-10-08T14:27:33Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "title": "feat(storefront): build responsive dealer websites with light and dark themes",
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/282"
+}

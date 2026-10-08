@@ -80,6 +80,10 @@ issuance/renewal, live TLS and production-like performance are unverified. Stagi
 browser workflows with real authentication/OTP and owned provider domains remain
 required. Legal/privacy PR #279 reconciliation needs qualified review.
 
-GitHub CI is pending until exact-head status/logs are added. No pending, cancelled,
-skipped-required or failed check counts as passing. PR stays OPEN, unmerged with
+All required GitHub checks passed at the final head: lint/typecheck/test/build,
+dependency audit, Semgrep and Gitleaks. Terraform and Vercel preview also passed.
+CI run 37819272440 and Security run 37819272156 both report the exact final SHA
+and completed success. The final-stack JSON verifies all five current heads,
+parent bases, required checks, OPEN state, null mergedAt and null auto-merge.
+No required check was skipped, pending, cancelled or failed at final verification. PR stays OPEN, unmerged with
 no auto-merge. No production migration, deployment, DNS change or paid purchase.

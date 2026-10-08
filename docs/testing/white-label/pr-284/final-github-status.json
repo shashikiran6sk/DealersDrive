@@ -1,0 +1,81 @@
+{
+  "autoMergeRequest": null,
+  "baseRefName": "feat/white-label-04-dashboard-domains",
+  "baseRefOid": "6e1779d2d09e86335716237f9b4e62c3e9cb7530",
+  "headRefName": "feat/white-label-05-hardening",
+  "headRefOid": "ef586f3e09193ba4f38840cb66e8edeba22c86d4",
+  "mergedAt": null,
+  "number": 284,
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:56:05Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37819272440/job/113455800269",
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "startedAt": "2026-10-08T17:47:26Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:48:36Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37819272156/job/113455799825",
+      "name": "semgrep",
+      "startedAt": "2026-10-08T17:47:26Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:47:41Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37819272440/job/113455800682",
+      "name": "terraform fmt / validate",
+      "startedAt": "2026-10-08T17:47:27Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:48:23Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37819272156/job/113455799617",
+      "name": "gitleaks",
+      "startedAt": "2026-10-08T17:47:27Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:47:58Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37819272440/job/113455800715",
+      "name": "dependency audit",
+      "startedAt": "2026-10-08T17:47:26Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-10-08T17:49:58Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/GAYNpY2Wd2rsdCQ7AwUCXQHJf1yT"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-08T17:49:59Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "startedAt": "2026-10-08T17:49:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "title": "test(storefront): harden security, SEO, deployment and end-to-end readiness",
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/284"
+}
