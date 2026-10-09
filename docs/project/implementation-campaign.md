@@ -105,6 +105,14 @@ now waits for that same scrolling assertion; the assertion, application behavior
 test count and CI thresholds are unchanged. Keep the original failed CI log and
 re-run all gates on the correction's final head before starting PR 2.
 
+The corrected head passed required GitHub checks, but Vercel's preview failed
+while downloading Manrope in Next's Google font loader. PR 1 therefore bundles
+the same Manrope 4.504 font under its original OFL license and uses Next's local
+font loader. This removes the external build dependency while preserving the
+font, CSS variable, normal style and weight range. Revalidate preview and all
+required checks on this additional correction's head. No production deployment
+or Vercel configuration change is performed.
+
 `node scripts/generate-favicon.mjs` deterministically rasterizes the unchanged DD
 vector contour into browser PNG/ICO assets. The glyph is approximately 25% smaller
 than the previous tight crop, centered on the same rounded black tile with
