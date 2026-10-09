@@ -25,6 +25,6 @@ for(const route of routes){
   const image=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(`/tmp/dealer-ux-evidence/${phase}/${encodeURIComponent(route)}-${width}.png`,Buffer.from(image.data,'base64'));
  }
  await fs.writeFile(`/tmp/dealer-ux-evidence/${phase}/results.json`,JSON.stringify(results,null,2));
- console.log(phase,route,results.filter(r=>r.route===route&&r.scroll>r.width+1).map(r=>r.width));
+ console.log(phase,route,results.filter(r=>r.route===route&&r.scroll>r.client+1).map(r=>r.width));
 }
-await fs.writeFile(`/tmp/dealer-ux-evidence/${phase}/results.json`,JSON.stringify(results,null,2));ws.close();
+await fs.writeFile(`/tmp/dealer-ux-evidence/${phase}/results.json`,JSON.stringify(results,null,2));ws.close();const overflow=results.filter(r=>r.scroll>r.client+1);if(overflow.length)throw Error(JSON.stringify({contentOverflow:overflow.map(r=>({route:r.route,width:r.width,scroll:r.scroll,client:r.client}))}));

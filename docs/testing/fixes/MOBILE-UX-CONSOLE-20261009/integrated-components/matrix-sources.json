@@ -1,0 +1,18 @@
+{
+  "fullRun": {
+    "head": "740c26b2b4d7bbb8585e8478e22d20e9e512f189",
+    "cases": 570,
+    "proof": "logs/integrated-components.log"
+  },
+  "affectedRerun": {
+    "head": "6a825fc0e95e438854193bfb3c5a570c099bd6ea",
+    "cases": 36,
+    "proof": "gallery-short-after/results.json"
+  },
+  "incrementalResults": {
+    "artifact": "integrated-components/results.json",
+    "uniqueCases": 576,
+    "executedCases": 606,
+    "note": "540 unchanged cases from the full matrix plus 36 final gallery cases; each record identifies the commit actually checked."
+  }
+}

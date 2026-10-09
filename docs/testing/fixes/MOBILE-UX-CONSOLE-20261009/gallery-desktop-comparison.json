@@ -1,0 +1,38 @@
+[
+  {
+    "story": "vehicle-vehiclegallery--twenty",
+    "width": 1280,
+    "identical": true,
+    "differenceBounds": null
+  },
+  {
+    "story": "vehicle-vehiclegallery--twenty",
+    "width": 1440,
+    "identical": true,
+    "differenceBounds": null
+  },
+  {
+    "story": "vehicle-vehiclegallery--portrait",
+    "width": 1280,
+    "identical": true,
+    "differenceBounds": null
+  },
+  {
+    "story": "vehicle-vehiclegallery--portrait",
+    "width": 1440,
+    "identical": true,
+    "differenceBounds": null
+  },
+  {
+    "story": "vehicle-vehiclegallery--one-photo",
+    "width": 1280,
+    "identical": true,
+    "differenceBounds": null
+  },
+  {
+    "story": "vehicle-vehiclegallery--one-photo",
+    "width": 1440,
+    "identical": true,
+    "differenceBounds": null
+  }
+]

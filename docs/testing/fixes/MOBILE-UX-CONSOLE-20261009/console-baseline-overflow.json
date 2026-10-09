@@ -1,0 +1,40 @@
+[
+  {
+    "port": 3001,
+    "path": "/dealer",
+    "scroll": 316,
+    "client": 305,
+    "offenders": [
+      {
+        "tag": "SECTION",
+        "c": "card gap-3 p-5",
+        "r": 316
+      },
+      {
+        "tag": "SECTION",
+        "c": "card gap-0 p-5",
+        "r": 316
+      }
+    ]
+  },
+  {
+    "port": 3003,
+    "path": "/dealer",
+    "scroll": 316,
+    "client": 305,
+    "metricScroll": 273,
+    "metricClient": 273,
+    "offenders": [
+      {
+        "tag": "SECTION",
+        "c": "card gap-3 p-5",
+        "r": 316
+      },
+      {
+        "tag": "SECTION",
+        "c": "card gap-0 p-5",
+        "r": 316
+      }
+    ]
+  }
+]

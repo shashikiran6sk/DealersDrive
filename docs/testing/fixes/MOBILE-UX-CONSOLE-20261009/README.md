@@ -1,52 +1,40 @@
 # Mobile UX corrections and dealer console cleanup
 
-This folder follows the existing `testing_evidence` archive workflow. It is
-never merged, deployed, or used as a product branch base. Product source,
-permanent regression tests and durable component documentation remain in the
-product PRs. Existing archive evidence is preserved.
+[Full A–G readiness report](READINESS.md) · [Mobile PR #285](https://github.com/shashikiran6sk/DealersDrive/pull/285) · [Console PR #286](https://github.com/shashikiran6sk/DealersDrive/pull/286)
 
-## Mobile PR #285
+This folder follows the existing `testing_evidence` archive convention. It is never merged, deployed or used as a product branch base. Permanent source, regression tests and component documentation remain in the product PRs. Earlier archive artifacts remain available in branch history.
 
-- PR: https://github.com/shashikiran6sk/DealersDrive/pull/285
-- Preserved baseline: `2b5561b2e36e175fee97e2b65fec28b9637e260e`.
-- Correction head: `1a14c8f736c210a4f5245e338ef061fd6f972330`.
-- Main base: `2a1845abcab9a6cf8b9fc3658cb5c92bf3c92566`.
-- Status: open, unmerged; all exact-head CI and Security checks passed.
+| Source                          | Commit                                     |
+| ------------------------------- | ------------------------------------------ |
+| Main / independent console base | `2a1845abcab9a6cf8b9fc3658cb5c92bf3c92566` |
+| Initial mobile                  | `2b5561b2e36e175fee97e2b65fec28b9637e260e` |
+| Final mobile                    | `fb48fa656ab5146bb638a870e9e74a686b34d775` |
+| Final console                   | `382bcc9b74604d2f7645a816b4996a83e972da43` |
+| Local-only final integration    | `6a825fc0e95e438854193bfb3c5a570c099bd6ea` |
 
-Validation: 4,919 tests (1,478 web, 427 contracts, 3,014 API), root formatting,
-lint, docs, types and production build passed. The two radio coexistence tests
-fail on the untouched mobile baseline. 510 component cases passed (51 stories
-at ten widths). All 330 final page cases fit their content width and render
-without a transient error page; 66 matched desktop pairs are pixel-identical.
-91 browser assertions cover the seven corrections, all implemented filter
-control variants, history, rapid taps, pending/disabled/long-list states and a
-short landscape CTA.
+Both product PRs have six passing exact-head CI/Security checks and remain open and unmerged. Full local suites pass: mobile 4,919, console 4,922 and integration 4,928 tests. Final formatting, lint, docs, types and production builds pass independently and combined.
 
-Widths: 320, 360, 375, 390, 430, 440, 768, 1024, 1280, 1440.
+| Evidence                                                                        | Contents                                                                                  |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `mobile-before/`, `mobile-after/`                                               | 330 matched page cases for the seven corrections; actual drawer before included           |
+| `desktop-mobile-correction-comparison.json`                                     | 66 identical desktop page pairs                                                           |
+| `mobile-components/`                                                            | Final independent mobile matrix: 516 passed cases                                         |
+| `mobile-interactions/`, `mobile-extra-interactions-a.json`                      | 91 correction/filter/history/landscape assertions                                         |
+| `filter-first-tap-before/first-tap.mp4`, `filter-first-tap-after/first-tap.mp4` | Native recordings: same 76 cars, immediate and persistent selection fixed                 |
+| `gallery-short-before/`, `gallery-short-after/`                                 | Six short-height failures before; all 36 gallery cases pass afterward                     |
+| `gallery-desktop-comparison.json`                                               | Six identical desktop gallery pairs                                                       |
+| `console-before/`, `console-after/`                                             | 50 affected route cases across all widths                                                 |
+| `console-components/`, `console-edge-states/`                                   | 60 final component cases and 50 long-name/keyboard/200% text assertions                   |
+| `console-authenticated/`                                                        | Real local OTP, public workspace entry, avatar before/after and complete desktop logout   |
+| `console-baseline-overflow.json`                                                | Inherited main chart overflow at 320px; new cards fit and integration fixes the panel     |
+| `integrated-pages/`                                                             | 330 combined cases, no content overflow; redirects recorded separately                    |
+| `integrated-components/`                                                        | Full 570-case matrix plus affected gallery rerun: 576 unique cases with commit provenance |
+| `integrated-authenticated/`                                                     | 28 real-session assertions, mobile logout, saved cars and short-height enquiry submission |
+| `integrated-mobile-interactions/`, `integrated-extra-interactions.json`         | All 91 correction and filter assertions pass together                                     |
+| `integrated-interactions/`, `integrated-edge-states/`, `integrated-gallery/`    | 85 metric, 50 text/menu and six native gallery assertions                                 |
+| `git-preservation-audit.json`, `ci-exact-head.json`                             | Source/branch preservation and exact-head checks                                          |
+| `logs/`, `harness/`                                                             | Successful checks, reproduced regressions, resource retry logs and browser harnesses      |
 
-| Evidence | Contents |
-| --- | --- |
-| `mobile-before/` | Screenshots of the existing mobile branch before corrections |
-| `mobile-after/` | Matched final correction screenshots |
-| `desktop-mobile-correction-comparison.json` | 66 identical desktop comparisons |
-| `mobile-components/` | 510 responsive component screenshots and result manifest |
-| `mobile-interactions/` | Drawer status and filter first-selection screenshots; 81 assertions |
-| `mobile-extra-interactions.json` | Ten further filter/history/landscape assertions |
-| `filter-first-tap-before/first-tap.mp4` | Native mouse recording: applied price, unchecked mobile radio |
-| `filter-first-tap-after/first-tap.mp4` | Native mouse recording: immediate and retained checked appearance |
-| `filter-first-tap-*/result.json` | Checked state, applied URL and identical result total (76 cars) |
-| `logs/regression-before.log` | Permanent regression tests fail on the original mobile source |
-| `logs/` | Successful local verification logs |
-| `harness/` | Reproducible native Chromium/CDP checks and existing isolated route fixtures |
+Widths: **320, 360, 375, 390, 430, 440, 768, 1024, 1280, 1440**. Short-height, landscape and 200% computed text-size fixtures supplement them. APIs, databases and fake OTP are local and isolated, with jobs disabled. Session values are not recorded. Real-device keyboards/safe-area hardware, production SMS and real Google OAuth were not run.
 
-The API, database, fixtures and fake OTP driver are local and isolated. No
-production records, schemas, authentication behavior or endpoints were changed.
-Restricted guest and sales routes retain their established redirects; requested
-paths and actual destinations are recorded separately. Browser emulation of
-short heights supplements testing and does not prove hardware keyboard behavior.
-
-## Independent console PR and local integration
-
-Console implementation and integration verification are ongoing. Their final
-heads, checks, screenshots and functional logout evidence will be appended here
-before completion. No additional product or integration PR will be opened.
+Merge #285 first only after owner approval, then update #286 from main and resolve the three documented text conflicts before separate approval. Main does not contain the mobile drawer: standalone console mobile logout depends on #285's shared navigation host. No PR merge is performed by this campaign.
