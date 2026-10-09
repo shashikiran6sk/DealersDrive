@@ -179,3 +179,10 @@ to the independent console cleanup PR. This correction adds no logout control.
 The drawer's shared navigation slot is the integration point for those utilities.
 The responsive component runner now includes 440px, completing the requested
 320/360/375/390/430/440/768/1024/1280/1440 matrix.
+
+The fullscreen gallery also lets its mobile image stage shrink below its
+intrinsic aspect-ratio height. At a 320×360 viewport the previous stage pushed
+the thumbnail rail 34px outside the clipped dialog body. `max-md:min-h-0` keeps
+the rail visible without changing desktop sizing. The browser runner checks
+all three gallery fixtures at 320×360 and 375×360 in addition to the width
+matrix; these checks fail on the previous gallery source.

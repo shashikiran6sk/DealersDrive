@@ -203,6 +203,36 @@ for (const story of stories) {
     });
     await fs.writeFile(`${output}/${story}-${width}.png`, Buffer.from(shot.data, 'base64'));
   }
+  if (story.startsWith('vehicle-vehiclegallery')) {
+    for (const width of [320, 375]) {
+      const height = 360;
+      await send('Emulation.setDeviceMetricsOverride', {
+        width,
+        height,
+        deviceScaleFactor: 1,
+        mobile: false,
+      });
+      await pause(150);
+      const rail = await evaluate(`(() => {
+        const element = document.querySelector('[role="dialog"] .dd-rail');
+        if (!element) return null;
+        const bounds = element.getBoundingClientRect();
+        return { top: bounds.top, bottom: bounds.bottom };
+      })()`);
+      const errors =
+        !rail || rail.top < 0 || rail.bottom > height + 1 ? ['Gallery rail leaves viewport'] : [];
+      results.push({ story, width, height, rail, errors });
+      if (errors.length) failures.push({ story, width, height, errors, rail });
+      const shot = await send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: false,
+      });
+      await fs.writeFile(
+        `${output}/${story}-${width}x${height}.png`,
+        Buffer.from(shot.data, 'base64'),
+      );
+    }
+  }
   console.log(
     story,
     results.filter((r) => r.story === story && r.errors.length).map((r) => r.width),

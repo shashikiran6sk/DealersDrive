@@ -68,7 +68,7 @@ export function GalleryViewer({
     >
       <GalleryRail images={images} index={index} onSelect={onSelect} />
 
-      <div className="relative flex min-w-0 flex-1 items-center justify-center p-3 md:p-5">
+      <div className="relative flex min-w-0 flex-1 items-center justify-center p-3 max-md:min-h-0 md:p-5">
         {several ? (
           <GalleryArrow
             direction="previous"
