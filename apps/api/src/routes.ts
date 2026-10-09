@@ -1,3 +1,7 @@
+import {
+  createPublicServiceLocationsRouter,
+  createAdminServiceLocationsRouter,
+} from './modules/service-locations/service-locations.routes.js';
 import { Router } from 'express';
 
 import { env } from './config/env.js';
@@ -51,6 +55,7 @@ export function createRoutes(container: Container): Router {
 
   const v1 = Router();
 
+  v1.use(createPublicServiceLocationsRouter(container.serviceLocations));
   v1.use(createConfigRouter(container.publicConfig));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
   v1.use(createSearchRouter(container.search, container.rateLimit));
@@ -112,6 +117,7 @@ export function createRoutes(container: Container): Router {
   const admin = Router();
   admin.use(container.guards.requireAdmin);
   admin.use(requirePermission('admin:console', ADMIN_CONSOLE_REFUSAL));
+  admin.use(createAdminServiceLocationsRouter(container.serviceLocations));
   admin.use(createAdminRouter(container.admin));
   admin.use(createAdminMembersRouter(container.adminMembers));
   admin.use(createModerationRouter(container.moderation));

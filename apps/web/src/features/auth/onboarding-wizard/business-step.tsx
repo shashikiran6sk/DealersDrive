@@ -2,6 +2,8 @@
 
 import type { DealerProfile } from '@dealers-drive/contracts';
 
+import { ServiceLocationFields } from '@/components/forms/service-location-fields/service-location-fields';
+
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
 import { ServiceInput } from '@/components/ui/service-input';
@@ -75,32 +77,11 @@ export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepPro
             />
           </Field>
 
-          <Field id="district" label="District" error={errors.district}>
-            <input
-              id="district"
-              name="district"
-              defaultValue={values.district ?? dealer?.address.district ?? ''}
-              className="input"
-              placeholder="Vellore"
-              required
-              aria-required="true"
-              {...invalidProps('district', errors.district)}
-            />
-          </Field>
-
-          <Field id="state" label="State" error={errors.state}>
-            <input
-              id="state"
-              name="state"
-              defaultValue={values.state ?? dealer?.address.state ?? ''}
-              className="input"
-              autoComplete="address-level1"
-              placeholder="Tamil Nadu"
-              required
-              aria-required="true"
-              {...invalidProps('state', errors.state)}
-            />
-          </Field>
+          <ServiceLocationFields
+            initialState={values.state ?? dealer?.address.state ?? ''}
+            initialDistrict={values.district ?? dealer?.address.district ?? ''}
+            errors={errors}
+          />
 
           <Field id="pincode" label="Pincode" error={errors.pincode}>
             <input

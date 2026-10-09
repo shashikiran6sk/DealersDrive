@@ -250,6 +250,7 @@ export const AdminDealerDetail = z.object({
   city: z.string().nullable(),
   district: z.string().nullable(),
   state: z.string().nullable(),
+  locationReviewRequired: z.boolean().optional(),
   addressLine: z.string().nullable(),
   pincode: z.string().nullable(),
   /**

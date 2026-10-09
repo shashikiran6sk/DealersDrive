@@ -1,5 +1,6 @@
 import {
   BODY_TYPE_LABELS,
+  canonicalDistrictFilterSlug,
   FUEL_LABELS,
   OWNER_BUCKET_LABELS,
   OWNER_BUCKET_MIN,
@@ -52,7 +53,11 @@ export function locationScope(
   const cities = new Set(query.city ?? []);
   const chosen = new Set(query.dealer ?? []);
   const inScope = query.district
-    ? dealers.filter((dealer) => slugOf(dealer.district) === query.district)
+    ? dealers.filter(
+        (dealer) =>
+          canonicalDistrictFilterSlug(slugOf(dealer.district)) ===
+          canonicalDistrictFilterSlug(query.district ?? ''),
+      )
     : dealers;
 
   const narrowed = cities.size > 0 || chosen.size > 0;

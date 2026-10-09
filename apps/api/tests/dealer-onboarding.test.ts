@@ -146,17 +146,17 @@ describe('one name per city', () => {
   /** The normalisation is what makes the casing case above hold at the index. */
   it('stores the city, district and state in one normalised form', async () => {
     const { agent } = await dealership({
-      city: '  hubballi  ',
-      district: 'dharwad',
-      state: 'karnataka',
+      city: '  katpadi  ',
+      district: 'vellore',
+      state: 'tn',
     });
 
     const profile = await agent.get('/v1/dealer').expect(200);
 
     expect(profile.body.address).toMatchObject({
-      city: 'Hubballi',
-      district: 'Dharwad',
-      state: 'Karnataka',
+      city: 'Katpadi',
+      district: 'Vellore',
+      state: 'Tamil Nadu',
     });
   });
 

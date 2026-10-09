@@ -447,6 +447,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         city: dealer.city,
         district: dealer.district,
         state: dealer.state,
+        locationReviewRequired: dealer.locationReviewRequired,
         addressLine: dealer.addressLine,
         pincode: dealer.pincode,
         mapsUrl: dealer.mapsUrl,

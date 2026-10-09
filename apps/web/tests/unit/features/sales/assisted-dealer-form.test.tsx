@@ -1,3 +1,16 @@
+vi.mock('@/features/service-location-actions', () => ({
+  loadServiceLocationsAction: () =>
+    Promise.resolve({
+      data: [
+        {
+          id: 'IN-TN',
+          name: 'Tamil Nadu',
+          districts: [{ id: 'IN-TN-VELLORE', stateId: 'IN-TN', name: 'Vellore' }],
+        },
+      ],
+    }),
+}));
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
