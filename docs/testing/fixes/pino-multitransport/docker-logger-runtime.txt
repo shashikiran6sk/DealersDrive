@@ -1,0 +1,6 @@
+HTTP 200
+{"mode":"false","stdoutRecords":7,"traceId":"verified","redaction":"verified"}
+HTTP 200
+{"mode":"true","stdoutRecords":7,"traceId":"verified","redaction":"verified"}
+TEST_RECEIVER_READY
+{"received":7,"levels":[30,40,50,60,30,30,30],"routes":["/dealers/:id"],"authentication":"verified","redaction":"verified"}

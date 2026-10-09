@@ -1,0 +1,67 @@
+
+ RUN  v5.0.3 /workspace/pino-baseline/apps/api
+
+ ❯ |unit| tests/unit/platform/telemetry/logger.test.ts (23 tests | 2 failed) 292ms
+   ❯ the shared logger (6)
+     × preserves numeric severity for transport routing 47ms
+     × filters below the configured level and keeps child metadata 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/platform/telemetry/logger.test.ts > the shared logger > preserves numeric severity for transport routing
+AssertionError: expected [ 'info', 'warn', 'error' ] to deeply equal [ 30, 40, 50 ]
+
+- Expected
++ Received
+
+  [
+-   30,
+-   40,
+-   50,
++   "info",
++   "warn",
++   "error",
+  ]
+
+ ❯ tests/unit/platform/telemetry/logger.test.ts:69:45
+     67|     log.error('failed');
+     68|
+     69|     expect(lines.map((line) => line.level)).toEqual([30, 40, 50]);
+       |                                             ^
+     70|   });
+     71|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/platform/telemetry/logger.test.ts > the shared logger > filters below the configured level and keeps child metadata
+AssertionError: expected { level: 'warn', …(6) } to match object { level: 40, component: 'jobs' }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "component": "jobs",
+-   "level": 40,
++   "level": "warn",
+  }
+
+ ❯ tests/unit/platform/telemetry/logger.test.ts:78:22
+     76|     log.child({ component: 'jobs' }).warn('retained');
+     77|     expect(lines).toHaveLength(1);
+     78|     expect(lines[0]).toMatchObject({ level: 40, component: 'jobs' });
+       |                      ^
+     79|   });
+     80|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 21 passed (23)
+   Start at  17:51:43
+   Duration  3.89s (import 52%, transform 35%, tests 13%, worker 1%)
+
+undefined
+/workspace/pino-baseline/apps/api:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run --project unit tests/unit/platform/telemetry/logger.test.ts

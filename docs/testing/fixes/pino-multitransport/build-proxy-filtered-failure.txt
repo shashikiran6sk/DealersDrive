@@ -1,0 +1,65 @@
+
+> dealers-drive@0.0.0 build /workspace/DealersDrive
+> turbo run build
+
+
+   • turbo 2.11.7
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running build in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/contracts:build: cache hit, replaying logs da59ad6814a9965f
+@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /workspace/DealersDrive/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build: 
+@dealers-drive/web:build: cache miss, executing 10aeb1394ff889c2
+@dealers-drive/api:build: cache miss, executing f443b0558024ed50
+@dealers-drive/web:build: 
+@dealers-drive/web:build: > @dealers-drive/web@0.0.0 build /workspace/DealersDrive/apps/web
+@dealers-drive/web:build: > next build
+@dealers-drive/web:build: 
+@dealers-drive/api:build: 
+@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /workspace/DealersDrive/apps/api
+@dealers-drive/api:build: > tsc -p tsconfig.build.json
+@dealers-drive/api:build: 
+@dealers-drive/web:build:    ▲ Next.js 15.5.27
+@dealers-drive/web:build: 
+@dealers-drive/web:build:    Creating an optimized production build ...
+@dealers-drive/web:build: getaddrinfo EAI_AGAIN fonts.googleapis.com
+@dealers-drive/web:build: 
+@dealers-drive/web:build: Retrying 1/3...
+@dealers-drive/web:build: getaddrinfo EAI_AGAIN fonts.googleapis.com
+@dealers-drive/web:build: 
+@dealers-drive/web:build: Retrying 2/3...
+@dealers-drive/web:build: getaddrinfo EAI_AGAIN fonts.googleapis.com
+@dealers-drive/web:build: 
+@dealers-drive/web:build: Retrying 3/3...
+@dealers-drive/web:build: [Error: getaddrinfo EAI_AGAIN fonts.googleapis.com] {
+@dealers-drive/web:build:   errno: -3001,
+@dealers-drive/web:build:   code: 'EAI_AGAIN',
+@dealers-drive/web:build:   syscall: 'getaddrinfo',
+@dealers-drive/web:build:   hostname: 'fonts.googleapis.com'
+@dealers-drive/web:build: }
+@dealers-drive/web:build: Failed to compile.
+@dealers-drive/web:build: 
+@dealers-drive/web:build: src/lib/fonts.ts
+@dealers-drive/web:build: `next/font` error:
+@dealers-drive/web:build: Failed to fetch `Manrope` from Google Fonts.
+@dealers-drive/web:build: 
+@dealers-drive/web:build: src/lib/fonts.ts
+@dealers-drive/web:build: `next/font` error:
+@dealers-drive/web:build: Failed to fetch `Manrope` from Google Fonts.
+@dealers-drive/web:build: 
+@dealers-drive/web:build: 
+@dealers-drive/web:build: > Build failed because of webpack errors
+@dealers-drive/web:build:  ELIFECYCLE  Command failed with exit code 1.
+@dealers-drive/web#build:  ERROR  command (/workspace/DealersDrive/apps/web) /tmp/pino-bin/pnpm run build exited (1)
+
+ Tasks:    2 successful, 3 total
+Cached:    1 cached, 3 total
+  Time:    1m35.524s 
+Failed:    @dealers-drive/web#build
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.
