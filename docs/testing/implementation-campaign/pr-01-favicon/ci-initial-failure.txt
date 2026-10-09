@@ -6,32 +6,32 @@ lint · typecheck · test · build	Test	2026-10-09T15:00:00.6882127Z   TURBO_UI:
 lint · typecheck · test · build	Test	2026-10-09T15:00:00.6882422Z   NEXT_TELEMETRY_DISABLED: 1
 lint · typecheck · test · build	Test	2026-10-09T15:00:00.6882804Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
 lint · typecheck · test · build	Test	2026-10-09T15:00:00.6883202Z ##[endgroup]
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1148900Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1148900Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1149708Z > dealers-drive@0.0.0 test /home/runner/work/DealersDrive/DealersDrive
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1150302Z > turbo run test
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1150477Z 
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1784214Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1150477Z
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1784214Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1786351Z    • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1787597Z    • Running test in 5 packages
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1788525Z    • Remote caching disabled
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1799553Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1799553Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1852624Z ##[group]@dealers-drive/contracts:build
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1856627Z cache hit, replaying logs d3088aafe30736f4
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1857273Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1857273Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1858691Z > @dealers-drive/contracts@0.0.0 build /home/runner/work/DealersDrive/DealersDrive/packages/contracts
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1860307Z > tsc -p tsconfig.build.json
-lint · typecheck · test · build	Test	2026-10-09T15:00:01.1860794Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:01.1860794Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:01.1861368Z ##[endgroup]
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8485980Z ##[group]@dealers-drive/contracts:test
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8501095Z cache bypass, force executing 3b34be9b045fa7dd
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8502515Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8502515Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8503711Z > @dealers-drive/contracts@0.0.0 test /home/runner/work/DealersDrive/DealersDrive/packages/contracts
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8505969Z > vitest run --coverage
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8506508Z 
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8515023Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8506508Z
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8515023Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8516715Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.3 ^[[39m^[[90m/home/runner/work/DealersDrive/DealersDrive/packages/contracts^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8519628Z       ^[[2mCoverage enabled with ^[[22m^[[33mv8^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8520329Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8520329Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8523878Z  ^[[32m✓^[[39m tests/unit/enums.test.ts ^[[2m(^[[22m^[[2m57 tests^[[22m^[[2m)^[[22m^[[32m 85^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8526179Z  ^[[32m✓^[[39m tests/unit/common.test.ts ^[[2m(^[[22m^[[2m101 tests^[[22m^[[2m)^[[22m^[[32m 224^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8528006Z  ^[[32m✓^[[39m tests/unit/vehicle.test.ts ^[[2m(^[[22m^[[2m34 tests^[[22m^[[2m)^[[22m^[[32m 166^[[2mms^[[22m^[[39m
@@ -47,17 +47,17 @@ lint · typecheck · test · build	Test	2026-10-09T15:00:07.8547022Z  ^[[32m✓^
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8549072Z  ^[[32m✓^[[39m tests/unit/index.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 52^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8550943Z  ^[[32m✓^[[39m tests/unit/vehicle-color.test.ts ^[[2m(^[[22m^[[2m25 tests^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8552857Z  ^[[32m✓^[[39m tests/unit/admin-access.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8554593Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8554593Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8556037Z ^[[2m Test Files ^[[22m ^[[1m^[[32m15 passed^[[39m^[[22m^[[90m (15)^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8557458Z ^[[2m      Tests ^[[22m ^[[1m^[[32m427 passed^[[39m^[[22m^[[90m (427)^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8558912Z ^[[2m   Start at ^[[22m 15:00:02
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8560314Z ^[[2m   Duration ^[[22m 5.31s^[[2m (import 63%, transform 14%, tests 12%, worker 11%)^[[22m
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8561230Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8561230Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8562508Z ^[[2m    Isolate ^[[22m ^[[33m15 workers spawned^[[39m^[[2m · ~308ms startup each (spawn + environment, per file)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8564761Z ^[[2m            ^[[22m ^[[2mat least ~1.23s faster with ^[[22m^[[33misolate: false^[[39m^[[2m — reuses workers across files instead of one per file^[[22m
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8582659Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8582659Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8583610Z ^[[34m % ^[[39m^[[2mCoverage report from ^[[22m^[[33mv8^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:00:07.8584326Z 
+lint · typecheck · test · build	Test	2026-10-09T15:00:07.8584326Z
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8585022Z =============================== Coverage summary ===============================
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8586674Z Statements   : 98.21% ( 661/673 )
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8587530Z Branches     : 95.21% ( 239/251 )
@@ -67,13 +67,13 @@ lint · typecheck · test · build	Test	2026-10-09T15:00:07.8590693Z ===========
 lint · typecheck · test · build	Test	2026-10-09T15:00:07.8592400Z ##[endgroup]
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1330208Z ^[[;31m@dealers-drive/web:test^[[;0m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1330971Z cache bypass, force executing 2597c43ab96ec6fb
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1331348Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1331348Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1332105Z > @dealers-drive/web@0.0.0 test /home/runner/work/DealersDrive/DealersDrive/apps/web
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1332932Z > vitest run
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1333158Z 
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1333168Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1333158Z
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1333168Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1334120Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.3 ^[[39m^[[90m/home/runner/work/DealersDrive/DealersDrive/apps/web^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1334888Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1334888Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1335884Z  ^[[32m✓^[[39m tests/unit/lib/api.test.ts ^[[2m(^[[22m^[[2m73 tests^[[22m^[[2m)^[[22m^[[32m 183^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1337500Z  ^[[32m✓^[[39m tests/unit/components/dealers/portfolio-page.test.tsx ^[[2m(^[[22m^[[2m53 tests^[[22m^[[2m)^[[22m^[[33m 2973^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1339786Z    ^[[32m✓^[[39m the dealership it shows ^[[2m(9)^[[22m
@@ -106,16 +106,16 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1376157Z    ^[[32m�
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1377505Z      ^[[33m^[[2m✓^[[22m^[[39m shows the dealership, each section, the description and the history with its reason^[[33m 694^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1380410Z ^[[90mstderr^[[2m | tests/unit/features/support/support-requests.test.tsx^[[2m > ^[[22m^[[2mSupportRequestForm^[[2m > ^[[22m^[[2msends one request for a double press
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1382493Z ^[[22m^[[39mAn update to SupportRequestForm inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1383148Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1383148Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1383793Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1384396Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1384396Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1384586Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1385002Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1385488Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1385854Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1386134Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1386134Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1387228Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1388417Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1388417Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1389481Z  ^[[32m✓^[[39m tests/unit/components/vehicle/vehicle-gallery.test.tsx ^[[2m(^[[22m^[[2m31 tests^[[22m^[[2m)^[[22m^[[33m 5064^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1390701Z    ^[[32m✓^[[39m the gallery on the page ^[[2m(6)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1391929Z      ^[[33m^[[2m✓^[[22m^[[39m shows the primary photograph in a blueprint frame with a view-all tag^[[33m 388^[[2mms^[[22m^[[39m
@@ -142,28 +142,28 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1419399Z    ^[[32m�
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1420613Z      ^[[33m^[[2m✓^[[22m^[[39m names the dealership, where it is, and links to it^[[33m 460^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1422603Z ^[[90mstderr^[[2m | tests/unit/components/dealers/dealer-search-box.test.tsx^[[2m > ^[[22m^[[2masking the API^[[2m > ^[[22m^[[2mdoes not ask at all for an empty box
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1424605Z ^[[22m^[[39mAn update to DealerSearchBox inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1425273Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1425273Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1425900Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1426534Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1426534Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1426693Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1427150Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1427595Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1427991Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1428569Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1428569Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1429627Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1430557Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1430557Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1431648Z ^[[90mstderr^[[2m | tests/unit/components/dealers/dealer-search-box.test.tsx^[[2m > ^[[22m^[[2masking the API^[[2m > ^[[22m^[[2mdoes not ask at all for an empty box
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1432634Z ^[[22m^[[39mAn update to DealerSearchBox inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1432965Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1432965Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1433340Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1433710Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1433710Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1433795Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1434058Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1434360Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1434563Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1434842Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1434842Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1435860Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1436754Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1436754Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1437742Z  ^[[32m✓^[[39m tests/unit/components/vehicle/vehicle-card.test.tsx ^[[2m(^[[22m^[[2m34 tests^[[22m^[[2m)^[[22m^[[33m 3442^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1439224Z    ^[[32m✓^[[39m VehicleCard ^[[2m(14)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1440402Z      ^[[33m^[[2m✓^[[22m^[[39m draws the year plate, title, price, meta row and dealer strip^[[33m 572^[[2mms^[[22m^[[39m
@@ -171,26 +171,26 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1441541Z    ^[[32m�
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1442750Z      ^[[33m^[[2m✓^[[22m^[[39m draws the filter panel and the applied chips from the response^[[33m 615^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1445151Z ^[[90mstderr^[[2m | tests/unit/features/vehicle/vehicle-wizard.test.tsx^[[2m > ^[[22m^[[2ma saved vehicle^[[2m > ^[[22m^[[2mfills the step from what was saved and names the vehicle and step it posts
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1446950Z ^[[22m^[[39mAn update to SuggestInput inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1447283Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1447283Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1447616Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1447944Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1447944Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1448027Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1448661Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1449320Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1449555Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1449719Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1449719Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1450286Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1451076Z An update to SuggestInput inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1451363Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1451363Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1451680Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1452302Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1452302Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1452462Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1452866Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1453318Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1453656Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1453923Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1453923Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1454962Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1455881Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1455881Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1456779Z  ^[[32m✓^[[39m tests/unit/features/auth/header-account.test.tsx ^[[2m(^[[22m^[[2m31 tests^[[22m^[[2m)^[[22m^[[33m 2826^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1457437Z    ^[[32m✓^[[39m HeaderAccount ^[[2m(15)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1458578Z      ^[[33m^[[2m✓^[[22m^[[39m shows Login to somebody not signed in, and no avatar^[[33m 456^[[2mms^[[22m^[[39m
@@ -199,16 +199,16 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1460136Z    ^[[32m�
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1460788Z      ^[[33m^[[2m✓^[[22m^[[39m asks for the plate, with Cancel and Continue and nothing to go back to^[[33m 335^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1461974Z ^[[90mstderr^[[2m | tests/unit/components/dealers/dealer-search-box.test.tsx^[[2m > ^[[22m^[[2mthe pointer^[[2m > ^[[22m^[[2mdoes not re-ask for a dealership that was just chosen
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1462919Z ^[[22m^[[39mAn update to DealerSearchBox inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463250Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463250Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463573Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463892Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463892Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1463977Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1464222Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1464475Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1464682Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1464840Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1464840Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1465395Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1465902Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1465902Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1466343Z  ^[[32m✓^[[39m tests/unit/app/seo-routes.test.tsx ^[[2m(^[[22m^[[2m21 tests^[[22m^[[2m)^[[22m^[[33m 437^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1467263Z  ^[[32m✓^[[39m tests/unit/components/dealers/dealer-search-box.test.tsx ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[33m 11553^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1467899Z    ^[[32m✓^[[39m asking the API ^[[2m(4)^[[22m
@@ -326,26 +326,26 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1628304Z    ^[[32m�
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1629332Z      ^[[33m^[[2m✓^[[22m^[[39m is a modal dialog, named and described by its own header^[[33m 471^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1631310Z ^[[90mstderr^[[2m | tests/unit/components/ui/service-input.test.tsx^[[2m > ^[[22m^[[2mwhat reaches the server^[[2m > ^[[22m^[[2mcommits a draft the dealer typed but did not add
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1632893Z ^[[22m^[[39mAn update to ServiceInput inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1633410Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1633410Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1633959Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1634511Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1634511Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1634648Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1635029Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1635465Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1635811Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1636066Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1636066Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1637120Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1638791Z An update to ServiceInput inside a test was not wrapped in act(...).
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1639280Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1639280Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1639849Z When testing, code that causes React state updates should be wrapped into act(...):
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1640415Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1640415Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1640559Z act(() => {
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1640954Z   /* fire events that update state */
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1641377Z });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1641717Z /* assert on the output */
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1641973Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1641973Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1642959Z This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1643839Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1643839Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1644740Z  ^[[32m✓^[[39m tests/unit/components/ui/service-input.test.tsx ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[33m 1576^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1645845Z    ^[[32m✓^[[39m adding one at a time ^[[2m(4)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1646812Z      ^[[33m^[[2m✓^[[22m^[[39m turns the draft into a chip when Add is pressed^[[33m 518^[[2mms^[[22m^[[39m
@@ -527,12 +527,12 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1876975Z  ^[[32m✓^
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1878830Z  ^[[32m✓^[[39m tests/unit/lib/upload.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1880353Z  ^[[32m✓^[[39m tests/unit/lib/safe-return-path.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1882011Z  ^[[32m✓^[[39m tests/unit/features/auth/phone-identifier.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1882822Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1882822Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1883399Z ^[[31m⎯⎯⎯⎯⎯⎯⎯^[[39m^[[1m^[[41m Failed Tests 1 ^[[49m^[[22m^[[31m⎯⎯⎯⎯⎯⎯⎯^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1883883Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1883883Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1885229Z ^[[41m^[[1m FAIL ^[[22m^[[49m tests/unit/features/enquiry/enquiry-panel.test.tsx^[[2m > ^[[22mcoming back from sign-in^[[2m > ^[[22mopens the form by itself, prefilled
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1887183Z ^[[31m^[[1mAssertionError^[[22m: expected undefined to be <textarea …(5)></textarea> // Object.is equality^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1887923Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1887923Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1888388Z ^[[32m- Expected:^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1888768Z <textarea
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1889192Z   class="input min-h-[88px] py-[8px]"
@@ -541,10 +541,10 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1890053Z   maxlength
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1890419Z   name="message"
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1890891Z   placeholder="Ask about the car, or when you can visit."
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1891370Z />
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1891548Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1891548Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1891770Z ^[[31m+ Received:^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1892100Z undefined
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1892255Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1892255Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1892975Z ^[[36m ^[[2m❯^[[22m tests/unit/features/enquiry/enquiry-panel.test.tsx:^[[2m249:38^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1894259Z     ^[[90m247|^[[39m     expect(await screen.findByRole('button', { name: 'Send enquiry' })…
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1895468Z     ^[[90m248|^[[39m     expect(screen.getByText('Shashikiran')).toBeInTheDocument();
@@ -552,22 +552,22 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.1896521Z     ^[[90m2
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1897387Z     ^[[90m   |^[[39m                                      ^[[31m^^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1897905Z     ^[[90m250|^[[39m   });
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1898551Z     ^[[90m251|^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1898795Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1898795Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1899221Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯^[[22m^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1899566Z 
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1899576Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1899566Z
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1899576Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1900414Z ^[[2m Test Files ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m124 passed^[[39m^[[22m^[[90m (125)^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1901772Z ^[[2m      Tests ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m1487 passed^[[39m^[[22m^[[90m (1488)^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1902573Z ^[[2m   Start at ^[[22m 15:00:02
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1903664Z ^[[2m   Duration ^[[22m 130.74s^[[2m (environment 44%, tests 35%, setup 9%, import 8%, transform 4%, worker 1%)^[[22m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1904373Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1904373Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1905266Z ^[[2mEnvironment ^[[22m ^[[33mjsdom was created 125 times^[[39m^[[2m · 158.05s total, 44% of tracked time^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1907379Z ^[[2m            ^[[22m ^[[2mcreate it once per worker with ^[[22m^[[33mpool: 'vmThreads'^[[39m^[[2m (keeps per-file isolation) or ^[[22m^[[33misolate: false^[[39m^[[2m (shares it across files)^[[22m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1909430Z ^[[2m            ^[[22m ^[[2mlearn more: https://vitest.dev/guide/improving-performance#test-environments^[[22m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1910139Z 
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.1910150Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1910139Z
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.1910150Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1946938Z ##[error]AssertionError: expected undefined to be <textarea …(5)></textarea> // Object.is equality
-lint · typecheck · test · build	Test	
+lint · typecheck · test · build	Test
 lint · typecheck · test · build	Test	- Expected:
 lint · typecheck · test · build	Test	<textarea
 lint · typecheck · test · build	Test	  class="input min-h-[88px] py-[8px]"
@@ -576,31 +576,31 @@ lint · typecheck · test · build	Test	  maxlength="1000"
 lint · typecheck · test · build	Test	  name="message"
 lint · typecheck · test · build	Test	  placeholder="Ask about the car, or when you can visit."
 lint · typecheck · test · build	Test	/>
-lint · typecheck · test · build	Test	
+lint · typecheck · test · build	Test
 lint · typecheck · test · build	Test	+ Received:
 lint · typecheck · test · build	Test	undefined
-lint · typecheck · test · build	Test	
+lint · typecheck · test · build	Test
 lint · typecheck · test · build	Test	 ❯ tests/unit/features/enquiry/enquiry-panel.test.tsx:249:38
-lint · typecheck · test · build	Test	
-lint · typecheck · test · build	Test	
+lint · typecheck · test · build	Test
+lint · typecheck · test · build	Test
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.1976740Z  ELIFECYCLE  Test failed. See above for more details.
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3046943Z ##[group]@dealers-drive/api:test
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3048535Z cache bypass, force executing 69d69fe235003c13
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3049318Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3049318Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3050470Z > @dealers-drive/api@0.0.0 test /home/runner/work/DealersDrive/DealersDrive/apps/api
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3051972Z > vitest run --coverage
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3052361Z 
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3052372Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3052361Z
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3052372Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3054000Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.3 ^[[39m^[[90m/home/runner/work/DealersDrive/DealersDrive/apps/api^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3056413Z       ^[[2mCoverage enabled with ^[[22m^[[33mv8^[[39m
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3057012Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3057012Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3057492Z Loaded Prisma config from prisma.config.ts.
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3058037Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3058037Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3064809Z Prisma schema loaded from prisma/schema.prisma.
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3065981Z Datasource "db": PostgreSQL database "dealersdrive_test", schema "public" at "localhost:5432"
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3066423Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3066423Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3066603Z 44 migrations found in prisma/migrations
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3066821Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3066821Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3067004Z Applying migration `20260903095253_identity`
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3067441Z Applying migration `20260903100216_cache_shared_state`
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3067875Z Applying migration `20260903100656_audit_log`
@@ -645,7 +645,7 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3090627Z Applying mi
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3091012Z Applying migration `20261006110000_assisted_onboarding`
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3091441Z Applying migration `20261006120000_dealer_email_verification`
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3091860Z Applying migration `20261006130000_assisted_listings`
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3092083Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3092083Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3092437Z ┌─────────────────────────────────────────────────────────┐
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3092936Z │  Update available 7.10.0 -> 8.0.0-rc.22                 │
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3093577Z │                                                         │
@@ -657,7 +657,7 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3095889Z │    npm 
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3096340Z │    npm i @prisma/client@latest                          │
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3096803Z └─────────────────────────────────────────────────────────┘
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097170Z The following migration(s) have been applied:
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097391Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097391Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097475Z migrations/
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097719Z   └─ 20260903095253_identity/
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3097987Z     └─ migration.sql
@@ -747,7 +747,7 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3129328Z   └─ 20
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3130041Z     └─ migration.sql
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3130484Z   └─ 20261006130000_assisted_listings/
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3130935Z     └─ migration.sql
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3131150Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3131150Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3131453Z All migrations have been successfully applied.
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3132047Z seeded 1 admin and 1 dealership
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3133484Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/modules/dealers/dealers.public.service.test.ts ^[[2m(^[[22m^[[2m92 tests^[[22m^[[2m)^[[22m^[[32m 95^[[2mms^[[22m^[[39m
@@ -872,7 +872,7 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3265327Z      ^[[33m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3266310Z      ^[[33m^[[2m✓^[[22m^[[39m shuts the dealer door of a member who is also an admin, and leaves their console open^[[33m 382^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3267616Z ^[[90mstdout^[[2m | tests/membership-commit-guard.test.ts^[[2m > ^[[22m^[[2mdenies a queued listing submission when the owner removes its manager before the listing lock is released (BUG-005)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3269522Z ^[[22m^[[39m{"bug":"BUG-005","canonicalTests":["CONCURRENCY-007","CROSS-019"],"lockWaitProven":true,"revocationHttp":204,"membership":"REMOVED","submissionHttp":401,"listing":"DRAFT","nextDealerRequest":401}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3270419Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3270419Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3271020Z  ^[[32m✓^[[39m ^[[30m^[[45m integration ^[[49m^[[39m tests/membership-commit-guard.test.ts ^[[2m(^[[22m^[[2m38 tests^[[22m^[[2m)^[[22m^[[33m 16876^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3272187Z    ^[[33m^[[2m✓^[[22m^[[39m denies a queued listing submission when the owner removes its manager before the listing lock is released (BUG-005)^[[33m 1223^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3273231Z    ^[[33m^[[2m✓^[[22m^[[39m blocks queued patch after actual membership removal without changing history^[[33m 445^[[2mms^[[22m^[[39m
@@ -930,21 +930,21 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3347886Z (node:6705)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3349167Z (Use `node --trace-deprecation ...` to show where the warning was created)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3350518Z ^[[90mstdout^[[2m | tests/dealer-rejection-atomicity.test.ts^[[2m > ^[[22m^[[2mrejection must not purge a dealer after approval has passed upload checks
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3352863Z ^[[22m^[[39m{"finding":"approval-versus-destructive-rejection","approvalHttp":200,"rejectionHttp":422,"dealerExists":true,"finalStatus":"ACTIVE","approvedAudit":1,"rejectedAudit":0}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3353958Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3353958Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3355277Z ^[[90mstdout^[[2m | tests/dealer-rejection-atomicity.test.ts^[[2m > ^[[22m^[[2ma rolled-back rejection retains all stored uploads and produces no rejection history
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3356605Z ^[[22m^[[39mprisma:error 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3356605Z ^[[22m^[[39mprisma:error
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3357206Z Invalid `tx.outboxEvent.create()` invocation in
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3358834Z /home/runner/work/DealersDrive/DealersDrive/apps/api/src/platform/events/bus.ts:118:24
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3359516Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3359516Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3359731Z   115   payload: write.payload,
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3360155Z   116 };
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3360478Z   117 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3360478Z   117
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3361015Z → 118 await tx.outboxEvent.create(
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3361844Z Database error. Code: `P0001`. Message: `certification rejection rollback`
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3362481Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3362481Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3363866Z ^[[90mstdout^[[2m | tests/dealer-rejection-atomicity.test.ts^[[2m > ^[[22m^[[2ma rolled-back rejection retains all stored uploads and produces no rejection history
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3365873Z ^[[22m^[[39m{"finding":"rejection-rollback-storage","status":"PENDING_APPROVAL","storedUploads":4,"expectedUploads":4}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3366576Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3366576Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3367665Z  ^[[32m✓^[[39m ^[[30m^[[45m integration ^[[49m^[[39m tests/dealer-rejection-atomicity.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 13557^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3369616Z    ^[[33m^[[2m✓^[[22m^[[39m rejection must not purge a dealer after approval has passed upload checks^[[33m 1750^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3371289Z    ^[[33m^[[2m✓^[[22m^[[39m a rolled-back rejection retains all stored uploads and produces no rejection history^[[33m 588^[[2mms^[[22m^[[39m
@@ -963,21 +963,21 @@ lint · typecheck · test · build	Test	2026-10-09T15:02:13.3386065Z    ^[[33m^[
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3387294Z    ^[[33m^[[2m✓^[[22m^[[39m honors a role downgrade, logout/login and seat revocation on an existing Admin cookie^[[33m 579^[[2mms^[[22m^[[39m
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3388624Z ^[[90mstdout^[[2m | tests/stable-pagination.test.ts^[[2m > ^[[22m^[[2mvisits every equal-time row once in the saved collection (BUG-003)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3391712Z ^[[22m^[[39m{"finding":"BUG-003","collection":"saved","expected":["2023-hyundai-creta-sx-o-katpadi-69ee01ca","2023-hyundai-creta-sx-o-katpadi-8993c370","2023-hyundai-creta-sx-o-katpadi-68bcf76a"],"visited":["2023-hyundai-creta-sx-o-katpadi-69ee01ca","2023-hyundai-creta-sx-o-katpadi-8993c370","2023-hyundai-creta-sx-o-katpadi-68bcf76a"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3393451Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3393451Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3394265Z ^[[90mstdout^[[2m | tests/stable-pagination.test.ts^[[2m > ^[[22m^[[2mvisits every equal-time row once in the customer collection (BUG-003)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3397454Z ^[[22m^[[39m{"finding":"BUG-003","collection":"customer","expected":["f099ccc9-5edf-4d36-bc12-8c392892cdc8","8523b1b4-8f5f-497e-8124-b4e6ebb2a268","4176beff-233d-4a6d-b79e-e0e51550f8fa"],"visited":["f099ccc9-5edf-4d36-bc12-8c392892cdc8","8523b1b4-8f5f-497e-8124-b4e6ebb2a268","4176beff-233d-4a6d-b79e-e0e51550f8fa"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3399463Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3399463Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3400297Z ^[[90mstdout^[[2m | tests/stable-pagination.test.ts^[[2m > ^[[22m^[[2mvisits every equal-time row once in the inbox collection (BUG-003)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3403512Z ^[[22m^[[39m{"finding":"BUG-003","collection":"inbox","expected":["f099ccc9-5edf-4d36-bc12-8c392892cdc8","8523b1b4-8f5f-497e-8124-b4e6ebb2a268","4176beff-233d-4a6d-b79e-e0e51550f8fa"],"visited":["f099ccc9-5edf-4d36-bc12-8c392892cdc8","8523b1b4-8f5f-497e-8124-b4e6ebb2a268","4176beff-233d-4a6d-b79e-e0e51550f8fa"],"pages":[{"count":1,"hasMore":true},{"count":1,"hasMore":true},{"count":1,"hasMore":false}]}
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3405518Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3405518Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3406405Z (node:6963) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3407444Z (Use `node --trace-deprecation ...` to show where the warning was created)
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3408368Z ##[endgroup]
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3408559Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3408559Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3408698Z  Tasks:    2 successful, 4 total
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3408996Z Cached:    1 cached, 4 total
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3409242Z   Time:    2m12.148s 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3409242Z   Time:    2m12.148s
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3409517Z Failed:    @dealers-drive/web#test
-lint · typecheck · test · build	Test	2026-10-09T15:02:13.3409692Z 
+lint · typecheck · test · build	Test	2026-10-09T15:02:13.3409692Z
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3410029Z  ELIFECYCLE  Test failed. See above for more details.
 lint · typecheck · test · build	Test	2026-10-09T15:02:13.3412328Z ##[error]Process completed with exit code 1.

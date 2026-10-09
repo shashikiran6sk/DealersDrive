@@ -16,40 +16,40 @@ All matched files use Prettier code style!
 
 @dealers-drive/contracts:lint: cache hit, replaying logs 027957f81189fb31
 @dealers-drive/config:lint: cache hit, replaying logs c6d6d7547611ee04
-@dealers-drive/config:lint: 
+@dealers-drive/config:lint:
 @dealers-drive/config:lint: > @dealers-drive/config@0.0.0 lint <repo>/packages/config
 @dealers-drive/config:lint: > echo "@dealers-drive/config: nothing to lint"
-@dealers-drive/config:lint: 
+@dealers-drive/config:lint:
 @dealers-drive/config:lint: @dealers-drive/config: nothing to lint
 @dealers-drive/contracts:build: cache hit, replaying logs b816430abba1f93f
-@dealers-drive/contracts:lint: 
+@dealers-drive/contracts:lint:
 @dealers-drive/contracts:lint: > @dealers-drive/contracts@0.0.0 lint <repo>/packages/contracts
 @dealers-drive/contracts:lint: > eslint .
-@dealers-drive/contracts:lint: 
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:lint:
+@dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <repo>/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/web:lint: cache miss, executing d3f5986c324a583d
 @dealers-drive/api:lint: cache hit, replaying logs a69058f358690bdf
 @dealers-drive/sandbox:lint: cache hit, replaying logs 01e7a5800c3f5f11
-@dealers-drive/api:lint: 
+@dealers-drive/api:lint:
 @dealers-drive/api:lint: > @dealers-drive/api@0.0.0 lint <repo>/apps/api
-@dealers-drive/sandbox:lint: 
+@dealers-drive/sandbox:lint:
 @dealers-drive/sandbox:lint: > @dealers-drive/sandbox@0.0.0 lint <repo>/apps/sandbox
 @dealers-drive/sandbox:lint: > eslint .
-@dealers-drive/sandbox:lint: 
+@dealers-drive/sandbox:lint:
 @dealers-drive/sandbox:lint: Pages directory cannot be found at <repo>/apps/sandbox/pages or <repo>/apps/sandbox/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
 @dealers-drive/api:lint: > eslint .
-@dealers-drive/api:lint: 
-@dealers-drive/web:lint: 
+@dealers-drive/api:lint:
+@dealers-drive/web:lint:
 @dealers-drive/web:lint: > @dealers-drive/web@0.0.0 lint <repo>/apps/web
 @dealers-drive/web:lint: > eslint .
-@dealers-drive/web:lint: 
+@dealers-drive/web:lint:
 
  Tasks:    6 successful, 6 total
 Cached:    5 cached, 6 total
-  Time:    10.385s 
+  Time:    10.385s
 
 
 > dealers-drive@0.0.0 docs:check <repo>

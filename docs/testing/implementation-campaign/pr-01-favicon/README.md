@@ -3,7 +3,7 @@
 PR: [#287](https://github.com/shashikiran6sk/DealersDrive/pull/287)
 Branch: `feat/dd-favicon-sizing` · Base: `main`
 Baseline: `5ce6df503a33df0c199ac90e7a2941ead8c70bcb`
-Current head: `6bc01285` (full SHA in `github-status.json`).
+Final head: `6bc012858d389a113790e8c9aee6f196f333de86`.
 State: OPEN, unmerged, auto-merge disabled. No production deployment.
 
 ## Implementation and exact outline preservation
@@ -49,8 +49,8 @@ Two post-creation blocking findings were fixed on the same branch:
 | Browser                   | PASS                    | `post-pr/browser-results.json`: six routes, icon links and HTTP 200 assets                        |
 | Responsive / fonts        | PASS                    | 320/360/390/768/1280px; no document overflow, actual local font loaded; 390px at DPR 2            |
 | Light/dark                | PASS asset review       | Actual native-size ICO frames and enlarged previews on both backgrounds                           |
-| Required GitHub CI        | PENDING latest head     | `github-status.json`; update after completion                                                     |
-| Vercel preview            | PENDING latest head     | Previous failed font-fetch preview was corrected; update after completion                         |
+| Required GitHub CI        | PASS latest head        | `github-status.json`; CI and Security runs record this exact head                                 |
+| Vercel preview            | PASS latest head        | Final preview succeeds after the font correction                                                  |
 
 The complete local suite passed before creation, after creation, after the
 scroll-test correction, and after the font correction. Final executed count:
@@ -74,7 +74,7 @@ neither was hidden as an application success.
 
 All API/browser fixtures are local. No production database, real SMS, email or
 KYC provider operation occurred. Screenshot email/phone text is masked before
-capture. Logs redact emails/phones and local repository paths. No credentials,
+capture. Logs redact emails/phones and local repository paths, remove terminal color codes and normalize trailing whitespace. No credentials,
 OTPs or private documents are included. Browser automation uses isolated local
 Chrome and production Next builds. The before-stage preview uses preserved main
 icon bytes on otherwise unchanged page code; the report records that boundary.
@@ -92,7 +92,7 @@ Files changed: `changed-files.txt`.
 Migrations / API / security-domain changes: none.
 UI changes: favicon only; same font is hosted locally for build reliability.
 Tests failed on final local execution: zero.
-CI run: recorded in `github-status.json`; final result pending.
+CI and Security: all required checks PASS on the final head; run URLs in `ci-run.json` and `security-run.json`.
 Known limitations: browser-native cache/theme/device UAT; six high and six
 moderate dependency advisories, zero critical.
 Next PR: email uniqueness, only after final-head gates pass.

@@ -9,31 +9,31 @@
    • Remote caching disabled
 
 @dealers-drive/contracts:build: cache hit, replaying logs b816430abba1f93f
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <repo>/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/web:build: cache miss, executing 0e95963967aed8b3
 @dealers-drive/api:build: cache hit, replaying logs 86e7bae7d88091d2
-@dealers-drive/api:build: 
+@dealers-drive/api:build:
 @dealers-drive/api:build: > @dealers-drive/api@0.0.0 build <repo>/apps/api
 @dealers-drive/api:build: > tsc -p tsconfig.build.json
-@dealers-drive/api:build: 
-@dealers-drive/web:build: 
+@dealers-drive/api:build:
+@dealers-drive/web:build:
 @dealers-drive/web:build: > @dealers-drive/web@0.0.0 build <repo>/apps/web
 @dealers-drive/web:build: > next build
-@dealers-drive/web:build: 
+@dealers-drive/web:build:
 @dealers-drive/web:build:    ▲ Next.js 15.5.27
-@dealers-drive/web:build: 
+@dealers-drive/web:build:
 @dealers-drive/web:build:    Creating an optimized production build ...
 @dealers-drive/web:build:  ✓ Compiled successfully in 15.3s
 @dealers-drive/web:build:    Skipping linting
 @dealers-drive/web:build:    Checking validity of types ...
 @dealers-drive/web:build:    Collecting page data ...
 @dealers-drive/web:build:    Generating static pages (0/18) ...
-@dealers-drive/web:build:    Generating static pages (4/18) 
-@dealers-drive/web:build:    Generating static pages (8/18) 
-@dealers-drive/web:build:    Generating static pages (13/18) 
+@dealers-drive/web:build:    Generating static pages (4/18)
+@dealers-drive/web:build:    Generating static pages (8/18)
+@dealers-drive/web:build:    Generating static pages (13/18)
 @dealers-drive/web:build: [TypeError: fetch failed] {
 @dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
 @dealers-drive/web:build: }
@@ -76,7 +76,7 @@
 @dealers-drive/web:build: }
 @dealers-drive/web:build:    Finalizing page optimization ...
 @dealers-drive/web:build:    Collecting build traces ...
-@dealers-drive/web:build: 
+@dealers-drive/web:build:
 @dealers-drive/web:build: Route (app)                                             Size  First Load JS  Revalidate  Expire
 @dealers-drive/web:build: ┌ ○ /                                                3.34 kB         165 kB          1m      1y
 @dealers-drive/web:build: ├ ○ /_not-found                                        207 B         103 kB         10m      1y
@@ -148,13 +148,12 @@
 @dealers-drive/web:build:   ├ chunks/2406-c239329ea3fcdffa.js                  46.6 kB
 @dealers-drive/web:build:   ├ chunks/938c6ab6-3f94b23de08d27df.js              54.2 kB
 @dealers-drive/web:build:   └ other shared chunks (total)                      1.94 kB
-@dealers-drive/web:build: 
-@dealers-drive/web:build: 
+@dealers-drive/web:build:
+@dealers-drive/web:build:
 @dealers-drive/web:build: ○  (Static)   prerendered as static content
 @dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
-@dealers-drive/web:build: 
+@dealers-drive/web:build:
 
  Tasks:    3 successful, 3 total
 Cached:    2 cached, 3 total
-  Time:    28.215s 
-
+  Time:    28.215s

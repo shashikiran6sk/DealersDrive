@@ -10,43 +10,43 @@
 
 @dealers-drive/contracts:test: cache bypass, force executing 8562e4010f810dd2
 @dealers-drive/contracts:build: cache hit, replaying logs 8fb5ebaf69854311
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <repo>/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
-@dealers-drive/contracts:build: 
+@dealers-drive/contracts:build:
 @dealers-drive/api:test: cache bypass, force executing cef0e71f5698293c
 @dealers-drive/web:test: cache bypass, force executing ad582b654ce2e000
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: > @dealers-drive/web@0.0.0 test <repo>/apps/web
 @dealers-drive/web:test: > vitest run
-@dealers-drive/web:test: 
-@dealers-drive/contracts:test: 
+@dealers-drive/web:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test: > @dealers-drive/contracts@0.0.0 test <repo>/packages/contracts
 @dealers-drive/contracts:test: > vitest run --coverage
-@dealers-drive/contracts:test: 
-@dealers-drive/api:test: 
+@dealers-drive/contracts:test:
+@dealers-drive/api:test:
 @dealers-drive/api:test: > @dealers-drive/api@0.0.0 test <repo>/apps/api
 @dealers-drive/api:test: > vitest run --coverage
-@dealers-drive/api:test: 
-@dealers-drive/web:test: 
+@dealers-drive/api:test:
+@dealers-drive/web:test:
 @dealers-drive/web:test:  RUN  v5.0.3 <repo>/apps/web
-@dealers-drive/web:test: 
-@dealers-drive/contracts:test: 
+@dealers-drive/web:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  RUN  v5.0.3 <repo>/packages/contracts
 @dealers-drive/contracts:test:       Coverage enabled with v8
-@dealers-drive/contracts:test: 
-@dealers-drive/api:test: 
+@dealers-drive/contracts:test:
+@dealers-drive/api:test:
 @dealers-drive/api:test:  RUN  v5.0.3 <repo>/apps/api
 @dealers-drive/api:test:       Coverage enabled with v8
-@dealers-drive/api:test: 
-@dealers-drive/contracts:test: 
+@dealers-drive/api:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  Test Files  15 passed (15)
 @dealers-drive/contracts:test:       Tests  427 passed (427)
 @dealers-drive/contracts:test:    Start at  14:57:52
 @dealers-drive/contracts:test:    Duration  913ms (import 51%, transform 24%, worker 13%, tests 12%)
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  % Coverage report from v8
-@dealers-drive/contracts:test: 
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test: =============================== Coverage summary ===============================
 @dealers-drive/contracts:test: Statements   : 98.21% ( 661/673 )
 @dealers-drive/contracts:test: Branches     : 95.21% ( 239/251 )
@@ -54,12 +54,12 @@
 @dealers-drive/contracts:test: Lines        : 98.73% ( 626/634 )
 @dealers-drive/contracts:test: ================================================================================
 @dealers-drive/api:test: Loaded Prisma config from prisma.config.ts.
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: Prisma schema loaded from prisma/schema.prisma.
 @dealers-drive/api:test: Datasource "db": PostgreSQL database "dealersdrive_test", schema "public" at "localhost:5432"
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: 44 migrations found in prisma/migrations
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: Applying migration `20260903095253_identity`
 @dealers-drive/api:test: Applying migration `20260903100216_cache_shared_state`
 @dealers-drive/api:test: Applying migration `20260903100656_audit_log`
@@ -104,9 +104,9 @@
 @dealers-drive/api:test: Applying migration `20261006110000_assisted_onboarding`
 @dealers-drive/api:test: Applying migration `20261006120000_dealer_email_verification`
 @dealers-drive/api:test: Applying migration `20261006130000_assisted_listings`
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: The following migration(s) have been applied:
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: migrations/
 @dealers-drive/api:test:   └─ 20260903095253_identity/
 @dealers-drive/api:test:     └─ migration.sql
@@ -196,21 +196,21 @@
 @dealers-drive/api:test:     └─ migration.sql
 @dealers-drive/api:test:   └─ 20261006130000_assisted_listings/
 @dealers-drive/api:test:     └─ migration.sql
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: All migrations have been successfully applied.
 @dealers-drive/api:test: seeded 1 admin and 1 dealership
 @dealers-drive/api:test: (node:61074) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test:  Test Files  125 passed (125)
 @dealers-drive/web:test:       Tests  1488 passed (1488)
 @dealers-drive/web:test:    Start at  14:57:51
 @dealers-drive/web:test:    Duration  23.57s (environment 41%, tests 35%, setup 10%, import 7%, transform 6%)
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/web:test: Environment  jsdom was created 125 times · 81.31s total, 41% of tracked time
 @dealers-drive/web:test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 @dealers-drive/web:test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
-@dealers-drive/web:test: 
+@dealers-drive/web:test:
 @dealers-drive/api:test: (node:61227) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test: (node:61268) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
@@ -251,14 +251,14 @@
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test: (node:61437) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  Test Files  151 passed (151)
 @dealers-drive/api:test:       Tests  3014 passed (3014)
 @dealers-drive/api:test:    Start at  14:57:52
 @dealers-drive/api:test:    Duration  110.21s (tests 62%, import 26%, transform 11%, worker 1%)
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test:  % Coverage report from v8
-@dealers-drive/api:test: 
+@dealers-drive/api:test:
 @dealers-drive/api:test: =============================== Coverage summary ===============================
 @dealers-drive/api:test: Statements   : 95.95% ( 6339/6606 )
 @dealers-drive/api:test: Branches     : 90.28% ( 4175/4624 )
@@ -268,5 +268,4 @@
 
  Tasks:    4 successful, 4 total
 Cached:    1 cached, 4 total
-  Time:    1m50.876s 
-
+  Time:    1m50.876s
