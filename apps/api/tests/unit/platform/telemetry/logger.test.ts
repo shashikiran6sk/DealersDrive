@@ -59,13 +59,23 @@ describe('the shared logger', () => {
     });
   });
 
-  it('writes the level as a label rather than as pino’s numeric code', () => {
+  it('preserves numeric severity for transport routing', () => {
     const { lines, log } = probe();
 
+    log.info('hello');
     log.warn('careful');
+    log.error('failed');
 
-    // `level: 30` means nothing in a log search; `level: "warn"` does.
-    expect(lines[0]?.level).toBe('warn');
+    expect(lines.map((line) => line.level)).toEqual([30, 40, 50]);
+  });
+
+  it('filters below the configured level and keeps child metadata', () => {
+    const { lines, log } = probe();
+    log.level = 'warn';
+    log.child({ component: 'jobs' }).info('filtered');
+    log.child({ component: 'jobs' }).warn('retained');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ level: 40, component: 'jobs' });
   });
 
   it('timestamps in epoch milliseconds for CloudWatch and Loki', () => {
