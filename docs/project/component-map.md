@@ -1718,3 +1718,14 @@ as make and model.
 be wrong for the target state. Their stories should be written **after** F060
 settles the input shape, not before — or written now against free text, which is
 the decided direction. Everything else in this map is stable under D1.
+
+## Dealer console cleanup components
+
+| Component          | Source                                                                   | Props / states                                                                              | Consumers                                                               |
+| ------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `DashboardMetrics` | `apps/web/src/components/dealer/dashboard-metrics/dashboard-metrics.tsx` | Existing summary/listing stats; populated, large values, loading, unavailable               | Dealer dashboard and its loading route; sandbox                         |
+| `ConsoleUtilities` | `apps/web/src/components/dealer/console-utilities/console-utilities.tsx` | Existing customer workspace account or null; shared sign out, workspace switch, invitations | Optional `ConsoleNav.footer`; desktop sidebar and PR #285 mobile drawer |
+
+The dashboard keeps API formatting and reporting periods, selects four primary
+metrics, and leaves inventory status definitions intact. Dealer account
+utilities use existing actions and sessions without a public profile avatar.

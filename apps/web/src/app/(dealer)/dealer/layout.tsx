@@ -12,18 +12,16 @@ import {
   consoleNavFor,
 } from '@/components/dealer/console-nav';
 import { ButtonLink } from '@/components/ui/button';
+import { ConsoleUtilities } from '@/components/dealer/console-utilities';
 import { BrandLogo } from '@/components/brand-logo';
 import { Blueprint, StatusTag } from '@/components/ui/primitives';
 import { customerAccountAction } from '@/features/auth/customer-account-actions';
-import { HeaderAccount } from '@/features/auth/header-account';
-import { SignOutButton } from '@/features/auth/sign-out';
 import { apiGet } from '@/lib/api';
 import { currentSession, hasSession } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const HOME_HREF = '/';
 const DEALER_LOGIN_HREF = '/login?as=dealer';
 const SESSION_EXPIRED_HREF = '/dealer/login?error=session_expired';
 
@@ -38,6 +36,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
     customerAccountAction(),
   ]);
   const nav = consoleNavFor(permissions);
+  const navigation = <ConsoleNav items={nav} footer={<ConsoleUtilities account={account} />} />;
 
   return (
     <div className="flex min-h-dvh bg-white">
@@ -49,7 +48,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           </span>
         </Link>
 
-        <ConsoleNav items={nav} />
+        {navigation}
 
         <Blueprint className="mt-auto rounded-[14px] bg-white p-4">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] ink-muted">
@@ -81,11 +80,6 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
             {ADD_VEHICLE_LABEL}
           </ButtonLink>
-          {account ? (
-            <HeaderAccount initialAccount={account} afterLogoutHref={HOME_HREF} />
-          ) : (
-            <SignOutButton />
-          )}
         </header>
 
         <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
