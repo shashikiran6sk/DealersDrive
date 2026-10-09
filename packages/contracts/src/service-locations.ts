@@ -36,7 +36,7 @@ export const AddServiceDistrictInput = z
       .trim()
       .min(2)
       .max(100)
-      .regex(/^[\p{L}\p{M} .'-]+$/u),
+      .regex(/^[\p{L}\p{M}\p{N} .'-]+$/u),
     sourceUrl: GovernmentSourceUrl,
     sourceReviewed: z.literal(true),
   })

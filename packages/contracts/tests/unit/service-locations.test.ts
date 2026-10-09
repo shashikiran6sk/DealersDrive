@@ -24,6 +24,16 @@ describe('service location contracts', () => {
   ])('rejects unsafe or non-government sources %s', (value) => {
     expect(GovernmentSourceUrl.safeParse(value).success).toBe(false);
   });
+  it('accepts canonical Indian district names containing numbers', () => {
+    expect(
+      AddServiceDistrictInput.parse({
+        stateId: 'IN-WB',
+        name: 'North 24 Parganas',
+        sourceUrl: 'https://north24parganas.gov.in/',
+        sourceReviewed: true,
+      }).name,
+    ).toBe('North 24 Parganas');
+  });
   it('requires an explicit source review and preserves canonical names within length limits', () => {
     const input = {
       stateId: 'IN-TN',

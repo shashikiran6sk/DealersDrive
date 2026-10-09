@@ -229,6 +229,46 @@ describe('service locations: real sessions, routing, PostgreSQL and dealer admis
     ).toBe(true);
     expect(history.body.data[0]).not.toHaveProperty('ip');
   });
+  it('adds and admits a reviewed numeric district name in a newly enabled state', async () => {
+    const added = await admin
+      .post('/v1/admin/service-locations/districts')
+      .send({
+        stateId: 'IN-WB',
+        name: 'North 24 Parganas',
+        sourceUrl: 'https://north24parganas.gov.in/',
+        sourceReviewed: true,
+      })
+      .expect(201);
+    const state = added.body.data.find((item: { id: string }) => item.id === 'IN-WB');
+    const district = state.districts.find(
+      (item: { name: string }) => item.name === 'North 24 Parganas',
+    );
+    expect(district).toMatchObject({ onboardingEnabled: false, photographyAvailable: false });
+    await admin
+      .put('/v1/admin/service-locations/state/IN-WB')
+      .send({ expectedVersion: state.version, active: true, onboardingEnabled: true })
+      .expect(200);
+    await admin
+      .put(`/v1/admin/service-locations/district/${district.id}`)
+      .send({
+        expectedVersion: district.version,
+        active: true,
+        onboardingEnabled: true,
+        photographyAvailable: false,
+      })
+      .expect(200);
+    const created = await signup('West Bengal', 'North 24 Parganas');
+    expect(created.response.status).toBe(201);
+    const row = await h.prisma.dealer.findUniqueOrThrow({
+      where: { id: created.response.body.dealer.id as string },
+    });
+    expect(row).toMatchObject({
+      state: 'West Bengal',
+      district: 'North 24 Parganas',
+      serviceStateId: 'IN-WB',
+      serviceDistrictId: district.id,
+    });
+  });
   it('rejects duplicate district names and unreviewed or non-government master data', async () => {
     await admin
       .post('/v1/admin/service-locations/districts')
