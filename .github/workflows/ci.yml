@@ -36,7 +36,18 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - feat/dd-favicon-sizing
+      - fix/dealer-email-uniqueness
+      - feat/standard-dealer-directory-image
+      - feat/dynamic-service-locations
+      - feat/optional-dealer-tagline
+      - feat/admin-mobile-otp
+      - feat/mobile-admin-access
+      - feat/ticket-message-limits
+      - fix/mobile-sidebar-navigation
+      - feat/dealer-verification
 
 # One run per branch. A force-push mid-review should not leave two suites
 # racing, and the newer commit is the only one anybody cares about.
