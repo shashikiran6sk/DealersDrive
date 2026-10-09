@@ -1,0 +1,79 @@
+{
+  "baseRefName": "feat/standard-dealer-directory-image",
+  "headRefName": "feat/dynamic-service-locations",
+  "headRefOid": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+  "isDraft": false,
+  "mergedAt": null,
+  "number": 291,
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:49:47Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847/job/113994753950",
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "startedAt": "2026-10-09T19:42:34Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:43:32Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916/job/113994753580",
+      "name": "semgrep",
+      "startedAt": "2026-10-09T19:42:34Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:42:49Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847/job/113994754160",
+      "name": "terraform fmt / validate",
+      "startedAt": "2026-10-09T19:42:35Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:43:27Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916/job/113994753913",
+      "name": "gitleaks",
+      "startedAt": "2026-10-09T19:42:34Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:43:04Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847/job/113994753642",
+      "name": "dependency audit",
+      "startedAt": "2026-10-09T19:42:34Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-10-09T19:44:12Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/4Ev7y9FSz2wgZSV5chgVfVZfPXmL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T19:44:13Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "startedAt": "2026-10-09T19:44:13Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/291"
+}

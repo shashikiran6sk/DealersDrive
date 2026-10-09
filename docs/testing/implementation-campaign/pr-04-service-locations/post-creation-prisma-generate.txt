@@ -1,0 +1,11 @@
+
+> @dealers-drive/api@0.0.0 db:generate <workspace>/apps/api
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (v7.10.0) to ./../../node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types+react_buqsydkzprpoq5gz45gvjeonum/node_modules/@prisma/client in 134ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)

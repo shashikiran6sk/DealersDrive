@@ -1,0 +1,38 @@
+{
+  "prNumber": 291,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/291",
+  "branch": "feat/dynamic-service-locations",
+  "baseBranch": "feat/standard-dealer-directory-image",
+  "headSha": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+  "implementationCompleted": true,
+  "filesChanged": 52,
+  "migrations": [
+    "20261010090000_service_locations",
+    "20261010090100_service_location_audit_index"
+  ],
+  "testsExecuted": 5053,
+  "testsPassed": 5053,
+  "testsFailed": 0,
+  "suiteCounts": {
+    "api": 3103,
+    "web": 1506,
+    "contracts": 444
+  },
+  "postCreationBrowser": "PASS",
+  "requiredCiStatus": "PASS",
+  "ciHeadSha": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916",
+  "evidence": "docs/testing/implementation-campaign/pr-04-service-locations",
+  "knownLimitations": [
+    "Initial district master is Tamil Nadu; future districts require reviewed admin entries",
+    "Native Safari/physical-device and live external provider UAT not claimed",
+    "Production-scale migration rehearsal remains owner-controlled before rollout",
+    "Existing API prerender fallback warnings; built-app browser routes validated against isolated API"
+  ],
+  "outstandingBlockers": [],
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployed": false,
+  "nextPr": "feat/optional-dealer-tagline"
+}

@@ -74,8 +74,13 @@ for (const [index, width] of [320, 390, 768, 1280].entries()) {
   await section.getByRole('heading', { name: 'Service Locations' }).scrollIntoViewIfNeeded();
   assert.equal(await adminPage.locator('#configured-state option').count(), 36);
   const bounds = await section.boundingBox(); assert(bounds.x >= 0 && bounds.x + bounds.width <= width + 1);
+  if (width <= 390) { const save = await section.getByRole('button', { name: 'Save state' }).boundingBox(); assert(save.height >= 44); }
   await adminPage.screenshot({ path: `${out}/admin-service-locations-${width}.png`, mask: masks(adminPage), maskColor: '#e5e7eb' });
   if (width === 1280) {
+    for (const sourceUrl of ['not a url', 'https://', '']) {
+      const invalid = await adminContext.request.post('http://127.0.0.1:4001/v1/admin/service-locations/districts', { data: { stateId: 'IN-TN', name: 'Invalid Browser QA', sourceUrl, sourceReviewed: true } });
+      assert.equal(invalid.status(), 400);
+    }
     const row = section.locator('form').filter({ hasText: 'Ariyalur' });
     await row.getByLabel('Photography coverage').uncheck(); await row.getByRole('button', { name: 'Save district' }).click();
     const changed = await checkDistrict(adminContext, 'IN-TN-ARIYALUR', (item) => item.photographyAvailable === false);
