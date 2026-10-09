@@ -553,8 +553,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
       });
 
-      if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO');
-
       const steps: CompletenessResponse['steps'] = [
         {
           key: 'account',

@@ -504,7 +504,7 @@ describe('directory', () => {
    * URL on a page a CDN cached five minutes ago survives the bucket being
    * reorganised underneath it (`platform/media/urls.ts`).
    */
-  it('addresses the yard photograph by media id, not by storage key', async () => {
+  it('uses the standard directory image instead of exposing uploaded yard media', async () => {
     const h = setup({
       dealers: [activeDealer({ coverMediaId: COVER })],
       ready: [COVER],
@@ -512,7 +512,7 @@ describe('directory', () => {
 
     const card = (await h.service.directory(query())).data[0];
 
-    expect(card?.coverUrl).toBe(`${env.MEDIA_BASE_URL}/by-media/${COVER}/640.webp`);
+    expect(card?.coverUrl).toBe(`${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`);
     expect(card?.coverUrl).not.toContain('dealers/');
   });
 
@@ -522,16 +522,20 @@ describe('directory', () => {
    * ORPHAN, and `media.serve()` refuses both. Emitting a URL for either is a
    * broken image on the card, where `ImageSlot` is the more honest answer.
    */
-  it('shows no cover for an upload that is not ready to be served', async () => {
+  it('uses the same standard image for a private or unready yard upload', async () => {
     const h = setup({ dealers: [activeDealer({ coverMediaId: COVER })], ready: [] });
 
-    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBe(
+      `${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`,
+    );
   });
 
-  it('shows no cover for a dealership that never uploaded one', async () => {
+  it('uses the same standard image for a dealership without a yard upload', async () => {
     const h = setup({ dealers: [activeDealer({ coverMediaId: null })] });
 
-    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBe(
+      `${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`,
+    );
   });
 
   /**
@@ -542,7 +546,7 @@ describe('directory', () => {
    * about all of them would grow with the platform for no visible benefit, and
    * asking per card would be twelve round trips.
    */
-  it('asks about the covers on the page, not about every dealership', async () => {
+  it('does not query yard media for directory cards', async () => {
     const h = setup({
       dealers: [
         activeDealer({ slug: 'a', coverMediaId: COVER }),
@@ -553,7 +557,7 @@ describe('directory', () => {
 
     await h.service.directory(query({ limit: 1 }));
 
-    expect(h.readyIdQueries).toEqual([[COVER]]);
+    expect(h.readyIdQueries).toEqual([]);
   });
 
   /** Nothing writes `logoMediaId`, so there is no image to address. */

@@ -19,7 +19,7 @@
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "*.tsbuildinfo"],
+      "outputs": ["*.tsbuildinfo"],
       // `apps/sandbox` type-checks its stories against the real components in
       // `apps/web/src`, which it reaches through a tsconfig path alias rather
       // than a workspace dependency — a Storybook cannot depend on an app. So
