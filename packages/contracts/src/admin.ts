@@ -188,9 +188,8 @@ export type AdminDealerDocument = z.infer<typeof AdminDealerDocument>;
  * in their head, and a reviewer holding a value in their head is a reviewer who
  * approves a phone number appended to a sentence they half-remember.
  *
- * `null` and `[]` on the proposed side keep the meaning they have in the
- * database: this request does not touch that field. The console renders those
- * rows as unchanged rather than as cleared.
+ * `taglineChanged` distinguishes removal from an unchanged nullable tagline.
+ * An empty services array still means unchanged.
  */
 export const AdminProfileChange = z.object({
   id: Uuid,
@@ -201,8 +200,9 @@ export const AdminProfileChange = z.object({
   status: ProfileChangeStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,
-  /** What the dealer is asking for. `null` / `[]` mean "not part of this edit". */
+  /** A null tagline is a removal only when taglineChanged is true. */
   tagline: z.string().nullable(),
+  taglineChanged: z.boolean().optional(),
   specialities: z.array(z.string()),
   /** What buyers see right now, and will keep seeing unless this is approved. */
   liveTagline: z.string().nullable(),

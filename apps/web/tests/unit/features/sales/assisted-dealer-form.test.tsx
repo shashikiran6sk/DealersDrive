@@ -36,7 +36,11 @@ describe('AssistedDealerForm', () => {
     await user.click(screen.getByRole('button', { name: 'Save details' }));
 
     await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledWith({ legalName: 'Sri Murugan Cars', pan: 'AAACS1429P' });
+      expect(onSubmit).toHaveBeenCalledWith({
+        legalName: 'Sri Murugan Cars',
+        pan: 'AAACS1429P',
+        tagline: '',
+      });
     });
     expect(await screen.findByText('Saved.')).toBeInTheDocument();
   });

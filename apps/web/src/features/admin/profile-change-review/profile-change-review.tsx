@@ -56,7 +56,9 @@ export function ProfileChangeReview({ change }: { change: AdminProfileChange }) 
         <ReviewRow label={PROFILE_CHANGE_TEXT.taglineLabel}>
           <Comparison
             live={change.liveTagline ?? EMPTY_VALUE}
-            proposed={change.tagline}
+            proposed={
+              change.taglineChanged && change.tagline === null ? 'Remove tagline' : change.tagline
+            }
             render={(value) => <span className="text-[13px]">{value}</span>}
           />
         </ReviewRow>

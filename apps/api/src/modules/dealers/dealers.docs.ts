@@ -46,9 +46,9 @@ export const dealersDocs: ModuleDocs = {
         '`UpdateDealerInput` while the dealership is a **DRAFT** \u2014 nothing has been ' +
         'verified about it yet \u2014 and `PATCH /v1/admin/dealers/{id}` takes it for a ' +
         'moderator with the certificate in hand.\n\n' +
-        '**Partial by design**: an absent field is untouched, never cleared. `tagline` and ' +
-        '`specialities` may not be *emptied* though (R26) \u2014 a dealer must not be able ' +
-        'to delete here what onboarding insisted on.\n\n' +
+        '**Partial by design**: an absent field is untouched. Tagline is optional; null or ' +
+        'blank text requests removal through the same review queue. Services remain nonempty ' +
+        'when supplied.\n\n' +
         'OWNER only (`dealer:update`) \u2014 a manager or salesperson gets a 403.\n\n' +
         '## Two of the three wait for a moderator (R34)\n\n' +
         'On an **ACTIVE** dealership `tagline` and `specialities` do not reach the ' +

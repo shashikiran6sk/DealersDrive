@@ -29,10 +29,12 @@ export function ReviewPanel({ change }: { change: DealerProfileChange | null }) 
     <Banner tone="warn" title={PROFILE_FORM_TEXT.waitingTitle}>
       <p>{PROFILE_FORM_TEXT.waitingIntro(change.submittedAtLabel)}</p>
       <dl className="mt-[10px] flex flex-col gap-[8px] text-[12px]">
-        {change.tagline ? (
+        {change.taglineChanged || change.tagline !== null ? (
           <div>
             <dt className="ink-muted">{PROFILE_FORM_TEXT.newLine}</dt>
-            <dd className="mt-[2px] font-medium">“{change.tagline}”</dd>
+            <dd className="mt-[2px] font-medium">
+              {change.tagline === null ? 'Remove tagline after approval' : `“${change.tagline}”`}
+            </dd>
           </div>
         ) : null}
         {change.specialities.length > 0 ? (

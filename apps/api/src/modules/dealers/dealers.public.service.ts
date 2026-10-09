@@ -89,7 +89,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           state,
           yearsOperating: dealer.yearsOperating,
           yearsLabel: locationLabel(city, state, dealer.yearsOperating),
-          tagline: dealer.tagline,
+          tagline: dealer.tagline?.trim() || null,
           services: distinctServices(dealer.specialities).slice(0, 3),
           carCount: stat?.count ?? 0,
           fromPricePaise: fromPrice,
@@ -209,7 +209,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         legalName: dealer.legalName,
         initials: initialsOf(dealer.brandName),
         isVerified: true,
-        tagline: dealer.tagline,
+        tagline: dealer.tagline?.trim() || null,
         services: distinctServices(dealer.specialities),
         address: {
           line: dealer.addressLine,
