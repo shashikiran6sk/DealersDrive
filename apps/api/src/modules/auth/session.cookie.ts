@@ -5,9 +5,19 @@ import { isRecord } from '../../platform/errors.js';
 import { OAUTH_COOKIE } from './oauth-transaction.js';
 
 export const SESSION_COOKIE = 'dd_session';
+export const ADMIN_SESSION_COOKIE = 'dd_admin_session';
+export const ADMIN_OAUTH_COOKIE = 'dd_admin_oauth';
 
 export function readSessionToken(req: Request): string | undefined {
   return cookieOf(req, SESSION_COOKIE);
+}
+
+export function readAdminSessionToken(req: Request): string | undefined {
+  return cookieOf(req, ADMIN_SESSION_COOKIE);
+}
+
+export function readAdminOAuthCookie(req: Request): string | undefined {
+  return cookieOf(req, ADMIN_OAUTH_COOKIE);
 }
 
 export function readOAuthCookie(req: Request): string | undefined {
@@ -37,18 +47,38 @@ function baseAttributes(): CookieAttributes {
   };
 }
 
-export function setSessionCookie(res: Response, token: string, expiresAt: Date): void {
-  res.cookie(SESSION_COOKIE, token, { ...baseAttributes(), expires: expiresAt });
+export function setSessionCookie(
+  res: Response,
+  token: string,
+  expiresAt: Date,
+  admin = false,
+): void {
+  res.cookie(admin ? ADMIN_SESSION_COOKIE : SESSION_COOKIE, token, {
+    ...baseAttributes(),
+    expires: expiresAt,
+  });
 }
 
 export function clearSessionCookie(res: Response): void {
   res.clearCookie(SESSION_COOKIE, baseAttributes());
 }
 
-export function setOAuthCookie(res: Response, sealed: string, maxAgeSeconds: number): void {
-  res.cookie(OAUTH_COOKIE, sealed, { ...baseAttributes(), maxAge: maxAgeSeconds * 1000 });
+export function clearAdminSessionCookie(res: Response): void {
+  res.clearCookie(ADMIN_SESSION_COOKIE, baseAttributes());
 }
 
-export function clearOAuthCookie(res: Response): void {
-  res.clearCookie(OAUTH_COOKIE, baseAttributes());
+export function setOAuthCookie(
+  res: Response,
+  sealed: string,
+  maxAgeSeconds: number,
+  admin = false,
+): void {
+  res.cookie(admin ? ADMIN_OAUTH_COOKIE : OAUTH_COOKIE, sealed, {
+    ...baseAttributes(),
+    maxAge: maxAgeSeconds * 1000,
+  });
+}
+
+export function clearOAuthCookie(res: Response, admin = false): void {
+  res.clearCookie(admin ? ADMIN_OAUTH_COOKIE : OAUTH_COOKIE, baseAttributes());
 }

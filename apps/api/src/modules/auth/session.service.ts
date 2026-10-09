@@ -21,6 +21,7 @@ export function createSessionService(prisma: PrismaClient) {
     async issue(input: {
       userId: string;
       scope: SessionScope;
+      authenticationMethod?: 'GOOGLE' | 'PHONE_OTP';
       ip?: string | undefined;
       userAgent?: string | undefined;
     }): Promise<IssuedSession> {
@@ -31,6 +32,7 @@ export function createSessionService(prisma: PrismaClient) {
         data: {
           userId: input.userId,
           scope: input.scope,
+          authenticationMethod: input.authenticationMethod ?? null,
           tokenHash: hashToken(token),
           expiresAt,
           ip: input.ip ?? null,

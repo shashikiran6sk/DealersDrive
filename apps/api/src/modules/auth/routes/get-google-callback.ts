@@ -1,6 +1,7 @@
 import {
   clearOAuthCookie,
   readOAuthCookie,
+  readAdminOAuthCookie,
   readSessionToken,
   setSessionCookie,
 } from '../session.cookie.js';
@@ -22,11 +23,19 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
       };
 
       try {
-        const transaction = openTransaction(readOAuthCookie(req));
+        const stateQuery = typeof req.query.state === 'string' ? req.query.state : '';
+        const personTransaction = openTransaction(readOAuthCookie(req));
+        const adminTransaction = openTransaction(readAdminOAuthCookie(req));
+        const transaction =
+          adminTransaction?.state === stateQuery
+            ? adminTransaction
+            : personTransaction?.state === stateQuery
+              ? personTransaction
+              : null;
         audience = transaction?.audience ?? 'DEALER';
         if (audience === 'ADMIN') signInPath = '/admin/login';
         if (audience === 'LINK') signInPath = '/dealer/onboarding';
-        clearOAuthCookie(res);
+        if (transaction) clearOAuthCookie(res, audience === 'ADMIN');
 
         if (typeof req.query.error === 'string') {
           back('google_declined');
@@ -50,7 +59,7 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
         });
 
         if (result.token && result.expiresAt) {
-          setSessionCookie(res, result.token, result.expiresAt);
+          setSessionCookie(res, result.token, result.expiresAt, result.audience === 'ADMIN');
         }
         recordOAuthAttempt(result.audience, 'success', 'completed');
         res.redirect(302, `${env.WEB_BASE_URL}${result.returnTo}`);

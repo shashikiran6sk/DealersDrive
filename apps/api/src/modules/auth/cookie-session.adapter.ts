@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import { isAdmitted, permissionsForMember } from './admin-member.js';
 import { findWorkspaceMembership } from './membership.js';
 import { isSeatSuspended } from './roles.js';
-import { readSessionToken } from './session.cookie.js';
+import { readSessionToken, readAdminSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
 import {
   permissionsForRole,
@@ -65,9 +65,9 @@ export function createCookieSessionResolver(
     },
 
     async resolveAdmin(req): Promise<AdminPrincipal | null> {
-      const session = await sessions.resolve(readSessionToken(req), 'ADMIN');
+      const session = await sessions.resolve(readAdminSessionToken(req), 'ADMIN');
       const user = session?.user;
-      if (!user) return null;
+      if (!user || isSeatSuspended(user.roles, 'ADMIN')) return null;
 
       const member = user.adminMember;
       if (!member || !isAdmitted({ email: user.email, status: user.status, member })) return null;

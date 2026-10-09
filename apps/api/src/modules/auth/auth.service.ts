@@ -634,6 +634,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     const session = await sessions.issue({
       userId: admin.user.id,
       scope: 'ADMIN',
+      authenticationMethod: 'GOOGLE',
       ip: input.ip,
       userAgent: input.userAgent,
     });
