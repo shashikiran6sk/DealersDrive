@@ -1,0 +1,502 @@
+[
+  {
+    "route": "/dealer",
+    "width": 320,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 316,
+    "client": 305,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 360,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 345,
+    "client": 345,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 375,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 360,
+    "client": 360,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 390,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 375,
+    "client": 375,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 430,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 415,
+    "client": 415,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 440,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nGood afternoon, Manikandan\n\nHer",
+    "scroll": 425,
+    "client": 425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 768,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 753,
+    "client": 753,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 1024,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1009,
+    "client": 1009,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 1280,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1265,
+    "client": 1265,
+    "overflow": []
+  },
+  {
+    "route": "/dealer",
+    "width": 1440,
+    "path": "/dealer",
+    "title": "Dashboard | Dealers-Drive",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1425,
+    "client": 1425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 320,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 305,
+    "client": 305,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 360,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 345,
+    "client": 345,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 375,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 360,
+    "client": 360,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 390,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 375,
+    "client": 375,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 430,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 415,
+    "client": 415,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 440,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nInventory\n\n0 vehicles\n\nAdd vehi",
+    "scroll": 425,
+    "client": 425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 768,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 753,
+    "client": 753,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 1024,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1009,
+    "client": 1009,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 1280,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1265,
+    "client": 1265,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/inventory",
+    "width": 1440,
+    "path": "/dealer/inventory",
+    "title": "Inventory · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1425,
+    "client": 1425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 320,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 305,
+    "client": 305,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 360,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 345,
+    "client": 345,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 375,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 360,
+    "client": 360,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 390,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 375,
+    "client": 375,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 430,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 415,
+    "client": 415,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 440,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nEnquiries\n\n0 enquiries\n\nNew\n0\nC",
+    "scroll": 425,
+    "client": 425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 768,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 753,
+    "client": 753,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 1024,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1009,
+    "client": 1009,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 1280,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1265,
+    "client": 1265,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/enquiries",
+    "width": 1440,
+    "path": "/dealer/enquiries",
+    "title": "Enquiries · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1425,
+    "client": 1425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 320,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 305,
+    "client": 305,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 360,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 345,
+    "client": 345,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 375,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 360,
+    "client": 360,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 390,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 375,
+    "client": 375,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 430,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 415,
+    "client": 415,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 440,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nDealer profile\nVerified\nTeam\nPR",
+    "scroll": 425,
+    "client": 425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 768,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 753,
+    "client": 753,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 1024,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1009,
+    "client": 1009,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 1280,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1265,
+    "client": 1265,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/profile",
+    "width": 1440,
+    "path": "/dealer/profile",
+    "title": "Dealer profile · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1425,
+    "client": 1425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 320,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 305,
+    "client": 305,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 360,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 345,
+    "client": 345,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 375,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 360,
+    "client": 360,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 390,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 375,
+    "client": 375,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 430,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 415,
+    "client": 415,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 440,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nSri Lakshmi Motors\nVerified\n0 credits\nSign out\nTeam\n\nThe people who work this ",
+    "scroll": 425,
+    "client": 425,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 768,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 753,
+    "client": 753,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 1024,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1009,
+    "client": 1009,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 1280,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1265,
+    "client": 1265,
+    "overflow": []
+  },
+  {
+    "route": "/dealer/team",
+    "width": 1440,
+    "path": "/dealer/team",
+    "title": "Team · Dealer console",
+    "text": "LOCAL — NOT REAL DATA\nDealer console\nDashboard\nInventory\nAdd vehicle\nEnquiries\nDealer profile\nTeam\nL",
+    "scroll": 1425,
+    "client": 1425,
+    "overflow": []
+  }
+]
