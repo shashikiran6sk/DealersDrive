@@ -103,7 +103,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             variant="primary"
             size="md"
             block
-            className="min-h-[44px]"
+            className="min-h-[44px] max-lg:hidden"
             loading={stage === 'checking'}
             aria-label={stage === 'checking' ? ENQUIRY_PANEL_TEXT.loading : undefined}
             onClick={() => {
@@ -113,7 +113,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             {ENQUIRY_PANEL_TEXT.enquire}
           </Button>
           {customer ? null : (
-            <p className="m-0 text-center text-[12px] ink-secondary">
+            <p className="m-0 text-center text-[12px] ink-secondary max-lg:hidden">
               {ENQUIRY_PANEL_TEXT.requiresLogin}
             </p>
           )}

@@ -84,8 +84,9 @@ dealer/admin/sales routes; a separate cookie-auth API exercises customer OTP
 with the existing fake driver. No production records are changed. Hardware virtual keyboard behavior
 requires a real mobile device; small-height viewport emulation is supplemental.
 
-No documented `testing_evidence` branch workflow was found in the checkout.
-Visual artifacts stay outside production source and are linked from the PR.
+The follow-up audit located the existing `testing_evidence` archive through
+PR #239. New correction evidence follows its `docs/testing/fixes/` convention;
+production branches retain only permanent source, tests and documentation.
 
 ## Reproducing responsive component checks
 
@@ -143,3 +144,38 @@ were repaired. Guest redirects were recaptured after settling; blinking carets
 were blurred; exhausted isolated OTP request counters were reset by restarting
 the local API. The passing reports reflect the final recaptures. No application
 rate limits or existing tests were weakened.
+
+## Mobile UX corrections (PR #285 follow-up)
+
+The correction baseline is the existing mobile head `2b5561b2e36e175fee97e2b65fec28b9637e260e`,
+not main. Public headers put the menu before the logo below 768px. The account
+and district group can shrink at narrow content widths, including a scrollbar.
+
+Below 1024px the car page uses one set of components in this visual order:
+gallery, vehicle identity/price/highlights/save, specifications, description,
+dealership card, similar vehicles. `display: contents` preserves the original
+desktop column boxes and spacing. Only the sticky enquiry entry point is visible
+on mobile; the existing state machine, login, OTP, availability restrictions and
+submission handlers are unchanged.
+
+Dealer portfolios use a compact logo/name/location grid, a full-width tagline
+and a 16:9 yard region below 768px. Desktop sizes and ordering remain unchanged.
+The dealer shell removes only its own mobile bottom bar and its reserved main
+padding. Its drawer puts the API's actual status below the dealership name,
+above the shared `ConsoleNav`, with no credit information.
+
+The first-tap filter defect was a native radio-group collision. Desktop and
+mobile panels were simultaneously mounted with `name="price"` and `name="km"`.
+The mobile optimistic update checked its control, then the desktop control
+became checked when applied server props arrived, silently unchecking the
+mobile control. Unique IDs did not isolate radio groups. Each range group now
+uses its existing panel prefix in its native name; query keys, preset values,
+facets, dependencies, transition and server fetches are unchanged. The regression
+asserts actual checked state before and after an applied update while both
+panels coexist, independently of URL correctness. It fails on the baseline.
+
+Shared dealer metric definitions, avatar removal and navigation utilities belong
+to the independent console cleanup PR. This correction adds no logout control.
+The drawer's shared navigation slot is the integration point for those utilities.
+The responsive component runner now includes 440px, completing the requested
+320/360/375/390/430/440/768/1024/1280/1440 matrix.

@@ -34,6 +34,32 @@ afterEach(() => {
 });
 
 describe('MobileNav', () => {
+  it('keeps supplied account status above shared navigation and closes its links', async () => {
+    const user = userEvent.setup();
+    render(
+      <MobileNav
+        items={items}
+        label="Dealer console"
+        rootHref="/dealer"
+        heading={<p>Suspended</p>}
+        navigation={
+          <nav aria-label="Shared console">
+            <a href="/dealer/inventory">Inventory</a>
+          </nav>
+        }
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Open Dealer console menu' });
+    await user.click(trigger);
+    const status = screen.getByText('Suspended');
+    const navigation = screen.getByRole('navigation', { name: 'Shared console' });
+    expect(
+      status.compareDocumentPosition(navigation) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'Inventory' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+  });
   it('opens all supplied destinations, highlights the active page, and returns focus on Escape', async () => {
     const user = userEvent.setup();
     render(<Nav />);

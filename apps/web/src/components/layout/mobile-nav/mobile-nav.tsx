@@ -11,7 +11,14 @@ import { isCurrentPath } from '@/lib/nav';
 import { MOBILE_NAV_TEXT } from './mobile-nav.constants';
 import type { MobileNavProps } from './mobile-nav.types';
 
-export function MobileNav({ items, label, rootHref, children }: MobileNavProps) {
+export function MobileNav({
+  items,
+  label,
+  rootHref,
+  heading,
+  navigation,
+  children,
+}: MobileNavProps) {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
@@ -51,20 +58,33 @@ export function MobileNav({ items, label, rootHref, children }: MobileNavProps) 
         </button>
       }
     >
-      <nav aria-label={label} className="flex flex-col gap-1">
-        {items.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="dd-nav-item min-h-12"
-            aria-current={isCurrentPath(pathname, item.href, rootHref) ? 'page' : undefined}
-            onClick={() => setOpenPath(null)}
-          >
-            <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{item.label}</span>
-            <LinkPendingIndicator reserve />
-          </Link>
-        ))}
-      </nav>
+      {heading ? <div className="mb-4 flex flex-col items-start gap-2">{heading}</div> : null}
+      {navigation ? (
+        <div
+          onClickCapture={(event) => {
+            if (event.target instanceof Element && event.target.closest('a[href]')) {
+              setOpenPath(null);
+            }
+          }}
+        >
+          {navigation}
+        </div>
+      ) : (
+        <nav aria-label={label} className="flex flex-col gap-1">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="dd-nav-item min-h-12"
+              aria-current={isCurrentPath(pathname, item.href, rootHref) ? 'page' : undefined}
+              onClick={() => setOpenPath(null)}
+            >
+              <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{item.label}</span>
+              <LinkPendingIndicator reserve />
+            </Link>
+          ))}
+        </nav>
+      )}
       {children ? (
         <div className="mt-5 border-t border-(--color-divider) pt-4">{children}</div>
       ) : null}

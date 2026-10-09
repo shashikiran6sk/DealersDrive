@@ -26,7 +26,7 @@ export function ConsoleNav({
         <Link
           key={item.href}
           href={item.href}
-          className="dd-nav-item"
+          className="dd-nav-item max-md:min-h-12"
           aria-current={isCurrentPath(pathname, item.href, rootHref) ? 'true' : undefined}
         >
           <span className="min-w-0 flex-1 truncate">{item.label}</span>

@@ -50,7 +50,7 @@ await send('Page.enable');
 // CHROME_DEBUG_URL=http://127.0.0.1:9222 SANDBOX_URL=http://127.0.0.1:6006 node tests/responsive/browser-check.mjs
 const sandbox = process.env.SANDBOX_URL ?? 'http://127.0.0.1:6006';
 const output = process.env.RESPONSIVE_EVIDENCE_DIR ?? '/tmp/dealersdrive-responsive';
-const widths = [320, 360, 375, 390, 430, 768, 1024, 1280, 1440];
+const widths = [320, 360, 375, 390, 430, 440, 768, 1024, 1280, 1440];
 const availableStories = [
   'layout-customerheader--home',
   'layout-customerheader--signed-in-customer',

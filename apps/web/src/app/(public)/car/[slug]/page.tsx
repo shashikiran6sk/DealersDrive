@@ -129,14 +129,19 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
       </Link>
 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">
-        <div className="flex min-w-0 flex-col gap-[26px]">
-          <VehicleGallery
-            title={vehicle.title}
-            images={vehicle.images}
-            primaryIndex={vehicle.primaryIndex}
-          />
+        <div className="flex min-w-0 flex-col gap-[26px] max-lg:contents">
+          <div className="min-w-0 max-lg:order-1 lg:contents">
+            <VehicleGallery
+              title={vehicle.title}
+              images={vehicle.images}
+              primaryIndex={vehicle.primaryIndex}
+            />
+          </div>
 
-          <section aria-labelledby="specs-heading" className="flex flex-col gap-[10px]">
+          <section
+            aria-labelledby="specs-heading"
+            className="flex flex-col gap-[10px] max-lg:order-3"
+          >
             <h2 id="specs-heading" className="text-[22px]">
               {VEHICLE_PAGE_TEXT.specifications}
             </h2>
@@ -144,7 +149,10 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           </section>
 
           {vehicle.description ? (
-            <section aria-labelledby="description-heading" className="flex flex-col gap-[10px]">
+            <section
+              aria-labelledby="description-heading"
+              className="flex flex-col gap-[10px] max-lg:order-4"
+            >
               <h2 id="description-heading" className="text-[22px]">
                 {VEHICLE_PAGE_TEXT.description}
               </h2>
@@ -155,49 +163,53 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           ) : null}
         </div>
 
-        <aside className="flex flex-col gap-[16px] self-start lg:sticky lg:rail-top">
-          <div className="flex flex-col gap-[6px]">
-            <div className="relative flex items-center gap-[8px]">
-              {vehicle.year ? <Plate className="self-start">{vehicle.year}</Plate> : null}
-              {available ? null : (
-                <AvailabilityBadge
-                  label={availabilityLabel(vehicle.availability)}
-                  className="static"
-                />
-              )}
+        <aside className="flex flex-col gap-[16px] self-start max-lg:contents lg:sticky lg:rail-top">
+          <div className="max-lg:order-2 max-lg:flex max-lg:flex-col max-lg:gap-4 lg:contents">
+            <div className="flex flex-col gap-[6px]">
+              <div className="relative flex items-center gap-[8px]">
+                {vehicle.year ? <Plate className="self-start">{vehicle.year}</Plate> : null}
+                {available ? null : (
+                  <AvailabilityBadge
+                    label={availabilityLabel(vehicle.availability)}
+                    className="static"
+                  />
+                )}
+              </div>
+              <h1 className="text-[26px] leading-[1.15] tracking-[-0.035em] sm:text-[30px]">
+                <VehicleName title={vehicle.title} year={vehicle.year} />
+              </h1>
+              {vehicle.summary ? (
+                <p className="text-[13px] ink-secondary tnum">{vehicle.summary}</p>
+              ) : null}
+              {vehicle.publishedLabel ? (
+                <p className="text-[12px] ink-subtle">{vehicle.publishedLabel}</p>
+              ) : null}
             </div>
-            <h1 className="text-[26px] leading-[1.15] tracking-[-0.035em] sm:text-[30px]">
-              <VehicleName title={vehicle.title} year={vehicle.year} />
-            </h1>
-            {vehicle.summary ? (
-              <p className="text-[13px] ink-secondary tnum">{vehicle.summary}</p>
-            ) : null}
-            {vehicle.publishedLabel ? (
-              <p className="text-[12px] ink-subtle">{vehicle.publishedLabel}</p>
-            ) : null}
+            <PriceBlock
+              priceLabel={vehicle.priceLabel}
+              negotiabilityLabel={vehicle.negotiabilityLabel}
+            />
+            {available ? (
+              <Suspense
+                fallback={
+                  <EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+                }
+              >
+                <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+              </Suspense>
+            ) : (
+              <AvailabilityNotice />
+            )}
+            <SaveButton
+              slug={vehicle.slug}
+              title={vehicle.title}
+              variant="labelled"
+              className="w-full"
+            />
           </div>
-          <PriceBlock
-            priceLabel={vehicle.priceLabel}
-            negotiabilityLabel={vehicle.negotiabilityLabel}
-          />
-          {available ? (
-            <Suspense
-              fallback={
-                <EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
-              }
-            >
-              <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
-            </Suspense>
-          ) : (
-            <AvailabilityNotice />
-          )}
-          <SaveButton
-            slug={vehicle.slug}
-            title={vehicle.title}
-            variant="labelled"
-            className="w-full"
-          />
-          <VdpDealerCard dealer={vehicle.dealer} />
+          <div className="max-lg:order-5 lg:contents">
+            <VdpDealerCard dealer={vehicle.dealer} />
+          </div>
         </aside>
       </div>
 
