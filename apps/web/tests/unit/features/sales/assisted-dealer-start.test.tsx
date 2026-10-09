@@ -41,6 +41,43 @@ async function enterCode(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('AssistedDealerStart', () => {
+  it('shows a duplicate email error and preserves entered details through renewed mobile verification', async () => {
+    vi.mocked(verifyDealerPhoneAction).mockResolvedValue({
+      verified: true,
+      phone: '+919840012345',
+      phoneTicket: 'ticket-new',
+    });
+    vi.mocked(createAssistedDealerAction).mockResolvedValue({
+      ok: false,
+      message: 'This email address is already associated with a dealer account.',
+      fieldErrors: { email: 'Use another email or contact support.' },
+    });
+    const user = userEvent.setup();
+    render(<AssistedDealerStart widget={FAKE} />);
+    await user.type(
+      screen.getByLabelText('Dealer’s mobile number', { exact: false, selector: 'input' }),
+      '9840012345',
+    );
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await enterCode(user);
+    await user.click(screen.getByRole('button', { name: /Verify/ }));
+    await screen.findByText('Dealer’s mobile verified');
+    await user.click(screen.getByRole('button', { name: 'Continue to dealership details' }));
+    await user.type(screen.getByLabelText(/Contact person/), 'Synthetic Representative');
+    await user.type(screen.getByLabelText(/Dealer’s email/), 'conflict@example.test');
+    await user.click(screen.getByRole('button', { name: 'Create dealership' }));
+    expect(await screen.findByText(/already associated/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Dealer’s email/)).toHaveAttribute('aria-invalid', 'true');
+    await user.click(screen.getByRole('button', { name: 'Verify mobile again' }));
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await enterCode(user);
+    await user.click(screen.getByRole('button', { name: /Verify/ }));
+    await screen.findByText('Dealer’s mobile verified');
+    await user.click(screen.getByRole('button', { name: 'Continue to dealership details' }));
+    expect(screen.getByLabelText(/Contact person/)).toHaveValue('Synthetic Representative');
+    expect(screen.getByLabelText(/Dealer’s email/)).toHaveValue('conflict@example.test');
+  });
   it('will not send a code until the dealer has consented', async () => {
     const user = userEvent.setup();
     render(<AssistedDealerStart widget={FAKE} />);

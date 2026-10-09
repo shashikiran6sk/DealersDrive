@@ -50,6 +50,52 @@ function google(overrides: Partial<OAuthClaims> = {}): OAuthClaims {
   };
 }
 
+it('refuses to collapse conflicting primary dealership ownership and rolls back both identities', async () => {
+  const claims = google();
+  const source = await identities.createWithGoogle(claims);
+  const phone = await identities.createWithPhone(proven());
+  const first = await prisma.dealer.create({
+    data: {
+      slug: `merge-primary-a-${counter}`,
+      legalName: `Merge Primary A ${counter}`,
+      brandName: 'Synthetic A',
+      contactEmail: claims.email,
+      members: { create: { userId: source, role: 'OWNER', permissions: [] } },
+    },
+  });
+  const second = await prisma.dealer.create({
+    data: {
+      slug: `merge-primary-b-${counter}`,
+      legalName: `Merge Primary B ${counter}`,
+      brandName: 'Synthetic B',
+      contactEmail: `phone-owner-${counter}@example.test`,
+      members: { create: { userId: phone.userId, role: 'OWNER', permissions: [] } },
+    },
+  });
+  await expect(identities.absorbGoogleHolder(phone.userId, claims)).rejects.toMatchObject({
+    code: 'DEALER_EMAIL_TAKEN',
+  });
+  expect(
+    (await prisma.dealerMember.findFirstOrThrow({ where: { dealerId: first.id, role: 'OWNER' } }))
+      .userId,
+  ).toBe(source);
+  expect(
+    (await prisma.dealerMember.findFirstOrThrow({ where: { dealerId: second.id, role: 'OWNER' } }))
+      .userId,
+  ).toBe(phone.userId);
+  expect(
+    (
+      await prisma.oAuthIdentity.findUniqueOrThrow({
+        where: {
+          provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject },
+        },
+      })
+    ).userId,
+  ).toBe(source);
+  expect((await prisma.user.findUniqueOrThrow({ where: { id: source } })).status).toBe('ACTIVE');
+  expect((await prisma.user.findUniqueOrThrow({ where: { id: source } })).mergedIntoId).toBeNull();
+});
+
 describe('an account that starts with a phone', () => {
   it('is one user row, holding the proved number and nothing else', async () => {
     const phone = freeNumber();

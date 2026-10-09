@@ -68,7 +68,7 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
           back('account_link_required');
           return;
         }
-        if (code === 'IDENTITY_ALREADY_LINKED') {
+        if (code === 'IDENTITY_ALREADY_LINKED' || code === 'DEALER_EMAIL_TAKEN') {
           back('identity_already_linked');
           return;
         }
