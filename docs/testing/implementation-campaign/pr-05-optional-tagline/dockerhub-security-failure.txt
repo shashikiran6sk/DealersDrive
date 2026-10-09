@@ -1,0 +1,40 @@
+gitleaks	Scan the repository and its history	﻿2026-10-09T21:16:28.7334259Z ##[group]Run docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.7334963Z ^[[36;1mdocker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \^[[0m
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.7335491Z ^[[36;1m  detect --source=/repo --config=/repo/.gitleaks.toml \^[[0m
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.7335964Z ^[[36;1m  --redact --no-banner --verbose^[[0m
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.7623586Z shell: /usr/bin/bash -e {0}
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.7624020Z ##[endgroup]
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.8736448Z Unable to find image 'zricethezav/gitleaks:latest' locally
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.9830736Z docker: Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.9831655Z
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.9831836Z Run 'docker run --help' for more information
+gitleaks	Scan the repository and its history	2026-10-09T21:16:28.9854867Z ##[error]Process completed with exit code 125.
+semgrep	Initialize containers	﻿2026-10-09T21:16:23.9921254Z ##[group]Checking docker version
+semgrep	Initialize containers	2026-10-09T21:16:23.9935466Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+semgrep	Initialize containers	2026-10-09T21:16:24.0571188Z '1.48'
+semgrep	Initialize containers	2026-10-09T21:16:24.0591545Z Docker daemon API version: '1.48'
+semgrep	Initialize containers	2026-10-09T21:16:24.0592418Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+semgrep	Initialize containers	2026-10-09T21:16:24.0770283Z '1.48'
+semgrep	Initialize containers	2026-10-09T21:16:24.0785235Z Docker client API version: '1.48'
+semgrep	Initialize containers	2026-10-09T21:16:24.0791545Z ##[endgroup]
+semgrep	Initialize containers	2026-10-09T21:16:24.0793987Z ##[group]Clean up resources from previous jobs
+semgrep	Initialize containers	2026-10-09T21:16:24.0800328Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=d6fccf"
+semgrep	Initialize containers	2026-10-09T21:16:24.0970242Z ##[command]/usr/bin/docker network prune --force --filter "label=d6fccf"
+semgrep	Initialize containers	2026-10-09T21:16:24.1120229Z ##[endgroup]
+semgrep	Initialize containers	2026-10-09T21:16:24.1120873Z ##[group]Create local container network
+semgrep	Initialize containers	2026-10-09T21:16:24.1132975Z ##[command]/usr/bin/docker network create --label d6fccf github_network_8c7bfc2930a4429bbd5ae73a02e1612f
+semgrep	Initialize containers	2026-10-09T21:16:24.1740778Z e29db7c1b77cb8aaa5137e3d4a14c1ea4f2ff363f00f8f74bf98e07b94141796
+semgrep	Initialize containers	2026-10-09T21:16:24.1762237Z ##[endgroup]
+semgrep	Initialize containers	2026-10-09T21:16:24.1786863Z ##[group]Starting job container
+semgrep	Initialize containers	2026-10-09T21:16:24.1808755Z ##[command]/usr/bin/docker pull semgrep/semgrep
+semgrep	Initialize containers	2026-10-09T21:16:24.1918686Z Using default tag: latest
+semgrep	Initialize containers	2026-10-09T21:16:24.7939084Z Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+semgrep	Initialize containers	2026-10-09T21:16:24.7970926Z ##[warning]Docker pull failed with exit code 1, back off 6.089 seconds before retry.
+semgrep	Initialize containers	2026-10-09T21:16:30.8873987Z ##[command]/usr/bin/docker pull semgrep/semgrep
+semgrep	Initialize containers	2026-10-09T21:16:30.9000336Z Using default tag: latest
+semgrep	Initialize containers	2026-10-09T21:16:46.0474500Z Error response from daemon: Head "https://registry-1.docker.io/v2/semgrep/semgrep/manifests/latest": Get "https://auth.docker.io/token?account=githubactions&scope=repository%3Asemgrep%2Fsemgrep%3Apull&service=registry.docker.io": net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+semgrep	Initialize containers	2026-10-09T21:16:46.0488757Z ##[warning]Docker pull failed with exit code 1, back off 3.591 seconds before retry.
+semgrep	Initialize containers	2026-10-09T21:16:49.6407179Z ##[command]/usr/bin/docker pull semgrep/semgrep
+semgrep	Initialize containers	2026-10-09T21:16:49.6539975Z Using default tag: latest
+semgrep	Initialize containers	2026-10-09T21:16:50.2166816Z Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+semgrep	Initialize containers	2026-10-09T21:16:50.2265691Z ##[error]Docker pull failed with exit code 1

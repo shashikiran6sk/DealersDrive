@@ -1,0 +1,35 @@
+{
+  "prNumber": 292,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/292",
+  "branch": "feat/optional-dealer-tagline",
+  "baseBranch": "feat/dynamic-service-locations",
+  "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+  "implementationCompleted": true,
+  "filesChanged": 35,
+  "migrations": [
+    "20261010093000_optional_tagline"
+  ],
+  "testsExecuted": 5085,
+  "testsPassed": 5085,
+  "testsFailed": 0,
+  "suiteCounts": {
+    "api": 3119,
+    "web": 1508,
+    "contracts": 458
+  },
+  "postCreationBrowser": "PASS",
+  "requiredCiStatus": "PASS",
+  "ciHeadSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422840",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922",
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployed": false,
+  "outstandingBlockers": [],
+  "knownLimitations": [
+    "Physical-device/Safari/live provider UAT not claimed",
+    "Existing dependency high advisories remain reported",
+    "Production rollout remains owner-controlled"
+  ],
+  "nextPr": "feat/admin-mobile-otp"
+}

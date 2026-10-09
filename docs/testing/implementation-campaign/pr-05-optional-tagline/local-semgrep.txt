@@ -1,0 +1,36 @@
+
+
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 1778 files tracked by git with 1080 Code rules:
+
+  Language      Rules   Files          Origin      Rules
+ ─────────────────────────────        ───────────────────
+  ts              164    1618          Community    1080
+  <multilang>      62    1185
+  json              4      28
+  js              154      20
+  terraform       101      13
+  yaml             41      10
+  bash              4       4
+  dockerfile        7       2
+
+
+
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 40 (40 blocking)
+ • Rules run: 379
+ • Targets scanned: 1778
+ • Parsed lines: ~100.0%
+ • Scan skipped:
+   ◦ Files matching .semgrepignore patterns: 290
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 379 rules on 1778 files: 40 findings.
+
+📢 Too many findings? Try Semgrep Pro for more powerful queries and less noise.
+   See https://sg.run/false-positives.
