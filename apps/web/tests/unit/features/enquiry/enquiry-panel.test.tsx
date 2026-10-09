@@ -69,6 +69,20 @@ describe('an anonymous visitor', () => {
 });
 
 describe('a signed-in customer', () => {
+  it('scrolls the bottom enquiry button to the message field after the form is mounted', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+    panel();
+
+    await user.click(screen.getAllByRole('button', { name: 'Enquire now' }).at(-1)!);
+
+    const message = await screen.findByRole('textbox', { name: /message/i });
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.instances[0]).toBe(message);
+    expect(scroll).toHaveBeenCalledWith({ block: 'center' });
+  });
+
   it('sees their own name and verified mobile, with nothing to type them into', async () => {
     const user = userEvent.setup();
     vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
@@ -227,10 +241,12 @@ describe('coming back from sign-in', () => {
   /** `?enquire=1` reopens the form: the customer does not press Enquire twice. */
   it('opens the form by itself, prefilled', async () => {
     vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
     panel(true);
 
     expect(await screen.findByRole('button', { name: 'Send enquiry' })).toBeInTheDocument();
     expect(screen.getByText('Shashikiran')).toBeInTheDocument();
+    expect(scroll.mock.instances[0]).toBe(screen.getByRole('textbox', { name: /message/i }));
   });
 
   it('drops ?enquire=1 once the enquiry is sent, so a reload does not reopen it', async () => {

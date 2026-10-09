@@ -43,8 +43,14 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     }
     setCustomer(signedIn);
     setStage('form');
-    panel.current?.scrollIntoView({ block: 'nearest' });
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (stage !== 'form') return;
+    panel.current
+      ?.querySelector<HTMLTextAreaElement>('textarea[name="message"]')
+      ?.scrollIntoView({ block: 'center' });
+  }, [stage]);
 
   useEffect(() => {
     if (!autoOpen || autoOpened.current) return;

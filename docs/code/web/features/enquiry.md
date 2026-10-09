@@ -69,6 +69,11 @@ Idle → checking → form → sent / already / gone.
 - **Mobile.** Below `lg` the Enquire button is also pinned as a bottom bar
   (DESIGN-SPEC §3.4 at 375: the 64px action bar with `--shadow-lg`); the page
   pads its bottom by the bar's height so the last line is never under it.
+- **Opening the form.** Scroll to the message field after the form stage has
+  rendered, including the return from sign-in. Scrolling inside `open()` runs
+  before React commits the form and can target the old, collapsed panel.
+  Centering the mounted field keeps it reachable on short mobile viewports
+  without automatically focusing it or opening the keyboard.
 
 ## `apps/web/src/features/enquiry/enquiry-panel/enquiry-form.tsx`
 

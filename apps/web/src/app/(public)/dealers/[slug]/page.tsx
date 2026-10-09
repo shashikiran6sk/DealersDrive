@@ -160,7 +160,7 @@ export default async function DealerPortfolioPage({
           <LogoTile
             initials={dealer.initials}
             size={78}
-            className="max-md:h-[60px]! max-md:w-[60px]! max-md:col-start-1 max-md:row-start-1 max-md:row-span-2"
+            className="max-md:h-[60px]! max-md:w-[60px]! max-md:col-start-1 max-md:row-start-1"
           />
 
           <div className="min-w-[260px] flex-1 max-md:contents max-md:[overflow-wrap:anywhere]">
@@ -176,7 +176,7 @@ export default async function DealerPortfolioPage({
               </p>
             ) : null}
             {dealer.address.full ? (
-              <p className="mt-[6px] text-[14px] ink-secondary max-md:col-start-2 max-md:row-start-2 max-md:mt-0">
+              <p className="mt-[6px] text-[14px] ink-secondary max-md:col-span-2 max-md:row-start-2 max-md:mt-0">
                 {dealer.address.full}
               </p>
             ) : null}
