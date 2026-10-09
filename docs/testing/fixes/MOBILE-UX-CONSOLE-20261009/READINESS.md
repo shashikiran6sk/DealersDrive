@@ -1,5 +1,7 @@
 # Mobile UX corrections and dealer console readiness
 
+This document records the original pre-merge readiness checkpoint. The subsequent enquiry/address fixes and the owner-authorized sequential merges are recorded in [the follow-up evidence](follow-up-enquiry-address/README.md) and the final merge report.
+
 Both product PRs remain open and unmerged. The console branch is independent
 of the mobile branch. The only feature-to-feature merges are in a local
 verification worktree; that branch is not pushed and has no PR. The existing

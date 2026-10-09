@@ -18,4 +18,4 @@ The mobile dealer address now spans the identity grid below the logo and dealer 
 
 Local OTP fixtures and production builds were used. No production SMS, Google OAuth or real-device hardware checks are claimed. No enquiry was submitted during these navigation checks. No session cookie or token is archived.
 
-Native browser harness: `browser-check.mjs`, using the existing sibling `../harness/dealer-ux-cdp.mjs` helper (adjust its import path when replaying from the archive).
+Native browser harness: `browser-check.mjs`, using the copied `dealer-ux-cdp.mjs` helper. `console-authenticated-check.mjs` records the final 15 console assertions after its main update.

@@ -1,5 +1,7 @@
 # Mobile UX corrections and dealer console cleanup
 
+This document records the original pre-merge readiness checkpoint. The subsequent enquiry/address fixes and the owner-authorized sequential merges are recorded in [the follow-up evidence](follow-up-enquiry-address/README.md) and the final merge report.
+
 [Full A–G readiness report](READINESS.md) · [Mobile PR #285](https://github.com/shashikiran6sk/DealersDrive/pull/285) · [Console PR #286](https://github.com/shashikiran6sk/DealersDrive/pull/286)
 
 This folder follows the existing `testing_evidence` archive convention. It is never merged, deployed or used as a product branch base. Permanent source, regression tests and component documentation remain in the product PRs. Earlier archive artifacts remain available in branch history.
