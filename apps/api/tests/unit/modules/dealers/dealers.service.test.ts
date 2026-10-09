@@ -1908,24 +1908,24 @@ describe('completeness — the yard photograph', () => {
     doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
   ];
 
-  it('names it as outstanding when there is none', async () => {
+  it('keeps document completeness independent of an optional yard photograph', async () => {
     const h = setup({ documents: verified, dealer: { coverMediaId: null } });
 
     const state = await h.service.completeness('dealer-1');
 
-    expect(state.steps[2]?.missing).toEqual(['YARD_PHOTO']);
-    expect(state.steps[2]?.complete).toBe(false);
-    expect(state.isComplete).toBe(false);
+    expect(state.steps[2]?.missing).toEqual([]);
+    expect(state.steps[2]?.complete).toBe(true);
+    expect(state.isComplete).toBe(true);
   });
 
-  it('refuses the submit until one is uploaded', async () => {
+  it('allows submission without a yard photograph when required evidence is present', async () => {
     const h = setup({
       documents: verified,
       dealer: { status: 'DRAFT', coverMediaId: null },
     });
 
-    await expect(h.service.submitForVerification('dealer-1')).rejects.toMatchObject({
-      code: 'PROFILE_INCOMPLETE',
+    await expect(h.service.submitForVerification('dealer-1')).resolves.toMatchObject({
+      status: 'PENDING_APPROVAL',
     });
   });
 });

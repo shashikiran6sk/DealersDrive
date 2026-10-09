@@ -1262,7 +1262,7 @@ describe('OnboardingWizard — the Documents step', () => {
     render_(DOCUMENTS);
 
     expect(screen.getByLabelText('Upload a photo of your yard')).toHaveAttribute('type', 'file');
-    expect(screen.getByText(/first thing buyers see/)).toBeInTheDocument();
+    expect(screen.getByText(/Optional. Approved yard photos appear only/)).toBeInTheDocument();
     expect(screen.getByText(/clear, well-lit photograph of your yard/)).toBeInTheDocument();
   });
 
