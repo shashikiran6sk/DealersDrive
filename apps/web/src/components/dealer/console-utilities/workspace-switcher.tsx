@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { AccountWorkspace } from '@/features/auth/customer-account';
 import { enterWorkspaceAction } from '@/features/auth/customer-account-actions';
@@ -20,6 +20,26 @@ export function WorkspaceSwitcher({
   const [entering, setEntering] = useState<string | null>(null);
   const [, startEntering] = useNavigationSafeAction();
 
+  useEffect(() => {
+    function closeDisclosure(event: KeyboardEvent) {
+      const disclosure = details.current;
+      if (
+        event.key !== 'Escape' ||
+        !disclosure?.open ||
+        !(event.target instanceof Node) ||
+        !disclosure.contains(event.target)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      disclosure.open = false;
+      disclosure.querySelector('summary')?.focus();
+    }
+    window.addEventListener('keydown', closeDisclosure, true);
+    return () => window.removeEventListener('keydown', closeDisclosure, true);
+  }, []);
+
   if (workspaces.length === 0 && invitations === 0) return null;
 
   return (
@@ -35,15 +55,6 @@ export function WorkspaceSwitcher({
         aria-label={CONSOLE_UTILITIES_TEXT.workspaces}
         className="flex max-h-[min(280px,40dvh)] min-w-0 flex-col overflow-y-auto overscroll-contain border-t border-(--color-divider) py-1"
         onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            if (details.current) {
-              details.current.open = false;
-              details.current.querySelector('summary')?.focus();
-            }
-            return;
-          }
           const items = Array.from(
             event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)'),
           );

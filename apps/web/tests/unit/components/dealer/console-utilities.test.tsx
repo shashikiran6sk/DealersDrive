@@ -1,8 +1,10 @@
 import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConsoleUtilities } from '@/components/dealer/console-utilities';
+import { Dialog } from '@/components/ui/dialog';
 import type { CustomerAccount } from '@/features/auth/customer-account';
 import { navigationState } from '../../../setup';
 
@@ -51,6 +53,36 @@ beforeEach(() => {
 });
 
 describe('ConsoleUtilities', () => {
+  it('closes its disclosure before a containing Radix navigation dialog', async () => {
+    function NavigationDialog() {
+      const [open, setOpen] = useState(false);
+      return (
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Dealer console"
+          trigger={<button type="button">Open navigation</button>}
+        >
+          <ConsoleUtilities account={account} />
+        </Dialog>
+      );
+    }
+    const user = userEvent.setup();
+    render(<NavigationDialog />);
+    const trigger = screen.getByRole('button', { name: 'Open navigation' });
+    await user.click(trigger);
+    const summary = screen.getByText('Switch dealership');
+    await user.click(summary);
+    await user.tab();
+    expect(screen.getByRole('menuitem', { name: /Dealership invitation/ })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'Dealer console' })).toBeInTheDocument();
+    expect(summary.closest('details')).not.toHaveAttribute('open');
+    expect(summary).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
   it('preserves full account logout and its existing home destination', async () => {
     const user = userEvent.setup();
     render(<ConsoleUtilities account={account} />);
