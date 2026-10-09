@@ -99,6 +99,12 @@ decisions, especially RTO classification, GST applicability and evidence minimiz
 
 ### Favicon implementation and owner UAT
 
+The first PR 1 CI run exposed an existing asynchronous enquiry regression-test
+race: the form's button can appear before its scrolling effect runs. The test
+now waits for that same scrolling assertion; the assertion, application behavior,
+test count and CI thresholds are unchanged. Keep the original failed CI log and
+re-run all gates on the correction's final head before starting PR 2.
+
 `node scripts/generate-favicon.mjs` deterministically rasterizes the unchanged DD
 vector contour into browser PNG/ICO assets. The glyph is approximately 25% smaller
 than the previous tight crop, centered on the same rounded black tile with
