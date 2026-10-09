@@ -16,6 +16,86 @@ export const adminDocs: ModuleDocs = {
   operations: [
     {
       method: 'get',
+      path: '/v1/admin/service-locations',
+      operationId: 'getServiceLocations',
+      tag: DOC_TAGS.admin,
+      summary: 'Configured service locations',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/service-locations/history',
+      operationId: 'getServiceLocationHistory',
+      tag: DOC_TAGS.admin,
+      summary: 'Service location audit history',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationHistory' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/service-locations/state/:id',
+      operationId: 'updateServiceState',
+      tag: DOC_TAGS.admin,
+      summary: 'Change state availability',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      params: 'ServiceLocationParam',
+      requestBody: { schema: 'ServiceLocationSettings', required: true },
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/service-locations/district/:id',
+      operationId: 'updateServiceDistrict',
+      tag: DOC_TAGS.admin,
+      summary: 'Change district availability and photography coverage',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      params: 'ServiceLocationParam',
+      requestBody: { schema: 'ServiceLocationSettings', required: true },
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/service-locations/districts',
+      operationId: 'addServiceDistrict',
+      tag: DOC_TAGS.admin,
+      summary: 'Add a government-reviewed canonical district',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      requestBody: { schema: 'AddServiceDistrictInput', required: true },
+      responses: [
+        { status: 201, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+
+    {
+      method: 'get',
       path: '/v1/admin/metrics/overview',
       operationId: 'getAdminOverview',
       tag: DOC_TAGS.admin,

@@ -10,6 +10,20 @@ export const configDocs: ModuleDocs = {
   operations: [
     {
       method: 'get',
+      path: '/v1/service-locations',
+      operationId: 'getOnboardingLocations',
+      tag: DOC_TAGS.config,
+      summary: 'Available onboarding states and districts',
+      description:
+        'Canonical enabled locations. No cache: configuration changes apply on the next request. Photography coverage is a separate district flag.',
+      audience: 'public',
+      responses: [
+        { status: 200, description: 'Available catalogue.', schema: 'ServiceLocationsResponse' },
+      ],
+    },
+
+    {
+      method: 'get',
       path: '/v1/config/public',
       operationId: 'getPublicConfig',
       tag: DOC_TAGS.config,

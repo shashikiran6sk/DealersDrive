@@ -1,3 +1,4 @@
+import { canonicalDistrictFilterSlug } from '@dealers-drive/contracts';
 import {
   distinctServices,
   formatLakh,
@@ -47,7 +48,11 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
       const inDistrict =
         query.district && query.district !== 'all'
-          ? dealers.filter((dealer) => dealer.districtSlug === query.district)
+          ? dealers.filter(
+              (dealer) =>
+                canonicalDistrictFilterSlug(dealer.districtSlug ?? '') ===
+                canonicalDistrictFilterSlug(query.district ?? ''),
+            )
           : dealers;
 
       const cities = citySlugsIn(query.city);
@@ -115,7 +120,12 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
       const cities = citySlugsIn(query.city);
       const inScope = dealers.filter((dealer) => {
-        if (query.district && query.district !== 'all' && dealer.districtSlug !== query.district) {
+        if (
+          query.district &&
+          query.district !== 'all' &&
+          canonicalDistrictFilterSlug(dealer.districtSlug ?? '') !==
+            canonicalDistrictFilterSlug(query.district ?? '')
+        ) {
           return false;
         }
         if (cities.size > 0 && (dealer.citySlug === null || !cities.has(dealer.citySlug))) {

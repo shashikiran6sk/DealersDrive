@@ -1,3 +1,16 @@
+vi.mock('@/features/service-location-actions', () => ({
+  loadServiceLocationsAction: () =>
+    Promise.resolve({
+      data: [
+        {
+          id: 'IN-TN',
+          name: 'Tamil Nadu',
+          districts: [{ id: 'IN-TN-VELLORE', stateId: 'IN-TN', name: 'Vellore' }],
+        },
+      ],
+    }),
+}));
+
 import type {
   AuthSession,
   CompletenessResponse,
@@ -959,19 +972,17 @@ describe('OnboardingWizard — the Business step', () => {
    * The reach of the product used to be a database migration: five towns in
    * one state, and a dealer outside them could not finish this form at all.
    */
-  it('asks for the city and the state as text, both required', async () => {
-    await onBusinessStep();
-
+  it('keeps town or city as text and selects a permitted state', async () => {
+    const user = await onBusinessStep();
     const city = screen.getByLabelText('City');
+    expect(city.tagName).toBe('INPUT');
+    expect(city).toBeRequired();
     const state = screen.getByLabelText('State');
-
-    for (const field of [city, state]) {
-      expect(field.tagName).toBe('INPUT');
-      expect(field).toBeEnabled();
-      expect(field).toBeRequired();
-    }
-    expect(city).toHaveAttribute('name', 'city');
-    expect(state).toHaveAttribute('name', 'state');
+    await waitFor(() => expect(state).toBeEnabled());
+    expect(state.tagName).toBe('SELECT');
+    expect(state).toBeRequired();
+    await user.selectOptions(state, 'Tamil Nadu');
+    expect(state).toHaveValue('Tamil Nadu');
   });
 
   /**
@@ -1050,14 +1061,13 @@ describe('OnboardingWizard — the Business step', () => {
     expect(screen.getByText(/first three on your directory card/i)).toBeInTheDocument();
   });
 
-  it('takes a city and a state the platform has never seen before', async () => {
+  it('accepts any town while restricting state choices to enabled locations', async () => {
     const user = await onBusinessStep();
-
-    await user.type(screen.getByLabelText('City'), 'Hubballi');
-    await user.type(screen.getByLabelText('State'), 'Karnataka');
-
-    expect(screen.getByLabelText('City')).toHaveValue('Hubballi');
-    expect(screen.getByLabelText('State')).toHaveValue('Karnataka');
+    await user.type(screen.getByLabelText('City'), 'Katpadi');
+    await waitFor(() => expect(screen.getByLabelText('State')).toBeEnabled());
+    await user.selectOptions(screen.getByLabelText('State'), 'Tamil Nadu');
+    expect(screen.getByLabelText('City')).toHaveValue('Katpadi');
+    expect(screen.queryByRole('option', { name: 'Karnataka' })).not.toBeInTheDocument();
   });
 
   /**
@@ -1065,18 +1075,19 @@ describe('OnboardingWizard — the Business step', () => {
    * they are: the admin console filters on all three, and a dealership that
    * skipped the question is one the filter would silently omit.
    */
-  it('asks for the district alongside the city and the state', async () => {
+  it('searches and persists a canonical district alongside the separate city', async () => {
     const user = await onBusinessStep();
-
-    const district = screen.getByLabelText('District');
-    expect(district.tagName).toBe('INPUT');
-    expect(district).toHaveAttribute('name', 'district');
-    expect(district).toBeRequired();
-
-    await user.type(district, 'Dharwad');
-    expect(district).toHaveValue('Dharwad');
+    await waitFor(() => expect(screen.getByLabelText('State')).toBeEnabled());
+    await user.selectOptions(screen.getByLabelText('State'), 'Tamil Nadu');
+    const district = screen.getByRole('combobox', { name: 'District' });
+    await user.type(district, 'Vell');
+    await user.click(screen.getByRole('button', { name: 'Vellore' }));
+    expect(district).toHaveValue('Vellore');
     expect(district.closest('form')).toBe(
       screen.getByRole('button', { name: 'Continue' }).closest('form'),
+    );
+    expect(district.closest('form')?.querySelector('input[name="district"]')).toHaveValue(
+      'Vellore',
     );
   });
 

@@ -96,6 +96,12 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
         ) : null}
       </div>
 
+      {dealer.locationReviewRequired ? (
+        <Banner tone="warn" className="mb-2">
+          This legacy location needs review. Confirm the district and state before assigning
+          canonical values; the existing text has been preserved.
+        </Banner>
+      ) : null}
       {message ? (
         <Banner tone="err" className="mb-2">
           {message}

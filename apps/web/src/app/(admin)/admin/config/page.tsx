@@ -1,6 +1,12 @@
-import type { ConfigResponse } from '@dealers-drive/contracts';
+import type {
+  ConfigResponse,
+  ServiceLocationsResponse,
+  ServiceLocationHistory,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import { ServiceLocationsEditor } from '@/features/admin/service-locations-editor';
 
 import { Banner } from '@/components/ui/primitives';
 import { ConfigRow } from '@/features/admin/config-editor';
@@ -12,7 +18,11 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Configuration' };
 
 export default async function AdminConfigPage() {
-  const config = await apiGet<ConfigResponse>('/v1/admin/config', { revalidate: false });
+  const [config, locations, history] = await Promise.all([
+    apiGet<ConfigResponse>('/v1/admin/config', { revalidate: false }),
+    apiGet<ServiceLocationsResponse>('/v1/admin/service-locations', { revalidate: false }),
+    apiGet<ServiceLocationHistory>('/v1/admin/service-locations/history', { revalidate: false }),
+  ]);
 
   const inUse = config.data.filter((entry) => entry.readBy !== null);
   const dormant = config.data.filter((entry) => entry.readBy === null);
@@ -34,6 +44,8 @@ export default async function AdminConfigPage() {
       >
         {CONFIG_PAGE_TEXT.membersMovedBody}
       </Banner>
+
+      <ServiceLocationsEditor initial={locations} history={history} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[17px]">Platform settings</h2>

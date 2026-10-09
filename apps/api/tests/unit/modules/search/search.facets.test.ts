@@ -28,6 +28,19 @@ const DEALERS: PublicDealerRow[] = [
 ];
 
 describe('the location scope', () => {
+  it('resolves old district filter URLs to canonical districts after backfill', () => {
+    const dealer = {
+      id: 'legacy',
+      slug: 'legacy',
+      brandName: 'Legacy QA',
+      city: 'Preserved Town',
+      district: 'Tirupathur',
+    };
+    expect(locationScope([dealer], { district: 'tirupattur' }).resultIds).toEqual(['legacy']);
+    expect(
+      locationScope([{ ...dealer, district: 'Tirupattur' }], { district: 'tirupathur' }).resultIds,
+    ).toEqual(['legacy']);
+  });
   it('is no restriction at all with no district, town or dealer', () => {
     const scope = locationScope(DEALERS, {});
     expect(scope.resultIds).toBeNull();
