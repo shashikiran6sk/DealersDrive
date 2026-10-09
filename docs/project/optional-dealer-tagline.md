@@ -43,3 +43,18 @@ migration is executed by this campaign.
    Attempt a forged approval using a dealer cookie and confirm rejection.
 6. Review phone/desktop forms and the removal comparison. No public “No tagline provided”
    placeholder or marketing text should appear when no tagline exists.
+
+## Post-creation CI infrastructure correction
+
+GitHub's original run and retry stopped before tests/scans when unauthenticated Docker Hub
+pulls were rate-limited. The same PR therefore corrects the required test infrastructure:
+PostgreSQL 16 Alpine uses its digest-pinned Docker Official Image on Amazon ECR Public;
+Gitleaks uses its publisher's digest-pinned GHCR image, whose digest matches the preceding
+successful Docker Hub run; Semgrep 1.179.0, matching that successful container release,
+is installed from its official Python distribution. All seven rule packs, severity gates,
+full-history secret scanning, redaction, check names and read-only job permissions remain.
+Scanner execution errors now fail the job explicitly. No branch protection changed.
+
+Distribution references: [Docker Official Images on ECR Public](https://aws.amazon.com/blogs/containers/docker-official-images-now-available-on-amazon-elastic-container-registry-public/),
+[Gitleaks official distributions](https://github.com/gitleaks/gitleaks),
+[Semgrep installation](https://github.com/semgrep/semgrep).
