@@ -1,0 +1,16 @@
+apps/api/src/modules/dealers/dealers.docs.ts
+apps/api/src/modules/dealers/dealers.public.service.ts
+apps/api/src/modules/dealers/dealers.service.ts
+apps/api/tests/dealer-approval-gate.test.ts
+apps/api/tests/dealer-onboarding.test.ts
+apps/api/tests/unit/modules/dealers/dealers.public.service.test.ts
+apps/api/tests/unit/modules/dealers/dealers.service.test.ts
+apps/web/public/brand/dealer-directory-cover.svg
+apps/web/src/components/dealers/dealer-card/dealer-card-cover.tsx
+apps/web/src/components/dealers/dealer-card/dealer-card.constants.ts
+apps/web/src/features/auth/yard-photo-uploader/yard-photo-uploader.tsx
+apps/web/tests/unit/components/dealers/directory.test.tsx
+apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx
+docs/project/dealer-directory-image.md
+packages/contracts/src/public.ts
+turbo.json
