@@ -23,21 +23,21 @@ user-before-dealer-before-proof lock order is consistent with identity writes.
 
 ## Actual executed results
 
-| Category             | Result                               | Artifact                                                           |
-| -------------------- | ------------------------------------ | ------------------------------------------------------------------ |
-| Formatting/lint/docs | PASS before and after PR             | `pre-pr-lint.txt`, `post-pr-lint.txt`                              |
-| Typecheck            | PASS all packages/sandbox            | Pre/post typecheck logs                                            |
-| Contracts            | PASS — 428                           | Pre/post full test logs                                            |
-| Frontend             | PASS — 1,489                         | Pre/post full test logs                                            |
-| API unit/integration | PASS — 3,043                         | Pre/post full test logs; real PostgreSQL                           |
-| Complete suite       | PASS — 4,960                         | Existing coverage gates retained                                   |
-| API coverage         | PASS — 96.97% lines, 90.35% branches | Post-PR test log                                                   |
-| Production build     | PASS uncached before/after           | Pre/post build logs                                                |
-| Migration rehearsal  | PASS five scenarios                  | `migration-rehearsal.txt` and full suite                           |
-| Security boundaries  | PASS                                 | `security-boundaries.txt`; extended full suite                     |
-| Browser/UAT          | PASS actual cookie-auth sales route  | `post-pr/browser-results.json`                                     |
-| Responsive           | PASS 320/390/768/1280px              | No overflow; actual field error and proof renewal, values retained |
-| Required GitHub CI   | PENDING final head                   | Await final job; all available scans/preview are successful        |
+| Category             | Result                               | Artifact                                                                        |
+| -------------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| Formatting/lint/docs | PASS before and after PR             | `pre-pr-lint.txt`, `post-pr-lint.txt`                                           |
+| Typecheck            | PASS all packages/sandbox            | Pre/post typecheck logs                                                         |
+| Contracts            | PASS — 428                           | Pre/post full test logs                                                         |
+| Frontend             | PASS — 1,489                         | Pre/post full test logs                                                         |
+| API unit/integration | PASS — 3,043                         | Pre/post full test logs; real PostgreSQL                                        |
+| Complete suite       | PASS — 4,960                         | Existing coverage gates retained                                                |
+| API coverage         | PASS — 96.97% lines, 90.35% branches | Post-PR test log                                                                |
+| Production build     | PASS uncached before/after           | Pre/post build logs                                                             |
+| Migration rehearsal  | PASS five scenarios                  | `migration-rehearsal.txt` and full suite                                        |
+| Security boundaries  | PASS                                 | `security-boundaries.txt`; extended full suite                                  |
+| Browser/UAT          | PASS actual cookie-auth sales route  | `post-pr/browser-results.json`                                                  |
+| Responsive           | PASS 320/390/768/1280px              | No overflow; actual field error and proof renewal, values retained              |
+| Required GitHub CI   | PASS final head                      | All required checks, Terraform and Vercel preview successful on this exact head |
 
 Local read-only inventory: 126 development dealer records; zero canonical-user,
 multiple-active-owner and primary-dealer conflict groups. Only counts were
@@ -76,7 +76,7 @@ API changes: conflict responses, guarded identity updates and fresh proof checks
 UI changes: feedback and retained details through renewed mobile proof.
 Security: no raw email in rejection events, no inferred ownership from typed email.
 Final local failures: zero. Checks not executed: real provider/production/device UAT.
-Final CI run/HEAD: pending confirmation; do not start PR 3 yet.
+Final CI and Security run/HEAD verified in `ci-run.json`, `security-run.json` and `github-status.json`. PR 3 may now start from this head.
 MERGED: NO.
 
 Owner UAT: enter a case/whitespace variant of a registered primary email as a
