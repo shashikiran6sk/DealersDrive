@@ -1,0 +1,58 @@
+
+ RUN  v5.0.0 /tmp/dealersdrive-mobile-corrections-baseline/apps/web
+
+ ❯ tests/unit/components/search/range-presets-coexistence.test.tsx (2 tests | 2 failed) 514ms
+   ❯ desktop rail and mobile sheet coexistence (2)
+     × keeps the first price selection checked when server results arrive 426ms
+     × keeps the first km selection checked when server results arrive 85ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/components/search/range-presets-coexistence.test.tsx > desktop rail and mobile sheet coexistence > keeps the first price selection checked when server results arrive
+Error: expect(element).toBeChecked()
+
+Received element is not checked:
+  <input
+  aria-label="Under 5 lakh (12 cars)"
+  class="h-[15px] w-[15px] flex-none accent-(--color-accent) disabled:cursor-not-allowed"
+  id="sheet-price-0"
+  name="price"
+  type="radio"
+/>
+ ❯ tests/unit/components/search/range-presets-coexistence.test.tsx:48:77
+     46|       const mobile = within(screen.getByRole('region', { name: 'Mobile…
+     47|       await user.click(mobile.getByRole('radio', { name: 'Under 5 lakh…
+     48|       expect(mobile.getByRole('radio', { name: 'Under 5 lakh (12 cars)…
+       |                                                                             ^
+     49|       act(() => apply());
+     50|       expect(desktop.getByRole('radio', { name: 'Under 5 lakh (12 cars…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/components/search/range-presets-coexistence.test.tsx > desktop rail and mobile sheet coexistence > keeps the first km selection checked when server results arrive
+Error: expect(element).toBeChecked()
+
+Received element is not checked:
+  <input
+  aria-label="Under 5 lakh (12 cars)"
+  class="h-[15px] w-[15px] flex-none accent-(--color-accent) disabled:cursor-not-allowed"
+  id="sheet-km-0"
+  name="km"
+  type="radio"
+/>
+ ❯ tests/unit/components/search/range-presets-coexistence.test.tsx:48:77
+     46|       const mobile = within(screen.getByRole('region', { name: 'Mobile…
+     47|       await user.click(mobile.getByRole('radio', { name: 'Under 5 lakh…
+     48|       expect(mobile.getByRole('radio', { name: 'Under 5 lakh (12 cars)…
+       |                                                                             ^
+     49|       act(() => apply());
+     50|       expect(desktop.getByRole('radio', { name: 'Under 5 lakh (12 cars…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  07:46:50
+   Duration  3.28s (environment 41%, transform 23%, tests 17%, import 11%, setup 8%)
+

@@ -1,6 +1,6 @@
 # Mobile UX corrections and dealer console cleanup
 
-This document records the original pre-merge readiness checkpoint. The subsequent enquiry/address fixes and the owner-authorized sequential merges are recorded in [the follow-up evidence](follow-up-enquiry-address/README.md) and the final merge report.
+This document records the original pre-merge readiness checkpoint. The subsequent enquiry/address fixes and the owner-authorized sequential merges are recorded in [the follow-up evidence](follow-up-enquiry-address/README.md) and [the final merge report](MERGE-REPORT.md).
 
 [Full A–G readiness report](READINESS.md) · [Mobile PR #285](https://github.com/shashikiran6sk/DealersDrive/pull/285) · [Console PR #286](https://github.com/shashikiran6sk/DealersDrive/pull/286)
 

@@ -1,0 +1,32 @@
+$ pnpm format:check && turbo run lint && pnpm docs:check
+$ prettier --check "**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}"
+Checking formatting...
+All matched files use Prettier code style!
+• turbo 2.10.12
+
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running lint in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/config:lint: cache hit, replaying logs 79835ae1aa61f1f8
+@dealers-drive/config:lint: $ echo "@dealers-drive/config: nothing to lint"
+@dealers-drive/config:lint: @dealers-drive/config: nothing to lint
+@dealers-drive/contracts:lint: cache hit, replaying logs adf86bf159e73f47
+@dealers-drive/contracts:lint: $ eslint .
+@dealers-drive/contracts:build: cache hit, replaying logs da59ad6814a9965f
+@dealers-drive/contracts:build: $ tsc -p tsconfig.build.json
+@dealers-drive/web:lint: cache miss, executing 041040eebf368260
+@dealers-drive/api:lint: cache hit, replaying logs d3da3021f03fb198
+@dealers-drive/sandbox:lint: cache hit, replaying logs b3ad6e0ddce379a1
+@dealers-drive/api:lint: $ eslint .
+@dealers-drive/sandbox:lint: $ eslint .
+@dealers-drive/sandbox:lint: Pages directory cannot be found at /workspace/DealersDrive/apps/sandbox/pages or /workspace/DealersDrive/apps/sandbox/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
+@dealers-drive/web:lint: $ eslint .
+
+ Tasks:    6 successful, 6 total
+Cached:    5 cached, 6 total
+  Time:    37.787s 
+
+$ node scripts/check-docs.mjs
+checked 15 script reference(s) and 93 path(s) across 3 document(s)  (baseline ref 'legacy/pre-reorg' unreachable — forward references not verified)
+no stale references
