@@ -99,7 +99,32 @@ for (const [index, width] of [320, 390, 768, 1280].entries()) {
     await adminPage.getByText('Configuration audit history', { exact: true }).click();
     await adminPage.getByText('Configuration audit history', { exact: true }).scrollIntoViewIfNeeded();
     await adminPage.screenshot({ path: `${out}/configuration-audit-history.png`, mask: masks(adminPage), maskColor: '#e5e7eb' });
-    results.push({ width, actualConfigurationPersistence: true, photographyIndependent: true, availabilityReflectedImmediately: true });
+    await adminPage.locator('#configured-state').selectOption('IN-WB');
+    const stateForm = section.getByRole('button', { name: 'Save state' }).locator('..');
+    await stateForm.getByLabel('New onboarding').check();
+    await stateForm.getByRole('button', { name: 'Save state' }).click();
+    const deadline = Date.now() + 10000;
+    while (Date.now() < deadline) {
+      const enabled = await adminContext.request.get('http://127.0.0.1:4001/v1/service-locations');
+      if ((await enabled.json()).data.some((item) => item.id === 'IN-WB')) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    const numericContext = await authenticated('sales', 390);
+    const numericPage = await numericContext.newPage();
+    await numericPage.goto('http://127.0.0.1:3001/sales/dealers/new', { waitUntil: 'networkidle' });
+    await phoneProof(numericPage, numericContext, '9000041999');
+    await numericPage.waitForFunction(() => !document.querySelector('#assisted-state').disabled);
+    await numericPage.locator('#assisted-state').selectOption('West Bengal');
+    const numericDistrict = numericPage.getByRole('combobox', { name: 'District' });
+    await numericDistrict.fill('24');
+    await numericPage.getByRole('button', { name: 'North 24 Parganas', exact: true }).click();
+    assert.equal(await numericPage.locator('input[name=district]').inputValue(), 'North 24 Parganas');
+    await numericDistrict.scrollIntoViewIfNeeded();
+    await numericPage.screenshot({ path: `${out}/numeric-district-390.png`, mask: masks(numericPage), maskColor: '#e5e7eb' });
+    await numericContext.close();
+    await stateForm.getByLabel('New onboarding').uncheck();
+    await stateForm.getByRole('button', { name: 'Save state' }).click();
+    results.push({ width, actualConfigurationPersistence: true, photographyIndependent: true, availabilityReflectedImmediately: true, numericDistrictUiSelection: 'North 24 Parganas' });
   }
   results.push({ width, adminConfiguredStates: 36, serviceLocationSectionFitsViewport: true });
   await adminContext.close();

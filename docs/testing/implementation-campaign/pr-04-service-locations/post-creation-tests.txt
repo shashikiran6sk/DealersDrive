@@ -8,38 +8,38 @@
    • Running test in 5 packages
    • Remote caching disabled
 
-@dealers-drive/contracts:test: cache bypass, force executing 8c3f05bb334aa0f3
-@dealers-drive/contracts:build: cache bypass, force executing 61828e1ef22649e2
-@dealers-drive/contracts:test:
-@dealers-drive/contracts:test: > @dealers-drive/contracts@0.0.0 test <workspace>/packages/contracts
-@dealers-drive/contracts:test: > vitest run --coverage
-@dealers-drive/contracts:test:
+@dealers-drive/contracts:test: cache bypass, force executing 27bb3be11c329021
+@dealers-drive/contracts:build: cache bypass, force executing f6128d30d30f43be
 @dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <workspace>/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
 @dealers-drive/contracts:build:
 @dealers-drive/contracts:test:
+@dealers-drive/contracts:test: > @dealers-drive/contracts@0.0.0 test <workspace>/packages/contracts
+@dealers-drive/contracts:test: > vitest run --coverage
+@dealers-drive/contracts:test:
+@dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  RUN  v5.0.3 <workspace>/packages/contracts
 @dealers-drive/contracts:test:       Coverage enabled with v8
 @dealers-drive/contracts:test:
-@dealers-drive/web:test: cache bypass, force executing e3a60d26436e86ec
-@dealers-drive/api:test: cache bypass, force executing eb6925090d9805cd
+@dealers-drive/api:test: cache bypass, force executing 02eb31f7572102e1
+@dealers-drive/web:test: cache bypass, force executing c6c86898a2b96168
+@dealers-drive/web:test:
+@dealers-drive/web:test: > @dealers-drive/web@0.0.0 test <workspace>/apps/web
+@dealers-drive/web:test: > vitest run
+@dealers-drive/web:test:
 @dealers-drive/api:test:
 @dealers-drive/api:test: > @dealers-drive/api@0.0.0 test <workspace>/apps/api
 @dealers-drive/api:test: > vitest run --coverage
 @dealers-drive/api:test:
 @dealers-drive/web:test:
-@dealers-drive/web:test: > @dealers-drive/web@0.0.0 test <workspace>/apps/web
-@dealers-drive/web:test: > vitest run
-@dealers-drive/web:test:
-@dealers-drive/web:test:
 @dealers-drive/web:test:  RUN  v5.0.3 <workspace>/apps/web
 @dealers-drive/web:test:
 @dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  Test Files  16 passed (16)
-@dealers-drive/contracts:test:       Tests  444 passed (444)
-@dealers-drive/contracts:test:    Start at  19:42:47
-@dealers-drive/contracts:test:    Duration  493ms (import 49%, transform 33%, worker 9%, tests 8%)
+@dealers-drive/contracts:test:       Tests  445 passed (445)
+@dealers-drive/contracts:test:    Start at  20:17:54
+@dealers-drive/contracts:test:    Duration  530ms (import 47%, transform 34%, worker 11%, tests 8%)
 @dealers-drive/contracts:test:
 @dealers-drive/contracts:test:  % Coverage report from v8
 @dealers-drive/contracts:test:
@@ -211,74 +211,74 @@
 @dealers-drive/web:test:
 @dealers-drive/web:test:  Test Files  128 passed (128)
 @dealers-drive/web:test:       Tests  1506 passed (1506)
-@dealers-drive/web:test:    Start at  19:42:47
-@dealers-drive/web:test:    Duration  19.16s (environment 38%, tests 35%, setup 10%, import 8%, transform 7%)
+@dealers-drive/web:test:    Start at  20:17:55
+@dealers-drive/web:test:    Duration  19.80s (environment 39%, tests 36%, setup 10%, import 8%, transform 6%, worker 1%)
 @dealers-drive/web:test:
-@dealers-drive/web:test: Environment  jsdom was created 128 times · 61.16s total, 38% of tracked time
+@dealers-drive/web:test: Environment  jsdom was created 128 times · 64.19s total, 39% of tracked time
 @dealers-drive/web:test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 @dealers-drive/web:test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
 @dealers-drive/web:test:
-@dealers-drive/api:test: (node:99348) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3513) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99353) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3524) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99356) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3530) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99362) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3534) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99367) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3538) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99369) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3545) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99374) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3547) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99377) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3551) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99382) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3565) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99385) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3569) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99396) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3570) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99397) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3575) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99402) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3577) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99404) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3578) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99408) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3584) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99409) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3585) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99410) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3594) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99424) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3606) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99433) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3610) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99434) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3612) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99435) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3613) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99443) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3619) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
-@dealers-drive/api:test: (node:99446) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+@dealers-drive/api:test: (node:3622) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 @dealers-drive/api:test: (Use `node --trace-deprecation ...` to show where the warning was created)
 @dealers-drive/api:test:
 @dealers-drive/api:test:  Test Files  155 passed (155)
-@dealers-drive/api:test:       Tests  3103 passed (3103)
-@dealers-drive/api:test:    Start at  19:42:48
-@dealers-drive/api:test:    Duration  100.24s (tests 65%, import 22%, transform 13%, worker 1%)
+@dealers-drive/api:test:       Tests  3104 passed (3104)
+@dealers-drive/api:test:    Start at  20:17:55
+@dealers-drive/api:test:    Duration  102.54s (tests 65%, import 24%, transform 10%, worker 1%)
 @dealers-drive/api:test:
 @dealers-drive/api:test:  % Coverage report from v8
 @dealers-drive/api:test:
 @dealers-drive/api:test: =============================== Coverage summary ===============================
-@dealers-drive/api:test: Statements   : 95.93% ( 6462/6736 )
-@dealers-drive/api:test: Branches     : 90.2% ( 4274/4738 )
+@dealers-drive/api:test: Statements   : 95.94% ( 6463/6736 )
+@dealers-drive/api:test: Branches     : 90.24% ( 4276/4738 )
 @dealers-drive/api:test: Functions    : 97.98% ( 1801/1838 )
-@dealers-drive/api:test: Lines        : 96.96% ( 5908/6093 )
+@dealers-drive/api:test: Lines        : 96.98% ( 5909/6093 )
 @dealers-drive/api:test: ================================================================================
 
  Tasks:    4 successful, 4 total
 Cached:    0 cached, 4 total
-  Time:    1m41.219s
+  Time:    1m43.606s

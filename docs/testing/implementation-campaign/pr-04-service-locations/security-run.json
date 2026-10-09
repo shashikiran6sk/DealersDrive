@@ -1,134 +1,134 @@
 {
   "conclusion": "success",
-  "headSha": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+  "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
   "jobs": [
     {
-      "completedAt": "2026-10-09T19:43:32Z",
+      "completedAt": "2026-10-09T20:18:13Z",
       "conclusion": "success",
-      "databaseId": 113994753580,
+      "databaseId": 114007777390,
       "name": "semgrep",
-      "startedAt": "2026-10-09T19:42:34Z",
+      "startedAt": "2026-10-09T20:17:02Z",
       "status": "completed",
       "steps": [
         {
-          "completedAt": "2026-10-09T19:42:35Z",
+          "completedAt": "2026-10-09T20:17:03Z",
           "conclusion": "success",
           "name": "Set up job",
           "number": 1,
-          "startedAt": "2026-10-09T19:42:34Z",
+          "startedAt": "2026-10-09T20:17:03Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:42:53Z",
+          "completedAt": "2026-10-09T20:17:15Z",
           "conclusion": "success",
           "name": "Initialize containers",
           "number": 2,
-          "startedAt": "2026-10-09T19:42:35Z",
+          "startedAt": "2026-10-09T20:17:03Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:42:55Z",
+          "completedAt": "2026-10-09T20:17:17Z",
           "conclusion": "success",
           "name": "Run actions/checkout@v7",
           "number": 3,
-          "startedAt": "2026-10-09T19:42:53Z",
+          "startedAt": "2026-10-09T20:17:15Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:30Z",
+          "completedAt": "2026-10-09T20:18:10Z",
           "conclusion": "success",
           "name": "Scan",
           "number": 4,
-          "startedAt": "2026-10-09T19:42:55Z",
+          "startedAt": "2026-10-09T20:17:17Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:30Z",
+          "completedAt": "2026-10-09T20:18:10Z",
           "conclusion": "success",
           "name": "Report",
           "number": 5,
-          "startedAt": "2026-10-09T19:43:30Z",
+          "startedAt": "2026-10-09T20:18:10Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:30Z",
+          "completedAt": "2026-10-09T20:18:10Z",
           "conclusion": "success",
           "name": "Post Run actions/checkout@v7",
           "number": 9,
-          "startedAt": "2026-10-09T19:43:30Z",
+          "startedAt": "2026-10-09T20:18:10Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:30Z",
+          "completedAt": "2026-10-09T20:18:11Z",
           "conclusion": "success",
           "name": "Stop containers",
           "number": 10,
-          "startedAt": "2026-10-09T19:43:30Z",
+          "startedAt": "2026-10-09T20:18:10Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:30Z",
+          "completedAt": "2026-10-09T20:18:11Z",
           "conclusion": "success",
           "name": "Complete job",
           "number": 11,
-          "startedAt": "2026-10-09T19:43:30Z",
+          "startedAt": "2026-10-09T20:18:11Z",
           "status": "completed"
         }
       ],
-      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916/job/113994753580"
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899/job/114007777390"
     },
     {
-      "completedAt": "2026-10-09T19:43:27Z",
+      "completedAt": "2026-10-09T20:17:55Z",
       "conclusion": "success",
-      "databaseId": 113994753913,
+      "databaseId": 114007777738,
       "name": "gitleaks",
-      "startedAt": "2026-10-09T19:42:34Z",
+      "startedAt": "2026-10-09T20:17:01Z",
       "status": "completed",
       "steps": [
         {
-          "completedAt": "2026-10-09T19:42:35Z",
+          "completedAt": "2026-10-09T20:17:02Z",
           "conclusion": "success",
           "name": "Set up job",
           "number": 1,
-          "startedAt": "2026-10-09T19:42:35Z",
+          "startedAt": "2026-10-09T20:17:02Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:42:41Z",
+          "completedAt": "2026-10-09T20:17:08Z",
           "conclusion": "success",
           "name": "Run actions/checkout@v7",
           "number": 2,
-          "startedAt": "2026-10-09T19:42:35Z",
+          "startedAt": "2026-10-09T20:17:02Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:25Z",
+          "completedAt": "2026-10-09T20:17:53Z",
           "conclusion": "success",
           "name": "Scan the repository and its history",
           "number": 3,
-          "startedAt": "2026-10-09T19:42:41Z",
+          "startedAt": "2026-10-09T20:17:08Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:26Z",
+          "completedAt": "2026-10-09T20:17:53Z",
           "conclusion": "success",
           "name": "Post Run actions/checkout@v7",
           "number": 6,
-          "startedAt": "2026-10-09T19:43:25Z",
+          "startedAt": "2026-10-09T20:17:53Z",
           "status": "completed"
         },
         {
-          "completedAt": "2026-10-09T19:43:26Z",
+          "completedAt": "2026-10-09T20:17:53Z",
           "conclusion": "success",
           "name": "Complete job",
           "number": 7,
-          "startedAt": "2026-10-09T19:43:26Z",
+          "startedAt": "2026-10-09T20:17:53Z",
           "status": "completed"
         }
       ],
-      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916/job/113994753913"
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899/job/114007777738"
     }
   ],
   "status": "completed",
-  "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916"
+  "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899"
 }

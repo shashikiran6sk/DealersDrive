@@ -8,13 +8,13 @@
    • Running build in 5 packages
    • Remote caching disabled
 
-@dealers-drive/contracts:build: cache bypass, force executing 72d491d8c558d604
+@dealers-drive/contracts:build: cache bypass, force executing 60f80f6d6b9eb56a
 @dealers-drive/contracts:build:
 @dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <workspace>/packages/contracts
 @dealers-drive/contracts:build: > tsc -p tsconfig.build.json
 @dealers-drive/contracts:build:
-@dealers-drive/api:build: cache bypass, force executing ce3ddb94ace60617
-@dealers-drive/web:build: cache bypass, force executing 8f32da2e9ec240e4
+@dealers-drive/web:build: cache bypass, force executing 54aa2ab053b188db
+@dealers-drive/api:build: cache bypass, force executing 2151c51285c9b1b2
 @dealers-drive/api:build:
 @dealers-drive/api:build: > @dealers-drive/api@0.0.0 build <workspace>/apps/api
 @dealers-drive/api:build: > tsc -p tsconfig.build.json
@@ -26,7 +26,7 @@
 @dealers-drive/web:build:    ▲ Next.js 15.5.27
 @dealers-drive/web:build:
 @dealers-drive/web:build:    Creating an optimized production build ...
-@dealers-drive/web:build:  ✓ Compiled successfully in 3.6s
+@dealers-drive/web:build:  ✓ Compiled successfully in 3.8s
 @dealers-drive/web:build:    Skipping linting
 @dealers-drive/web:build:    Checking validity of types ...
 @dealers-drive/web:build:    Collecting page data ...
@@ -58,10 +58,10 @@
 @dealers-drive/web:build: [TypeError: fetch failed] {
 @dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
 @dealers-drive/web:build: }
+@dealers-drive/web:build:  ✓ Generating static pages (18/18)
 @dealers-drive/web:build: [TypeError: fetch failed] {
 @dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
 @dealers-drive/web:build: }
-@dealers-drive/web:build:  ✓ Generating static pages (18/18)
 @dealers-drive/web:build: [TypeError: fetch failed] {
 @dealers-drive/web:build:   [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
 @dealers-drive/web:build: }
@@ -156,4 +156,4 @@
 
  Tasks:    3 successful, 3 total
 Cached:    0 cached, 3 total
-  Time:    13.875s
+  Time:    13.144s

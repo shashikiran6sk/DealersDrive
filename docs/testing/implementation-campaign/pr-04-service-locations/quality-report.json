@@ -3,26 +3,26 @@
   "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/291",
   "branch": "feat/dynamic-service-locations",
   "baseBranch": "feat/standard-dealer-directory-image",
-  "headSha": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+  "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
   "implementationCompleted": true,
   "filesChanged": 52,
   "migrations": [
     "20261010090000_service_locations",
     "20261010090100_service_location_audit_index"
   ],
-  "testsExecuted": 5053,
-  "testsPassed": 5053,
+  "testsExecuted": 5055,
+  "testsPassed": 5055,
   "testsFailed": 0,
   "suiteCounts": {
-    "api": 3103,
+    "api": 3104,
     "web": 1506,
-    "contracts": 444
+    "contracts": 445
   },
   "postCreationBrowser": "PASS",
   "requiredCiStatus": "PASS",
-  "ciHeadSha": "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
-  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847",
-  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916",
+  "ciHeadSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985927019",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899",
   "evidence": "docs/testing/implementation-campaign/pr-04-service-locations",
   "knownLimitations": [
     "Initial district master is Tamil Nadu; future districts require reviewed admin entries",

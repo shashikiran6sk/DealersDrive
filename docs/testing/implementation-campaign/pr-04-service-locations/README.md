@@ -1,7 +1,7 @@
 # PR 4 — canonical service locations
 
 Branch: `feat/dynamic-service-locations` · Base: `feat/standard-dealer-directory-image` (#289)
-Implementation head: `7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba`
+Implementation head: `aaceb0172c85d1d22b172452f500103c9a873edc`
 PR: [#291](https://github.com/shashikiran6sk/DealersDrive/pull/291). State: **OPEN**, unmerged. No production deployment.
 
 ## Implementation
@@ -20,7 +20,7 @@ snapshot before any owner-controlled rollout. No production migration was run. D
 
 ## Before creation — executed
 
-- `TZ=UTC APP_ENV=local pnpm run test --force --env-mode=loose`: **5,050 PASS** — API 3,103,
+- `TZ=UTC APP_ENV=local pnpm run test --force --env-mode=loose`: **5,050 PASS** — API 3,104,
   web 1,506, contracts 441. No cached tests in this final run.
 - `pnpm lint`, `pnpm run typecheck`, `pnpm build`: PASS.
 - Prisma generation and `prisma validate`: PASS.
@@ -34,28 +34,30 @@ snapshot before any owner-controlled rollout. No production migration was run. D
   `/cars`/`/dealers` filter routes. Before screenshot is the actual parent build.
 - Scoped security: real session/permission routing, moderator refusal, forged locations,
   database FK enforcement, lost-update conflict, and admission/disable locking PASS.
-- Final API coverage: lines 96.96%, branches 90.22%; required 90% gate retained.
+- Final API coverage: lines 96.98%, branches 90.22%; required 90% gate retained.
 
 ## After creation — executed on final head
+
+Final expansion review also found a letters-only name restriction rejecting North 24 Parganas. The correction accepts numeric district names while preserving length/input safeguards. Real API tests now cover reviewed West Bengal district creation and dealer admission; browser UAT covers its numeric selection. This was verified against [the district administration](https://north24parganas.gov.in/).
 
 - Additional adversarial input probing found that malformed government-source URLs threw
   `TypeError` rather than normal validation errors. Corrected in the same PR, with three
   new contract cases plus API and server-action regression coverage. Also enlarged mobile
   configuration save/checkbox hit areas to 44 pixels.
 - After commit/push, fresh `pnpm run test --force --env-mode=loose` with `TZ=UTC APP_ENV=local`:
-  **5,053 PASS** — API 3,103, web 1,506, contracts 444; no cached tests.
+  **5,055 PASS** — API 3,104, web 1,506, contracts 445; no cached tests.
 - `pnpm lint`, `pnpm run typecheck`, `pnpm run build --force`: PASS. Production builds
   executed with caches bypassed. Prisma generation/validation: PASS.
 - Post-creation browser UAT on the final production build: PASS at all four widths,
   including real registration persistence, settings persistence, independent photography,
   availability changes, old public filter routes, keyboard/first-click selection, malformed
   API URL rejection, and measured mobile save controls of at least 44 pixels.
-- Final API coverage: lines **96.96%**, branches **90.20%**; existing threshold unchanged.
-- All required checks passed on the exact final SHA. [CI](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055847)
-  and [Security](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37982055916).
+- Final API coverage: lines **96.98%**, branches **90.24%**; existing threshold unchanged.
+- All required checks passed on the exact final SHA. [CI](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985927019)
+  and [Security](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899).
   Dependency audit, semgrep, gitleaks, Terraform validation and Vercel preview also passed.
 - `deployments.json` confirms Preview with `production_environment=false` for this SHA.
-- Base/head, two incremental commits, 52-file comparison, clean worktree, and unmerged state
+- Base/head, three incremental commits, 52-file comparison, clean worktree, and unmerged state
   were verified. Final local failures: zero. Outstanding blockers: none for this PR.
 
 ## Limitations and owner review
