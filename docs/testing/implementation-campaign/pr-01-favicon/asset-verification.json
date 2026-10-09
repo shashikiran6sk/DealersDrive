@@ -1,0 +1,30 @@
+{
+  "oldBounds": {
+    "width": 388,
+    "height": 272,
+    "centerX": 255.5,
+    "centerY": 255.5
+  },
+  "newBounds": {
+    "width": 291,
+    "height": 204,
+    "centerX": 255,
+    "centerY": 255.5
+  },
+  "widthRatio": 0.75,
+  "heightRatio": 0.75,
+  "alphaPixelsChanged": 0,
+  "sizes": [16, 32, 48],
+  "unchanged": [
+    "apps/web/public/brand/dealers-drive-dark.png",
+    "apps/web/public/brand/dealers-drive-light.png",
+    "apps/web/public/brand/dealers-drive-dark.svg",
+    "apps/web/public/brand/dealers-drive-light.svg",
+    "apps/web/src/app/apple-icon.png",
+    "apps/web/src/app/manifest.ts",
+    "apps/web/public/brand/icon-192.png",
+    "apps/web/public/brand/icon-512.png",
+    "apps/web/public/brand/icon-maskable-512.png"
+  ],
+  "result": "PASS"
+}

@@ -1,0 +1,77 @@
+{
+  "autoMergeRequest": null,
+  "baseRefName": "main",
+  "headRefName": "feat/dd-favicon-sizing",
+  "headRefOid": "6bc012858d389a113790e8c9aee6f196f333de86",
+  "isDraft": false,
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289295",
+      "name": "lint · typecheck · test · build",
+      "startedAt": "2026-10-09T15:20:14Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T15:21:32Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925069/job/113889294308",
+      "name": "semgrep",
+      "startedAt": "2026-10-09T15:20:14Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T15:20:27Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289797",
+      "name": "terraform fmt / validate",
+      "startedAt": "2026-10-09T15:20:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T15:21:00Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925069/job/113889294680",
+      "name": "gitleaks",
+      "startedAt": "2026-10-09T15:20:14Z",
+      "status": "COMPLETED",
+      "workflowName": "Security"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T15:20:46Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289791",
+      "name": "dependency audit",
+      "startedAt": "2026-10-09T15:20:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-10-09T15:19:55Z",
+      "state": "PENDING",
+      "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/EJmZLvFF8zP1V9j6R4vTwETQn7Ab"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T15:19:56Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "startedAt": "2026-10-09T15:19:56Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ]
+}
