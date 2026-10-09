@@ -110,5 +110,11 @@ secrets, API/worker-only rollout, readiness, stdout/Loki/traceId/metrics and rol
 
 ## CI
 
-Final job results and links will be retained in `ci-results.json` after completion.
-The product PR must remain open and unmerged.
+All five workflow jobs passed on the final product commit: repository
+lint/typecheck/test/build, dependency audit, Terraform formatting/validation,
+Semgrep, and Gitleaks. The additional Vercel status also passed.
+[CI #530](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983818)
+and [Security #730](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983777)
+completed successfully. Final results are in `ci-results.json`; the full CI
+verification log is in `ci-verify-log.txt`. The product PR remains open and
+unmerged.
