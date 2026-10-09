@@ -176,6 +176,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       status: row.status,
       statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
       tagline: row.tagline,
+      taglineChanged: row.taglineChanged || row.tagline !== null,
       specialities: row.specialities,
       submittedAtLabel: formatDate(row.createdAt),
       reviewedAtLabel: row.reviewedAt ? formatDate(row.reviewedAt) : null,
@@ -327,8 +328,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         await this.update(dealerId, { establishedYear: input.establishedYear });
       }
 
-      const tagline =
-        input.tagline === undefined || input.tagline === dealer.tagline ? null : input.tagline;
+      const taglineChanged = input.tagline !== undefined && input.tagline !== dealer.tagline;
+      const tagline = taglineChanged ? (input.tagline ?? null) : null;
 
       const typedServices =
         input.specialities === undefined ? null : distinctServices(input.specialities);
@@ -337,7 +338,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? []
           : typedServices;
 
-      if (tagline === null && specialities.length === 0) {
+      if (!taglineChanged && specialities.length === 0) {
         return toProfile(await requireDealer(dealerId));
       }
 
@@ -351,7 +352,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       await withTransaction(prisma, async (tx) => {
         const saved = await tx.dealerProfileChange.create({
-          data: { dealerId, tagline, specialities, submittedBy: actorUserId },
+          data: { dealerId, tagline, taglineChanged, specialities, submittedBy: actorUserId },
         });
 
         await audit.record(tx, {
@@ -362,7 +363,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           entityType: 'DealerProfileChange',
           entityId: saved.id,
           before: { tagline: dealer.tagline, specialities: dealer.specialities },
-          after: { tagline, specialities },
+          after: { tagline, taglineChanged, specialities },
         });
 
         await enqueueOutbox(tx, {
@@ -390,6 +391,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       }
 
       await withTransaction(prisma, async (tx) => {
+        await repo.lockStatus(dealerId, tx);
+        const current = await requireDealer(dealerId, tx);
+        if (
+          !current.profileEdits.some((row) => row.id === pending.id && row.status === 'PENDING')
+        ) {
+          throw new NotFoundError('You have no change waiting for review.');
+        }
         await tx.dealerProfileChange.delete({ where: { id: pending.id } });
 
         await audit.record(tx, {
@@ -568,7 +576,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
       if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
-      if (!dealer.tagline) businessMissing.push('tagline');
       if (dealer.specialities.length === 0) businessMissing.push('specialities');
       if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');

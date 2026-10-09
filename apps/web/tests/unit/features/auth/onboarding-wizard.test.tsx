@@ -997,18 +997,18 @@ describe('OnboardingWizard — the Business step', () => {
    * `required` box with no `minLength` is satisfied by `-`, and the browser is
    * the first of the two validators a dealer meets.
    */
-  it('asks for a tagline and a service list, both required', async () => {
+  it('keeps services required and makes the tagline optional', async () => {
     await onBusinessStep();
 
     const tagline = screen.getByLabelText(/one line about your dealership/i);
     const services = screen.getByLabelText(/services you offer/i);
 
-    for (const field of [tagline, services]) {
-      expect(field.tagName).toBe('INPUT');
-      expect(field).toBeRequired();
-    }
+    expect(tagline.tagName).toBe('INPUT');
+    expect(tagline).not.toBeRequired();
+    expect(services).toBeRequired();
     expect(tagline).toHaveAttribute('name', 'tagline');
-    expect(tagline).toHaveAttribute('minLength', '10');
+    expect(tagline).toHaveAttribute('maxLength', '200');
+    expect(tagline).not.toHaveAttribute('minLength');
 
     /*
      * **R37.** The services box the dealer types into is the *draft*, and a

@@ -30,7 +30,7 @@ export async function saveDealerProfileAction(
 
   const parsed = DealerSelfUpdateInput.safeParse({
     ...(year ? { establishedYear: Number(year) } : {}),
-    ...(text('tagline') ? { tagline: text('tagline') } : {}),
+    ...(formData.has('tagline') ? { tagline: formData.get('tagline') } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),
   });
 

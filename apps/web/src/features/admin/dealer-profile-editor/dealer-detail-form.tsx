@@ -44,6 +44,7 @@ export function DealerDetailForm({ values, errors, onChange }: DealerDetailFormP
               id={`dealer-${field.key}`}
               className={field.mono ? 'font-mono' : undefined}
               value={values[field.key]}
+              maxLength={field.key === 'tagline' ? 200 : undefined}
               onChange={(event) =>
                 onChange(
                   field.key,

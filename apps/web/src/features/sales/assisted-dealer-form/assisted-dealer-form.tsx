@@ -69,6 +69,7 @@ export function AssistedDealerForm({
           name={field.name}
           type={field.type ?? 'text'}
           inputMode={field.inputMode}
+          maxLength={field.maxLength}
           autoComplete={field.autoComplete}
           defaultValue={initial[field.name] ?? ''}
           required={field.required && !partial}

@@ -1,3 +1,4 @@
+import { DealerTaglineInput } from './dealer-tagline.js';
 import { z } from 'zod';
 
 import { GoogleMapsUrl, IndianMobile, MapKind, Uuid } from './common.js';
@@ -52,12 +53,9 @@ export type PresignResponse = z.infer<typeof PresignResponse>;
  * and a dealer who cannot see their edit concludes the save failed and does it
  * again.
  *
- * **The values here are the proposed ones, not the live ones.** `tagline` is
- * `null` and `specialities` is empty when the request does not touch that
- * field — the fields have floors of ten characters and one entry respectively,
- * so neither empty value is a thing a dealer could have asked for. What is
- * currently public is on `DealerProfile` itself, which is what makes the two
- * renderable side by side.
+ * The proposed values are separate from live values. `taglineChanged` distinguishes
+ * explicit removal (null) from an unchanged tagline. Services retain their existing
+ * nonempty-list semantics. Legacy non-null proposals remain replacements.
  *
  * Exactly one of these reaches the screen at a time, and which one is a
  * question of `status`:
@@ -74,6 +72,7 @@ export const DealerProfileChange = z.object({
   status: ProfileChangeStatus,
   statusLabel: z.string(),
   tagline: z.string().nullable(),
+  taglineChanged: z.boolean().optional(),
   specialities: z.array(z.string()),
   submittedAtLabel: z.string(),
   reviewedAtLabel: z.string().nullable(),
@@ -186,20 +185,8 @@ export const UpdateDealerInput = z
      * a client able to make them disagree.
      */
     legalName: z.string().trim().min(2).max(160).optional(),
-    /**
-     * Optional here because this schema is a partial patch — a step that does
-     * not carry the line must not be read as clearing it. But it may not be
-     * *emptied*: the same 10-character floor `OnboardingInput` applies holds
-     * when the field is present (**R26**), so a dealer cannot delete on the
-     * profile screen what onboarding insisted on, and neither can a moderator
-     * clearing the box on the review screen.
-     */
-    tagline: z
-      .string()
-      .trim()
-      .min(10, 'One line buyers will read under your name.')
-      .max(200, 'Keep it to one line — 200 characters at most.')
-      .optional(),
+    /** Optional marketing text; absence/blank becomes null, while omitted patches preserve the live value. */
+    tagline: DealerTaglineInput,
     /*
      * ── `about` was here, and its absence is the decision (R33) ──────────────
      * The paragraph the portfolio used to open with. It asked a dealership for
@@ -216,7 +203,7 @@ export const UpdateDealerInput = z
      * Recorded rather than silently absent, because "why is there no About"
      * is a question this schema will be asked. `tagline` above and
      * `specialities` below are the answer, and neither is a shorter `about`:
-     * both are required at sign-up, both are on the public pages, and both are
+     * services are required at sign-up; tagline is optional, both are on the public pages, and both are
      * on the review screen — three things `about` never was.
      * ────────────────────────────────────────────────────────────────────────
      */

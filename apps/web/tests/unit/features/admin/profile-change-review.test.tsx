@@ -41,6 +41,13 @@ const CHANGE: AdminProfileChange = {
   decisionReason: null,
 };
 
+describe('explicit tagline removal', () => {
+  it('shows a removal proposal rather than marking the field unchanged', () => {
+    render(<ProfileChangeReview change={{ ...CHANGE, tagline: null, taglineChanged: true }} />);
+    expect(screen.getByText('Remove tagline')).toBeInTheDocument();
+  });
+});
+
 describe('the profile-change review card', () => {
   beforeEach(() => {
     approveProfileChangeAction.mockReset().mockResolvedValue({ ok: true });
