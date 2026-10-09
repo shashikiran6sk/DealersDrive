@@ -16,13 +16,17 @@ export const GovernmentSourceUrl = z
   .url()
   .max(500)
   .refine((value) => {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      (url.hostname.endsWith('.gov.in') || url.hostname.endsWith('.nic.in'))
-    );
+    try {
+      const url = new URL(value);
+      return (
+        url.protocol === 'https:' &&
+        !url.username &&
+        !url.password &&
+        (url.hostname.endsWith('.gov.in') || url.hostname.endsWith('.nic.in'))
+      );
+    } catch {
+      return false;
+    }
   }, 'Use the authoritative HTTPS government district source.');
 export const AddServiceDistrictInput = z
   .object({

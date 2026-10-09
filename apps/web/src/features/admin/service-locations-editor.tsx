@@ -82,11 +82,11 @@ function LocationSettings({
       <span className="w-full text-[14px] font-semibold sm:w-auto sm:min-w-[140px]">
         {item.name}
       </span>
-      <label className="flex items-center gap-2 text-[13px]">
+      <label className="flex min-h-[44px] items-center gap-2 text-[13px] sm:min-h-0">
         <input type="checkbox" name="active" defaultChecked={item.active} disabled={pending} />
         Active
       </label>
-      <label className="flex items-center gap-2 text-[13px]">
+      <label className="flex min-h-[44px] items-center gap-2 text-[13px] sm:min-h-0">
         <input
           type="checkbox"
           name="onboardingEnabled"
@@ -96,7 +96,7 @@ function LocationSettings({
         New onboarding
       </label>
       {kind === 'district' ? (
-        <label className="flex items-center gap-2 text-[13px]">
+        <label className="flex min-h-[44px] items-center gap-2 text-[13px] sm:min-h-0">
           <input
             type="checkbox"
             name="photographyAvailable"
@@ -106,7 +106,7 @@ function LocationSettings({
           Photography coverage
         </label>
       ) : null}
-      <Button size="sm" type="submit" loading={pending}>
+      <Button size="sm" className="min-h-[44px] sm:min-h-0" type="submit" loading={pending}>
         Save {kind}
       </Button>
     </form>

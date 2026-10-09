@@ -240,6 +240,9 @@ describe('service locations: real sessions, routing, PostgreSQL and dealer admis
       })
       .expect(409);
     for (const source of [
+      'not a url',
+      'https://',
+      '',
       'https://example.test/',
       'http://vellore.nic.in/',
       'https://vellore.nic.in.evil.test/',

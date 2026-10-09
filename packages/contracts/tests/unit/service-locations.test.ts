@@ -14,6 +14,9 @@ describe('service location contracts', () => {
     },
   );
   it.each([
+    'not a url',
+    'https://',
+    '',
     'http://vellore.nic.in/',
     'https://nic.in.evil.test/',
     'https://example.test/',

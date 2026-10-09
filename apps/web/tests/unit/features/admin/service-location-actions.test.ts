@@ -58,6 +58,14 @@ describe('service location actions', () => {
         sourceReviewed: false,
       }),
     ).toMatchObject({ ok: false });
+    expect(
+      await addServiceDistrictAction({
+        stateId: 'IN-TN',
+        name: 'QA',
+        sourceUrl: 'not a url',
+        sourceReviewed: true,
+      }),
+    ).toMatchObject({ ok: false });
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
   it('returns a backend conflict clearly and makes no success claim', async () => {
