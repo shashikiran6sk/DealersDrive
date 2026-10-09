@@ -3,6 +3,7 @@ import type { PlatformRole, Prisma, UserRoleStatus } from '@prisma/client';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError } from '../../platform/errors.js';
+import { withDealerEmailConflict } from '../dealers/dealers.facade.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
   MERGE_REFUSED_CONFLICTING,
@@ -93,6 +94,14 @@ export async function loadMergeCandidates(
 }
 
 export async function mergeAccounts(
+  tx: Tx,
+  audit: AuditService,
+  request: MergeRequest,
+): Promise<MergeOutcome> {
+  return withDealerEmailConflict(() => mergeAccountsChecked(tx, audit, request));
+}
+
+async function mergeAccountsChecked(
   tx: Tx,
   audit: AuditService,
   request: MergeRequest,

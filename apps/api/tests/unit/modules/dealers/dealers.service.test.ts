@@ -687,21 +687,34 @@ describe('update', () => {
     expect(h.updates[0]?.data).toEqual({ tagline: 'Trusted since 1998' });
   });
 
-  it('splits contact details between the user row and the dealership row', async () => {
+  it('keeps the verified owner identity while updating contact details', async () => {
     const h = setup();
 
     await h.service.update('dealer-1', {
-      contact: { fullName: 'Ramesh K', email: 'new@example.com', landline: '0416 111 2222' },
+      contact: {
+        fullName: 'Ramesh K',
+        email: 'owner@sri-lakshmi-motors.in',
+        landline: '0416 111 2222',
+      },
     });
 
     expect(h.userUpdates[0]).toMatchObject({
       where: { id: 'user-1' },
-      data: { fullName: 'Ramesh K', email: 'new@example.com' },
+      data: { fullName: 'Ramesh K' },
     });
     expect(h.updates[0]?.data).toMatchObject({
-      contactEmail: 'new@example.com',
+      contactEmail: 'owner@sri-lakshmi-motors.in',
       landline: '0416 111 2222',
     });
+  });
+
+  it('refuses an unverified change to the owner account email', async () => {
+    const h = setup();
+    await expect(
+      h.service.update('dealer-1', { contact: { email: 'someone@example.test' } }),
+    ).rejects.toMatchObject({ code: 'OWNER_EMAIL_PROOF_REQUIRED' });
+    expect(h.userUpdates).toHaveLength(0);
+    expect(h.updates).toHaveLength(0);
   });
 
   it('leaves the phone alone when the patch does not mention it', async () => {

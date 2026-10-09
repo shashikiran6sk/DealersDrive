@@ -136,7 +136,7 @@ function claimsFrom(
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     subject: claims.sub as string,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
-    email: (claims.email as string).toLowerCase(),
+    email: (claims.email as string).trim().toLowerCase(),
     emailVerified: true,
     ...(claims.name === undefined ? {} : { name: claims.name }),
     ...(claims.picture === undefined ? {} : { picture: claims.picture }),
