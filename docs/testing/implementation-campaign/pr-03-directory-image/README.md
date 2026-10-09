@@ -35,7 +35,7 @@ belongs to PR 10; this PR does not fabricate it from photos or approval.
 | Media/privacy           | PASS                                | Upload/moderation/detail regressions; directory does not query private/unready yard media        |
 | Browser/public API      | PASS                                | Pre/post `browser-results.json`, identical cover URLs, HTTP 200 SVG, no private primary identity |
 | Responsive/navigation   | PASS 320/390/768/1280px             | No overflow, actual card/detail navigation                                                       |
-| Required GitHub CI      | PENDING final check                 | Security/audit/Terraform/preview passed; awaiting test/build                                     |
+| Required GitHub CI      | PASS final head                     | All required checks, Terraform and preview PASS against this exact head                          |
 
 Actual application screenshots live under `pre-pr/` and `post-pr/`; contacts are
 masked. The illustration is an implemented static asset, not a page mockup or
@@ -60,7 +60,7 @@ No check, threshold or branch protection is removed.
 Migrations: none. API: directory shared cover URL; optional presentation gate.
 UI: shared cover, honest alt text, removed yard claim, optional uploader copy.
 Files: `changed-files.txt` (captured with final GitHub record).
-Final local failures: zero. Final CI: pending completion on the head above.
+Final local failures: zero. Final CI: all required checks PASS on the head above; exact run SHA/URLs in `ci-run.json` and `security-run.json`.
 MERGED: NO. Next PR: service locations, only after final-SHA gates pass.
 
 Owner UAT: compare cards with/without photos; all show the same illustration.
