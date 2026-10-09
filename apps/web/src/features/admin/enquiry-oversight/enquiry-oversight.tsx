@@ -15,7 +15,11 @@ const COLUMNS: TableColumn[] = [
   { key: 'customer', label: ENQUIRY_OVERSIGHT_TEXT.colCustomer },
   { key: 'vehicle', label: ENQUIRY_OVERSIGHT_TEXT.colVehicle },
   { key: 'dealer', label: ENQUIRY_OVERSIGHT_TEXT.colDealer },
-  { key: 'message', label: ENQUIRY_OVERSIGHT_TEXT.colMessage, className: 'max-xl:hidden' },
+  {
+    key: 'message',
+    label: ENQUIRY_OVERSIGHT_TEXT.colMessage,
+    className: 'max-xl:hidden max-md:table-cell',
+  },
   { key: 'status', label: ENQUIRY_OVERSIGHT_TEXT.colStatus },
   { key: 'received', label: ENQUIRY_OVERSIGHT_TEXT.colReceived },
   { key: 'actions', label: ENQUIRY_OVERSIGHT_TEXT.colActions, align: 'right' },

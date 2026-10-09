@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     <div className="flex flex-col gap-5 p-5">
       <h1 className="text-[26px]">Operations overview</h1>
 
-      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))]">
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))] max-md:grid-cols-2 max-md:gap-3">
         {overview.stats.map((stat) => {
           const box = (
             <>

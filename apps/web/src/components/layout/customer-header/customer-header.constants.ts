@@ -6,12 +6,20 @@ export const HEADER_TEXT = {
   buyCars: 'Buy cars',
   dealers: 'Dealers',
   login: 'Login',
+  home: 'Home',
   selectDistrict: DISTRICT_PICKER_TEXT.selectDistrict,
   caret: '▾',
 } as const;
 
 export const HEADER_NAV = {
+  home: '/',
   cars: '/cars',
   dealers: '/dealers',
   login: '/login',
 } as const;
+
+export const MOBILE_HEADER_NAV = [
+  { href: HEADER_NAV.home, label: HEADER_TEXT.home },
+  { href: HEADER_NAV.cars, label: HEADER_TEXT.buyCars },
+  { href: HEADER_NAV.dealers, label: HEADER_TEXT.dealers },
+];

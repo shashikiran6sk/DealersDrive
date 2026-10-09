@@ -38,7 +38,7 @@ export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
         {ENQUIRY_DETAIL_TEXT.readOnly}
       </p>
 
-      <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
+      <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr))]">
         <div className="flex min-w-0 flex-col gap-5">
           <section aria-labelledby="enquiry-heading" className="card gap-[8px] bg-white p-4">
             <h2 id="enquiry-heading" className="text-[16px]">

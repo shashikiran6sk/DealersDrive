@@ -151,14 +151,14 @@ export function ReviewStep({
               </Link>
             )}
           </div>
-          <dl className="grid [grid-template-columns:minmax(140px,220px)_1fr]">
+          <dl className="grid [grid-template-columns:minmax(140px,220px)_1fr] max-md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] max-md:gap-x-3">
             {section.rows.map((row) => (
               <div key={row.label ?? ''} className="contents">
-                <dt className="border-b border-[rgba(20,23,28,0.08)] py-[8px] text-[13px] ink-muted">
+                <dt className="border-b border-[rgba(20,23,28,0.08)] py-[8px] max-md:min-w-0 max-md:[overflow-wrap:anywhere] text-[13px] ink-muted">
                   {row.label}
                 </dt>
                 <dd
-                  className={`border-b border-[rgba(20,23,28,0.08)] py-[8px] text-[13px] tnum ${row.value ? 'font-medium' : 'ink-faint'}`}
+                  className={`border-b border-[rgba(20,23,28,0.08)] py-[8px] max-md:min-w-0 max-md:[overflow-wrap:anywhere] text-[13px] tnum ${row.value ? 'font-medium' : 'ink-faint'}`}
                 >
                   {row.value ?? VEHICLE_WIZARD_TEXT.notEntered}
                 </dd>

@@ -11,6 +11,7 @@ import '../src/preview.css';
  */
 const preview: Preview = {
   parameters: {
+    nextjs: { appDirectory: true },
     layout: 'centered',
     viewport: {
       options: {

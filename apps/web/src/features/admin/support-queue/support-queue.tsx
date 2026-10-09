@@ -14,7 +14,11 @@ import { isQueueFiltered, supportQueueHref } from './utils';
 const COLUMNS: TableColumn[] = [
   { key: 'ticket', label: SUPPORT_QUEUE_TEXT.colTicket },
   { key: 'customer', label: SUPPORT_QUEUE_TEXT.colCustomer },
-  { key: 'context', label: SUPPORT_QUEUE_TEXT.colContext, className: 'max-xl:hidden' },
+  {
+    key: 'context',
+    label: SUPPORT_QUEUE_TEXT.colContext,
+    className: 'max-xl:hidden max-md:table-cell',
+  },
   { key: 'status', label: SUPPORT_QUEUE_TEXT.colStatus },
   { key: 'assignee', label: SUPPORT_QUEUE_TEXT.colAssignee },
   { key: 'updated', label: SUPPORT_QUEUE_TEXT.colUpdated },

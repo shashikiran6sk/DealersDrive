@@ -32,7 +32,7 @@ export function StatCard({
   return (
     <Blueprint
       className={cn(
-        'flex min-h-[120px] flex-col justify-between rounded-[14px] p-5',
+        'flex min-h-[120px] flex-col justify-between rounded-[14px] p-5 max-md:min-h-[108px] max-md:min-w-0 max-md:p-3',
         inverse ? 'border-(--color-accent) bg-(--color-accent) text-white' : 'bg-white',
         className,
       )}
@@ -40,7 +40,7 @@ export function StatCard({
       <div className={cn('text-[12px] font-bold', inverse ? 'text-white/75' : 'ink-muted')}>
         {label}
       </div>
-      <div className="mt-[6px] font-heading text-[30px] font-extrabold leading-[1.15] tracking-[-0.03em] tnum">
+      <div className="mt-[6px] font-heading text-[30px] max-md:text-[26px] max-md:[overflow-wrap:anywhere] font-extrabold leading-[1.15] tracking-[-0.03em] tnum">
         {value}
       </div>
       {delta ? (

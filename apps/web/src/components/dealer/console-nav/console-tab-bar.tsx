@@ -29,7 +29,7 @@ export function ConsoleTabBar({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 flex h-[60px] border-t border-(--color-divider) bg-white/95 backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 flex h-[calc(60px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-(--color-divider) bg-white/95 backdrop-blur-md md:hidden"
       aria-label={label}
     >
       {bar.map((item) => {

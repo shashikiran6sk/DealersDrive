@@ -62,7 +62,7 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
       {count === 0 ? (
         <p className="text-[13px] ink-muted">{LISTING_IMAGES_TEXT.empty}</p>
       ) : (
-        <ol className="grid gap-[8px] [grid-template-columns:repeat(auto-fill,minmax(120px,1fr))]">
+        <ol className="grid gap-[8px] [grid-template-columns:repeat(auto-fill,minmax(120px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(120px,100%),1fr))]">
           {images.items.map((image, index) => (
             <ImageTile
               key={image.mediaId}

@@ -8,9 +8,13 @@ import {
   ADD_VEHICLE_HREF,
   ADD_VEHICLE_LABEL,
   ConsoleNav,
-  ConsoleTabBar,
   consoleNavFor,
 } from '@/components/dealer/console-nav';
+import { MobileNav } from '@/components/layout/mobile-nav';
+import {
+  DEALER_NAV_LABEL,
+  DEALER_ROOT_HREF,
+} from '@/components/dealer/console-nav/console-nav.constants';
 import { ButtonLink } from '@/components/ui/button';
 import { BrandLogo } from '@/components/brand-logo';
 import { Blueprint, StatusTag } from '@/components/ui/primitives';
@@ -38,6 +42,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
     customerAccountAction(),
   ]);
   const nav = consoleNavFor(permissions);
+  const navigation = <ConsoleNav items={nav} />;
 
   return (
     <div className="flex min-h-dvh bg-white">
@@ -49,7 +54,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           </span>
         </Link>
 
-        <ConsoleNav items={nav} />
+        {navigation}
 
         <Blueprint className="mt-auto rounded-[14px] bg-white p-4">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] ink-muted">
@@ -68,14 +73,31 @@ export default async function DealerLayout({ children }: { children: ReactNode }
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-[15] flex h-[64px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-4 md:h-[70px] md:px-8">
-          <span className="min-w-0 truncate font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+          <MobileNav
+            items={nav}
+            label={DEALER_NAV_LABEL}
+            rootHref={DEALER_ROOT_HREF}
+            navigation={navigation}
+            heading={
+              <>
+                <p className="text-[14px] font-bold [overflow-wrap:anywhere]">{dealer.brandName}</p>
+                <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}>
+                  {dealer.statusLabel}
+                </StatusTag>
+              </>
+            }
+          />
+          <span className="min-w-0 truncate font-heading text-[16px] max-md:flex-1 font-extrabold tracking-[-0.02em]">
             {dealer.brandName}
           </span>
-          <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'} className="flex-none">
+          <StatusTag
+            tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}
+            className="flex-none max-md:hidden"
+          >
             {dealer.statusLabel}
           </StatusTag>
 
-          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum">
+          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum max-md:hidden">
             {dealer.creditBalance} credits
           </span>
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
@@ -88,10 +110,8 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           )}
         </header>
 
-        <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
-
-      <ConsoleTabBar items={nav} />
     </div>
   );
 }

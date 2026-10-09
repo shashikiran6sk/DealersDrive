@@ -37,7 +37,7 @@ export function Dialog({
           className={cn(classes.content, className)}
           onCloseAutoFocus={onCloseAutoFocus}
         >
-          <div className={classes.header}>
+          <div className={cn(classes.header, 'dd-dialog-header')}>
             <div className="min-w-0 flex-1">
               {header ?? (
                 <>
@@ -56,10 +56,10 @@ export function Dialog({
             </RadixDialog.Close>
           </div>
 
-          <div className={cn(classes.body, contentClassName)}>{children}</div>
+          <div className={cn(classes.body, 'dd-dialog-body', contentClassName)}>{children}</div>
 
           {footer ? (
-            <div className="flex flex-wrap items-center justify-between gap-[10px] border-t border-(--color-divider) bg-(--color-bg) px-[18px] py-[12px]">
+            <div className="dd-dialog-footer flex flex-wrap items-center justify-between gap-[10px] border-t border-(--color-divider) bg-(--color-bg) px-[18px] py-[12px]">
               {footer}
             </div>
           ) : null}

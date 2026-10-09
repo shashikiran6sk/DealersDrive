@@ -90,7 +90,7 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder={DOCUMENT_REVIEW_TEXT.reasonPlaceholder}
-            className="min-w-[240px] flex-1"
+            className="min-w-[240px] max-md:min-w-0 max-md:max-w-full flex-1"
           />
           <Button
             variant="destructive"

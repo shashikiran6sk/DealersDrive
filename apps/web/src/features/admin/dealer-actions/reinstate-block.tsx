@@ -22,7 +22,7 @@ export function ReinstateBlock({ dealer, pending, run, note, onNoteChange }: Rei
       <Field
         id="reinstateNote"
         label={DEALER_ACTIONS_TEXT.noteLabel}
-        className="min-w-[220px] flex-1"
+        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
       >
         <Input
           id="reinstateNote"

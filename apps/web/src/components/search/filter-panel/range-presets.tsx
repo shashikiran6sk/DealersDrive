@@ -32,7 +32,7 @@ export function RangePresets({
     <ul className="flex flex-col gap-[7px]">
       <FacetRow
         type="radio"
-        name={name}
+        name={`${idPrefix}-${name}`}
         id={`${idPrefix}-${name}-any`}
         label={anyLabel}
         checked={isAny}
@@ -44,7 +44,7 @@ export function RangePresets({
         <FacetRow
           key={band.label}
           type="radio"
-          name={name}
+          name={`${idPrefix}-${name}`}
           id={`${idPrefix}-${name}-${String(index)}`}
           label={band.label}
           count={band.count}
@@ -57,7 +57,7 @@ export function RangePresets({
       {isCustom ? (
         <FacetRow
           type="radio"
-          name={name}
+          name={`${idPrefix}-${name}`}
           id={`${idPrefix}-${name}-custom`}
           label={`${FILTER_PANEL_TEXT.customRange}: ${describe(range)}`}
           checked

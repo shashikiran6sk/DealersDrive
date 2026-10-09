@@ -55,7 +55,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
 
       <OnboardingProvenance onboarding={dealer.onboarding} />
 
-      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))]">
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))] max-md:grid-cols-2 max-md:gap-3">
         {[
           ['Vehicles', dealer.counts.vehicles],
           ['Live listings', dealer.counts.active],
@@ -75,7 +75,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
 
       {dealer.profileChange ? <ProfileChangeReview change={dealer.profileChange} /> : null}
 
-      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr))]">
         <DealerProfileEditor dealer={dealer} />
 
         <section className="card gap-2 p-4">

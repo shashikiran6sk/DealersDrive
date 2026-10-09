@@ -156,33 +156,35 @@ export default async function DealerPortfolioPage({
           </Link>
         </div>
 
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px]">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px] max-md:grid max-md:grid-cols-[60px_minmax(0,1fr)] max-md:gap-x-3 max-md:gap-y-1.5 max-md:px-4">
           <LogoTile
             initials={dealer.initials}
             size={78}
-            className="max-md:h-[60px] max-md:w-[60px]"
+            className="max-md:h-[60px]! max-md:w-[60px]! max-md:col-start-1 max-md:row-start-1"
           />
 
-          <div className="min-w-[260px] flex-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] sm:text-[34px]">
+          <div className="min-w-[260px] flex-1 max-md:contents max-md:[overflow-wrap:anywhere]">
+            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2">
+              <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
                 {dealer.brandName}
               </h1>
               {dealer.isVerified ? <Plate size="chip">VERIFIED DEALER</Plate> : null}
             </div>
             {dealer.tagline ? (
-              <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5]">
+              <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5] max-md:col-span-2 max-md:row-start-3 max-md:mt-2">
                 {dealer.tagline}
               </p>
             ) : null}
             {dealer.address.full ? (
-              <p className="mt-[6px] text-[14px] ink-secondary">{dealer.address.full}</p>
+              <p className="mt-[6px] text-[14px] ink-secondary max-md:col-span-2 max-md:row-start-2 max-md:mt-0">
+                {dealer.address.full}
+              </p>
             ) : null}
           </div>
         </div>
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pb-[20px]">
-          <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-[240px]">
+          <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-auto max-md:aspect-video">
             {dealer.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -197,7 +199,7 @@ export default async function DealerPortfolioPage({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))]">
         <section className="card p-[18px]">
           <h2 className="eyebrow">Dealership details</h2>
 

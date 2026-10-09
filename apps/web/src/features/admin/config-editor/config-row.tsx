@@ -42,7 +42,7 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
   return (
     <div className="flex flex-col gap-2 border-b border-(--color-divider) px-4 py-3 last:border-b-0">
       <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[220px] flex-1">
+        <div className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1">
           <label className="block text-[12px] ink-secondary" htmlFor={entry.key}>
             {entry.label}
           </label>
@@ -62,7 +62,7 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
         ) : entry.type === 'string[]' ? (
           <Textarea
             id={entry.key}
-            className="min-w-[280px] flex-[2]"
+            className="min-w-[280px] max-md:min-w-0 max-md:max-w-full flex-[2]"
             rows={4}
             value={value}
             onChange={(event) => setValue(event.target.value)}

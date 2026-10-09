@@ -11,7 +11,7 @@ export function SavedListLoading() {
       className="mx-auto flex w-full max-w-[1280px] flex-col gap-[18px] px-4 pt-[22px] pb-[60px] sm:px-6"
     >
       <div className="skeleton h-[32px] w-[200px]" />
-      <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">
+      <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(262px,100%),1fr))]">
         {Array.from({ length: SAVED_LIST_LOADING.cards }, (_, index) => (
           <VehicleCardSkeleton key={index} />
         ))}

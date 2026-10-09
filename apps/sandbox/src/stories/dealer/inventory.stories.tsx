@@ -126,7 +126,7 @@ const FULL: DealerInventoryResponse = {
 const meta = {
   title: 'Dealer/InventoryView',
   component: InventoryView,
-  parameters: { layout: 'padded' },
+  parameters: { layout: 'padded', nextjs: { appDirectory: true } },
   args: { inventory: FULL },
 } satisfies Meta<typeof InventoryView>;
 
