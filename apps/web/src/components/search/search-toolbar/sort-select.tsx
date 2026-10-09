@@ -28,7 +28,7 @@ export function SortSelect({ params, basePath, id, className }: SortSelectProps)
       </label>
       <Select
         id={id}
-        className={className ?? 'w-full min-w-[180px] sm:w-auto'}
+        className={className ?? 'w-full min-w-[180px] max-sm:min-w-0 sm:w-auto'}
         value={current.success ? current.data : DEFAULT_SORT}
         onChange={(event) => {
           const next = VehicleSort.safeParse(event.target.value);

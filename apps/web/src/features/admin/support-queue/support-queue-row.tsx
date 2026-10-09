@@ -22,7 +22,7 @@ export function SupportQueueRow({ row }: SupportQueueRowProps) {
           {row.customer.phoneDisplay ?? SUPPORT_QUEUE_TEXT.noNumber}
         </div>
       </td>
-      <td className="min-w-[170px] max-xl:hidden">
+      <td className="min-w-[170px] max-xl:hidden max-md:table-cell">
         {row.context ? (
           <>
             <div className="text-[12px] font-medium">{row.context.vehicleTitle}</div>

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { BrandLogo } from '@/components/brand-logo';
 import { ConsoleNav, ConsoleTabBar } from '@/components/dealer/console-nav';
+import { MobileNav } from '@/components/layout/mobile-nav';
 import { ButtonLink } from '@/components/ui/button';
 import { SignOutButton } from '@/features/auth/sign-out';
 import {
@@ -43,6 +44,7 @@ export default async function SalesLayout({ children }: { children: ReactNode })
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-[15] flex h-[64px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-4 md:h-[70px] md:px-8">
+          <MobileNav items={SALES_NAV} label={SALES_NAV_LABEL} rootHref={SALES_ROOT_HREF} />
           <span className="min-w-0 truncate font-heading text-[16px] font-extrabold tracking-[-0.02em] md:hidden">
             {SALES_TEXT.brand}
           </span>
@@ -52,7 +54,9 @@ export default async function SalesLayout({ children }: { children: ReactNode })
           </ButtonLink>
           <SignOutButton scope="admin" />
         </header>
-        <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+          {children}
+        </main>
       </div>
 
       <ConsoleTabBar items={SALES_NAV} label={SALES_NAV_LABEL} rootHref={SALES_ROOT_HREF} />

@@ -53,10 +53,11 @@ export function GalleryViewer({
       open={open}
       onOpenChange={onOpenChange}
       onCloseAutoFocus={onCloseAutoFocus}
+      contentClassName="max-md:flex-col"
       title={title}
       closeLabel={VEHICLE_GALLERY_TEXT.close}
       header={
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3 max-md:gap-2 max-md:[&>img]:hidden">
           <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
           <DialogTitle className="truncate text-[15px] text-white">{title}</DialogTitle>
           <DialogDescription tone="inverse" className="mt-0 flex-none text-[12px] tnum">
@@ -67,7 +68,7 @@ export function GalleryViewer({
     >
       <GalleryRail images={images} index={index} onSelect={onSelect} />
 
-      <div className="relative flex min-w-0 flex-1 items-center justify-center p-3 md:p-5">
+      <div className="relative flex min-w-0 flex-1 items-center justify-center p-3 max-md:min-h-0 md:p-5">
         {several ? (
           <GalleryArrow
             direction="previous"

@@ -55,7 +55,7 @@ export function DealerProfileForm({
       <section className="card gap-[14px] p-[18px]">
         <h2 className="text-[19px]">{PROFILE_FORM_TEXT.dealershipHeading}</h2>
 
-        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))]">
           <LockedField
             id="legalName"
             label={PROFILE_FORM_TEXT.nameLabel}
@@ -131,7 +131,7 @@ export function DealerProfileForm({
         <h2 className="text-[19px]">{PROFILE_FORM_TEXT.contactHeading}</h2>
         <LockedNote>{PROFILE_FORM_TEXT.contactNote}</LockedNote>
 
-        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))]">
           <LockedField id="contactFullName" label="Contact name" value={dealer.contact.fullName} />
           <LockedField id="contactEmail" label="Email" value={dealer.contact.email} />
           <LockedField id="contactPhone" label="Mobile" value={dealer.contact.phoneDisplay} mono />
@@ -145,7 +145,7 @@ export function DealerProfileForm({
 
         <LockedField id="addressLine" label="Street address" value={dealer.address.line} />
 
-        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr))]">
           <LockedField id="addressCity" label="City" value={dealer.address.city} />
           <LockedField id="addressDistrict" label="District" value={dealer.address.district} />
           <LockedField id="addressState" label="State" value={dealer.address.state} />
@@ -165,7 +165,7 @@ export function DealerProfileForm({
         <h2 className="text-[19px]">{PROFILE_FORM_TEXT.taxHeading}</h2>
         <p className="text-[12px] ink-subtle">{PROFILE_FORM_TEXT.taxNote}</p>
 
-        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))]">
           <Field id="gstin" label="GSTIN">
             <Input id="gstin" className="font-mono" defaultValue={dealer.gstin ?? ''} disabled />
           </Field>

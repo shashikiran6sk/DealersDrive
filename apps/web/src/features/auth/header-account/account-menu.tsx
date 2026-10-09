@@ -66,7 +66,7 @@ export function AccountMenu({
             event.preventDefault();
             menu.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
           }}
-          className="z-50 w-[240px] max-w-[calc(100vw-24px)] rounded-[14px] border border-(--color-divider) bg-white p-[6px] shadow-md"
+          className="z-50 w-[240px] max-w-[calc(100vw-24px)] rounded-[14px] border border-(--color-divider) bg-white p-[6px] shadow-md max-md:max-h-[var(--radix-popover-content-available-height)] max-md:overflow-y-auto max-md:overscroll-contain"
         >
           <div className="mb-[4px] border-b border-(--color-divider) px-[12px] pt-[8px] pb-[10px]">
             <div className="truncate text-[14px] font-extrabold">{account.fullName}</div>

@@ -21,6 +21,20 @@ export interface RegistryEntry {
 
 export const registry: RegistryEntry[] = [
   {
+    id: 'mobile-nav',
+    name: 'MobileNav',
+    source: 'apps/web/src/components/layout/mobile-nav/mobile-nav.tsx',
+    category: 'Layout',
+    ownership: 'Shared',
+    purpose: 'Accessible mobile drawer using the existing permission-filtered navigation items.',
+    aliases: ['MobileDrawer', 'ConsoleMenu'],
+    features: ['Mobile responsive revamp'],
+    props: ['items', 'label', 'rootHref', 'children'],
+    states: ['dealer', 'admin', 'restricted-admin', 'sales'],
+    reusable: true,
+    storyId: 'layout-mobilenav',
+  },
+  {
     id: 'brand-logo',
     name: 'BrandLogo',
     source: 'apps/web/src/components/brand-logo/brand-logo.tsx',

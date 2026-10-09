@@ -19,7 +19,12 @@ export function DiscoveryRow({ id, title, href, cars }: DiscoveryRowProps) {
           <LinkPendingLabel>{HOME_TEXT.viewAll}</LinkPendingLabel>
         </Link>
       </div>
-      <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">
+      <div
+        role="group"
+        aria-labelledby={`${id}-heading`}
+        tabIndex={0}
+        className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))] max-md:flex max-md:gap-3 max-md:overflow-x-auto max-md:pb-2 max-md:snap-x max-md:snap-proximity max-md:[&>article]:w-[min(280px,85vw)] max-md:[&>article]:flex-none max-md:[&>article]:snap-start"
+      >
         {cars.map((car) => (
           <VehicleCard key={car.slug} vehicle={car} />
         ))}

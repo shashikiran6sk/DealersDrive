@@ -39,7 +39,7 @@ export function SaveButton({ slug, title, variant = 'overlay', className }: Save
           ? 'border-(--color-accent) text-(--color-accent)'
           : 'border-(--color-divider) text-(--color-ink) hover:border-(--color-neutral-400)',
         variant === 'overlay'
-          ? 'h-[36px] w-[36px] rounded-[10px] text-[18px] leading-none shadow-sm'
+          ? 'h-[36px] w-[36px] rounded-[10px] max-md:size-11 text-[18px] leading-none shadow-sm'
           : 'btn btn-secondary h-[40px] px-[14px] text-[14px]',
         className,
       )}

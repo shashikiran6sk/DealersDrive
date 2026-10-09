@@ -36,7 +36,7 @@ export function ConsoleNav({
         <Link
           key={item.href}
           href={item.href}
-          className={cn('dd-nav-item', footer && 'shrink-0')}
+          className={cn('dd-nav-item max-md:min-h-12', footer && 'shrink-0')}
           aria-current={isCurrentPath(pathname, item.href, rootHref) ? 'true' : undefined}
         >
           <span className="min-w-0 flex-1 truncate">{item.label}</span>

@@ -12,7 +12,7 @@ export function PricingStep({ vehicle, errors, values }: StepProps) {
   const value = (field: string) => formValue(values, vehicle, field);
 
   return (
-    <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
+    <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
       <StepField name="priceRupees" errors={errors} hint={VEHICLE_WIZARD_TEXT.priceHint}>
         <Input
           id="priceRupees"

@@ -19,7 +19,7 @@ export function SimilarVehicles({ vehicles }: SimilarVehiclesProps) {
         </h2>
         <p className="text-[13px] ink-muted">{SIMILAR_VEHICLES_TEXT.description}</p>
       </div>
-      <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+      <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] max-md:[grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr))]">
         {vehicles.map((vehicle) => (
           <VehicleCard key={vehicle.slug} vehicle={vehicle} />
         ))}

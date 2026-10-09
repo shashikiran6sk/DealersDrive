@@ -23,7 +23,7 @@ export function BasicsStep({ vehicle, errors, values }: StepProps) {
   const maxYear = maxVehicleYear();
 
   return (
-    <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
+    <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
       <StepField name="make" errors={errors} hint={VEHICLE_WIZARD_TEXT.makeHint}>
         <SuggestInput
           id="make"

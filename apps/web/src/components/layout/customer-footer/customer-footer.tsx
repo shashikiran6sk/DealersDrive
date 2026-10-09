@@ -9,8 +9,8 @@ import { SocialRow } from './social-row';
 export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerFooterProps) {
   return (
     <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
-        <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
+      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 max-sm:grid-cols-2 max-sm:gap-6 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
+        <div className="flex flex-col gap-4 max-sm:col-span-2 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-[10px]">
             <BrandLogo variant="dark" />
             <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">

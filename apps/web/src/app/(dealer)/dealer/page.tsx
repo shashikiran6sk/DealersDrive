@@ -45,7 +45,7 @@ export default async function DealerDashboardPage() {
 
       <DashboardMetrics stats={dashboard.stats} listingStats={dashboard.listingStats} />
 
-      <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+      <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
         <ViewsChart chart={dashboard.viewsChart} />
         <RecentEnquiries enquiries={dashboard.recentEnquiries} />
       </div>

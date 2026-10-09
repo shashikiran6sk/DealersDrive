@@ -11,8 +11,8 @@ export function RecentEnquiries({
   enquiries: DashboardResponse['recentEnquiries'];
 }) {
   return (
-    <section className="card gap-0 p-5">
-      <div className="mb-2 flex items-baseline gap-3">
+    <section className="card gap-0 p-5 max-md:p-4">
+      <div className="mb-2 flex items-baseline gap-3 max-md:flex-wrap max-md:gap-1">
         <h2 className="text-[18px]">{RECENT_ENQUIRIES_TEXT.heading}</h2>
         <ButtonLink
           href={RECENT_ENQUIRIES_TEXT.viewAllHref}
@@ -29,11 +29,13 @@ export function RecentEnquiries({
         enquiries.slice(0, RECENT_ENQUIRIES_SHOWN).map((enquiry) => (
           <div
             key={enquiry.id}
-            className="flex items-center gap-3 border-b border-(--color-divider) py-[10px] last:border-b-0"
+            className="flex items-center gap-3 max-md:flex-wrap max-md:gap-2 border-b border-(--color-divider) py-[10px] last:border-b-0"
           >
             <Avatar initials={enquiry.initials} size={30} />
             <div className="min-w-0 flex-1">
-              <div className="text-[14px] font-bold">{enquiry.name}</div>
+              <div className="text-[14px] font-bold max-md:[overflow-wrap:anywhere]">
+                {enquiry.name}
+              </div>
               <div className="truncate text-[11px] ink-subtle">
                 {enquiry.vehicleTitle ?? RECENT_ENQUIRIES_TEXT.generalEnquiry}
               </div>

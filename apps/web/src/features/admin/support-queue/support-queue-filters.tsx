@@ -32,7 +32,9 @@ export function SupportQueueFilters({
     >
       {filters.status ? <input type="hidden" name="status" value={filters.status} /> : null}
 
-      <label className={`${LABEL} min-w-[220px] flex-1 sm:max-w-[300px]`}>
+      <label
+        className={`${LABEL} min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1 sm:max-w-[300px]`}
+      >
         {SUPPORT_QUEUE_TEXT.searchLabel}
         <Input
           name="q"

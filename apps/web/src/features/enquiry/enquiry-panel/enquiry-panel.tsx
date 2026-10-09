@@ -43,8 +43,14 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     }
     setCustomer(signedIn);
     setStage('form');
-    panel.current?.scrollIntoView({ block: 'nearest' });
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (stage !== 'form') return;
+    panel.current
+      ?.querySelector<HTMLTextAreaElement>('textarea[name="message"]')
+      ?.scrollIntoView({ block: 'center' });
+  }, [stage]);
 
   useEffect(() => {
     if (!autoOpen || autoOpened.current) return;
@@ -103,7 +109,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             variant="primary"
             size="md"
             block
-            className="min-h-[44px]"
+            className="min-h-[44px] max-lg:hidden"
             loading={stage === 'checking'}
             aria-label={stage === 'checking' ? ENQUIRY_PANEL_TEXT.loading : undefined}
             onClick={() => {
@@ -113,11 +119,11 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             {ENQUIRY_PANEL_TEXT.enquire}
           </Button>
           {customer ? null : (
-            <p className="m-0 text-center text-[12px] ink-secondary">
+            <p className="m-0 text-center text-[12px] ink-secondary max-lg:hidden">
               {ENQUIRY_PANEL_TEXT.requiresLogin}
             </p>
           )}
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] shadow-(--shadow-lg) lg:hidden">
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] max-lg:pb-[max(10px,env(safe-area-inset-bottom))] shadow-(--shadow-lg) lg:hidden">
             <Button
               variant="primary"
               size="md"

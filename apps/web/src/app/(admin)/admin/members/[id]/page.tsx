@@ -40,7 +40,7 @@ export default async function AdminMemberPage({ params }: { params: Promise<{ id
         <h1 className="text-[24px] break-all">{member.name ?? member.email}</h1>
         <StatusTag tone={STATUS_TONE[member.status]}>{member.statusLabel}</StatusTag>
       </div>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-[13px]">
+      <dl className="grid grid-cols-[max-content_1fr] max-md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] max-md:[&>dd]:min-w-0 max-md:[&>dd]:[overflow-wrap:anywhere] gap-x-4 gap-y-2 text-[13px]">
         <dt className="ink-muted">{MEMBER_DETAIL_TEXT.email}</dt>
         <dd className="break-all">{member.email}</dd>
         <dt className="ink-muted">{MEMBER_DETAIL_TEXT.role}</dt>
