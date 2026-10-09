@@ -4,10 +4,10 @@ import Link from 'next/link';
 
 import { ADD_VEHICLE_HREF, ADD_VEHICLE_LABEL } from '@/components/dealer/console-nav';
 import { RecentEnquiries, ViewsChart } from '@/components/dealer/dashboard-panels';
-import { ListingStats } from '@/components/dealer/listing-stats';
+import { DashboardMetrics } from '@/components/dealer/dashboard-metrics';
 import { ButtonLink } from '@/components/ui/button';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
-import { Banner, StatCard } from '@/components/ui/primitives';
+import { Banner } from '@/components/ui/primitives';
 import { apiGet } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -43,20 +43,7 @@ export default async function DealerDashboardPage() {
         </Banner>
       ))}
 
-      <ListingStats stats={dashboard.listingStats} />
-
-      <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(178px,1fr))] max-md:grid-cols-2 max-md:gap-3">
-        {dashboard.stats.map((stat) => (
-          <StatCard
-            key={stat.key}
-            label={stat.label}
-            value={stat.valueLabel}
-            delta={stat.delta}
-            deltaTone={stat.deltaTone}
-            inverse={stat.key === 'credits'}
-          />
-        ))}
-      </div>
+      <DashboardMetrics stats={dashboard.stats} listingStats={dashboard.listingStats} />
 
       <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
         <ViewsChart chart={dashboard.viewsChart} />

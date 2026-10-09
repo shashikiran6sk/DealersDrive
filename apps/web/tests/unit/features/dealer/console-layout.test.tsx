@@ -1,5 +1,5 @@
 import type { AuthSession } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
@@ -138,7 +138,7 @@ describe('the console shell', () => {
    * links, the person's dealerships and Logout — one account, two contexts,
    * and no second sign-in in either direction.
    */
-  it('puts the person’s own account menu in the top bar when there is one', async () => {
+  it('keeps account controls out of the top bar and offers the existing sign-out in navigation', async () => {
     currentSession.mockResolvedValue(session('DASHBOARD'));
     apiGet.mockResolvedValue(DEALER);
     customerAccount.mockResolvedValueOnce({
@@ -150,9 +150,12 @@ describe('the console shell', () => {
     render(await layout());
 
     expect(
-      screen.getByRole('button', { name: 'Account menu for Ramesh Kumar' }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull();
+      screen.queryByRole('button', { name: 'Account menu for Ramesh Kumar' }),
+    ).not.toBeInTheDocument();
+    const sidebar = screen
+      .getAllByRole('navigation', { name: 'Dealer console' })
+      .find((nav) => nav.closest('aside'));
+    expect(within(sidebar!).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
   });
 
   /**

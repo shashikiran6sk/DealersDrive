@@ -73,3 +73,11 @@ Nothing to show is not the same as an empty bar: a 56px white strip pinned
 over every console screen with nothing in it is a reconstruction artefact
 rather than a state of the product. The guard stays because `items` is a
 prop and an empty one is a thing a caller can pass.
+
+## Optional shared utilities
+
+`ConsoleNav.footer` accepts a server-rendered utility slot. Dealer callers
+supply `ConsoleUtilities`; other callers retain the original link-only nav.
+The navigation scrolls at short heights when utilities are present. The same
+navigation element can be supplied to PR #285's mobile drawer so sign out and
+workspace switching have one implementation across viewport sizes.

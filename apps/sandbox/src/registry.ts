@@ -2902,6 +2902,35 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'primitives-pageloading',
   },
+  {
+    id: 'dealer-dashboard-metrics',
+    name: 'DashboardMetrics',
+    source: 'apps/web/src/components/dealer/dashboard-metrics/dashboard-metrics.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-shared',
+    purpose: 'Four primary dealer metrics using existing API values and honest loading states.',
+    aliases: ['DealerOverview'],
+    features: ['Dealer console cleanup'],
+    props: ['stats', 'listingStats', 'loading'],
+    states: ['populated', 'large-values', 'loading', 'unavailable'],
+    reusable: true,
+    storyId: 'dealer-dashboardmetrics',
+  },
+  {
+    id: 'dealer-console-utilities',
+    name: 'ConsoleUtilities',
+    source: 'apps/web/src/components/dealer/console-utilities/console-utilities.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-shared',
+    purpose:
+      'Existing dealer sign out and workspace switching in console navigation without a customer avatar.',
+    aliases: ['DealerAccountUtilities'],
+    features: ['Dealer console cleanup'],
+    props: ['account'],
+    states: ['signed-out', 'multiple-workspaces'],
+    reusable: true,
+    storyId: 'dealer-consoleutilities',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

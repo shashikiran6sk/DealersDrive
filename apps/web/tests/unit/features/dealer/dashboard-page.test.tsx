@@ -148,9 +148,9 @@ describe('every number is the API’s', () => {
   it('renders each stat with the label the API formatted, not the raw value', async () => {
     await renderPage();
 
-    // `12,500` rather than `12500` — the Indian grouping is applied server-side.
-    expect(screen.getByText('12,500')).toBeInTheDocument();
-    expect(screen.getByText('4 used this month')).toBeInTheDocument();
+    expect(screen.getByText('1,500')).toBeInTheDocument();
+    expect(screen.queryByText('12,500')).not.toBeInTheDocument();
+    expect(screen.queryByText('4 used this month')).not.toBeInTheDocument();
     expect(screen.getByText('First week of enquiries')).toBeInTheDocument();
     expect(screen.getByText('+50% vs last week')).toBeInTheDocument();
   });
@@ -313,21 +313,23 @@ describe('recent enquiries', () => {
 });
 
 describe('the vehicle counts (F066)', () => {
-  it('shows the four listing states, each linking to its inventory tab, and the Add vehicle CTA', async () => {
+  it('shows the four primary metrics with the pending-review inventory link and Add vehicle CTA', async () => {
     apiGet.mockResolvedValue(dashboard());
     render(await DealerDashboardPage());
 
-    const nav = screen.getByRole('navigation', { name: /vehicles by status/i });
-    const links = within(nav).getAllByRole('link');
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/dealer/inventory?status=ACTIVE',
-      '/dealer/inventory?status=RESERVED',
+    const overview = screen.getByRole('region', { name: 'Dashboard overview' });
+    expect(overview.children).toHaveLength(4);
+    expect(within(overview).getByText('Active listings')).toBeInTheDocument();
+    expect(within(overview).getByText('Pending review')).toBeInTheDocument();
+    expect(within(overview).getByText('New enquiries')).toBeInTheDocument();
+    expect(within(overview).getByText('Vehicle views')).toBeInTheDocument();
+    expect(within(overview).getByRole('link')).toHaveAttribute(
+      'href',
       '/dealer/inventory?status=PENDING_REVIEW',
-      '/dealer/inventory?status=CHANGES_REQUESTED',
-      '/dealer/inventory?status=SOLD',
-    ]);
-    expect(within(nav).getByText('Changes requested')).toBeInTheDocument();
-    expect(within(nav).getByText('Reserved')).toBeInTheDocument();
+    );
+    expect(within(overview).queryByText('Changes requested')).not.toBeInTheDocument();
+    expect(within(overview).queryByText('Reserved')).not.toBeInTheDocument();
+    expect(within(overview).queryByText('Sold')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '+ Add vehicle' })).toHaveAttribute(
       'href',
       '/dealer/vehicles/new',
