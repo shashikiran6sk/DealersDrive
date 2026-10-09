@@ -29,6 +29,10 @@ const ENV = {
   // The limits are exercised by their own test, which enables them locally.
   RATE_LIMIT_ENABLED: 'false',
   LOG_LEVEL: 'silent',
+  GRAFANA_CLOUD_LOGS_ENABLED: 'false',
+  GRAFANA_CLOUD_LOKI_URL: '',
+  GRAFANA_CLOUD_LOKI_USER: '',
+  GRAFANA_CLOUD_LOKI_TOKEN: '',
   STORAGE_LOCAL_DIR: '.storage-test',
   /*
    * Two addresses, not the one the default carries (**R41**).
