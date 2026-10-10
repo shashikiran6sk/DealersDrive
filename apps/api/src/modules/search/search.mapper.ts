@@ -1,3 +1,4 @@
+import { isDealerVerified } from '@dealers-drive/contracts';
 import {
   BODY_TYPE_LABELS,
   FUEL_LABELS,
@@ -117,7 +118,7 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
       name: dealer.brandName,
       slug: dealer.slug,
       initials: initialsOf(dealer.brandName),
-      isVerified: true,
+      isVerified: isDealerVerified(dealer),
       location: locationOf(dealer),
       city: dealer.city,
       district: dealer.district,
@@ -185,7 +186,7 @@ export function toVehicleCard(row: CardRow): VehicleCardDto {
       name: dealer.brandName,
       slug: dealer.slug,
       initials: initialsOf(dealer.brandName),
-      isVerified: true,
+      isVerified: isDealerVerified(dealer),
     },
   };
 }

@@ -26,7 +26,7 @@ export function ComingSoon({ eyebrow, title, description }: ComingSoonProps) {
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/dealers" className="relative btn btn-primary px-5 py-[10px]">
-              <LinkPendingLabel>Explore verified dealers</LinkPendingLabel>
+              <LinkPendingLabel>Explore dealers</LinkPendingLabel>
             </Link>
             <Link href="/" className="relative btn btn-secondary px-5 py-[10px]">
               <LinkPendingLabel>Back to home</LinkPendingLabel>

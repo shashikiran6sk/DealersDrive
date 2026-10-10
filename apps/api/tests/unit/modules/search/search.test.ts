@@ -41,7 +41,13 @@ function row(overrides: Partial<CardRow['vehicle']> = {}): CardRow {
       _count: { images: 8 },
       ...overrides,
     },
-    dealer: { brandName: 'Sri Lakshmi Motors', slug: 'sri-lakshmi-motors', city: 'Vellore' },
+    dealer: {
+      status: 'ACTIVE',
+      verificationStatus: 'VERIFIED',
+      brandName: 'Sri Lakshmi Motors',
+      slug: 'sri-lakshmi-motors',
+      city: 'Vellore',
+    },
   } as unknown as CardRow;
 }
 
@@ -157,6 +163,8 @@ function detailRow(overrides: Partial<DetailRow['vehicle']> = {}): DetailRow {
       ...overrides,
     },
     dealer: {
+      status: 'ACTIVE',
+      verificationStatus: 'VERIFIED',
       brandName: 'Sri Lakshmi Motors',
       slug: 'sri',
       city: 'Katpadi',

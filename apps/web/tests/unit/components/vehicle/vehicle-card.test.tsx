@@ -84,7 +84,7 @@ describe('VehicleCard', () => {
       within(article).getByText('22,400 km · Petrol · Automatic · Katpadi'),
     ).toBeInTheDocument();
     expect(within(article).getByText('Sri Lakshmi Motors')).toBeInTheDocument();
-    expect(within(article).getByText('Verified')).toBeInTheDocument();
+    expect(within(article).getByText('Dealer Verified')).toBeInTheDocument();
   });
 
   it('shows the year once, in the plate — never again in the visible title', () => {
@@ -127,7 +127,7 @@ describe('VehicleCard', () => {
 
   it('marks a dealer that is not verified without the tag', () => {
     render(<VehicleCard vehicle={card({ dealer: { ...card().dealer, isVerified: false } })} />);
-    expect(screen.queryByText('Verified')).not.toBeInTheDocument();
+    expect(screen.queryByText('Dealer Verified')).not.toBeInTheDocument();
   });
 
   it('loads the first cards eagerly and the rest lazily', () => {

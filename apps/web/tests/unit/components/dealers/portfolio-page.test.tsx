@@ -139,7 +139,7 @@ describe('the dealership it shows', () => {
     render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sri Lakshmi Motors');
-    expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
+    expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
     expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
   });
 
@@ -700,7 +700,7 @@ describe('the inventory (R48)', () => {
 
     const card = within(screen.getByRole('article'));
     expect(card.queryByText('Sri Lakshmi Motors')).not.toBeInTheDocument();
-    expect(card.queryByText('Verified')).not.toBeInTheDocument();
+    expect(card.queryByText('Dealer Verified')).not.toBeInTheDocument();
   });
 
   it('says plainly when nothing is available', async () => {

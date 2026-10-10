@@ -162,6 +162,8 @@ describe('listActive', () => {
         'slug',
         'specialities',
         'state',
+        'status',
+        'verificationStatus',
         'tagline',
         'yearsOperating',
       ].sort(),

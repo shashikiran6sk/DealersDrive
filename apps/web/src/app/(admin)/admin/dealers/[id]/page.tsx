@@ -1,4 +1,5 @@
-import type { AdminDealerDetail } from '@dealers-drive/contracts';
+import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification/dealer-verification';
+import { DealerVerificationReview, type AdminDealerDetail } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -10,7 +11,7 @@ import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
 import { OnboardingProvenance } from '@/features/admin/onboarding-provenance';
 import { ProfileChangeReview } from '@/features/admin/profile-change-review';
-import { ApiError, apiGet } from '@/lib/api';
+import { ApiError, apiGet, apiGetParsed } from '@/lib/api';
 import { cn } from '@/lib/cn';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,12 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
+
+  const verification = dealer.actions.canEdit
+    ? await apiGetParsed(DealerVerificationReview, `/v1/admin/dealers/${id}/verification`, {
+        revalidate: false,
+      })
+    : null;
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-4 p-5">
@@ -54,6 +61,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       ) : null}
 
       <OnboardingProvenance onboarding={dealer.onboarding} />
+      {verification ? <DealerVerificationReviewPanel initial={verification} /> : null}
 
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))] max-md:grid-cols-2 max-md:gap-3">
         {[
@@ -87,7 +95,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
               rel="noreferrer nofollow"
               className="text-[13px] text-(--color-accent)"
             >
-              Open the yard in Google Maps
+              Open the business location in Google Maps
             </a>
           ) : (
             <p className="text-[13px] ink-muted">No Google Maps location on file.</p>
@@ -101,7 +109,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
             />
           ) : (
             <p className="py-3 text-[13px] ink-muted">
-              Not uploaded. A dealership cannot be submitted for verification without one.
+              Optional presentation image. Yard ownership and photographs do not determine Dealer
+              Verified status.
             </p>
           )}
         </section>
