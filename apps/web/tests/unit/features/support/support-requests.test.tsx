@@ -15,7 +15,11 @@ import {
   createSupportRequestAction,
   replySupportRequestAction,
 } from '@/features/support/support-actions';
-import { SupportReplyForm, SupportRequestForm } from '@/features/support/support-requests';
+import {
+  SupportReplyForm,
+  SupportRequestForm,
+  SupportRequestDetail,
+} from '@/features/support/support-requests';
 import type * as ApiModule from '@/lib/api';
 
 import { navigationState, revalidations } from '../../../setup';
@@ -269,6 +273,60 @@ describe('SupportRequestForm', () => {
 });
 
 describe('/support-requests/[id]', () => {
+  it('renders the saved reply and allowance immediately while server refresh still has the old snapshot', async () => {
+    const before = ticket({ remainingMessages: 2, messages: [] });
+    const saved = ticket({
+      remainingMessages: 1,
+      messages: [
+        {
+          id: '33333333-3333-4333-8333-333333333333',
+          author: 'CUSTOMER',
+          authorLabel: 'You',
+          body: 'Saved fourth reply',
+          createdAt: before.updatedAt,
+          createdLabel: before.updatedLabel,
+        },
+      ],
+    });
+    apiSend.mockResolvedValue(saved);
+    const view = render(<SupportRequestDetail ticket={before} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Reply to Dealers-Drive support'), 'Saved fourth reply');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    expect(await screen.findByText('1 messages remaining before support replies.')).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Conversation' })).toHaveTextContent(
+      'Saved fourth reply',
+    );
+    view.rerender(<SupportRequestDetail ticket={before} />);
+    expect(screen.getByText('1 messages remaining before support replies.')).toBeVisible();
+    const latest = ticket({
+      ...saved,
+      canReply: false,
+      remainingMessages: 0,
+      messages: [
+        ...saved.messages,
+        {
+          ...saved.messages[0]!,
+          id: '44444444-4444-4444-8444-444444444444',
+          body: 'Saved fifth reply',
+        },
+      ],
+    });
+    view.rerender(<SupportRequestDetail ticket={latest} />);
+    expect(
+      screen.getByText(
+        "You've sent five messages. Please wait for our support team to reply before sending more.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Send reply' })).toBeNull();
+    view.rerender(
+      <SupportRequestDetail
+        ticket={ticket({ id: ENQUIRY_ID, remainingMessages: 5, messages: [] })}
+      />,
+    );
+    expect(screen.getByText('5 messages remaining before support replies.')).toBeVisible();
+    expect(screen.queryByText('Saved fourth reply')).toBeNull();
+  });
   it('shows the exact blocked message and urgent support route without a reply composer', async () => {
     apiGetParsed.mockResolvedValue(
       ticket({ canReply: false, remainingMessages: 0, status: 'OPEN' }),
@@ -479,7 +537,10 @@ describe('support Server Actions', () => {
 
   it('replies through the API and redraws the request and the list', async () => {
     apiSend.mockResolvedValue(ticket());
-    expect(await replySupportRequestAction(ID, ' Thanks ')).toEqual({ status: 'sent' });
+    expect(await replySupportRequestAction(ID, ' Thanks ')).toEqual({
+      status: 'sent',
+      ticket: ticket(),
+    });
     expect(apiSend).toHaveBeenCalledWith('POST', `/v1/support/tickets/${ID}/messages`, {
       message: 'Thanks',
     });

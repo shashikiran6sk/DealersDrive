@@ -26,7 +26,7 @@ export type CreateSupportRequestResult =
   | { status: 'signed-out' };
 
 export type ReplySupportRequestResult =
-  | { status: 'sent' }
+  | { status: 'sent'; ticket?: CustomerSupportTicket }
   | { status: 'invalid'; message: string }
   | { status: 'refused'; code: string; message: string }
   | { status: 'signed-out' };
@@ -95,8 +95,9 @@ export async function replySupportRequestAction(
     };
   }
 
+  let ticket: CustomerSupportTicket;
   try {
-    await apiSend<CustomerSupportTicket>(
+    ticket = await apiSend<CustomerSupportTicket>(
       'POST',
       `/v1/support/tickets/${encodeURIComponent(id.data.id)}/messages`,
       body.data,
@@ -115,5 +116,5 @@ export async function replySupportRequestAction(
 
   revalidatePath(SUPPORT_ACTION_TEXT.detailPath(id.data.id));
   revalidatePath(SUPPORT_ACTION_TEXT.listPath);
-  return { status: 'sent' };
+  return { status: 'sent', ticket };
 }

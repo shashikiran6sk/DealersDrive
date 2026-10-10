@@ -20,6 +20,7 @@ export function SupportReplyForm({
   ticketId,
   hint,
   remainingMessages,
+  onSent,
   send = replySupportRequestAction,
 }: SupportReplyFormProps) {
   const id = useId();
@@ -44,6 +45,7 @@ export function SupportReplyForm({
           const result = await send(ticketId, message, replyId.current);
           inFlight.current = false;
           if (result.status === 'sent') {
+            if (result.ticket) onSent?.(result.ticket);
             setMessage('');
             replyId.current = null;
             router.refresh();

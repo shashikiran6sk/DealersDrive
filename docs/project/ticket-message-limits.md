@@ -28,6 +28,15 @@ link does not send a sixth message or reset the ticket counter. Remaining allowa
 through an accessible live region. Private notes, operator identities and quota internals are not
 added to the public marketplace or another customer's payload.
 
+Post-creation browser UAT found a delayed server refresh could leave the visible conversation
+and allowance one reply behind the persisted record. Successful reply actions now return the
+safe customer ticket snapshot; the detail component applies it immediately. Older refresh
+snapshots cannot replace a conversation containing a later message, and snapshots are bound to
+the ticket ID. Newer server messages and lifecycle updates still take precedence. This uses
+the server's actual saved result, not an optimistic local quota increment. The regression test
+covers stale refresh, the fifth-message block, a newer server snapshot and navigation to another
+ticket. No admin/private metadata is added to the customer snapshot.
+
 Migration 20261010120000_ticket_message_limits is additive and transactional. It counts historical
 CUSTOMER messages after the latest SUPPORT timestamp, caps over-limit records at five while
 preserving every message, and leaves empty tickets at zero. Legacy same-timestamp ordering cannot

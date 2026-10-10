@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
-import { SUPPORT_MESSAGE_LIMIT_TEXT } from '@dealers-drive/contracts';
+import { useState } from 'react';
+import { SUPPORT_MESSAGE_LIMIT_TEXT, type CustomerSupportTicket } from '@dealers-drive/contracts';
 
 import { ButtonLink } from '@/components/ui/button';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
@@ -20,7 +23,16 @@ function replyHint(status: SupportRequestDetailProps['ticket']['status']): strin
   return null;
 }
 
-export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
+export function SupportRequestDetail({ ticket: initialTicket }: SupportRequestDetailProps) {
+  const [savedTicket, setSavedTicket] = useState<CustomerSupportTicket | null>(null);
+  const ticket =
+    savedTicket &&
+    savedTicket.id === initialTicket.id &&
+    (savedTicket.messages.length > initialTicket.messages.length ||
+      (savedTicket.messages.length === initialTicket.messages.length &&
+        savedTicket.updatedAt > initialTicket.updatedAt))
+      ? savedTicket
+      : initialTicket;
   return (
     <div className="flex flex-col gap-[18px]">
       <Link href={SUPPORT_REQUESTS_PATH} className="relative btn btn-ghost self-start">
@@ -103,6 +115,7 @@ export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
             ticketId={ticket.id}
             hint={replyHint(ticket.status)}
             remainingMessages={ticket.remainingMessages}
+            onSent={setSavedTicket}
           />
         </section>
       ) : ticket.status !== 'CLOSED' && ticket.remainingMessages === 0 ? (

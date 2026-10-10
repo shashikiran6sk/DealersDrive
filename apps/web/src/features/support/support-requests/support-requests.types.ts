@@ -35,6 +35,7 @@ export interface SupportReplyFormProps {
   ticketId: string;
   hint: string | null;
   remainingMessages?: number;
+  onSent?: (ticket: CustomerSupportTicket) => void;
   send?: (
     ticketId: string,
     message: string,
