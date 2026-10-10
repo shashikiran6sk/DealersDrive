@@ -180,6 +180,22 @@ describe('redaction', () => {
       user: { passwordHash: '[redacted]' },
     });
   });
+  it('redacts admin provider proofs and challenge nonces', () => {
+    const { lines, log } = probe();
+    log.info(
+      {
+        accessToken: 'controlled-proof',
+        browserToken: 'controlled-nonce',
+        body: { accessToken: 'controlled-proof', browserToken: 'controlled-nonce' },
+      },
+      'admin mobile verification',
+    );
+    expect(lines[0]).toMatchObject({
+      accessToken: '[redacted]',
+      browserToken: '[redacted]',
+      body: { accessToken: '[redacted]', browserToken: '[redacted]' },
+    });
+  });
 
   it('censors the request headers that carry a session', () => {
     const { lines, log } = probe();

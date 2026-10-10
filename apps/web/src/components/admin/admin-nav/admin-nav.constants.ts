@@ -14,6 +14,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     permission: 'admin:notifications:read',
   },
   { href: '/admin/config', label: 'Configuration', permission: 'admin:config:write' },
+  { href: '/admin/profile/security', label: 'Profile · Security' },
 ];
 
 const NOT_YET_BUILT = new Set(['/admin/payments']);

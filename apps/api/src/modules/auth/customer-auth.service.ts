@@ -186,7 +186,7 @@ export function createCustomerAuthService({
     },
 
     async logout(token: string | undefined): Promise<void> {
-      await sessions.revoke(token);
+      if (await sessions.resolvePerson(token)) await sessions.revoke(token);
     },
   };
 }

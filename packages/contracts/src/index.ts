@@ -43,3 +43,4 @@ export const CONTRACTS_VERSION = '1.0.0';
 export * from './service-locations.js';
 
 export * from './dealer-tagline.js';
+export * from './admin-phone.js';

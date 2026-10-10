@@ -8,6 +8,9 @@ type ZodSchema = z.ZodType;
 const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 const INPUT_SCHEMA_NAMES = [
+  'AdminPhoneChallengeInput',
+  'AdminPhoneVerifyInput',
+  'AdminPhoneRevokeInput',
   'ServiceLocationParam',
   'ServiceLocationSettings',
   'AddServiceDistrictInput',

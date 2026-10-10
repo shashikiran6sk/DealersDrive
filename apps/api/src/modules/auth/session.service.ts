@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 
-import type { PrismaClient, SessionScope } from '@prisma/client';
+import type { Prisma, PrismaClient, SessionScope } from '@prisma/client';
 
 export const DEALER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const ADMIN_SESSION_TTL_SECONDS = 12 * 60 * 60;
@@ -18,19 +18,24 @@ export function ttlFor(scope: SessionScope): number {
 
 export function createSessionService(prisma: PrismaClient) {
   return {
-    async issue(input: {
-      userId: string;
-      scope: SessionScope;
-      ip?: string | undefined;
-      userAgent?: string | undefined;
-    }): Promise<IssuedSession> {
+    async issue(
+      input: {
+        userId: string;
+        scope: SessionScope;
+        authenticationMethod?: 'GOOGLE' | 'PHONE_OTP';
+        ip?: string | undefined;
+        userAgent?: string | undefined;
+      },
+      db: PrismaClient | Prisma.TransactionClient = prisma,
+    ): Promise<IssuedSession> {
       const token = randomBytes(32).toString('base64url');
       const expiresAt = new Date(Date.now() + ttlFor(input.scope) * 1000);
 
-      await prisma.session.create({
+      await db.session.create({
         data: {
           userId: input.userId,
           scope: input.scope,
+          authenticationMethod: input.authenticationMethod ?? null,
           tokenHash: hashToken(token),
           expiresAt,
           ip: input.ip ?? null,

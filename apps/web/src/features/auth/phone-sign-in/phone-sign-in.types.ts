@@ -9,4 +9,5 @@ export interface PhoneSignInProps {
   verifyLabel?: string;
   initialStage?: PhoneSignInStage;
   initialPhone?: string;
+  onBeforeSend?: (phone: string, resend: boolean) => Promise<string | null>;
 }

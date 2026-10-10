@@ -20,6 +20,8 @@ export const OTP_PURPOSES = [
   'CUSTOMER_LOGIN',
   'ASSISTED_DEALER_PHONE',
   'DEALER_CLAIM',
+  'ADMIN_ENROLL',
+  'ADMIN_LOGIN',
 ] as const;
 
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
@@ -30,6 +32,7 @@ export interface ProvePhoneInput {
   purpose: OtpPurpose;
   userId?: string | undefined;
   ip?: string | undefined;
+  freshAfter?: Date;
 }
 
 export interface ProvenPhone {
@@ -51,6 +54,8 @@ export const REPLAY_GUARD_FAILS_OPEN: Readonly<Record<OtpPurpose, boolean>> = {
   CUSTOMER_LOGIN: false,
   ASSISTED_DEALER_PHONE: false,
   DEALER_CLAIM: false,
+  ADMIN_ENROLL: false,
+  ADMIN_LOGIN: false,
 };
 
 const TOKEN_FIELD = 'body.accessToken';
@@ -104,6 +109,11 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
     async prove(input: ProvePhoneInput): Promise<ProvenPhone> {
       const phone = normaliseIndianMobile(input.phone);
       if (!phone) throw refused(input, 'not an Indian mobile number');
+      if (
+        (input.purpose === 'ADMIN_LOGIN' || input.purpose === 'ADMIN_ENROLL') &&
+        !input.freshAfter
+      )
+        throw refused(input, 'admin challenge freshness required');
 
       const verdict = await otp.identify(input.accessToken);
 
@@ -111,6 +121,19 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
       if (verdict.status === 'REJECTED') throw refused(input, verdict.reason);
       if (normaliseIndianMobile(verdict.identifier) !== phone) {
         throw refused(input, 'identifier mismatch');
+      }
+
+      if (
+        input.freshAfter &&
+        (!verdict.issuedAt ||
+          !verdict.expiresAt ||
+          !Number.isFinite(verdict.issuedAt.getTime()) ||
+          !Number.isFinite(verdict.expiresAt.getTime()) ||
+          verdict.issuedAt.getTime() < input.freshAfter.getTime() - 5000 ||
+          verdict.issuedAt.getTime() > Date.now() + 5000 ||
+          verdict.expiresAt.getTime() <= Date.now())
+      ) {
+        throw refused(input, 'proof freshness unavailable or expired');
       }
 
       await consumeToken(cache, input);

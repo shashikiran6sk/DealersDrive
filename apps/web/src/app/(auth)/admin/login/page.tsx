@@ -1,4 +1,4 @@
-import type { AuthProvidersResponse } from '@dealers-drive/contracts';
+import type { AuthProvidersResponse, PhoneOtpWidget } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -8,6 +8,7 @@ import { Banner } from '@/components/ui/primitives';
 import { apiGet } from '@/lib/api';
 import { currentAdmin } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
+import { AdminPhone } from '@/features/auth/admin-phone/admin-phone';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,8 @@ const ERRORS: Record<string, string> = {
   invalid_callback: 'That sign-in link was incomplete. Please start again.',
   account_suspended: 'This account has been suspended.',
   session_expired: 'Your session has ended. Sign in again.',
+  mobile_revoked:
+    'Mobile access and admin sessions have been revoked. Continue with Google to recover or link another number.',
   no_console:
     'Your role does not include the admin console. Sign in with an operations account, or use your own workspace.',
 };
@@ -41,6 +44,9 @@ export default async function AdminLoginPage({
   const providers = await apiGet<AuthProvidersResponse>('/v1/auth/providers', {
     revalidate: false,
   });
+  const widget = await apiGet<PhoneOtpWidget>('/v1/auth/admin/phone/widget', {
+    revalidate: false,
+  }).catch(() => null);
 
   return (
     <AuthShell eyebrow="Dealers-Drive operations">
@@ -73,9 +79,15 @@ export default async function AdminLoginPage({
       />
 
       <p className="mt-[14px] text-center text-[12px] ink-subtle">
-        Admin access is granted by address, not by signing in. Accounts that are not on the list are
-        refused after Google confirms them.
+        Mobile sign-in is available after an authorized administrator links and verifies a number in
+        Profile → Security.
       </p>
+      <details className="mt-5 border-t border-(--color-divider) pt-4">
+        <summary className="cursor-pointer py-2 font-semibold">Continue with Mobile OTP</summary>
+        <div className="mt-3">
+          <AdminPhone mode="LOGIN" widget={widget} />
+        </div>
+      </details>
     </AuthShell>
   );
 }

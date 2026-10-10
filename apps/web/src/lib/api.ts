@@ -6,6 +6,7 @@ import { serverConfig } from './config';
 import { logger } from './logger';
 
 export const SESSION_COOKIE = 'dd_session';
+export const ADMIN_SESSION_COOKIE = 'dd_admin_session';
 
 export const SERVER_ERROR_MESSAGE =
   'Something went wrong on our side. Please try again in a moment.';
@@ -196,9 +197,16 @@ async function request<T>(
 
   if (uncached) {
     init.cache = 'no-store';
-    const session = await sessionCookie();
+    const cookieName =
+      path.startsWith('/v1/admin/') ||
+      path === '/v1/admin' ||
+      path.startsWith('/v1/auth/admin/') ||
+      path.startsWith('/v1/sales/')
+        ? ADMIN_SESSION_COOKIE
+        : SESSION_COOKIE;
+    const session = await sessionCookie(cookieName);
     if (session) {
-      init.headers = { ...init.headers, Cookie: `${SESSION_COOKIE}=${session}` };
+      init.headers = { ...init.headers, Cookie: `${cookieName}=${session}` };
     }
     init.headers = { ...init.headers, ...(await clientIpHeaders()) };
   } else if (bypassCache) {
@@ -265,9 +273,9 @@ async function request<T>(
   return parsed.value as T;
 }
 
-async function sessionCookie(): Promise<string | undefined> {
+async function sessionCookie(name: string): Promise<string | undefined> {
   try {
-    return (await cookies()).get(SESSION_COOKIE)?.value;
+    return (await cookies()).get(name)?.value;
   } catch {
     return undefined;
   }

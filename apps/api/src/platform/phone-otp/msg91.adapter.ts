@@ -29,12 +29,10 @@ export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPo
       }
 
       const body: unknown = await response.json().catch(() => null);
+      if (response.status >= 500 || response.status === 429) return { status: 'UNAVAILABLE' };
 
       if (!response.ok || !isSuccess(body)) {
-        logger.info(
-          { driver: 'msg91', status: response.status, providerMessage: messageOf(body) },
-          'msg91 refused an access token',
-        );
+        logger.info({ driver: 'msg91', status: response.status }, 'msg91 refused an access token');
         return { status: 'REJECTED', reason: 'the provider refused the token' };
       }
 
@@ -47,17 +45,13 @@ export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPo
         return { status: 'REJECTED', reason: 'the provider named no identifier' };
       }
 
-      return { status: 'VERIFIED', identifier };
+      return { status: 'VERIFIED', identifier, ...tokenTimes(accessToken) };
     },
   };
 }
 
 function isSuccess(body: unknown): boolean {
   return isRecord(body) && text(body.type).toLowerCase() === 'success';
-}
-
-function messageOf(body: unknown): string {
-  return isRecord(body) ? text(body.message).slice(0, 200) : '';
 }
 
 function text(value: unknown): string {
@@ -99,4 +93,21 @@ function asIdentifier(value: unknown): MsisdnDigits | null {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   const text = String(value).trim().replace(/^\+/, '');
   return /^\d{8,15}$/.test(text) ? text : null;
+}
+
+function tokenTimes(token: string): { issuedAt?: Date; expiresAt?: Date } {
+  try {
+    const payload: unknown = JSON.parse(
+      Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8'),
+    );
+    if (!isRecord(payload)) return {};
+    const result: { issuedAt?: Date; expiresAt?: Date } = {};
+    if (typeof payload.iat === 'number' && Number.isSafeInteger(payload.iat))
+      result.issuedAt = new Date(payload.iat * 1000);
+    if (typeof payload.exp === 'number' && Number.isSafeInteger(payload.exp))
+      result.expiresAt = new Date(payload.exp * 1000);
+    return result;
+  } catch {
+    return {};
+  }
 }
