@@ -103,6 +103,7 @@ describe('the login door', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Open Main menu' }));
     const drawer = await screen.findByRole('dialog');
+    expect(drawer).toHaveAccessibleName('Main');
     for (const [name, href] of [
       ['Home', '/'],
       ['Buy cars', '/cars'],
