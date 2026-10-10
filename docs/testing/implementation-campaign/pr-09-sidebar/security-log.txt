@@ -1,0 +1,844 @@
+semgrep	Set up job	﻿2026-10-10T14:35:23.3053998Z Current runner version: '2.337.0'
+semgrep	Set up job	2026-10-10T14:35:23.3083544Z ##[group]Runner Image Provisioner
+semgrep	Set up job	2026-10-10T14:35:23.3084510Z Hosted Compute Agent
+semgrep	Set up job	2026-10-10T14:35:23.3085100Z Version: 20261002.596
+semgrep	Set up job	2026-10-10T14:35:23.3085807Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+semgrep	Set up job	2026-10-10T14:35:23.3086630Z Build Date: 2026-10-02T22:28:27Z
+semgrep	Set up job	2026-10-10T14:35:23.3087390Z Worker ID: {3ea0cfb8-9fb1-427d-b874-8d36f32c8a08}
+semgrep	Set up job	2026-10-10T14:35:23.3088360Z Region: westus2
+semgrep	Set up job	2026-10-10T14:35:23.3088941Z Cloud: Azure
+semgrep	Set up job	2026-10-10T14:35:23.3089537Z ##[endgroup]
+semgrep	Set up job	2026-10-10T14:35:23.3091084Z ##[group]Operating System
+semgrep	Set up job	2026-10-10T14:35:23.3091738Z Ubuntu
+semgrep	Set up job	2026-10-10T14:35:23.3092406Z 24.04.5
+semgrep	Set up job	2026-10-10T14:35:23.3092922Z LTS
+semgrep	Set up job	2026-10-10T14:35:23.3093476Z ##[endgroup]
+semgrep	Set up job	2026-10-10T14:35:23.3094135Z ##[group]Runner Image
+semgrep	Set up job	2026-10-10T14:35:23.3094715Z Image: ubuntu-24.04
+semgrep	Set up job	2026-10-10T14:35:23.3095393Z Version: 20261004.327.1
+semgrep	Set up job	2026-10-10T14:35:23.3096476Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+semgrep	Set up job	2026-10-10T14:35:23.3098677Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+semgrep	Set up job	2026-10-10T14:35:23.3099664Z ##[endgroup]
+semgrep	Set up job	2026-10-10T14:35:23.3100861Z ##[group]GITHUB_TOKEN Permissions
+semgrep	Set up job	2026-10-10T14:35:23.3102968Z Contents: read
+semgrep	Set up job	2026-10-10T14:35:23.3103702Z Metadata: read
+semgrep	Set up job	2026-10-10T14:35:23.3104287Z ##[endgroup]
+semgrep	Set up job	2026-10-10T14:35:23.3106599Z Secret source: Actions
+semgrep	Set up job	2026-10-10T14:35:23.3107631Z Cache mode: write
+semgrep	Set up job	2026-10-10T14:35:23.3108935Z Prepare workflow directory
+semgrep	Set up job	2026-10-10T14:35:23.3509293Z Prepare all required actions
+semgrep	Set up job	2026-10-10T14:35:23.3566666Z Getting action download info
+semgrep	Set up job	2026-10-10T14:35:23.6872229Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+semgrep	Set up job	2026-10-10T14:35:23.7864292Z Download action repository 'actions/setup-python@v7' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+semgrep	Set up job	2026-10-10T14:35:24.0016212Z Complete job name: semgrep
+semgrep	Run actions/checkout@v7	﻿2026-10-10T14:35:24.0803571Z ##[group]Run actions/checkout@v7
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0804545Z with:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0805023Z   repository: shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0809181Z   token: ***
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0809629Z   ssh-strict: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0810103Z   ssh-user: git
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0810554Z   persist-credentials: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0811054Z   clean: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0811495Z   sparse-checkout-cone-mode: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0812022Z   fetch-depth: 1
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0812446Z   fetch-tags: false
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0812891Z   show-progress: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0813341Z   lfs: false
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0813781Z   submodules: false
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0814234Z   set-safe-directory: true
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0814739Z   allow-unsafe-pr-checkout: false
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.0815525Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.1868834Z Syncing repository: shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.1872018Z ##[group]Getting Git version info
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.1873433Z Working directory is '/home/runner/work/DealersDrive/DealersDrive'
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.1875509Z [command]/usr/bin/git version
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.1976577Z git version 2.55.0
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2016085Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2028850Z Temporarily overriding HOME='/home/runner/work/_temp/be4edaa7-f15d-4675-bb13-6db7f0e4fd7c' before making global git config changes
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2031757Z Adding repository directory to the temporary git global config as a safe directory
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2034686Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2097128Z Deleting the contents of '/home/runner/work/DealersDrive/DealersDrive'
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2101649Z ##[group]Determining repository object format
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2103948Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2105437Z ##[group]Initializing the repository
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2110088Z [command]/usr/bin/git init /home/runner/work/DealersDrive/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2223778Z hint: Using 'master' as the name for the initial branch. This default branch name
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2225947Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2227048Z hint: to use in all of your new repositories, which will suppress this warning,
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2227901Z hint: call:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2228628Z hint:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2229233Z hint: 	git config --global init.defaultBranch <name>
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2229927Z hint:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2230981Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2232749Z hint: 'development'. The just-created branch can be renamed via this command:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2233654Z hint:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2234122Z hint: 	git branch -m <name>
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2234664Z hint:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2235370Z hint: Disable this message with "git config set advice.defaultBranchName false"
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2236417Z Initialized empty Git repository in /home/runner/work/DealersDrive/DealersDrive/.git/
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2256026Z [command]/usr/bin/git remote add origin https://github.com/shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2299861Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2300722Z ##[group]Disabling automatic garbage collection
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2303104Z [command]/usr/bin/git config --local gc.auto 0
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2338124Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2339495Z ##[group]Setting up auth
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2340347Z Removing SSH command configuration
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2345556Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2380969Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2791055Z Removing HTTP extra header
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2813294Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.2869582Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3126892Z Removing includeIf entries pointing to credentials config files
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3134418Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3171517Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3408792Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3452593Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path /home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3491357Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3533173Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3574003Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3611265Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3612141Z ##[group]Fetching the repository
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:24.3620961Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +62d63df933c3e62d8afdeb3b6e72adc6325a740a:refs/remotes/pull/296/merge
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2649934Z From https://github.com/shashikiran6sk/DealersDrive
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2652782Z  * [new ref]         62d63df933c3e62d8afdeb3b6e72adc6325a740a -> pull/296/merge
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2658851Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2660867Z ##[group]Determining the checkout info
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2663002Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2664921Z [command]/usr/bin/git sparse-checkout disable
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2724443Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2765171Z ##[group]Checking out the ref
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.2766818Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/296/merge
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4800469Z Note: switching to 'refs/remotes/pull/296/merge'.
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4801746Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4802485Z You are in 'detached HEAD' state. You can look around, make experimental
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4804152Z changes and commit them, and you can discard any commits you make in this
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4805763Z state without impacting any branches by switching back to a branch.
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4806740Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4807397Z If you want to create a new branch to retain commits you create, you may
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4809539Z do so (now or later) by using -c with the switch command. Example:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4810930Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4811582Z   git switch -c <new-branch-name>
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4812584Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4813351Z Or undo this operation with:
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4814414Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4815075Z   git switch -
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4815956Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4817345Z Turn off this advice by setting config variable advice.detachedHead to false
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4819456Z
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4821296Z HEAD is now at 62d63df Merge cefed41177086685bb56423522bfd67d2ea9e7dc into 98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4828730Z ##[endgroup]
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4885679Z [command]/usr/bin/git log -1 --format=%H
+semgrep	Run actions/checkout@v7	2026-10-10T14:35:25.4919145Z 62d63df933c3e62d8afdeb3b6e72adc6325a740a
+semgrep	Run actions/setup-python@v7	﻿2026-10-10T14:35:25.5221507Z ##[group]Run actions/setup-python@v7
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5221934Z with:
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5222202Z   python-version: 3.12
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5222484Z   check-latest: false
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5225133Z   token: ***
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5225401Z   update-environment: true
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5225698Z   allow-prereleases: false
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5295366Z   freethreaded: false
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.5295866Z ##[endgroup]
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.6515804Z ##[group]Installed versions
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.6596333Z Successfully set up CPython (3.12.15)
+semgrep	Run actions/setup-python@v7	2026-10-10T14:35:25.6597676Z ##[endgroup]
+semgrep	Install Semgrep	﻿2026-10-10T14:35:25.6759419Z ##[group]Run python -m pip install --disable-pip-version-check semgrep==1.179.0
+semgrep	Install Semgrep	2026-10-10T14:35:25.6760193Z python -m pip install --disable-pip-version-check semgrep==1.179.0
+semgrep	Install Semgrep	2026-10-10T14:35:25.7126664Z shell: /usr/bin/bash -e {0}
+semgrep	Install Semgrep	2026-10-10T14:35:25.7127188Z env:
+semgrep	Install Semgrep	2026-10-10T14:35:25.7127622Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Install Semgrep	2026-10-10T14:35:25.7128711Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+semgrep	Install Semgrep	2026-10-10T14:35:25.7129437Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Install Semgrep	2026-10-10T14:35:25.7130017Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Install Semgrep	2026-10-10T14:35:25.7130596Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Install Semgrep	2026-10-10T14:35:25.7131175Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+semgrep	Install Semgrep	2026-10-10T14:35:25.7131667Z ##[endgroup]
+semgrep	Install Semgrep	2026-10-10T14:35:28.5516129Z Collecting semgrep==1.179.0
+semgrep	Install Semgrep	2026-10-10T14:35:28.6131170Z   Downloading semgrep-1.179.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl.metadata (22 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6385894Z Collecting attrs>=21.3 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6453188Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6635453Z Collecting boltons~=21.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6703298Z   Downloading boltons-21.0.0-py2.py3-none-any.whl.metadata (1.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6856892Z Collecting click-option-group~=0.5 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.6935030Z   Downloading click_option_group-0.5.9-py3-none-any.whl.metadata (5.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7138585Z Collecting click~=8.4.2 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7203238Z   Downloading click-8.4.2-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7370952Z Collecting colorama~=0.4.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7436305Z   Downloading colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7597408Z Collecting exceptiongroup~=1.2.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7664617Z   Downloading exceptiongroup-1.2.2-py3-none-any.whl.metadata (6.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7813735Z Collecting glom>=23.3 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.7878005Z   Downloading glom-25.12.0-py3-none-any.whl.metadata (5.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8117532Z Collecting jsonschema~=4.25.1 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8184355Z   Downloading jsonschema-4.25.1-py3-none-any.whl.metadata (7.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8551063Z Collecting mcp==1.29.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8617504Z   Downloading mcp-1.29.0-py3-none-any.whl.metadata (9.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8851584Z Collecting opentelemetry-api~=1.37.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.8958196Z   Downloading opentelemetry_api-1.37.0-py3-none-any.whl.metadata (1.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9179978Z Collecting opentelemetry-sdk~=1.37.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9251650Z   Downloading opentelemetry_sdk-1.37.0-py3-none-any.whl.metadata (1.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9446790Z Collecting opentelemetry-exporter-otlp-proto-http~=1.37.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9515702Z   Downloading opentelemetry_exporter_otlp_proto_http-1.37.0-py3-none-any.whl.metadata (2.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9748893Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:28.9816891Z   Downloading opentelemetry_instrumentation_requests-0.66b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0036694Z Collecting opentelemetry-instrumentation-threading~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0107313Z   Downloading opentelemetry_instrumentation_threading-0.66b1-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0363368Z Collecting packaging>=21.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0437919Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0729283Z Collecting peewee~=3.14 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0794764Z   Downloading peewee-3.19.0-py3-none-any.whl.metadata (7.0 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.0992156Z Collecting pyjwt<3,>=2.15.0 (from pyjwt[crypto]<3,>=2.15.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.1069609Z   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.1339974Z Collecting requests~=2.22 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.1406046Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.1739253Z Collecting rich>=13.5.2 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.1809053Z   Downloading rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3109101Z Collecting ruamel.yaml>=0.18.15 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3179242Z   Downloading ruamel_yaml-0.19.1-py3-none-any.whl.metadata (16 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3572817Z Collecting ruamel.yaml.clib==0.2.15 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3645381Z   Downloading ruamel_yaml_clib-0.2.15-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (3.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3789805Z Collecting semantic-version~=2.10.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.3854256Z   Downloading semantic_version-2.10.0-py2.py3-none-any.whl.metadata (9.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4179542Z Collecting tomli~=2.4.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4250452Z   Downloading tomli-2.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4452570Z Collecting typing-extensions~=4.2 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4574560Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4813758Z Collecting urllib3~=2.0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.4888762Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5095545Z Collecting wcmatch~=8.3 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5167939Z   Downloading wcmatch-8.5.2-py3-none-any.whl.metadata (4.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5400108Z Collecting anyio>=4.5 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5472535Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5629393Z Collecting httpx-sse>=0.4 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5698557Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5924080Z Collecting httpx<1.0.0,>=0.27.1 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.5997884Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.6217874Z Collecting pydantic-settings>=2.5.2 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.6294512Z   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.7461159Z Collecting pydantic<3.0.0,>=2.11.0 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.7534804Z   Downloading pydantic-2.14.0-py3-none-any.whl.metadata (131 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.7880688Z Collecting python-multipart>=0.0.9 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.7947062Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8176379Z Collecting sse-starlette>=1.6.1 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8247765Z   Downloading sse_starlette-3.5.0-py3-none-any.whl.metadata (15 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8573479Z Collecting starlette>=0.27 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8649437Z   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8828825Z Collecting typing-inspection>=0.4.1 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.8906500Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9231311Z Collecting uvicorn>=0.31.1 (from mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9309065Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9618121Z Collecting certifi (from httpx<1.0.0,>=0.27.1->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9692910Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9904246Z Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:29.9984847Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0231485Z Collecting idna (from httpx<1.0.0,>=0.27.1->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0305513Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0483236Z Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0554686Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0761706Z Collecting jsonschema-specifications>=2023.03.6 (from jsonschema~=4.25.1->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.0831661Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.1074607Z Collecting referencing>=0.28.4 (from jsonschema~=4.25.1->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.1145238Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.4747401Z Collecting rpds-py>=0.7.1 (from jsonschema~=4.25.1->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.4826578Z   Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5119133Z Collecting importlib-metadata<8.8.0,>=6.0 (from opentelemetry-api~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5193498Z   Downloading importlib_metadata-8.7.1-py3-none-any.whl.metadata (4.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5440382Z Collecting zipp>=3.20 (from importlib-metadata<8.8.0,>=6.0->opentelemetry-api~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5515022Z   Downloading zipp-4.1.1-py3-none-any.whl.metadata (3.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5763736Z Collecting googleapis-common-protos~=1.52 (from opentelemetry-exporter-otlp-proto-http~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.5894010Z   Downloading googleapis_common_protos-1.75.5-py3-none-any.whl.metadata (8.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.6124155Z Collecting opentelemetry-exporter-otlp-proto-common==1.37.0 (from opentelemetry-exporter-otlp-proto-http~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.6213059Z   Downloading opentelemetry_exporter_otlp_proto_common-1.37.0-py3-none-any.whl.metadata (1.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.6432489Z Collecting opentelemetry-proto==1.37.0 (from opentelemetry-exporter-otlp-proto-http~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.6504318Z   Downloading opentelemetry_proto-1.37.0-py3-none-any.whl.metadata (2.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8150218Z Collecting protobuf<7.0,>=5.0 (from opentelemetry-proto==1.37.0->opentelemetry-exporter-otlp-proto-http~=1.37.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8233665Z   Downloading protobuf-6.33.6-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8531990Z Collecting opentelemetry-instrumentation==0.66b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8600939Z   Downloading opentelemetry_instrumentation-0.66b1-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8833929Z Collecting opentelemetry-semantic-conventions==0.66b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.8903218Z   Downloading opentelemetry_semantic_conventions-0.66b1-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:30.9108033Z Collecting opentelemetry-util-http==0.66b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:30.9249709Z   Downloading opentelemetry_util_http-0.66b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3234970Z Collecting wrapt<3.0.0,>=1.0.0 (from opentelemetry-instrumentation==0.66b1->opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3302000Z   Downloading wrapt-2.5.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (7.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3359769Z INFO: pip is looking at multiple versions of opentelemetry-semantic-conventions to determine which version is compatible with other requirements. This could take a while.
+semgrep	Install Semgrep	2026-10-10T14:35:31.3369334Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3437002Z   Downloading opentelemetry_instrumentation_requests-0.66b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3484952Z Collecting opentelemetry-instrumentation==0.66b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3560729Z   Downloading opentelemetry_instrumentation-0.66b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3620190Z Collecting opentelemetry-semantic-conventions==0.66b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3684605Z   Downloading opentelemetry_semantic_conventions-0.66b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3726606Z Collecting opentelemetry-util-http==0.66b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3791557Z   Downloading opentelemetry_util_http-0.66b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3855913Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3923324Z   Downloading opentelemetry_instrumentation_requests-0.65b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.3971375Z Collecting opentelemetry-instrumentation==0.65b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4036919Z   Downloading opentelemetry_instrumentation-0.65b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4088022Z Collecting opentelemetry-semantic-conventions==0.65b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4157216Z   Downloading opentelemetry_semantic_conventions-0.65b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4207244Z Collecting opentelemetry-util-http==0.65b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4276823Z   Downloading opentelemetry_util_http-0.65b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4339196Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4410613Z   Downloading opentelemetry_instrumentation_requests-0.64b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4467228Z Collecting opentelemetry-instrumentation==0.64b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4535319Z   Downloading opentelemetry_instrumentation-0.64b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4588173Z Collecting opentelemetry-semantic-conventions==0.64b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4658165Z   Downloading opentelemetry_semantic_conventions-0.64b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4710907Z Collecting opentelemetry-util-http==0.64b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4823327Z   Downloading opentelemetry_util_http-0.64b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4882968Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.4952842Z   Downloading opentelemetry_instrumentation_requests-0.63b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5007492Z Collecting opentelemetry-instrumentation==0.63b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5081719Z   Downloading opentelemetry_instrumentation-0.63b1-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5135109Z Collecting opentelemetry-semantic-conventions==0.63b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5208986Z   Downloading opentelemetry_semantic_conventions-0.63b1-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5263522Z Collecting opentelemetry-util-http==0.63b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5333277Z   Downloading opentelemetry_util_http-0.63b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5395308Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5463591Z   Downloading opentelemetry_instrumentation_requests-0.63b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5520442Z Collecting opentelemetry-instrumentation==0.63b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5591940Z   Downloading opentelemetry_instrumentation-0.63b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5646628Z Collecting opentelemetry-semantic-conventions==0.63b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5721560Z   Downloading opentelemetry_semantic_conventions-0.63b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5774993Z Collecting opentelemetry-util-http==0.63b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5848374Z   Downloading opentelemetry_util_http-0.63b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5908200Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.5976948Z   Downloading opentelemetry_instrumentation_requests-0.62b1-py3-none-any.whl.metadata (2.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6031037Z Collecting opentelemetry-instrumentation==0.62b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6099065Z   Downloading opentelemetry_instrumentation-0.62b1-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6147803Z Collecting opentelemetry-semantic-conventions==0.62b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6216485Z   Downloading opentelemetry_semantic_conventions-0.62b1-py3-none-any.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6263394Z Collecting opentelemetry-util-http==0.62b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6331751Z   Downloading opentelemetry_util_http-0.62b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6392671Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6463679Z   Downloading opentelemetry_instrumentation_requests-0.62b0-py3-none-any.whl.metadata (2.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6516667Z Collecting opentelemetry-instrumentation==0.62b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6583532Z   Downloading opentelemetry_instrumentation-0.62b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6631514Z Collecting opentelemetry-semantic-conventions==0.62b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6697176Z   Downloading opentelemetry_semantic_conventions-0.62b0-py3-none-any.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6742438Z Collecting opentelemetry-util-http==0.62b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6809523Z   Downloading opentelemetry_util_http-0.62b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6861682Z INFO: pip is still looking at multiple versions of opentelemetry-semantic-conventions to determine which version is compatible with other requirements. This could take a while.
+semgrep	Install Semgrep	2026-10-10T14:35:31.6872710Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6942624Z   Downloading opentelemetry_instrumentation_requests-0.61b0-py3-none-any.whl.metadata (2.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.6994503Z Collecting opentelemetry-instrumentation==0.61b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7064104Z   Downloading opentelemetry_instrumentation-0.61b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7112798Z Collecting opentelemetry-semantic-conventions==0.61b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7181223Z   Downloading opentelemetry_semantic_conventions-0.61b0-py3-none-any.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7226872Z Collecting opentelemetry-util-http==0.61b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7299501Z   Downloading opentelemetry_util_http-0.61b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7361574Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7435176Z   Downloading opentelemetry_instrumentation_requests-0.60b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7490271Z Collecting opentelemetry-instrumentation==0.60b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7557479Z   Downloading opentelemetry_instrumentation-0.60b1-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7606939Z Collecting opentelemetry-semantic-conventions==0.60b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7674517Z   Downloading opentelemetry_semantic_conventions-0.60b1-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7724061Z Collecting opentelemetry-util-http==0.60b1 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7795679Z   Downloading opentelemetry_util_http-0.60b1-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7854211Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7920718Z   Downloading opentelemetry_instrumentation_requests-0.60b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.7971225Z Collecting opentelemetry-instrumentation==0.60b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8042513Z   Downloading opentelemetry_instrumentation-0.60b0-py3-none-any.whl.metadata (7.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8097571Z Collecting opentelemetry-semantic-conventions==0.60b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8174108Z   Downloading opentelemetry_semantic_conventions-0.60b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8231970Z Collecting opentelemetry-util-http==0.60b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8302309Z   Downloading opentelemetry_util_http-0.60b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8363972Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8434043Z   Downloading opentelemetry_instrumentation_requests-0.59b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.8948504Z Collecting opentelemetry-instrumentation==0.59b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9022553Z   Downloading opentelemetry_instrumentation-0.59b0-py3-none-any.whl.metadata (7.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9081603Z Collecting opentelemetry-semantic-conventions==0.59b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9156180Z   Downloading opentelemetry_semantic_conventions-0.59b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9208040Z Collecting opentelemetry-util-http==0.59b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9281525Z   Downloading opentelemetry_util_http-0.59b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9410414Z Collecting opentelemetry-instrumentation-requests~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9488503Z   Downloading opentelemetry_instrumentation_requests-0.58b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9549933Z Collecting opentelemetry-instrumentation==0.58b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9623605Z   Downloading opentelemetry_instrumentation-0.58b0-py3-none-any.whl.metadata (7.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9678470Z Collecting opentelemetry-semantic-conventions==0.58b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9747059Z   Downloading opentelemetry_semantic_conventions-0.58b0-py3-none-any.whl.metadata (2.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9799737Z Collecting opentelemetry-util-http==0.58b0 (from opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9871460Z   Downloading opentelemetry_util_http-0.58b0-py3-none-any.whl.metadata (2.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:31.9970136Z Collecting wrapt<2.0.0,>=1.0.0 (from opentelemetry-instrumentation==0.58b0->opentelemetry-instrumentation-requests~=0.58b0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0043340Z   Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0106071Z INFO: pip is looking at multiple versions of opentelemetry-instrumentation-threading to determine which version is compatible with other requirements. This could take a while.
+semgrep	Install Semgrep	2026-10-10T14:35:32.0113933Z Collecting opentelemetry-instrumentation-threading~=0.58b0 (from semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0181715Z   Downloading opentelemetry_instrumentation_threading-0.66b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0298385Z   Downloading opentelemetry_instrumentation_threading-0.65b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0445430Z   Downloading opentelemetry_instrumentation_threading-0.64b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0577701Z   Downloading opentelemetry_instrumentation_threading-0.63b1-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0702603Z   Downloading opentelemetry_instrumentation_threading-0.63b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0837898Z   Downloading opentelemetry_instrumentation_threading-0.62b1-py3-none-any.whl.metadata (2.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.0968049Z   Downloading opentelemetry_instrumentation_threading-0.62b0-py3-none-any.whl.metadata (2.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1023093Z INFO: pip is still looking at multiple versions of opentelemetry-instrumentation-threading to determine which version is compatible with other requirements. This could take a while.
+semgrep	Install Semgrep	2026-10-10T14:35:32.1109114Z   Downloading opentelemetry_instrumentation_threading-0.61b0-py3-none-any.whl.metadata (2.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1240631Z   Downloading opentelemetry_instrumentation_threading-0.60b1-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1362525Z   Downloading opentelemetry_instrumentation_threading-0.60b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1490328Z   Downloading opentelemetry_instrumentation_threading-0.59b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1623543Z   Downloading opentelemetry_instrumentation_threading-0.58b0-py3-none-any.whl.metadata (2.1 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1811849Z Collecting annotated-types>=0.6.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:32.1890117Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.0159295Z Collecting pydantic-core==2.50.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.0232978Z   Downloading pydantic_core-2.50.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.3309235Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]<3,>=2.15.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.3381222Z   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.4667264Z Collecting charset_normalizer<4,>=2 (from requests~=2.22->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.4738014Z   Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.5025119Z Collecting bracex>=2.1.1 (from wcmatch~=8.3->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.5090817Z   Downloading bracex-3.0.1-py3-none-any.whl.metadata (3.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6351172Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]<3,>=2.15.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6423851Z   Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6589668Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]<3,>=2.15.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6654968Z   Downloading pycparser-3.11-py3-none-any.whl.metadata (8.2 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6813725Z Collecting face>=20.1.1 (from glom>=23.3->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.6880517Z   Downloading face-26.0.1-py3-none-any.whl.metadata (1.8 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7157728Z Collecting python-dotenv>=0.21.0 (from pydantic-settings>=2.5.2->mcp==1.29.0->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7227915Z   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7518809Z Collecting markdown-it-py>=2.2.0 (from rich>=13.5.2->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7592798Z   Downloading markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7880704Z Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.5.2->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.7951314Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.8110183Z Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.5.2->semgrep==1.179.0)
+semgrep	Install Semgrep	2026-10-10T14:35:33.8183877Z   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:33.8471771Z Downloading semgrep-1.179.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl (70.8 MB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.1806600Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.8/70.8 MB 217.3 MB/s  0:00:00
+semgrep	Install Semgrep	2026-10-10T14:35:34.1884369Z Downloading mcp-1.29.0-py3-none-any.whl (223 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.1994419Z Downloading ruamel_yaml_clib-0.2.15-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (788 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2061782Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 788.2/788.2 kB 147.9 MB/s  0:00:00
+semgrep	Install Semgrep	2026-10-10T14:35:34.2135215Z Downloading boltons-21.0.0-py2.py3-none-any.whl (193 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2232660Z Downloading click-8.4.2-py3-none-any.whl (119 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2351557Z Downloading click_option_group-0.5.9-py3-none-any.whl (11 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2442594Z Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2539096Z Downloading exceptiongroup-1.2.2-py3-none-any.whl (16 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2632100Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2731399Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2843667Z Downloading jsonschema-4.25.1-py3-none-any.whl (90 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.2939232Z Downloading opentelemetry_api-1.37.0-py3-none-any.whl (65 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3049446Z Downloading importlib_metadata-8.7.1-py3-none-any.whl (27 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3142374Z Downloading opentelemetry_exporter_otlp_proto_http-1.37.0-py3-none-any.whl (19 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3235399Z Downloading opentelemetry_exporter_otlp_proto_common-1.37.0-py3-none-any.whl (18 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3329599Z Downloading opentelemetry_proto-1.37.0-py3-none-any.whl (72 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3428420Z Downloading googleapis_common_protos-1.75.5-py3-none-any.whl (307 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3527751Z Downloading opentelemetry_instrumentation_requests-0.58b0-py3-none-any.whl (12 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3625406Z Downloading opentelemetry_semantic_conventions-0.58b0-py3-none-any.whl (207 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3723790Z Downloading opentelemetry_instrumentation-0.58b0-py3-none-any.whl (33 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3816319Z Downloading opentelemetry_util_http-0.58b0-py3-none-any.whl (7.7 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.3909309Z Downloading opentelemetry_instrumentation_threading-0.58b0-py3-none-any.whl (9.3 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4001396Z Downloading opentelemetry_sdk-1.37.0-py3-none-any.whl (131 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4104387Z Downloading peewee-3.19.0-py3-none-any.whl (411 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4214171Z Downloading protobuf-6.33.6-cp39-abi3-manylinux2014_x86_64.whl (323 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4319959Z Downloading pydantic-2.14.0-py3-none-any.whl (487 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4432398Z Downloading pydantic_core-2.50.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4541392Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 257.7 MB/s  0:00:00
+semgrep	Install Semgrep	2026-10-10T14:35:34.4615731Z Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4713586Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4812107Z Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.4914661Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5003713Z Downloading semantic_version-2.10.0-py2.py3-none-any.whl (15 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5100136Z Downloading tomli-2.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (253 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5219336Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5321331Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5422392Z Downloading wcmatch-8.5.2-py3-none-any.whl (39 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5514609Z Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (88 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5605685Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5697689Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5792457Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5891381Z Downloading bracex-3.0.1-py3-none-any.whl (11 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.5980752Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6075293Z Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6247721Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 310.8 MB/s  0:00:00
+semgrep	Install Semgrep	2026-10-10T14:35:34.6323067Z Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6443796Z Downloading glom-25.12.0-py3-none-any.whl (103 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6541359Z Downloading face-26.0.1-py3-none-any.whl (57 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6637767Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6726480Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6813993Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.6908013Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7007986Z Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7100329Z Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7190400Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7286248Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7379883Z Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7502077Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7597066Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 150.2 MB/s  0:00:00
+semgrep	Install Semgrep	2026-10-10T14:35:34.7668562Z Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7762422Z Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7865567Z Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (371 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.7969444Z Downloading ruamel_yaml-0.19.1-py3-none-any.whl (118 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8062858Z Downloading sse_starlette-3.5.0-py3-none-any.whl (17 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8151714Z Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8248091Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8344745Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8442114Z Downloading zipp-4.1.1-py3-none-any.whl (10 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:34.8535033Z Downloading pycparser-3.11-py3-none-any.whl (51 kB)
+semgrep	Install Semgrep	2026-10-10T14:35:35.3030691Z Installing collected packages: peewee, boltons, zipp, wrapt, urllib3, typing-extensions, tomli, semantic-version, ruamel.yaml.clib, ruamel.yaml, rpds-py, python-multipart, python-dotenv, pyjwt, pygments, pycparser, protobuf, packaging, opentelemetry-util-http, mdurl, idna, httpx-sse, h11, face, exceptiongroup, colorama, click, charset_normalizer, certifi, bracex, attrs, annotated-types, wcmatch, uvicorn, typing-inspection, requests, referencing, pydantic-core, opentelemetry-proto, markdown-it-py, importlib-metadata, httpcore, googleapis-common-protos, glom, click-option-group, cffi, anyio, starlette, rich, pydantic, opentelemetry-exporter-otlp-proto-common, opentelemetry-api, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, opentelemetry-semantic-conventions, jsonschema, opentelemetry-sdk, opentelemetry-instrumentation, mcp, opentelemetry-instrumentation-threading, opentelemetry-instrumentation-requests, opentelemetry-exporter-otlp-proto-http, semgrep
+semgrep	Install Semgrep	2026-10-10T14:35:41.7431915Z
+semgrep	Install Semgrep	2026-10-10T14:35:41.7492841Z Successfully installed annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 boltons-21.0.0 bracex-3.0.1 certifi-2026.7.22 cffi-2.1.1 charset_normalizer-3.5.2 click-8.4.2 click-option-group-0.5.9 colorama-0.4.6 cryptography-50.0.2 exceptiongroup-1.2.2 face-26.0.1 glom-25.12.0 googleapis-common-protos-1.75.5 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 importlib-metadata-8.7.1 jsonschema-4.25.1 jsonschema-specifications-2025.9.1 markdown-it-py-4.2.0 mcp-1.29.0 mdurl-0.1.2 opentelemetry-api-1.37.0 opentelemetry-exporter-otlp-proto-common-1.37.0 opentelemetry-exporter-otlp-proto-http-1.37.0 opentelemetry-instrumentation-0.58b0 opentelemetry-instrumentation-requests-0.58b0 opentelemetry-instrumentation-threading-0.58b0 opentelemetry-proto-1.37.0 opentelemetry-sdk-1.37.0 opentelemetry-semantic-conventions-0.58b0 opentelemetry-util-http-0.58b0 packaging-26.3 peewee-3.19.0 protobuf-6.33.6 pycparser-3.11 pydantic-2.14.0 pydantic-core-2.50.0 pydantic-settings-2.15.0 pygments-2.21.0 pyjwt-2.15.1 python-dotenv-1.2.4 python-multipart-0.0.32 referencing-0.37.0 requests-2.34.2 rich-15.0.0 rpds-py-2026.9.1 ruamel.yaml-0.19.1 ruamel.yaml.clib-0.2.15 semantic-version-2.10.0 semgrep-1.179.0 sse-starlette-3.5.0 starlette-1.7.0 tomli-2.4.1 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0 wcmatch-8.5.2 wrapt-1.17.3 zipp-4.1.1
+semgrep	Scan	﻿2026-10-10T14:35:42.0888930Z ##[group]Run set -uo pipefail
+semgrep	Scan	2026-10-10T14:35:42.0889375Z set -uo pipefail
+semgrep	Scan	2026-10-10T14:35:42.0889658Z semgrep scan \
+semgrep	Scan	2026-10-10T14:35:42.0889914Z   --config p/default \
+semgrep	Scan	2026-10-10T14:35:42.0890192Z   --config p/typescript \
+semgrep	Scan	2026-10-10T14:35:42.0890483Z   --config p/react \
+semgrep	Scan	2026-10-10T14:35:42.0890792Z   --config p/nodejs \
+semgrep	Scan	2026-10-10T14:35:42.0891072Z   --config p/secrets \
+semgrep	Scan	2026-10-10T14:35:42.0891359Z   --config p/github-actions \
+semgrep	Scan	2026-10-10T14:35:42.0891669Z   --config p/dockerfile \
+semgrep	Scan	2026-10-10T14:35:42.0891947Z   --metrics=off \
+semgrep	Scan	2026-10-10T14:35:42.0892219Z   --json --output semgrep.json
+semgrep	Scan	2026-10-10T14:35:42.0892518Z SCAN_STATUS=$?
+semgrep	Scan	2026-10-10T14:35:42.0892782Z if [ "$SCAN_STATUS" -ne 0 ]; then
+semgrep	Scan	2026-10-10T14:35:42.0893170Z   echo "::error::Semgrep failed with exit status $SCAN_STATUS"
+semgrep	Scan	2026-10-10T14:35:42.0893597Z   exit "$SCAN_STATUS"
+semgrep	Scan	2026-10-10T14:35:42.0893899Z fi
+semgrep	Scan	2026-10-10T14:35:42.0894121Z echo "scan complete"
+semgrep	Scan	2026-10-10T14:35:42.0964865Z shell: /usr/bin/bash -e {0}
+semgrep	Scan	2026-10-10T14:35:42.0965204Z env:
+semgrep	Scan	2026-10-10T14:35:42.0965555Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Scan	2026-10-10T14:35:42.0966128Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+semgrep	Scan	2026-10-10T14:35:42.0966723Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Scan	2026-10-10T14:35:42.0967234Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Scan	2026-10-10T14:35:42.0967736Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Scan	2026-10-10T14:35:42.0968398Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+semgrep	Scan	2026-10-10T14:35:42.0968839Z ##[endgroup]
+semgrep	Scan	2026-10-10T14:35:49.1253719Z
+semgrep	Scan	2026-10-10T14:35:49.1254512Z
+semgrep	Scan	2026-10-10T14:35:49.1255250Z ┌─────────────┐
+semgrep	Scan	2026-10-10T14:35:49.1255726Z │ Scan Status │
+semgrep	Scan	2026-10-10T14:35:49.1256199Z └─────────────┘
+semgrep	Scan	2026-10-10T14:35:49.1264744Z   Scanning 1799 files tracked by git with 1080 Code rules:
+semgrep	Scan	2026-10-10T14:35:49.6383512Z
+semgrep	Scan	2026-10-10T14:35:49.6384599Z   Language      Rules   Files          Origin      Rules
+semgrep	Scan	2026-10-10T14:35:49.6386080Z  ─────────────────────────────        ───────────────────
+semgrep	Scan	2026-10-10T14:35:49.6386989Z   ts              164    1636          Community    1080
+semgrep	Scan	2026-10-10T14:35:49.6387868Z   <multilang>      62    1199
+semgrep	Scan	2026-10-10T14:35:49.6389210Z   json              4      28
+semgrep	Scan	2026-10-10T14:35:49.6389991Z   js              154      20
+semgrep	Scan	2026-10-10T14:35:49.6390815Z   terraform       101      13
+semgrep	Scan	2026-10-10T14:35:49.6391610Z   yaml             41      10
+semgrep	Scan	2026-10-10T14:35:49.6392927Z   bash              4       4
+semgrep	Scan	2026-10-10T14:35:49.6393705Z   dockerfile        7       2
+semgrep	Scan	2026-10-10T14:35:49.6394483Z
+semgrep	Scan	2026-10-10T14:36:37.3781339Z
+semgrep	Scan	2026-10-10T14:36:37.3782098Z
+semgrep	Scan	2026-10-10T14:36:37.3783028Z ┌──────────────┐
+semgrep	Scan	2026-10-10T14:36:37.3783719Z │ Scan Summary │
+semgrep	Scan	2026-10-10T14:36:37.3784872Z └──────────────┘
+semgrep	Scan	2026-10-10T14:36:37.3785647Z ✅ Scan completed successfully.
+semgrep	Scan	2026-10-10T14:36:37.3786575Z  • Findings: 40 (40 blocking)
+semgrep	Scan	2026-10-10T14:36:37.3787410Z  • Rules run: 379
+semgrep	Scan	2026-10-10T14:36:37.3787958Z  • Targets scanned: 1799
+semgrep	Scan	2026-10-10T14:36:37.3788711Z  • Parsed lines: ~100.0%
+semgrep	Scan	2026-10-10T14:36:37.3789205Z  • Scan skipped:
+semgrep	Scan	2026-10-10T14:36:37.3789762Z    ◦ Files matching .semgrepignore patterns: 294
+semgrep	Scan	2026-10-10T14:36:37.3790484Z  • Scan was limited to files tracked by git
+semgrep	Scan	2026-10-10T14:36:37.3791423Z  • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+semgrep	Scan	2026-10-10T14:36:37.3792137Z Ran 379 rules on 1799 files: 40 findings.
+semgrep	Scan	2026-10-10T14:36:37.3905401Z
+semgrep	Scan	2026-10-10T14:36:37.3908100Z 📢 Too many findings? Try Semgrep Pro for more powerful queries and less noise.
+semgrep	Scan	2026-10-10T14:36:37.3909519Z    See https://sg.run/false-positives.
+semgrep	Scan	2026-10-10T14:36:37.7000466Z scan complete
+semgrep	Report	﻿2026-10-10T14:36:37.7039431Z ##[group]Run set -euo pipefail
+semgrep	Report	2026-10-10T14:36:37.7039826Z set -euo pipefail
+semgrep	Report	2026-10-10T14:36:37.7040069Z
+semgrep	Report	2026-10-10T14:36:37.7040258Z blocking() {
+semgrep	Report	2026-10-10T14:36:37.7040491Z   jq -r '.results[]
+semgrep	Report	2026-10-10T14:36:37.7040959Z     | select(.extra.severity == "ERROR" or .extra.severity == "HIGH" or .extra.severity == "CRITICAL")
+semgrep	Report	2026-10-10T14:36:37.7041798Z     | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)\n    \(.extra.message | gsub("\n"; " ") | .[0:160])"' semgrep.json
+semgrep	Report	2026-10-10T14:36:37.7042386Z }
+semgrep	Report	2026-10-10T14:36:37.7042587Z advisory() {
+semgrep	Report	2026-10-10T14:36:37.7042811Z   jq -r '.results[]
+semgrep	Report	2026-10-10T14:36:37.7043271Z     | select(.extra.severity != "ERROR" and .extra.severity != "HIGH" and .extra.severity != "CRITICAL")
+semgrep	Report	2026-10-10T14:36:37.7043948Z     | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)"' semgrep.json
+semgrep	Report	2026-10-10T14:36:37.7044423Z }
+semgrep	Report	2026-10-10T14:36:37.7044612Z
+semgrep	Report	2026-10-10T14:36:37.7044790Z {
+semgrep	Report	2026-10-10T14:36:37.7044987Z   echo "### Semgrep"
+semgrep	Report	2026-10-10T14:36:37.7045226Z   echo
+semgrep	Report	2026-10-10T14:36:37.7045429Z   echo "\`\`\`"
+semgrep	Report	2026-10-10T14:36:37.7045675Z   blocking | sed 's/^/  /' || true
+semgrep	Report	2026-10-10T14:36:37.7045982Z   echo "\`\`\`"
+semgrep	Report	2026-10-10T14:36:37.7046209Z   echo
+semgrep	Report	2026-10-10T14:36:37.7046540Z   echo "<details><summary>Advisory findings (not blocking)</summary>"
+semgrep	Report	2026-10-10T14:36:37.7046931Z   echo
+semgrep	Report	2026-10-10T14:36:37.7047134Z   echo "\`\`\`"
+semgrep	Report	2026-10-10T14:36:37.7047367Z   advisory || true
+semgrep	Report	2026-10-10T14:36:37.7047599Z   echo "\`\`\`"
+semgrep	Report	2026-10-10T14:36:37.7047818Z   echo "</details>"
+semgrep	Report	2026-10-10T14:36:37.7048057Z } >> "$GITHUB_STEP_SUMMARY"
+semgrep	Report	2026-10-10T14:36:37.7048578Z
+semgrep	Report	2026-10-10T14:36:37.7048826Z COUNT=$(blocking | grep -c '^[^ ]' || true)
+semgrep	Report	2026-10-10T14:36:37.7049155Z if [ "${COUNT:-0}" -gt 0 ]; then
+semgrep	Report	2026-10-10T14:36:37.7049520Z   echo "::error::$COUNT blocking finding(s). See the job summary."
+semgrep	Report	2026-10-10T14:36:37.7049893Z   blocking
+semgrep	Report	2026-10-10T14:36:37.7050100Z   exit 1
+semgrep	Report	2026-10-10T14:36:37.7050295Z fi
+semgrep	Report	2026-10-10T14:36:37.7050498Z echo "No blocking findings."
+semgrep	Report	2026-10-10T14:36:37.7115558Z shell: /usr/bin/bash -e {0}
+semgrep	Report	2026-10-10T14:36:37.7115841Z env:
+semgrep	Report	2026-10-10T14:36:37.7116149Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Report	2026-10-10T14:36:37.7116660Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+semgrep	Report	2026-10-10T14:36:37.7117154Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Report	2026-10-10T14:36:37.7117582Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Report	2026-10-10T14:36:37.7118011Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+semgrep	Report	2026-10-10T14:36:37.7118668Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+semgrep	Report	2026-10-10T14:36:37.7119046Z ##[endgroup]
+semgrep	Report	2026-10-10T14:36:37.7369250Z No blocking findings.
+semgrep	Post Run actions/setup-python@v7	﻿2026-10-10T14:36:37.7491961Z Post job cleanup.
+semgrep	Post Run actions/checkout@v7	﻿2026-10-10T14:36:37.8824464Z Post job cleanup.
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9746458Z [command]/usr/bin/git version
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9790675Z git version 2.55.0
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9832075Z Temporarily overriding HOME='/home/runner/work/_temp/df75235e-2050-4599-8678-9c92f9a8cf54' before making global git config changes
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9833439Z Adding repository directory to the temporary git global config as a safe directory
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9838340Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9876519Z Removing SSH command configuration
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9884254Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:37.9928914Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0189908Z Removing HTTP extra header
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0196667Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0240448Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0524904Z Removing includeIf entries pointing to credentials config files
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0533342Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0567784Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0569232Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0570241Z includeif.gitdir:/github/workspace/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0571064Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0582526Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0619158Z /home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0626901Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-9243179b\-3796\-4231\-b264\-7b8ee09ab0cc\.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0672869Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0709222Z /home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0719646Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-9243179b\-3796\-4231\-b264\-7b8ee09ab0cc\.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0763141Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0792517Z /github/runner_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0801590Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-9243179b\-3796\-4231\-b264\-7b8ee09ab0cc\.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0840854Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0866480Z /github/runner_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0876187Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-9243179b\-3796\-4231\-b264\-7b8ee09ab0cc\.config
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.0916488Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+semgrep	Post Run actions/checkout@v7	2026-10-10T14:36:38.1148580Z Removing credentials config '/home/runner/work/_temp/git-credentials-9243179b-3796-4231-b264-7b8ee09ab0cc.config'
+semgrep	Complete job	﻿2026-10-10T14:36:38.1306530Z Cleaning up orphan processes
+gitleaks	Set up job	﻿2026-10-10T14:35:22.4811718Z Current runner version: '2.337.0'
+gitleaks	Set up job	2026-10-10T14:35:22.4829529Z ##[group]Runner Image Provisioner
+gitleaks	Set up job	2026-10-10T14:35:22.4830134Z Hosted Compute Agent
+gitleaks	Set up job	2026-10-10T14:35:22.4830505Z Version: 20261002.596
+gitleaks	Set up job	2026-10-10T14:35:22.4830888Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+gitleaks	Set up job	2026-10-10T14:35:22.4831401Z Build Date: 2026-10-02T22:28:27Z
+gitleaks	Set up job	2026-10-10T14:35:22.4831835Z Worker ID: {cbb10119-2119-47af-9c79-983c9bd7e3ba}
+gitleaks	Set up job	2026-10-10T14:35:22.4832279Z Region: centralus
+gitleaks	Set up job	2026-10-10T14:35:22.4832625Z Cloud: Azure
+gitleaks	Set up job	2026-10-10T14:35:22.4832953Z ##[endgroup]
+gitleaks	Set up job	2026-10-10T14:35:22.4833766Z ##[group]Operating System
+gitleaks	Set up job	2026-10-10T14:35:22.4834132Z Ubuntu
+gitleaks	Set up job	2026-10-10T14:35:22.4834440Z 24.04.5
+gitleaks	Set up job	2026-10-10T14:35:22.4834804Z LTS
+gitleaks	Set up job	2026-10-10T14:35:22.4835124Z ##[endgroup]
+gitleaks	Set up job	2026-10-10T14:35:22.4835515Z ##[group]Runner Image
+gitleaks	Set up job	2026-10-10T14:35:22.4835917Z Image: ubuntu-24.04
+gitleaks	Set up job	2026-10-10T14:35:22.4836252Z Version: 20261004.327.1
+gitleaks	Set up job	2026-10-10T14:35:22.4836910Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+gitleaks	Set up job	2026-10-10T14:35:22.4838143Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+gitleaks	Set up job	2026-10-10T14:35:22.4838743Z ##[endgroup]
+gitleaks	Set up job	2026-10-10T14:35:22.4839407Z ##[group]GITHUB_TOKEN Permissions
+gitleaks	Set up job	2026-10-10T14:35:22.4840593Z Contents: read
+gitleaks	Set up job	2026-10-10T14:35:22.4840967Z Metadata: read
+gitleaks	Set up job	2026-10-10T14:35:22.4841376Z ##[endgroup]
+gitleaks	Set up job	2026-10-10T14:35:22.4842617Z Secret source: Actions
+gitleaks	Set up job	2026-10-10T14:35:22.4843226Z Cache mode: write
+gitleaks	Set up job	2026-10-10T14:35:22.4843670Z Prepare workflow directory
+gitleaks	Set up job	2026-10-10T14:35:22.5043986Z Prepare all required actions
+gitleaks	Set up job	2026-10-10T14:35:22.5076039Z Getting action download info
+gitleaks	Set up job	2026-10-10T14:35:22.7132607Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+gitleaks	Set up job	2026-10-10T14:35:22.8917926Z Complete job name: gitleaks
+gitleaks	Run actions/checkout@v7	﻿2026-10-10T14:35:22.9376101Z ##[group]Run actions/checkout@v7
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9376531Z with:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9376771Z   fetch-depth: 0
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9377040Z   repository: shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9379213Z   token: ***
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9379450Z   ssh-strict: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9379695Z   ssh-user: git
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9379941Z   persist-credentials: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9380212Z   clean: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9380464Z   sparse-checkout-cone-mode: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9380758Z   fetch-tags: false
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9381008Z   show-progress: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9381258Z   lfs: false
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9381489Z   submodules: false
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9381742Z   set-safe-directory: true
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9382026Z   allow-unsafe-pr-checkout: false
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:22.9382391Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0058467Z Syncing repository: shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0059857Z ##[group]Getting Git version info
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0060279Z Working directory is '/home/runner/work/DealersDrive/DealersDrive'
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0060967Z [command]/usr/bin/git version
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0149585Z git version 2.55.0
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0162372Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0171257Z Temporarily overriding HOME='/home/runner/work/_temp/4fa03e35-0645-4efd-b295-f1996906aa35' before making global git config changes
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0172630Z Adding repository directory to the temporary git global config as a safe directory
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0176353Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0221096Z Deleting the contents of '/home/runner/work/DealersDrive/DealersDrive'
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0224028Z ##[group]Determining repository object format
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0225012Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0225639Z ##[group]Initializing the repository
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0228774Z [command]/usr/bin/git init /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0336718Z hint: Using 'master' as the name for the initial branch. This default branch name
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0338141Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0339243Z hint: to use in all of your new repositories, which will suppress this warning,
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0339940Z hint: call:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0340357Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0340849Z hint: 	git config --global init.defaultBranch <name>
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0349460Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0356839Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0358227Z hint: 'development'. The just-created branch can be renamed via this command:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0358942Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0359317Z hint: 	git branch -m <name>
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0359732Z hint:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0360286Z hint: Disable this message with "git config set advice.defaultBranchName false"
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0361281Z Initialized empty Git repository in /home/runner/work/DealersDrive/DealersDrive/.git/
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0362946Z [command]/usr/bin/git remote add origin https://github.com/shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0394709Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0395393Z ##[group]Disabling automatic garbage collection
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0398182Z [command]/usr/bin/git config --local gc.auto 0
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0429270Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0430523Z ##[group]Setting up auth
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0430999Z Removing SSH command configuration
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0453888Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0471353Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0781104Z Removing HTTP extra header
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0784345Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0811623Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0989702Z Removing includeIf entries pointing to credentials config files
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.0994769Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1025553Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1199445Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1231878Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path /home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1260821Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1291395Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1320156Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1346921Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1347696Z ##[group]Fetching the repository
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:23.1351762Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +62d63df933c3e62d8afdeb3b6e72adc6325a740a:refs/remotes/pull/296/merge
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7832498Z From https://github.com/shashikiran6sk/DealersDrive
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7834625Z  * [new branch]        claude/dealers-drive-promo-video-m2nu5i  -> origin/claude/dealers-drive-promo-video-m2nu5i
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7836941Z  * [new branch]        claude/practical-hamilton-raxgvi         -> origin/claude/practical-hamilton-raxgvi
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7839034Z  * [new branch]        claude/production-performance-audit-7i0a6z -> origin/claude/production-performance-audit-7i0a6z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7840926Z  * [new branch]        codex/environment-config                 -> origin/codex/environment-config
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7842532Z  * [new branch]        evidence/mobile-ui-responsive-revamp     -> origin/evidence/mobile-ui-responsive-revamp
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7844093Z  * [new branch]        feat/admin-mobile-otp                    -> origin/feat/admin-mobile-otp
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7845469Z  * [new branch]        feat/dd-favicon-sizing                   -> origin/feat/dd-favicon-sizing
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7847742Z  * [new branch]        feat/dynamic-service-locations           -> origin/feat/dynamic-service-locations
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7849361Z  * [new branch]        feat/mobile-admin-access                 -> origin/feat/mobile-admin-access
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7851008Z  * [new branch]        feat/msg91-ticket-acknowledgement        -> origin/feat/msg91-ticket-acknowledgement
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7852778Z  * [new branch]        feat/optional-dealer-tagline             -> origin/feat/optional-dealer-tagline
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7854859Z  * [new branch]        feat/production-deployment-architecture  -> origin/feat/production-deployment-architecture
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7856928Z  * [new branch]        feat/r39-firebase-phone-otp              -> origin/feat/r39-firebase-phone-otp
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7858835Z  * [new branch]        feat/r39-msg91-onboarding-otp            -> origin/feat/r39-msg91-onboarding-otp
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7860844Z  * [new branch]        feat/standard-dealer-directory-image     -> origin/feat/standard-dealer-directory-image
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7862884Z  * [new branch]        feat/ticket-message-limits               -> origin/feat/ticket-message-limits
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7864620Z  * [new branch]        feat/white-label-01-foundation           -> origin/feat/white-label-01-foundation
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7866315Z  * [new branch]        feat/white-label-02-backend              -> origin/feat/white-label-02-backend
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7868144Z  * [new branch]        feat/white-label-03-storefront           -> origin/feat/white-label-03-storefront
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7869974Z  * [new branch]        feat/white-label-04-dashboard-domains    -> origin/feat/white-label-04-dashboard-domains
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7871782Z  * [new branch]        feat/white-label-05-hardening            -> origin/feat/white-label-05-hardening
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7873742Z  * [new branch]        feature/legal-compliance-and-consent-v1  -> origin/feature/legal-compliance-and-consent-v1
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7875647Z  * [new branch]        feature/whatsapp-otp-channel             -> origin/feature/whatsapp-otp-channel
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7877707Z  * [new branch]        feature/whatsapp-otp-logo-toggle         -> origin/feature/whatsapp-otp-logo-toggle
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7879514Z  * [new branch]        fix/dealer-email-uniqueness              -> origin/fix/dealer-email-uniqueness
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7881333Z  * [new branch]        fix/mobile-sidebar-navigation            -> origin/fix/mobile-sidebar-navigation
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7882942Z  * [new branch]        legacy_branch                            -> origin/legacy_branch
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7884210Z  * [new branch]        main                                     -> origin/main
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7885652Z  * [new branch]        pr-screenshots                           -> origin/pr-screenshots
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7887825Z  * [new branch]        refactor/api-routing-and-comment-migration -> origin/refactor/api-routing-and-comment-migration
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7889938Z  * [new branch]        testing_branch                           -> origin/testing_branch
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7891340Z  * [new branch]        testing_evidence                         -> origin/testing_evidence
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7892932Z  * [new branch]        video_generator                          -> origin/video_generator
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7894340Z  * [new ref]           62d63df933c3e62d8afdeb3b6e72adc6325a740a -> pull/296/merge
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7897102Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7898478Z ##[group]Determining the checkout info
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7899665Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7900349Z [command]/usr/bin/git sparse-checkout disable
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7902338Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7927713Z ##[group]Checking out the ref
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.7929594Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/296/merge
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9444199Z Note: switching to 'refs/remotes/pull/296/merge'.
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9445387Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9446241Z You are in 'detached HEAD' state. You can look around, make experimental
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9448284Z changes and commit them, and you can discard any commits you make in this
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9450056Z state without impacting any branches by switching back to a branch.
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9451106Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9451779Z If you want to create a new branch to retain commits you create, you may
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9453399Z do so (now or later) by using -c with the switch command. Example:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9454350Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9454732Z   git switch -c <new-branch-name>
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9455421Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9455790Z Or undo this operation with:
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9456382Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9456698Z   git switch -
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9457121Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9457840Z Turn off this advice by setting config variable advice.detachedHead to false
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9458686Z
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9459615Z HEAD is now at 62d63df9 Merge cefed41177086685bb56423522bfd67d2ea9e7dc into 98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9463205Z ##[endgroup]
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9503314Z [command]/usr/bin/git log -1 --format=%H
+gitleaks	Run actions/checkout@v7	2026-10-10T14:35:28.9528021Z 62d63df933c3e62d8afdeb3b6e72adc6325a740a
+gitleaks	Scan the repository and its history	﻿2026-10-10T14:35:28.9716585Z ##[group]Run docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+gitleaks	Scan the repository and its history	2026-10-10T14:35:28.9719453Z docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+gitleaks	Scan the repository and its history	2026-10-10T14:35:28.9721250Z   detect --source=/repo --config=/repo/.gitleaks.toml \
+gitleaks	Scan the repository and its history	2026-10-10T14:35:28.9722164Z   --redact --no-banner --verbose
+gitleaks	Scan the repository and its history	2026-10-10T14:35:28.9946401Z shell: /usr/bin/bash -e {0}
+gitleaks	Scan the repository and its history	2026-10-10T14:35:28.9947031Z ##[endgroup]
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.0856076Z Unable to find image 'ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f' locally
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.4728200Z ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f: Pulling from gitleaks/gitleaks
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.6019398Z d49a2dee86fb: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.6019772Z d92b655ae8e2: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.6020067Z 61fdfd7c0175: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.6020243Z a43ab0c74cc4: Pulling fs layer
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.6020412Z a43ab0c74cc4: Waiting
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.8513522Z d49a2dee86fb: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.8513923Z d49a2dee86fb: Download complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.9335764Z d49a2dee86fb: Pull complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.9368025Z d92b655ae8e2: Download complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.9626161Z 61fdfd7c0175: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-10T14:35:29.9626999Z 61fdfd7c0175: Download complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.0153078Z a43ab0c74cc4: Verifying Checksum
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.0153569Z a43ab0c74cc4: Download complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.5631174Z d92b655ae8e2: Pull complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.7434007Z 61fdfd7c0175: Pull complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.7516553Z a43ab0c74cc4: Pull complete
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.7549675Z Digest: sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+gitleaks	Scan the repository and its history	2026-10-10T14:35:30.7558438Z Status: Downloaded newer image for ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+gitleaks	Scan the repository and its history	2026-10-10T14:35:54.3968768Z 2:35PM INF 425 commits scanned.
+gitleaks	Scan the repository and its history	2026-10-10T14:35:54.3969399Z 2:35PM INF scanned ~85864146 bytes (85.86 MB) in 23.5s
+gitleaks	Scan the repository and its history	2026-10-10T14:35:54.3969808Z 2:35PM INF no leaks found
+gitleaks	Post Run actions/checkout@v7	﻿2026-10-10T14:35:54.5364809Z Post job cleanup.
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6000745Z [command]/usr/bin/git version
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6037942Z git version 2.55.0
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6064305Z Temporarily overriding HOME='/home/runner/work/_temp/a980cf36-4c0c-4094-be43-1e2c8b59e1d9' before making global git config changes
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6064763Z Adding repository directory to the temporary git global config as a safe directory
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6068893Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DealersDrive/DealersDrive
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6102592Z Removing SSH command configuration
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6108561Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6142569Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6362465Z Removing HTTP extra header
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6367993Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6409157Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6624778Z Removing includeIf entries pointing to credentials config files
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6629790Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6660025Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6660572Z includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6660981Z includeif.gitdir:/github/workspace/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6661303Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6668207Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6691930Z /home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6700925Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-a9bf78e6\-ce74\-46cd\-84b3\-b5b9572d4c8d\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6735778Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6760684Z /home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6766352Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DealersDrive/DealersDrive/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-a9bf78e6\-ce74\-46cd\-84b3\-b5b9572d4c8d\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6799623Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6822907Z /github/runner_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6828782Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-a9bf78e6\-ce74\-46cd\-84b3\-b5b9572d4c8d\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6860264Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6882785Z /github/runner_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6889123Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-a9bf78e6\-ce74\-46cd\-84b3\-b5b9572d4c8d\.config
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.6923007Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gitleaks	Post Run actions/checkout@v7	2026-10-10T14:35:54.7106445Z Removing credentials config '/home/runner/work/_temp/git-credentials-a9bf78e6-ce74-46cd-84b3-b5b9572d4c8d.config'
+gitleaks	Complete job	﻿2026-10-10T14:35:54.7240695Z Cleaning up orphan processes
