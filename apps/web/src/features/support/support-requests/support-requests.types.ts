@@ -34,5 +34,10 @@ export interface SupportRequestDetailProps {
 export interface SupportReplyFormProps {
   ticketId: string;
   hint: string | null;
-  send?: (ticketId: string, message: string) => Promise<ReplySupportRequestResult>;
+  remainingMessages?: number;
+  send?: (
+    ticketId: string,
+    message: string,
+    clientMessageId?: string,
+  ) => Promise<ReplySupportRequestResult>;
 }

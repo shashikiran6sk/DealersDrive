@@ -427,7 +427,11 @@ describe('TicketComposer', () => {
     expect(screen.getByText(/customer will see this reply/)).toBeInTheDocument();
     await user.type(screen.getByRole('textbox'), 'We are on it.');
     await user.click(screen.getByRole('button', { name: 'Send reply to customer' }));
-    expect(reply).toHaveBeenCalledWith(ID, 'We are on it.');
+    expect(reply).toHaveBeenCalledWith(
+      ID,
+      'We are on it.',
+      expect.stringMatching(/^[a-f0-9-]{36}$/),
+    );
     expect(note).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByRole('textbox')).toHaveValue(''));
 

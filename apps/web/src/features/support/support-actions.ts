@@ -80,9 +80,13 @@ export async function createSupportRequestAction(
 export async function replySupportRequestAction(
   ticketId: string,
   message: string,
+  clientMessageId?: string,
 ): Promise<ReplySupportRequestResult> {
   const id = IdParam.safeParse({ id: ticketId });
-  const body = SupportMessageInput.safeParse({ message });
+  const body = SupportMessageInput.safeParse({
+    message,
+    ...(clientMessageId ? { clientMessageId } : {}),
+  });
   if (!id.success) return { status: 'invalid', message: SUPPORT_ACTION_TEXT.failed };
   if (!body.success) {
     return {

@@ -269,6 +269,23 @@ describe('SupportRequestForm', () => {
 });
 
 describe('/support-requests/[id]', () => {
+  it('shows the exact blocked message and urgent support route without a reply composer', async () => {
+    apiGetParsed.mockResolvedValue(
+      ticket({ canReply: false, remainingMessages: 0, status: 'OPEN' }),
+    );
+    render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
+    expect(
+      screen.getByText(
+        "You've sent five messages. Please wait for our support team to reply before sending more.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contact support for urgent help' })).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+    expect(screen.queryByRole('button', { name: 'Send reply' })).toBeNull();
+    expect(screen.queryByText('This request is closed')).toBeNull();
+  });
   it('shows the request, its enquiry and the conversation, with the reply box', async () => {
     apiGetParsed.mockResolvedValue(ticket());
     render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
@@ -345,6 +362,25 @@ describe('/support-requests/[id]', () => {
 });
 
 describe('SupportReplyForm', () => {
+  it('retains the reply UUID on network retry and replaces it after the text changes', async () => {
+    const send = vi
+      .fn()
+      .mockResolvedValue({ status: 'refused', code: 'UNAVAILABLE', message: 'Try again.' });
+    render(<SupportReplyForm ticketId={ID} hint={null} remainingMessages={4} send={send} />);
+    const user = userEvent.setup();
+    const input = screen.getByLabelText('Reply to Dealers-Drive support');
+    await user.type(input, 'Retry text');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await screen.findByText('Try again.');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(2));
+    expect(send.mock.calls[1]?.[2]).toBe(send.mock.calls[0]?.[2]);
+    await user.type(input, ' changed');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(3));
+    expect(send.mock.calls[2]?.[2]).not.toBe(send.mock.calls[0]?.[2]);
+    expect(screen.getByText('4 messages remaining before support replies.')).toBeVisible();
+  });
   it('sends a reply, clears the box and refreshes the conversation', async () => {
     const send = vi.fn().mockResolvedValue({ status: 'sent' });
     const user = userEvent.setup();
@@ -354,7 +390,7 @@ describe('SupportReplyForm', () => {
     expect(button).toBeDisabled();
     await user.type(screen.getByLabelText('Reply to Dealers-Drive support'), 'Here it is.');
     await user.click(button);
-    expect(send).toHaveBeenCalledWith(ID, 'Here it is.');
+    expect(send).toHaveBeenCalledWith(ID, 'Here it is.', expect.stringMatching(/^[a-f0-9-]{36}$/));
     await waitFor(() => expect(navigationState.refreshed).toBe(1));
     expect(screen.getByLabelText('Reply to Dealers-Drive support')).toHaveValue('');
   });

@@ -91,7 +91,10 @@ export const supportAdminDocs: ModuleDocs = {
         'Adds a customer-visible message, authored as support by the signed-in operator. The ' +
         'customer sees it from “Dealers-Drive support”, never the operator’s name. A closed ' +
         'ticket takes no reply (`409 SUPPORT_TICKET_CLOSED`). The status does not change; ' +
-        'set it separately.',
+        'set it separately. A newly persisted authorized support reply resets the customer allowance to five ' +
+        'under the same ticket row lock. An optional clientMessageId makes retries idempotent; replaying an old ' +
+        'support reply never resets quota again. Reuse by another author or with different text is a conflict. ' +
+        'Internal notes do not reset the allowance.',
       audience: 'admin',
       permission: 'admin:support:manage',
       params: 'IdParam',

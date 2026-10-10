@@ -51,9 +51,13 @@ function invalid(message: string | undefined): AdminSupportResult {
 export async function replyToTicketAction(
   ticketId: string,
   message: string,
+  clientMessageId?: string,
 ): Promise<AdminSupportResult> {
   const id = IdParam.safeParse({ id: ticketId });
-  const body = SupportMessageInput.safeParse({ message });
+  const body = SupportMessageInput.safeParse({
+    message,
+    ...(clientMessageId ? { clientMessageId } : {}),
+  });
   if (!id.success) return invalid(undefined);
   if (!body.success) return invalid(body.error.issues[0]?.message);
   return send(id.data.id, 'POST', '/messages', body.data);

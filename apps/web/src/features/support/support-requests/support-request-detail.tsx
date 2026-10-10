@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SUPPORT_MESSAGE_LIMIT_TEXT } from '@dealers-drive/contracts';
 
 import { ButtonLink } from '@/components/ui/button';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
@@ -98,7 +99,18 @@ export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
 
       {ticket.canReply ? (
         <section className="card bg-white p-[16px]">
-          <SupportReplyForm ticketId={ticket.id} hint={replyHint(ticket.status)} />
+          <SupportReplyForm
+            ticketId={ticket.id}
+            hint={replyHint(ticket.status)}
+            remainingMessages={ticket.remainingMessages}
+          />
+        </section>
+      ) : ticket.status !== 'CLOSED' && ticket.remainingMessages === 0 ? (
+        <section className="card gap-3 bg-white p-4" aria-live="polite">
+          <p>{SUPPORT_MESSAGE_LIMIT_TEXT}</p>
+          <Link href="/contact" className="text-[13px] font-bold">
+            Contact support for urgent help
+          </Link>
         </section>
       ) : (
         <EmptyState

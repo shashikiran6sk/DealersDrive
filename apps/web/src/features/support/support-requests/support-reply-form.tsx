@@ -19,6 +19,7 @@ import { supportRequestHref } from './utils';
 export function SupportReplyForm({
   ticketId,
   hint,
+  remainingMessages,
   send = replySupportRequestAction,
 }: SupportReplyFormProps) {
   const id = useId();
@@ -27,6 +28,7 @@ export function SupportReplyForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
+  const replyId = useRef<string | null>(null);
 
   return (
     <form
@@ -38,10 +40,12 @@ export function SupportReplyForm({
         inFlight.current = true;
         setError(null);
         startTransition(async () => {
-          const result = await send(ticketId, message);
+          replyId.current ??= crypto.randomUUID();
+          const result = await send(ticketId, message, replyId.current);
           inFlight.current = false;
           if (result.status === 'sent') {
             setMessage('');
+            replyId.current = null;
             router.refresh();
             return;
           }
@@ -58,6 +62,11 @@ export function SupportReplyForm({
         {SUPPORT_DETAIL_TEXT.replyLabel}
       </label>
       {hint ? <p className="text-[12px] ink-muted">{hint}</p> : null}
+      {remainingMessages === undefined ? null : (
+        <p className="text-[12px] ink-muted" aria-live="polite">
+          {remainingMessages} messages remaining before support replies.
+        </p>
+      )}
       <Textarea
         id={`${id}-reply`}
         name="message"
@@ -71,6 +80,7 @@ export function SupportReplyForm({
         aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => {
           setMessage(event.target.value);
+          replyId.current = null;
         }}
       />
       {error ? (
