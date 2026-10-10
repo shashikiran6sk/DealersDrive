@@ -14,7 +14,11 @@ import {
   replyToTicketAction,
   updateTicketAction,
 } from '@/features/admin/support-actions';
-import { TicketComposer, TicketControls } from '@/features/admin/support-ticket';
+import {
+  SupportTicketWorkspace,
+  TicketComposer,
+  TicketControls,
+} from '@/features/admin/support-ticket';
 import type * as ApiModule from '@/lib/api';
 
 import { navigationState, revalidations } from '../../../setup';
@@ -427,7 +431,11 @@ describe('TicketComposer', () => {
     expect(screen.getByText(/customer will see this reply/)).toBeInTheDocument();
     await user.type(screen.getByRole('textbox'), 'We are on it.');
     await user.click(screen.getByRole('button', { name: 'Send reply to customer' }));
-    expect(reply).toHaveBeenCalledWith(ID, 'We are on it.');
+    expect(reply).toHaveBeenCalledWith(
+      ID,
+      'We are on it.',
+      expect.stringMatching(/^[a-f0-9-]{36}$/),
+    );
     expect(note).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByRole('textbox')).toHaveValue(''));
 
@@ -456,16 +464,17 @@ describe('TicketComposer', () => {
 describe('admin support Server Actions', () => {
   it('reply, note and update call the API and redraw the ticket and the queue', async () => {
     apiSend.mockResolvedValue(ticket());
-    expect(await replyToTicketAction(ID, ' Hi ')).toEqual({ ok: true });
+    expect(await replyToTicketAction(ID, ' Hi ')).toEqual({ ok: true, ticket: ticket() });
     expect(apiSend).toHaveBeenLastCalledWith('POST', `/v1/admin/support/tickets/${ID}/messages`, {
       message: 'Hi',
     });
-    expect(await addTicketNoteAction(ID, 'Called')).toEqual({ ok: true });
+    expect(await addTicketNoteAction(ID, 'Called')).toEqual({ ok: true, ticket: ticket() });
     expect(apiSend).toHaveBeenLastCalledWith('POST', `/v1/admin/support/tickets/${ID}/notes`, {
       note: 'Called',
     });
     expect(await updateTicketAction(ID, { priority: 'LOW', assignedAdminId: null })).toEqual({
       ok: true,
+      ticket: ticket(),
     });
     expect(apiSend).toHaveBeenLastCalledWith('PATCH', `/v1/admin/support/tickets/${ID}`, {
       priority: 'LOW',
@@ -502,5 +511,42 @@ describe('admin support Server Actions', () => {
     });
     apiSend.mockRejectedValue(new TypeError('fetch failed'));
     expect(await replyToTicketAction(ID, 'Hi')).toMatchObject({ ok: false });
+  });
+});
+
+describe('persisted admin conversation snapshot', () => {
+  it('shows a saved support reply immediately, retains it through an older refresh, and isolates ticket navigation', async () => {
+    const initial = ticket();
+    const saved = ticket({
+      updatedAt: '2026-09-30T12:00:00.000Z',
+      messages: [
+        ...initial.messages,
+        {
+          ...initial.messages[0]!,
+          id: '99999999-9999-4999-8999-999999999994',
+          body: 'Persisted support reply resets the allowance.',
+        },
+      ],
+    });
+    apiSend.mockResolvedValue(saved);
+    const user = userEvent.setup();
+    const view = render(<SupportTicketWorkspace ticket={initial} viewerId={ME.id} />);
+    await user.type(
+      screen.getByLabelText('Reply to customer'),
+      'Persisted support reply resets the allowance.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Send reply to customer' }));
+    const conversation = screen.getByRole('region', { name: 'Conversation' });
+    expect(
+      await within(conversation).findByText('Persisted support reply resets the allowance.'),
+    ).toBeInTheDocument();
+    view.rerender(<SupportTicketWorkspace ticket={initial} viewerId={ME.id} />);
+    expect(
+      within(conversation).getByText('Persisted support reply resets the allowance.'),
+    ).toBeInTheDocument();
+    view.rerender(
+      <SupportTicketWorkspace ticket={ticket({ id: COLLEAGUE.id })} viewerId={ME.id} />,
+    );
+    expect(screen.queryByText('Persisted support reply resets the allowance.')).toBeNull();
   });
 });

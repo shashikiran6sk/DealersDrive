@@ -1,5 +1,7 @@
 import {
   statusAfterCustomerReply,
+  SUPPORT_UNANSWERED_MESSAGE_LIMIT,
+  SUPPORT_MESSAGE_LIMIT_TEXT,
   type CreateSupportTicketInput,
   type CustomerSupportTicket,
   type CustomerSupportTicketQuery,
@@ -23,6 +25,7 @@ import {
   toSupportTicketRow,
 } from './support.mapper.js';
 import { ENQUIRY_NOT_YOURS, TICKET_CLOSED, TICKET_NOT_FOUND } from './support.messages.js';
+import { isPersistedRetry } from './message-retry.js';
 
 export interface SupportDeps {
   prisma: PrismaClient;
@@ -151,10 +154,28 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
 
         const current = await tx.supportTicket.findUniqueOrThrow({
           where: { id: ticketId },
-          select: { status: true },
+          select: { status: true, unansweredCustomerMessages: true },
         });
+        if (
+          await isPersistedRetry(
+            tx,
+            ticketId,
+            'CUSTOMER',
+            input.message,
+            input.clientMessageId,
+            customer.userId,
+          )
+        )
+          return;
         const next = statusAfterCustomerReply(current.status);
         if (next === null) throw new ConflictError('SUPPORT_TICKET_CLOSED', TICKET_CLOSED);
+        if (current.unansweredCustomerMessages >= SUPPORT_UNANSWERED_MESSAGE_LIMIT) {
+          logger.info(
+            { event: 'support_ticket.message_limit', ticketId },
+            'customer reply quota reached',
+          );
+          throw new ConflictError('SUPPORT_MESSAGE_LIMIT_REACHED', SUPPORT_MESSAGE_LIMIT_TEXT);
+        }
 
         const now = new Date();
         await tx.supportTicketMessage.create({
@@ -163,6 +184,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
             authorType: 'CUSTOMER',
             authorId: customer.userId,
             body: input.message,
+            clientMessageId: input.clientMessageId ?? null,
             createdAt: now,
           },
         });
@@ -170,6 +192,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
           where: { id: ticketId },
           data: {
             status: next,
+            unansweredCustomerMessages: { increment: 1 },
             updatedAt: now,
             ...(current.status === 'RESOLVED' ? { resolvedAt: null } : {}),
           },

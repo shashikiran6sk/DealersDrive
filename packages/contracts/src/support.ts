@@ -208,7 +208,12 @@ export const CreateSupportTicketInput = z
 export type CreateSupportTicketInput = z.infer<typeof CreateSupportTicketInput>;
 
 /** `POST /v1/support/tickets/:id/messages` — a reply in the conversation. */
-export const SupportMessageInput = z.object({ message: SupportMessageBody }).strict();
+export const SUPPORT_UNANSWERED_MESSAGE_LIMIT = 5;
+export const SUPPORT_MESSAGE_LIMIT_TEXT =
+  "You've sent five messages. Please wait for our support team to reply before sending more.";
+export const SupportMessageInput = z
+  .object({ message: SupportMessageBody, clientMessageId: Uuid.optional() })
+  .strict();
 export type SupportMessageInput = z.infer<typeof SupportMessageInput>;
 
 /** `GET /v1/support/tickets` — most recently active first. */
@@ -280,6 +285,7 @@ export type CustomerSupportEnquiry = z.infer<typeof CustomerSupportEnquiry>;
 export const CustomerSupportTicket = SupportTicketRow.extend({
   description: z.string(),
   canReply: z.boolean(),
+  remainingMessages: z.number().int().min(0).max(SUPPORT_UNANSWERED_MESSAGE_LIMIT).optional(),
   messages: z.array(SupportMessage),
   enquiry: CustomerSupportEnquiry.nullable(),
 });

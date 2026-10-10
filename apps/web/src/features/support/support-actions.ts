@@ -26,7 +26,7 @@ export type CreateSupportRequestResult =
   | { status: 'signed-out' };
 
 export type ReplySupportRequestResult =
-  | { status: 'sent' }
+  | { status: 'sent'; ticket?: CustomerSupportTicket }
   | { status: 'invalid'; message: string }
   | { status: 'refused'; code: string; message: string }
   | { status: 'signed-out' };
@@ -80,9 +80,13 @@ export async function createSupportRequestAction(
 export async function replySupportRequestAction(
   ticketId: string,
   message: string,
+  clientMessageId?: string,
 ): Promise<ReplySupportRequestResult> {
   const id = IdParam.safeParse({ id: ticketId });
-  const body = SupportMessageInput.safeParse({ message });
+  const body = SupportMessageInput.safeParse({
+    message,
+    ...(clientMessageId ? { clientMessageId } : {}),
+  });
   if (!id.success) return { status: 'invalid', message: SUPPORT_ACTION_TEXT.failed };
   if (!body.success) {
     return {
@@ -91,8 +95,9 @@ export async function replySupportRequestAction(
     };
   }
 
+  let ticket: CustomerSupportTicket;
   try {
-    await apiSend<CustomerSupportTicket>(
+    ticket = await apiSend<CustomerSupportTicket>(
       'POST',
       `/v1/support/tickets/${encodeURIComponent(id.data.id)}/messages`,
       body.data,
@@ -111,5 +116,5 @@ export async function replySupportRequestAction(
 
   revalidatePath(SUPPORT_ACTION_TEXT.detailPath(id.data.id));
   revalidatePath(SUPPORT_ACTION_TEXT.listPath);
-  return { status: 'sent' };
+  return { status: 'sent', ticket };
 }

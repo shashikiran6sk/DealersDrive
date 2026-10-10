@@ -129,6 +129,19 @@ describe('CreateSupportTicketInput', () => {
 });
 
 describe('SupportMessageInput', () => {
+  it('accepts only a UUID retry identifier and does not accept quota or author controls', () => {
+    const clientMessageId = '11111111-1111-4111-8111-111111111111';
+    expect(SupportMessageInput.parse({ message: ' Reply ', clientMessageId })).toEqual({
+      message: 'Reply',
+      clientMessageId,
+    });
+    expect(
+      SupportMessageInput.safeParse({ message: 'Reply', clientMessageId: 'forged' }).success,
+    ).toBe(false);
+    expect(SupportMessageInput.safeParse({ message: 'Reply', remainingMessages: 5 }).success).toBe(
+      false,
+    );
+  });
   it('takes a message and nothing else', () => {
     expect(SupportMessageInput.parse({ message: ' Thanks ' })).toEqual({ message: 'Thanks' });
     expect(SupportMessageInput.safeParse({ message: 'x', authorType: 'SUPPORT' }).success).toBe(

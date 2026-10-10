@@ -92,7 +92,13 @@ export const supportDocs: ModuleDocs = {
         'Adds the customer’s message to the conversation. A request waiting for the customer ' +
         'goes back to `IN_PROGRESS`; a `RESOLVED` one reopens to `OPEN` (audited as ' +
         '`support_ticket.reopened`). A `CLOSED` request takes no reply: ' +
-        '`409 SUPPORT_TICKET_CLOSED`, and the customer is pointed at a new request.',
+        '`409 SUPPORT_TICKET_CLOSED`, and the customer is pointed at a new request. ' +
+        'Up to five successfully persisted customer messages are allowed after the latest genuine support reply. ' +
+        'The original description is a separate ticket field and is not an additional message. ' +
+        'A ticket row lock makes the quota atomic. The sixth reply returns 409 SUPPORT_MESSAGE_LIMIT_REACHED. ' +
+        'An optional clientMessageId UUID makes a retry idempotent; reusing it with different text returns 409 SUPPORT_MESSAGE_RETRY_CONFLICT. ' +
+        'Retries preserve quota and timestamps. Internal notes and lifecycle changes never reset it. ' +
+        'Customer detail exposes remainingMessages and canReply. Urgent help is available through /contact without bypassing this quota.',
       audience: 'customer',
       params: 'IdParam',
       requestBody: {

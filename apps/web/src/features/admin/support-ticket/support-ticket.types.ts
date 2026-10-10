@@ -14,8 +14,13 @@ export interface TicketControlsProps {
 }
 
 export interface TicketComposerProps {
+  onSaved?: (ticket: AdminSupportTicketDetail) => void;
   ticketId: string;
   canReply: boolean;
-  reply?: (ticketId: string, message: string) => Promise<AdminSupportResult>;
+  reply?: (
+    ticketId: string,
+    message: string,
+    clientMessageId?: string,
+  ) => Promise<AdminSupportResult>;
   note?: (ticketId: string, note: string) => Promise<AdminSupportResult>;
 }
