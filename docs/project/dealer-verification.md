@@ -92,3 +92,10 @@ No production migration, seed, reset or deployment is executed by this campaign.
 7. Try dealer/staff/sales/SUPPORT actors, assisting reviewer, forged requests and concurrent versions.
    They must not bypass role, self-review, evidence or concurrency controls.
 8. Inspect public responses for document/assessment/identifier leakage and mobile/desktop layout.
+
+Post-creation browser UAT found public profile data remained cached after a verification
+write even though the API returned the correct badge state. Verification actions now
+invalidate the existing dealer and vehicle cache tags, covering directory/detail/suggestions
+and vehicle dealer badges. The regression checks both tags; browser UAT repeats verification
+and revocation after first visiting the cached public page. Existing core-edit/document-review
+admin actions already invalidate those same tags.

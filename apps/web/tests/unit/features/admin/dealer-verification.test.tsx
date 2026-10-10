@@ -5,6 +5,7 @@ import type { DealerVerificationReview } from '@dealers-drive/contracts';
 import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification/dealer-verification';
 import { decideDealerVerification } from '@/features/admin/dealer-verification/actions';
 import type * as Api from '@/lib/api';
+import { revalidations } from '../../../setup';
 const send = vi.fn();
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof Api>()),
@@ -45,6 +46,8 @@ describe('genuine admin verification workflow', () => {
       expectedVersion: 0,
       status: 'IN_REVIEW',
     });
+    expect(revalidations.tags).toContain('dealers');
+    expect(revalidations.tags).toContain('vehicles');
     view.rerender(<DealerVerificationReviewPanel initial={initial} />);
     expect(screen.getByText('Verification in review', { selector: 'p' })).toBeInTheDocument();
     view.rerender(

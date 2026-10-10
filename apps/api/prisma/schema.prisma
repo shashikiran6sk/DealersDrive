@@ -414,6 +414,7 @@ model Dealer {
   /// straight past a case-sensitive index — that read is the error message,
   /// this is the constraint.
   @@unique([legalName, city])
+  @@index([verificationStatus])
   @@index([status, city])
   /// The admin console's location filters, which are always narrowed from the
   /// outside in: a state, then a district within it, then a town.

@@ -7,6 +7,7 @@ import {
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 import { ApiError, apiSend } from '@/lib/api';
+import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
 
 export async function decideDealerVerification(
   dealerId: string,
@@ -28,8 +29,8 @@ export async function decideDealerVerification(
       body.data,
     );
     revalidatePath(`/admin/dealers/${id.data.id}`);
-    revalidatePath('/dealers');
-    revalidatePath('/cars');
+    revalidatePublicDealer();
+    revalidatePublicVehicles();
     return { ok: true, review };
   } catch (error) {
     return {
