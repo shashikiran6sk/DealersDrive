@@ -1,5 +1,9 @@
 # PR 6 — verified admin mobile authentication
 
+**Current final-head certification:** [coverage follow-up](coverage-hardening/README.md),
+`e481bb04c7b294900817fc64f92a241c09cfb894`. The report below is the original executed
+`38f1ccc3` certification and is retained as historical evidence.
+
 - PR: [#293](https://github.com/shashikiran6sk/DealersDrive/pull/293)
 - Branch: `feat/admin-mobile-otp`
 - Base: `feat/optional-dealer-tagline` (parent #292)
