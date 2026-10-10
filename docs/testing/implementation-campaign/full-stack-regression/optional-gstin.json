@@ -1,0 +1,42 @@
+{
+  "provider": "controlled local identities, real app/API/PostgreSQL; synthetic documents",
+  "checks": [
+    {
+      "check": "actual approved non-GST business remains public without fabricated tax identity",
+      "pass": true
+    },
+    {
+      "check": "existing dealer OTP login preserved",
+      "pass": true
+    },
+    {
+      "check": "dealer optional GSTIN profile and layout 320",
+      "pass": true
+    },
+    {
+      "check": "dealer optional GSTIN profile and layout 390",
+      "pass": true
+    },
+    {
+      "check": "dealer optional GSTIN profile and layout 768",
+      "pass": true
+    },
+    {
+      "check": "dealer optional GSTIN profile and layout 1280",
+      "pass": true
+    },
+    {
+      "check": "actual admin invalid supplied GSTIN error",
+      "pass": true
+    },
+    {
+      "check": "admin update, clear and reload persist optional tax identity correctly",
+      "pass": true
+    },
+    {
+      "check": "admin clearing invalidates conditional public tax display",
+      "pass": true
+    }
+  ],
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"
+}

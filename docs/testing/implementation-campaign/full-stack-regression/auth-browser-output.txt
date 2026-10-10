@@ -1,0 +1,4 @@
+Waiting for the real 60-second challenge cooldown before mobile login
+Browser campaign passed 17 explicit checks; screenshots mask contact and OTP fields.
+Respecting the real 60-second cooldown after recovery enrollment before the rotation check
+Additional isolation and fixation checks passed: 5. Total browser checks: 22. No tokens printed.

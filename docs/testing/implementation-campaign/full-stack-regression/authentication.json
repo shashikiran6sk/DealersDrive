@@ -1,0 +1,112 @@
+{
+  "provider": "controlled local Google/OTP; no live delivery",
+  "results": [
+    {
+      "check": "admin login 320px",
+      "pass": true,
+      "scroll": 320,
+      "width": 320
+    },
+    {
+      "check": "admin login 390px",
+      "pass": true,
+      "scroll": 390,
+      "width": 390
+    },
+    {
+      "check": "admin login 768px",
+      "pass": true,
+      "scroll": 768,
+      "width": 768
+    },
+    {
+      "check": "admin login 1280px",
+      "pass": true,
+      "scroll": 1280,
+      "width": 1280
+    },
+    {
+      "check": "controlled Google real cookie login",
+      "pass": true
+    },
+    {
+      "check": "linked security 390px",
+      "pass": true,
+      "scroll": 390,
+      "width": 390
+    },
+    {
+      "check": "recent Google enrollment through UI",
+      "pass": true
+    },
+    {
+      "check": "same-number customer/admin identities remain isolated",
+      "pass": true
+    },
+    {
+      "check": "admin logout revocation/replay and person preservation",
+      "pass": true
+    },
+    {
+      "check": "mobile OTP actual server-action login",
+      "pass": true
+    },
+    {
+      "check": "refresh, second tab and OTP enrollment/revocation step-up",
+      "pass": true
+    },
+    {
+      "check": "Google step-up and credential/global admin revocation UI",
+      "pass": true
+    },
+    {
+      "check": "controlled lost-phone recovery and new-number verification",
+      "pass": true
+    },
+    {
+      "check": "security 320px",
+      "pass": true,
+      "scroll": 320,
+      "width": 320
+    },
+    {
+      "check": "security 390px",
+      "pass": true,
+      "scroll": 390,
+      "width": 390
+    },
+    {
+      "check": "security 768px",
+      "pass": true,
+      "scroll": 768,
+      "width": 768
+    },
+    {
+      "check": "security 1280px",
+      "pass": true,
+      "scroll": 1280,
+      "width": 1280
+    },
+    {
+      "check": "wrong-scope admin logout cannot revoke customer session",
+      "pass": true
+    },
+    {
+      "check": "customer logout preserves admin session",
+      "pass": true
+    },
+    {
+      "check": "wrong-scope customer logout cannot revoke admin session",
+      "pass": true
+    },
+    {
+      "check": "dealer Google sign-in/logout preserves admin session",
+      "pass": true
+    },
+    {
+      "check": "OTP rotation prevents old-session replay and fixation",
+      "pass": true
+    }
+  ],
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"
+}
