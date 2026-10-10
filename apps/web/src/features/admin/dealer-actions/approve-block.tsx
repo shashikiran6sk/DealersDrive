@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import type { AdminDealerDetail } from '@dealers-drive/contracts';
 
 import { Field } from '@/components/forms/field';
@@ -27,8 +29,13 @@ export function ApproveBlock({
   confirm,
   onConfirmChange,
 }: ApproveBlockProps) {
+  const [taxReview, setTaxReview] = useState({ dealerId: dealer.id, text: '' });
+  const taxText = taxReview.dealerId === dealer.id ? taxReview.text : '';
   const approvalPhrase = DEALER_ACTIONS_TEXT.approvalPhrase(dealer.brandName);
-  const canApprove = dealer.actions.canApprove && confirm.trim().toLowerCase() === approvalPhrase;
+  const canApprove =
+    dealer.actions.canApprove &&
+    confirm.trim().toLowerCase() === approvalPhrase &&
+    (Boolean(dealer.gstin) || taxText.trim().length >= 20);
 
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
@@ -58,6 +65,24 @@ export function ApproveBlock({
           disabled={pending}
         />
       </Field>
+      {!dealer.gstin ? (
+        <Field
+          id="gstApplicabilityReview"
+          label="GST registration applicability review"
+          hint="Record why registration is not required and the protected review reference. Blank GSTIN alone is not an exemption. Leave unresolved cases under review."
+          className="w-full"
+        >
+          <Input
+            id="gstApplicabilityReview"
+            value={taxText}
+            required
+            minLength={20}
+            maxLength={1000}
+            onChange={(event) => setTaxReview({ dealerId: dealer.id, text: event.target.value })}
+            disabled={pending}
+          />
+        </Field>
+      ) : null}
       <Button
         variant="primary"
         size="md"
@@ -68,7 +93,10 @@ export function ApproveBlock({
           run(async () => {
             const result = await approveDealerAction(
               dealer.id,
-              { ...(note.trim() ? { note: note.trim() } : {}) },
+              {
+                ...(note.trim() ? { note: note.trim() } : {}),
+                ...(!dealer.gstin ? { gstNotRequiredReview: taxText.trim() } : {}),
+              },
               dealer.slug,
             );
             if (result.ok) onConfirmChange('');

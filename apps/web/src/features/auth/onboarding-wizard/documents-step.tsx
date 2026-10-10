@@ -55,16 +55,14 @@ export function DocumentsStep({
 
       <form action={submit} className="flex flex-col gap-[14px]" noValidate>
         <div className="grid gap-[14px] sm:grid-cols-2">
-          <Field id="gstin" label="GSTIN" error={state.errors?.gstin}>
+          <Field id="gstin" label="GSTIN (optional where applicable)" error={state.errors?.gstin}>
             <input
               id="gstin"
               name="gstin"
               className="input font-mono uppercase"
               placeholder="33ABCDE1234F1Z5"
               maxLength={15}
-              defaultValue={values.gstin ?? dealer?.gstin ?? ''}
-              required
-              aria-required="true"
+              defaultValue={values.gstin === undefined ? (dealer?.gstin ?? '') : values.gstin}
               {...invalidProps('gstin', state.errors?.gstin)}
             />
           </Field>
@@ -89,10 +87,21 @@ export function DocumentsStep({
         </button>
       </form>
 
+      <p className="text-[13px] ink-muted">
+        Optional collection does not remove GST registration obligations. If you are registered,
+        supply your GSTIN and certificate. Applicability is reviewed separately.
+      </p>
       <div className="flex flex-col gap-[10px]">
-        {documents.map((document) => (
-          <DocumentUploader key={document.type} document={document} />
-        ))}
+        {documents
+          .filter(
+            (document) =>
+              document.type !== 'GST_CERTIFICATE' ||
+              Boolean(dealer?.gstin) ||
+              document.status !== 'REQUIRED',
+          )
+          .map((document) => (
+            <DocumentUploader key={document.type} document={document} />
+          ))}
       </div>
 
       {yardPhoto ? <YardPhotoUploader photo={yardPhoto} /> : null}

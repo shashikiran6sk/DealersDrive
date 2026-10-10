@@ -46,3 +46,5 @@ export * from './dealer-tagline.js';
 export * from './admin-phone.js';
 
 export * from './dealer-verification.js';
+
+export * from './dealer-gstin.js';

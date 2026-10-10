@@ -4,7 +4,13 @@ function upper(value: string): string {
 
 export const FIELDS = [
   { key: 'legalName', label: 'Dealership name', path: 'legalName', mono: false },
-  { key: 'gstin', label: 'GSTIN', path: 'gstin', mono: true, transform: upper },
+  {
+    key: 'gstin',
+    label: 'GSTIN (optional where applicable)',
+    path: 'gstin',
+    mono: true,
+    transform: upper,
+  },
   { key: 'pan', label: 'PAN', path: 'pan', mono: true, transform: upper },
   { key: 'addressLine', label: 'Address', path: 'address.line', mono: false },
   { key: 'city', label: 'City', path: 'address.city', mono: false },

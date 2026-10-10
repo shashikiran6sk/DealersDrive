@@ -1,8 +1,10 @@
+import { withDealerRegistrationConflict } from './dealer-registration-conflict.js';
 import { invalidateDealerVerification } from './dealer-verification.js';
 import { isDealerVerified } from '@dealers-drive/contracts';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
+  requiredDealerDocuments,
   DEALER_STATUS_LABELS,
   distinctServices,
   DOC_TYPE_LABELS,
@@ -47,7 +49,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
-import { normaliseDealerEmail, withDealerEmailConflict } from './dealer-email-identity.js';
+import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
   ALREADY_SUBMITTED,
   APPLICATION_CLOSED,
@@ -472,7 +474,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         ...(input.legalName === undefined || nameCity === undefined
           ? {}
           : { legalName: input.legalName, city: nameCity }),
-        ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
+        ...(input.gstin ? { gstin: input.gstin } : {}),
         ...(input.pan === undefined ? {} : { pan: input.pan }),
       });
 
@@ -569,7 +571,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       };
       const updated = transaction
         ? await work(transaction)
-        : await withDealerEmailConflict(() => withTransaction(prisma, work), 'body.contact.email');
+        : await withDealerRegistrationConflict(
+            () => withTransaction(prisma, work),
+            'body.contact.email',
+          );
 
       return toProfile(updated);
     },
@@ -600,10 +605,9 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (!dealer.pincode) businessMissing.push('pincode');
       if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
       if (dealer.specialities.length === 0) businessMissing.push('specialities');
-      if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');
 
-      const documentsMissing: string[] = DOC_TYPES.filter((type) => {
+      const documentsMissing: string[] = requiredDealerDocuments(dealer.gstin).filter((type) => {
         const doc = documents.find((row) => row.type === type);
         return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
       });

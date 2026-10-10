@@ -1,5 +1,6 @@
 import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
+  requiredDealerDocuments,
   ADMIN_ROLE_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
@@ -78,12 +79,15 @@ export interface AdminDeps {
   dealers: DealersService;
 }
 
-const REQUIRED_DOCUMENTS = 3;
-
-function allDocumentsVerified(documents: Pick<DealerDocument, 'status' | 'fileName'>[]): boolean {
-  return (
-    documents.length === REQUIRED_DOCUMENTS &&
-    documents.every((doc) => doc.status === 'VERIFIED' && Boolean(doc.fileName))
+function allDocumentsVerified(
+  documents: Pick<DealerDocument, 'type' | 'status' | 'fileName'>[],
+  gstin: string | null,
+): boolean {
+  const required = requiredDealerDocuments(gstin);
+  return required.every((type) =>
+    documents.some(
+      (doc) => doc.type === type && doc.status === 'VERIFIED' && Boolean(doc.fileName),
+    ),
   );
 }
 
@@ -366,7 +370,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           joinedAt: dealer.createdAt.toISOString(),
           joinedLabel: formatDate(dealer.createdAt),
           creditBalance: dealer.creditBalance,
-          documentsVerified: allDocumentsVerified(dealer.documents),
+          documentsVerified: allDocumentsVerified(dealer.documents, dealer.gstin),
           hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
@@ -398,7 +402,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       }[] = [];
 
       const owner = dealer.members[0];
-      const allVerified = allDocumentsVerified(dealer.documents);
+      const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
 
       const documents = await Promise.all(
@@ -518,7 +522,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     async approveDealer(
       admin: AdminPrincipal,
       dealerId: string,
-      _input: ApproveDealerInput,
+      input: ApproveDealerInput,
     ): Promise<DealerModerationResponse> {
       assertPermission(admin, 'admin:dealer:approve');
 
@@ -540,14 +544,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           SELECT "id" FROM "dealer_documents" WHERE "dealerId" = ${dealerId}::uuid
           ORDER BY "id" FOR UPDATE`;
         const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
-        if (!allDocumentsVerified(documents)) {
+        if (!allDocumentsVerified(documents, dealer.gstin)) {
           throw new DomainError(
             'DOCUMENTS_NOT_VERIFIED',
-            'Verify all three uploaded KYC documents before approving this dealership.',
+            'Verify the applicable uploaded business documents before approving this dealership.',
           );
         }
         const uploads = await Promise.all(
-          documents.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+          documents
+            .filter((doc) => requiredDealerDocuments(dealer.gstin).includes(doc.type))
+            .map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
         );
         if (uploads.some((object) => object === null)) {
           throw new DomainError(
@@ -559,6 +565,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         if (!application.isComplete) {
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }
+
+        if (!dealer.gstin && !input.gstNotRequiredReview)
+          throw new DomainError(
+            'GST_APPLICABILITY_REVIEW_REQUIRED',
+            'Record why GST registration is not required before approving a business without GSTIN. Uncertain applicability must remain under review.',
+          );
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
@@ -575,7 +587,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'Dealer',
           entityId: dealerId,
           before: { status: dealer.status },
-          after: { status: 'ACTIVE', creditsGranted },
+          after: {
+            status: 'ACTIVE',
+            creditsGranted,
+            ...(dealer.gstin ? {} : { gstNotRequiredReview: input.gstNotRequiredReview }),
+          },
         });
 
         await enqueueOutbox(tx, {
@@ -1026,9 +1042,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
-        const allVerified = allDocumentsVerified(all);
-
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
+        const allVerified = allDocumentsVerified(all, dealer?.gstin ?? null);
         if (rejecting && dealer)
           await invalidateDealerVerification(
             tx,
