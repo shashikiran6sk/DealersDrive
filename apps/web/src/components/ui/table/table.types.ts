@@ -13,4 +13,5 @@ export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
   children: ReactNode;
   caption?: string;
   containerClassName?: string;
+  scrollHint?: boolean;
 }

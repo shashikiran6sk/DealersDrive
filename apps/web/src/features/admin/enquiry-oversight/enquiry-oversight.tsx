@@ -56,7 +56,7 @@ export function EnquiryOversight({ enquiries, filters }: EnquiryOversightProps) 
           />
         )
       ) : (
-        <Table columns={COLUMNS} caption={ENQUIRY_OVERSIGHT_TEXT.caption}>
+        <Table scrollHint columns={COLUMNS} caption={ENQUIRY_OVERSIGHT_TEXT.caption}>
           {enquiries.data.map((row) => (
             <EnquiryOversightRow key={row.id} row={row} filters={filters} />
           ))}

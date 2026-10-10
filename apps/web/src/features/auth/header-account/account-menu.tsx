@@ -112,6 +112,14 @@ export function AccountMenu({
               onNavigate={() => setOpen(false)}
             />
             <div role="separator" className={MENU_SEPARATOR} />
+            <Link
+              role="menuitem"
+              href={HEADER_ACCOUNT_TEXT.adminLoginHref}
+              className={MENU_ITEM}
+              onClick={() => setOpen(false)}
+            >
+              {HEADER_ACCOUNT_TEXT.adminLogin}
+            </Link>
             <button
               role="menuitem"
               type="button"

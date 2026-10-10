@@ -100,6 +100,7 @@ describe('HeaderAccount', () => {
       'My enquiries',
       'Support requests',
       'Dealer Login',
+      'Admin login',
       'Logout',
     ]);
     expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveAttribute(
@@ -118,7 +119,8 @@ describe('HeaderAccount', () => {
 
   it('puts focus on the first item, moves with the arrow keys, Home and End, and wraps', async () => {
     const { user, menu } = await openMenu();
-    const [saved, enquiries, support, dealer, logout] = within(menu).getAllByRole('menuitem');
+    const [saved, enquiries, support, dealer, admin, logout] =
+      within(menu).getAllByRole('menuitem');
 
     await waitFor(() => expect(saved).toHaveFocus());
     await user.keyboard('{ArrowDown}');
@@ -128,9 +130,11 @@ describe('HeaderAccount', () => {
     await user.keyboard('{ArrowDown}');
     expect(dealer).toHaveFocus();
     await user.keyboard('{ArrowDown}');
+    expect(admin).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
     expect(logout).toHaveFocus();
     await user.keyboard('{ArrowUp}');
-    expect(dealer).toHaveFocus();
+    expect(admin).toHaveFocus();
     await user.keyboard('{End}');
     expect(logout).toHaveFocus();
     await user.keyboard('{ArrowDown}');
@@ -307,6 +311,7 @@ describe('a member’s dealerships (R93)', () => {
       'Support requests',
       'ABC MotorsCurrentDealer dashboard · Manager',
       'XYZ CarsDealer dashboard · Staff',
+      'Admin login',
       'Logout',
     ]);
     expect(within(menu).queryByRole('menuitem', { name: 'Dealer Login' })).toBeNull();

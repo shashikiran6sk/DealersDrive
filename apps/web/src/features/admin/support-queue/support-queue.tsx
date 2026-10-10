@@ -56,7 +56,7 @@ export function SupportQueue({ tickets, filters }: SupportQueueProps) {
           />
         )
       ) : (
-        <Table columns={COLUMNS} caption={SUPPORT_QUEUE_TEXT.caption}>
+        <Table scrollHint columns={COLUMNS} caption={SUPPORT_QUEUE_TEXT.caption}>
           {tickets.data.map((row) => (
             <SupportQueueRow key={row.id} row={row} />
           ))}

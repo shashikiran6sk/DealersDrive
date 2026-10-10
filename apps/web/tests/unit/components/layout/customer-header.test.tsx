@@ -1,5 +1,6 @@
 import type { PublicLocations } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { setLocation } from '../../../setup';
@@ -96,6 +97,26 @@ describe('saved cars', () => {
 });
 
 describe('the login door', () => {
+  it('offers mobile admin and dealer sign-in and support while preserving marketplace links', async () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Open Main menu' }));
+    const drawer = await screen.findByRole('dialog');
+    for (const [name, href] of [
+      ['Home', '/'],
+      ['Buy cars', '/cars'],
+      ['Dealers', '/dealers'],
+      ['Dealer login', '/login?as=dealer'],
+      ['Admin login', '/admin/login'],
+      ['Help and support', '/contact'],
+    ]) {
+      expect(within(drawer).getByRole('link', { name })).toHaveAttribute('href', href);
+    }
+    await user.click(within(drawer).getByRole('link', { name: 'Admin login' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument();
+  });
   /**
    * **R63** replaced the dealer door. The header used to say "Dealer login"
    * and go to `/dealer`, because only dealers had accounts; now buyers do too,
