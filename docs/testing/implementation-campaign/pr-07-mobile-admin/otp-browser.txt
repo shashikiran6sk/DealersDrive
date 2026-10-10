@@ -1,0 +1,2 @@
+Waiting for the real 60-second challenge cooldown before mobile login
+Browser campaign passed 17 explicit checks; screenshots mask contact and OTP fields.

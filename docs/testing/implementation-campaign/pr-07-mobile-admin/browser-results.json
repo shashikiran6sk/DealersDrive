@@ -1,0 +1,247 @@
+{
+  "provider": "controlled local Google/OTP; synthetic fixtures",
+  "checks": [
+    {
+      "check": "mobile admin discovery 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "mobile admin discovery 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "Google login from mobile admin entry",
+      "pass": true
+    },
+    {
+      "check": "/admin 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/dealers 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/listings 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/enquiries 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/support 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/config 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin/profile/security 320",
+      "pass": true,
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "check": "/admin 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/dealers 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/listings 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/enquiries 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/support 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/config 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin/profile/security 390",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "/admin 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/dealers 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/listings 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/enquiries 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/support 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/config 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin/profile/security 768",
+      "pass": true,
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "check": "/admin 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/dealers 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/listings 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/enquiries 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/support 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/config 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "/admin/profile/security 1280",
+      "pass": true,
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "check": "admin mobile drawer route navigation",
+      "pass": true
+    },
+    {
+      "check": "dealer approval mobile",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "actual synthetic dealer approval persisted through UI",
+      "pass": true
+    },
+    {
+      "check": "listing decision dialog mobile",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "actual listing change-request persisted through mobile dialog",
+      "pass": true
+    },
+    {
+      "check": "support reply mobile",
+      "pass": true,
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "check": "actual support reply persisted through mobile composer",
+      "pass": true
+    },
+    {
+      "check": "refresh and isolated admin logout from mobile",
+      "pass": true
+    },
+    {
+      "check": "unauthorized admin route rejected after logout",
+      "pass": true
+    },
+    {
+      "check": "persisted SUPPORT reply confirmed through API and conversation region",
+      "pass": true
+    },
+    {
+      "check": "actual wide table horizontal scrolling",
+      "pass": true
+    },
+    {
+      "check": "mobile configuration save/reload/restore persisted",
+      "pass": true
+    },
+    {
+      "check": "native desktop context navigation regression",
+      "pass": true
+    }
+  ]
+}
