@@ -1,6 +1,9 @@
 # Admin mobile OTP — implementation checkpoint
 
-Status: active PR 6 implementation, not yet opened or certified.
+Status: implementation completed; [PR #293](https://github.com/shashikiran6sk/DealersDrive/pull/293)
+is open and unmerged. The sections below record historical implementation checkpoints.
+Current final-SHA certification is maintained in the PR description and
+[published evidence](https://github.com/shashikiran6sk/DealersDrive/tree/testing_evidence/docs/testing/implementation-campaign/pr-06-admin-otp).
 Branch: `feat/admin-mobile-otp`; parent `feat/optional-dealer-tagline`.
 Parent certified head: `465a5cd129de8b03be02cd551ca9e4bf238a39c6` (PR #292).
 
@@ -76,3 +79,13 @@ production build, actual browser campaign, post-creation testing and final-SHA C
 before this branch is certified or PR 7 starts. See
 [the security design and rollout notes](admin-mobile-otp.md) for precise policy and provider
 limitations. Live Google/SMS and production configuration are not claimed as tested.
+
+## Coverage hardening follow-up
+
+PR 7's first full validation passed every test but measured 89.97% API branch coverage, below
+the unchanged 90% gate. PR 7's UI work was preserved while this originating branch gained
+additional security scenarios: logout or revocation during provider verification, expiring
+Google assurance, console permission removal, duplicate phone ownership through the actual API,
+normalization, resend invalidation, provider configuration and mandatory proof freshness.
+Product code and security gates are unchanged. The updated parent must pass full validation and
+final-head CI before the child is advanced and its preserved UI work restored.

@@ -16,15 +16,29 @@ const cache = createMemoryCache();
 const proofs = new Map<string, PhoneOtpVerdict>();
 let unavailable = false;
 let providerCalls = 0;
+function deferred() {
+  const control: { resolve?: () => void } = {};
+  const promise = new Promise<void>((resolve) => {
+    control.resolve = resolve;
+  });
+  return { promise, resolve: () => control.resolve?.() };
+}
+let providerPause: {
+  started: ReturnType<typeof deferred>;
+  release: ReturnType<typeof deferred>;
+} | null = null;
 const otp: PhoneOtpPort = {
   driver: 'fake',
-  identify(token) {
+  async identify(token) {
     providerCalls += 1;
-    return Promise.resolve(
-      unavailable
-        ? { status: 'UNAVAILABLE' }
-        : (proofs.get(token) ?? { status: 'REJECTED', reason: 'controlled refusal' }),
-    );
+    const paused = providerPause;
+    if (paused) {
+      paused.started.resolve();
+      await paused.release.promise;
+    }
+    return unavailable
+      ? { status: 'UNAVAILABLE' }
+      : (proofs.get(token) ?? { status: 'REJECTED', reason: 'controlled refusal' });
   },
 };
 let h: AuthHarness;
@@ -53,8 +67,10 @@ beforeEach(async () => {
   proofs.clear();
   unavailable = false;
   providerCalls = 0;
+  providerPause = null;
 });
 afterEach(() => {
+  providerPause?.release.resolve();
   vi.restoreAllMocks();
 });
 
@@ -116,6 +132,93 @@ async function loginChallenge(f: Fixture) {
 }
 
 describe('admin mobile credentials and challenge boundaries', () => {
+  it('refuses enrollment when Google logout occurs while the provider is verifying', async () => {
+    const f = await admin();
+    const c = await challenge(f.agent, ENROLL, f.phone);
+    const paused = { started: deferred(), release: deferred() };
+    providerPause = paused;
+    const pending = verify(f.agent, ENROLL, c, token(f.phone)).then((response) => response);
+    await paused.started.promise;
+    await f.agent.post('/v1/auth/admin/logout').expect(204);
+    paused.release.resolve();
+    const response = await pending;
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('ADMIN_GOOGLE_REAUTH_REQUIRED');
+    expect(await h.prisma.adminPhoneCredential.count({ where: { userId: f.userId } })).toBe(0);
+  });
+  it('refuses login when credential revocation occurs during provider verification', async () => {
+    const f = await admin();
+    await enroll(f);
+    const c = await loginChallenge(f);
+    const paused = { started: deferred(), release: deferred() };
+    providerPause = paused;
+    const pending = verify(h.agent(), LOGIN, c, token(f.phone)).then((response) => response);
+    await paused.started.promise;
+    await f.agent
+      .post(`${ENROLL}/revoke`)
+      .set('Origin', origin)
+      .send({ confirm: true })
+      .expect(204);
+    paused.release.resolve();
+    expect((await pending).status).toBe(403);
+    expect(
+      await h.prisma.session.count({
+        where: { userId: f.userId, scope: 'ADMIN', revokedAt: null },
+      }),
+    ).toBe(0);
+  });
+  it('requires renewed Google assurance if step-up expires after challenge creation', async () => {
+    const f = await admin();
+    const c = await challenge(f.agent, ENROLL, f.phone);
+    await h.prisma.session.update({
+      where: { id: f.sessionId },
+      data: { createdAt: new Date(Date.now() - 601_000) },
+    });
+    const response = await verify(f.agent, ENROLL, c, token(f.phone)).expect(403);
+    expect(response.body.code).toBe('ADMIN_GOOGLE_REAUTH_REQUIRED');
+    expect(await h.prisma.adminPhoneCredential.count({ where: { userId: f.userId } })).toBe(0);
+  });
+  it('rejects login after a member loses console permission without disabling their account', async () => {
+    const f = await admin();
+    await enroll(f);
+    const c = await loginChallenge(f);
+    await h.prisma.adminMember.update({ where: { userId: f.userId }, data: { role: 'SALES_REP' } });
+    await verify(h.agent(), LOGIN, c, token(f.phone)).expect(403);
+  });
+  it('rejects a second administrator enrolling an already owned number without reassigning it', async () => {
+    const first = await admin();
+    await enroll(first);
+    const second = await admin();
+    const c = await challenge(second.agent, ENROLL, first.phone);
+    await verify(second.agent, ENROLL, c, token(first.phone)).expect(403);
+    expect(
+      (await h.prisma.adminPhoneCredential.findUniqueOrThrow({ where: { phone: first.phone } }))
+        .userId,
+    ).toBe(first.userId);
+    expect(await h.prisma.adminPhoneCredential.count({ where: { userId: second.userId } })).toBe(0);
+  });
+  it('normalizes trunk-prefix and whitespace enrollment without changing the person identity', async () => {
+    const f = await admin();
+    const c = await challenge(f.agent, ENROLL, ` 0 ${f.phone.slice(3)} `);
+    await verify(f.agent, ENROLL, c, token(f.phone)).expect(200);
+    expect(
+      (await h.prisma.adminPhoneCredential.findUniqueOrThrow({ where: { userId: f.userId } }))
+        .phone,
+    ).toBe(f.phone);
+    expect((await h.prisma.user.findUniqueOrThrow({ where: { id: f.userId } })).phone).toBeNull();
+  });
+  it('invalidates an older challenge on resend before accepting a new proof', async () => {
+    const f = await admin();
+    const old = await challenge(f.agent, ENROLL, f.phone);
+    await h.prisma.adminOtpChallenge.update({
+      where: { id: old.challengeId },
+      data: { createdAt: new Date(Date.now() - 61_000) },
+    });
+    const current = await challenge(f.agent, ENROLL, f.phone);
+    await verify(f.agent, ENROLL, old, token(f.phone)).expect(403);
+    expect(providerCalls).toBe(0);
+    await verify(f.agent, ENROLL, current, token(f.phone)).expect(200);
+  });
   it('serializes member disabling with OTP issuance and leaves no usable admin session', async () => {
     const controller = await admin();
     const f = await admin();

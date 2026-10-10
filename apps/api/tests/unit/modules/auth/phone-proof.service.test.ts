@@ -44,6 +44,14 @@ function proof(otp: PhoneOtpPort = otpAnswering(VERIFIED)) {
 }
 
 describe('proving a handset', () => {
+  it.each(['ADMIN_ENROLL', 'ADMIN_LOGIN'] as const)(
+    'requires challenge freshness for %s even when a provider proves the number',
+    async (purpose) => {
+      await expect(
+        proof().prove({ phone: '9840012345', accessToken: 'controlled-proof', purpose }),
+      ).rejects.toMatchObject({ code: 'PHONE_VERIFICATION_FAILED' });
+    },
+  );
   it.each(OTP_PURPOSES)('answers the canonical number for %s', async (purpose) => {
     const proven = await proof().prove({
       phone: '98400 12345',
