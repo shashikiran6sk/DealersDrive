@@ -1,0 +1,101 @@
+{
+  "testedSha": "d5043b5dd36d7733e9255c0c94615988585fcd0a",
+  "environment": "isolated local Chromium / real cookie API / PostgreSQL / inert uploads / fake providers / recording mailer",
+  "result": "PASS",
+  "cases": [
+    {
+      "scenario": "confirmed-rejection-and-existing-owner-tab",
+      "width": 1440,
+      "result": "PASS",
+      "db": {
+        "dealers": 0,
+        "members": 0,
+        "documents": 0,
+        "media": 0,
+        "active_sessions": 0,
+        "rejection_audits": 1,
+        "rejection_events": 1,
+        "cleanup_events": 1
+      },
+      "immutableActor": "PASS",
+      "confirmation": "PASS",
+      "replayHttp": 404,
+      "ownerHttp": 401,
+      "publicHttp": 404,
+      "layout": {
+        "viewport": 1440,
+        "scrollWidth": 1440
+      },
+      "knownBug008Overflow": false
+    },
+    {
+      "scenario": "confirmed-rejection-and-existing-owner-tab",
+      "width": 768,
+      "result": "PASS",
+      "db": {
+        "dealers": 0,
+        "members": 0,
+        "documents": 0,
+        "media": 0,
+        "active_sessions": 0,
+        "rejection_audits": 1,
+        "rejection_events": 1,
+        "cleanup_events": 1
+      },
+      "immutableActor": "PASS",
+      "confirmation": "PASS",
+      "replayHttp": 404,
+      "ownerHttp": 401,
+      "publicHttp": 404,
+      "layout": {
+        "viewport": 768,
+        "scrollWidth": 768
+      },
+      "knownBug008Overflow": false
+    },
+    {
+      "scenario": "confirmed-rejection-and-existing-owner-tab",
+      "width": 390,
+      "result": "PASS",
+      "db": {
+        "dealers": 0,
+        "members": 0,
+        "documents": 0,
+        "media": 0,
+        "active_sessions": 0,
+        "rejection_audits": 1,
+        "rejection_events": 1,
+        "cleanup_events": 1
+      },
+      "immutableActor": "PASS",
+      "confirmation": "PASS",
+      "replayHttp": 404,
+      "ownerHttp": 401,
+      "publicHttp": 404,
+      "layout": {
+        "viewport": 390,
+        "scrollWidth": 424
+      },
+      "knownBug008Overflow": true
+    },
+    {
+      "scenario": "stale-admin-rejection-after-approval",
+      "result": "PASS",
+      "state": "ACTIVE",
+      "db": {
+        "dealers": 1,
+        "members": 1,
+        "documents": 3,
+        "media": 1,
+        "active_sessions": 0,
+        "rejection_audits": 0,
+        "rejection_events": 0,
+        "cleanup_events": 0
+      },
+      "publicHttp": 200,
+      "refreshedControls": "PASS"
+    }
+  ],
+  "humanUat": "PENDING",
+  "mobileLayout": "BUG-008 remains separately open; functional checks only"
+}

@@ -1,0 +1,224 @@
+[
+  {
+    "fixture": [
+      {
+        "id": "393ac000-8e52-4de4-b64b-17a9e24cf5b9",
+        "slug": "2023-hyundai-creta-sx-o-vellore-2170b408",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "71f704e0-49fb-4c67-a7dc-d1cc429dd4f1",
+        "slug": "2023-hyundai-creta-sx-o-vellore-aa3e4543",
+        "status": "SOLD"
+      },
+      {
+        "id": "1e962c9f-3295-4bd6-aea3-174e7d4ee433",
+        "slug": "2023-hyundai-creta-sx-o-vellore-bb75b324",
+        "status": "WITHDRAWN"
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "h1": "Find your next car",
+    "cards": 16,
+    "url": "<redacted>",
+    "shot": "screenshots/PUBLIC-001-home-desktop.png"
+  },
+  {
+    "url": "<redacted>",
+    "kept": "Creta",
+    "results": 24,
+    "shot": "screenshots/PUBLIC-002-search-results.png"
+  },
+  {
+    "before": {
+      "url": "<redacted>",
+      "cards": 24
+    },
+    "after": {
+      "url": "<redacted>",
+      "cards": 24
+    }
+  },
+  {
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "shot": "screenshots/PUBLIC-021-404.png"
+  },
+  {
+    "out": [
+      {
+        "vp": "desktop",
+        "p": "/",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/cars",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/car/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "canonical": "https://www.dealers-drive.com/",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Browse used cars from verified independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership that owns the car.",
+    "types": ["Organization", "WebSite"],
+    "ogTitle": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "ogImage": "https://www.dealers-drive.com/og/dealers-drive.png"
+  },
+  {
+    "base": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["index, follow, max-image-preview:large"]
+    },
+    "narrowed": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["noindex, follow"]
+    },
+    "page2": {
+      "s": 200,
+      "c": "https://www.dealers-drive.com/cars?page=2",
+      "r": ["index, follow, max-image-preview:large"]
+    }
+  },
+  {
+    "status": 200,
+    "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/car/2023-hyundai-creta-sx-o-vellore-2170b408",
+    "robots": ["index, follow, max-image-preview:large"],
+    "types": ["Car", "BreadcrumbList"],
+    "ogImage": true
+  },
+  {
+    "status": 200,
+    "title": "SeoMotors Motors 184466e74d87 — Used Car Dealer in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/dealers/seomotors-motors-184466e74d87-vellore-tamil-nadu",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Quality used cars from SeoMotors SeoMotors Motors 184466e74d87 is a verified independent used-car dealer in Vellore, Tamil Nadu. Browse the cars it has available and enquire directly on Dealers-Drive."
+  },
+  {
+    "apiIncludesLive": true,
+    "apiIncludesSold": false,
+    "apiIncludesWithdrawn": false,
+    "status": 200,
+    "total": 846,
+    "cars": 560,
+    "dealers": 258,
+    "badCars": [],
+    "soldInMap": 0,
+    "badDealers": [],
+    "foreign": [],
+    "privateUrls": [],
+    "includesLive": false,
+    "includesWithdrawn": false,
+    "includesSold": false
+  },
+  {
+    "sold": {
+      "status": 404,
+      "robots": ["noindex"],
+      "canonical": null
+    },
+    "withdrawn": {
+      "status": 404,
+      "robots": ["noindex"]
+    },
+    "privatePages": [
+      {
+        "p": "/login",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/saved",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/enquiries",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealer",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/admin",
+        "status": 200,
+        "robots": ["noindex, nofollow"],
+        "url": "<redacted>"
+      }
+    ]
+  },
+  {
+    "prod": "User-Agent: *\nAllow: /\nDisallow: /api/\nDisallow: /v1/\n\nSitemap: https://www.dealers-drive.com/sitemap.xml\n",
+    "local": "User-Agent: *\nDisallow: /\n\n"
+  },
+  {
+    "icons": {
+      "/favicon.ico": 200,
+      "/icon.png": 200,
+      "/apple-icon.png": 200
+    },
+    "linkIcons": ["/favicon.ico", "/icon.png?08039510d40f0fbb", "/apple-icon.png?f5f50792a65aefc0"],
+    "homeOg": {
+      "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+      "image": "https://www.dealers-drive.com/og/dealers-drive.png"
+    },
+    "carOg": {
+      "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+      "image": "http://localhost:4000/media/by-media/2d193b60-0c93-4af1-861b-e3704c4b1cc8/1024.webp",
+      "fetch": 200
+    }
+  },
+  {
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false,
+    "shot": "screenshots/SEO-010-outage.png"
+  }
+]

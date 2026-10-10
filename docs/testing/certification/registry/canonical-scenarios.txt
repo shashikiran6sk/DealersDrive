@@ -1,0 +1,599 @@
+# Canonical launch-certification scenarios — verbatim source.
+# Format:  @SECTION <PREFIX> <declared-count> <title>   then   <global-number>. <scenario>
+# The declared count is what the certification brief's header said; the
+# validator reports any section whose scenarios disagree with it.
+@SECTION PUBLIC 24 Public / Anonymous
+1. Anonymous user opens homepage and all public content loads without authentication.
+2. Anonymous user searches from homepage and reaches `/cars` with correct search context.
+3. Anonymous user browses `/cars` without authentication.
+4. Every supported car filter works individually.
+5. Multiple filters return correct intersection.
+6. Individual filters can be cleared correctly.
+7. Clear-all returns default results.
+8. District changes correctly reset/update location-dependent filters/results.
+9. ACTIVE vehicle opens correct public portfolio.
+10. RESERVED vehicle interaction/navigation follows defined behavior.
+11. SOLD vehicle is absent from public search.
+12. WITHDRAWN vehicle is absent from public search.
+13. Moderation-pending listing is not publicly discoverable.
+14. Draft/rejected listing is not publicly discoverable.
+15. Direct URL to non-public listing returns correct unavailable/not-found experience.
+16. Anonymous user can browse dealer directory.
+17. Active/verified dealer public portfolio opens correctly.
+18. Public dealer listing count matches publicly available inventory.
+19. Pagination/infinite scroll does not duplicate or omit vehicles.
+20. Refresh preserves intended search/filter state.
+21. Invalid public route displays custom Dealers-Drive 404.
+22. API/server failure displays application error UX rather than raw error.
+23. Public pages work on mobile/tablet/desktop.
+24. Public pages/API responses expose no private customer/dealer/Admin information.
+@SECTION AUTH 15 Customer Authentication
+25. New customer successfully authenticates using configured OTP channel.
+26. Existing customer logs in with verified phone.
+27. Incorrect OTP rejected.
+28. Expired OTP rejected.
+29. Used OTP cannot be replayed.
+30. OTP attempt limits enforced.
+31. OTP resend limits enforced.
+32. OTP provider failure gives recoverable UX.
+33. Refresh during OTP does not corrupt account state.
+34. Concurrent OTP attempts cannot authenticate wrong session.
+35. Logout invalidates appropriate session.
+36. Logout-all invalidates applicable sessions.
+37. Expired session redirects gracefully.
+38. Customer cannot access another customer's resources by changing IDs.
+39. Authentication/session cookies use appropriate production security attributes.
+@SECTION CUSTOMER 10 Customer Account
+40. Authenticated customer sees correct account menu/avatar.
+41. Customer accesses Saved Cars.
+42. Customer accesses My Enquiries.
+43. Logout returns correct public state.
+44. Customer account remains usable when an enquiry's dealer changes operational state.
+45. Customer account remains usable if customer also becomes dealer member.
+46. Customer account remains usable after dealer membership revocation.
+47. Revoking dealer membership does not revoke customer authentication/account.
+48. Suspending dealership does not suspend personal customer capabilities of its members.
+49. Customer and dealership authorization remain independent.
+@SECTION SAVED 10 Saved Cars
+50. Customer saves ACTIVE car.
+51. Anonymous save triggers intended authentication flow.
+52. Customer unsaves car.
+53. Duplicate save does not create duplicate records.
+54. Saved cars persist through logout/login.
+55. RESERVED saved car follows intended unavailable state.
+56. SOLD saved car follows intended behavior without corrupting history.
+57. WITHDRAWN saved car follows intended unavailable behavior.
+58. Removed/moderated-down listing does not break Saved Cars.
+59. Customer cannot access another customer's saved records.
+@SECTION ENQ-CREATE 17 Customer Enquiry Creation
+60. Customer enquires about ACTIVE vehicle.
+61. Anonymous Enquire initiates required authentication/phone verification.
+62. Verified customer information prefills correctly.
+63. Enquiry submits without optional description.
+64. Enquiry submits with description.
+65. Invalid enquiry input rejected server-side.
+66. SOLD vehicle cannot receive new enquiry.
+67. WITHDRAWN vehicle cannot receive new enquiry.
+68. Non-public/moderation listing cannot receive enquiry.
+69. RESERVED vehicle enquiry follows defined behavior.
+70. Vehicle becoming SOLD during enquiry submission is handled safely.
+71. Rapid duplicate submissions do not create unintended duplicate leads.
+72. Successful enquiry appears in My Enquiries.
+73. Successful enquiry appears in correct dealer Enquiries.
+74. Successful enquiry appears in Admin tracking.
+75. Customer/dealer/Admin enquiry data remains consistent.
+76. Dealer A cannot view Dealer B enquiries.
+77. Customer A cannot view Customer B enquiries.
+@SECTION ENQ-LIFE 21 Enquiry Lifecycle
+78. New enquiry begins in correct initial state.
+79. STAFF views dealership enquiries.
+80. STAFF can mark NEW → CONTACTED.
+81. STAFF cannot close enquiry.
+82. MANAGER can mark CONTACTED.
+83. MANAGER can close enquiry.
+84. OWNER can perform all intended transitions.
+85. CONTACTED records actor/time.
+86. CLOSED records actor/time.
+87. Invalid transitions rejected server-side.
+88. Direct API cannot bypass enquiry permissions.
+89. Concurrent enquiry updates produce valid deterministic state.
+90. Customer history survives CONTACTED.
+91. Customer history survives CLOSED.
+92. History survives associated vehicle SOLD.
+93. History survives WITHDRAWN.
+94. History survives RESERVED.
+95. Historical enquiry remains usable when listing is no longer public.
+96. Dealer suspension does not delete enquiry history.
+97. Member removal does not delete handled enquiries.
+98. Historical actor remains attributable after member removal.
+@SECTION ONBOARD 18 Dealer Onboarding
+99. New eligible user begins dealer onboarding.
+100. Repeated submissions do not create duplicate dealership.
+101. Dealer phone verification works.
+102. Google linking/authentication works according to current architecture.
+103. Phone/Google link to correct human rather than duplicate users.
+104. Incomplete onboarding can resume.
+105. Refresh preserves intended onboarding progress.
+106. Logout/login returns draft/review dealer to correct state.
+107. Required dealership fields cannot be skipped.
+108. Required dealer documents cannot be skipped.
+109. Invalid document type/size rejected.
+110. Documents remain associated with correct dealership.
+111. Dealer cannot retrieve another dealer's verification documents.
+112. Completed onboarding enters correct review state.
+113. Dealer cannot self-approve.
+114. Direct APIs cannot bypass onboarding requirements.
+115. Unverified dealer cannot publicly list vehicles.
+116. Duplicate identity handling follows intended linking rules.
+@SECTION VERIFY 14 Dealer Verification
+117. Admin sees submitted dealer application.
+118. Admin sees required dealer information/documents.
+119. Admin approves valid dealership.
+120. Approved dealership enters correct verified/active state.
+121. Dealer gains intended capabilities only after approval.
+122. Admin rejects dealer.
+123. Rejected dealer gets correct state/remediation path.
+124. Rejected dealer cannot access verified-only features.
+125. Rejected dealer can correct/resubmit where supported.
+126. Resubmission enters correct review state.
+127. Incomplete dealer cannot be approved through direct API.
+128. Concurrent Admin review cannot corrupt verification state.
+129. Verification transitions are audit logged.
+130. Existing dealer data/listings behave correctly if verification status later changes.
+@SECTION DEALER-LIFE 18 Dealer Lifecycle
+131. ACTIVE verified dealer operates normally.
+132. Admin suspends ACTIVE dealer.
+133. Suspended dealer immediately loses prohibited operations.
+134. Existing session cannot bypass suspension.
+135. Suspended dealer public profile follows defined policy.
+136. ACTIVE listings of suspended dealer follow explicitly defined visibility policy.
+137. RESERVED listings of suspended dealer remain consistent.
+138. Existing enquiries survive suspension.
+139. Customer enquiry history survives dealer suspension.
+140. Saved cars from suspended dealer remain non-broken.
+141. Dealer members cannot bypass suspension through valid membership.
+142. Dealer members retain personal customer capabilities.
+143. Reinstatement restores only intended dealer capabilities/data.
+144. Reinstatement creates no duplicate listings/memberships/enquiries.
+145. Hidden listings restore only according to defined lifecycle policy.
+146. Suspension/reinstatement audit logged.
+147. Permanent dealer deactivation preserves required historical data.
+148. Direct API cannot bypass dealer lifecycle restrictions.
+@SECTION LISTING-CREATE 16 Listing Creation
+149. OWNER creates draft.
+150. MANAGER creates draft.
+151. STAFF creates draft.
+152. Draft belongs to dealership, not employee.
+153. Draft records creating actor.
+154. STAFF edits permitted draft fields.
+155. MANAGER edits permitted draft fields.
+156. OWNER edits permitted draft fields.
+157. Required fields validated server-side.
+158. Invalid price/year/km/vehicle data rejected.
+159. Listing cannot be assigned to another dealership via manipulated request.
+160. Duplicate submissions do not create unintended duplicate listings.
+161. Concurrent edits remain predictable.
+162. Refresh/navigation does not lose persisted draft unexpectedly.
+163. Admin/team media remains linked to correct vehicle.
+164. Dealer cannot access another dealership's draft.
+@SECTION MODERATION 18 Listing Moderation
+165. STAFF cannot submit for moderation.
+166. STAFF direct API submission denied.
+167. MANAGER submits valid draft.
+168. OWNER submits valid draft.
+169. Incomplete listing cannot submit.
+170. Submitted listing enters correct moderation state.
+171. Submitted listing remains non-public before approval.
+172. Admin sees listing in moderation queue.
+173. Admin sees correct dealer/listing/media information.
+174. Admin approves valid listing.
+175. Approved listing becomes publicly discoverable correctly.
+176. Admin rejects listing.
+177. Rejected listing remains non-public.
+178. Dealer sees rejection state/reason where supported.
+179. Dealer corrects and resubmits rejected listing.
+180. Duplicate moderation action does not create invalid state.
+181. Concurrent Admin approve/reject cannot corrupt lifecycle.
+182. Moderation actions audit logged.
+@SECTION MEDIA 13 Listing Media
+183. Vehicle data can exist before Dealers-Drive photography is attached.
+184. Correct StudioCar output links to correct listing.
+185. Intended maximum image count works.
+186. Image ordering works.
+187. Invalid media rejected.
+188. Replacement/removal does not create broken galleries.
+189. Failed upload does not corrupt listing.
+190. Public listing does not expose private/raw processing assets.
+191. Card uses correct primary image.
+192. Gallery arrows work.
+193. Fullscreen gallery works.
+194. Missing image uses intended fallback.
+195. Listing A cannot access/use Listing B media without authorization.
+@SECTION LISTING-LIFE 31 Listing Lifecycle
+196. Approved listing enters ACTIVE correctly.
+197. ACTIVE appears `/cars`.
+198. ACTIVE appears dealer portfolio.
+199. ACTIVE contributes correct public dealer count.
+200. OWNER can transition eligible listing to RESERVED.
+201. MANAGER can transition eligible listing to RESERVED.
+202. STAFF cannot RESERVED.
+203. RESERVED visual state correct.
+204. RESERVED interaction/navigation follows defined behavior.
+205. RESERVED enquiry behavior correct.
+206. RESERVED → ACTIVE works if supported.
+207. OWNER can mark eligible vehicle SOLD.
+208. MANAGER can mark eligible vehicle SOLD.
+209. STAFF cannot SOLD.
+210. SOLD disappears public inventory.
+211. SOLD disappears dealer public available inventory.
+212. SOLD removed from active listing count.
+213. SOLD remains in dealer/Admin history.
+214. Existing enquiries survive SOLD.
+215. Customer enquiry history survives SOLD.
+216. OWNER can WITHDRAW.
+217. MANAGER can WITHDRAW.
+218. STAFF cannot WITHDRAW.
+219. WITHDRAWN disappears publicly.
+220. WITHDRAWN remains internal history.
+221. Existing enquiries survive WITHDRAWN.
+222. Invalid transitions rejected.
+223. Direct API cannot bypass lifecycle.
+224. Concurrent lifecycle mutations cannot produce impossible state.
+225. Public search/read model stays synchronized.
+226. Lifecycle changes correctly update counts/search without stale exposure.
+@SECTION MEMBER 35 Dealer Members / RBAC
+227. Existing owner becomes OWNER after migration.
+228. OWNER invites existing customer as MANAGER.
+229. OWNER invites existing customer as STAFF.
+230. OWNER invites unregistered phone.
+231. Existing customer invitation creates no duplicate user.
+232. New member performs only required identity verification, not dealer verification.
+233. Accepted invitation joins correct dealership.
+234. Duplicate membership prevented.
+235. Duplicate active invitation handled.
+236. Expired invitation rejected.
+237. Revoked invitation rejected.
+238. Different authenticated person cannot accept invite.
+239. Invitation replay prevented.
+240. OWNER changes MANAGER → STAFF.
+241. OWNER changes STAFF → MANAGER.
+242. Permission changes apply without waiting for old dealer session expiration.
+243. OWNER revokes/removes member.
+244. Removed member immediately loses dealership access.
+245. Existing session cannot retain dealership access.
+246. Removed member remains valid customer.
+247. Removed member can browse normally.
+248. Removed member retains personal saved cars.
+249. Removed member retains personal enquiries.
+250. Removed member cannot enter former dealer dashboard.
+251. Historical actions remain attributed to removed member.
+252. Removing member does not delete listings they created.
+253. Removing member does not delete enquiries they handled.
+254. Removing member does not mutate dealership-owned data.
+255. MANAGER cannot invite.
+256. MANAGER cannot change roles.
+257. MANAGER cannot remove members.
+258. STAFF cannot manage members.
+259. Last OWNER cannot remove themselves.
+260. Last OWNER cannot demote themselves.
+261. Direct API cannot bypass membership restrictions.
+@SECTION IDENTITY 14 Unified Identity
+262. OWNER uses normal customer login and enters dealer dashboard without second login.
+263. MANAGER does same.
+264. STAFF does same.
+265. Customer without membership denied dealer dashboard.
+266. Personal → Dealer requires no OTP.
+267. Dealer → Personal requires no OTP.
+268. Switching does not create duplicate session/user.
+269. Personal customer actions remain human-owned rather than dealership-owned.
+270. Dealer actions associate dealership plus actor.
+271. Revocation while dealer context open denies subsequent dealer requests.
+272. Revocation does not terminate customer access.
+273. Dealer suspension blocks dealer operations but preserves personal customer access.
+274. Multiple dealership membership resolves correct dealer context.
+275. User cannot manipulate workspace/dealer IDs to access unauthorized dealership.
+@SECTION OWNER 8 Owner RBAC
+276. OWNER accesses intended dashboard.
+277. OWNER manages listings.
+278. OWNER manages enquiries.
+279. OWNER edits dealership profile.
+280. OWNER manages permitted verification actions.
+281. OWNER manages Team.
+282. OWNER cannot access another dealer's resources.
+283. OWNER cannot perform Admin-only operations.
+@SECTION MANAGER 13 Manager RBAC
+284. MANAGER accesses dealer dashboard.
+285. MANAGER views inventory.
+286. MANAGER creates/edits drafts.
+287. MANAGER submits eligible listing.
+288. MANAGER performs allowed listing lifecycle transitions.
+289. MANAGER views enquiries.
+290. MANAGER marks CONTACTED.
+291. MANAGER closes enquiry.
+292. MANAGER cannot edit protected dealer profile.
+293. MANAGER cannot manage verification.
+294. MANAGER cannot manage Team.
+295. MANAGER cannot access Admin.
+296. MANAGER cannot access another dealer's resources.
+@SECTION STAFF 17 Staff RBAC
+297. STAFF accesses permitted dashboard.
+298. STAFF views inventory.
+299. STAFF creates draft.
+300. STAFF edits permitted draft.
+301. STAFF cannot submit.
+302. STAFF cannot RESERVED.
+303. STAFF cannot SOLD.
+304. STAFF cannot WITHDRAW.
+305. STAFF views enquiries.
+306. STAFF views required enquiry contact details.
+307. STAFF marks NEW → CONTACTED.
+308. STAFF cannot close.
+309. STAFF cannot edit protected dealer profile.
+310. STAFF cannot manage verification.
+311. STAFF cannot manage Team.
+312. STAFF cannot access Admin.
+313. STAFF cannot access another dealer's resources.
+@SECTION PROFILE 8 Dealer Profile
+314. OWNER updates permitted profile information.
+315. MANAGER cannot update owner-only profile fields.
+316. STAFF cannot update dealer profile.
+317. Public dealer profile reflects approved changes.
+318. Verification-sensitive fields cannot bypass re-verification policy.
+319. Invalid profile values rejected.
+320. Dealer media cannot expose another dealership's assets.
+321. Profile update audit logged.
+@SECTION ADMIN-AUTH 10 Admin Authorization
+322. Valid Admin authenticates.
+323. Non-admin cannot access Admin UI.
+324. OWNER cannot access Admin APIs.
+325. MANAGER cannot access Admin APIs.
+326. STAFF cannot access Admin APIs.
+327. Customer cannot access Admin APIs.
+328. Hidden Admin navigation backed by server authorization.
+329. Admin session expiry safe.
+330. Admin logout invalidates Admin access.
+331. Admin bootstrap cannot create unauthorized Admins.
+@SECTION ADMIN-DEALER 9 Admin Dealer Management
+332. Authorized Admin user-management behavior works.
+333. Admin sees onboarding applications.
+334. Admin inspects verification data.
+335. Admin approves eligible dealer.
+336. Admin rejects dealer.
+337. Admin suspends active dealer.
+338. Admin reinstates eligible suspended dealer.
+339. Dealer state changes immediately affect authorization/public visibility according to policy.
+340. Admin dealer actions audit logged.
+341. Repeated Admin requests cannot create impossible dealer state.
+@SECTION ADMIN-LISTING 10 Admin Listings
+342. Admin sees moderation queue.
+343. Admin sees correct dealer/listing/media.
+344. Admin approves eligible listing.
+345. Admin rejects eligible listing.
+346. Approval reaches public read model.
+347. Rejected listing remains non-public.
+348. Ineligible/suspended dealer listing cannot be improperly approved.
+349. Dealer suspension during review remains consistent.
+350. Verification change during review remains consistent.
+351. Admin listing actions audit logged.
+@SECTION ADMIN-ENQ 12 Admin Enquiries
+352. Admin sees cross-dealer enquiries.
+353. Correct customer name.
+354. Correct customer phone.
+355. Correct description.
+356. Correct dealership.
+357. Correct vehicle.
+358. Correct status.
+359. Dealer status changes do not erase history.
+360. Listing status changes do not erase history.
+361. Member removal does not erase actor/history.
+362. Filters/search/pagination correct.
+363. Dealer members cannot access Admin enquiry aggregation APIs.
+@SECTION CROSS 29 Cross-Lifecycle
+364. ACTIVE dealer + ACTIVE listing → suspension produces defined public behavior without deleting listing data.
+365. Suspended dealer + hidden ACTIVE listing → reinstatement follows defined restoration policy.
+366. Suspension while RESERVED remains consistent.
+367. Suspension while moderation pending follows explicit policy.
+368. Suspension during enquiry submission safely resolves.
+369. Suspension preserves existing enquiries.
+370. Dealer rejection with draft listings follows defined policy.
+371. ACTIVE saved car → SOLD handles Saved Cars correctly.
+372. ACTIVE enquiry → SOLD preserves history.
+373. ACTIVE enquiry → WITHDRAWN preserves history.
+374. ACTIVE enquiry → RESERVED preserves history.
+375. RESERVED vehicle existing enquiry can continue historical workflow where intended.
+376. SOLD → direct API reactivation rejected unless explicitly supported.
+377. WITHDRAWN invalid transition rejected.
+378. STAFF creates draft → STAFF removed → draft remains dealership-owned.
+379. STAFF creates draft → promoted MANAGER → can submit if otherwise eligible.
+380. MANAGER submits → demoted STAFF before approval → moderation remains valid.
+381. MANAGER CONTACTED → removed → enquiry actor/history preserved.
+382. Member removed while mutation in flight remains safe.
+383. Member dashboard open → OWNER revokes → next protected request denied.
+384. Dealer dashboard open → Admin suspends → next prohibited operation denied.
+385. Dealer reinstated + valid membership restores appropriate access.
+386. Dealer reinstated + member revoked during suspension remains denied.
+387. Revoked member logs in as customer successfully but dealer access remains revoked.
+388. Revoked member opens old dealer bookmark → dealer denied without destroying customer session.
+389. Customer becomes dealer member while logged in without duplicate identity.
+390. Dealer member personally enquires with another dealership without employer contamination.
+391. Dealer member personally saves competitor car without employer visibility.
+392. Employer suspension does not affect member's unrelated customer activity.
+@SECTION SEARCH 12 Search / Read Model
+393. Approved listing becomes searchable.
+394. SOLD disappears search.
+395. WITHDRAWN disappears search.
+396. RESERVED search behavior follows policy.
+397. Suspended dealer listings follow suspension visibility policy.
+398. Reinstated dealer inventory returns according to policy.
+399. Public dealer count updates after approval.
+400. Count updates after SOLD.
+401. Count updates after WITHDRAWN.
+402. Filters never return non-public listing.
+403. Crafted search parameters cannot expose private listings.
+404. Search and direct portfolio access enforce consistent visibility.
+@SECTION DATA 11 Data Integrity
+405. Membership revocation never cascades dealership listings.
+406. Membership changes never delete enquiries.
+407. Listing lifecycle changes never delete enquiry history.
+408. Dealer suspension never destroys historical data.
+409. Foreign keys remain valid across lifecycle transitions.
+410. Mixed OTP/Google/invite flows do not create duplicate users.
+411. Retry/races do not create duplicate dealerships.
+412. Duplicate memberships prevented at DB level.
+413. Duplicate lifecycle operations safely rejected/idempotent.
+414. Audit records survive actor membership loss.
+415. Public read model is not authoritative lifecycle source.
+@SECTION API-SEC 14 API Security
+416. Unauthenticated protected API requests fail.
+417. Customer cannot call dealer-only API.
+418. STAFF cannot call MANAGER-only API.
+419. MANAGER cannot call OWNER-only API.
+420. OWNER cannot call Admin-only API.
+421. Dealer A cannot access Dealer B by changing IDs.
+422. Customer A cannot access Customer B by changing IDs.
+423. Invalid IDs do not leak internal errors.
+424. Unexpected privileged fields rejected.
+425. Mass assignment cannot change dealer/role/verification/lifecycle ownership.
+426. Pagination/filter parameters validated.
+427. Sensitive auth/public endpoints rate limited appropriately.
+428. Revoked authentication/session tokens cannot retain prohibited access.
+429. Server errors do not leak stack traces/secrets/SQL/environment values.
+@SECTION STORAGE 8 Storage Security
+430. Presigned upload restricts intended file type/size.
+431. Upload authorization cannot be reused across unauthorized resources.
+432. Upload commit validates ownership.
+433. Removed uploads follow cleanup policy.
+434. Missing object does not crash pages.
+435. Private verification documents cannot be publicly fetched.
+436. Public vehicle media exposed only through intended mechanisms.
+437. Object keys/URLs do not expose sensitive information.
+@SECTION NOTIFY 5 Email / Notification Regression
+438. Existing dealer-onboarding email works.
+439. Email outage does not corrupt onboarding.
+440. Retries do not cause destructive duplicate state.
+441. Missing email configuration follows intended non-production behavior.
+442. Unimplemented listing/enquiry/complaint notifications are not assumed by business logic.
+@SECTION RECOVERY 13 Failure / Recovery
+443. API unavailable during public browsing gives graceful UX.
+444. API unavailable during listing save does not falsely report success.
+445. API unavailable during enquiry submission supports safe retry.
+446. Database outage produces controlled error.
+447. Storage outage does not corrupt listing.
+448. OTP outage does not create partially authenticated session.
+449. Google OAuth failure is recoverable.
+450. Email failure does not corrupt onboarding.
+451. Browser refresh during critical flow recovers safely.
+452. Browser Back does not repeat lifecycle mutation.
+453. Double-click mutation does not duplicate operation.
+454. Network timeout + retry safe.
+455. Server restart does not unexpectedly corrupt persisted business state.
+@SECTION CONCURRENCY 10 Concurrency
+456. Two staff editing same draft do not silently corrupt critical data.
+457. Two managers SOLD same vehicle remains consistent.
+458. RESERVED vs SOLD race results in valid state.
+459. Admin approval vs dealer edit/submit remains valid.
+460. Dealer suspension vs manager submit prevents invalid publication.
+461. CONTACTED vs CLOSED race follows valid transition.
+462. Member removal vs member mutation remains safe.
+463. Concurrent Admin dealer verification actions remain valid.
+464. Simultaneous legitimate customer enquiries retained.
+465. Concurrent invitation acceptance cannot duplicate membership.
+@SECTION BROWSER 12 Browser / Device
+466. Chrome desktop works.
+467. Safari desktop works.
+468. Firefox desktop works.
+469. Edge desktop works.
+470. Chrome Android/mobile works.
+471. Safari iPhone/mobile works.
+472. Tablet works.
+473. Dealer dashboard usable mobile.
+474. Admin dashboard usable at supported responsive sizes.
+475. Dialogs usable with mobile keyboard.
+476. Browser back/forward preserves valid state.
+477. New tabs do not break session/context.
+@SECTION UX 12 Accessibility / UX
+478. Public search keyboard accessible.
+479. Authentication keyboard accessible.
+480. Dealer forms keyboard accessible.
+481. Admin forms keyboard accessible.
+482. Fields have meaningful labels.
+483. Validation identifies affected field.
+484. Dialog focus handled correctly.
+485. Buttons have understandable accessible names.
+486. Loading states prevent accidental repeated actions.
+487. Empty states explain next action.
+488. Destructive actions have appropriate confirmation.
+489. Permission denied does not appear as application crash.
+@SECTION SEO 10 SEO / Public Production
+490. Homepage canonical/meta/structured data correct.
+491. `/cars` indexing behavior correct.
+492. Public car portfolio metadata/structured data correct.
+493. Dealer portfolio metadata correct.
+494. Sitemap includes only intended public resources.
+495. SOLD/WITHDRAWN/private resources handled correctly for indexing.
+496. robots.txt correct.
+497. Favicon/social metadata work.
+498. Invalid URLs use custom 404.
+499. Server failures use custom error experience.
+@SECTION PROD 13 Production Configuration
+500. Production starts without local-only services.
+501. Production cannot use MinIO accidentally.
+502. Production cannot use dummy OTP accidentally.
+503. Production cannot use Mailpit accidentally.
+504. Production cannot use development seed data.
+505. Development cannot mutate production resources.
+506. Production DB points to intended DB.
+507. Storage points to intended production resources.
+508. Email sender configuration correct.
+509. Google OAuth callbacks correct.
+510. MSG91/WhatsApp OTP production configuration works.
+511. Secrets absent from client bundle/repository.
+512. Debug/docs/internal endpoints follow production policy.
+@SECTION DEPLOY 10 Database / Deployment
+513. Production migrations run on production-like DB.
+514. Single-owner → OWNER membership migration correct.
+515. Migration creates no duplicate users/dealers.
+516. Migration preserves listings/enquiries/documents.
+517. Deployment/migration ordering remains compatible.
+518. Failed migration has documented recovery strategy.
+519. Seed scripts cannot accidentally execute against production.
+520. DB indexes support critical queries.
+521. Backup/restore procedure tested.
+522. Restored DB preserves lifecycle and authorization relationships.
+@SECTION OBS 12 Observability
+523. Production requests have useful request/correlation IDs.
+524. Authentication failures diagnosable without secrets.
+525. Authorization failures observable.
+526. Dealer suspension traceable.
+527. Member permission changes traceable.
+528. Listing lifecycle traceable.
+529. Enquiry lifecycle traceable.
+530. Admin actions traceable.
+531. Unexpected 5xx captured.
+532. Logs contain no OTP/token/password/private-document leakage.
+533. Health endpoint reflects service health.
+534. Failed workflow can be traced end-to-end.
+@SECTION ABUSE 12 Abuse / Negative
+535. OTP abuse rate-limited.
+536. Enquiry spam appropriately protected.
+537. Automated listing submission cannot bypass dealer verification.
+538. Frontend role tampering cannot elevate privilege.
+539. Dealer ID tampering cannot change tenant.
+540. Listing status payload tampering cannot bypass transitions.
+541. Enquiry status tampering cannot bypass transitions.
+542. Invitation role manipulation cannot self-promote OWNER.
+543. Membership manipulation cannot remove final OWNER.
+544. Suspended dealer cannot regain functionality by changing client state.
+545. Removed member cannot regain access using stale browser state.
+546. Hidden UI routes remain server-protected.
+@SECTION GOLDEN 10 Golden-Path E2E
+547. Visitor → search → car → login/OTP → enquiry → dealer receives → STAFF contacts → MANAGER closes → Admin sees history.
+548. Customer → save → logout → login → persistence → enquiry → history persists.
+549. New dealer → onboarding → documents → Admin approval → listing → moderation → ACTIVE → enquiry → SOLD → history preserved.
+550. OWNER → invite STAFF → existing customer accepts → dealer switch without re-login → draft → manager/owner submit → Admin approve.
+551. OWNER → invite MANAGER → customer-context switch → submit listing → enquiry management → SOLD.
+552. STAFF → draft → CONTACTED → privileged actions attempted → all denied.
+553. OWNER → revoke STAFF → open dealer session loses access → customer remains functional.
+554. Admin → suspend dealer with ACTIVE inventory/enquiries → defined behavior → reinstate → appropriate restoration.
+555. Dealer member → personal customer context → enquiry with another dealer → employer/personal data remain isolated.
+556. Listing → ACTIVE → RESERVED → defined behavior → SOLD → public removal with history/audit preserved.

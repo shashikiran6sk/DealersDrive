@@ -1,0 +1,326 @@
+{
+  "pr": 232,
+  "headSha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+  "implementationSha": "fc452697337212dd300953030022ca15d5b3ac83",
+  "baseBranch": "fix/pre-production-01-invitation-race",
+  "baseSha": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+  "result": "PASS",
+  "runs": [
+    {
+      "id": 37116029188,
+      "name": "CI",
+      "number": 362,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37116029188",
+      "result": "PASS"
+    },
+    {
+      "id": 37116029234,
+      "name": "Security",
+      "number": 511,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37116029234",
+      "result": "PASS"
+    }
+  ],
+  "jobs": [
+    {
+      "runId": 37116029188,
+      "jobs": [
+        {
+          "id": 111182911842,
+          "name": "lint · typecheck · test · build",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run pnpm/action-setup@v4",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Generate Prisma client",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Format",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Lint",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Documentation references",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Test",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run pnpm/action-setup@v4",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stop containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 111182911915,
+          "name": "dependency audit",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run pnpm/action-setup@v4",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run pnpm install --frozen-lockfile",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Block on critical advisories",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Report high advisories",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run pnpm/action-setup@v4",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 111182911973,
+          "name": "terraform fmt / validate",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run hashicorp/setup-terraform@v3",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Format",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Init (no backend)",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "runId": 37116029234,
+      "jobs": [
+        {
+          "id": 111182911850,
+          "name": "semgrep",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Scan",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Report",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stop containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 111182911937,
+          "name": "gitleaks",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Scan the repository and its history",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v7",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

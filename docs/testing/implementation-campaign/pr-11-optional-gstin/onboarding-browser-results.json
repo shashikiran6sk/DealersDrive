@@ -1,0 +1,22 @@
+{
+  "provider": "controlled local identities; real draft application",
+  "checks": [
+    {
+      "check": "actual draft document step optional GSTIN, conditional certificate and layout 320",
+      "pass": true
+    },
+    {
+      "check": "actual draft document step optional GSTIN, conditional certificate and layout 390",
+      "pass": true
+    },
+    {
+      "check": "actual draft document step optional GSTIN, conditional certificate and layout 768",
+      "pass": true
+    },
+    {
+      "check": "actual draft document step optional GSTIN, conditional certificate and layout 1280",
+      "pass": true
+    }
+  ],
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"
+}

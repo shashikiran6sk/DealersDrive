@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Desktop enquiry message visible 1280",
+    "pass": true,
+    "geometry": {
+      "top": 553.515625,
+      "bottom": 641.515625
+    }
+  },
+  {
+    "name": "Desktop enquiry message visible 1440",
+    "pass": true,
+    "geometry": {
+      "top": 553.515625,
+      "bottom": 641.515625
+    }
+  },
+  {
+    "name": "Cancel and reopen scrolls to newly mounted message",
+    "pass": true,
+    "geometry": {
+      "top": 378.203125,
+      "bottom": 466.203125
+    }
+  }
+]

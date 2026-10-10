@@ -1,0 +1,13 @@
+Subject: Reactivation request — 2023 Hyundai Creta SX(O) (KA 05 MR 8801)
+
+A dealer wants a listing back on sale
+
+Sri Lakshmi Motors has asked to put 2023 Hyundai Creta SX(O) (KA 05 MR 8801) back on the marketplace.
+
+  Add a photo of the odometer.
+
+Open reactivation requests: http://localhost:3000/admin/listings?view=reactivation
+
+—
+Dealers-Drive
+Questions? support@example.com

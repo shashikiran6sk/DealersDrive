@@ -1,0 +1,141 @@
+{
+  "GOLDEN-001": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "search \"G1825616\" → car → Enquire → OTP sign-up → enquiry NEW → STAFF \"Mark contacted\" (CONTACTED; STAFF sees 0 Close buttons) → MANAGER \"Close\" (CLOSED) → Admin enquiry page shows Contacted and Closed; audit [\"enquiry.created\",\"enquiry.contacted\",\"enquiry.closed\"]. Hybrid journey: setup via API where noted (onboarding SIM-GOOGLE, vehicle details, photography); every human decision in the browser; outcomes verified in the DB.",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:57:13.618Z"
+  },
+  "GOLDEN-002": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "DATABASE"
+    ],
+    "note": "OTP sign-up → Save (1 row) → Logout → OTP sign-in (same account, no duplicate user) → /saved lists the car → enquiry → Logout → sign-in → /enquiries still lists it",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:58:16.314Z"
+  },
+  "GOLDEN-003": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "onboarding (API, SIM-GOOGLE) → Admin UI verifies 3 documents + typed-confirmation Approve → ACTIVE → listing (API details, 6 photos) → Admin UI checks + \"Approve and publish\" → public 200 → enquiry → dealer UI \"Mark sold\" confirm → SOLD, public 404, customer still sees enquiry (NEW); listing audit [\"listing.submitted\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.approved\",\"listing.marked_sold\"]. Hybrid journey: setup via API where noted (onboarding SIM-GOOGLE, vehicle details, photography); every human decision in the browser; outcomes verified in the DB.",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:58:26.404Z"
+  },
+  "GOLDEN-004": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "OWNER invites STAFF in the UI dialog → existing customer accepts on /invitations → lands on /dealer with the same session (no re-login) → STAFF drafts (API) → STAFF submit 403 → OWNER submit 200 → Admin approve → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:58:29.137Z"
+  },
+  "GOLDEN-005": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "MANAGER in personal customer context → account menu switches to the dealership (same session) → submits listing → Admin approve → enquiry Mark contacted → Close → inventory Mark sold (confirm) → enquiry CLOSED, listing SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:01.607Z"
+  },
+  "GOLDEN-006": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "STAFF drafts and marks CONTACTED in the UI; UI shows Close×0, Spam×0, Mark sold×0, Withdraw×0, Invite×0; every privileged API attempt → 403 {\"close\":403,\"submit\":403,\"sold\":403,\"withdraw\":403,\"delete\":403,\"invite\":403,\"profile\":403}; DB unchanged (car ACTIVE, draft kept)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:05.563Z"
+  },
+  "GOLDEN-007": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "OWNER removes STAFF in the UI (confirm) → member REMOVED → the STAFF's already-open dealer tab reloads to /login (no dealer data); dealer API 401; same session still works as a customer (/saved 200, /me 200)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:09.138Z"
+  },
+  "GOLDEN-008": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "Admin UI suspend (reason) → SUSPENDED: car/dealer public 404 (web page 404), listing kept ACTIVE, dealer console API 401, customer still sees the enquiry → Admin UI reinstate → ACTIVE, car public 200, listing ACTIVE, enquiry NEW intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:13.807Z"
+  },
+  "GOLDEN-009": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "a MANAGER of dealership A, browsing as a customer, enquires on dealership B’s car in the UI → enquiry belongs to B and to the person; A’s inbox unchanged; B’s inbox carries no employer (A) data; the person sees it under My enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:17.422Z"
+  },
+  "GOLDEN-010": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API",
+      "DATABASE"
+    ],
+    "note": "dealer UI Mark reserved → RESERVED: public page 200 with a Reserved notice (Enquire button ×0; new enquiry → 409) → Mark sold (confirm) → SOLD: public 404, out of the sitemap; customer’s enquiry history kept; audit [\"listing.submitted\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.approved\",\"listing.reserved\",\"listing.marked_sold\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-golden",
+    "at": "2026-10-04T19:59:49.126Z"
+  }
+}

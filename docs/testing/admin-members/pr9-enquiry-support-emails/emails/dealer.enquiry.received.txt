@@ -1,0 +1,19 @@
+Subject: New enquiry — 2022 Tata Nexon XZ+
+
+A buyer is interested in your car
+
+Hi Lakshmi,
+
+Asha has enquired about 2022 Tata Nexon XZ+ (KA 05 MR 1234) on Dealers-Drive.
+
+This is what they wrote:
+
+  Is the price negotiable? Can I see it on Saturday?
+
+Their phone number is in your enquiries inbox. Buyers who hear back the same day are the ones who visit.
+
+Open your enquiries: http://localhost:3000/dealer/enquiries
+
+—
+Dealers-Drive
+Questions? support@example.com

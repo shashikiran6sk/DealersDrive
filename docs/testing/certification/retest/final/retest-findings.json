@@ -1,0 +1,62 @@
+{
+  "ORIG-DISC-PROFILE-001 second profile edit": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "first edit 200; second edit while pending → 409 PROFILE_EDIT_PENDING instead of amending the pending change (code/docs say it amends). Still reproduces on main. P3.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:08:46.538Z"
+  },
+  "ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "DRAFT dealership: suspend → 422 INVALID_DEALER_TRANSITION (correctly refused since #232), no close route (404; OpenAPI dealer close/deactivate paths: 0); CLOSED dealers in DB: 0. The only way to drop a draft/in-review application is reject = permanent purge. Product gap vs owner expectation (close while DRAFT/PENDING; suspend only once ACTIVE). P2 product decision.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:08:46.615Z"
+  },
+  "BUG-NEW-006 onboarding account overflow on mobile": {
+    "status": "FAIL",
+    "layers": ["BROWSER"],
+    "note": "onboarding at 320px: +328px, 390px: +258px horizontal overflow (long Google email in the account step). Confirmed. P2.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:08:48.919Z"
+  },
+  "BUG-NEW-008 local private PDF served as image/jpeg": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "3/3 signed private KYC reads return PDF bytes with Content-Type image/jpeg (local adapter infers type from the extension-less key). Confirmed on the local driver; R2 not tested. P2 (P3 if R2 sets the stored type correctly).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:08:49.111Z"
+  },
+  "BUG-NEW-010 warmed car page survives dealer suspension": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "API"],
+    "note": "after Admin suspension the API returns 404 but the warmed car page still returns 200; after 65 s: 200 then 200 (ISR revalidate=60 serves stale once, then refreshes). Suspension does not revalidate the vehicle tag. Confirmed. P2.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:10:26.268Z"
+  },
+  "BUG-NEW-011 media width contract vs documentation": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "OpenAPI says only 320/640/1024/1600 (anything else 404) but the route serves {\"320\":200,\"500\":200,\"4000\":200,\"4001\":404}. Documentation/contract drift. Confirmed. P3.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T15:10:26.316Z"
+  }
+}

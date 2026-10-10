@@ -1,0 +1,14 @@
+.github/workflows/ci.yml
+.github/workflows/security.yml
+AGENTS.md
+apps/web/src/app/favicon.ico
+apps/web/src/app/icon.png
+apps/web/src/lib/fonts.ts
+apps/web/src/lib/fonts/OFL.txt
+apps/web/src/lib/fonts/README.md
+apps/web/src/lib/fonts/manrope-variable.woff2
+apps/web/tests/unit/app/seo-routes.test.tsx
+apps/web/tests/unit/components/errors/error-pages.test.tsx
+apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx
+docs/project/implementation-campaign.md
+scripts/generate-favicon.mjs

@@ -1,0 +1,180 @@
+[
+  {
+    "id": "unknown-route@1440",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "unknown-route@768",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "unknown-route@390",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "404-home-link-navigates",
+    "ok": true,
+    "url": "http://localhost:3000/"
+  },
+  {
+    "id": "nested-unknown@1440",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "nested-unknown@768",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "nested-unknown@390",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-car@1440",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Car not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-car@768",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Car not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-car@390",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Car not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-dealer@1440",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Dealership not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-dealer@768",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Dealership not found | Dealers-Drive"
+  },
+  {
+    "id": "missing-dealer@390",
+    "ok": true,
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex"],
+    "header": true,
+    "overflow": 0,
+    "homeLink": true,
+    "title": "Dealership not found | Dealers-Drive"
+  },
+  {
+    "id": "valid-home",
+    "ok": true,
+    "status": 200,
+    "h1": "Find your next car",
+    "robots": ["index, follow, max-image-preview:large"]
+  },
+  {
+    "id": "valid-cars",
+    "ok": true,
+    "status": 200,
+    "h1": "Used cars",
+    "robots": ["index, follow, max-image-preview:large"]
+  },
+  {
+    "id": "valid-car",
+    "ok": true,
+    "status": 200,
+    "h1": "2023 Hyundai Creta SX(O)",
+    "robots": ["index, follow, max-image-preview:large"]
+  },
+  {
+    "id": "valid-dealer",
+    "ok": true,
+    "status": 200,
+    "h1": "DealerLife Motors 152988b3300a",
+    "robots": ["index, follow, max-image-preview:large"]
+  },
+  {
+    "id": "valid-dealers",
+    "ok": true,
+    "status": 200,
+    "h1": "Verified dealers",
+    "robots": ["index, follow, max-image-preview:large"]
+  },
+  {
+    "id": "robots-observe",
+    "ok": true,
+    "status": 200,
+    "body": "User-Agent: *\nAllow: /\nDisallow: /api/\nDisallow: /v1/\n\nSitemap: https://www.dealers-drive.com/sitemap.xml\n"
+  }
+]

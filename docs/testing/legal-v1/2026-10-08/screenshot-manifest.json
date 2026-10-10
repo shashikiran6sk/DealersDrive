@@ -1,0 +1,92 @@
+[
+  {
+    "file": "customer-history.png",
+    "sha256": "346d7551b2122b20c4103a6fbeb426fd1bb5ce58245955808911f145c99e6539",
+    "bytes": 83395
+  },
+  {
+    "file": "customer-signup-mobile.png",
+    "sha256": "79a0403e74729a967304050b309bf6f4cc7524cb64ee42dc9a9a5a73c0b2e6f7",
+    "bytes": 51545
+  },
+  {
+    "file": "customer-signup-unticked.png",
+    "sha256": "ff508f56e79f3f0d55749d9eb63a265830ea99c2b7129d0a633a30007ac7e6ee",
+    "bytes": 107106
+  },
+  {
+    "file": "data-rights-withdrawal.png",
+    "sha256": "3cb121ac1973f53af5e7171c52501cbd2fc5985a28c6e043614228ddbef9a1b7",
+    "bytes": 128842
+  },
+  {
+    "file": "dealer-agreement-desktop.png",
+    "sha256": "e4a7cb9c2f4ec9d87fd4709cffb9462f25cb9c548571dc8f82d5292cc9f1e6ff",
+    "bytes": 180088
+  },
+  {
+    "file": "dealer-authority-unticked.png",
+    "sha256": "3e43345806f98e15b86833a1a83e353ed789844aad70e7f2e6e665a98b58da58",
+    "bytes": 105804
+  },
+  {
+    "file": "dealer-onboarding-agreements.png",
+    "sha256": "c38d8584c8e1db6be3a1e07ab4a4dd5cf79b72bc983762c30ad366cd198ff0f0",
+    "bytes": 65439
+  },
+  {
+    "file": "enquiry-permission-desktop.png",
+    "sha256": "199d8d2315ff8617cfdf3c1d33f9da9535c6ae32ef34d0fa6ca20e00c40e5ad5",
+    "bytes": 128660
+  },
+  {
+    "file": "enquiry-permission-mobile.png",
+    "sha256": "a55402e0cde8fe6fdc2672b26b42944874b5f8fa968d787a35c9ef5cd1566b7f",
+    "bytes": 60908
+  },
+  {
+    "file": "existing-owner-checkpoint.png",
+    "sha256": "50c70a47da7977c44f86d544af69e16cd46ca6d212b49578a089ba8896acecd0",
+    "bytes": 91988
+  },
+  {
+    "file": "footer-desktop.png",
+    "sha256": "513833b28bf635ffc48dc08f652fee4fded00c7559c6484059c7b5babc3285af",
+    "bytes": 155676
+  },
+  {
+    "file": "footer-mobile.png",
+    "sha256": "06eacf44a03efec7be06c750a0404bb26b232e071e001b8941aa731dc3c6790f",
+    "bytes": 42150
+  },
+  {
+    "file": "listing-certification-desktop.png",
+    "sha256": "226ecf82de5023835206250757366853bbc406cb236d8e70e33190341d9f09c7",
+    "bytes": 99830
+  },
+  {
+    "file": "listing-certification-mobile.png",
+    "sha256": "64f4741928e62e746e037f412a7336dca0c130c948150875c8235c945ce24a4d",
+    "bytes": 55764
+  },
+  {
+    "file": "privacy-desktop.png",
+    "sha256": "ae5c85f8592a59723911e1608b986637289e5e665c9292ab88231275df35e8da",
+    "bytes": 181654
+  },
+  {
+    "file": "terms-desktop.png",
+    "sha256": "d73750fd9b446efe7e755c7daf8d84faf2e00829e2fb4518c66874f84c9e18d8",
+    "bytes": 183021
+  },
+  {
+    "file": "terms-mobile.png",
+    "sha256": "041e13bafe810b2723de73af5c07d2a29499de0bf51546f886d18c607dbde21e",
+    "bytes": 57209
+  },
+  {
+    "file": "withdrawal-confirmed.png",
+    "sha256": "5507ebc85d7af7809e6b8dddd58bcec0145c16a985afcb6abd366ac8df12f81d",
+    "bytes": 131215
+  }
+]

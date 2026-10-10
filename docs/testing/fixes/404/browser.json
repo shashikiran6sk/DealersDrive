@@ -1,0 +1,105 @@
+{
+  "environment": "Built production Next.js server :3001; isolated local API; Chromium 151; no production provider",
+  "testedTree": "main merge plus branded404 integration changes, before commit",
+  "results": [
+    {
+      "name": "unknown-route",
+      "path": "/a-route-that-does-not-exist",
+      "viewport": 1440,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "home": "/",
+      "noindex": "noindex"
+    },
+    {
+      "name": "missing-car",
+      "path": "/car/toyota-innova-cert-no-such",
+      "viewport": 1440,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    },
+    {
+      "name": "missing-dealer",
+      "path": "/dealers/cert-no-such-dealer",
+      "viewport": 1440,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    },
+    {
+      "name": "unknown-route",
+      "path": "/a-route-that-does-not-exist",
+      "viewport": 768,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 768,
+      "scrollWidth": 768,
+      "home": "/",
+      "noindex": "noindex"
+    },
+    {
+      "name": "missing-car",
+      "path": "/car/toyota-innova-cert-no-such",
+      "viewport": 768,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 768,
+      "scrollWidth": 768,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    },
+    {
+      "name": "missing-dealer",
+      "path": "/dealers/cert-no-such-dealer",
+      "viewport": 768,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 768,
+      "scrollWidth": 768,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    },
+    {
+      "name": "unknown-route",
+      "path": "/a-route-that-does-not-exist",
+      "viewport": 390,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 390,
+      "scrollWidth": 390,
+      "home": "/",
+      "noindex": "noindex"
+    },
+    {
+      "name": "missing-car",
+      "path": "/car/toyota-innova-cert-no-such",
+      "viewport": 390,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 390,
+      "scrollWidth": 390,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    },
+    {
+      "name": "missing-dealer",
+      "path": "/dealers/cert-no-such-dealer",
+      "viewport": 390,
+      "status": 404,
+      "heading": "Page not found",
+      "width": 390,
+      "scrollWidth": 390,
+      "home": "/",
+      "noindex": "noindex, nofollow"
+    }
+  ]
+}

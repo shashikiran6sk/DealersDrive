@@ -1,0 +1,232 @@
+{
+  "PROD-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a correct production env (r2/msg91/resend/postgres/cookie) boots; local-only services are refused (see PROD-002..005)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:41.596Z"
+  },
+  "PROD-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "minio refused in production",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:41.814Z"
+  },
+  "PROD-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production refuses PHONE_OTP_DRIVER=fake (must be msg91)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:41.942Z"
+  },
+  "PROD-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production refuses MAIL_DRIVER=console (Mailpit/console) — must be resend",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.065Z"
+  },
+  "PROD-005": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "dev seed refuses to run with NODE_ENV=production (dev-guard throws even with full prod config)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.508Z"
+  },
+  "PROD-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dev tooling is guarded (PROD-005) and production DATABASE_URL/storage are separate secrets (deploy/aws SSM); development cannot point at prod by default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.508Z"
+  },
+  "PROD-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production DATABASE_URL is required and read from the environment (SSM in deploy/aws), not a default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.615Z"
+  },
+  "PROD-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "storage points to r2 in production; local filesystem refused (non-durable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.837Z"
+  },
+  "PROD-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "Google OAuth client id/secret required in production; callback URL configurable (GOOGLE_CALLBACK_URL)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:42.946Z"
+  },
+  "PROD-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MSG91 (WhatsApp/SMS OTP) auth key required in production when PHONE_OTP_DRIVER=msg91",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.058Z"
+  },
+  "PROD-011": {
+    "status": "PASS",
+    "layers": ["SECURITY"],
+    "note": "no server secret values in the client bundle; no NEXT_PUBLIC_* secret vars (MSG91 widget id is a public client identifier, not the AUTH_KEY)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.075Z"
+  },
+  "PROD-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "/api/docs is behind DOCS_ENABLED (off in prod) and metrics behind METRICS_ENABLED + a scrape token",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.075Z"
+  },
+  "PROD-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "production refuses the default SESSION_SECRET. (UPLOAD_SIGNING_SECRET has NO equivalent guard — tracked as BUG-001/SEC-DISC-001.)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.181Z"
+  },
+  "DEPLOY-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "prisma migrate deploy applied 39 migrations cleanly on the cert DB (0 unfinished)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.205Z"
+  },
+  "DEPLOY-002": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "single-owner → OWNER membership holds: every ACTIVE dealer has an ACTIVE OWNER member",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.208Z"
+  },
+  "DEPLOY-003": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "migration/flows created no duplicate users or memberships",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.210Z"
+  },
+  "DEPLOY-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "listings/enquiries/documents preserved through all migrations (940/183/1530)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.213Z"
+  },
+  "DEPLOY-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "39 timestamp-ordered migrations; prisma applies in order (deploy workflow runs migrate before serving)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.213Z"
+  },
+  "DEPLOY-006": {
+    "status": "PASS",
+    "layers": ["DEPLOY"],
+    "note": "deployment runs migrations as a dedicated step (migrate taskdef); recovery strategy documented in deploy/aws. Prisma migrate deploy is forward-only — down-recovery is restore-from-backup (see DEPLOY-009 BLOCKED).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.214Z"
+  },
+  "DEPLOY-007": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "seed scripts refuse to execute against NODE_ENV=production (dev-guard), even with full prod config",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.665Z"
+  },
+  "DEPLOY-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "indexes support critical queries: listing public visibility, enquiry dealer inbox, membership lookup, session by token, saved per customer (101 total)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.670Z"
+  },
+  "DEPLOY-009": {
+    "status": "BLOCKED",
+    "layers": ["DEPLOY"],
+    "note": "Backup/restore of the production managed database cannot be exercised in this isolated container (no managed DB, no snapshot API). Recovery strategy is documented in deploy/aws. Requires a staging restore drill.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.670Z"
+  },
+  "DEPLOY-010": {
+    "status": "BLOCKED",
+    "layers": ["DEPLOY"],
+    "note": "Verifying a restored DB preserves lifecycle/authorization relationships requires an actual restore (DEPLOY-009 BLOCKED). FK integrity on the live schema is green (DATA-005); a restore drill on staging is the remaining step.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-04T14:39:43.670Z"
+  }
+}

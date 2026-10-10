@@ -1,0 +1,75 @@
+{
+  "CAMPAIGN-01 ORIG-BUG-001 forged stand-in links behind an S3 driver": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "S3-driver API: forged PUT 404, forged read 404 — stand-ins not mounted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:29.971Z"
+  },
+  "CAMPAIGN-02 ORIG-BUG-004 verified KYC locked for an ACTIVE dealer": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "presign 409 DOCUMENT_LOCKED, delete 409, all three still VERIFIED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:30.222Z"
+  },
+  "CAMPAIGN-03 BUG-NEW-010 warmed car page after Admin suspension (console)": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API"
+    ],
+    "note": "warm 200,200 → after console suspension 404,404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:32.036Z"
+  },
+  "CAMPAIGN-05 ORIG-BUG-005 + BUG-NEW-009 yard photo locked and hidden while suspended": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "ACTIVE presign 409 YARD_PHOTO_LOCKED; cover 200 while ACTIVE, 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:32.270Z"
+  },
+  "CAMPAIGN-07 BUG-NEW-007 dealer inventory over tied timestamps": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "5 tied rows, pages of 2 → 5 unique",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:32.483Z"
+  },
+  "CAMPAIGN-09 ORIG-GAP-CLOSE close keeps the record and shuts the members out": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "PENDING → CLOSED 200, 3 documents kept, member session 401, second close 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-04T20:01:32.650Z"
+  }
+}

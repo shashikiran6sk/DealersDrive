@@ -1,0 +1,35 @@
+{
+  "testedCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
+  "sourceFiles": {
+    "apps/api/src/modules/auth/dealer-write-authorization.ts": "962bc9525b7f0224e350e9beb75dffdff61530568c397373df6b2ac9e135e569",
+    "apps/api/src/modules/auth/cookie-session.adapter.ts": "0632e316fe76c04575c2a1c62213b3baa966d9fe16f7207a75bb15d403427dd4",
+    "apps/api/src/modules/vehicles/vehicles.service.ts": "0bf2dbbae565115385cb8ab0c19d2365236adbd06b5cdfb05dbd07202fc84b93",
+    "apps/api/src/modules/vehicles/routes/actor.ts": "4152682a4dfc4bbbd17d92cf238567986cabfd35cacc9e98821a1c5d01ddd51d",
+    "apps/api/tests/membership-commit-guard.test.ts": "9fecc80687b93a5988258a846011970aad535a6fb3dc51748be3c0735d2a34a3",
+    "apps/api/tests/unit/modules/auth/dealer-write-authorization.test.ts": "720871ad1bf68173675675391f4d2645f9a1d3027d6e3509722cb6b1749f62f9"
+  },
+  "screenshots": {
+    "baseline-after-submit-1440.png": "f6c5b791232cf3871e1abd4593193baf003aca41b9c54d65901e7a8de94e4809",
+    "baseline-before-submit-1440.png": "79bc0687ecc9cb3196e1fff248977cfc8183ed2e047c92933d970d206b5bafd1",
+    "baseline-personal-saved-1440.png": "e29fb78b27de8fc47227a99715445302cc47234ac2b4a6d1980de7f386041b80",
+    "baseline-refreshed-access-1440.png": "ed812bc17b7629ce05b6cb72ff06b7b9efcef2ce0e365b686bc935a38364860f",
+    "baseline-removed-team-1440.png": "d724b1be68d75fa4a63953a9ff6ba6fbe59c29ea4b680e9a51578f917c5dd431",
+    "fixed-after-submit-1440.png": "304728906657e4b3fac91b90dc1f84864015d2fe21e28b9e980408e1d7f2cc1b",
+    "fixed-after-submit-390.png": "1f8f242bdde4522bf2ad5b9c4ec298d5d3d064f347e419a5b0dcdbd211d5e4cc",
+    "fixed-after-submit-768.png": "d1b39b99f42da0224dd20d226f395e32537303004012964cbacda96dd01ca0ef",
+    "fixed-before-submit-1440.png": "9236dc4c0e7f7809006089a9e9fd7f0edf865bd2dd3bc3395078eebb076116a8",
+    "fixed-before-submit-390.png": "86976c91a4b938ac097cb73cb2069c73b4caf5f2bc5dc55b6942bf21ba7ad263",
+    "fixed-before-submit-768.png": "050ea4e6ca76fd6019d9f119b0484085c95839ff5c78b42094131feec8a22328",
+    "fixed-personal-saved-1440.png": "0c2131f8bdc9f4d695ce682a518c7ddeee09651e389d23a74373fd8ad4b66627",
+    "fixed-personal-saved-390.png": "903aa247868c2049525a722457c4d3664d600ac53fc6762204ecf635553d9c71",
+    "fixed-personal-saved-768.png": "f66bc5fbf2a2fd88943563f61f874bf2bb2fc7b10e1ece0e13da749874e204a6",
+    "fixed-refreshed-access-1440.png": "310131fbfec15a7763eaca70874811e8035c80a5e7f60832d723eeb3c1cf0e59",
+    "fixed-refreshed-access-390.png": "d9bdf8750fbc08860432e8b1712207766e0175975198fa987896b15267a62e4f",
+    "fixed-refreshed-access-768.png": "c3d6af9712ed04dc6213902be6a2670632f0a55aca3ec428083bd7c31bfd01c5",
+    "fixed-removed-team-1440.png": "21a700e1c95acab8bc3ee43f0ce6bd5962a7f99f1f1f2fbb70f5138d69444fdb",
+    "fixed-removed-team-390.png": "ef02dd735a86f87fb355af4394cb5828440437be74b0c091cd2a7d9040608e4a",
+    "fixed-removed-team-768.png": "16309787add4462f23299a5fd0902da4bb0a3d45adc152ce6cafc71ceb93a5e7"
+  },
+  "visualReview": "All5 baseline and15 fixed screenshots inspected; baseline after-action capture transient; seeded Saved images have no bytes; membership/history UI scoped",
+  "humanUat": "PENDING"
+}

@@ -1,0 +1,32 @@
+{
+  "R237-PROD-002-minio-and-local-refused": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production: r2 boots; minio refused (STORAGE_DRIVER: must be `r2` in production — `local` and `minio` are development adapters.); local refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-04T14:08:47.060Z"
+  },
+  "R237-BUG-NEW-013-r2-endpoint-unvalidated": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "production r2 boots with S3_ENDPOINT omitted (resolves to http://localhost:9000) and with a loopback endpoint (http://127.0.0.1:9000) — BUG-NEW-013 confirmed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-04T14:08:47.063Z"
+  },
+  "R237-ORIG-BUG-001-default-signing-secret-in-production": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "a production r2 env without UPLOAD_SIGNING_SECRET boots with the committed default secret; /uploads (PUT) and /private (GET) are mounted for every driver and backed by the configured StoragePort — forged signatures would write/read the production bucket. ORIG-BUG-001 remains P0.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-04T14:08:47.063Z"
+  }
+}

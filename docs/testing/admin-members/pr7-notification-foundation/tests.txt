@@ -1,0 +1,122 @@
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > publishes each row and marks it published 4ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > returns 0 on an empty outbox and touches nothing 0ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > claims rows with FOR UPDATE SKIP LOCKED, so two workers never collide 0ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > increments attempts instead of publishing when the bus throws 1ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > increments attempts when the publish succeeded but the mark failed 1ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > keeps going after one row fails 0ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > drain > caps retries in the query rather than in code 0ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > polls on an interval once started 5ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > is idempotent — a second start does not double the poll rate 1ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > stops polling after stop, and stop is safe when never started 1ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > can be restarted after being stopped 2ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > never overlaps two drains 1ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > survives a drain that rejects, and keeps polling 2ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > createOutboxPublisher > start / stop > unrefs its timer so it cannot hold the process open 2ms
+ ✓ |unit| tests/unit/platform/events/outbox-publisher.test.ts > events nobody listens to (R115) > are marked published in bulk before the batch is claimed, so they never block one 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > delivers an event to the handler subscribed to its type 4ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > delivers to every subscriber of a type, in subscription order 0ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > does not deliver to subscribers of a different type 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > publishing a type nobody subscribed to is a no-op, not an error 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > swallows a subscriber failure so the publisher is never rolled back 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > propagates a required subscriber failure for durable outbox retry 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > awaits each subscriber rather than firing them all off unawaited 6ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > createEventBus > keeps subscriptions separate per bus instance 0ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > writes one row through the transaction handle it was given 2ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > stores the full envelope as the payload 0ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > mints a fresh uuid and timestamp per event 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > includes dealerId when there is one 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > omits dealerId entirely for a platform-wide event 0ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > produces a payload that survives a JSON round trip 1ms
+ ✓ |unit| tests/unit/platform/events/bus.test.ts > enqueueOutbox > carries ids in the payload, never PII 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received renders both bodies and names the dealership 3ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.application.rejected carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.application.changes-requested carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.account.suspended carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.profile-change.rejected carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > renders no quote block when there is no reason 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > application resubmission > thanks the dealer for resubmitting the details 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > application resubmission > tells the admin that the dealer resubmitted the application 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > escaping > escapes a dealership name that contains markup 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > escaping > escapes a moderator’s note that contains markup 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the profile-change review email > shows the moderator what was proposed 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the profile-change review email > shows the services alone when only they changed 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the approved message > links the dealership’s own public page 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the approved message > falls back to the console when there is no slug 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer and the admins when an application arrives 5ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > uses distinct dealer and admin emails when an application is resubmitted 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on approval 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on a rejection, with the reason 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > sends a rejection from the surviving audit snapshot after the dealer is purged 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when changes are requested 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the admins when a profile change is submitted 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when the dealership is suspended 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer a dedicated message when the application is closed 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when the dealership is reinstated 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on an approved profile change 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on a refused profile change, with the reason 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > sends one email however many times the job is delivered 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > sends again for a different event 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > keys on the recipient as well as the event 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > claims the row before sending 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > lets a failed attempt be retried, and counts the attempts 2ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > rethrows a retryable failure and leaves the row PENDING 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > does not rethrow a permanent failure, and marks the row FAILED 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > skips a dealer with no email, without a delivery row 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > recipients > fans an admin message out to the allow-list 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > recipients > reads the dealer address out of the database 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > mints the link at send time and emails it to the verification’s address 5ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > does not mint a second link once the email has been sent 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > sends nothing for a superseded or claimed verification 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > sends an unclaimed dealership’s mail only to a verified address 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > writes to the active members whose role holds the permission, once each 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > never writes to a bootstrap member the allow-list no longer admits 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > falls back to the allow-list when no member holds the permission 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > user recipients (R115) > writes only to a verified address on an active account 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > a transient failure that never clears (R115) > is marked FAILED on the last attempt, and stops being retried 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the rules table (R115) > turns each rule into the job the old hand-written subscriber produced 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the rules table (R115) > keys the claim email on the verification, and drops a malformed event 0ms
+ ✓ |integration| tests/notification-foundation.test.ts > admin emails > reach the active members whose role holds the permission, and no one else 75ms
+ ✓ |integration| tests/notification-foundation.test.ts > admin emails > send once per recipient however often the event is delivered 190ms
+ ✓ |integration| tests/notification-foundation.test.ts > listing events > publishes submission and the moderator’s decision, in the transaction that made them 255ms
+ ✓ |integration| tests/notification-foundation.test.ts > the delivery log > lists deliveries newest first, filtered and searched, for a Super admin 110ms
+ ✓ |integration| tests/notification-foundation.test.ts > the delivery log > is refused to every role but Super admin, and refuses unknown filters 22ms
+ ✓ |integration| tests/notification-foundation.test.ts > the delivery log > pages by keyset without repeating a row 22ms
+      Tests  121 passed (121)

@@ -1,0 +1,75 @@
+[
+  {
+    "id": "API-FOLLOWUP-001",
+    "canonical": [
+      "MEMBER-019",
+      "MEMBER-020",
+      "MEMBER-022",
+      "MEMBER-023",
+      "MEMBER-024",
+      "MEMBER-026",
+      "MEMBER-027",
+      "IDENTITY-010",
+      "IDENTITY-011",
+      "CROSS-015",
+      "CROSS-024",
+      "CROSS-025",
+      "DATA-001"
+    ],
+    "title": "Removed staff remains a customer and preserves saved/enquiry/draft records",
+    "status": "PASS",
+    "observed": {
+      "dealerHttp": 401,
+      "customerHttp": 200,
+      "saved": 1,
+      "enquiries": 1,
+      "draftPreserved": true
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "API-FOLLOWUP-002",
+    "canonical": ["API-SEC-003", "STAFF-005", "STAFF-006", "STAFF-007", "STAFF-008"],
+    "title": "STAFF is forbidden on the actual listing routes",
+    "status": "PASS",
+    "observed": {
+      "statuses": [403, 403, 403, 403]
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "SEC-DISC-002-OBSERVED",
+    "status": "OBSERVATION",
+    "canonical": [],
+    "observed": {
+      "listingHttp": 404,
+      "publicMediaHttp": 200
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "SEC-DISC-002",
+    "canonical": [],
+    "title": "Suspended dealer cannot continue delivering listing media publicly",
+    "status": "FAIL",
+    "error": "listing HTTP 404, public media HTTP 200\n\n200 !== 404\n",
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "DATA-DISC-003",
+    "canonical": [],
+    "title": "Dealer enquiry pagination preserves records with equal timestamps",
+    "status": "FAIL",
+    "error": "DB has at least 4 tied records; page 1 has 1; page 2 has 0\n\n0 !== 1\n",
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "AUTH-DISC-001",
+    "canonical": ["CONCURRENCY-007", "CROSS-019"],
+    "title": "Membership removed before a blocked listing submission commits denies the operation",
+    "status": "BLOCKED",
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "original_harness_assertion": "The HTTP operation must demonstrably be waiting on the row lock.",
+    "reason": "Harness polling used PostgreSQL statistics cached within a transaction; no revocation was performed. Lock released during cleanup. Corrected lock observation is a separate probe."
+  }
+]

@@ -1,0 +1,1 @@
+Actual optional GSTIN browser UAT passed 9 checks.

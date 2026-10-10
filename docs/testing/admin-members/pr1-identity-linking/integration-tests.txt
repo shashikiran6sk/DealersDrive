@@ -1,0 +1,35 @@
+ ✓ |integration| tests/account-linking.test.ts > the customer → Google dealer bug > links a customer phone to a new Google dealer identity after the OTP 314ms
+ ✓ |integration| tests/account-linking.test.ts > the customer → Google dealer bug > lets the linked person create their dealership and keep shopping as a customer 127ms
+ ✓ |integration| tests/account-linking.test.ts > the customer → Google dealer bug > keeps a dealership the phone holder already belongs to 90ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > does not link on a typed number: a wrong code changes nothing 68ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > does not link on a token the provider refuses as expired or forged 69ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > does not link on a replayed token 56ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > does not link a token proving a different handset 44ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > refuses a phone whose account already has its own Google identity 77ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > refuses when the Google account already holds a different phone 63ms
+ ✓ |integration| tests/account-linking.test.ts > what never merges > refuses to fold an operator account into a customer 56ms
+ ✓ |integration| tests/account-linking.test.ts > races and repeats > two verifications at once make one account, not two 68ms
+ ✓ |integration| tests/account-linking.test.ts > races and repeats > an already-linked account re-proving its number is a plain verification 72ms
+ ✓ |integration| tests/account-linking.test.ts > races and repeats > merging the same pair twice is a no-op the second time 47ms
+ ✓ |integration| tests/account-linking.test.ts > races and repeats > an account already folded into someone else cannot be folded again 73ms
+ ✓ |integration| tests/account-linking.test.ts > the other direction: phone first, then Google > folds an abandoned Google-only dealer account into the phone session on link 103ms
+ ✓ |integration| tests/account-linking.test.ts > the other direction: phone first, then Google > still refuses a Google account that belongs to a complete account 67ms
+ ✓ |integration| tests/account-linking.test.ts > what a merge carries across > keeps the stricter seat and the survivor’s saved cars without duplicates 60ms
+ ✓ |integration| tests/account-linking.test.ts > what a merge carries across > carries a suspension onto a seat the survivor already holds 48ms
+ ✓ |integration| tests/account-linking.test.ts > what a merge carries across > moves memberships, and refuses when both accounts sit in one dealership 105ms
+ ✓ |integration| tests/account-linking.test.ts > what a merge carries across > names each reason it refuses 39ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > phone first > creates a provisional dealer: phone proved, Google missing, sent to step 1 307ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > phone first > cannot create a dealership until Google is linked 59ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > phone first > links Google on the same account, keeps the session, then continues 158ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > phone first > converges: Google and the phone both sign in to the one user 113ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > Google first > creates a provisional dealer: Google linked, phone missing, sent to step 1 32ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > Google first > cannot create a dealership until the phone is proved, then can 64ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > collisions: one person is merged, two people are refused > folds a Google-only account into the phone session that proves it 87ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > collisions: one person is merged, two people are refused > refuses a Google account that belongs to a complete account 64ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > collisions: one person is merged, two people are refused > folds a Google-first account into the phone-only account whose number it proves 56ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > collisions: one person is merged, two people are refused > refuses a second Google account on an account that already has one 64ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > the link round trip > needs a session to start 3ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > the link round trip > links nothing when the callback arrives without the session that started it 31ms
+ ✓ |integration| tests/dealer-identity-completion.test.ts > the link round trip > links nothing when a different account’s session comes back 46ms
+ Test Files  2 passed (2)
+      Tests  33 passed (33)

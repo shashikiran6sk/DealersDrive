@@ -1,0 +1,122 @@
+{
+  "SEC-DISC-001a": {
+    "status": "FAIL",
+    "layers": ["SECURITY", "API", "STORAGE"],
+    "note": "Unauthenticated PUT /uploads signed with the committed default UPLOAD_SIGNING_SECRET overwrote the served object (original.jpg — the fallback served when variants are unprocessed, and the source any reprocessing reads) of a live listing's primary image; public /media route then served attacker bytes (before 11518B image → after 1040B attacker text).",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.387Z"
+  },
+  "SEC-DISC-001b": {
+    "status": "FAIL",
+    "layers": ["SECURITY", "API", "STORAGE"],
+    "note": "Forged read signature returned a private KYC PDF with no session. Requires knowing the document UUID (not public), so the read path is constrained; the write path (001a) is not.",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.391Z"
+  },
+  "SEC-DISC-001c": {
+    "status": "FAIL",
+    "layers": ["SECURITY", "STORAGE"],
+    "note": "Unauthenticated forged PUT created an arbitrary object inside another dealership's private KYC prefix (12 MB per request, no rate limit).",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.393Z"
+  },
+  "LIFE-DISC-001a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.461Z"
+  },
+  "LIFE-DISC-001b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.683Z"
+  },
+  "LIFE-DISC-002a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 INVALID_DEALER_TRANSITION",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.852Z"
+  },
+  "LIFE-DISC-002b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspend 422/DRAFT, reinstate 422/DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.907Z"
+  },
+  "LIFE-DISC-002c": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.913Z"
+  },
+  "API-DISC-001": {
+    "status": "FAIL",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer, VERIFIED GST certificate: POST /v1/dealer/documents/presign → 201. Merely asking for the URL reset the row to UPLOADING with a new id and DELETED the verified file from storage (on disk before=true, after=false). No upload needed to destroy verification evidence.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.924Z"
+  },
+  "API-DISC-002": {
+    "status": "FAIL",
+    "layers": ["API", "DATABASE"],
+    "note": "ACTIVE dealer replaced its verified PAN card: document now UPLOADED, dealership still ACTIVE — no re-verification triggered, admin not notified.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.951Z"
+  },
+  "API-DISC-003": {
+    "status": "FAIL",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer: DELETE /v1/dealer/documents/ADDRESS_PROOF → 204; verified KYC row and file deleted, dealership remains ACTIVE.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:17.961Z"
+  },
+  "API-DISC-004": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "ACTIVE dealer replaced the public yard photograph with no moderation, while tagline/services edits on the same profile are held for review (R34). A public image is the unmoderated channel R34 closed for text.",
+    "evidence": [],
+    "bug": "BUG-005",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T14:38:18.019Z"
+  }
+}

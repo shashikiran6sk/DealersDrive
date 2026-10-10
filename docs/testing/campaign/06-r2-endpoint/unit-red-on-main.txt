@@ -1,0 +1,1093 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/api
+
+ ❯ |unit| tests/unit/config/env.test.ts (75 tests | 13 failed) 354ms
+   ❯ configurations that must not boot (34)
+     × BUG-NEW-013 refuses r2 in production when S3_ENDPOINT is omitted 18ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://localhost:9000 7ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://localhost:9000 9ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://127.0.0.1:9000 4ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://[::1]:9000 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://0.0.0.0 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://10.0.0.5 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://172.20.0.3 4ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://192.168.1.10 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://169.254.169.254 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://minio:9000 5ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://minio 9ms
+     × BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://example-account-id.r2.cloudflarestorage.com 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production when S3_ENDPOINT is omitted
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "http://localhost:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:588:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://localhost:9000
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "http://localhost:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://localhost:9000
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://localhost:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://127.0.0.1:9000
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://127.0.0.1:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://[::1]:9000
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://[::1]:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://0.0.0.0
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://0.0.0.0",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://10.0.0.5
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://10.0.0.5",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://172.20.0.3
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://172.20.0.3",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://192.168.1.10
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://192.168.1.10",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://169.254.169.254
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://169.254.169.254",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://minio:9000
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "http://minio:9000",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=https://minio
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "https://minio",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| tests/unit/config/env.test.ts > configurations that must not boot > BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=http://example-account-id.r2.cloudflarestorage.com
+AssertionError: promise resolved "{ NODE_ENV: 'production', …(55) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ADMIN_ALLOWLIST": "shashikiran6.sk@gmail.com",
++   "API_BASE_URL": "https://api.dealers-drive.com",
++   "APP_ENV": "local",
++   "AUTH_MODE": "cookie",
++   "CACHE_DRIVER": "postgres",
++   "CONFIG_VERSION_POLL_MS": 10000,
++   "DATABASE_URL": "postgresql://u:p@db:5432/d",
++   "DB_SLOW_OPERATION_MS": 500,
++   "DB_TRANSACTION_MAX_WAIT_MS": 10000,
++   "DB_TRANSACTION_TIMEOUT_MS": 20000,
++   "DEV_DEALER_SLUG": "sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu",
++   "DOCS_ENABLED": false,
++   "GIT_SHA": "unknown",
++   "GOOGLE_CALLBACK_URL": "http://localhost:4000/v1/auth/google/callback",
++   "GOOGLE_CLIENT_ID": "client.apps.googleusercontent.com",
++   "GOOGLE_CLIENT_SECRET": "google-secret",
++   "GRAFANA_CLOUD_LOGS_ENABLED": false,
++   "HOST": "0.0.0.0",
++   "JOBS_ENABLED": true,
++   "LOG_LEVEL": "info",
++   "MAIL_DRIVER": "resend",
++   "MAIL_FROM": "Dealers-Drive <updates@dealers-drive.com>",
++   "MEDIA_BASE_URL": "https://api.dealers-drive.com/media",
++   "METRICS_ENABLED": false,
++   "MSG91_AUTH_KEY": "a-real-msg91-auth-key",
++   "MSG91_WIDGET_ID": "example-widget-id",
++   "MSG91_WIDGET_TOKEN": "example-widget-token",
++   "NODE_ENV": "production",
++   "PHONE_OTP_DEV_CODE": "123456",
++   "PHONE_OTP_DRIVER": "msg91",
++   "PHONE_OTP_TIMEOUT_MS": 4000,
++   "PORT": 4000,
++   "RATE_LIMIT_ENABLED": true,
++   "RESEND_API_KEY": "re_a_real_production_key",
++   "S3_ACCESS_KEY_ID": "r2-key",
++   "S3_BUCKET": "dealers-drive",
++   "S3_ENDPOINT": "http://example-account-id.r2.cloudflarestorage.com",
++   "S3_FORCE_PATH_STYLE": true,
++   "S3_REGION": "auto",
++   "S3_SECRET_ACCESS_KEY": "r2-secret",
++   "SESSION_SECRET": "a-real-production-session-secret",
++   "SHUTDOWN_DRAIN_MS": 5000,
++   "SHUTDOWN_TIMEOUT_MS": 15000,
++   "STORAGE_DRIVER": "r2",
++   "STORAGE_LOCAL_DIR": ".storage",
++   "SUPPORT_EMAIL": "support@dealers-drive.com",
++   "SUPPORT_PHONE": "+914162248890",
++   "UPLOAD_SIGNING_SECRET": "dealers-drive-local-upload-secret",
++   "WEB_BASE_URL": "https://dealers-drive.com",
++   "WEB_ORIGIN": "https://dealers-drive.com",
++   "WORKER_INLINE": true,
++   "adminAllowlist": [
++     "shashikiran6.sk@gmail.com",
++   ],
++   "isDevelopment": false,
++   "isProduction": true,
++   "isTest": false,
++   "webOrigins": [
++     "https://dealers-drive.com",
++   ],
+  }
+
+ ❯ refuses tests/unit/config/env.test.ts:504:34
+    502|
+    503|     try {
+    504|       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+       |                                  ^
+    505|       return error.mock.calls.map((call) => String(call[0])).join('\n'…
+    506|     } finally {
+ ❯ tests/unit/config/env.test.ts:607:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 62 passed (75)
+   Start at  17:22:42
+   Duration  1.30s (transform 50%, tests 32%, import 17%, worker 1%)
+

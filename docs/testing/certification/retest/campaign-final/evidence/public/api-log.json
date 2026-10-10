@@ -1,0 +1,5028 @@
+[
+  {
+    "req": "GET /v1/vehicles?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-543a3570",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 522802c54ecb",
+            "slug": "prioa-motors-522802c54ecb-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g922643-vellore-cf1ad2fb",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G922643",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G922643, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden9Other Motors 2264363f8914",
+            "slug": "golden9other-motors-2264363f8914-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g822642-vellore-e8a67133",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G822642",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G822642, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden8 Motors 226426931992",
+            "slug": "golden8-motors-226426931992-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g622641-vellore-9dc266e7",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G622641",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G622641, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden6 Motors 226413a2a2d6",
+            "slug": "golden6-motors-226413a2a2d6-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 5,
+        "total": 726,
+        "totalPages": 146
+      },
+      "available": 665,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 539
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 512
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 459
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 522
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 463
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 482
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?brand=maruti-suzuki&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Brezza ZXi+",
+          "year": 2022,
+          "priceLabel": "₹5,95,000",
+          "metaLabel": "54,900 km · Petrol · Automatic · Mangalagiri",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Capital Region Motors",
+            "slug": "capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh",
+            "initials": "CR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Wagon R LXi",
+          "year": 2016,
+          "priceLabel": "₹2,75,000",
+          "metaLabel": "1,29,500 km · Petrol · Manual · Katpadi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Sri Balaji Cars",
+            "slug": "sri-balaji-cars-and-credits-katpadi-vellore-tamil-nadu",
+            "initials": "SB",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2021-maruti-suzuki-ertiga-vxi-gudiyatham-0ea755c1",
+          "availability": "AVAILABLE",
+          "title": "2021 Maruti Suzuki Ertiga VXi",
+          "year": 2021,
+          "priceLabel": "₹5,70,000",
+          "metaLabel": "38,300 km · CNG · Manual · Gudiyatham",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Pernambut Road Motors",
+            "slug": "pernambut-road-motors-enterprises-gudiyatham-vellore-tamil-nadu",
+            "initials": "PR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2022-maruti-suzuki-wagon-r-vxi-ranipet-d4aae7e4",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Wagon R VXi",
+          "year": 2022,
+          "priceLabel": "₹4,95,000",
+          "metaLabel": "30,700 km · CNG · Manual · Ranipet",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "SIPCOT Car Bazaar",
+            "slug": "sipcot-car-bazaar-llp-ranipet-tamil-nadu",
+            "initials": "SC",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-baleno-sigma-aluva-843d8f1c",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Baleno Sigma",
+          "year": 2016,
+          "priceLabel": "₹3,15,000",
+          "metaLabel": "1,25,800 km · Petrol · Manual · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Aluva Junction Autos",
+            "slug": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "initials": "AJ",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 74,
+        "totalPages": 2
+      },
+      "available": 70,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [
+          {
+            "value": "brezza",
+            "label": "Brezza",
+            "count": 15,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "swift",
+            "label": "Swift",
+            "count": 14,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "ertiga",
+            "label": "Ertiga",
+            "count": 12,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "wagon-r",
+            "label": "Wagon R",
+            "count": 12,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "baleno",
+            "label": "Baleno",
+            "count": 10,
+            "parent": "maruti-suzuki"
+          }
+        ],
+        "fuelTypes": [
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 36
+          },
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 34
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 42
+          },
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 28
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 36
+          },
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 15
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 12
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 7
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 6
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 16
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 9
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 10
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 7
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 23
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 18
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 15
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 14
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 4
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 6
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 7
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 8
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 8
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 40
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 29
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 1
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 0
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 0
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 2
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 11
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 18
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 22
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 17
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?fuel=diesel&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2020-kia-sonet-htx-belagavi-1874b479",
+          "availability": "AVAILABLE",
+          "title": "2020 Kia Sonet HTX",
+          "year": 2020,
+          "priceLabel": "₹6,75,000",
+          "metaLabel": "79,900 km · Diesel · Automatic · Belagavi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Camp Road Car Company",
+            "slug": "camp-road-car-company-pvt-ltd-belagavi-karnataka",
+            "initials": "CR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2020-honda-amaze-vx-belagavi-8a5a9b0a",
+          "availability": "AVAILABLE",
+          "title": "2020 Honda Amaze VX",
+          "year": 2020,
+          "priceLabel": "₹5,10,000",
+          "metaLabel": "80,100 km · Diesel · Automatic · Belagavi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Khanapur Road Autos",
+            "slug": "khanapur-road-autos-enterprises-belagavi-karnataka",
+            "initials": "KR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-harrier-smart-arakkonam-2ed1920c",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Harrier Smart",
+          "year": 2023,
+          "priceLabel": "₹16,85,000",
+          "metaLabel": "21,500 km · Diesel · Manual · Arakkonam",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Nemili Auto Traders",
+            "slug": "nemili-auto-traders-llp-arakkonam-ranipet-tamil-nadu",
+            "initials": "NA",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2020-tata-altroz-xm-guntur-0a60640a",
+          "availability": "AVAILABLE",
+          "title": "2020 Tata Altroz XM",
+          "year": 2020,
+          "priceLabel": "₹5,65,000",
+          "metaLabel": "74,500 km · Diesel · Manual · Guntur",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Brodipet Car House",
+            "slug": "brodipet-car-house-pvt-ltd-guntur-andhra-pradesh",
+            "initials": "BC",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-toyota-innova-crysta-zx-vadakara-2ec3e1ac",
+          "availability": "AVAILABLE",
+          "title": "2023 Toyota Innova Crysta ZX",
+          "year": 2023,
+          "priceLabel": "₹18,90,000",
+          "metaLabel": "23,700 km · Diesel · Automatic · Vadakara",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Lokanarkavu Cars",
+            "slug": "lokanarkavu-cars-llp-vadakara-kozhikode-kerala",
+            "initials": "LC",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 65,
+        "totalPages": 2
+      },
+      "available": 62,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "mahindra",
+            "label": "Mahindra",
+            "count": 15
+          },
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 12
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 10
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 10
+          },
+          {
+            "value": "kia",
+            "label": "Kia",
+            "count": 9
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 31
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 31
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 34
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 14
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 6
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 4
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 4
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 3
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 13
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 8
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 7
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 7
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 29
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 14
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 11
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 8
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 10
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 11
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 12
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 8
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 6
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 1
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 32
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 19
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 8
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 2
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 6
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 19
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 19
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 18
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?minYear=2022&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-543a3570",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 522802c54ecb",
+            "slug": "prioa-motors-522802c54ecb-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g922643-vellore-cf1ad2fb",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G922643",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G922643, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden9Other Motors 2264363f8914",
+            "slug": "golden9other-motors-2264363f8914-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g822642-vellore-e8a67133",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G822642",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G822642, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden8 Motors 226426931992",
+            "slug": "golden8-motors-226426931992-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g622641-vellore-9dc266e7",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G622641",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G622641, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden6 Motors 226413a2a2d6",
+            "slug": "golden6-motors-226413a2a2d6-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 581,
+        "totalPages": 13
+      },
+      "available": 528,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 405
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 34
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 17
+          },
+          {
+            "value": "mahindra",
+            "label": "Mahindra",
+            "count": 16
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 15
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 469
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 33
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 16
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 6
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 4
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 472
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 56
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 473
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 28
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 14
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 10
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 3
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 4
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 434
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 20
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 16
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 12
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 468
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 39
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 18
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 3
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 11
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 56
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 451
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 9
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 3
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 474
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 35
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 0
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?brand=maruti-suzuki&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Brezza ZXi+",
+          "year": 2022,
+          "priceLabel": "₹5,95,000",
+          "metaLabel": "54,900 km · Petrol · Automatic · Mangalagiri",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Capital Region Motors",
+            "slug": "capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh",
+            "initials": "CR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Wagon R LXi",
+          "year": 2016,
+          "priceLabel": "₹2,75,000",
+          "metaLabel": "1,29,500 km · Petrol · Manual · Katpadi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Sri Balaji Cars",
+            "slug": "sri-balaji-cars-and-credits-katpadi-vellore-tamil-nadu",
+            "initials": "SB",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2021-maruti-suzuki-ertiga-vxi-gudiyatham-0ea755c1",
+          "availability": "AVAILABLE",
+          "title": "2021 Maruti Suzuki Ertiga VXi",
+          "year": 2021,
+          "priceLabel": "₹5,70,000",
+          "metaLabel": "38,300 km · CNG · Manual · Gudiyatham",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Pernambut Road Motors",
+            "slug": "pernambut-road-motors-enterprises-gudiyatham-vellore-tamil-nadu",
+            "initials": "PR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2022-maruti-suzuki-wagon-r-vxi-ranipet-d4aae7e4",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Wagon R VXi",
+          "year": 2022,
+          "priceLabel": "₹4,95,000",
+          "metaLabel": "30,700 km · CNG · Manual · Ranipet",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "SIPCOT Car Bazaar",
+            "slug": "sipcot-car-bazaar-llp-ranipet-tamil-nadu",
+            "initials": "SC",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-baleno-sigma-aluva-843d8f1c",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Baleno Sigma",
+          "year": 2016,
+          "priceLabel": "₹3,15,000",
+          "metaLabel": "1,25,800 km · Petrol · Manual · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Aluva Junction Autos",
+            "slug": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "initials": "AJ",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 74,
+        "totalPages": 2
+      },
+      "available": 70,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [
+          {
+            "value": "brezza",
+            "label": "Brezza",
+            "count": 15,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "swift",
+            "label": "Swift",
+            "count": 14,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "ertiga",
+            "label": "Ertiga",
+            "count": 12,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "wagon-r",
+            "label": "Wagon R",
+            "count": 12,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "baleno",
+            "label": "Baleno",
+            "count": 10,
+            "parent": "maruti-suzuki"
+          }
+        ],
+        "fuelTypes": [
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 36
+          },
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 34
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 42
+          },
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 28
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 36
+          },
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 15
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 12
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 7
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 6
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 16
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 9
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 10
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 7
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 23
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 18
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 15
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 14
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 4
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 6
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 7
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 8
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 8
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 40
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 29
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 1
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 0
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 0
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 2
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 11
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 18
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 22
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 17
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?brand=maruti-suzuki&fuel=petrol&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Brezza ZXi+",
+          "year": 2022,
+          "priceLabel": "₹5,95,000",
+          "metaLabel": "54,900 km · Petrol · Automatic · Mangalagiri",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Capital Region Motors",
+            "slug": "capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh",
+            "initials": "CR",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Wagon R LXi",
+          "year": 2016,
+          "priceLabel": "₹2,75,000",
+          "metaLabel": "1,29,500 km · Petrol · Manual · Katpadi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Sri Balaji Cars",
+            "slug": "sri-balaji-cars-and-credits-katpadi-vellore-tamil-nadu",
+            "initials": "SB",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-baleno-sigma-aluva-843d8f1c",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Baleno Sigma",
+          "year": 2016,
+          "priceLabel": "₹3,15,000",
+          "metaLabel": "1,25,800 km · Petrol · Manual · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Aluva Junction Autos",
+            "slug": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "initials": "AJ",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2018-maruti-suzuki-swift-zxi-koyilandy-7202a9c1",
+          "availability": "AVAILABLE",
+          "title": "2018 Maruti Suzuki Swift ZXi+",
+          "year": 2018,
+          "priceLabel": "₹3,30,000",
+          "metaLabel": "48,400 km · Petrol · Automatic · Koyilandy",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Koyilandy Car Point",
+            "slug": "koyilandy-car-point-pvt-ltd-koyilandy-kozhikode-kerala",
+            "initials": "KC",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-maruti-suzuki-brezza-zxi-belagavi-19c4f182",
+          "availability": "AVAILABLE",
+          "title": "2023 Maruti Suzuki Brezza ZXi",
+          "year": 2023,
+          "priceLabel": "₹7,60,000",
+          "metaLabel": "33,800 km · Petrol · Manual · Belagavi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Tilakwadi Motors",
+            "slug": "tilakwadi-motors-llp-belagavi-karnataka",
+            "initials": "TM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 36,
+        "totalPages": 1
+      },
+      "available": 34,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 417
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 34
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 29
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 12
+          },
+          {
+            "value": "renault",
+            "label": "Renault",
+            "count": 10
+          }
+        ],
+        "models": [
+          {
+            "value": "brezza",
+            "label": "Brezza",
+            "count": 8,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "ertiga",
+            "label": "Ertiga",
+            "count": 7,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "swift",
+            "label": "Swift",
+            "count": 6,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "baleno",
+            "label": "Baleno",
+            "count": 5,
+            "parent": "maruti-suzuki"
+          },
+          {
+            "value": "wagon-r",
+            "label": "Wagon R",
+            "count": 5,
+            "parent": "maruti-suzuki"
+          }
+        ],
+        "fuelTypes": [
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 36
+          },
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 34
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 21
+          },
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 13
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 16
+          },
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 8
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 7
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 3
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 1
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 7
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 3
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 5
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 5
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 14
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 5
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 8
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 7
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 1
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 4
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 5
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 4
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 1
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 17
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 17
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 0
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 0
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 0
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 0
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 6
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 10
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 9
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 9
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?fuel=diesel&limit=1",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2020-kia-sonet-htx-belagavi-1874b479",
+          "availability": "AVAILABLE",
+          "title": "2020 Kia Sonet HTX",
+          "year": 2020,
+          "priceLabel": "₹6,75,000",
+          "metaLabel": "79,900 km · Diesel · Automatic · Belagavi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Camp Road Car Company",
+            "slug": "camp-road-car-company-pvt-ltd-belagavi-karnataka",
+            "initials": "CR",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 1,
+        "total": 65,
+        "totalPages": 65
+      },
+      "available": 62,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "mahindra",
+            "label": "Mahindra",
+            "count": 15
+          },
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 12
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 10
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 10
+          },
+          {
+            "value": "kia",
+            "label": "Kia",
+            "count": 9
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 31
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 31
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 34
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 14
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 6
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 4
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 4
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 3
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 13
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 8
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 7
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 7
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 29
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 14
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 11
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 8
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 10
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 11
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 12
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 8
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 6
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 1
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 32
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 19
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 8
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 2
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 6
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 19
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 19
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 18
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?limit=1",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 1,
+        "total": 726,
+        "totalPages": 726
+      },
+      "available": 665,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 539
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 512
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 459
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 522
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 463
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 482
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-543a3570",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 522802c54ecb",
+            "slug": "prioa-motors-522802c54ecb-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g922643-vellore-cf1ad2fb",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G922643",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G922643, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden9Other Motors 2264363f8914",
+            "slug": "golden9other-motors-2264363f8914-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g822642-vellore-e8a67133",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G822642",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G822642, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden8 Motors 226426931992",
+            "slug": "golden8-motors-226426931992-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g622641-vellore-9dc266e7",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G622641",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G622641, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden6 Motors 226413a2a2d6",
+            "slug": "golden6-motors-226413a2a2d6-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 24,
+        "total": 726,
+        "totalPages": 31
+      },
+      "available": 665,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 539
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 512
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 459
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 522
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 463
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 482
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?district=vellore&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-543a3570",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 522802c54ecb",
+            "slug": "prioa-motors-522802c54ecb-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g922643-vellore-cf1ad2fb",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G922643",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G922643, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden9Other Motors 2264363f8914",
+            "slug": "golden9other-motors-2264363f8914-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g822642-vellore-e8a67133",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G822642",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G822642, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden8 Motors 226426931992",
+            "slug": "golden8-motors-226426931992-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g622641-vellore-9dc266e7",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G622641",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G622641, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden6 Motors 226413a2a2d6",
+            "slug": "golden6-motors-226413a2a2d6-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 490,
+        "totalPages": 11
+      },
+      "available": 441,
+      "facets": {
+        "cities": [
+          {
+            "value": "vellore",
+            "label": "Vellore",
+            "count": 418
+          },
+          {
+            "value": "katpadi",
+            "label": "Katpadi",
+            "count": 10
+          },
+          {
+            "value": "gudiyatham",
+            "label": "Gudiyatham",
+            "count": 7
+          },
+          {
+            "value": "bagayam",
+            "label": "Bagayam",
+            "count": 6
+          }
+        ],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 393
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 23
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 9
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 6
+          },
+          {
+            "value": "mahindra",
+            "label": "Mahindra",
+            "count": 3
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 420
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 9
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 8
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 2
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 2
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 422
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 19
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 421
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 10
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 7
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 2
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 1
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 6
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 410
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 6
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 3
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 3
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 423
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 5
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 4
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 9
+          }
+        ],
+        "dealers": [
+          {
+            "value": "enqmain-motors-5155022b0ae7-vellore-tamil-nadu",
+            "label": "EnqMain Motors 5155022b0ae7",
+            "count": 17
+          },
+          {
+            "value": "enqmain-motors-706576ecb711-vellore-tamil-nadu",
+            "label": "EnqMain Motors 706576ecb711",
+            "count": 17
+          },
+          {
+            "value": "enqmain-motors-8214180da7ec-vellore-tamil-nadu",
+            "label": "EnqMain Motors 8214180da7ec",
+            "count": 17
+          },
+          {
+            "value": "lista-motors-1484856cc21e-vellore-tamil-nadu",
+            "label": "ListA Motors 1484856cc21e",
+            "count": 8
+          },
+          {
+            "value": "lista-motors-1862113d84c4-vellore-tamil-nadu",
+            "label": "ListA Motors 1862113d84c4",
+            "count": 8
+          }
+        ],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 5
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 415
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 3
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 6
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 4
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 8
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 11
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 418
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 4
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 0
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 4
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 416
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 12
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 7
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?district=ernakulam&limit=48",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2016-maruti-suzuki-baleno-sigma-aluva-843d8f1c",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Baleno Sigma",
+          "year": 2016,
+          "priceLabel": "₹3,15,000",
+          "metaLabel": "1,25,800 km · Petrol · Manual · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Aluva Junction Autos",
+            "slug": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "initials": "AJ",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2019-maruti-suzuki-brezza-lxi-aluva-abc93cc5",
+          "availability": "AVAILABLE",
+          "title": "2019 Maruti Suzuki Brezza LXi",
+          "year": 2019,
+          "priceLabel": "₹7,20,000",
+          "metaLabel": "89,600 km · CNG · Manual · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Aluva Junction Autos",
+            "slug": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "initials": "AJ",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2018-maruti-suzuki-ertiga-lxi-perumbavoor-ff86839d",
+          "availability": "AVAILABLE",
+          "title": "2018 Maruti Suzuki Ertiga LXi",
+          "year": 2018,
+          "priceLabel": "₹5,90,000",
+          "metaLabel": "62,500 km · Petrol · Manual · Perumbavoor",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Rayonpuram Motors",
+            "slug": "rayonpuram-motors-enterprises-perumbavoor-ernakulam-kerala",
+            "initials": "RM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2018-hyundai-creta-s-perumbavoor-b4554dd2",
+          "availability": "AVAILABLE",
+          "title": "2018 Hyundai Creta S",
+          "year": 2018,
+          "priceLabel": "₹6,45,000",
+          "metaLabel": "77,800 km · Diesel · Automatic · Perumbavoor",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Perumbavoor Auto Traders",
+            "slug": "perumbavoor-auto-traders-llp-perumbavoor-ernakulam-kerala",
+            "initials": "PA",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2022-kia-seltos-hte-aluva-617082c5",
+          "availability": "AVAILABLE",
+          "title": "2022 Kia Seltos HTE",
+          "year": 2022,
+          "priceLabel": "₹8,85,000",
+          "metaLabel": "29,300 km · Petrol · Automatic · Aluva",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Periyar Motors",
+            "slug": "periyar-motors-enterprises-aluva-ernakulam-kerala",
+            "initials": "PM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 48,
+        "total": 16,
+        "totalPages": 1
+      },
+      "available": 16,
+      "facets": {
+        "cities": [
+          {
+            "value": "kochi",
+            "label": "Kochi",
+            "count": 6
+          },
+          {
+            "value": "aluva",
+            "label": "Aluva",
+            "count": 4
+          },
+          {
+            "value": "perumbavoor",
+            "label": "Perumbavoor",
+            "count": 4
+          },
+          {
+            "value": "muvattupuzha",
+            "label": "Muvattupuzha",
+            "count": 2
+          }
+        ],
+        "brands": [
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 6
+          },
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 2
+          },
+          {
+            "value": "mahindra",
+            "label": "Mahindra",
+            "count": 2
+          },
+          {
+            "value": "skoda",
+            "label": "Skoda",
+            "count": 2
+          },
+          {
+            "value": "kia",
+            "label": "Kia",
+            "count": 1
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 9
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 3
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 2
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 1
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 1
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 11
+          },
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 5
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 10
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 2
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 2
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 1
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 1
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 1
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 2
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 0
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 2
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 2
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 6
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 7
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 2
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 1
+          }
+        ],
+        "dealers": [
+          {
+            "value": "aluva-junction-autos-llp-aluva-ernakulam-kerala",
+            "label": "Aluva Junction Autos",
+            "count": 2
+          },
+          {
+            "value": "kaloor-car-company-llp-kochi-ernakulam-kerala",
+            "label": "Kaloor Car Company",
+            "count": 2
+          },
+          {
+            "value": "periyar-motors-enterprises-aluva-ernakulam-kerala",
+            "label": "Periyar Motors",
+            "count": 2
+          },
+          {
+            "value": "perumbavoor-auto-traders-llp-perumbavoor-ernakulam-kerala",
+            "label": "Perumbavoor Auto Traders",
+            "count": 2
+          },
+          {
+            "value": "rayonpuram-motors-enterprises-perumbavoor-ernakulam-kerala",
+            "label": "Rayonpuram Motors",
+            "count": 2
+          }
+        ],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 3
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 1
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 4
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 1
+          },
+          {
+            "value": "2019",
+            "label": "2019",
+            "count": 2
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 2
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 9
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 3
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 2
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 0
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 1
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 5
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 2
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 7
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "returned": 48,
+    "outOfDistrict": []
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-5f063546",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 04 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "PubVis Motors 525550e10d86",
+        "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+        "initials": "PM",
+        "isVerified": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-afedf89f",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-afedf89f",
+      "availability": "RESERVED",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 04 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "PubVis Motors 525550e10d86",
+        "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+        "initials": "PM",
+        "isVerified": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "inSearch": true
+  },
+  {
+    "soldSlug": "2023-hyundai-creta-sx-o-vellore-0af40519",
+    "inSearch": false
+  },
+  {
+    "withdrawnSlug": "2023-hyundai-creta-sx-o-vellore-3e09e248",
+    "inSearch": false
+  },
+  {
+    "status": "PENDING_REVIEW",
+    "slug": null,
+    "inSearch": false,
+    "vdp": 404
+  },
+  {
+    "draftListing": {
+      "id": "fb30fb1d-727c-4adc-9b72-b9e6c4a87592",
+      "slug": null,
+      "status": "DRAFT"
+    },
+    "rejected": {
+      "slug": null,
+      "status": "REJECTED"
+    },
+    "rejInSearch": false
+  },
+  {
+    "req": "GET /v1/vehicles/no-such-vehicle-slug-xyz",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "bYFNwUaYL5",
+      "detail": "That car is not on Dealers-Drive."
+    }
+  },
+  {
+    "soldVdp": 404
+  },
+  {
+    "req": "GET /v1/dealers?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "abuseremove-motors-7348256d107f-vellore-tamil-nadu",
+          "brandName": "AbuseRemove Motors 7348256d107f",
+          "initials": "AM",
+          "city": "Vellore",
+          "state": "Tamil Nadu",
+          "yearsOperating": 1,
+          "yearsLabel": "Vellore, Tamil Nadu · 1 year",
+          "tagline": "Quality used cars from AbuseRemove",
+          "services": [
+            "SUVs",
+            "Sedans"
+          ],
+          "carCount": 0,
+          "fromPricePaise": null,
+          "fromPriceLabel": "—",
+          "isVerified": true,
+          "logoUrl": null,
+          "coverUrl": "<redacted>"
+        },
+        {
+          "slug": "abuseremove-motors-7615367d0ae7-vellore-tamil-nadu",
+          "brandName": "AbuseRemove Motors 7615367d0ae7",
+          "initials": "AM",
+          "city": "Vellore",
+          "state": "Tamil Nadu",
+          "yearsOperating": 1,
+          "yearsLabel": "Vellore, Tamil Nadu · 1 year",
+          "tagline": "Quality used cars from AbuseRemove",
+          "services": [
+            "SUVs",
+            "Sedans"
+          ],
+          "carCount": 0,
+          "fromPricePaise": null,
+          "fromPriceLabel": "—",
+          "isVerified": true,
+          "logoUrl": null,
+          "coverUrl": "<redacted>"
+        },
+        {
+          "slug": "abuseremove-motors-819589dd6ece-vellore-tamil-nadu",
+          "brandName": "AbuseRemove Motors 819589dd6ece",
+          "initials": "AM",
+          "city": "Vellore",
+          "state": "Tamil Nadu",
+          "yearsOperating": 1,
+          "yearsLabel": "Vellore, Tamil Nadu · 1 year",
+          "tagline": "Quality used cars from AbuseRemove",
+          "services": [
+            "SUVs",
+            "Sedans"
+          ],
+          "carCount": 0,
+          "fromPricePaise": null,
+          "fromPriceLabel": "—",
+          "isVerified": true,
+          "logoUrl": null,
+          "coverUrl": "<redacted>"
+        },
+        {
+          "slug": "abuseremove-motors-82525807fd04-vellore-tamil-nadu",
+          "brandName": "AbuseRemove Motors 82525807fd04",
+          "initials": "AM",
+          "city": "Vellore",
+          "state": "Tamil Nadu",
+          "yearsOperating": 1,
+          "yearsLabel": "Vellore, Tamil Nadu · 1 year",
+          "tagline": "Quality used cars from AbuseRemove",
+          "services": [
+            "SUVs",
+            "Sedans"
+          ],
+          "carCount": 0,
+          "fromPricePaise": null,
+          "fromPriceLabel": "—",
+          "isVerified": true,
+          "logoUrl": null,
+          "coverUrl": "<redacted>"
+        },
+        {
+          "slug": "abuseremove-motors-876685a5358f-vellore-tamil-nadu",
+          "brandName": "AbuseRemove Motors 876685a5358f",
+          "initials": "AM",
+          "city": "Vellore",
+          "state": "Tamil Nadu",
+          "yearsOperating": 1,
+          "yearsLabel": "Vellore, Tamil Nadu · 1 year",
+          "tagline": "Quality used cars from AbuseRemove",
+          "services": [
+            "SUVs",
+            "Sedans"
+          ],
+          "carCount": 0,
+          "fromPricePaise": null,
+          "fromPriceLabel": "—",
+          "isVerified": true,
+          "logoUrl": null,
+          "coverUrl": "<redacted>"
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 5,
+        "total": 570,
+        "totalPages": 114
+      },
+      "countLabel": "570 verified dealerships",
+      "cities": [
+        {
+          "slug": "vellore",
+          "name": "Vellore",
+          "count": 454
+        },
+        {
+          "slug": "bengaluru",
+          "name": "Bengaluru",
+          "count": 4
+        },
+        {
+          "slug": "kochi",
+          "name": "Kochi",
+          "count": 4
+        },
+        {
+          "slug": "visakhapatnam",
+          "name": "Visakhapatnam",
+          "count": 4
+        },
+        {
+          "slug": "adoni",
+          "name": "Adoni",
+          "count": 3
+        }
+      ],
+      "districts": [
+        {
+          "slug": "vellore",
+          "name": "Vellore",
+          "count": 461,
+          "state": "Tamil Nadu"
+        },
+        {
+          "slug": "bengaluru-urban",
+          "name": "Bengaluru Urban",
+          "count": 11,
+          "state": "Karnataka"
+        },
+        {
+          "slug": "ernakulam",
+          "name": "Ernakulam",
+          "count": 11,
+          "state": "Kerala"
+        },
+        {
+          "slug": "guntur",
+          "name": "Guntur",
+          "count": 11,
+          "state": "Andhra Pradesh"
+        },
+        {
+          "slug": "mysuru",
+          "name": "Mysuru",
+          "count": 11,
+          "state": "Karnataka"
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealers/pubvis-motors-525550e10d86-vellore-tamil-nadu",
+    "status": 200,
+    "body": {
+      "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+      "brandName": "PubVis Motors 525550e10d86",
+      "legalName": "PubVis Motors 525550e10d86",
+      "initials": "PM",
+      "isVerified": true,
+      "tagline": "Quality used cars from PubVis",
+      "services": [
+        "SUVs",
+        "Sedans"
+      ],
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "full": "12 Main Road, Vellore 632001, Tamil Nadu",
+        "mapsUrl": "<redacted>",
+        "geo": null,
+        "embedUrl": null
+      },
+      "stats": [
+        {
+          "key": "cars",
+          "label": "Cars available",
+          "value": "1"
+        },
+        {
+          "key": "years",
+          "label": "Years operating",
+          "value": "1"
+        },
+        {
+          "key": "location",
+          "label": "Location",
+          "value": "Vellore"
+        },
+        {
+          "key": "response",
+          "label": "Response time",
+          "value": "New dealer"
+        }
+      ],
+      "contact": [
+        {
+          "key": "city",
+          "label": "City",
+          "value": "Vellore, Tamil Nadu"
+        },
+        {
+          "key": "gstin",
+          "label": "GSTIN",
+          "value": "33VFHCT9611G1Z7",
+          "mono": true
+        }
+      ],
+      "logoUrl": null,
+      "coverUrl": "<redacted>",
+      "seo": {
+        "canonical": "http://localhost:3000/dealers/pubvis-motors-525550e10d86-vellore-tamil-nadu",
+        "isIndexable": true,
+        "title": "PubVis Motors 525550e10d86 — Used Car Dealer in Vellore | Dealers-Drive"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealers/pubvis-motors-525550e10d86-vellore-tamil-nadu",
+    "status": 200,
+    "body": {
+      "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+      "brandName": "PubVis Motors 525550e10d86",
+      "legalName": "PubVis Motors 525550e10d86",
+      "initials": "PM",
+      "isVerified": true,
+      "tagline": "Quality used cars from PubVis",
+      "services": [
+        "SUVs",
+        "Sedans"
+      ],
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "full": "12 Main Road, Vellore 632001, Tamil Nadu",
+        "mapsUrl": "<redacted>",
+        "geo": null,
+        "embedUrl": null
+      },
+      "stats": [
+        {
+          "key": "cars",
+          "label": "Cars available",
+          "value": "1"
+        },
+        {
+          "key": "years",
+          "label": "Years operating",
+          "value": "1"
+        },
+        {
+          "key": "location",
+          "label": "Location",
+          "value": "Vellore"
+        },
+        {
+          "key": "response",
+          "label": "Response time",
+          "value": "New dealer"
+        }
+      ],
+      "contact": [
+        {
+          "key": "city",
+          "label": "City",
+          "value": "Vellore, Tamil Nadu"
+        },
+        {
+          "key": "gstin",
+          "label": "GSTIN",
+          "value": "33VFHCT9611G1Z7",
+          "mono": true
+        }
+      ],
+      "logoUrl": null,
+      "coverUrl": "<redacted>",
+      "seo": {
+        "canonical": "http://localhost:3000/dealers/pubvis-motors-525550e10d86-vellore-tamil-nadu",
+        "isIndexable": true,
+        "title": "PubVis Motors 525550e10d86 — Used Car Dealer in Vellore | Dealers-Drive"
+      }
+    }
+  },
+  {
+    "availableInDb": 1,
+    "vehiclesEndpointTotal": 2
+  },
+  {
+    "req": "GET /v1/vehicles?limit=10&page=1",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f063546",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 525550e10d86",
+            "slug": "pubvis-motors-525550e10d86-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-543a3570",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 522802c54ecb",
+            "slug": "prioa-motors-522802c54ecb-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g922643-vellore-cf1ad2fb",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G922643",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G922643, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden9Other Motors 2264363f8914",
+            "slug": "golden9other-motors-2264363f8914-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g822642-vellore-e8a67133",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G822642",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G822642, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden8 Motors 226426931992",
+            "slug": "golden8-motors-226426931992-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-tata-nexon-xz-g622641-vellore-9dc266e7",
+          "availability": "AVAILABLE",
+          "title": "2023 Tata Nexon XZ G622641",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Tata Nexon XZ G622641, the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Golden6 Motors 226413a2a2d6",
+            "slug": "golden6-motors-226413a2a2d6-vellore-tamil-nadu",
+            "initials": "GM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 10,
+        "total": 726,
+        "totalPages": 73
+      },
+      "available": 665,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 539
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 512
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 459
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 522
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 463
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 482
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?limit=10&page=2",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-7177165f",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "UxMotors Motors 87188ef089e",
+            "slug": "uxmotors-motors-87188ef089e-vellore-tamil-nadu",
+            "initials": "UM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-85cb54f6",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "SeoMotors Motors 21671b48c2f",
+            "slug": "seomotors-motors-21671b48c2f-vellore-tamil-nadu",
+            "initials": "SM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-e7126cea",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Obs7 Motors 55427024f",
+            "slug": "obs7-motors-55427024f-vellore-tamil-nadu",
+            "initials": "OM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-b93c40ec",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Rec12 Motors 53504dd9d",
+            "slug": "rec12-motors-53504dd9d-vellore-tamil-nadu",
+            "initials": "RM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-72a6728b",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "Rec3 Motors 514a9acc7",
+            "slug": "rec3-motors-514a9acc7-vellore-tamil-nadu",
+            "initials": "RM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 2,
+        "limit": 10,
+        "total": 726,
+        "totalPages": 73
+      },
+      "available": 665,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 432
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 47
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 541
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 539
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 512
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 459
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 522
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 455
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 463
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 482
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "overlap": []
+  },
+  {
+    "req": "GET /v1/vehicles?minPrice=9999999999999999999",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "TI7T29lt8l",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.minPrice",
+          "code": "TOO_BIG",
+          "message": "Too big: expected int to be <=9007199254740991"
+        },
+        {
+          "field": "query.minPrice",
+          "code": "TOO_BIG",
+          "message": "Too big: expected number to be <=100000000000"
+        }
+      ]
+    }
+  },
+  {
+    "dealerPhoneInPublic": false,
+    "gstinExposed": false
+  },
+  {
+    "queriesSwept": 6,
+    "leaks": []
+  },
+  {
+    "req": "GET /v1/vehicles?status=SOLD&limit=5",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "mZSwTM9f2r",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?dealerStatus=SUSPENDED&limit=5",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "a_7C7atEzA",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.dealerStatus",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerStatus` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "portfolioHasSold": false,
+    "portfolioHasWithdrawn": false
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "vitest",
+    "run",
+    "--project",
+    "integration",
+    "tests/public-media-visibility.test.ts",
+    "tests/vehicle-images.test.ts",
+    "tests/public-vehicle-page.test.ts",
+    "tests/dealer-listing-lifecycle.test.ts",
+    "tests/saved-vehicles.test.ts",
+    "tests/dealer-enquiries.test.ts",
+    "tests/enquiries.test.ts"
+  ],
+  "sha": "62b14915dec43118994b11f88f8a00191d2e55d8",
+  "start_utc": "2026-10-04T05:51:18.804282+00:00",
+  "end_utc": "2026-10-04T05:51:40.192130+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug004-expanded-target.log",
+  "cache": "TURBO_FORCE=true"
+}

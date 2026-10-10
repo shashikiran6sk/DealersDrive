@@ -1,0 +1,170 @@
+[
+  {
+    "width": 320,
+    "path": "/admin",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/dealers",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/listings",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/enquiries",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/support",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/config",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "path": "/admin/profile/security",
+    "scroll": 320,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/dealers",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/listings",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/enquiries",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/support",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/config",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/admin/profile/security",
+    "scroll": 390,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/dealers",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/listings",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/enquiries",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/support",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/config",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "path": "/admin/profile/security",
+    "scroll": 768,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/dealers",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/listings",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/enquiries",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/support",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/config",
+    "scroll": 1280,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "path": "/admin/profile/security",
+    "scroll": 1280,
+    "overflow": false
+  }
+]

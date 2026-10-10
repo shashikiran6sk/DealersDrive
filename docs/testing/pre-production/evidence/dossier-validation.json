@@ -1,0 +1,24 @@
+{
+  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "expected": 556,
+  "accounted": 556,
+  "counts": {
+    "PASS": 244,
+    "FAIL": 7,
+    "BLOCKED": 305,
+    "NOT_APPLICABLE": 0
+  },
+  "missing": 0,
+  "duplicates": 0,
+  "unclassified": 0,
+  "source_verbatim_validated": true,
+  "evidence_references_checked": 329,
+  "bugs": 9,
+  "open_p1": 3,
+  "human_tickets": 556,
+  "human_priority_journeys": 15,
+  "human_results": "PENDING",
+  "required_documents": 24,
+  "tracked_application_diff": [],
+  "decision": "NO GO"
+}

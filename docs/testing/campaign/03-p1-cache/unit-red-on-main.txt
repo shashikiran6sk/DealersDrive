@@ -1,0 +1,99 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/web
+
+ ❯ tests/unit/features/admin/actions.test.ts (9 tests | 6 failed) 32ms
+   ❯ a decision that changes public visibility (9)
+     × clears the suspended dealership from the directory, its own page and its car pages 14ms
+     × suspend clears every cached car page 3ms
+     × reinstate clears every cached car page 2ms
+     × approve clears every cached car page 1ms
+     × puts an approved dealership in front of buyers at once 1ms
+     × still clears the directory when no slug was passed 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > clears the suspended dealership from the directory, its own page and its car pages
+AssertionError: expected [ 'dealers', …(1) ] to deeply equal [ 'dealers', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "dealers",
+    "dealer:sri-lakshmi-motors-vellore-tamil-nadu",
+-   "vehicles",
+  ]
+
+ ❯ tests/unit/features/admin/actions.test.ts:56:32
+     54|
+     55|     expect(result.ok).toBe(true);
+     56|     expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`, '…
+       |                                ^
+     57|     expect(revalidations.paths).toContain('/admin');
+     58|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > suspend clears every cached car page
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > reinstate clears every cached car page
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > approve clears every cached car page
+AssertionError: expected [ 'dealers', …(1) ] to include 'vehicles'
+ ❯ tests/unit/features/admin/actions.test.ts:75:32
+     73|
+     74|     expect(result.ok).toBe(true);
+     75|     expect(revalidations.tags).toContain('vehicles');
+       |                                ^
+     76|   });
+     77|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > puts an approved dealership in front of buyers at once
+AssertionError: expected [ 'dealers', …(1) ] to deeply equal [ 'dealers', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "dealers",
+    "dealer:sri-lakshmi-motors-vellore-tamil-nadu",
+-   "vehicles",
+  ]
+
+ ❯ tests/unit/features/admin/actions.test.ts:81:32
+     79|     await approveDealerAction(DEALER, {}, SLUG);
+     80|
+     81|     expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`, '…
+       |                                ^
+     82|   });
+     83|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/unit/features/admin/actions.test.ts > a decision that changes public visibility > still clears the directory when no slug was passed
+AssertionError: expected [ 'dealers' ] to deeply equal [ 'dealers', 'vehicles' ]
+
+- Expected
++ Received
+
+  [
+    "dealers",
+-   "vehicles",
+  ]
+
+ ❯ tests/unit/features/admin/actions.test.ts:115:32
+    113|     await approveDealerAction(DEALER, {});
+    114|
+    115|     expect(revalidations.tags).toEqual(['dealers', 'vehicles']);
+       |                                ^
+    116|   });
+    117|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 3 passed (9)
+   Start at  16:35:26
+   Duration  1.67s (environment 45%, transform 35%, setup 10%, import 8%, tests 2%)
+

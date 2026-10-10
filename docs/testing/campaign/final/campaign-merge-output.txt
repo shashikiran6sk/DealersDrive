@@ -1,0 +1,40 @@
+{
+ "canonical": 556,
+ "covered": 556,
+ "totals": {
+  "PASS": 545,
+  "FAIL": 0,
+  "BLOCKED": 10,
+  "NOT_APPLICABLE": 1
+ },
+ "reRunNow": 556
+}
+TRANSITIONS
+DEALER-LIFE-017: NOT_APPLICABLE → PASS (#249 (Close application; was NOT_APPLICABLE))
+BROWSER-009: FAIL → PASS (#248 (Admin dealer detail mobile overflow))
+NON-CANONICAL
+ADMIN-ENQ-002to008 PASS
+SEC-DISC-001a PASS
+SEC-DISC-001b PASS
+SEC-DISC-001c PASS
+LIFE-DISC-001a PASS
+LIFE-DISC-001b PASS
+LIFE-DISC-002a PASS
+LIFE-DISC-002b PASS
+LIFE-DISC-002c PASS
+API-DISC-001 PASS
+API-DISC-002 PASS
+API-DISC-003 PASS
+API-DISC-004 PASS
+CAMPAIGN-01 ORIG-BUG-001 forged stand-in links behind an S3 driver PASS
+CAMPAIGN-02 ORIG-BUG-004 verified KYC locked for an ACTIVE dealer PASS
+CAMPAIGN-03 BUG-NEW-010 warmed car page after Admin suspension (console) PASS
+CAMPAIGN-05 ORIG-BUG-005 + BUG-NEW-009 yard photo locked and hidden while suspended PASS
+CAMPAIGN-07 BUG-NEW-007 dealer inventory over tied timestamps PASS
+CAMPAIGN-09 ORIG-GAP-CLOSE close keeps the record and shuts the members out PASS
+ORIG-DISC-PROFILE-001 second profile edit PASS
+ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships PASS
+BUG-NEW-006 onboarding account overflow on mobile PASS
+BUG-NEW-008 local private PDF served as image/jpeg PASS
+BUG-NEW-010 warmed car page survives dealer suspension PASS
+BUG-NEW-011 media width contract vs documentation PASS

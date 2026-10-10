@@ -1,0 +1,15 @@
+{
+  "files_scanned": 110,
+  "patterns": [
+    "raw_local_otp_proof",
+    "raw_cookie_value",
+    "raw_bearer",
+    "credential_url",
+    "jwt_value",
+    "private_signed_url",
+    "embedded_browser_state"
+  ],
+  "matches": [],
+  "scope": "Regex check for common credential/proof leaks in the certification bundle only; not a whole-repo secret certification",
+  "synthetic_identities": "Evidence screenshots use fictional accounts and non-sensitive fixture images."
+}

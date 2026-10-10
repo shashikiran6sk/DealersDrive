@@ -1,0 +1,9 @@
+{
+  "command": ["node", "docs/testing/fixes/BUG-008/browser-regression.mjs", "baseline"],
+  "sha": "c9dfc4d0f47c015059e10915029051f282fe499d",
+  "start_utc": "2026-10-04T10:50:44.804999+00:00",
+  "end_utc": "2026-10-04T10:50:48.769646+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug008-browser-baseline.log",
+  "cache": "TURBO_FORCE=true"
+}

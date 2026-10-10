@@ -1,0 +1,576 @@
+{
+  "phase": "after",
+  "base": "http://localhost:3000",
+  "checks": [
+    {
+      "name": "Bottom CTA reaches message at 320x640",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3554,
+          "scrollHeight": 4194
+        },
+        "scrollY": 612,
+        "top": 275.59375,
+        "bottom": 363.59375,
+        "headerBottom": 65,
+        "height": 640,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 320x640",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 360x740",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3419,
+          "scrollHeight": 4159
+        },
+        "scrollY": 562,
+        "top": 325.703125,
+        "bottom": 413.703125,
+        "headerBottom": 65,
+        "height": 740,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 360x740",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 375x812",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3395,
+          "scrollHeight": 4207
+        },
+        "scrollY": 537,
+        "top": 361.953125,
+        "bottom": 449.953125,
+        "headerBottom": 65,
+        "height": 812,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 375x812",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 390x844",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3412,
+          "scrollHeight": 4256
+        },
+        "scrollY": 532,
+        "top": 378.203125,
+        "bottom": 466.203125,
+        "headerBottom": 65,
+        "height": 844,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 390x844",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 430x932",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3436,
+          "scrollHeight": 4368
+        },
+        "scrollY": 518,
+        "top": 422.203125,
+        "bottom": 510.203125,
+        "headerBottom": 65,
+        "height": 932,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 430x932",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 440x900",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3500,
+          "scrollHeight": 4400
+        },
+        "scrollY": 542,
+        "top": 405.703125,
+        "bottom": 493.703125,
+        "headerBottom": 65,
+        "height": 900,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 440x900",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 390x360",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3896,
+          "scrollHeight": 4256
+        },
+        "scrollY": 774,
+        "top": 136.203125,
+        "bottom": 224.203125,
+        "headerBottom": 65,
+        "height": 360,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 390x360",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 568x320",
+      "pass": true,
+      "detail": {
+        "before": {
+          "scrollY": 3062,
+          "scrollHeight": 3382
+        },
+        "scrollY": 928,
+        "top": 115.703125,
+        "bottom": 203.703125,
+        "headerBottom": 65,
+        "height": 320,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 568x320",
+      "pass": true
+    },
+    {
+      "name": "Return from login reaches message at short height",
+      "pass": true,
+      "detail": {
+        "top": 136.203125,
+        "bottom": 224.203125,
+        "headerBottom": 65,
+        "height": 360
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 320",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 289,
+          "top": 240.046875,
+          "width": 273
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 305,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 360",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 329,
+          "top": 240.046875,
+          "width": 313
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 345,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 375",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 344,
+          "top": 240.046875,
+          "width": 328
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 360,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 390",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 359,
+          "top": 240.046875,
+          "width": 343
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 375,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 430",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 399,
+          "top": 240.046875,
+          "width": 383
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 198.234375,
+        "gridWidth": 415,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 440",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 16,
+          "right": 409,
+          "top": 240.046875,
+          "width": 393
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 198.234375,
+        "gridWidth": 425,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 768",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 729,
+          "top": 253.625,
+          "width": 609
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 753,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1024",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 985,
+          "top": 253.625,
+          "width": 865
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1009,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1280",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 1241,
+          "top": 253.625,
+          "width": 1121
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1265,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1440",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 192.5,
+          "right": 1328.5,
+          "top": 253.625,
+          "width": 1136
+        },
+        "logo": {
+          "left": 96.5,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1280,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 320",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 289,
+          "top": 257.921875,
+          "width": 273
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 251.921875,
+        "gridWidth": 305,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 360",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 329,
+          "top": 240.046875,
+          "width": 313
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 345,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 375",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 344,
+          "top": 240.046875,
+          "width": 328
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 360,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 390",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 359,
+          "top": 240.046875,
+          "width": 343
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 375,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 430",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 399,
+          "top": 240.046875,
+          "width": 383
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 415,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 440",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 16,
+          "right": 409,
+          "top": 240.046875,
+          "width": 393
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 425,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 768",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 120,
+          "right": 729,
+          "top": 253.625,
+          "width": 609
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 753,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 1024",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 120,
+          "right": 985,
+          "top": 253.625,
+          "width": 865
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1009,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 1280",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 120,
+          "right": 1241,
+          "top": 253.625,
+          "width": 1121
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1265,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh 1440",
+      "pass": true,
+      "detail": {
+        "name": "Capital Region Motors",
+        "address": {
+          "left": 192.5,
+          "right": 1328.5,
+          "top": 253.625,
+          "width": 1136
+        },
+        "logo": {
+          "left": 96.5,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1280,
+        "overflow": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+
+> dealers-drive@0.0.0 typecheck <repo>
+> turbo run typecheck
+
+
+   • turbo 2.11.7
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running typecheck in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/config:typecheck: cache miss, executing 4f5b8ca57eeb704d
+@dealers-drive/contracts:typecheck: cache miss, executing fb2fba00fc2732a1
+@dealers-drive/contracts:build: cache hit, replaying logs b816430abba1f93f
+@dealers-drive/contracts:build:
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <repo>/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build:
+@dealers-drive/web:typecheck: cache miss, executing 6c19db37a3e00481
+@dealers-drive/api:typecheck: cache miss, executing faf180e9e631896d
+@dealers-drive/sandbox:typecheck: cache miss, executing 67f9414f50b91598
+@dealers-drive/api:typecheck:
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck <repo>/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck:
+@dealers-drive/config:typecheck:
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck <repo>/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck:
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/web:typecheck:
+@dealers-drive/web:typecheck: > @dealers-drive/web@0.0.0 typecheck <repo>/apps/web
+@dealers-drive/web:typecheck: > tsc --noEmit
+@dealers-drive/web:typecheck:
+@dealers-drive/contracts:typecheck:
+@dealers-drive/contracts:typecheck: > @dealers-drive/contracts@0.0.0 typecheck <repo>/packages/contracts
+@dealers-drive/contracts:typecheck: > tsc -p tsconfig.json
+@dealers-drive/contracts:typecheck:
+@dealers-drive/sandbox:typecheck:
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck <repo>/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck:
+
+ Tasks:    6 successful, 6 total
+Cached:    1 cached, 6 total
+  Time:    1.501s
+
+ WARNING  no output files found for task @dealers-drive/config#typecheck. Please check your `outputs` key in `turbo.json`

@@ -1,0 +1,595 @@
+{
+  "ADMIN-AUTH-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "valid admin (allow-listed, ADMIN seat) authenticates to admin APIs. Session minted directly — admin sign-in is Google-only (unreachable here).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-SESSION",
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:49.911Z"
+  },
+  "ADMIN-AUTH-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "unauthenticated → 401; admin UI is server-guarded (hidden nav is not the control)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.194Z"
+  },
+  "ADMIN-AUTH-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "OWNER cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.197Z"
+  },
+  "ADMIN-AUTH-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "MANAGER cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.200Z"
+  },
+  "ADMIN-AUTH-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "STAFF cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.203Z"
+  },
+  "ADMIN-AUTH-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "customer cannot call admin APIs (dealers 401, metrics 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.213Z"
+  },
+  "ADMIN-AUTH-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "admin write route refuses a dealer session → 401 (server-side, not nav hiding)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.218Z"
+  },
+  "ADMIN-AUTH-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "expired admin session → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.223Z"
+  },
+  "ADMIN-AUTH-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin logout invalidates admin access (→ 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.231Z"
+  },
+  "ADMIN-AUTH-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "admin bootstrap/grant guarded: dealer → 401, anonymous → 401; only an authorized admin can grant admin access",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.235Z"
+  },
+  "ADMIN-DEALER-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "authorized admin user-management (access list) works",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.242Z"
+  },
+  "ADMIN-DEALER-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin sees onboarding applications",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.391Z"
+  },
+  "ADMIN-DEALER-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin inspects verification data (documents)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.542Z"
+  },
+  "ADMIN-DEALER-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin approves an eligible dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.729Z"
+  },
+  "ADMIN-DEALER-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin rejects a dealer (purge)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:50.892Z"
+  },
+  "ADMIN-DEALER-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin suspends an active dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:51.078Z"
+  },
+  "ADMIN-DEALER-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin reinstates an eligible suspended dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:51.271Z"
+  },
+  "ADMIN-DEALER-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "suspension immediately hides listings (200→404) and blocks the console (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:51.782Z"
+  },
+  "ADMIN-DEALER-009": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "admin dealer actions audit-logged: dealer.approved, dealer.suspended, dealer.onboarding.created",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:51.988Z"
+  },
+  "ADMIN-DEALER-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "double suspend → still SUSPENDED (a 200, b 422); idempotent, no impossible state",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:52.198Z"
+  },
+  "ADMIN-LISTING-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin sees the moderation queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:52.207Z"
+  },
+  "ADMIN-LISTING-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin sees dealer/listing/media detail",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:52.447Z"
+  },
+  "ADMIN-LISTING-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin approves an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:52.795Z"
+  },
+  "ADMIN-LISTING-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin rejects an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:52.853Z"
+  },
+  "ADMIN-LISTING-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "approval reaches the public read model",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:53.204Z"
+  },
+  "ADMIN-LISTING-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "rejected listing remains non-public",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:53.265Z"
+  },
+  "ADMIN-LISTING-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "approve on a suspended dealer's listing: public VDP still 404 (dealer not ACTIVE gates visibility), approve returned 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:53.791Z"
+  },
+  "ADMIN-LISTING-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dealer suspension during review leaves the listing consistent (still PENDING_REVIEW, admin can view)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:54.028Z"
+  },
+  "ADMIN-LISTING-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "listing review state stays consistent across dealer verification changes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:54.258Z"
+  },
+  "ADMIN-LISTING-010": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "admin listing actions audit-logged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:54.648Z"
+  },
+  "DEALER-LIFE-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "ACTIVE verified dealer operates normally",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.696Z"
+  },
+  "DEALER-LIFE-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin suspends ACTIVE dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.707Z"
+  },
+  "DEALER-LIFE-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "suspended dealer immediately loses prohibited ops (create 401, dashboard 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.716Z"
+  },
+  "DEALER-LIFE-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "existing member session cannot bypass suspension → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.721Z"
+  },
+  "DEALER-LIFE-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "suspended dealer public profile policy: /v1/dealers/dealerlife-motors-5698595420aa-vellore-tamil-nadu → 404 (dealer not in public ACTIVE set → 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.725Z"
+  },
+  "DEALER-LIFE-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "ACTIVE listings of a suspended dealer are hidden publicly (404) but the row is preserved (status ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.731Z"
+  },
+  "DEALER-LIFE-007": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "RESERVED listing of a suspended dealer remains consistent (still RESERVED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.731Z"
+  },
+  "DEALER-LIFE-008": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "existing enquiries survive suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.732Z"
+  },
+  "DEALER-LIFE-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "customer enquiry history survives dealer suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.738Z"
+  },
+  "DEALER-LIFE-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "saved cars from a suspended dealer remain non-broken",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.744Z"
+  },
+  "DEALER-LIFE-011": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "members cannot bypass suspension through a valid membership → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.749Z"
+  },
+  "DEALER-LIFE-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "IDENTITY"
+    ],
+    "note": "members retain personal customer capabilities during employer suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.787Z"
+  },
+  "DEALER-LIFE-013": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "reinstatement restores intended dealer capabilities",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.808Z"
+  },
+  "DEALER-LIFE-014": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "reinstatement created no duplicates: listings 3, enquiries 1, members 3 (unchanged)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.809Z"
+  },
+  "DEALER-LIFE-015": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "hidden listings restore per lifecycle policy: ACTIVE visible again (200), RESERVED stays RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.814Z"
+  },
+  "DEALER-LIFE-016": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "suspension + reinstatement audit-logged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.819Z"
+  },
+  "DEALER-LIFE-017": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "Close (#249): PENDING → CLOSED with reason; members 1, uploaded documents 3 kept; audit rows 1 → 2 (+dealer.closed). ACTIVE dealerships remain suspend-only (V1 owner decision).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:55.991Z"
+  },
+  "DEALER-LIFE-018": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "suspended dealer direct submit → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-04T19:52:56.221Z"
+  }
+}

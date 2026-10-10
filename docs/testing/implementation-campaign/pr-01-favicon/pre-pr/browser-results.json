@@ -1,0 +1,142 @@
+{
+  "stage": "pre-pr",
+  "engine": "155.0.8059.39",
+  "frames": [16, 32, 48],
+  "routes": [
+    {
+      "route": "/",
+      "finalPath": "/",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "route": "/dealers",
+      "finalPath": "/dealers",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "route": "/admin",
+      "finalPath": "/admin",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "route": "/admin/login",
+      "finalPath": "/admin",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "route": "/login",
+      "finalPath": "/login",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "route": "/dealer/login",
+      "finalPath": "/dealer",
+      "status": 200,
+      "icons": [
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "cacheControl": "public, max-age=0, must-revalidate"
+        },
+        {
+          "path": "/icon.png",
+          "status": 200,
+          "cacheControl": "public, immutable, no-transform, max-age=31536000"
+        }
+      ]
+    }
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "dpr": 1,
+      "overflow": false,
+      "logo": "/brand/dealers-drive-dark.png"
+    },
+    {
+      "width": 360,
+      "dpr": 1,
+      "overflow": false,
+      "logo": "/brand/dealers-drive-dark.png"
+    },
+    {
+      "width": 390,
+      "dpr": 2,
+      "overflow": false,
+      "logo": "/brand/dealers-drive-dark.png"
+    },
+    {
+      "width": 768,
+      "dpr": 1,
+      "overflow": false,
+      "logo": "/brand/dealers-drive-dark.png"
+    },
+    {
+      "width": 1280,
+      "dpr": 1,
+      "overflow": false,
+      "logo": "/brand/dealers-drive-dark.png"
+    }
+  ],
+  "note": "ICO previews display decoded implementation assets; page screenshots come from the local production build with email/phone text masked. Before-stage icon requests replay actual main assets. Headless screenshots do not capture browser tab chrome."
+}

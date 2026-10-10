@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "docs/testing/fixes/BUG-006/evidence/diagnostics/configuration-probes.py",
+    "fixed"
+  ],
+  "sha": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
+  "start_utc": "2026-10-04T10:18:19.983312+00:00",
+  "end_utc": "2026-10-04T10:18:23.414430+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug006-configuration-green.log",
+  "cache": "TURBO_FORCE=true"
+}

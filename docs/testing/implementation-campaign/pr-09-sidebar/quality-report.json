@@ -1,0 +1,32 @@
+{
+  "prNumber": 296,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/296",
+  "branch": "fix/mobile-sidebar-navigation",
+  "baseBranch": "feat/ticket-message-limits",
+  "baseSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+  "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+  "incrementalFiles": 4,
+  "featureCommits": 1,
+  "migration": null,
+  "testsPassed": {
+    "api": 3216,
+    "web": 1530,
+    "contracts": 469,
+    "total": 5215,
+    "browserChecks": 26
+  },
+  "testsFailedFinal": 0,
+  "ciFinalStatus": "SUCCESS",
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204088",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204099",
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployment": false,
+  "notRun": [
+    "physical devices",
+    "native Safari",
+    "native screen-reader software"
+  ],
+  "next": "PR 10: feat/dealer-verification",
+  "ciHeadSha": "cefed41177086685bb56423522bfd67d2ea9e7dc"
+}

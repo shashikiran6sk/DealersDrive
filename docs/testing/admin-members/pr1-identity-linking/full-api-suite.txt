@@ -1,0 +1,6 @@
+ Test Files  143 passed (143)
+      Tests  2877 passed (2877)
+Statements   : 97.04% ( 5488/5655 )
+Branches     : 92.2% ( 3606/3911 )
+Functions    : 98.42% ( 1567/1592 )
+Lines        : 97.82% ( 4991/5102 )

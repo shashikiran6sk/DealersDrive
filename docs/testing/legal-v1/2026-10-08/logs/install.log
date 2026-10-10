@@ -1,0 +1,45 @@
+Scope: all 6 workspace projects
+(node:7716) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +218 -27
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
+
+   ╭───────────────────────────────────────────────────────────────────╮
+   │                                                                   │
+   │                Update available! 9.15.9 → 12.10.1.                │
+   │   Changelog: https://github.com/pnpm/pnpm/releases/tag/v12.10.1   │
+   │            Run "corepack use pnpm@12.10.1" to update.             │
+   │                                                                   │
+   ╰───────────────────────────────────────────────────────────────────╯
+
+Progress: resolved 218, reused 80, downloaded 0, added 11
+Progress: resolved 218, reused 80, downloaded 0, added 36
+Progress: resolved 218, reused 80, downloaded 16, added 59
+Progress: resolved 218, reused 80, downloaded 21, added 66
+Progress: resolved 218, reused 80, downloaded 36, added 76
+Progress: resolved 218, reused 80, downloaded 54, added 98
+Progress: resolved 218, reused 80, downloaded 80, added 123
+Progress: resolved 218, reused 80, downloaded 92, added 146
+Progress: resolved 218, reused 80, downloaded 102, added 148
+Progress: resolved 218, reused 80, downloaded 103, added 148
+Progress: resolved 218, reused 80, downloaded 108, added 154
+Progress: resolved 218, reused 80, downloaded 117, added 158
+Progress: resolved 218, reused 80, downloaded 117, added 159
+Progress: resolved 218, reused 80, downloaded 132, added 175
+Progress: resolved 218, reused 80, downloaded 137, added 193
+Progress: resolved 218, reused 80, downloaded 138, added 193
+Progress: resolved 218, reused 80, downloaded 138, added 194, done
+.../node_modules/prisma preinstall$ node scripts/preinstall-entry.js
+.../node_modules/prisma preinstall: Done
+
+devDependencies:
+- prettier 3.9.6
++ prettier 3.9.9
+- turbo 2.10.12
++ turbo 2.11.7
+- vitest 5.0.0
++ vitest 5.0.3
+
+Done in 22.8s using pnpm v9.15.9

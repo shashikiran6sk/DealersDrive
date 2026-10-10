@@ -1,0 +1,74 @@
+{
+  "provider": "controlled local identities; synthetic protected documents, no production data",
+  "checks": [
+    {
+      "check": "actual approved business has no fabricated verification badge",
+      "pass": true
+    },
+    {
+      "check": "legacy non-GST dealer remains publicly active without a fabricated badge",
+      "pass": true
+    },
+    {
+      "check": "actual admin starts separate verification review",
+      "pass": true
+    },
+    {
+      "check": "no-yard business verified through actual persisted admin assessment",
+      "pass": true
+    },
+    {
+      "check": "admin review history and responsive layout 320",
+      "pass": true
+    },
+    {
+      "check": "admin review history and responsive layout 390",
+      "pass": true
+    },
+    {
+      "check": "admin review history and responsive layout 768",
+      "pass": true
+    },
+    {
+      "check": "admin review history and responsive layout 1280",
+      "pass": true
+    },
+    {
+      "check": "genuine public badge and layout 320",
+      "pass": true
+    },
+    {
+      "check": "genuine public badge and layout 390",
+      "pass": true
+    },
+    {
+      "check": "genuine public badge and layout 768",
+      "pass": true
+    },
+    {
+      "check": "genuine public badge and layout 1280",
+      "pass": true
+    },
+    {
+      "check": "directory uses genuine flag and identical shared image",
+      "pass": true
+    },
+    {
+      "check": "revocation immediately removes public badge while preserving approved business",
+      "pass": true
+    },
+    {
+      "check": "re-review and reasoned rejection persisted with decision history",
+      "pass": true
+    },
+    {
+      "check": "fresh review after rejection can record a corrected verification decision",
+      "pass": true
+    },
+    {
+      "check": "actual directory card displays the genuine badge and standardized conceptual cover",
+      "pass": true
+    }
+  ],
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"
+}

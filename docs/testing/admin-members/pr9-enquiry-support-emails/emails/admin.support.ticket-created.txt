@@ -1,0 +1,15 @@
+Subject: New support request DD-1001 — Problem with a dealer
+
+A customer has asked for help
+
+DD-1001 — Problem with a dealer:
+
+  Dealer has not confirmed my visit
+
+It is in the support queue now, unassigned.
+
+Open the ticket: http://localhost:3000/admin/support/d93e1421-8974-4be9-bc3e-d0cd7b283ff0
+
+—
+Dealers-Drive
+Questions? support@example.com

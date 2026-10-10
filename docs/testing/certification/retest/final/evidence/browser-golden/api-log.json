@@ -1,0 +1,131 @@
+[
+  {
+    "enquiry": "66eab460-7d0a-4a4b-8b19-15753722d05c",
+    "staffSeesClose": 0,
+    "trail": ["enquiry.created", "enquiry.contacted", "enquiry.closed"],
+    "adminShowsClosed": true,
+    "adminShowsContacted": true
+  },
+  {
+    "saved1": 1,
+    "savedListed": 1,
+    "enquiryListed": 1,
+    "accounts": 1
+  },
+  {
+    "dealer": "ACTIVE",
+    "listing": "SOLD",
+    "pub1": 200,
+    "pub2": 404,
+    "enquiry": "NEW",
+    "custSees": true,
+    "trail": [
+      "listing.submitted",
+      "listing.check_set",
+      "listing.check_set",
+      "listing.check_set",
+      "listing.check_set"
+    ]
+  },
+  {
+    "inv": {
+      "id": "62d98c3d-f7ac-49ff-a0f3-d699f5cf6f43",
+      "role": "STAFF",
+      "status": "PENDING"
+    },
+    "landed": "/dealer",
+    "member": {
+      "role": "STAFF",
+      "status": "ACTIVE"
+    },
+    "staffSubmit": 403,
+    "ownerSubmit": 200,
+    "final": "ACTIVE"
+  },
+  {
+    "switched": "/dealer",
+    "enquiry": "CLOSED",
+    "listing": "SOLD"
+  },
+  {
+    "visible": {
+      "close": 0,
+      "spam": 0
+    },
+    "invButtons": {
+      "sold": 0,
+      "withdraw": 0
+    },
+    "teamUrl": "<redacted>",
+    "invite": 0,
+    "denied": {
+      "close": 403,
+      "submit": 403,
+      "sold": 403,
+      "withdraw": 403,
+      "delete": 403,
+      "invite": 403,
+      "profile": 403
+    },
+    "state": {
+      "enquiry": "CONTACTED",
+      "car": "ACTIVE",
+      "draft": 1
+    }
+  },
+  {
+    "beforeUrl": "<redacted>",
+    "member": "REMOVED",
+    "afterUrl": "<redacted>",
+    "api": 401,
+    "savedUrl": "<redacted>",
+    "me": 200
+  },
+  {
+    "suspended": "SUSPENDED",
+    "during": {
+      "car": 404,
+      "dealer": 404,
+      "dealerApi": 401,
+      "customerSees": true,
+      "listing": "ACTIVE"
+    },
+    "publicPage": 404,
+    "after": {
+      "dealer": "ACTIVE",
+      "car": 200,
+      "listing": "ACTIVE",
+      "enquiry": "NEW",
+      "dealerApi": 200
+    }
+  },
+  {
+    "aBefore": 0,
+    "aAfter": 0,
+    "bInbox": 1,
+    "row": {
+      "dealerId": "13286c09-4630-46cc-a77a-36574ad439c2",
+      "customerId": "2907abac-8c4d-48c5-9e03-59bcd373593b"
+    },
+    "listedPersonally": 1,
+    "bSeesEmployer": false
+  },
+  {
+    "reserved": "RESERVED",
+    "reservedPage": 200,
+    "reservedBadge": true,
+    "enquireOnReserved": 0,
+    "newEnquiry": 409,
+    "sold": "SOLD",
+    "soldPage": 404,
+    "trail": [
+      "listing.submitted",
+      "listing.check_set",
+      "listing.check_set",
+      "listing.check_set",
+      "listing.check_set"
+    ],
+    "custSees": true,
+    "sitemap": false
+  }
+]
