@@ -45,3 +45,10 @@ A description for screen readers when the heading above is not enough.
 ### `containerClassName?: string`
 
 Applied to the scroll container, not the table.
+
+### `scrollHint?: boolean`
+
+An opt-in instruction on phones explains horizontal swiping while the existing named, keyboard-
+focusable scroll region and table caption remain intact. Admin dealer, listing/reactivation,
+enquiry, support, member and email-delivery queues enable it. Existing consumers default to no
+hint; desktop rendering is unchanged.

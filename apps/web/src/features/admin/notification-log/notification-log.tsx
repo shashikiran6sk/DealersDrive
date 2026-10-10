@@ -94,6 +94,7 @@ export function NotificationLog({
         />
       ) : (
         <Table
+          scrollHint
           columns={COLUMNS}
           caption={NOTIFICATION_LOG_TEXT.caption}
           className="max-md:min-w-[640px]"

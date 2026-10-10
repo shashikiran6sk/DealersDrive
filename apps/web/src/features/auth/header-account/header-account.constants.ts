@@ -11,6 +11,8 @@ export const HEADER_ACCOUNT_TEXT = {
   supportRequestsHref: '/support-requests',
   dealerLogin: 'Dealer Login',
   dealerLoginHref: '/login?as=dealer',
+  adminLogin: 'Admin login',
+  adminLoginHref: '/admin/login',
   dealerDashboard: 'Dealer dashboard',
   workspaceLabel: (role: string) => `Dealer dashboard · ${role}`,
   workspaceCurrent: 'Current',

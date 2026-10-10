@@ -32,7 +32,8 @@ export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses> = {
       'flex items-start justify-between gap-4 border-b border-(--color-divider) px-[22px] py-[16px]',
     title: '',
     description: 'mt-[2px] text-[13px] ink-muted',
-    close: 'btn btn-secondary h-9 w-9 flex-none rounded-full border-transparent p-0 text-[15px]',
+    close:
+      'btn btn-secondary h-9 w-9 max-md:size-11 flex-none rounded-full border-transparent p-0 text-[15px]',
     body: 'min-h-0 flex-1 overflow-y-auto px-[22px] py-[18px]',
     closeShowsLabel: false,
   },

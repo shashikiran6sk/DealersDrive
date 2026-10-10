@@ -143,7 +143,7 @@ export function AdminMembers({ members, counts, status }: AdminMembersProps) {
         ))}
       </nav>
 
-      <Table columns={[...MEMBER_COLUMNS]} caption={MEMBERS_TEXT.caption}>
+      <Table scrollHint columns={[...MEMBER_COLUMNS]} caption={MEMBERS_TEXT.caption}>
         {members.length === 0 ? (
           <tr>
             <td colSpan={MEMBER_COLUMNS.length} className="text-center ink-muted">
