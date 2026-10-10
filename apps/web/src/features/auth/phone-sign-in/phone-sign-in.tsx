@@ -28,6 +28,7 @@ export function PhoneSignIn({
   verifyLabel = PHONE_SIGN_IN_TEXT.verify,
   initialStage = 'number',
   initialPhone = '',
+  onBeforeSend,
 }: PhoneSignInProps) {
   const captchaId = useId();
   const phoneId = `${idPrefix}-phone`;
@@ -75,6 +76,13 @@ export function PhoneSignIn({
     setPhoneError(null);
     setFailure(null);
     try {
+      const error = await onBeforeSend?.(phone, resend);
+      if (error) {
+        setPhoneError(error);
+        setFailure(error);
+        if (resend) setStage('failed');
+        return;
+      }
       await sendPhoneOtp(ready, phone, { resend, captchaRenderId: captchaId });
       setCode('');
       setAttemptsLeft(LOCAL_ATTEMPTS);

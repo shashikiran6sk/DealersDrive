@@ -4,10 +4,10 @@ Status: active PR 6 implementation, not yet opened or certified.
 Branch: `feat/admin-mobile-otp`; parent `feat/optional-dealer-tagline`.
 Parent certified head: `465a5cd129de8b03be02cd551ca9e4bf238a39c6` (PR #292).
 
-## Audit findings
+## Original audit findings
 
 - Google admin authentication exists and must remain the identity authority.
-- All three session scopes currently share `dd_session`. Admin OAuth and person OAuth
+- All three session scopes previously shared `dd_session`. Admin OAuth and person OAuth
   also share `dd_oauth`; concurrent starts can overwrite a pending transaction.
 - Session records store scope/time but not authentication method. Enrollment therefore
   needs explicit Google assurance on a recent admin session, not just a recent OTP login.
@@ -41,9 +41,9 @@ Parent certified head: `465a5cd129de8b03be02cd551ca9e4bf238a39c6` (PR #292).
 7. Add Google/mobile login options and Admin Profile → Security enrollment/revocation UI.
    Keep provider failures secure and error text non-enumerating.
 
-## Outstanding verification
+## Verification gates
 
-Implement and test every requirement above before PR creation. Review provider expiry
+Complete all required validation before PR creation. Review provider expiry
 semantics against official MSG91 documentation; do not infer verification from a frontend
 callback. Execute the dedicated 35-case security matrix, real database concurrency tests,
 Google/dealer/customer regressions, mobile browser UAT, and final-SHA required CI. Do not
@@ -64,3 +64,15 @@ Executed: workspace typecheck PASS; 65 actual integration cases across auth/admi
 PASS with clean isolated migration. This is an implementation checkpoint, not full PR 6
 certification. OTP credentials/challenges, enrollment/login/recovery UI, full isolation and
 security regression matrix, screenshots, post-creation tests and GitHub CI remain pending.
+
+## OTP implementation checkpoint
+
+Separate credentials, persistent challenges and proof hashes, fail-closed limiting, trusted
+Origin checks, recent Google enrollment, atomic OTP session rotation, revocation and Google
+recovery are implemented. Login and Profile → Security reuse the existing OTP controls.
+Suspended admin seats cannot be reactivated by Google step-up. Legacy migration rehearsals
+and backend/web/contract/provider cases are added. The current final pre-creation test run,
+production build, actual browser campaign, post-creation testing and final-SHA CI must finish
+before this branch is certified or PR 7 starts. See
+[the security design and rollout notes](admin-mobile-otp.md) for precise policy and provider
+limitations. Live Google/SMS and production configuration are not claimed as tested.

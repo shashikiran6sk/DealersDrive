@@ -6,7 +6,7 @@ export const postAdminLogout: PublicAuthRoute = (router, { service }) => {
   router.post('/admin/logout', (req, res, next) => {
     void (async () => {
       try {
-        await service.logout(readAdminSessionToken(req));
+        await service.logoutAdmin(readAdminSessionToken(req));
         clearAdminSessionCookie(res);
         res.status(204).end();
       } catch (error) {

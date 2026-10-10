@@ -14,9 +14,11 @@ const otp = createFakePhoneOtp('123456');
 
 describe('the fake phone-OTP driver', () => {
   it('names the identifier the token carries', async () => {
-    await expect(otp.identify('dev-otp:919840012345:123456')).resolves.toEqual({
+    await expect(otp.identify('dev-otp:919840012345:123456')).resolves.toMatchObject({
       status: 'VERIFIED',
       identifier: '919840012345',
+      issuedAt: expect.any(Date),
+      expiresAt: expect.any(Date),
     });
   });
 

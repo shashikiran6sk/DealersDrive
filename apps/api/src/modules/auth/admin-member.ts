@@ -11,6 +11,7 @@ import { isAllowlistedAdmin } from './admin-allowlist.js';
 import { grantSeat, setSeatStatus } from './roles.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
+export const ADMIN_MEMBERSHIP_LOCK = 'admin_members:manage';
 
 export interface AdmissionSubject {
   email: string | null;

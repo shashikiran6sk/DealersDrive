@@ -74,6 +74,7 @@ export function createCookieSessionResolver(
 
       return {
         kind: 'ADMIN',
+        sessionId: session?.id,
         userId: user.id,
         memberId: member.id,
         email: user.email ?? '',

@@ -1,7 +1,7 @@
 export type MsisdnDigits = string;
 
 export type PhoneOtpVerdict =
-  | { status: 'VERIFIED'; identifier: MsisdnDigits }
+  | { status: 'VERIFIED'; identifier: MsisdnDigits; issuedAt?: Date; expiresAt?: Date }
   | { status: 'REJECTED'; reason: string }
   | { status: 'UNAVAILABLE' };
 

@@ -26,7 +26,12 @@ function otpAnswering(verdict: PhoneOtpVerdict): PhoneOtpPort {
   return { driver: 'fake', identify: vi.fn(() => Promise.resolve(verdict)) };
 }
 
-const VERIFIED: PhoneOtpVerdict = { status: 'VERIFIED', identifier: '919840012345' };
+const VERIFIED: PhoneOtpVerdict = {
+  status: 'VERIFIED',
+  identifier: '919840012345',
+  issuedAt: new Date(),
+  expiresAt: new Date(Date.now() + 300_000),
+};
 
 let cache: CachePort;
 
@@ -44,6 +49,7 @@ describe('proving a handset', () => {
       phone: '98400 12345',
       accessToken: `token-${purpose}`,
       purpose,
+      freshAfter: new Date(0),
     });
 
     expect(proven).toMatchObject({ phone: '+919840012345', purpose });

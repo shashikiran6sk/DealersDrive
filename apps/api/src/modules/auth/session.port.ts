@@ -32,6 +32,7 @@ export interface PendingPrincipal {
 
 export interface AdminPrincipal {
   kind: 'ADMIN';
+  sessionId?: string;
   userId: string;
   memberId?: string;
   email: string;
