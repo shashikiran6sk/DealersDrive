@@ -28,6 +28,7 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
         <MobileNav
           items={MOBILE_HEADER_NAV}
           label={HEADER_TEXT.navLabel}
+          showTitle={false}
           rootHref={HEADER_NAV.home}
         >
           <nav aria-label="Account and support" className="flex flex-col gap-1">
