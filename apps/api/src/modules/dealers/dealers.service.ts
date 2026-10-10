@@ -1,3 +1,5 @@
+import { invalidateDealerVerification } from './dealer-verification.js';
+import { isDealerVerified } from '@dealers-drive/contracts';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
@@ -289,7 +291,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           status: dealer.status,
           statusLabel:
             dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
-          isVerified: dealer.status === 'ACTIVE',
+          isVerified: isDealerVerified(dealer),
           creditBalance: dealer.creditBalance,
           creditsHeld: dealer.creditsHeld,
         },
@@ -506,6 +508,27 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           });
         }
 
+        const identityChanged =
+          (input.legalName !== undefined && input.legalName !== current.legalName) ||
+          (input.gstin !== undefined && input.gstin !== current.gstin) ||
+          (input.pan !== undefined && input.pan !== current.pan) ||
+          (email !== undefined && email !== current.contactEmail) ||
+          (phone !== undefined && phone !== current.contactPhone) ||
+          (input.contact?.fullName !== undefined &&
+            input.contact.fullName !==
+              current.members.find((member) => member.role === 'OWNER')?.user.fullName) ||
+          (input.address?.line !== undefined && input.address.line !== current.addressLine) ||
+          (city !== undefined && city !== current.city) ||
+          locationChanged ||
+          (input.address?.pincode !== undefined && input.address.pincode !== current.pincode);
+        if (identityChanged)
+          await invalidateDealerVerification(
+            tx,
+            audit,
+            current,
+            { actorType: 'SYSTEM', actorId: getContext()?.userId ?? null },
+            'Business identity or contact evidence changed; a new review is required.',
+          );
         return repo.update(
           dealerId,
           {

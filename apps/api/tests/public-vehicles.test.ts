@@ -78,7 +78,7 @@ describe('what the marketplace lists', () => {
         name: expect.any(String),
         slug: a.slug,
         initials: expect.any(String),
-        isVerified: true,
+        isVerified: false,
       },
     });
     expect(live.slug).toMatch(/^2023-tata-nexon-xz-.*-[0-9a-f]{8}$/);

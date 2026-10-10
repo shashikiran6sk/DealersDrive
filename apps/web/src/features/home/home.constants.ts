@@ -20,9 +20,9 @@ export const DISCOVERY_SECTIONS: readonly DiscoverySection[] = [
 export const HOME_TEXT = {
   eyebrow: 'Independent dealers · one trusted platform',
   title: 'Find your next car',
-  lede: 'Used cars from verified independent dealerships, photographed by Dealers-Drive and reviewed before they go live. Choose where, what and how much — the marketplace does the rest.',
+  lede: 'Used cars from independent dealerships, photographed by Dealers-Drive and reviewed before they go live. Choose where, what and how much — the marketplace does the rest.',
   browseAll: 'Browse every car',
-  browseDealers: 'Explore verified dealers',
+  browseDealers: 'Explore dealers',
   viewAll: 'View all →',
   discoveryLabel: 'Cars on Dealers-Drive now',
   unavailableTitle: 'We couldn’t load these vehicles right now',

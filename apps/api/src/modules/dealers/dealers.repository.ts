@@ -48,6 +48,8 @@ export function createDealersRepository(prisma: PrismaClient) {
 
       return rows.map((dealer) => ({
         id: dealer.id,
+        status: dealer.status,
+        verificationStatus: dealer.verificationStatus,
         slug: dealer.slug,
         brandName: dealer.brandName,
         initials: initialsOf(dealer.brandName),

@@ -68,7 +68,16 @@ export const cardInclude = {
       _count: { select: { images: true } },
     },
   },
-  dealer: { select: { brandName: true, slug: true, city: true, district: true } },
+  dealer: {
+    select: {
+      status: true,
+      verificationStatus: true,
+      brandName: true,
+      slug: true,
+      city: true,
+      district: true,
+    },
+  },
 } satisfies Prisma.ListingInclude;
 
 export type CardRow = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;
@@ -82,7 +91,17 @@ export const detailInclude = {
       },
     },
   },
-  dealer: { select: { brandName: true, slug: true, city: true, district: true, state: true } },
+  dealer: {
+    select: {
+      status: true,
+      verificationStatus: true,
+      brandName: true,
+      slug: true,
+      city: true,
+      district: true,
+      state: true,
+    },
+  },
 } satisfies Prisma.ListingInclude;
 
 export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;

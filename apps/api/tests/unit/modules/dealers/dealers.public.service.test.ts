@@ -37,6 +37,8 @@ import { NotFoundError } from '../../../../src/platform/errors.js';
  */
 function activeDealer(overrides: Record<string, unknown> = {}) {
   return {
+    status: 'ACTIVE',
+    verificationStatus: 'VERIFIED',
     id: '3c8f2b10-2222-4000-8000-000000000002',
     slug: 'sri-lakshmi-motors',
     brandName: 'Sri Lakshmi Motors',
@@ -55,6 +57,8 @@ function activeDealer(overrides: Record<string, unknown> = {}) {
 
 function publicDealer(overrides: Record<string, unknown> = {}) {
   return {
+    status: 'ACTIVE',
+    verificationStatus: 'VERIFIED',
     slug: 'sri-lakshmi-motors',
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
@@ -430,9 +434,9 @@ describe('directory', () => {
     const many = setup({ dealers: [activeDealer(), activeDealer({ slug: 'b' })] });
     const none = setup({ dealers: [] });
 
-    expect((await one.service.directory(query())).countLabel).toBe('1 verified dealership');
-    expect((await many.service.directory(query())).countLabel).toBe('2 verified dealerships');
-    expect((await none.service.directory(query())).countLabel).toBe('0 verified dealerships');
+    expect((await one.service.directory(query())).countLabel).toBe('1 dealership');
+    expect((await many.service.directory(query())).countLabel).toBe('2 dealerships');
+    expect((await none.service.directory(query())).countLabel).toBe('0 dealerships');
   });
 
   it('offers city chips counted by dealership, busiest first', async () => {
@@ -721,14 +725,14 @@ describe('suggest', () => {
     const response = await h.service.suggest(suggestQuery({ search: 'velocity', limit: 6 }));
 
     expect(response.data).toHaveLength(6);
-    // Not "6 matching yards": the label is what tells a buyer to keep typing.
-    expect(response.countLabel).toBe('9 matching yards');
+    // Not "6 matching dealerships": the label is what tells a buyer to keep typing.
+    expect(response.countLabel).toBe('9 matching dealerships');
   });
 
-  it('says "yard" in the singular', async () => {
+  it('uses dealership in the singular', async () => {
     const h = setup({ dealers: [activeDealer({ brandName: 'Velavan Cars' })] });
 
-    expect((await h.service.suggest(suggestQuery())).countLabel).toBe('1 matching yard');
+    expect((await h.service.suggest(suggestQuery())).countLabel).toBe('1 matching dealership');
   });
 
   it('echoes the search back, so the client can drop a stale answer', async () => {
@@ -743,7 +747,7 @@ describe('suggest', () => {
     const response = await h.service.suggest(suggestQuery({ search: 'zzzz' }));
 
     expect(response.data).toEqual([]);
-    expect(response.countLabel).toBe('0 matching yards');
+    expect(response.countLabel).toBe('0 matching dealerships');
   });
 
   it('composes the meta line from the inventory and the place', async () => {

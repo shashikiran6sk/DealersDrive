@@ -45,10 +45,18 @@ describe('the sentence the marketplace rests on', () => {
    * than in a terms document nobody opens: Dealers-Drive verifies who the
    * dealer is, and does not sell the car.
    */
-  it('survives the redesign', () => {
+  it('states badge review and dealer responsibility without promising ownership', () => {
     renderFooter();
 
-    expect(screen.getByText(/owned, priced and warranted by the dealer/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Dealer Verified badge follows a business and representative review/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Dealers are responsible for their listings, prices and vehicle documentation/i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Every vehicle is owned/i)).toBeNull();
   });
 
   it('says the platform is not a party to the sale', () => {

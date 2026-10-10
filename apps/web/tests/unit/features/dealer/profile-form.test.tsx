@@ -201,7 +201,9 @@ describe('what the form offers', () => {
     render(<DealerProfileForm dealer={DEALER} />);
 
     expect(screen.getByText(/contact support to change any of them/i)).toBeInTheDocument();
-    expect(screen.getByText(/closes this account and opens a new one/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/yard ownership and photographs do not determine Dealer Verified status/i),
+    ).toBeInTheDocument();
   });
 
   it('shows the tax identifiers but does not let them be edited here', () => {

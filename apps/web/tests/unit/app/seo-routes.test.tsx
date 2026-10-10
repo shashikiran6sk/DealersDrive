@@ -171,7 +171,7 @@ describe('/', () => {
     expect(meta.title).toEqual({
       absolute: 'Dealers-Drive | Used Cars from Verified Independent Dealers',
     });
-    expect(meta.description).toMatch(/verified independent dealers/);
+    expect(meta.description).toMatch(/independent dealers/);
     expect(meta.alternates?.canonical).toBe('https://www.dealers-drive.com/');
     expect(meta.robots).toMatchObject({ index: true, follow: true });
   });

@@ -8,3 +8,5 @@ export {
   withDealerEmailConflict,
   assertDealerEmailFree,
 } from './dealer-email-identity.js';
+
+export { invalidateDealerVerification } from './dealer-verification.js';

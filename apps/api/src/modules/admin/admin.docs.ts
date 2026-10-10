@@ -16,6 +16,47 @@ export const adminDocs: ModuleDocs = {
   operations: [
     {
       method: 'get',
+      path: '/v1/admin/dealers/:id/verification',
+      operationId: 'getDealerVerification',
+      tag: DOC_TAGS.admin,
+      summary: 'Restricted dealership verification review and history',
+      description:
+        'Active authorized reviewers only. Latest 100 audit decisions with private evidence references; no public KYC payload. Approval and verification are distinct.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'Review status and restricted history.',
+          schema: 'DealerVerificationReview',
+        },
+      ],
+      errors: [401, 403, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/verification',
+      operationId: 'decideDealerVerification',
+      tag: DOC_TAGS.admin,
+      summary: 'Record a genuine verification decision',
+      description:
+        'Optimistic version and locked transaction. Verified requires active approval, contact proof, reviewed applicable documents and recorded identity/business/regulatory/GST assessments. Yard ownership is never a criterion. Assistants and dealership members cannot self-approve; rejected/revoked need reasons. Core evidence changes revoke the badge.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: { schema: 'DealerVerificationDecisionInput', required: true },
+      responses: [
+        {
+          status: 200,
+          description: 'Recorded decision and history.',
+          schema: 'DealerVerificationReview',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
       path: '/v1/admin/service-locations',
       operationId: 'getServiceLocations',
       tag: DOC_TAGS.admin,
