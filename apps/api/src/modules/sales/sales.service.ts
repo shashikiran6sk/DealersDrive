@@ -39,7 +39,7 @@ import { requestEmailVerification, withinCooldown } from '../dealer-claims/deale
 import {
   uniqueDealerSlug,
   normaliseDealerEmail,
-  withDealerEmailConflict,
+  withDealerRegistrationConflict,
   assertDealerEmailFree,
   type DealersService,
 } from '../dealers/dealers.facade.js';
@@ -479,7 +479,7 @@ export function createSalesService({
       const consentAt = new Date(ticket.provenAt);
 
       const email = normaliseDealerEmail(input.email);
-      const created = await withDealerEmailConflict(() =>
+      const created = await withDealerRegistrationConflict(() =>
         withTransaction(prisma, async (tx) => {
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.phone}`}))`;
           await assertPhoneFree(tx, ticket.phone);
@@ -606,7 +606,7 @@ export function createSalesService({
             }),
       };
 
-      await withDealerEmailConflict(() =>
+      await withDealerRegistrationConflict(() =>
         withTransaction(prisma, async (tx) => {
           await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
           await requireEditable(principal, dealerId, tx);

@@ -368,7 +368,15 @@ export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ApproveDealerInput = z
-  .object({ note: z.string().trim().max(300).optional() })
+  .object({
+    note: z.string().trim().max(300).optional(),
+    gstNotRequiredReview: z
+      .string()
+      .trim()
+      .min(20, 'Record the GST applicability review and protected case reference.')
+      .max(1000)
+      .optional(),
+  })
   .strict();
 export type ApproveDealerInput = z.infer<typeof ApproveDealerInput>;
 

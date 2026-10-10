@@ -22,6 +22,7 @@ const DEALER = {
   slug: 'chennai-cars',
   brandName: 'Chennai cars',
   status: 'PENDING_APPROVAL',
+  gstin: '33AABCS1429B1ZX',
   actions: { canApprove: true },
 } as AdminDealerDetail;
 
@@ -46,6 +47,31 @@ describe('dealer approval confirmation', () => {
     expect(approveDealerAction).toHaveBeenCalledWith(DEALER.id, {}, DEALER.slug);
     expect(confirmation).toHaveValue('');
     expect(button).toBeDisabled();
+  });
+
+  it('requires and sends an explicit applicability review when GSTIN is absent', async () => {
+    const user = userEvent.setup();
+    const view = render(<DealerAdminActions dealer={{ ...DEALER, gstin: null }} />);
+    await user.type(screen.getByLabelText(/confirm approval/i), 'approve chennai cars');
+    const button = screen.getByRole('button', { name: 'Approve dealer' });
+    expect(button).toBeDisabled();
+    await user.type(
+      screen.getByLabelText(/GST registration applicability review/),
+      'Synthetic reviewed non-requirement case QA-11.',
+    );
+    expect(button).toBeEnabled();
+    await user.click(button);
+    expect(approveDealerAction).toHaveBeenCalledWith(
+      DEALER.id,
+      { gstNotRequiredReview: 'Synthetic reviewed non-requirement case QA-11.' },
+      DEALER.slug,
+    );
+    view.rerender(
+      <DealerAdminActions
+        dealer={{ ...DEALER, id: 'another', gstin: null, brandName: 'Madurai Cars' }}
+      />,
+    );
+    expect(screen.getByLabelText(/GST registration applicability review/)).toHaveValue('');
   });
 
   it('accepts case differences and outer spaces', async () => {
