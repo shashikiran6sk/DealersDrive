@@ -17,6 +17,7 @@ type Mode = 'reply' | 'note';
 export function TicketComposer({
   ticketId,
   canReply,
+  onSaved,
   reply = replyToTicketAction,
   note = addTicketNoteAction,
 }: TicketComposerProps) {
@@ -50,6 +51,7 @@ export function TicketComposer({
             : await reply(ticketId, text, replyId.current);
           inFlight.current = false;
           if (result.ok) {
+            if (result.ticket) onSaved?.(result.ticket);
             setText('');
             replyId.current = null;
             router.refresh();

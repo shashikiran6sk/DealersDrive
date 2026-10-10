@@ -14,6 +14,7 @@ export interface TicketControlsProps {
 }
 
 export interface TicketComposerProps {
+  onSaved?: (ticket: AdminSupportTicketDetail) => void;
   ticketId: string;
   canReply: boolean;
   reply?: (

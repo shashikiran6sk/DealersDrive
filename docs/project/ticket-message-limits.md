@@ -37,6 +37,12 @@ the server's actual saved result, not an optimistic local quota increment. The r
 covers stale refresh, the fifth-message block, a newer server snapshot and navigation to another
 ticket. No admin/private metadata is added to the customer snapshot.
 
+The repeated browser campaign also reproduced a persisted admin reply missing from the
+visible admin conversation after refresh. Admin reply/note actions now return their existing
+authorized admin detail snapshot, which the workspace applies immediately. A newer server
+snapshot supersedes it; an older refresh or navigation to another ticket cannot carry the
+saved conversation across. The regression exercises the actual action-to-workspace boundary.
+
 Migration 20261010120000_ticket_message_limits is additive and transactional. It counts historical
 CUSTOMER messages after the latest SUPPORT timestamp, caps over-limit records at five while
 preserving every message, and leaves empty tickets at zero. Legacy same-timestamp ordering cannot
