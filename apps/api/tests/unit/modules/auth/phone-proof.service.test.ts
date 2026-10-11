@@ -45,6 +45,45 @@ function proof(otp: PhoneOtpPort = otpAnswering(VERIFIED)) {
 
 describe('proving a handset', () => {
   it.each(['ADMIN_ENROLL', 'ADMIN_LOGIN'] as const)(
+    'accepts a provider-verified %s proof that carries no timestamps',
+    async (purpose) => {
+      const otp: PhoneOtpPort = {
+        driver: 'msg91',
+        identify: () => Promise.resolve({ status: 'VERIFIED', identifier: '919840012345' }),
+      };
+      const service = createPhoneProofService({ otp, cache: createMemoryCache() });
+      await expect(
+        service.prove({
+          phone: '9840012345',
+          accessToken: `untimed-${purpose}`,
+          purpose,
+          freshAfter: new Date(),
+        }),
+      ).resolves.toMatchObject({ phone: '+919840012345', purpose });
+    },
+  );
+
+  it.each([
+    ['issued before the challenge', { issuedAt: new Date(Date.now() - 120_000) }],
+    ['issued in the future', { issuedAt: new Date(Date.now() + 120_000) }],
+    ['already expired', { expiresAt: new Date(Date.now() - 1) }],
+  ] as const)('refuses an admin proof %s', async (_label, times) => {
+    const otp: PhoneOtpPort = {
+      driver: 'msg91',
+      identify: () => Promise.resolve({ status: 'VERIFIED', identifier: '919840012345', ...times }),
+    };
+    const service = createPhoneProofService({ otp, cache: createMemoryCache() });
+    await expect(
+      service.prove({
+        phone: '9840012345',
+        accessToken: 'timed-proof',
+        purpose: 'ADMIN_LOGIN',
+        freshAfter: new Date(),
+      }),
+    ).rejects.toMatchObject({ code: 'PHONE_VERIFICATION_FAILED' });
+  });
+
+  it.each(['ADMIN_ENROLL', 'ADMIN_LOGIN'] as const)(
     'requires challenge freshness for %s even when a provider proves the number',
     async (purpose) => {
       await expect(

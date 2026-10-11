@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
@@ -68,6 +69,30 @@ describe('/login', () => {
     expect(screen.getByRole('link', { name: /trouble signing in/i })).toHaveAttribute(
       'href',
       '/contact',
+    );
+  });
+
+  it('shows no Admin Login on the Customer tab', async () => {
+    await page({});
+    expect(screen.queryByRole('link', { name: /admin/i })).toBeNull();
+  });
+
+  it('offers a small Admin Login link below the support link on the Dealer tab only', async () => {
+    const user = userEvent.setup();
+    await page({ as: 'dealer' });
+    const admin = screen.getByRole('link', { name: 'Admin Login' });
+    expect(admin).toHaveAttribute('href', '/admin/login');
+    const trouble = screen.getByRole('link', { name: /trouble signing in/i });
+    expect(trouble.compareDocumentPosition(admin) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await user.click(screen.getByRole('tab', { name: 'Customer' }));
+    expect(screen.queryByRole('link', { name: 'Admin Login' })).toBeNull();
+    expect(screen.getByRole('link', { name: /trouble signing in/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Dealer' }));
+    expect(screen.getByRole('link', { name: 'Admin Login' })).toHaveAttribute(
+      'href',
+      '/admin/login',
     );
   });
 

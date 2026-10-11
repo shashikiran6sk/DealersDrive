@@ -26,6 +26,8 @@ export const LOGIN_TEXT = {
   usePhoneInstead: 'Use mobile number instead',
   trouble: 'Trouble signing in? Contact support',
   troubleHref: '/contact',
+  adminLogin: 'Admin Login',
+  adminLoginHref: '/admin/login',
   googleUnavailable: 'Google sign-in is not configured',
 } as const;
 
