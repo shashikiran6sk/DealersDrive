@@ -52,6 +52,42 @@ async function currentReviewer(tx: Tx, admin: AdminPrincipal): Promise<void> {
     throw new ForbiddenError('Your dealership review access is no longer available.');
 }
 
+type EvidenceDocument = {
+  id: string;
+  type: string;
+  status: string;
+  fileName: string | null;
+  reviewedBy: string | null;
+  reviewedAt: Date | null;
+};
+
+function requiredEvidence<T extends EvidenceDocument>(documents: T[], gstin: string | null): T[] {
+  return documents.filter(
+    (doc) =>
+      doc.type === 'PAN_CARD' ||
+      doc.type === 'ADDRESS_PROOF' ||
+      (gstin !== null && doc.type === 'GST_CERTIFICATE'),
+  );
+}
+
+function evidenceFingerprint(slug: string, documents: EvidenceDocument[]): string {
+  return [
+    slug,
+    ...documents
+      .map((doc) =>
+        [
+          doc.id,
+          doc.type,
+          doc.status,
+          doc.fileName,
+          doc.reviewedBy,
+          doc.reviewedAt?.getTime(),
+        ].join(':'),
+      )
+      .sort(),
+  ].join('|');
+}
+
 export function createDealerVerificationService({
   prisma,
   audit,
@@ -91,6 +127,26 @@ export function createDealerVerificationService({
       history,
     };
   }
+  async function storedEvidenceFingerprint(dealerId: string): Promise<string | null> {
+    const dealer = await prisma.dealer.findUnique({
+      where: { id: dealerId },
+      select: { slug: true, gstin: true, documents: true },
+    });
+    if (!dealer) return null;
+    const required = requiredEvidence(dealer.documents, dealer.gstin);
+    const objects = await Promise.all(
+      required
+        .filter((doc) => doc.status === 'VERIFIED' && doc.fileName)
+        .map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+    );
+    if (objects.some((object) => object === null))
+      throw new DomainError(
+        'VERIFICATION_DOCUMENT_MISSING',
+        'A reviewed evidence upload is missing.',
+      );
+    return evidenceFingerprint(dealer.slug, required);
+  }
+
   return {
     async review(admin: AdminPrincipal, dealerId: string): Promise<DealerVerificationReview> {
       return withTransaction(prisma, async (tx) => {
@@ -103,6 +159,10 @@ export function createDealerVerificationService({
       dealerId: string,
       input: DealerVerificationDecisionInput,
     ): Promise<DealerVerificationReview> {
+      if (!admin.permissions.includes('admin:dealer:approve'))
+        throw new ForbiddenError('Only authorized dealership reviewers can decide verification.');
+      const checkedEvidence =
+        input.status === 'VERIFIED' ? await storedEvidenceFingerprint(dealerId) : null;
       return withTransaction(prisma, async (tx) => {
         await currentReviewer(tx, admin);
         await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id"=${dealerId}::uuid FOR UPDATE`;
@@ -167,12 +227,7 @@ export function createDealerVerificationService({
             );
           await tx.$queryRaw`SELECT "id" FROM "dealer_documents" WHERE "dealerId"=${dealerId}::uuid ORDER BY "id" FOR UPDATE`;
           const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
-          const required = documents.filter(
-            (doc) =>
-              doc.type === 'PAN_CARD' ||
-              doc.type === 'ADDRESS_PROOF' ||
-              (dealer.gstin && doc.type === 'GST_CERTIFICATE'),
-          );
+          const required = requiredEvidence(documents, dealer.gstin);
           const expected = dealer.gstin ? 3 : 2;
           if (
             required.length !== expected ||
@@ -195,13 +250,10 @@ export function createDealerVerificationService({
               'GST_APPLICABILITY_REQUIRED',
               'Record why GST registration is not required, or collect and verify it.',
             );
-          const objects = await Promise.all(
-            required.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
-          );
-          if (objects.some((object) => object === null))
-            throw new DomainError(
-              'VERIFICATION_DOCUMENT_MISSING',
-              'A reviewed evidence upload is missing.',
+          if (checkedEvidence !== evidenceFingerprint(dealer.slug, required))
+            throw new ConflictError(
+              'VERIFICATION_CHANGED',
+              'Verification evidence changed. Reload before deciding.',
             );
         }
         const now = new Date();
