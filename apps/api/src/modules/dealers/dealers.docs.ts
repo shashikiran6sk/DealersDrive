@@ -437,9 +437,8 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'Remove the yard photograph',
       description:
-        'Clears `coverMediaId` and deletes the stored object. The dealership then reads as ' +
-        'incomplete again \u2014 `GET /v1/dealer/completeness` lists `YARD_PHOTO` as missing, ' +
-        'and `POST /v1/dealer/submit` refuses until one is uploaded.\n\n' +
+        'Clears `coverMediaId` and deletes the explicitly selected stored object. Yard photography is optional; ' +
+        'removing it does not make an otherwise complete application incomplete. Directory cards retain the shared illustration.\n\n' +
         '**DRAFT only.** Once the dealership has been submitted this is a 409 ' +
         '`YARD_PHOTO_LOCKED`. OWNER only (`document:upload`).',
       audience: 'dealer',

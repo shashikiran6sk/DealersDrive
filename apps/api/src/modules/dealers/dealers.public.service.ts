@@ -2,6 +2,7 @@ import {
   distinctServices,
   formatLakh,
   initialsOf,
+  STANDARD_DEALER_COVER_PATH,
   type DealerCard,
   type DealerDirectoryQuery,
   type DealerDirectoryResponse,
@@ -30,7 +31,6 @@ export interface DealerInventoryStats {
   dealerStats(): Promise<DealerInventoryStat[]>;
 }
 
-const CARD_COVER_WIDTH = 640;
 const PORTFOLIO_COVER_WIDTH = 1600;
 
 export interface DealersPublicDeps {
@@ -67,10 +67,6 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const start = (query.page - 1) * query.limit;
       const paged = filtered.slice(start, start + query.limit);
 
-      const covers = await repo.readyMediaIds(
-        paged.map((dealer) => dealer.coverMediaId).filter((id): id is string => id !== null),
-      );
-
       const data: DealerCard[] = paged.map((dealer) => {
         const stat = byDealer.get(dealer.slug);
         const fromPrice =
@@ -95,10 +91,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           fromPriceLabel: fromPrice === null ? '—' : `from ${formatLakh(fromPrice)}`,
           isVerified: true,
           logoUrl: null,
-          coverUrl:
-            dealer.coverMediaId && covers.has(dealer.coverMediaId)
-              ? mediaUrl(dealer.coverMediaId, CARD_COVER_WIDTH)
-              : null,
+          coverUrl: `${env.WEB_BASE_URL}${STANDARD_DEALER_COVER_PATH}`,
         };
       });
 

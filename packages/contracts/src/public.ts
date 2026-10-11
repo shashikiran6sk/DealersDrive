@@ -1,6 +1,7 @@
 import { OffsetPage } from './common.js';
 import { PublicAvailability } from './listing.js';
 import { z } from 'zod';
+export const STANDARD_DEALER_COVER_PATH = '/brand/dealer-directory-cover.svg';
 
 /**
  * PART A — the public API (API-SPEC A1–A15). No authentication anywhere in

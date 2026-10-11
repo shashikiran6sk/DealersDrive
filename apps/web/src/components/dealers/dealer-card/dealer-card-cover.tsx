@@ -1,11 +1,14 @@
-import type { DealerCard as DealerCardDto } from '@dealers-drive/contracts';
+import {
+  STANDARD_DEALER_COVER_PATH,
+  type DealerCard as DealerCardDto,
+} from '@dealers-drive/contracts';
+import Image from 'next/image';
 
-import { ImageSlot } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
 import { COVER_HEIGHT, DEALER_CARD_TEXT } from './dealer-card.constants';
 
-export function DealerCardCover({ dealer }: { dealer: DealerCardDto }) {
+export function DealerCardCover(_props: { dealer: DealerCardDto }) {
   return (
     <div
       className={cn(
@@ -13,24 +16,13 @@ export function DealerCardCover({ dealer }: { dealer: DealerCardDto }) {
         COVER_HEIGHT,
       )}
     >
-      {dealer.coverUrl ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"
-          />
-        </>
-      ) : (
-        <ImageSlot label={DEALER_CARD_TEXT.coverAlt(dealer.brandName)} />
-      )}
-
-      {dealer.isVerified ? (
-        <span className="absolute right-[10px] top-[10px] rounded-full bg-white/90 px-[9px] py-[3px] text-[10px] font-extrabold tracking-[0.06em] text-(--color-ink) backdrop-blur-[2px]">
-          {DEALER_CARD_TEXT.yardVerified}
-        </span>
-      ) : null}
+      <Image
+        src={STANDARD_DEALER_COVER_PATH}
+        alt={DEALER_CARD_TEXT.coverAlt}
+        width={960}
+        height={420}
+        className="h-full w-full object-cover"
+      />
     </div>
   );
 }

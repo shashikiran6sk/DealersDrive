@@ -1429,8 +1429,8 @@ describe('KYC documents — replace and remove', () => {
 });
 
 /**
- * The yard photograph, end to end. It is required before a dealership can be
- * submitted, which is what ties this to the completeness read below it.
+ * Optional yard photography, end to end. Required identity evidence remains
+ * independent of directory presentation and photographic uploads.
  */
 describe('the yard photograph', () => {
   const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
@@ -1499,7 +1499,7 @@ describe('the yard photograph', () => {
     const documents = (completeness.body.steps as { key: string; missing: string[] }[]).find(
       (step) => step.key === 'documents',
     );
-    expect(documents?.missing).toContain('YARD_PHOTO');
+    expect(documents?.missing).not.toContain('YARD_PHOTO');
   });
 
   it('404s a delete when there is nothing to remove', async () => {
@@ -1509,7 +1509,7 @@ describe('the yard photograph', () => {
   });
 
   /** A submit is refused until every part of the application is there. */
-  it('is required before a dealership can be submitted', async () => {
+  it('is optional when the required business and identity evidence is submitted', async () => {
     const { agent } = await dealership();
     await agent
       .patch('/v1/dealer/onboarding')
@@ -1541,11 +1541,6 @@ describe('the yard photograph', () => {
         .expect(200);
     }
 
-    const refused = await agent.post('/v1/dealer/submit').expect(422);
-    expect(refused.body.code).toBe('PROFILE_INCOMPLETE');
-    expect(JSON.stringify(refused.body.errors)).toContain('YARD_PHOTO');
-
-    await uploadYardPhoto(agent);
     const submitted = await agent.post('/v1/dealer/submit').expect(200);
     expect(submitted.body.status).toBe('PENDING_APPROVAL');
   });

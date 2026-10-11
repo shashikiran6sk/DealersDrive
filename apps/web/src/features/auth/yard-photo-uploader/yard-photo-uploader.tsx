@@ -84,8 +84,8 @@ export function YardPhotoUploader({
       <div>
         <div className="text-[14px] font-medium">{YARD_PHOTO_TEXT.heading}</div>
         <p className="mt-[4px] text-[12px] leading-[1.55] ink-secondary">
-          This is the first thing buyers see on your dealership page, so it is worth getting right.
-          Send us a{' '}
+          Optional. Approved yard photos appear only on your individual dealership page. Directory
+          cards use the same conceptual illustration for every dealer. You can add a{' '}
           <strong>clear, well-lit photograph of your yard or the signboard at your entrance</strong>{' '}
           — taken straight on, in daylight, with the whole frontage in frame. Not a logo, not a
           screenshot, and not a photo of one car.

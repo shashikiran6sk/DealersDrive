@@ -324,7 +324,21 @@ describe('BUG-002 — complete application, capability and history regression', 
     ).toBe('PENDING_APPROVAL');
   });
 
-  it.each(['gstin', 'pan', 'coverMediaId'] as const)(
+  it('can approve a submitted application with verified required documents and no yard photograph', async () => {
+    const f = await application();
+    await h.prisma.dealer.update({
+      where: { id: f.dealer.dealerId },
+      data: { coverMediaId: null },
+    });
+    const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
+    expect(detail.body.actions.canApprove).toBe(true);
+    await f.admin.post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`).send({}).expect(200);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: f.dealer.dealerId } })).status,
+    ).toBe('ACTIVE');
+  });
+
+  it.each(['gstin', 'pan'] as const)(
     'refuses an otherwise verified application with missing %s and a misleading status',
     async (field) => {
       const f = await application();
