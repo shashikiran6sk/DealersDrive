@@ -45,7 +45,3 @@ Open an individual dealer with approved yard media and verify its existing
 viewer; missing/unapproved media must not appear. Submit a synthetic application
 with valid required business/identity evidence and no yard photo. Verify card
 navigation, search/filter/pagination and mobile layouts.
-
-Base: `fix/dealer-email-uniqueness` (#288), validated head `9ad0c9e3`.
-No production deployment or merge. Complete post-creation tests and final-head
-CI before starting the service-locations PR.

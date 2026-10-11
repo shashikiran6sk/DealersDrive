@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ServiceLocationFields } from '@/components/forms/service-location-fields/service-location-fields';
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
 import { loadServiceLocationsAction } from '@/features/service-location-actions';
 
 vi.mock('@/features/service-location-actions', () => ({ loadServiceLocationsAction: vi.fn() }));
@@ -25,7 +25,12 @@ beforeEach(() => {
         active: true,
         onboardingEnabled: true,
         version: 1,
-        districts: [district('Vellore'), district('Chennai')],
+        districts: [
+          district('Vellore'),
+          district('Chennai'),
+          district('Tiruchirappalli'),
+          district('Thoothukudi'),
+        ],
       },
       {
         id: 'IN-KA',
@@ -47,6 +52,22 @@ function form(initialState = '', initialDistrict = '') {
   );
 }
 describe('canonical location fields', () => {
+  it('finds a district by its common legacy name and posts the government name', async () => {
+    const user = userEvent.setup();
+    form('Tamil Nadu');
+    const input = screen.getByRole('combobox', { name: 'District' });
+    await waitFor(() => expect(input).toBeEnabled());
+    await user.type(input, 'Trichy');
+    await user.click(screen.getByRole('button', { name: 'Tiruchirappalli' }));
+    expect(input).toHaveValue('Tiruchirappalli');
+    expect(screen.getByTestId('location-form').querySelector('input[name="district"]')).toHaveValue(
+      'Tiruchirappalli',
+    );
+    await user.clear(input);
+    await user.type(input, 'tuticorin');
+    expect(screen.getByRole('button', { name: 'Thoothukudi' })).toBeInTheDocument();
+  });
+
   it('shows the first selected state and district immediately and submits their canonical names', async () => {
     const user = userEvent.setup();
     form();
