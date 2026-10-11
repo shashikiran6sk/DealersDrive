@@ -13,9 +13,6 @@ export const LOGGER_OPTIONS: LoggerOptions = {
     environment: env.APP_ENV,
   },
   timestamp: pino.stdTimeFunctions.epochTime,
-  formatters: {
-    level: (label) => ({ level: label }),
-  },
   serializers: {
     err(value: unknown) {
       const error = isRecord(value) ? value : null;
@@ -77,9 +74,10 @@ function destination() {
   const endpoint = new URL(env.GRAFANA_CLOUD_LOKI_URL!);
   return transport({
     targets: [
-      { target: 'pino/file', options: { destination: 1 } },
+      { target: 'pino/file', level: 'trace', options: { destination: 1 } },
       {
         target: 'pino-loki',
+        level: 'trace',
         options: {
           host: endpoint.origin,
           endpoint: `${endpoint.pathname}${endpoint.search}`,
@@ -92,18 +90,9 @@ function destination() {
             environment: env.APP_ENV,
           },
           propsToLabels: ['method', 'route', 'status_code'],
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pino-loki types levelMap more narrowly than it accepts
-          levelMap: {
-            trace: 'debug',
-            debug: 'debug',
-            info: 'info',
-            warn: 'warning',
-            error: 'error',
-            fatal: 'critical',
-          } as unknown as LokiOptions['levelMap'],
           batching: { interval: 5, maxBufferSize: 10_000 },
           timeout: 10_000,
-          silenceErrors: false,
+          silenceErrors: true,
           structuredMetaKey: false,
         } satisfies LokiOptions,
       },
@@ -112,6 +101,11 @@ function destination() {
 }
 
 const logDestination = destination();
+logDestination?.on('error', () => {
+  process.stderr.write(
+    'Pino transport failed; check logging configuration and restart the process.\n',
+  );
+});
 export const logger: Logger = logDestination
   ? pino(LOGGER_OPTIONS, logDestination)
   : pino(LOGGER_OPTIONS);
