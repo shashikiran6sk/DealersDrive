@@ -76,7 +76,7 @@ describe('the dealership writes', () => {
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
-  it('answers a missing tagline and service in the schema’s words, not Zod’s', async () => {
+  it('accepts an absent tagline while naming missing required services', async () => {
     globalThis.fetch = respond(201, { id: 'd-1' });
     const refused = await createAssistedDealerAction({
       phoneTicket: 'x',
@@ -84,7 +84,7 @@ describe('the dealership writes', () => {
       mapsUrl: '',
       specialities: [],
     });
-    expect(refused.fieldErrors?.tagline).toBe('One line buyers will read under your name.');
+    expect(refused.fieldErrors?.tagline).toBeUndefined();
     expect(refused.fieldErrors?.specialities).toBe('Name at least one service you offer.');
     expect(refused.fieldErrors?.mapsUrl).toBe('Paste the link Google Maps gave you.');
   });

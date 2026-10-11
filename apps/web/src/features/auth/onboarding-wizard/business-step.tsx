@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { ServiceInput } from '@/components/ui/service-input';
 import { servicesOf } from '@/lib/services';
 
-import { ONBOARDING_TEXT, TAGLINE_MAX, TAGLINE_MIN } from './onboarding-wizard.constants';
+import { ONBOARDING_TEXT, TAGLINE_MAX } from './onboarding-wizard.constants';
 
 export interface BusinessStepProps {
   dealer: DealerProfile | null;
@@ -139,19 +139,16 @@ export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepPro
           <Field
             id="tagline"
             label="One line about your dealership"
-            hint="shown under your name on your public page"
+            hint="optional — shown on your public page"
             error={errors.tagline}
             className="sm:col-span-2"
           >
             <Input
               id="tagline"
               name="tagline"
-              minLength={TAGLINE_MIN}
               maxLength={TAGLINE_MAX}
               defaultValue={values.tagline ?? dealer?.tagline ?? ''}
               placeholder={ONBOARDING_TEXT.taglinePlaceholder}
-              required
-              aria-required="true"
               {...invalidProps('tagline', errors.tagline)}
             />
             <p className="mt-[4px] text-[11px] ink-subtle">

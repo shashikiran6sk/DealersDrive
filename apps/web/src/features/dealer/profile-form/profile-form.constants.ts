@@ -23,7 +23,7 @@ export const PROFILE_FORM_TEXT = {
   establishedLabel: 'Established',
   taglineLabel: 'One line about your dealership',
   taglineHintWaiting: 'waiting for review — cancel above to change it',
-  taglineHint: 'shown under your name on your public page — checked before it appears',
+  taglineHint: 'optional — shown under your name on your public page — checked before it appears',
   taglinePlaceholder:
     'Quality pre-owned cars since 1998 — professionally inspected, with expert support.',
   servicesLabel: 'Services you offer',

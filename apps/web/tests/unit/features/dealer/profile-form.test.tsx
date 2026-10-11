@@ -81,6 +81,31 @@ const DEALER: DealerProfile = {
   profileChange: null,
 };
 
+describe('optional tagline removal presentation', () => {
+  it('shows a pending removal as an empty locked field instead of the old live text', () => {
+    render(
+      <DealerProfileForm
+        dealer={{
+          ...DEALER,
+          profileChange: {
+            id: 'clear-fixture',
+            status: 'PENDING',
+            statusLabel: 'Pending',
+            tagline: null,
+            taglineChanged: true,
+            specialities: [],
+            submittedAtLabel: 'Today',
+            reviewedAtLabel: null,
+            decisionReason: null,
+          },
+        }}
+      />,
+    );
+    expect(screen.getByLabelText(/one line about your dealership/i)).toHaveValue('');
+    expect(screen.getByText('Remove tagline after approval')).toBeInTheDocument();
+  });
+});
+
 describe('what the form offers', () => {
   it.each([2090, 2400])('shows an inline error for the future year %s', async (year) => {
     const user = userEvent.setup();

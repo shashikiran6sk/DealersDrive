@@ -16,7 +16,7 @@ export const ONBOARDING_PATH = {
   dashboard: '/dealer',
 } as const;
 
-export const TAGLINE_MIN = 10;
+export const TAGLINE_MIN = 0;
 export const TAGLINE_MAX = 200;
 
 export const MISSING_LABELS: Record<string, string> = {
@@ -72,8 +72,7 @@ export const ONBOARDING_TEXT = {
   businessLegend: 'Your dealership',
   businessHeading: 'Dealership information',
   businessIntro: 'This is what buyers see on every one of your listings.',
-  taglinePlaceholder:
-    'Quality pre-owned cars since 1998 — professionally inspected, with expert support.',
+  taglinePlaceholder: 'Optional short description of your dealership',
 
   documentsHeading: 'Business verification',
   documentsIntro:

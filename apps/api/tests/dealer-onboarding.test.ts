@@ -388,16 +388,9 @@ describe('the dealership description', () => {
     expect(profile.body.specialities).toEqual(['Hatchbacks']);
   });
 
-  it('is required, and onboarding without a tagline is refused', async () => {
-    newAccount();
-    const agent = h.agent();
-    await h.signIn(agent);
-
-    const { tagline: _omitted, ...withoutTagline } = onboarding();
-    const refused = await agent.post('/v1/auth/onboarding').send(withoutTagline).expect(400);
-
-    expect(refused.body.code).toBe('VALIDATION_FAILED');
-    expect(JSON.stringify(refused.body)).toContain('tagline');
+  it.each([undefined, null, '', '   '])('onboards without marketing text (%s)', async (tagline) => {
+    const { agent } = await dealership({ tagline });
+    expect((await agent.get('/v1/dealer').expect(200)).body.tagline).toBeNull();
   });
 
   it('is required, and onboarding without a service is refused', async () => {
@@ -438,25 +431,9 @@ describe('the dealership description', () => {
    * no minimum is satisfied by a single character, which buys nothing except
    * the false belief that every portfolio has prose on it.
    */
-  it('refuses a single evasive word', async () => {
-    newAccount();
-    const agent = h.agent();
-    await h.signIn(agent);
-
-    await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ tagline: 'cars' }))
-      .expect(400);
-    await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ tagline: '-' }))
-      .expect(400);
-    // Whitespace is trimmed before the length is counted, so padding does not
-    // buy a way past it either.
-    await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ tagline: `cars${' '.repeat(40)}` }))
-      .expect(400);
+  it.each(['cars', '-', '  x  '])('accepts optional short text %s', async (tagline) => {
+    const { agent } = await dealership({ tagline });
+    expect((await agent.get('/v1/dealer').expect(200)).body.tagline).toBe(tagline.trim());
   });
 
   /** Ten characters exactly — the floor is a floor, not a wall. */
@@ -472,7 +449,7 @@ describe('the dealership description', () => {
    * no backfill — nobody but the dealer can write this sentence — so
    * completeness has to name it rather than pass silently.
    */
-  it('names the missing line and services when a dealership predates the question', async () => {
+  it('keeps required services but does not demand absent marketing text', async () => {
     const { agent, dealerId } = await dealership();
     await h.prisma.dealer.update({
       where: { id: dealerId },
@@ -484,7 +461,7 @@ describe('the dealership description', () => {
       (step: { key: string }) => step.key === 'business',
     );
 
-    expect(business.missing).toContain('tagline');
+    expect(business.missing).not.toContain('tagline');
     expect(business.missing).toContain('specialities');
     expect(completeness.body.canSubmit).toBe(false);
   });
@@ -528,19 +505,13 @@ describe('the dealership description', () => {
    * them must not clear them — but neither may be *emptied*, or the dealer
    * could delete on the profile screen what onboarding insisted on.
    */
-  it('cannot be emptied through PATCH', async () => {
+  it.each([null, '', '   '])('clears a draft tagline through PATCH (%s)', async (tagline) => {
     const { agent } = await dealership({ tagline: TAGLINE, specialities: ['Hatchbacks'] });
-
-    expect((await agent.patch('/v1/dealer').send({ tagline: '' }).expect(400)).body.code).toBe(
-      'VALIDATION_FAILED',
-    );
+    await agent.patch('/v1/dealer').send({ tagline }).expect(200);
+    expect((await agent.get('/v1/dealer').expect(200)).body.tagline).toBeNull();
     expect((await agent.patch('/v1/dealer').send({ specialities: [] }).expect(400)).body.code).toBe(
       'VALIDATION_FAILED',
     );
-
-    const profile = await agent.get('/v1/dealer').expect(200);
-    expect(profile.body.tagline).toBe(TAGLINE);
-    expect(profile.body.specialities).toEqual(['Hatchbacks']);
   });
 
   it('refuses a line longer than the column is meant to hold', async () => {
@@ -1585,6 +1556,102 @@ describe('a dealer editing their own public words', () => {
    * The whole point, in one case: what a buyer sees does not move until a
    * moderator says so.
    */
+  it('holds removal until approval and records explicit intent without changing live text early', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+    await agent.patch('/v1/dealer').send({ tagline: null }).expect(200);
+    const proposal = await h.prisma.dealerProfileChange.findFirstOrThrow({
+      where: { dealerId, status: 'PENDING' },
+    });
+    expect(proposal).toMatchObject({ tagline: null, taglineChanged: true });
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.tagline).toBe(before.tagline);
+    expect(profile.body.profileChange.taglineChanged).toBe(true);
+    await admin.post(`/v1/admin/profile-changes/${proposal.id}/approve`).expect(200);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).tagline,
+    ).toBeNull();
+  });
+  it('preserves live text when a removal is rejected or withdrawn', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+    await agent.patch('/v1/dealer').send({ tagline: '' }).expect(200);
+    const proposal = await h.prisma.dealerProfileChange.findFirstOrThrow({
+      where: { dealerId, status: 'PENDING' },
+    });
+    await admin
+      .post(`/v1/admin/profile-changes/${proposal.id}/reject`)
+      .send({ reason: 'Synthetic review refusal' })
+      .expect(200);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).tagline).toBe(
+      before.tagline,
+    );
+    await agent.patch('/v1/dealer').send({ tagline: null }).expect(200);
+    await agent.delete('/v1/dealer/profile-change').expect(200);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).tagline).toBe(
+      before.tagline,
+    );
+  });
+  it('admits only one concurrent approval/refusal and publishes exactly the accepted outcome', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+    await agent.patch('/v1/dealer').send({ tagline: null }).expect(200);
+    const proposal = await h.prisma.dealerProfileChange.findFirstOrThrow({
+      where: { dealerId, status: 'PENDING' },
+    });
+    const responses = await Promise.all([
+      admin.post(`/v1/admin/profile-changes/${proposal.id}/approve`),
+      admin
+        .post(`/v1/admin/profile-changes/${proposal.id}/reject`)
+        .send({ reason: 'Synthetic concurrent refusal' }),
+    ]);
+    expect(responses.map((r) => r.status).sort()).toEqual([200, 409]);
+    const final = await h.prisma.dealerProfileChange.findUniqueOrThrow({
+      where: { id: proposal.id },
+    });
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).tagline).toBe(
+      final.status === 'APPROVED' ? null : before.tagline,
+    );
+  });
+  it('does not let clients forge the removal-intent flag', async () => {
+    const { agent } = await trading();
+    await agent.patch('/v1/dealer').send({ taglineChanged: true }).expect(400);
+  });
+
+  it('does not queue a removal when the live tagline is already absent', async () => {
+    const { agent, dealerId } = await trading({ tagline: null });
+    await agent.patch('/v1/dealer').send({ tagline: null }).expect(200);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+  });
+  it('keeps blank legacy text out of public directory and detail payloads', async () => {
+    const { dealerId } = await trading();
+    const row = await h.prisma.dealer.update({ where: { id: dealerId }, data: { tagline: '   ' } });
+    const detail = await h.agent().get(`/v1/dealers/${row.slug}`).expect(200);
+    expect(detail.body.tagline).toBeNull();
+    const directory = await h
+      .agent()
+      .get(`/v1/dealers?q=${encodeURIComponent(row.brandName)}&limit=24`)
+      .expect(200);
+    expect(
+      directory.body.data.find((entry: { slug: string }) => entry.slug === row.slug).tagline,
+    ).toBeNull();
+  });
+  it('rejects unauthorized removal approval without changing the live profile', async () => {
+    const { agent, dealerId } = await trading();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+    await agent.patch('/v1/dealer').send({ tagline: null }).expect(200);
+    const proposal = await h.prisma.dealerProfileChange.findFirstOrThrow({
+      where: { dealerId, status: 'PENDING' },
+    });
+    await agent.post(`/v1/admin/profile-changes/${proposal.id}/approve`).expect(401);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).tagline).toBe(
+      before.tagline,
+    );
+  });
+
   it('does not publish the tagline until it is approved', async () => {
     const { agent, dealerId } = await trading();
     const admin = await moderator();

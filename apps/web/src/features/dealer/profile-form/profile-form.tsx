@@ -34,7 +34,10 @@ export function DealerProfileForm({
 
   const waiting = dealer.profileChange?.status === 'PENDING' ? dealer.profileChange : null;
   const locked = readOnly || Boolean(waiting);
-  const taglineValue = waiting?.tagline ?? dealer.tagline ?? '';
+  const taglineValue =
+    waiting && (waiting.taglineChanged || waiting.tagline !== null)
+      ? (waiting.tagline ?? '')
+      : (dealer.tagline ?? '');
   const servicesValue =
     waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities;
 
@@ -98,12 +101,9 @@ export function DealerProfileForm({
           <Input
             id="tagline"
             {...(locked ? {} : { name: 'tagline' })}
-            minLength={10}
             maxLength={200}
             defaultValue={taglineValue}
             placeholder={PROFILE_FORM_TEXT.taglinePlaceholder}
-            required={!locked}
-            aria-required={locked ? undefined : 'true'}
             disabled={locked}
             {...invalidProps('tagline', errors.tagline)}
           />
@@ -120,7 +120,6 @@ export function DealerProfileForm({
             {...(locked ? {} : { name: 'specialities' })}
             value={servicesValue}
             placeholder={PROFILE_FORM_TEXT.servicesPlaceholder}
-            required={!locked}
             disabled={locked}
             {...invalidProps('specialities', errors.specialities)}
           />

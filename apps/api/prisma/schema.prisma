@@ -551,15 +551,10 @@ model DealerProfileChange {
   dealerId String              @db.Uuid
   status   ProfileChangeStatus @default(PENDING)
 
-  /// The proposed line, or NULL when this request does not touch it.
-  ///
-  /// NULL is unambiguous here in a way it would not be on `dealers.tagline`:
-  /// the field cannot be *emptied* — `DealerSelfUpdateInput` puts a floor of
-  /// ten characters on it — so a request carrying NULL is a request about the
-  /// services only. The same reasoning gives the empty array below its meaning:
-  /// the floor on the list is one entry.
-  tagline      String?
-  specialities String[]
+  /// Null plus taglineChanged means removal; null without it means unchanged.
+  tagline        String?
+  taglineChanged Boolean  @default(false)
+  specialities   String[]
 
   /// Who typed it. `dealerId` says whose profile; this says whose hands.
   submittedBy    String?   @db.Uuid

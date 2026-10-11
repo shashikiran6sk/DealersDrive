@@ -145,6 +145,7 @@ function toAdminProfileChange(
     dealerId: string;
     status: ProfileChangeStatus;
     tagline: string | null;
+    taglineChanged?: boolean;
     specialities: string[];
     createdAt: Date;
     decisionReason: string | null;
@@ -162,6 +163,7 @@ function toAdminProfileChange(
     statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
     statusTone: PROFILE_CHANGE_STATUS_TONES[row.status],
     tagline: row.tagline,
+    taglineChanged: row.taglineChanged || row.tagline !== null,
     specialities: row.specialities,
     liveTagline: dealer.tagline,
     liveSpecialities: distinctServices(dealer.specialities),
@@ -210,8 +212,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     }
   }
 
-  async function requirePendingChange(changeId: string) {
-    const change = await prisma.dealerProfileChange.findUnique({
+  async function requirePendingChange(changeId: string, tx?: Tx) {
+    const change = await (tx ?? prisma).dealerProfileChange.findUnique({
       where: { id: changeId },
       include: { dealer: true },
     });
@@ -1090,12 +1092,20 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const change = await requirePendingChange(changeId);
 
-      await dealers.update(change.dealerId, {
-        ...(change.tagline === null ? {} : { tagline: change.tagline }),
-        ...(change.specialities.length === 0 ? {} : { specialities: change.specialities }),
-      });
-
       const decided = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, change.dealerId);
+        await tx.$queryRaw`SELECT "id" FROM "dealer_profile_changes" WHERE "id" = ${changeId}::uuid FOR UPDATE`;
+        const current = await requirePendingChange(changeId, tx);
+        await dealers.update(
+          current.dealerId,
+          {
+            ...(current.taglineChanged || current.tagline !== null
+              ? { tagline: current.tagline }
+              : {}),
+            ...(current.specialities.length === 0 ? {} : { specialities: current.specialities }),
+          },
+          tx,
+        );
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: { status: 'APPROVED', reviewedBy: admin.userId, reviewedAt: new Date() },
@@ -1109,10 +1119,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'DealerProfileChange',
           entityId: changeId,
           before: {
-            tagline: change.dealer.tagline,
-            specialities: change.dealer.specialities,
+            tagline: current.dealer.tagline,
+            specialities: current.dealer.specialities,
           },
-          after: { tagline: change.tagline, specialities: change.specialities },
+          after: {
+            tagline: current.tagline,
+            taglineChanged: current.taglineChanged || current.tagline !== null,
+            specialities: current.specialities,
+          },
         });
 
         await enqueueOutbox(tx, {
@@ -1149,6 +1163,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const change = await requirePendingChange(changeId);
 
       const decided = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, change.dealerId);
+        await tx.$queryRaw`SELECT "id" FROM "dealer_profile_changes" WHERE "id" = ${changeId}::uuid FOR UPDATE`;
+        await requirePendingChange(changeId, tx);
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: {

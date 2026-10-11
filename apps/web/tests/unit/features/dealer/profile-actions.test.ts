@@ -189,11 +189,11 @@ describe('a complete save', () => {
    * A partial patch. An untouched box must not arrive as an instruction to
    * clear the column behind it — that is what makes this schema partial.
    */
-  it('omits the boxes that were left empty', async () => {
+  it('clears explicit empty marketing text but leaves an absent year alone', async () => {
     await saveDealerProfileAction(IDLE, form({ ...COMPLETE, tagline: '', establishedYear: '  ' }));
     const body = bodyOf(calls[0]);
 
-    expect(body).not.toHaveProperty('tagline');
+    expect(body.tagline).toBeNull();
     expect(body).not.toHaveProperty('establishedYear');
     // And what was answered still goes.
     expect(body.specialities).toEqual(['Hatchbacks', 'RC transfer', 'Exchange']);
@@ -207,8 +207,11 @@ describe('a refusal', () => {
     expect(calls).toHaveLength(0);
   });
 
-  it('rejects a line shorter than the floor onboarding insisted on', async () => {
-    const state = await saveDealerProfileAction(IDLE, form({ ...COMPLETE, tagline: 'Cars' }));
+  it('rejects a line above the shared maximum', async () => {
+    const state = await saveDealerProfileAction(
+      IDLE,
+      form({ ...COMPLETE, tagline: 'x'.repeat(201) }),
+    );
 
     expect(state.status).toBe('error');
     expect(state.fieldErrors.tagline).toBeTruthy();
