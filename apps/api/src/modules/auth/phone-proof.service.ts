@@ -48,6 +48,8 @@ export interface PhoneProofDeps {
 
 export const TOKEN_SPENT_WINDOW_SECONDS = 15 * 60;
 
+export const PROOF_CLOCK_SKEW_MS = 30_000;
+
 export const REPLAY_GUARD_FAILS_OPEN: Readonly<Record<OtpPurpose, boolean>> = {
   DEALER_PHONE_LINK: true,
   DEALER_LOGIN: false,
@@ -123,17 +125,16 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
         throw refused(input, 'identifier mismatch');
       }
 
-      if (
-        input.freshAfter &&
-        (!verdict.issuedAt ||
-          !verdict.expiresAt ||
-          !Number.isFinite(verdict.issuedAt.getTime()) ||
-          !Number.isFinite(verdict.expiresAt.getTime()) ||
-          verdict.issuedAt.getTime() < input.freshAfter.getTime() - 5000 ||
-          verdict.issuedAt.getTime() > Date.now() + 5000 ||
-          verdict.expiresAt.getTime() <= Date.now())
-      ) {
-        throw refused(input, 'proof freshness unavailable or expired');
+      if (input.freshAfter) {
+        if (staleProof(verdict, input.freshAfter)) {
+          throw refused(input, 'proof issued before the challenge or already expired');
+        }
+        if (!verdict.issuedAt) {
+          logger.info(
+            { event: 'phone_otp.proof_untimed', purpose: input.purpose },
+            'provider-verified phone proof carried no issue time',
+          );
+        }
       }
 
       await consumeToken(cache, input);
@@ -144,6 +145,20 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
 }
 
 export type PhoneProofService = ReturnType<typeof createPhoneProofService>;
+
+function staleProof(
+  verdict: { issuedAt?: Date | undefined; expiresAt?: Date | undefined },
+  freshAfter: Date,
+  now = Date.now(),
+): boolean {
+  const issued = verdict.issuedAt?.getTime();
+  const expires = verdict.expiresAt?.getTime();
+  if (issued !== undefined && Number.isFinite(issued)) {
+    if (issued < freshAfter.getTime() - PROOF_CLOCK_SKEW_MS) return true;
+    if (issued > now + PROOF_CLOCK_SKEW_MS) return true;
+  }
+  return expires !== undefined && Number.isFinite(expires) && expires <= now;
+}
 
 export function spentTokenKey(accessToken: string): string {
   return `phone-otp:spent:${createHash('sha256').update(accessToken).digest('hex')}`;
