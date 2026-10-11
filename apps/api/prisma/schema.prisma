@@ -324,6 +324,11 @@ model Dealer {
   mapsPlaceId            String?
   contactPhone           String?
   contactEmail           String?
+  /// Database-maintained primary ownership identity, separate from public contact
+  /// details. Unclaimed assisted applications reserve their declared email;
+  /// claimed owners use their verified Google identity (or existing account email).
+  /// Never accepts ownership proof and never appears in public DTOs.
+  primaryOwnerEmail      String?                @unique
   /// The contact person's name, for an assisted dealership that has no owner
   /// account yet. A self-onboarded dealership reads it from the OWNER's user.
   contactName            String?

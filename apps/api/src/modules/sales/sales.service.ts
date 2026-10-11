@@ -35,9 +35,19 @@ import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { AdminPrincipal, PhoneProofService } from '../auth/auth.facade.js';
 import { requestEmailVerification, withinCooldown } from '../dealer-claims/dealer-claims.facade.js';
-import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
+import {
+  uniqueDealerSlug,
+  normaliseDealerEmail,
+  withDealerEmailConflict,
+  assertDealerEmailFree,
+  type DealersService,
+} from '../dealers/dealers.facade.js';
 import type { AssistedVehicleActor, VehiclesService } from '../vehicles/vehicles.facade.js';
-import { issueAssistedPhoneTicket, redeemAssistedPhoneTicket } from './assisted-phone-ticket.js';
+import {
+  issueAssistedPhoneTicket,
+  redeemAssistedPhoneTicket,
+  openAssistedPhoneTicket,
+} from './assisted-phone-ticket.js';
 import {
   ASSISTED_DEALER_LOCKED,
   ASSISTED_DEALER_NOT_FOUND,
@@ -190,9 +200,13 @@ export function createSalesService({
     };
   }
 
-  async function requireAssisted(principal: AdminPrincipal, dealerId: string) {
+  async function requireAssisted(
+    principal: AdminPrincipal,
+    dealerId: string,
+    db: PrismaClient | Tx = prisma,
+  ) {
     const memberId = memberOf(principal);
-    const dealer = await prisma.dealer.findFirst({
+    const dealer = await db.dealer.findFirst({
       where: { id: dealerId, assistedByMemberId: memberId },
       select: SUMMARY_SELECT,
     });
@@ -202,8 +216,12 @@ export function createSalesService({
     return dealer;
   }
 
-  async function requireEditable(principal: AdminPrincipal, dealerId: string): Promise<void> {
-    const dealer = await requireAssisted(principal, dealerId);
+  async function requireEditable(
+    principal: AdminPrincipal,
+    dealerId: string,
+    db: PrismaClient | Tx = prisma,
+  ): Promise<void> {
+    const dealer = await requireAssisted(principal, dealerId, db);
     if (dealer.status !== 'DRAFT' || dealer.members.length > 0) {
       throw new ConflictError('ASSISTED_DEALER_LOCKED', ASSISTED_DEALER_LOCKED);
     }
@@ -424,6 +442,9 @@ export function createSalesService({
       input: CreateAssistedDealerInput,
     ): Promise<SalesDealerDetail> {
       const memberId = memberOf(principal);
+      if (openAssistedPhoneTicket(input.phoneTicket, memberId)) {
+        await assertDealerEmailFree(prisma, input.email);
+      }
       const ticket = await redeemAssistedPhoneTicket(cache, input.phoneTicket, memberId);
 
       const city = normaliseLocality(input.city);
@@ -456,75 +477,83 @@ export function createSalesService({
       const place = await maps.placeFor(input.mapsUrl);
       const consentAt = new Date(ticket.provenAt);
 
-      const created = await withTransaction(prisma, async (tx) => {
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.phone}`}))`;
-        await assertPhoneFree(tx, ticket.phone);
+      const email = normaliseDealerEmail(input.email);
+      const created = await withDealerEmailConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.phone}`}))`;
+          await assertPhoneFree(tx, ticket.phone);
 
-        const dealer = await tx.dealer.create({
-          data: {
-            slug: await uniqueDealerSlug(tx, { legalName: input.legalName, city, district, state }),
-            brandName: input.legalName,
-            legalName: input.legalName,
-            status: 'DRAFT',
-            city,
-            district,
-            state,
-            addressLine: input.addressLine,
-            pincode: input.pincode,
-            mapsUrl: input.mapsUrl,
-            lat: place.coordinates?.lat ?? null,
-            lng: place.coordinates?.lng ?? null,
-            mapsPlaceId: place.placeId,
-            contactName: input.contactName,
-            contactPhone: ticket.phone,
-            contactPhoneVerifiedAt: consentAt,
-            contactEmail: input.email,
-            contactEmailVerifiedAt: null,
-            landline: input.landline ?? null,
-            tagline: input.tagline,
-            specialities: input.specialities,
-            gstin: input.gstin ?? null,
-            pan: input.pan ?? null,
-            onboardingSource: 'ASSISTED',
-            assistedByMemberId: memberId,
-            assistedConsentAt: consentAt,
-          },
-        });
+          const dealer = await tx.dealer.create({
+            data: {
+              slug: await uniqueDealerSlug(tx, {
+                legalName: input.legalName,
+                city,
+                district,
+                state,
+              }),
+              brandName: input.legalName,
+              legalName: input.legalName,
+              status: 'DRAFT',
+              city,
+              district,
+              state,
+              addressLine: input.addressLine,
+              pincode: input.pincode,
+              mapsUrl: input.mapsUrl,
+              lat: place.coordinates?.lat ?? null,
+              lng: place.coordinates?.lng ?? null,
+              mapsPlaceId: place.placeId,
+              contactName: input.contactName,
+              contactPhone: ticket.phone,
+              contactPhoneVerifiedAt: consentAt,
+              contactEmail: email,
+              contactEmailVerifiedAt: null,
+              landline: input.landline ?? null,
+              tagline: input.tagline,
+              specialities: input.specialities,
+              gstin: input.gstin ?? null,
+              pan: input.pan ?? null,
+              onboardingSource: 'ASSISTED',
+              assistedByMemberId: memberId,
+              assistedConsentAt: consentAt,
+            },
+          });
 
-        await tx.dealerDocument.createMany({
-          data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+          await tx.dealerDocument.createMany({
+            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+              dealerId: dealer.id,
+              type,
+              status: 'REQUIRED' as const,
+            })),
+          });
+
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: principal.userId,
             dealerId: dealer.id,
-            type,
-            status: 'REQUIRED' as const,
-          })),
-        });
+            action: 'dealer.assisted.created',
+            entityType: 'Dealer',
+            entityId: dealer.id,
+            after: {
+              slug: dealer.slug,
+              status: dealer.status,
+              onboardingSource: 'ASSISTED',
+              assistedByMemberId: memberId,
+              phoneVerifiedAt: consentAt.toISOString(),
+              consentAt: consentAt.toISOString(),
+              emailVerified: false,
+            },
+          });
+          await requestEmailVerification(tx, {
+            dealerId: dealer.id,
+            email,
+            memberId,
+            actorUserId: principal.userId,
+          });
 
-        await audit.record(tx, {
-          actorType: 'ADMIN',
-          actorId: principal.userId,
-          dealerId: dealer.id,
-          action: 'dealer.assisted.created',
-          entityType: 'Dealer',
-          entityId: dealer.id,
-          after: {
-            slug: dealer.slug,
-            status: dealer.status,
-            onboardingSource: 'ASSISTED',
-            assistedByMemberId: memberId,
-            phoneVerifiedAt: consentAt.toISOString(),
-            consentAt: consentAt.toISOString(),
-            emailVerified: false,
-          },
-        });
-        await requestEmailVerification(tx, {
-          dealerId: dealer.id,
-          email: input.email,
-          memberId,
-          actorUserId: principal.userId,
-        });
-
-        return dealer;
-      });
+          return dealer;
+        }),
+      );
 
       logger.info(
         { event: 'sales.dealer.created', adminMemberId: memberId, dealerId: created.id },
@@ -541,7 +570,7 @@ export function createSalesService({
       input: UpdateAssistedDealerInput,
     ): Promise<SalesDealerDetail> {
       await requireEditable(principal, dealerId);
-      const current = await prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+      const email = input.email === undefined ? undefined : normaliseDealerEmail(input.email);
 
       const patch: UpdateDealerInput = {
         ...(input.legalName === undefined ? {} : { legalName: input.legalName }),
@@ -553,7 +582,7 @@ export function createSalesService({
           ? {}
           : {
               contact: {
-                ...(input.email === undefined ? {} : { email: input.email }),
+                ...(email === undefined ? {} : { email }),
                 ...(input.landline === undefined ? {} : { landline: input.landline }),
               },
             }),
@@ -576,37 +605,41 @@ export function createSalesService({
             }),
       };
 
-      await dealers.amendDraft(dealerId, patch);
-
-      const emailChanged = input.email !== undefined && input.email !== current.contactEmail;
-      await withTransaction(prisma, async (tx) => {
-        if (input.contactName !== undefined || emailChanged) {
-          await tx.dealer.update({
-            where: { id: dealerId },
-            data: {
-              ...(input.contactName === undefined ? {} : { contactName: input.contactName }),
-              ...(emailChanged ? { contactEmailVerifiedAt: null } : {}),
-            },
-          });
-        }
-        await audit.record(tx, {
-          actorType: 'ADMIN',
-          actorId: principal.userId,
-          dealerId,
-          action: 'dealer.assisted.updated',
-          entityType: 'Dealer',
-          entityId: dealerId,
-          after: { fields: Object.keys(input), emailChanged },
-        });
-        if (emailChanged && input.email) {
-          await requestEmailVerification(tx, {
+      await withDealerEmailConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+          await requireEditable(principal, dealerId, tx);
+          const current = await tx.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+          const emailChanged = email !== undefined && email !== current.contactEmail;
+          await dealers.amendDraft(dealerId, patch, tx);
+          if (input.contactName !== undefined || emailChanged) {
+            await tx.dealer.update({
+              where: { id: dealerId },
+              data: {
+                ...(input.contactName === undefined ? {} : { contactName: input.contactName }),
+                ...(emailChanged ? { contactEmailVerifiedAt: null } : {}),
+              },
+            });
+          }
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: principal.userId,
             dealerId,
-            email: input.email,
-            memberId: memberOf(principal),
-            actorUserId: principal.userId,
+            action: 'dealer.assisted.updated',
+            entityType: 'Dealer',
+            entityId: dealerId,
+            after: { fields: Object.keys(input), emailChanged },
           });
-        }
-      });
+          if (emailChanged && email) {
+            await requestEmailVerification(tx, {
+              dealerId,
+              email,
+              memberId: memberOf(principal),
+              actorUserId: principal.userId,
+            });
+          }
+        }),
+      );
 
       return detail(principal, dealerId);
     },

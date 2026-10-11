@@ -21,7 +21,12 @@ import {
   UnauthorizedError,
 } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
+import {
+  uniqueDealerSlug,
+  normaliseDealerEmail,
+  withDealerEmailConflict,
+  type DealersService,
+} from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
 import { isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
 import {
@@ -185,11 +190,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      const claims = await oauth.exchange({
+      const verified = await oauth.exchange({
         code: input.code,
         codeVerifier: transaction.codeVerifier,
         nonce: transaction.nonce,
       });
+      const claims = { ...verified, email: normaliseDealerEmail(verified.email) };
 
       logger.info({ event: 'auth.oauth.verified', provider: 'GOOGLE' }, 'oauth identity verified');
 
@@ -220,16 +226,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         }
 
         userId = existing.userId;
-        await prisma.oAuthIdentity.update({
-          where: { id: existing.id },
-          data: {
-            email: claims.email,
-            emailVerified: claims.emailVerified,
-            displayName: claims.name ?? existing.displayName,
-            pictureUrl: claims.picture ?? existing.pictureUrl,
-            lastLoginAt: new Date(),
-          },
-        });
+        try {
+          await withDealerEmailConflict(() =>
+            prisma.oAuthIdentity.update({
+              where: { id: existing.id },
+              data: {
+                email: claims.email,
+                emailVerified: claims.emailVerified,
+                displayName: claims.name ?? existing.displayName,
+                pictureUrl: claims.picture ?? existing.pictureUrl,
+                lastLoginAt: new Date(),
+              },
+            }),
+          );
+        } catch (error) {
+          if (!(error instanceof ConflictError) || error.code !== 'DEALER_EMAIL_TAKEN') throw error;
+          await prisma.oAuthIdentity.update({
+            where: { id: existing.id },
+            data: { lastLoginAt: new Date() },
+          });
+          await audit.recordDetached({
+            actorType: 'DEALER',
+            actorId: userId,
+            action: 'auth.identity.email_update_blocked',
+            entityType: 'User',
+            entityId: userId,
+            after: { reason: 'conflicting_primary_dealer_identity' },
+          });
+        }
         await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
       } else {
         userId = await identities.createWithGoogle(claims);
@@ -277,6 +301,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           ],
         });
       }
+      const email = normaliseDealerEmail(linked.google.email);
 
       const city = normaliseLocality(input.city);
       const district = normaliseLocality(input.district);
@@ -310,74 +335,85 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
       const place = await maps.placeFor(input.mapsUrl);
 
-      const created = await withTransaction(prisma, async (tx) => {
-        const existing = await tx.dealerMember.findFirst({
-          where: { userId: principal.userId, status: 'ACTIVE' },
-        });
-        if (existing) {
-          throw new ConflictError(
-            'DEALER_ALREADY_EXISTS',
-            'This account already manages a dealership.',
-          );
-        }
+      const created = await withDealerEmailConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
+          const currentUser = await tx.user.findUniqueOrThrow({
+            where: { id: principal.userId },
+            include: { roles: true },
+          });
+          if (currentUser.status !== 'ACTIVE' || isSeatSuspended(currentUser.roles, 'DEALER')) {
+            throw new ForbiddenError(ACCOUNT_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
+          }
+          await assertPhoneVerified(tx, principal.userId, phone, 'body.phone');
+          const existing = await tx.dealerMember.findFirst({
+            where: { userId: principal.userId, status: 'ACTIVE' },
+          });
+          if (existing) {
+            throw new ConflictError(
+              'DEALER_ALREADY_EXISTS',
+              'This account already manages a dealership.',
+            );
+          }
 
-        await tx.user.update({
-          where: { id: principal.userId },
-          data: { fullName: input.fullName },
-        });
+          await tx.user.update({
+            where: { id: principal.userId },
+            data: { fullName: input.fullName },
+          });
 
-        const dealer = await tx.dealer.create({
-          data: {
-            slug: await uniqueDealerSlug(prisma, {
+          const dealer = await tx.dealer.create({
+            data: {
+              slug: await uniqueDealerSlug(prisma, {
+                legalName: input.legalName,
+                city,
+                district,
+                state,
+              }),
+              brandName: input.legalName,
               legalName: input.legalName,
+              status: 'DRAFT',
               city,
               district,
               state,
-            }),
-            brandName: input.legalName,
-            legalName: input.legalName,
-            status: 'DRAFT',
-            city,
-            district,
-            state,
-            addressLine: input.addressLine,
-            pincode: input.pincode,
-            mapsUrl: input.mapsUrl,
-            lat: place.coordinates?.lat ?? null,
-            lng: place.coordinates?.lng ?? null,
-            mapsPlaceId: place.placeId,
-            contactPhone: phone,
-            contactEmail: principal.email,
-            landline: input.landline ?? null,
-            tagline: input.tagline,
-            specialities: input.specialities,
-          },
-        });
+              addressLine: input.addressLine,
+              pincode: input.pincode,
+              mapsUrl: input.mapsUrl,
+              lat: place.coordinates?.lat ?? null,
+              lng: place.coordinates?.lng ?? null,
+              mapsPlaceId: place.placeId,
+              contactPhone: phone,
+              contactEmail: email,
+              landline: input.landline ?? null,
+              tagline: input.tagline,
+              specialities: input.specialities,
+            },
+          });
 
-        await tx.dealerMember.create({
-          data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
-        });
+          await tx.dealerMember.create({
+            data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
+          });
 
-        await tx.dealerDocument.createMany({
-          data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+          await tx.dealerDocument.createMany({
+            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+              dealerId: dealer.id,
+              type,
+              status: 'REQUIRED' as const,
+            })),
+          });
+
+          await audit.record(tx, {
+            actorType: 'DEALER',
+            actorId: principal.userId,
             dealerId: dealer.id,
-            type,
-            status: 'REQUIRED' as const,
-          })),
-        });
+            action: 'dealer.onboarding.created',
+            entityType: 'Dealer',
+            entityId: dealer.id,
+            after: { slug: dealer.slug, brandName: dealer.brandName, status: dealer.status },
+          });
 
-        await audit.record(tx, {
-          actorType: 'DEALER',
-          actorId: principal.userId,
-          dealerId: dealer.id,
-          action: 'dealer.onboarding.created',
-          entityType: 'Dealer',
-          entityId: dealer.id,
-          after: { slug: dealer.slug, brandName: dealer.brandName, status: dealer.status },
-        });
-
-        return { id: dealer.id, slug: dealer.slug };
-      });
+          return { id: dealer.id, slug: dealer.slug };
+        }),
+      );
 
       logger.info(
         { event: 'dealer.onboarding.created', dealerId: created.id, userId: principal.userId },

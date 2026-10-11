@@ -44,6 +44,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import { normaliseDealerEmail, withDealerEmailConflict } from './dealer-email-identity.js';
 import {
   ALREADY_SUBMITTED,
   APPLICATION_CLOSED,
@@ -300,8 +301,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(await requireDealer(dealerId));
     },
 
-    async amendDraft(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
-      const dealer = await requireDealer(dealerId);
+    async amendDraft(dealerId: string, input: UpdateDealerInput, tx?: Tx): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId, tx);
       if (dealer.status !== 'DRAFT') {
         throw new ConflictError(
           'PROFILE_LOCKED',
@@ -309,7 +310,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         );
       }
 
-      return this.update(dealerId, input);
+      return this.update(dealerId, input, tx);
     },
 
     async selfUpdate(
@@ -405,9 +406,30 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(await requireDealer(dealerId));
     },
 
-    async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
-      const dealer = await requireDealer(dealerId);
+    async update(
+      dealerId: string,
+      input: UpdateDealerInput,
+      transaction?: Tx,
+    ): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId, transaction);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
+      const email =
+        input.contact?.email === undefined ? undefined : normaliseDealerEmail(input.contact.email);
+      if (owner && email !== undefined && email !== normaliseDealerEmail(owner.user.email ?? '')) {
+        throw new ConflictError(
+          'OWNER_EMAIL_PROOF_REQUIRED',
+          'The owner’s email is a verified account identity. Contact support to change it.',
+          {
+            errors: [
+              {
+                field: 'body.contact.email',
+                code: 'OWNER_EMAIL_PROOF_REQUIRED',
+                message: 'Changing the owner’s identity requires verification.',
+              },
+            ],
+          },
+        );
+      }
 
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
@@ -442,13 +464,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         ...(input.pan === undefined ? {} : { pan: input.pan }),
       });
 
-      const updated = await withTransaction(prisma, async (tx) => {
+      const work = async (tx: Tx) => {
         if (input.contact && owner) {
           await tx.user.update({
             where: { id: owner.userId },
             data: {
               ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
-              ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
             },
           });
         }
@@ -467,7 +488,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
               : { establishedYear: input.establishedYear }),
             ...(specialities === undefined ? {} : { specialities }),
             ...(input.workingHours === undefined ? {} : { workingHours: input.workingHours }),
-            ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
+            ...(email === undefined ? {} : { contactEmail: email }),
+            ...(email === undefined || email === dealer.contactEmail
+              ? {}
+              : { contactEmailVerifiedAt: null }),
             ...(phone === undefined ? {} : { contactPhone: phone }),
             ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
@@ -486,7 +510,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           },
           tx,
         );
-      });
+      };
+      const updated = transaction
+        ? await work(transaction)
+        : await withDealerEmailConflict(() => withTransaction(prisma, work), 'body.contact.email');
 
       return toProfile(updated);
     },

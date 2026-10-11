@@ -95,6 +95,184 @@ function details(ticket: string, overrides: Record<string, unknown> = {}) {
   };
 }
 
+describe('primary dealer email conflicts', () => {
+  it('preserves Google subject authentication when an email change needs ownership review', async () => {
+    const reserved = await draft();
+    const email = nextEmail('existing.google.owner');
+    const subject = `google-email-conflict-${Date.now()}`;
+    h.google.claims = { subject, email, emailVerified: true };
+    const owner = h.agent();
+    await h.signIn(owner);
+    const phone = freeNumber();
+    await h.proveNumber(owner, phone);
+    const fields = details('unused');
+    const created = await owner
+      .post('/v1/auth/onboarding')
+      .send({
+        fullName: 'Synthetic Owner',
+        phone,
+        legalName: fields.legalName,
+        addressLine: fields.addressLine,
+        city: fields.city,
+        district: fields.district,
+        state: fields.state,
+        pincode: fields.pincode,
+        mapsUrl: fields.mapsUrl,
+        tagline: fields.tagline,
+        specialities: fields.specialities,
+      })
+      .expect(201);
+    h.google.claims = { subject, email: reserved.dealer.email, emailVerified: true };
+    const signedIn = h.agent();
+    expect((await h.signIn(signedIn)).status).toBe(302);
+    const session = await signedIn.get('/v1/auth/me').expect(200);
+    expect(session.body.dealer.id).toBe(created.body.dealer.id);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: created.body.dealer.id } }))
+        .primaryOwnerEmail,
+    ).toBe(email);
+    expect(await h.prisma.dealerMember.count({ where: { dealerId: reserved.dealer.id } })).toBe(0);
+    expect(
+      await h.prisma.auditLog.count({
+        where: { action: 'auth.identity.email_update_blocked', entityId: session.body.user.id },
+      }),
+    ).toBe(1);
+  });
+  it.each(['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'SUSPENDED', 'CLOSED'] as const)(
+    'refuses conflicting registration regardless of %s application status',
+    async (status) => {
+      const first = await draft();
+      await h.prisma.dealer.update({ where: { id: first.dealer.id }, data: { status } });
+      const { ticket } = await verify(sales);
+      const rejected = await sales
+        .post('/v1/sales/dealers')
+        .send(details(ticket, { email: `  ${first.dealer.email.toUpperCase()}  ` }))
+        .expect(409);
+      expect(rejected.body).toMatchObject({
+        code: 'DEALER_EMAIL_TAKEN',
+        errors: [{ field: 'body.email' }],
+      });
+      expect(
+        await h.prisma.dealer.count({ where: { primaryOwnerEmail: first.dealer.email } }),
+      ).toBe(1);
+      await sales.post('/v1/sales/dealers').send(details(ticket)).expect(201);
+    },
+  );
+
+  it('allows an existing non-owner operator email without assigning ownership or changing the account', async () => {
+    const original = await h.prisma.user.findUniqueOrThrow({ where: { email: salesEmail } });
+    const { ticket } = await verify(sales);
+    const created = await sales
+      .post('/v1/sales/dealers')
+      .send(details(ticket, { email: salesEmail }))
+      .expect(201);
+    expect(await h.prisma.dealerMember.count({ where: { dealerId: created.body.id } })).toBe(0);
+    expect(await h.prisma.user.findUniqueOrThrow({ where: { id: original.id } })).toEqual(original);
+    expect(created.body.emailVerified).toBe(false);
+  });
+
+  it('enforces the uniqueness constraint for direct database writes even if a caller forges the derived field', async () => {
+    const first = await draft();
+    counter += 1;
+    await expect(
+      h.prisma.dealer.create({
+        data: {
+          slug: `forged-email-${Date.now()}-${counter}`,
+          legalName: `Forged ${counter}`,
+          brandName: 'Forged',
+          contactEmail: `\t\n${first.dealer.email.toUpperCase()}\r\n`,
+          primaryOwnerEmail: 'forged@example.test',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'P2002' });
+  });
+
+  it('returns a conflict for two concurrent registrations and persists exactly one', async () => {
+    const left = await verify(sales),
+      right = await verify(otherSales);
+    const email = nextEmail('race.owner');
+    const responses = await Promise.all([
+      sales.post('/v1/sales/dealers').send(details(left.ticket, { email })),
+      otherSales
+        .post('/v1/sales/dealers')
+        .send(details(right.ticket, { email: email.toUpperCase() })),
+    ]);
+    expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
+    expect(responses.find((r) => r.status === 409)?.body.code).toBe('DEALER_EMAIL_TAKEN');
+    expect(await h.prisma.dealer.count({ where: { primaryOwnerEmail: email } })).toBe(1);
+  });
+
+  it('preserves the existing email and its verification state when an edit conflicts', async () => {
+    const first = await draft(),
+      second = await draft();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: second.dealer.id } });
+    const rejected = await sales
+      .patch(`/v1/sales/dealers/${second.dealer.id}`)
+      .send({ email: first.dealer.email })
+      .expect(409);
+    expect(rejected.body.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: 'body.email' })]),
+    );
+    expect(await h.prisma.dealer.findUniqueOrThrow({ where: { id: second.dealer.id } })).toEqual(
+      before,
+    );
+  });
+
+  it('permits a staff member in multiple dealerships without reserving their email as an owner', async () => {
+    const first = await draft(),
+      second = await draft();
+    const email = nextEmail('shared.staff');
+    const user = await h.prisma.user.create({ data: { email } });
+    await h.prisma.dealerMember.createMany({
+      data: [first.dealer.id, second.dealer.id].map((dealerId) => ({
+        userId: user.id,
+        dealerId,
+        role: 'STAFF' as const,
+        permissions: [],
+      })),
+    });
+    const { ticket } = await verify(sales);
+    await sales.post('/v1/sales/dealers').send(details(ticket, { email })).expect(201);
+    expect(await h.prisma.dealerMember.count({ where: { userId: user.id, role: 'STAFF' } })).toBe(
+      2,
+    );
+    expect(await h.prisma.dealerMember.count({ where: { userId: user.id, role: 'OWNER' } })).toBe(
+      0,
+    );
+  });
+
+  it('blocks a self-onboarding attempt against an assisted email reservation without merging accounts', async () => {
+    const assisted = await draft();
+    const email = assisted.dealer.email;
+    const phone = freeNumber();
+    h.google.claims = {
+      subject: `email-reserved-${Date.now()}`,
+      email: ` ${email.toUpperCase()} `,
+      emailVerified: true,
+    };
+    const owner = h.agent();
+    await h.signIn(owner);
+    await h.proveNumber(owner, phone);
+    const {
+      phoneTicket: _ticket,
+      contactName: _name,
+      email: _email,
+      gstin: _gstin,
+      pan: _pan,
+      ...business
+    } = details('unused');
+    const denied = await owner
+      .post('/v1/auth/onboarding')
+      .send({ ...business, fullName: 'Verified Applicant', phone })
+      .expect(409);
+    expect(denied.body.code).toBe('DEALER_EMAIL_TAKEN');
+    const user = await h.prisma.user.findUniqueOrThrow({ where: { email } });
+    expect(await h.prisma.dealerMember.count({ where: { userId: user.id } })).toBe(0);
+    expect(await h.prisma.dealerMember.count({ where: { dealerId: assisted.dealer.id } })).toBe(0);
+    expect(user.mergedIntoId).toBeNull();
+  });
+});
+
 async function draft(agent: request.Agent = sales) {
   const { phone, ticket } = await verify(agent);
   const created = await agent.post('/v1/sales/dealers').send(details(ticket)).expect(201);

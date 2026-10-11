@@ -3,6 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { OnboardingInput } from '../../src/auth.js';
 import { UpdateDealerInput } from '../../src/dealer.js';
 
+it('normalizes contact email without Gmail-specific alias rewriting', () => {
+  expect(
+    UpdateDealerInput.parse({ contact: { email: '  Dealer.Name+yard@Example.TEST  ' } }).contact
+      ?.email,
+  ).toBe('dealer.name+yard@example.test');
+  expect(UpdateDealerInput.safeParse({ contact: { email: 'not-an-email' } }).success).toBe(false);
+  expect(
+    UpdateDealerInput.safeParse({ contact: { email: `${'x'.repeat(160)}@example.test` } }).success,
+  ).toBe(false);
+});
+
 /**
  * R30 — what a dealer is told when a bound refuses them.
  *

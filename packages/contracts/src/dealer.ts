@@ -257,7 +257,13 @@ export const UpdateDealerInput = z
     contact: z
       .object({
         fullName: z.string().trim().min(2).max(80).optional(),
-        email: z.string().trim().email().optional(),
+        email: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .email('Enter a valid email address.')
+          .max(160, 'Use an email address of 160 characters or fewer.')
+          .optional(),
         /** The same rule the onboarding form applies, from the same schema. */
         phone: IndianMobile.optional(),
         landline: z.string().trim().max(24).optional(),
