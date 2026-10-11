@@ -87,10 +87,7 @@ export function DocumentsStep({
         </button>
       </form>
 
-      <p className="text-[13px] ink-muted">
-        Optional collection does not remove GST registration obligations. If you are registered,
-        supply your GSTIN and certificate. Applicability is reviewed separately.
-      </p>
+      <p className="text-[13px] ink-muted">{ONBOARDING_TEXT.gstObligation}</p>
       <div className="flex flex-col gap-[10px]">
         {documents
           .filter(

@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 
-import type { AdminDealerDetail } from '@dealers-drive/contracts';
+import {
+  GST_REVIEW_MAX_LENGTH,
+  GST_REVIEW_MIN_LENGTH,
+  type AdminDealerDetail,
+} from '@dealers-drive/contracts';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -35,7 +39,7 @@ export function ApproveBlock({
   const canApprove =
     dealer.actions.canApprove &&
     confirm.trim().toLowerCase() === approvalPhrase &&
-    (Boolean(dealer.gstin) || taxText.trim().length >= 20);
+    (Boolean(dealer.gstin) || taxText.trim().length >= GST_REVIEW_MIN_LENGTH);
 
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
@@ -68,16 +72,16 @@ export function ApproveBlock({
       {!dealer.gstin ? (
         <Field
           id="gstApplicabilityReview"
-          label="GST registration applicability review"
-          hint="Record why registration is not required and the protected review reference. Blank GSTIN alone is not an exemption. Leave unresolved cases under review."
+          label={DEALER_ACTIONS_TEXT.gstReviewLabel}
+          hint={DEALER_ACTIONS_TEXT.gstReviewHint}
           className="w-full"
         >
           <Input
             id="gstApplicabilityReview"
             value={taxText}
             required
-            minLength={20}
-            maxLength={1000}
+            minLength={GST_REVIEW_MIN_LENGTH}
+            maxLength={GST_REVIEW_MAX_LENGTH}
             onChange={(event) => setTaxReview({ dealerId: dealer.id, text: event.target.value })}
             disabled={pending}
           />

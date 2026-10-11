@@ -10,6 +10,9 @@ export const DEALER_ACTIONS_TEXT = {
   noteLabel: 'Note',
   approveNotePlaceholder: 'Internal — not shown to the dealer',
   approveConfirmLabel: 'Confirm approval',
+  gstReviewLabel: 'GST registration applicability review',
+  gstReviewHint:
+    'Record why registration is not required and the protected review reference. Blank GSTIN alone is not an exemption. Leave unresolved cases under review.',
   approve: 'Approve dealer',
   approved: 'Dealer approved.',
   approveBlocked:
