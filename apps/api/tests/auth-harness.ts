@@ -13,6 +13,7 @@ import type {
 } from '../src/modules/auth/oauth.port.js';
 import { noMapsLookup } from '../src/platform/maps/maps-link.js';
 import type { MailMessage, MailerPort } from '../src/platform/mail/mail.port.js';
+import type { SmsMessage, SmsPort } from '../src/platform/sms/sms.port.js';
 import { UnauthorizedError } from '../src/platform/errors.js';
 import { createApp } from '../src/server.js';
 
@@ -127,6 +128,8 @@ export interface AuthHarness {
   ): Promise<{ status: number; location: string }>;
   /** Every email the run has produced, in order (**R40**). */
   mailer: RecordingMailer;
+  /** Every SMS the run has produced (**R118**). Nothing reaches MSG91. */
+  sms: RecordingSms;
   /**
    * Publishes whatever the last write put in the outbox, then returns.
    *
@@ -156,6 +159,23 @@ export function createRecordingMailer(): RecordingMailer {
   };
 }
 
+/** The SMS counterpart of the recording mailer (**R118**). */
+export function createRecordingSms(): RecordingSms {
+  const sent: SmsMessage[] = [];
+  return {
+    driver: 'console',
+    sent,
+    send(message) {
+      sent.push(message);
+      return Promise.resolve({ providerMessageId: `recorded-sms-${String(sent.length)}` });
+    },
+  };
+}
+
+export interface RecordingSms extends SmsPort {
+  readonly sent: SmsMessage[];
+}
+
 export interface RecordingMailer extends MailerPort {
   readonly sent: MailMessage[];
 }
@@ -179,7 +199,8 @@ export async function createAuthHarness(
    * onboarding cases below exercise a shape the product has rather than a
    * disabled one.
    */
-  const container = await buildContainer({ oauth: google, maps: noMapsLookup, mailer });
+  const sms = createRecordingSms();
+  const container = await buildContainer({ oauth: google, maps: noMapsLookup, mailer, sms });
   const app = createApp(container);
   // One listener for the whole file — see `AuthHarness.server`.
   const server = app.listen(0);
@@ -205,6 +226,7 @@ export async function createAuthHarness(
     prisma: container.prisma,
     google,
     mailer,
+    sms,
     /*
      * **R116.** Successive poller ticks, not one. Listing events from every
      * file in the run share one outbox, and a single 50-row batch, oldest

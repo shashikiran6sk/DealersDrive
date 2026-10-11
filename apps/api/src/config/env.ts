@@ -97,6 +97,10 @@ const envSchema = z.object({
     .default('123456'),
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <updates@dealers-drive.com>'),
 
+  SMS_DRIVER: z.enum(['console', 'msg91', 'disabled']).default('console'),
+  MSG91_TICKET_ACK_TEMPLATE_ID: optional(z.string().min(1)),
+  SMS_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
+
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
 
@@ -236,6 +240,18 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
+  if (value.SMS_DRIVER === 'msg91') {
+    if (!value.MSG91_AUTH_KEY) {
+      require('MSG91_AUTH_KEY', 'is required when SMS_DRIVER=msg91.');
+    }
+    if (!value.MSG91_TICKET_ACK_TEMPLATE_ID) {
+      require('MSG91_TICKET_ACK_TEMPLATE_ID', 'is required when SMS_DRIVER=msg91 — it is the DLT-approved flow the acknowledgement is sent through.');
+    }
+    if (value.NODE_ENV === 'test') {
+      require('SMS_DRIVER', 'must not be `msg91` under test — the suite never sends a real SMS.');
+    }
+  }
+
   if (value.METRICS_ENABLED && !value.METRICS_SCRAPE_TOKEN) {
     require('METRICS_SCRAPE_TOKEN', 'is required when METRICS_ENABLED=true (minimum 32 characters).');
   }
@@ -273,6 +289,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.CACHE_DRIVER === 'memory') {
     require('CACHE_DRIVER', 'must be `postgres` in production — an in-process counter behind N tasks permits N times every rate limit, silently.');
+  }
+
+  if (value.SMS_DRIVER === 'console') {
+    require('SMS_DRIVER', 'must be `msg91` or `disabled` in production — `console` sends nothing and says so only in a log.');
   }
 
   if (value.PHONE_OTP_DRIVER === 'fake') {

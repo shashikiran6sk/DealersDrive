@@ -14,6 +14,7 @@ import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/paginatio
 const ROW_SELECT = {
   id: true,
   template: true,
+  channel: true,
   recipient: true,
   subject: true,
   status: true,
@@ -30,6 +31,7 @@ function toRow(row: Row): AdminNotificationRow {
   return {
     id: row.id,
     template: row.template,
+    channel: row.channel,
     recipient: row.recipient,
     subject: row.subject,
     status: row.status,

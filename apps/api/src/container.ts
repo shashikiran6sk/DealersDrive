@@ -101,6 +101,8 @@ import { createMapsResolver, type MapsPort } from './platform/maps/maps-link.js'
 import { createPhoneOtp } from './platform/phone-otp/factory.js';
 import type { PhoneOtpPort } from './platform/phone-otp/phone-otp.port.js';
 import { createMailer } from './platform/mail/factory.js';
+import { createSms } from './platform/sms/factory.js';
+import type { SmsPort } from './platform/sms/sms.port.js';
 import type { MailerPort } from './platform/mail/mail.port.js';
 import {
   createNotificationsService,
@@ -123,6 +125,7 @@ export interface Container {
   readonly storage: StoragePort;
   readonly maps: MapsPort;
   readonly mailer: MailerPort;
+  readonly sms: SmsPort;
   readonly notifications: NotificationsService;
   readonly sessions: SessionResolver;
   readonly sessionStore: SessionService;
@@ -164,6 +167,7 @@ export interface ContainerOverrides {
   readonly storage?: StoragePort;
   readonly maps?: MapsPort;
   readonly mailer?: MailerPort;
+  readonly sms?: SmsPort;
   readonly sessions?: SessionResolver;
   readonly oauth?: OAuthProvider;
   readonly phoneOtp?: PhoneOtpPort;
@@ -184,6 +188,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   subscribeStorageCleanup(bus, storage);
   const maps = overrides.maps ?? createMapsResolver();
   const mailer = overrides.mailer ?? createMailer();
+  const sms = overrides.sms ?? createSms();
 
   const sessionStore = createSessionService(prisma);
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
@@ -247,6 +252,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     prisma,
     queue,
     mailer,
+    sms,
     claimLinks: dealerClaims,
   });
   const vehicles = createVehiclesService({
@@ -276,6 +282,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     storage,
     maps,
     mailer,
+    sms,
     notifications,
     sessions,
     sessionStore,
@@ -354,7 +361,7 @@ export async function startWorker(container: Container): Promise<void> {
   container.outbox.start();
 
   logger.info(
-    { mail: container.mailer.driver, jobs: env.JOBS_ENABLED },
+    { mail: container.mailer.driver, sms: container.sms.driver, jobs: env.JOBS_ENABLED },
     'background workers started',
   );
 }

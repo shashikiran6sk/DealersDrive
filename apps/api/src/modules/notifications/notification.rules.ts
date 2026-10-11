@@ -2,6 +2,7 @@ import type { AdminPermission } from '@dealers-drive/contracts';
 
 import type { DomainEvent, DomainEventType } from '../../platform/events/bus.js';
 import { isRecord } from '../../platform/errors.js';
+import type { SmsTemplateName } from './sms-templates.js';
 import type { TemplateName } from './templates.js';
 
 export type NotificationAudience =
@@ -18,6 +19,12 @@ export interface NotificationRule {
   enquiryId?: boolean;
   ticketId?: boolean;
   subjectKey?: string;
+}
+
+export interface SmsRule {
+  template: SmsTemplateName;
+  userIdKey: string;
+  ticketIdKey: string;
 }
 
 export function payloadOf(event: DomainEvent): Record<string, unknown> {
@@ -133,5 +140,11 @@ export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly Notifi
       audience: DEALER,
       reason: (event) => !published(event),
     },
+  ],
+};
+
+export const SMS_RULES: Partial<Record<DomainEventType, readonly SmsRule[]>> = {
+  SupportTicketCreated: [
+    { template: 'sms.support.ticket-ack', userIdKey: 'customerId', ticketIdKey: 'ticketId' },
   ],
 };

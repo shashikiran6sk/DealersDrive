@@ -104,6 +104,10 @@ locals {
     { name = "PHONE_OTP_DRIVER", value = var.phone_otp_driver },
     { name = "MSG91_WIDGET_ID", value = var.msg91_widget_id },
     { name = "MSG91_WIDGET_TOKEN", value = var.msg91_widget_token },
+    # R118. The worker sends the support acknowledgement through MSG91's Flow
+    # API with the same MSG91_AUTH_KEY. `env.ts` refuses `console` in production.
+    { name = "SMS_DRIVER", value = var.sms_driver },
+    { name = "MSG91_TICKET_ACK_TEMPLATE_ID", value = var.msg91_ticket_ack_template_id },
     { name = "JOBS_ENABLED", value = "true" },
 
     # **R40 — the API is a pure API now.**

@@ -54,6 +54,12 @@ const PRODUCTION_REQUIRED = {
   MSG91_AUTH_KEY: 'a-real-msg91-auth-key',
   MSG91_WIDGET_ID: 'example-widget-id',
   MSG91_WIDGET_TOKEN: 'example-widget-token',
+  /*
+   * R118. `console` texts nobody, so production refuses it. `disabled` is the
+   * explicit opt-out a deployment without an approved DLT template runs on;
+   * the configured MSG91 case has its own test below.
+   */
+  SMS_DRIVER: 'disabled',
 };
 
 /**
@@ -126,6 +132,9 @@ const SCHEMA_KEYS = [
   'PHONE_OTP_TIMEOUT_MS',
   'MSG91_WIDGET_ID',
   'MSG91_WIDGET_TOKEN',
+  'SMS_DRIVER',
+  'MSG91_TICKET_ACK_TEMPLATE_ID',
+  'SMS_TIMEOUT_MS',
 ];
 
 const saved = new Map<string, string | undefined>();
@@ -726,6 +735,47 @@ describe('configurations that must not boot', () => {
 
     expect(loaded.STORAGE_DRIVER).toBe(driver);
     expect(loaded.isProduction).toBe(false);
+  });
+
+  it('refuses the console SMS driver in production (R118)', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      SMS_DRIVER: 'console',
+    });
+
+    expect(message).toContain('SMS_DRIVER');
+  });
+
+  it('refuses MSG91 SMS without the auth key and the approved template (R118)', async () => {
+    const message = await refuses({ SMS_DRIVER: 'msg91' });
+
+    expect(message).toContain('MSG91_AUTH_KEY');
+    expect(message).toContain('MSG91_TICKET_ACK_TEMPLATE_ID');
+  });
+
+  it('refuses MSG91 SMS under test, however it is configured (R118)', async () => {
+    const message = await refuses({
+      NODE_ENV: 'test',
+      SMS_DRIVER: 'msg91',
+      MSG91_AUTH_KEY: 'key',
+      MSG91_TICKET_ACK_TEMPLATE_ID: 'template',
+    });
+
+    expect(message).toContain('never sends a real SMS');
+  });
+
+  it('accepts production texting through a configured MSG91 template (R118)', async () => {
+    const loaded = await loadEnv({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      SMS_DRIVER: 'msg91',
+      MSG91_TICKET_ACK_TEMPLATE_ID: 'example-flow-template-id',
+    });
+
+    expect(loaded.SMS_DRIVER).toBe('msg91');
+    expect(loaded.MSG91_TICKET_ACK_TEMPLATE_ID).toBe('example-flow-template-id');
+    expect(loaded.SMS_TIMEOUT_MS).toBe(5000);
   });
 
   it('refuses a metrics endpoint without a strong scrape token', async () => {

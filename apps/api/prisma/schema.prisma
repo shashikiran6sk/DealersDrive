@@ -1372,6 +1372,10 @@ model NotificationDelivery {
   dedupeKey String @unique
 
   template  String
+  /// **R118.** Email or SMS. For an SMS, `recipient` is the canonical phone
+  /// number and `subject` is a description of the message — the text itself is
+  /// the DLT-approved template held by the provider.
+  channel   NotificationChannel @default(EMAIL)
   /// The address as sent. Kept because a dealer changing their email later must
   /// not silently rewrite the record of where a message actually went.
   recipient String
@@ -1403,6 +1407,11 @@ enum NotificationStatus {
   PENDING
   SENT
   FAILED
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
 }
 
 model OutboxEvent {

@@ -5,13 +5,23 @@ import { createEventBus, type DomainEvent } from '../../../../src/platform/event
 import { createInlineQueue } from '../../../../src/platform/jobs/queue.js';
 import type { MailMessage, MailerPort } from '../../../../src/platform/mail/mail.port.js';
 import { PermanentMailError } from '../../../../src/platform/mail/resend.adapter.js';
+import {
+  PermanentSmsError,
+  type SmsMessage,
+  type SmsPort,
+} from '../../../../src/platform/sms/sms.port.js';
 import type { ClaimLink } from '../../../../src/modules/dealer-claims/dealer-claims.facade.js';
-import { NOTIFICATION_RULES } from '../../../../src/modules/notifications/notification.rules.js';
+import {
+  NOTIFICATION_RULES,
+  SMS_RULES,
+} from '../../../../src/modules/notifications/notification.rules.js';
 import {
   MAX_DELIVERY_ATTEMPTS,
   createNotificationsService,
   jobOf,
+  smsJobOf,
   type EmailJob,
+  type SmsJob,
 } from '../../../../src/modules/notifications/notifications.service.js';
 
 /**
@@ -40,6 +50,7 @@ interface Row {
   id: string;
   dedupeKey: string;
   template: string;
+  channel: string;
   recipient: string;
   subject: string;
   status: 'PENDING' | 'SENT' | 'FAILED';
@@ -68,7 +79,10 @@ function fakePrisma(
       emailVerifiedAt: Date | null;
       fullName: string | null;
       status: string;
+      phone?: string | null;
+      phoneVerifiedAt?: Date | null;
     } | null;
+    ticket?: { number: number } | null;
   } = {},
 ) {
   const rows = new Map<string, Row>();
@@ -90,6 +104,7 @@ function fakePrisma(
           id: `delivery-${String(rows.size + 1)}`,
           dedupeKey: key,
           template: data.template ?? '',
+          channel: data.channel ?? 'EMAIL',
           recipient: data.recipient ?? '',
           subject: data.subject ?? '',
           status: 'PENDING',
@@ -169,6 +184,10 @@ function fakePrisma(
     user: {
       findUnique: () => Promise.resolve(options.user ?? null),
     },
+    supportTicket: {
+      findUnique: () =>
+        Promise.resolve(options.ticket === undefined ? { number: 1042 } : options.ticket),
+    },
     auditLog: {
       findFirst: () =>
         Promise.resolve(
@@ -198,10 +217,26 @@ function recordingMailer(
   };
 }
 
+function recordingSms(
+  driver: SmsPort['driver'] = 'console',
+  behaviour: (message: SmsMessage) => Promise<string | null> = () => Promise.resolve('msg91-1'),
+): SmsPort & { sent: SmsMessage[] } {
+  const sent: SmsMessage[] = [];
+  return {
+    driver,
+    sent,
+    async send(message) {
+      sent.push(message);
+      return { providerMessageId: await behaviour(message) };
+    },
+  };
+}
+
 function setup(
   options: Parameters<typeof fakePrisma>[0] = {},
   mailer = recordingMailer(),
   claimLinks?: { issueLink: (id: string) => Promise<ClaimLink | null> },
+  sms = recordingSms(),
 ) {
   const { prisma, rows } = fakePrisma(options);
   const queue = createInlineQueue();
@@ -209,9 +244,10 @@ function setup(
     prisma,
     queue,
     mailer,
+    sms,
     ...(claimLinks ? { claimLinks } : {}),
   });
-  return { service, prisma, rows, queue, mailer };
+  return { service, prisma, rows, queue, mailer, sms };
 }
 
 function event(type: DomainEvent['type'], payload: Record<string, unknown> = {}): DomainEvent {
@@ -791,5 +827,109 @@ describe('the rules table (R115)', () => {
       ticketId: 'tkt-1',
     });
     expect(customer && jobOf(ticketEvent({ ticketId: 'tkt-1' }), customer)).toBeNull();
+  });
+});
+
+describe('the support acknowledgement SMS (R118)', () => {
+  const SMS_JOB: SmsJob = {
+    template: 'sms.support.ticket-ack',
+    subjectId: 'evt-7',
+    userId: 'user-9',
+    ticketId: 'ticket-1',
+  };
+  const PHONED = {
+    email: null,
+    emailVerifiedAt: null,
+    fullName: 'Ravi',
+    status: 'ACTIVE',
+    phone: '+919840012345',
+    phoneVerifiedAt: new Date(),
+  };
+
+  it('is queued from a new ticket, and dropped for a malformed event', () => {
+    const [rule] = SMS_RULES.SupportTicketCreated ?? [];
+    const ticketEvent = event('SupportTicketCreated', {
+      ticketId: 'ticket-1',
+      customerId: 'user-9',
+    });
+    expect(rule && smsJobOf(ticketEvent, rule)).toEqual({
+      template: 'sms.support.ticket-ack',
+      subjectId: 'evt-1',
+      userId: 'user-9',
+      ticketId: 'ticket-1',
+    });
+    expect(
+      rule && smsJobOf(event('SupportTicketCreated', { ticketId: 'ticket-1' }), rule),
+    ).toBeNull();
+  });
+
+  it('texts the proved number the reference and nothing else, once', async () => {
+    const { service, sms, rows } = setup({ user: PHONED });
+    await service.handleSmsJob(SMS_JOB);
+    await service.handleSmsJob(SMS_JOB);
+
+    expect(sms.sent).toHaveLength(1);
+    expect(sms.sent[0]).toMatchObject({
+      to: '+919840012345',
+      variables: { reference: 'DD-1042' },
+      tag: 'sms.support.ticket-ack',
+    });
+    expect([...rows.values()]).toMatchObject([
+      {
+        channel: 'SMS',
+        recipient: '+919840012345',
+        subject: 'Support request DD-1042 received',
+        status: 'SENT',
+        dealerId: null,
+      },
+    ]);
+  });
+
+  it('sends nothing to an unproved number, a closed account or a missing ticket', async () => {
+    for (const options of [
+      { user: { ...PHONED, phoneVerifiedAt: null } },
+      { user: { ...PHONED, phone: null } },
+      { user: { ...PHONED, status: 'SUSPENDED' } },
+      { user: PHONED, ticket: null },
+    ]) {
+      const { service, sms, rows } = setup(options);
+      await service.handleSmsJob(SMS_JOB);
+      expect(sms.sent).toHaveLength(0);
+      expect(rows.size).toBe(0);
+    }
+  });
+
+  it('records nothing when SMS is disabled', async () => {
+    const { service, sms, rows } = setup(
+      { user: PHONED },
+      undefined,
+      undefined,
+      recordingSms('disabled'),
+    );
+    await service.handleSmsJob(SMS_JOB);
+    expect(sms.sent).toHaveLength(0);
+    expect(rows.size).toBe(0);
+  });
+
+  it('retries a provider outage and gives up at once on a refusal', async () => {
+    const outage = setup(
+      { user: PHONED },
+      undefined,
+      undefined,
+      recordingSms('console', () => Promise.reject(new Error('MSG91 answered 503'))),
+    );
+    await expect(outage.service.handleSmsJob(SMS_JOB)).rejects.toThrow(/503/);
+    expect([...outage.rows.values()][0]).toMatchObject({ status: 'PENDING', attempts: 1 });
+
+    const refused = setup(
+      { user: PHONED },
+      undefined,
+      undefined,
+      recordingSms('console', () =>
+        Promise.reject(new PermanentSmsError('MSG91 refused it (401)')),
+      ),
+    );
+    await expect(refused.service.handleSmsJob(SMS_JOB)).resolves.toBeUndefined();
+    expect([...refused.rows.values()][0]).toMatchObject({ status: 'FAILED' });
   });
 });
