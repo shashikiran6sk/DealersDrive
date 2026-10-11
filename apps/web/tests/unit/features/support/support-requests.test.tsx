@@ -14,8 +14,13 @@ import SupportRequestsPage from '@/app/(public)/support-requests/page';
 import {
   createSupportRequestAction,
   replySupportRequestAction,
+  reopenSupportRequestAction,
 } from '@/features/support/support-actions';
-import { SupportReplyForm, SupportRequestForm } from '@/features/support/support-requests';
+import {
+  SupportReplyForm,
+  SupportRequestForm,
+  SupportRequestDetail,
+} from '@/features/support/support-requests';
 import type * as ApiModule from '@/lib/api';
 
 import { navigationState, revalidations } from '../../../setup';
@@ -269,6 +274,77 @@ describe('SupportRequestForm', () => {
 });
 
 describe('/support-requests/[id]', () => {
+  it('renders the saved reply and allowance immediately while server refresh still has the old snapshot', async () => {
+    const before = ticket({ remainingMessages: 2, messages: [] });
+    const saved = ticket({
+      remainingMessages: 1,
+      messages: [
+        {
+          id: '33333333-3333-4333-8333-333333333333',
+          author: 'CUSTOMER',
+          authorLabel: 'You',
+          body: 'Saved fourth reply',
+          createdAt: before.updatedAt,
+          createdLabel: before.updatedLabel,
+        },
+      ],
+    });
+    apiSend.mockResolvedValue(saved);
+    const view = render(<SupportRequestDetail ticket={before} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Reply to Dealers-Drive support'), 'Saved fourth reply');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    expect(await screen.findByText('1 messages remaining before support replies.')).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Conversation' })).toHaveTextContent(
+      'Saved fourth reply',
+    );
+    view.rerender(<SupportRequestDetail ticket={before} />);
+    expect(screen.getByText('1 messages remaining before support replies.')).toBeVisible();
+    const latest = ticket({
+      ...saved,
+      canReply: false,
+      remainingMessages: 0,
+      messages: [
+        ...saved.messages,
+        {
+          ...saved.messages[0]!,
+          id: '44444444-4444-4444-8444-444444444444',
+          body: 'Saved fifth reply',
+        },
+      ],
+    });
+    view.rerender(<SupportRequestDetail ticket={latest} />);
+    expect(
+      screen.getByText(
+        "You've sent five messages. Please wait for our support team to reply before sending more.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Send reply' })).toBeNull();
+    view.rerender(
+      <SupportRequestDetail
+        ticket={ticket({ id: ENQUIRY_ID, remainingMessages: 5, messages: [] })}
+      />,
+    );
+    expect(screen.getByText('5 messages remaining before support replies.')).toBeVisible();
+    expect(screen.queryByText('Saved fourth reply')).toBeNull();
+  });
+  it('shows the exact blocked message and urgent support route without a reply composer', async () => {
+    apiGetParsed.mockResolvedValue(
+      ticket({ canReply: false, remainingMessages: 0, status: 'OPEN' }),
+    );
+    render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
+    expect(
+      screen.getByText(
+        "You've sent five messages. Please wait for our support team to reply before sending more.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contact support for urgent help' })).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+    expect(screen.queryByRole('button', { name: 'Send reply' })).toBeNull();
+    expect(screen.queryByText('This request is closed')).toBeNull();
+  });
   it('shows the request, its enquiry and the conversation, with the reply box', async () => {
     apiGetParsed.mockResolvedValue(ticket());
     render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
@@ -308,19 +384,46 @@ describe('/support-requests/[id]', () => {
     expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
   });
 
-  it('says a reply reopens a resolved request', async () => {
+  it('keeps a resolved request read-only until the customer reopens it', async () => {
+    const user = userEvent.setup();
     apiGetParsed.mockResolvedValue(
       ticket({
         status: 'RESOLVED',
         statusLabel: 'Resolved',
+        canReply: false,
+        canReopen: true,
         enquiry: { ...ticket().enquiry!, vehicleHref: null },
       }),
     );
     render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
-    expect(
-      screen.getByText('This request is resolved. Replying will reopen it.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This request is resolved')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
     expect(screen.queryByRole('link', { name: 'View car' })).toBeNull();
+
+    apiSend.mockRejectedValueOnce(
+      await apiError(
+        409,
+        'SUPPORT_TICKET_CLOSED',
+        'This request is closed, so it cannot take a reply.',
+      ),
+    );
+    await user.click(screen.getByRole('button', { name: 'Reopen request' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('This request is closed');
+    expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
+
+    apiSend.mockResolvedValueOnce(
+      ticket({
+        status: 'OPEN',
+        statusLabel: 'Open',
+        canReply: true,
+        canReopen: false,
+        updatedAt: '2099-01-01T00:00:00.000Z',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Reopen request' }));
+    expect(await screen.findByLabelText('Reply to Dealers-Drive support')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reopen request' })).toBeNull();
+    expect(apiSend).toHaveBeenLastCalledWith('POST', `/v1/support/tickets/${ID}/reopen`, {});
   });
 
   it('answers another customer’s request with the 404 page, and signs a stranger in', async () => {
@@ -345,6 +448,25 @@ describe('/support-requests/[id]', () => {
 });
 
 describe('SupportReplyForm', () => {
+  it('retains the reply UUID on network retry and replaces it after the text changes', async () => {
+    const send = vi
+      .fn()
+      .mockResolvedValue({ status: 'refused', code: 'UNAVAILABLE', message: 'Try again.' });
+    render(<SupportReplyForm ticketId={ID} hint={null} remainingMessages={4} send={send} />);
+    const user = userEvent.setup();
+    const input = screen.getByLabelText('Reply to Dealers-Drive support');
+    await user.type(input, 'Retry text');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await screen.findByText('Try again.');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(2));
+    expect(send.mock.calls[1]?.[2]).toBe(send.mock.calls[0]?.[2]);
+    await user.type(input, ' changed');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(3));
+    expect(send.mock.calls[2]?.[2]).not.toBe(send.mock.calls[0]?.[2]);
+    expect(screen.getByText('4 messages remaining before support replies.')).toBeVisible();
+  });
   it('sends a reply, clears the box and refreshes the conversation', async () => {
     const send = vi.fn().mockResolvedValue({ status: 'sent' });
     const user = userEvent.setup();
@@ -354,7 +476,7 @@ describe('SupportReplyForm', () => {
     expect(button).toBeDisabled();
     await user.type(screen.getByLabelText('Reply to Dealers-Drive support'), 'Here it is.');
     await user.click(button);
-    expect(send).toHaveBeenCalledWith(ID, 'Here it is.');
+    expect(send).toHaveBeenCalledWith(ID, 'Here it is.', expect.stringMatching(/^[a-f0-9-]{36}$/));
     await waitFor(() => expect(navigationState.refreshed).toBe(1));
     expect(screen.getByLabelText('Reply to Dealers-Drive support')).toHaveValue('');
   });
@@ -443,11 +565,27 @@ describe('support Server Actions', () => {
 
   it('replies through the API and redraws the request and the list', async () => {
     apiSend.mockResolvedValue(ticket());
-    expect(await replySupportRequestAction(ID, ' Thanks ')).toEqual({ status: 'sent' });
+    expect(await replySupportRequestAction(ID, ' Thanks ')).toEqual({
+      status: 'sent',
+      ticket: ticket(),
+    });
     expect(apiSend).toHaveBeenCalledWith('POST', `/v1/support/tickets/${ID}/messages`, {
       message: 'Thanks',
     });
     expect(revalidations.paths).toEqual([`/support-requests/${ID}`, '/support-requests']);
+  });
+
+  it('reopens through the API and redraws the request and the list', async () => {
+    apiSend.mockResolvedValue(ticket({ status: 'OPEN', canReply: true }));
+    expect(await reopenSupportRequestAction(ID)).toEqual({
+      status: 'reopened',
+      ticket: ticket({ status: 'OPEN', canReply: true }),
+    });
+    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/support/tickets/${ID}/reopen`, {});
+    expect(revalidations.paths).toEqual([`/support-requests/${ID}`, '/support-requests']);
+    expect(await reopenSupportRequestAction('not-an-id')).toMatchObject({ status: 'refused' });
+    apiSend.mockRejectedValueOnce(await apiError(401, 'NOT_AUTHENTICATED'));
+    expect(await reopenSupportRequestAction(ID)).toEqual({ status: 'signed-out' });
   });
 
   it('refuses a reply it cannot send, without asking the API', async () => {

@@ -13,7 +13,8 @@ import { ApiError, apiSend } from '@/lib/api';
 
 import { ADMIN_SUPPORT_ACTION_TEXT } from './support-actions.constants';
 
-export type AdminSupportResult = { ok: true } | { ok: false; message: string };
+export type AdminSupportResult =
+  { ok: true; ticket?: AdminSupportTicketDetail } | { ok: false; message: string };
 
 export interface TicketChanges {
   status?: string;
@@ -27,8 +28,9 @@ async function send(
   suffix: string,
   body: unknown,
 ): Promise<AdminSupportResult> {
+  let ticket: AdminSupportTicketDetail;
   try {
-    await apiSend<AdminSupportTicketDetail>(
+    ticket = await apiSend<AdminSupportTicketDetail>(
       method,
       `/v1/admin/support/tickets/${encodeURIComponent(ticketId)}${suffix}`,
       body,
@@ -41,7 +43,7 @@ async function send(
   }
   revalidatePath(ADMIN_SUPPORT_ACTION_TEXT.detailPath(ticketId));
   revalidatePath(ADMIN_SUPPORT_ACTION_TEXT.listPath);
-  return { ok: true };
+  return { ok: true, ticket };
 }
 
 function invalid(message: string | undefined): AdminSupportResult {
@@ -51,9 +53,13 @@ function invalid(message: string | undefined): AdminSupportResult {
 export async function replyToTicketAction(
   ticketId: string,
   message: string,
+  clientMessageId?: string,
 ): Promise<AdminSupportResult> {
   const id = IdParam.safeParse({ id: ticketId });
-  const body = SupportMessageInput.safeParse({ message });
+  const body = SupportMessageInput.safeParse({
+    message,
+    ...(clientMessageId ? { clientMessageId } : {}),
+  });
   if (!id.success) return invalid(undefined);
   if (!body.success) return invalid(body.error.issues[0]?.message);
   return send(id.data.id, 'POST', '/messages', body.data);

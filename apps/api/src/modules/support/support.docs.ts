@@ -90,9 +90,15 @@ export const supportDocs: ModuleDocs = {
       summary: 'Reply on a support request',
       description:
         'Adds the customer’s message to the conversation. A request waiting for the customer ' +
-        'goes back to `IN_PROGRESS`; a `RESOLVED` one reopens to `OPEN` (audited as ' +
-        '`support_ticket.reopened`). A `CLOSED` request takes no reply: ' +
-        '`409 SUPPORT_TICKET_CLOSED`, and the customer is pointed at a new request.',
+        'goes back to `IN_PROGRESS`. A `RESOLVED` request takes no reply until it is reopened ' +
+        '(`409 SUPPORT_TICKET_RESOLVED`; see `reopenSupportTicket`). A `CLOSED` request takes ' +
+        'no reply: `409 SUPPORT_TICKET_CLOSED`, and the customer is pointed at a new request. ' +
+        'Up to five successfully persisted customer messages are allowed after the latest genuine support reply. ' +
+        'The original description is a separate ticket field and is not an additional message. ' +
+        'A ticket row lock makes the quota atomic. The sixth reply returns 409 SUPPORT_MESSAGE_LIMIT_REACHED. ' +
+        'An optional clientMessageId UUID makes a retry idempotent; reusing it with different text returns 409 SUPPORT_MESSAGE_RETRY_CONFLICT. ' +
+        'Retries preserve quota and timestamps. Internal notes and lifecycle changes never reset it. ' +
+        'Customer detail exposes remainingMessages and canReply. Urgent help is available through /contact without bypassing this quota.',
       audience: 'customer',
       params: 'IdParam',
       requestBody: {
@@ -108,6 +114,25 @@ export const supportDocs: ModuleDocs = {
       ],
       errors: [400, 401, 404, 409, 429],
       rateLimit: '30 per customer, per hour.',
+    },
+    {
+      method: 'post',
+      path: '/v1/support/tickets/:id/reopen',
+      operationId: 'reopenSupportTicket',
+      tag: DOC_TAGS.support,
+      summary: 'Reopen a resolved support request',
+      description:
+        'Moves the customer’s own `RESOLVED` request back to `OPEN` under the ticket row lock, ' +
+        'audited as `support_ticket.reopened`. The conversation, its history and the unanswered-' +
+        'message allowance are kept as they were: reopening never restores the five-message ' +
+        'quota, only a support reply does. Reopening a request that is already open, in ' +
+        'progress or waiting for the customer changes nothing and returns it. A `CLOSED` ' +
+        'request cannot be reopened: `409 SUPPORT_TICKET_CLOSED` — create a new request instead.',
+      audience: 'customer',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'The request.', schema: 'CustomerSupportTicket' }],
+      errors: [400, 401, 404, 409, 429],
+      rateLimit: '10 per customer, per hour.',
     },
   ],
 };

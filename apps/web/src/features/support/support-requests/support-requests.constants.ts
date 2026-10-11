@@ -78,12 +78,18 @@ export const SUPPORT_DETAIL_TEXT = {
   replyPlaceholder: 'Write your reply',
   send: 'Send reply',
   sending: 'Sending…',
-  resolvedNote: 'This request is resolved. Replying will reopen it.',
   waitingNote: 'We are waiting for your reply.',
   closedTitle: 'This request is closed',
   closedMessage:
     'Closed requests cannot take new replies. If you still need help, create a new request and mention this reference.',
   newRequest: 'Create a new request',
+  resolvedTitle: 'This request is resolved',
+  resolvedMessage:
+    'Your conversation is kept here. If the problem is still there, reopen the request to send another message.',
+  reopen: 'Reopen request',
+  reopening: 'Reopening…',
+  urgentHelp: 'Contact support for urgent help',
+  urgentHelpHref: '/contact',
   signedOut: 'Your session has ended. Sign in again to reply.',
   timesInIst: 'Times are IST.',
 } as const;

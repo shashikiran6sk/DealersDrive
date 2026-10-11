@@ -4,6 +4,8 @@ import {
   SUPPORT_CATEGORY_LABELS,
   SUPPORT_STATUS_TONES,
   canCustomerReply,
+  canCustomerReopen,
+  SUPPORT_UNANSWERED_MESSAGE_LIMIT,
   customerEnquiryStatus,
   formatDate,
   formatDateTime,
@@ -69,6 +71,7 @@ export const MESSAGE_SELECT = {
 export const CUSTOMER_TICKET_SELECT = {
   ...TICKET_ROW_SELECT,
   description: true,
+  unansweredCustomerMessages: true,
   enquiry: { select: CUSTOMER_ENQUIRY_SELECT },
   messages: { select: MESSAGE_SELECT, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
 } satisfies Prisma.SupportTicketSelect;
@@ -129,7 +132,14 @@ export function toCustomerSupportTicket(row: CustomerTicketSource): CustomerSupp
   return {
     ...toSupportTicketRow(row),
     description: row.description,
-    canReply: canCustomerReply(row.status),
+    canReply:
+      canCustomerReply(row.status) &&
+      (row.unansweredCustomerMessages ?? 0) < SUPPORT_UNANSWERED_MESSAGE_LIMIT,
+    canReopen: canCustomerReopen(row.status),
+    remainingMessages: Math.max(
+      0,
+      SUPPORT_UNANSWERED_MESSAGE_LIMIT - (row.unansweredCustomerMessages ?? 0),
+    ),
     messages: row.messages.map((message) => toSupportMessage(message)),
     enquiry: row.enquiry ? toCustomerSupportEnquiry(row.enquiry) : null,
   };

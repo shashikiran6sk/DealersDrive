@@ -15,12 +15,24 @@ import {
   type UpdateSupportTicketInput,
 } from '@dealers-drive/contracts';
 import type { AdminRole, Prisma } from '@prisma/client';
+import { isPersistedRetry } from './message-retry.js';
 
-import { isAdmitted, type AdminPrincipal } from '../auth/auth.facade.js';
+import {
+  ADMIN_MEMBERSHIP_LOCK,
+  isAdmitted,
+  isSeatSuspended,
+  permissionsForMember,
+  type AdminPrincipal,
+} from '../auth/auth.facade.js';
 import { getContext } from '../../middleware/request-context.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import {
@@ -288,7 +300,32 @@ export function createAdminSupportService({ prisma, audit }: SupportDeps) {
       input: SupportMessageInput,
     ): Promise<AdminSupportTicketDetail> {
       await withTransaction(prisma, async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ADMIN_MEMBERSHIP_LOCK}))`;
+        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${admin.userId}::uuid FOR SHARE`;
+        const actor = await tx.user.findUnique({
+          where: { id: admin.userId },
+          include: { roles: true, adminMember: true },
+        });
+        if (
+          !actor ||
+          !isAdmitted({ email: actor.email, status: actor.status, member: actor.adminMember }) ||
+          isSeatSuspended(actor.roles, 'ADMIN') ||
+          !actor.adminMember ||
+          !permissionsForMember(actor.adminMember.role).includes('admin:support:manage')
+        )
+          throw new ForbiddenError('Your support access is no longer available.');
         const current = await lockTicket(tx, ticketId);
+        if (
+          await isPersistedRetry(
+            tx,
+            ticketId,
+            'SUPPORT',
+            input.message,
+            input.clientMessageId,
+            admin.userId,
+          )
+        )
+          return;
         if (current.status === 'CLOSED') {
           throw new ConflictError('SUPPORT_TICKET_CLOSED', TICKET_CLOSED_FOR_SUPPORT);
         }
@@ -299,10 +336,14 @@ export function createAdminSupportService({ prisma, audit }: SupportDeps) {
             authorType: 'SUPPORT',
             authorId: admin.userId,
             body: input.message,
+            clientMessageId: input.clientMessageId ?? null,
             createdAt: now,
           },
         });
-        await tx.supportTicket.update({ where: { id: ticketId }, data: { updatedAt: now } });
+        await tx.supportTicket.update({
+          where: { id: ticketId },
+          data: { updatedAt: now, unansweredCustomerMessages: 0 },
+        });
       });
       return detail(ticketId);
     },

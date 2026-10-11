@@ -1,3 +1,7 @@
+'use client';
+
+import type { AdminSupportTicketDetail } from '@dealers-drive/contracts';
+import { useState } from 'react';
 import Link from 'next/link';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
@@ -13,7 +17,17 @@ import { TicketConversation } from './ticket-conversation';
 import { TicketHistory } from './ticket-history';
 import { TicketNotes } from './ticket-notes';
 
-export function SupportTicketWorkspace({ ticket, viewerId }: SupportTicketWorkspaceProps) {
+export function SupportTicketWorkspace({
+  ticket: initialTicket,
+  viewerId,
+}: SupportTicketWorkspaceProps) {
+  const [savedTicket, setSavedTicket] = useState<AdminSupportTicketDetail | null>(null);
+  const ticket =
+    savedTicket &&
+    savedTicket.id === initialTicket.id &&
+    savedTicket.updatedAt > initialTicket.updatedAt
+      ? savedTicket
+      : initialTicket;
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-5 p-5">
       <Link href="/admin/support" className="relative btn btn-ghost self-start">
@@ -38,7 +52,12 @@ export function SupportTicketWorkspace({ ticket, viewerId }: SupportTicketWorksp
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col gap-5">
           <TicketConversation ticket={ticket} />
-          <TicketComposer ticketId={ticket.id} canReply={ticket.canReply} />
+          <TicketComposer
+            key={ticket.id}
+            ticketId={ticket.id}
+            canReply={ticket.canReply}
+            onSaved={setSavedTicket}
+          />
           <TicketNotes notes={ticket.notes} />
           <TicketHistory history={ticket.history} />
         </div>

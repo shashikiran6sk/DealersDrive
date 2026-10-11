@@ -1031,29 +1031,30 @@ model Enquiry {
 /// `description` is the customer's opening message and is stored here once;
 /// the replies that follow are `SupportTicketMessage` rows.
 model SupportTicket {
-  id              String                @id @default(uuid()) @db.Uuid
-  number          Int                   @unique @default(autoincrement())
-  customerId      String                @db.Uuid
-  category        SupportTicketCategory
-  subject         String
-  description     String
-  status          SupportTicketStatus   @default(OPEN)
+  id                         String                @id @default(uuid()) @db.Uuid
+  number                     Int                   @unique @default(autoincrement())
+  customerId                 String                @db.Uuid
+  category                   SupportTicketCategory
+  subject                    String
+  description                String
+  unansweredCustomerMessages Int                   @default(0)
+  status                     SupportTicketStatus   @default(OPEN)
   /// Support's own triage. A customer never sets it and is never shown it.
-  priority        SupportTicketPriority @default(NORMAL)
+  priority                   SupportTicketPriority @default(NORMAL)
   /// Optional, and checked on write to be the customer's own enquiry.
   /// `SetNull`: an enquiry is never deleted by the lifecycle, but a ticket
   /// must outlive one that is removed by hand.
-  enquiryId       String?               @db.Uuid
+  enquiryId                  String?               @db.Uuid
   /// The operator working the ticket (**R91**) — a platform admin, checked on
   /// write. NULL is unassigned. `SetNull`: a removed account leaves the
   /// ticket unassigned rather than taking it with it.
-  assignedAdminId String?               @db.Uuid
-  createdAt       DateTime              @default(now())
+  assignedAdminId            String?               @db.Uuid
+  createdAt                  DateTime              @default(now())
   /// Last activity: set by every message as well as every change, so the
   /// lists sort by what last happened on the ticket.
-  updatedAt       DateTime              @updatedAt
-  resolvedAt      DateTime?
-  closedAt        DateTime?
+  updatedAt                  DateTime              @updatedAt
+  resolvedAt                 DateTime?
+  closedAt                   DateTime?
 
   customer User                   @relation("SupportTicketCustomer", fields: [customerId], references: [id], onDelete: Cascade)
   enquiry  Enquiry?               @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
@@ -1081,16 +1082,18 @@ model SupportTicket {
 /// request, so neither side can write as the other. `authorId` is the person;
 /// `SetNull` keeps the conversation when an account is removed.
 model SupportTicketMessage {
-  id         String               @id @default(uuid()) @db.Uuid
-  ticketId   String               @db.Uuid
-  authorType SupportMessageAuthor
-  authorId   String?              @db.Uuid
-  body       String
-  createdAt  DateTime             @default(now())
+  id              String               @id @default(uuid()) @db.Uuid
+  ticketId        String               @db.Uuid
+  authorType      SupportMessageAuthor
+  authorId        String?              @db.Uuid
+  body            String
+  clientMessageId String?              @db.Uuid
+  createdAt       DateTime             @default(now())
 
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   author User?         @relation("SupportMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
+  @@unique([ticketId, authorType, clientMessageId])
   /// A ticket's conversation in order.
   @@index([ticketId, createdAt])
   @@map("support_ticket_messages")
