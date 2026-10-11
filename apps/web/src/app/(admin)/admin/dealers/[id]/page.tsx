@@ -58,7 +58,11 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       {dealer.progressive ? (
         <ProgressiveAdminReview
           progressive={dealer.progressive}
-          editable={['DRAFT', 'PENDING_APPROVAL'].includes(dealer.status)}
+          editable={
+            Boolean(dealer.progressiveReviewAllowed) &&
+            !dealer.onboarding.reviewerIsAssistant &&
+            ['DRAFT', 'PENDING_APPROVAL'].includes(dealer.status)
+          }
         />
       ) : null}
 

@@ -238,6 +238,7 @@ export type DealerOnboardingProvenance = z.infer<typeof DealerOnboardingProvenan
 
 export const AdminDealerDetail = z.object({
   progressive: ProgressiveState.nullable().optional(),
+  progressiveReviewAllowed: z.boolean().optional(),
   id: Uuid,
   slug: z.string(),
   brandName: z.string(),

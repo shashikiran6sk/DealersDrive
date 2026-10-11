@@ -457,7 +457,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return {
         ...(dealer.progressiveRegisteredAt
-          ? { progressive: await dealers.progressiveState(dealer.id) }
+          ? {
+              progressive: await dealers.progressiveState(dealer.id),
+              progressiveReviewAllowed:
+                admin.permissions.includes('admin:dealer:approve') && !assistedBy(dealer, admin),
+            }
           : {}),
         id: dealer.id,
         slug: dealer.slug,
@@ -509,6 +513,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         })),
         actions: {
           canApprove:
+            (!dealer.progressiveRegisteredAt ||
+              admin.permissions.includes('admin:dealer:approve')) &&
             dealer.status === 'PENDING_APPROVAL' &&
             allVerified &&
             application.isComplete &&
@@ -521,7 +527,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
-          canEdit: admin.permissions.includes('admin:dealer:approve'),
+          canEdit:
+            admin.permissions.includes('admin:dealer:approve') &&
+            (!dealer.progressiveRegisteredAt || dealer.status === 'DRAFT'),
         },
       };
     },

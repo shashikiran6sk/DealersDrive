@@ -244,7 +244,7 @@ describe('DirectoryCard', () => {
   it('names the missing photograph rather than showing a blank frame', () => {
     render(<DirectoryCard dealer={DEALER} />);
 
-    expect(screen.getByText(/Sri Lakshmi Motors — yard photo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sri Lakshmi Motors — dealership image/i)).toBeInTheDocument();
   });
 
   /**
@@ -273,14 +273,14 @@ describe('DirectoryCard', () => {
   it('marks a verified dealership, and does not mark one that is not', () => {
     const { unmount } = render(<DirectoryCard dealer={DEALER} />);
     expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
-    // The audit mark on the cover says the same thing in the place a buyer
-    // looks first, and it carries no year — nothing records when a yard was
-    // audited (R28).
-    expect(screen.getByText('YARD VERIFIED')).toBeInTheDocument();
+    // The cover stamp reflects approval without claiming yard inspection.
+    expect(screen.getByText('APPROVED DEALER')).toBeInTheDocument();
+    expect(screen.queryByText('YARD VERIFIED')).toBeNull();
     unmount();
 
     render(<DirectoryCard dealer={{ ...DEALER, isVerified: false }} />);
     expect(screen.queryByText('VERIFIED DEALER')).toBeNull();
+    expect(screen.queryByText('APPROVED DEALER')).toBeNull();
     expect(screen.queryByText('YARD VERIFIED')).toBeNull();
   });
 });

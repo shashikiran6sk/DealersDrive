@@ -7,7 +7,7 @@ import type {
 } from '@dealers-drive/contracts';
 import { useActionState } from 'react';
 import { Field } from '@/components/forms/field';
-import { Banner, Stepper } from '@/components/ui/primitives';
+import { Banner, Stepper, StatusTag } from '@/components/ui/primitives';
 import { DocumentUploader } from '@/features/auth/document-uploader';
 import { saveProgressiveAction, submitProgressiveAction } from './actions';
 
@@ -84,9 +84,21 @@ export function ProgressiveWorkspace({
         <h2 className="text-[20px]">Applicable evidence</h2>
         {documents
           .filter((doc) => progressive.requiredDocuments.includes(doc.type))
-          .map((doc) => (
-            <DocumentUploader key={doc.type} document={doc} />
-          ))}
+          .map((doc) =>
+            locked ? (
+              <div
+                key={doc.type}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-(--color-divider) p-3"
+              >
+                <span className="text-[14px]">{doc.label}</span>
+                <StatusTag tone={doc.status === 'VERIFIED' ? 'ok' : 'warn'}>
+                  {doc.status === 'VERIFIED' ? 'Verified' : 'In review'}
+                </StatusTag>
+              </div>
+            ) : (
+              <DocumentUploader key={doc.type} document={doc} />
+            ),
+          )}
         {!progressive.requiredDocuments.length ? (
           <p className="text-[13px] ink-muted">Awaiting the applicable evidence review.</p>
         ) : null}
