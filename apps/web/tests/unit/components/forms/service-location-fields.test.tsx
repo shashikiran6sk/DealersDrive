@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ServiceLocationFields } from '@/components/forms/service-location-fields/service-location-fields';
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
 import { loadServiceLocationsAction } from '@/features/service-location-actions';
 
 vi.mock('@/features/service-location-actions', () => ({ loadServiceLocationsAction: vi.fn() }));

@@ -6,6 +6,8 @@ import { loadServiceLocationsAction } from '@/features/service-location-actions'
 import { cn } from '@/lib/cn';
 import { Field, invalidProps } from '@/components/forms/field';
 
+import { SERVICE_LOCATION_TEXT } from './service-location-fields.constants';
+
 interface Props {
   initialState: string;
   initialDistrict: string;
@@ -91,7 +93,7 @@ export function ServiceLocationFields({
   const blocked = disabled || loading || failure;
   return (
     <>
-      <Field id={`${prefix}state`} label="State" error={errors.state}>
+      <Field id={`${prefix}state`} label={SERVICE_LOCATION_TEXT.stateLabel} error={errors.state}>
         <select
           id={`${prefix}state`}
           name="state"
@@ -108,9 +110,11 @@ export function ServiceLocationFields({
             onChange?.('state', value);
           }}
         >
-          <option value="">{loading ? 'Loading service locations…' : 'Select state'}</option>
+          <option value="">
+            {loading ? SERVICE_LOCATION_TEXT.loadingStates : SERVICE_LOCATION_TEXT.selectState}
+          </option>
           {state && !selectedState ? (
-            <option value={state}>{state} (existing location)</option>
+            <option value={state}>{SERVICE_LOCATION_TEXT.existingState(state)}</option>
           ) : null}
           {states.map((item) => (
             <option key={item.id} value={item.name}>
@@ -119,7 +123,11 @@ export function ServiceLocationFields({
           ))}
         </select>
       </Field>
-      <Field id={`${prefix}district`} label="District" error={errors.district}>
+      <Field
+        id={`${prefix}district`}
+        label={SERVICE_LOCATION_TEXT.districtLabel}
+        error={errors.district}
+      >
         <div
           className="relative"
           onBlur={(event) => {
@@ -144,7 +152,7 @@ export function ServiceLocationFields({
               open && matches[activeIndex] ? `${listId}-${activeIndex}` : undefined
             }
             aria-required="true"
-            placeholder="Search districts"
+            placeholder={SERVICE_LOCATION_TEXT.searchDistricts}
             {...invalidProps(`${prefix}district`, errors.district)}
             onFocus={(event) => {
               setOpen(true);
@@ -165,7 +173,7 @@ export function ServiceLocationFields({
             <ul
               id={listId}
               role="listbox"
-              aria-label="Districts"
+              aria-label={SERVICE_LOCATION_TEXT.districtsListLabel}
               className="absolute z-20 mt-1 max-h-[240px] w-full overflow-y-auto rounded-lg border border-(--color-divider) bg-white shadow-lg"
             >
               {matches.map((item, index) => (
@@ -189,7 +197,7 @@ export function ServiceLocationFields({
                 </li>
               ))}
               {matches.length === 0 ? (
-                <li className="px-3 py-3 text-[13px]">No available districts match.</li>
+                <li className="px-3 py-3 text-[13px]">{SERVICE_LOCATION_TEXT.noDistricts}</li>
               ) : null}
             </ul>
           ) : null}
@@ -197,7 +205,7 @@ export function ServiceLocationFields({
       </Field>
       {failure ? (
         <p role="alert" className="text-[13px] text-red-700 sm:col-span-2">
-          Service locations could not be loaded. Reload this page to try again.
+          {SERVICE_LOCATION_TEXT.loadFailed}
         </p>
       ) : null}
     </>
