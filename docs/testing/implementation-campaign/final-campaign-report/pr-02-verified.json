@@ -1,0 +1,74 @@
+{
+  "prNumber": 288,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/288",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/dd-favicon-sizing",
+  "headRefName": "fix/dealer-email-uniqueness",
+  "headRefOid": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+  "files": [
+    "apps/api/prisma/migrations/20261009160000_dealer_primary_email/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/modules/auth/account-merge.ts",
+    "apps/api/src/modules/auth/auth.service.ts",
+    "apps/api/src/modules/auth/google.provider.ts",
+    "apps/api/src/modules/auth/routes/get-google-callback.ts",
+    "apps/api/src/modules/dealer-claims/dealer-claims.service.ts",
+    "apps/api/src/modules/dealers/dealer-email-identity.ts",
+    "apps/api/src/modules/dealers/dealers.facade.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/src/modules/sales/sales.service.ts",
+    "apps/api/tests/dealer-claims.test.ts",
+    "apps/api/tests/dealer-email-migration.test.ts",
+    "apps/api/tests/identity-linking.test.ts",
+    "apps/api/tests/sales-assisted-onboarding.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealer-email-identity.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.service.test.ts",
+    "apps/web/src/features/sales/assisted-dealer-start/assisted-dealer-start.constants.ts",
+    "apps/web/src/features/sales/assisted-dealer-start/assisted-dealer-start.tsx",
+    "apps/web/tests/unit/features/sales/assisted-dealer-start.test.tsx",
+    "docs/project/dealer-email-uniqueness.md",
+    "packages/contracts/src/dealer.ts",
+    "packages/contracts/tests/unit/dealer-messages.test.ts"
+  ],
+  "commits": ["9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611"],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37964866999/job/113936585799"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37964867138/job/113936585702"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37964867138/job/113936585439"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37964866999/job/113936585410"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "9ad0c9e35c8a4c1e5018725c0cdee97fde9dd611",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37964866999/job/113936585063"
+    }
+  ]
+}

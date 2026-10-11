@@ -1,0 +1,55 @@
+{
+  "prNumber": 296,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/296",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/ticket-message-limits",
+  "headRefName": "fix/mobile-sidebar-navigation",
+  "headRefOid": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+  "files": [
+    "apps/web/src/components/layout/customer-header/customer-header.tsx",
+    "apps/web/src/components/layout/mobile-nav/mobile-nav.tsx",
+    "apps/web/src/components/layout/mobile-nav/mobile-nav.types.ts",
+    "apps/web/tests/unit/components/layout/customer-header.test.tsx"
+  ],
+  "commits": ["cefed41177086685bb56423522bfd67d2ea9e7dc"],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204099/job/114236746863"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204088/job/114236746825"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204088/job/114236746713"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204099/job/114236746668"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38060204088/job/114236746560"
+    }
+  ]
+}

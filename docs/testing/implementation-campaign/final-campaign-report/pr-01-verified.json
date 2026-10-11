@@ -1,0 +1,70 @@
+{
+  "prNumber": 287,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/287",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "main",
+  "headRefName": "feat/dd-favicon-sizing",
+  "headRefOid": "6bc012858d389a113790e8c9aee6f196f333de86",
+  "files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/security.yml",
+    "AGENTS.md",
+    "apps/web/src/app/favicon.ico",
+    "apps/web/src/app/icon.png",
+    "apps/web/src/lib/fonts.ts",
+    "apps/web/src/lib/fonts/OFL.txt",
+    "apps/web/src/lib/fonts/README.md",
+    "apps/web/src/lib/fonts/manrope-variable.woff2",
+    "apps/web/tests/unit/app/seo-routes.test.tsx",
+    "apps/web/tests/unit/components/errors/error-pages.test.tsx",
+    "apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx",
+    "docs/project/implementation-campaign.md",
+    "scripts/generate-favicon.mjs"
+  ],
+  "commits": [
+    "e9b0e5aa37783e204c3951dffd43871ab0f59540",
+    "bcc98febc68e6d6baf17a51b91269baeb64398de",
+    "4767ae7b02d21ad6a117c885d5b0fcc8a5e84636",
+    "6bc012858d389a113790e8c9aee6f196f333de86"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925069/job/113889294680"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925069/job/113889294308"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289797"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289791"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "6bc012858d389a113790e8c9aee6f196f333de86",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37950925072/job/113889289295"
+    }
+  ]
+}

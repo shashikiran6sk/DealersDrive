@@ -1,0 +1,113 @@
+{
+  "prNumber": 293,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/293",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/optional-dealer-tagline",
+  "headRefName": "feat/admin-mobile-otp",
+  "headRefOid": "e481bb04c7b294900817fc64f92a241c09cfb894",
+  "files": [
+    "apps/api/prisma/migrations/20261010100000_admin_session_assurance/migration.sql",
+    "apps/api/prisma/migrations/20261010101000_admin_phone_credentials/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/container.ts",
+    "apps/api/src/docs/schemas.ts",
+    "apps/api/src/modules/admin-members/admin-members.service.ts",
+    "apps/api/src/modules/auth/admin-member.ts",
+    "apps/api/src/modules/auth/admin-phone.docs.ts",
+    "apps/api/src/modules/auth/admin-phone.routes.ts",
+    "apps/api/src/modules/auth/admin-phone.service.ts",
+    "apps/api/src/modules/auth/auth.docs.ts",
+    "apps/api/src/modules/auth/auth.facade.ts",
+    "apps/api/src/modules/auth/auth.service.ts",
+    "apps/api/src/modules/auth/cookie-session.adapter.ts",
+    "apps/api/src/modules/auth/customer-auth.service.ts",
+    "apps/api/src/modules/auth/phone-proof.service.ts",
+    "apps/api/src/modules/auth/routes/get-google-callback.ts",
+    "apps/api/src/modules/auth/routes/post-admin-logout.ts",
+    "apps/api/src/modules/auth/routes/start-google.ts",
+    "apps/api/src/modules/auth/session.cookie.ts",
+    "apps/api/src/modules/auth/session.port.ts",
+    "apps/api/src/modules/auth/session.service.ts",
+    "apps/api/src/platform/phone-otp/fake.adapter.ts",
+    "apps/api/src/platform/phone-otp/msg91.adapter.ts",
+    "apps/api/src/platform/phone-otp/phone-otp.port.ts",
+    "apps/api/src/platform/telemetry/logger.ts",
+    "apps/api/src/routes.ts",
+    "apps/api/tests/admin-phone-migration.test.ts",
+    "apps/api/tests/admin-phone.test.ts",
+    "apps/api/tests/admin-session-isolation.test.ts",
+    "apps/api/tests/auth-harness.ts",
+    "apps/api/tests/listing-emails.test.ts",
+    "apps/api/tests/unit/modules/auth/admin-phone.availability.test.ts",
+    "apps/api/tests/unit/modules/auth/auth.facade.test.ts",
+    "apps/api/tests/unit/modules/auth/phone-proof.service.test.ts",
+    "apps/api/tests/unit/platform/phone-otp/fake.adapter.test.ts",
+    "apps/api/tests/unit/platform/phone-otp/msg91.adapter.test.ts",
+    "apps/api/tests/unit/platform/telemetry/logger.test.ts",
+    "apps/web/src/app/(admin)/admin/profile/security/page.tsx",
+    "apps/web/src/app/(auth)/admin/login/page.tsx",
+    "apps/web/src/components/admin/admin-nav/admin-nav.constants.ts",
+    "apps/web/src/features/auth/actions.ts",
+    "apps/web/src/features/auth/admin-phone/actions.ts",
+    "apps/web/src/features/auth/admin-phone/admin-phone.tsx",
+    "apps/web/src/features/auth/phone-sign-in/phone-sign-in.tsx",
+    "apps/web/src/features/auth/phone-sign-in/phone-sign-in.types.ts",
+    "apps/web/src/lib/api.ts",
+    "apps/web/src/lib/session-cookie.ts",
+    "apps/web/tests/unit/features/admin/dashboard-page.test.tsx",
+    "apps/web/tests/unit/features/auth/admin-phone-actions.test.ts",
+    "apps/web/tests/unit/features/auth/admin-phone.test.tsx",
+    "apps/web/tests/unit/lib/api.test.ts",
+    "docs/code/api/modules/auth/README.md",
+    "docs/project/admin-mobile-otp-implementation.md",
+    "docs/project/admin-mobile-otp.md",
+    "packages/contracts/src/admin-phone.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/tests/unit/admin-phone.test.ts"
+  ],
+  "commits": [
+    "327de2df716eda586f50c100af26c082aa8ae141",
+    "38f1ccc38d89b539afe9f6c8af19217f1a3bbc82",
+    "e481bb04c7b294900817fc64f92a241c09cfb894"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38039042240/job/114175433698"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38039042279/job/114175433696"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38039042240/job/114175433604"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38039042240/job/114175433528"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "e481bb04c7b294900817fc64f92a241c09cfb894",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38039042279/job/114175433506"
+    }
+  ]
+}
