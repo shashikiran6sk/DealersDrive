@@ -176,7 +176,10 @@ describe('a sale', () => {
     const { listingId, vehicleId } = await approved();
     await h.drainEmails();
     const before = h.mailer.sent.length;
-    const soldAt = new Date();
+    const previousDeliveries = await h.prisma.notificationDelivery.findMany({
+      where: { dealerId: dealer.dealerId },
+      select: { id: true },
+    });
     await dealer.agent.post(`/v1/dealer/vehicles/${vehicleId}/mark-sold`).send({}).expect(200);
     await h.drainEmails();
     const slug =
@@ -191,7 +194,10 @@ describe('a sale', () => {
     expect(about).toEqual([]);
     expect(
       await h.prisma.notificationDelivery.count({
-        where: { dealerId: dealer.dealerId, createdAt: { gte: soldAt } },
+        where: {
+          dealerId: dealer.dealerId,
+          id: { notIn: previousDeliveries.map((row) => row.id) },
+        },
       }),
     ).toBe(0);
   });

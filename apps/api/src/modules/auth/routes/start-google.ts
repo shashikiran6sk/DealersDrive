@@ -10,7 +10,7 @@ export function startGoogle(service: AuthService, audience: OAuthAudience) {
       const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
       const { authorizationUrl, cookie, maxAgeSeconds } = service.startGoogle(returnTo, audience);
 
-      setOAuthCookie(res, cookie, maxAgeSeconds);
+      setOAuthCookie(res, cookie, maxAgeSeconds, audience === 'ADMIN');
       res.redirect(302, authorizationUrl);
     } catch (error) {
       next(error);

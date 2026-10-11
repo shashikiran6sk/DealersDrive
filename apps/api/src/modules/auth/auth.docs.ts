@@ -1,5 +1,6 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
+import { adminPhoneOperations } from './admin-phone.docs.js';
 
 const LOCATION_HEADER = {
   Location: { description: 'Where the browser is sent next.', schema: { type: 'string' } },
@@ -8,15 +9,15 @@ const LOCATION_HEADER = {
 export const authDocs: ModuleDocs = {
   tag: DOC_TAGS.auth,
   description:
-    'Everybody signs in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce) — ' +
-    'dealers and admins alike. Both end in the same place: an opaque `dd_session` cookie ' +
-    'backed by a row in `sessions`, revocable instantly (ARCHITECTURE §8.2).\n\n' +
-    '**No endpoint here accepts an identity, and none accepts a password.** There is no ' +
-    'request body anywhere in this tag that carries a credential: every session is issued ' +
-    'from an email inside a token Google signed. What separates the two consoles is the ' +
-    '`ADMIN_ALLOWLIST` check on that address, not a second login form. A `dealerId` is ' +
-    'never accepted anywhere in the API; it is a property of the resolved session (rule 1).',
+    'Google uses authorization code, PKCE and OIDC nonce. Person sessions use `dd_session`; ' +
+    'admin sessions use isolated `dd_admin_session` and a separate `dd_admin_oauth` transaction. ' +
+    'Both are opaque, HttpOnly, revocable database sessions. No password authentication.\n\n' +
+    'Existing admitted administrators may enroll a separate verified mobile credential after recent Google ' +
+    'authentication. Mobile admin login requires a fresh provider-verified proof and browser-bound challenge; ' +
+    'it never creates an administrator or links customer/dealer accounts. Admin admission requires an active ' +
+    'account and member, the applicable bootstrap allow-list rule, and no suspended admin seat.',
   operations: [
+    ...adminPhoneOperations,
     {
       method: 'get',
       path: '/v1/auth/providers',

@@ -7,6 +7,10 @@ import { Router } from 'express';
 import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
+import {
+  createAdminPhoneLoginRouter,
+  createAdminPhoneSecurityRouter,
+} from './modules/auth/admin-phone.routes.js';
 import { requirePermission } from './middleware/auth.js';
 import { ADMIN_CONSOLE_REFUSAL, SALES_WORKSPACE_REFUSAL } from './platform/messages.js';
 import { createSalesRouter } from './modules/sales/sales.routes.js';
@@ -60,6 +64,7 @@ export function createRoutes(container: Container): Router {
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
   v1.use(createSearchRouter(container.search, container.rateLimit));
 
+  v1.use('/auth', createAdminPhoneLoginRouter(container.adminPhone));
   v1.use(
     '/auth',
     createPublicAuthRouter(
@@ -117,6 +122,7 @@ export function createRoutes(container: Container): Router {
   const admin = Router();
   admin.use(container.guards.requireAdmin);
   admin.use(requirePermission('admin:console', ADMIN_CONSOLE_REFUSAL));
+  admin.use(createAdminPhoneSecurityRouter(container.adminPhone));
   admin.use(createAdminServiceLocationsRouter(container.serviceLocations));
   admin.use(createAdminRouter(container.admin));
   admin.use(createAdminMembersRouter(container.adminMembers));

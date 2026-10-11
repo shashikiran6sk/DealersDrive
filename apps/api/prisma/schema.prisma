@@ -50,13 +50,15 @@ model User {
   mergedInto User?  @relation("UserMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
   absorbed   User[] @relation("UserMerge")
 
-  adminMember   AdminMember?
-  sessions      Session[]
-  memberships   DealerMember[]
-  identities    OAuthIdentity[]
-  roles         UserRole[]
-  enquiries     Enquiry[]
-  savedVehicles SavedVehicle[]
+  adminOtpChallenges   AdminOtpChallenge[]
+  adminPhoneCredential AdminPhoneCredential?
+  adminMember          AdminMember?
+  sessions             Session[]
+  memberships          DealerMember[]
+  identities           OAuthIdentity[]
+  roles                UserRole[]
+  enquiries            Enquiry[]
+  savedVehicles        SavedVehicle[]
 
   enquiriesContacted Enquiry[] @relation("EnquiryContactedBy")
   enquiriesClosed    Enquiry[] @relation("EnquiryClosedBy")
@@ -128,25 +130,27 @@ enum UserRoleStatus {
 }
 
 model Session {
-  id             String       @id @default(uuid()) @db.Uuid
-  userId         String       @db.Uuid
-  tokenHash      String       @unique
+  id                   String       @id @default(uuid()) @db.Uuid
+  userId               String       @db.Uuid
+  tokenHash            String       @unique
   /// A dealer session can never satisfy `requireAdmin`, and an admin session can
   /// never satisfy `requireDealer` — even when one human holds both seats.
-  scope          SessionScope @default(DEALER)
-  expiresAt      DateTime
-  revokedAt      DateTime?
-  ip             String?
-  userAgent      String?
+  scope                SessionScope @default(DEALER)
+  authenticationMethod String?
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  ip                   String?
+  userAgent            String?
   /// The dealership this session is working in (**R93**), for a person who
   /// belongs to more than one. A preference, never a grant: the membership is
   /// re-read on every request, and a dealership this person can no longer
   /// enter is skipped as if this were NULL.
-  activeDealerId String?      @db.Uuid
-  createdAt      DateTime     @default(now())
+  activeDealerId       String?      @db.Uuid
+  createdAt            DateTime     @default(now())
 
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeDealer Dealer? @relation(fields: [activeDealerId], references: [id], onDelete: SetNull)
+  adminOtpChallenges AdminOtpChallenge[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeDealer       Dealer?             @relation(fields: [activeDealerId], references: [id], onDelete: SetNull)
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
@@ -1486,4 +1490,52 @@ model ServiceDistrict {
   @@unique([stateId, name])
   @@index([stateId, active, onboardingEnabled])
   @@map("service_districts")
+}
+
+model AdminPhoneCredential {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @unique @db.Uuid
+  phone           String              @unique
+  phoneVerifiedAt DateTime
+  version         Int                 @default(1)
+  revokedAt       DateTime?
+  createdAt       DateTime            @default(now())
+  challenges      AdminOtpChallenge[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("admin_phone_credentials")
+}
+
+model AdminOtpChallenge {
+  id                String    @id @default(uuid()) @db.Uuid
+  purpose           String
+  phone             String
+  userId            String?   @db.Uuid
+  sessionId         String?   @db.Uuid
+  credentialId      String?   @db.Uuid
+  credentialVersion Int?
+  browserTokenHash  String
+  attempts          Int       @default(0)
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  user       User?                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  session    Session?              @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  credential AdminPhoneCredential? @relation(fields: [credentialId], references: [id], onDelete: Restrict)
+  redemption AdminOtpRedemption?
+
+  @@index([phone, createdAt])
+  @@index([expiresAt])
+  @@map("admin_otp_challenges")
+}
+
+model AdminOtpRedemption {
+  tokenHash   String   @id
+  challengeId String   @unique @db.Uuid
+  redeemedAt  DateTime @default(now())
+
+  challenge AdminOtpChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
+
+  @@map("admin_otp_redemptions")
 }

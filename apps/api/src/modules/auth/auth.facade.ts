@@ -27,6 +27,7 @@ export type { SessionService } from './session.service.js';
 export { authorizeDealerWrite, type DealerWriteActor } from './dealer-write-authorization.js';
 
 export {
+  ADMIN_MEMBERSHIP_LOCK,
   findMemberByUser,
   isAdmitted,
   permissionsForMember,

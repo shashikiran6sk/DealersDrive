@@ -29,7 +29,7 @@ import {
   type DealersService,
 } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
-import { isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
+import { ADMIN_MEMBERSHIP_LOCK, isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
 import {
   ACCOUNT_SUSPENDED,
   DEALERSHIP_SUSPENDED,
@@ -432,6 +432,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       });
     },
 
+    async logoutAdmin(token: string | undefined): Promise<void> {
+      if (await sessions.resolve(token, 'ADMIN')) await sessions.revoke(token);
+    },
+
     async logout(token: string | undefined, userId?: string): Promise<void> {
       await sessions.revoke(token);
       logger.info({ event: 'auth.session.revoked', userId: userId ?? null }, 'session revoked');
@@ -492,11 +496,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
     const identity = await prisma.oAuthIdentity.findUnique({
       where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
-      include: { user: { include: { adminMember: true } } },
+      include: { user: { include: { adminMember: true, roles: true } } },
     });
     const byEmail = identity
       ? null
-      : await prisma.user.findUnique({ where: { email }, include: { adminMember: true } });
+      : await prisma.user.findUnique({
+          where: { email },
+          include: { adminMember: true, roles: true },
+        });
     const known = identity?.user ?? byEmail;
     const member = known?.adminMember ?? null;
 
@@ -527,7 +534,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       );
     }
 
-    if (known && known.status !== 'ACTIVE') {
+    if (known && (known.status !== 'ACTIVE' || isSeatSuspended(known.roles, 'ADMIN'))) {
       throw new ForbiddenError('This account has been suspended. Contact support.', {
         code: 'ACCOUNT_SUSPENDED',
       });
@@ -536,6 +543,24 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     const now = new Date();
 
     const admin = await withTransaction(prisma, async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ADMIN_MEMBERSHIP_LOCK}))`;
+      if (known) {
+        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${known.id}::uuid FOR UPDATE`;
+        await tx.$queryRaw`SELECT "id" FROM "admin_members" WHERE "userId" = ${known.id}::uuid FOR SHARE`;
+        await tx.$queryRaw`SELECT "id" FROM "user_roles" WHERE "userId" = ${known.id}::uuid AND "role" = 'ADMIN' FOR SHARE`;
+        const currentUser = await tx.user.findUniqueOrThrow({
+          where: { id: known.id },
+          include: { adminMember: true, roles: true },
+        });
+        if (currentUser.status !== 'ACTIVE' || isSeatSuspended(currentUser.roles, 'ADMIN'))
+          throw new ForbiddenError('This account has been suspended. Contact support.', {
+            code: 'ACCOUNT_SUSPENDED',
+          });
+        if (currentUser.adminMember?.status === 'DISABLED')
+          throw new ForbiddenError('Your admin access has been withdrawn.', {
+            code: 'ADMIN_ACCESS_REVOKED',
+          });
+      }
       const user =
         known ??
         (await tx.user.create({
@@ -621,22 +646,25 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         });
       }
 
-      return { user, member: saved };
-    });
-
-    if (!isAdmitted({ email, status: 'ACTIVE', member: admin.member })) {
-      throw new ForbiddenError(
-        'That Google account is not authorised for the Dealers-Drive admin console.',
-        { code: 'ADMIN_NOT_ALLOWLISTED' },
+      if (!isAdmitted({ email, status: 'ACTIVE', member: saved })) {
+        throw new ForbiddenError(
+          'That Google account is not authorised for the Dealers-Drive admin console.',
+          { code: 'ADMIN_NOT_ALLOWLISTED' },
+        );
+      }
+      const session = await sessions.issue(
+        {
+          userId: user.id,
+          scope: 'ADMIN',
+          authenticationMethod: 'GOOGLE',
+          ip: input.ip,
+          userAgent: input.userAgent,
+        },
+        tx,
       );
-    }
-
-    const session = await sessions.issue({
-      userId: admin.user.id,
-      scope: 'ADMIN',
-      ip: input.ip,
-      userAgent: input.userAgent,
+      return { user, member: saved, session };
     });
+    const session = admin.session;
 
     logger.info(
       { event: 'admin.login.success', userId: admin.user.id, adminMemberId: admin.member.id },
