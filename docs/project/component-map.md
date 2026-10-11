@@ -1269,7 +1269,7 @@ and either returns or hands over to `CustomerNameStep` (one Name field);
 | Component          | Props                                                                              | States                                                          |
 | ------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `PhoneSignIn`      | `widget`, `idPrefix`, `onProved`, `verifyLabel?`, `initialStage?`, `initialPhone?` | number · invalid number · code entry · refused · not configured |
-| `LoginTabs`        | `initial`, `customer`, `dealer`                                                    | customer · dealer                                               |
+| `LoginTabs`        | `initial`, `customer`, `dealer`, `footer?`, `dealerFooter?` (Dealer tab only)      | customer · dealer                                               |
 | `CustomerLogin`    | `widget`, `returnTo`                                                               | number · code · name required · unavailable                     |
 | `CustomerNameStep` | `phoneDisplay`, `onCreated`, `onRestart`                                           | empty · refused · ticket expired · creating                     |
 | `DealerLogin`      | `widget`, `google`, `returnTo`, `error`                                            | Google + phone · Google refused · Google not configured         |

@@ -86,7 +86,15 @@ export function MobileNav({
         </nav>
       )}
       {children ? (
-        <div className="mt-5 border-t border-(--color-divider) pt-4">{children}</div>
+        <div
+          className="mt-5 border-t border-(--color-divider) pt-4"
+          onClickCapture={(event) => {
+            if (event.target instanceof Element && event.target.closest('a[href]'))
+              setOpenPath(null);
+          }}
+        >
+          {children}
+        </div>
       ) : null}
     </Dialog>
   );

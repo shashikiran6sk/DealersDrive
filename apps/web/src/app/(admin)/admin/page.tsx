@@ -46,7 +46,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <section className="border border-(--color-divider) bg-white p-4">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-baseline gap-3 max-md:flex-wrap max-md:items-center">
           <h2 className="text-[19px]">Moderation queue</h2>
           <Link
             href={overview.moderationQueue.href}

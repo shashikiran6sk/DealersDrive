@@ -85,7 +85,7 @@ export function ReactivationQueue({
           />
         )
       ) : (
-        <Table columns={COLUMNS} caption={REACTIVATION_TEXT.caption}>
+        <Table scrollHint columns={COLUMNS} caption={REACTIVATION_TEXT.caption}>
           {requests.data.map((row) => (
             <ReactivationRow key={row.id} row={row} approve={approve} reject={reject} />
           ))}
