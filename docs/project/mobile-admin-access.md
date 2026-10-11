@@ -1,28 +1,28 @@
 # Mobile admin access
 
-PR 7 extends the current mobile revamp rather than replacing its navigation, tables or dialogs.
-The actual parent was audited at 320, 390, 768 and 1280 pixels across dashboard, dealer/listing
-queues, enquiries, support, configuration and security: all 28 combinations had no page-level
-horizontal overflow. Existing drawers, responsive layouts, dialog scroll containment and mobile
-44px button rules are preserved.
+Administrators use Dealers-Drive as an installed Chrome PWA and cannot easily edit its URL, so
+the admin sign-in page needs an in-app entry point. The owner's decision is a single, subtle
+**Admin Login** link on `/login`, on the **Dealer** tab only, directly below "Trouble signing in?
+Contact support". It routes to `/admin/login` with Next's in-app navigation, so the installed PWA
+stays in its window. There is no gesture, counter or hidden interaction, no third tab, and the
+Customer tab, brand, toggle, Google and OTP controls are unchanged.
 
-The marketplace mobile drawer now offers Dealer login, Admin login and Help and support below
-Home, Buy cars and Dealers. Its existing Main heading remains for separately scoped PR 9.
-Signed-in account menus also offer Admin login while preserving workspaces, customer actions,
-keyboard navigation and logout. Footer links close the drawer even when the pathname is unchanged.
-Admin discovery grants no permission; the existing backend and isolated admin cookie remain the
-authority. Google and verified mobile OTP are the PR 6 authentication methods.
+`LoginTabs` renders the support link (`footer`) for both tabs exactly where the page used to,
+and the admin link (`dealerFooter`) only while the Dealer tab is active, so the Customer view's
+markup does not change. The link is 12px, `ink-subtle` (≈5.1:1 on white), keyboard-focusable
+with a visible underline on focus and hover, and has a 40px-tall tap target.
 
-Admin queues opt into a visible mobile table swipe instruction. Their named focusable scroll
-regions, captions, column semantics, pagination and actions remain intact. The shared Table
-extension defaults off for other consumers. Card-dialog close buttons are at least 44px wide
-on phones; desktop size stays unchanged. The overview queue header can wrap on phones while
-retaining desktop alignment. No routes, permissions, database models or provider settings change.
+Admin discovery grants no permission: `/admin/login` and the isolated admin session remain the
+authority. The public marketplace drawer offers Dealer login and Help and support below Home,
+Buy cars and Dealers, but no admin entry; the signed-in account menu has no admin entry either.
+Links in the drawer footer close it even when the pathname is unchanged.
 
-Validation and actual post-creation browser screenshots belong in the campaign's PR 7 folder
-on testing_evidence. Test Google/mobile discovery, authorization, refresh, navigation, dealer and
-listing review, ticket replies, configuration, security and logout on phone/tablet/desktop
-widths. Native Safari and physical-device keyboard testing require owner UAT and are not claimed
-by Chromium viewport checks. Use synthetic data; mask contact, proof and document content.
+Admin queues opt into a visible mobile table swipe hint. Their named focusable scroll regions,
+captions, column semantics, pagination and actions remain intact; the shared `Table` extension
+defaults off for other consumers. Card-dialog close buttons are at least 44px on phones. The
+overview queue header can wrap on phones while keeping desktop alignment. No routes,
+permissions, database models or provider settings change.
 
-DO NOT MERGE. No production deployment.
+Owner UAT: on the installed PWA, open `/login`, switch to Dealer, tap Admin Login, sign in with
+Google or the linked mobile, and use Back. Native Safari and physical-device keyboard behaviour
+are not covered by Chromium viewport checks.
