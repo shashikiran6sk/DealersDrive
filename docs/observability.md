@@ -24,11 +24,55 @@ a Prometheus or Alloy service. It scrapes every 60 seconds. The endpoint is only
 enabled by deployment configuration, requires a random bearer token of at least
 32 characters, and emits no application data.
 
-Logs still go to stdout (and therefore the existing CloudWatch log groups) while
-a Pino worker-thread transport batches a second copy to Loki. The buffer is
-bounded at 10,000 entries so an ingestion outage cannot consume unbounded API
-memory. Loki credentials use Basic authentication over TLS and should come from
-a Cloud Access Policy token scoped only to `logs:write`.
+Logs go to stdout (visible through `docker logs dd-api` with Docker's `json-file`
+driver) while a Pino worker-thread transport batches a second copy to Loki.
+Pino JSON must retain numeric `level` values: info=30, warn=40, error=50.
+Pino 10.3.1 multi-target routing compares each target's numeric threshold with
+the parsed JSON level; a formatter returning `level: "info"` fails that comparison
+and drops the record from **both** targets. Keep Pino's default level formatter.
+Main currently locks Pino 10.4.0, which resolves known string labels before this
+comparison; the test-only 10.3.1 alias retains the production failure reproduction.
+Numeric JSON remains the documented convention and works with both versions.
+Both targets accept trace and above; the application's `LOG_LEVEL` filters
+records before transport. pino-loki maps numeric severity to Loki's `level`
+label (`info`, `warning`, `error`, etc.) using its built-in defaults.
+
+Loki credentials use Basic authentication over TLS and should come from a Cloud
+Access Policy token scoped only to `logs:write`. Production uses the full push
+URL, including `/loki/api/v1/push`; never put credentials in the URL.
+
+### Delivery and failure limits
+
+pino-loki 3 batches every five seconds and retains at most 10,000 unsent records,
+dropping the oldest when that buffer fills. Each push has a ten-second timeout.
+HTTP 401/403/429/500, connection refusal, DNS failure, and timeout are caught by
+the transport; application requests and stdout continue. Failed batches are
+discarded without retry. Raw remote response bodies and exception text are
+suppressed (`silenceErrors: true`) because they bypass application redaction and
+can echo credentials. Monitor missing ingestion in Grafana; silence does not
+establish successful delivery.
+
+The buffer cap applies to unsent records in pino-loki, **not all logging memory**:
+overlapping pushes and Pino's upstream worker queue also consume memory. The
+shared worker does not implement end-to-end backpressure. Both destinations
+depend on that worker, so a terminal worker failure can stop both outputs. A
+generic stderr diagnostic identifies transport failure without printing its
+error or options. Restart after correcting configuration. Independent main-thread
+stdout and a bounded remote queue are a follow-up if stronger isolation is needed.
+
+Closing a transport normally sends its buffered batch, but API and worker
+entrypoints currently call `process.exit()` after their application drain.
+Explicit exit, forced shutdown, crashes, and already in-flight pushes can lose
+logs; neither `logger.flush()` nor transport readiness proves Loki receipt.
+thread-stream's ten-second synchronous close deadline can also race the
+ten-second Loki request timeout when explicitly closing a stalled transport.
+Reliable shutdown delivery would require coordinated transport close within the
+existing shutdown deadline. This fix preserves the existing lifecycle.
+
+Redaction applies before fan-out, including session headers and known credential
+fields at the root and one nesting level. It is not a recursive scrubber or a
+free-text filter: do not log request/authentication payloads, customer/KYC
+documents, arbitrary deeply nested objects, credentials, or sensitive messages.
 
 ## Application configuration
 
@@ -46,6 +90,50 @@ All integrations are disabled by default. When the application is deployed,
 inject these values through the deployment platform's secret manager. Never put
 tokens in an image, task definition, compose file, committed env file, dashboard,
 or URL. Use independent credentials for each environment.
+
+## Operations
+
+### Verification and troubleshooting
+
+After deployment, make a normal API request with a non-sensitive `x-trace-id`.
+Check `docker logs --since 5m dd-api` for structured request completion with
+numeric severity and the same `traceId`; check `docker logs --since 5m dd-worker`
+for worker records when work runs. In Grafana Explore, select the hosted Loki
+data source and query `{service="dealers-drive-api",environment="production"}`.
+Allow at least one batching interval, then use `| json | traceId="<test-trace>"`
+to correlate the request. Readiness and a live transport thread alone do not
+prove delivery. `/internal/metrics` must still answer an authenticated scrape.
+
+If output is missing, check the deployed image SHA and numeric level first.
+For transport initialization failures, check the generic Docker stderr diagnostic,
+packaged `pino-loki` dependency, and validated configuration. Check the push URL,
+instance ID, token scope, DNS, TLS connectivity, throttling, and Grafana ingestion
+status using the secret manager and provider UI. Do not dump container environment,
+Parameter Store values, Authorization headers, or enable pino-loki debug output.
+Temporarily disabling forwarding through the approved deployment process restores
+direct Pino stdout while a worker/configuration failure is investigated.
+
+### Post-merge rollout and rollback
+
+1. Record the previous image tag/digest for both `dd-api` and `dd-worker`.
+   Confirm the approved fix is on main and CI is green. The release workflow
+   builds the API image tagged `sha-<commit>`; verify its `GIT_SHA`.
+2. Deploy that immutable image through the existing production CI/CD procedure.
+   The repository's release workflow builds images; its automatic development
+   deploy job is currently disabled. Follow the established EC2 rollout rather
+   than assuming a merge deploys production automatically.
+3. Preserve existing Parameter Store secrets and observability configuration.
+   Replace only API and worker containers with the corrected image; no database
+   migration, infrastructure, Compose, or Grafana resource changes are needed.
+4. Verify `/health/ready` and its build version, make a normal request, then check
+   Docker stdout and Loki ingestion using the steps above. Verify `traceId`,
+   worker output, and authenticated `/internal/metrics` collection.
+5. If API or logging behavior regresses, redeploy the recorded previous image
+   for both containers through the same procedure, preserving secrets. If that
+   image has the original Loki issue, use the approved configuration rollback
+   to set `GRAFANA_CLOUD_LOGS_ENABLED=false` and restore direct stdout. Recheck
+   readiness, stdout, worker behavior, and metrics. Production validation is an
+   operator's post-merge step; local/CI evidence does not establish it.
 
 ## Metric catalogue
 
