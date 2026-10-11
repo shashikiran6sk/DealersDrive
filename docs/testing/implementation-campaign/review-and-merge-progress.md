@@ -35,8 +35,8 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 2   | #288 | Email uniqueness        | `9ad0c9e`     | `5b6be13`         | green      | `19c1100` | Merged, main verified |
 | 3   | #289 | Directory image         | `451ac4e`     | `22dbc37`         | green      | `e8f0e55` | Merged, main verified |
 | 4   | #291 | Service locations       | `aaceb01`     | `4f11619`         | green      | `0d3d201` | Merged, main verified |
-| 5   | #292 | Optional tagline        | `465a5cd`     | `cef8c0b`         | green      | —         | Reviewed; merging |
-| 6   | #293 | Admin OTP               | `e481bb0`     | —                 | —          | —         | Pending                                 |
+| 5   | #292 | Optional tagline        | `465a5cd`     | `cef8c0b`         | green      | `f2f4d7b` | Merged, main verified |
+| 6   | #293 | Admin OTP               | `e481bb0`     | `e9e8939`         | green      | —         | Reviewed; owner defect fixed; merging (real MSG91 UAT outstanding) |
 | 7   | #294 | Mobile admin            | `a17b4a4`     | —                 | —          | —         | Pending                                 |
 | 8   | #295 | Ticket messaging        | `98a5b78`     | —                 | —          | —         | Pending                                 |
 | 9   | #296 | Mobile sidebar          | `cefed41`     | —                 | —          | —         | Pending                                 |
