@@ -6,9 +6,16 @@ import { getMyTicket } from './routes/get-my-ticket.js';
 import { getMyTickets } from './routes/get-my-tickets.js';
 import { postTicket } from './routes/post-ticket.js';
 import { postTicketMessage } from './routes/post-ticket-message.js';
+import { postTicketReopen } from './routes/post-ticket-reopen.js';
 import type { SupportRoute } from './routes/route.js';
 
-const ROUTES: SupportRoute[] = [getMyTickets, postTicket, getMyTicket, postTicketMessage];
+const ROUTES: SupportRoute[] = [
+  getMyTickets,
+  postTicket,
+  getMyTicket,
+  postTicketMessage,
+  postTicketReopen,
+];
 
 export function createSupportRouter(service: SupportService, rateLimit: RateLimiter): Router {
   const router = Router();

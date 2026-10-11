@@ -1,6 +1,6 @@
 # Five unanswered ticket messages
 
-PR 8 limits each ticket to five successfully persisted customer messages after its latest
+Each ticket is limited to five successfully persisted customer messages after its latest
 authorized support reply. The original request description is a separate field, not a message
 record; registration starts with five reply slots. The actual author enum is CUSTOMER/SUPPORT.
 There are no attachment or system-message records in this version; strict contracts reject
@@ -22,7 +22,30 @@ should provide a stable UUID per intended message; legacy clients omitting it re
 and each successful request is a distinct message. Retry IDs never bypass ownership checks or
 permit reopening a closed ticket. Closed tickets still reject new customer/support messages.
 
-Customer detail returns remainingMessages and canReply. At five unanswered messages the composer
+## Resolved and closed tickets
+
+| Status                                  | Customer messaging                           |
+| --------------------------------------- | -------------------------------------------- |
+| OPEN, IN_PROGRESS, WAITING_FOR_CUSTOMER | Allowed, within the five-message allowance   |
+| RESOLVED                                | Refused (`409 SUPPORT_TICKET_RESOLVED`)      |
+| CLOSED                                  | Refused (`409 SUPPORT_TICKET_CLOSED`); final |
+
+A customer message no longer reopens a resolved ticket implicitly. The customer reopens it
+explicitly with `POST /v1/support/tickets/:id/reopen`: only their own RESOLVED ticket, under the
+same ticket row lock as messaging and admin status changes, so a reopen, a close and a message
+cannot interleave. It moves the ticket to OPEN, clears `resolvedAt`, audits
+`support_ticket.reopened` (actor CUSTOMER, cause `customer_reopen`) and keeps the conversation,
+history and unanswered allowance as they were: a customer who had used all five messages still
+has none after reopening, until support replies. Reopening an already open ticket is a no-op and
+audits nothing; a CLOSED ticket cannot be reopened. Support may still reply to a resolved ticket;
+only CLOSED is final for support. The resolved-status email now tells the customer to use
+Reopen. The eligibility policy is "RESOLVED, never CLOSED"; a time limit on reopening would be
+a product decision.
+
+The customer page shows a resolved ticket read-only with a Reopen button, and a closed one
+read-only with a link to create a new request.
+
+Customer detail returns remainingMessages, canReply and canReopen. At five unanswered messages the composer
 is replaced with the requested waiting explanation and an urgent support link to /contact. This
 link does not send a sixth message or reset the ticket counter. Remaining allowance is announced
 through an accessible live region. Private notes, operator identities and quota internals are not
@@ -54,16 +77,14 @@ Apply schema before the new writer. Coordinate API rollout so old writers that d
 the counter are drained before enabling the new quota; mixed old/new writers would invalidate
 the denormalized counter. Use a reviewed forward fix, not deletion of history, if rollback is
 needed. Clean, representative legacy, constraint and transactional rollback rehearsals are in
-ticket-message-migration.test.ts. No production migrations or data modification were executed.
+ticket-message-migration.test.ts.
 
 Unit, real database/API concurrency, retries, closed/reopened lifecycle, authorization and UI
-cases live in the contracts, ticket-message-limits.test.ts and support component suites. Actual
-post-creation browser evidence and final-head CI must pass before PR 9 begins. No claim is made
-that the historical 556 manual scenarios all currently passed.
+cases live in the contracts, ticket-message-limits.test.ts and support component suites.
 
 Owner UAT: create a synthetic request, send five replies, check that the sixth is blocked, then
 reply as support and confirm five new slots. Retry a saved message with the same UUID, check
 another ticket's allowance, internal-note non-reset, refresh, multi-device submissions, closed
-restrictions and unauthorized access. Mask contacts and private notes in screenshots.
-
-DO NOT MERGE. No production deployment.
+restrictions and unauthorized access. Resolve a ticket, check that the composer is gone and a
+message is refused, reopen it, and check that history and the allowance are unchanged. Mask
+contacts and private notes in screenshots.

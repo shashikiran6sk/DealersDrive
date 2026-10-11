@@ -1451,12 +1451,12 @@ press. `SupportRequestDetail` is `/support-requests/[id]`: the request, its
 enquiry, the conversation (`SupportMessageBubble`) and `SupportReplyForm`, or a
 pointer to a new request once closed. `SupportRequestCallout` leads `/contact`.
 
-| Component               | Props                                                           | States                                                 |
-| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                        |
-| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused  |
-| `SupportRequestDetail`  | `ticket`                                                        | awaiting your reply · just created · resolved · closed |
-| `SupportRequestCallout` | —                                                               | default                                                |
+| Component               | Props                                                           | States                                                                                      |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                                                             |
+| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused                                       |
+| `SupportRequestDetail`  | `ticket` (`canReply`, `canReopen`, `remainingMessages`)         | awaiting your reply · just created · resolved (Reopen panel, `SupportReopenPanel`) · closed |
+| `SupportRequestCallout` | —                                                               | default                                                                                     |
 
 **Changed:** `SupportPage` leads with `SupportRequestCallout` and heads the
 contact cards "Other ways to reach us"; `AccountMenu` gains Support requests after
