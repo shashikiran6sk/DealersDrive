@@ -87,7 +87,7 @@ const TICKET_STATUS_LINES: Record<SupportTicketStatus, string> = {
   WAITING_FOR_CUSTOMER:
     'We need a little more from you before we can go further. Please reply in the request.',
   RESOLVED:
-    'We think your request is resolved. If it is not, reply in the request and it will reopen.',
+    'We think your request is resolved. If it is not, open the request and choose Reopen to continue the conversation.',
   CLOSED: 'Your request is now closed. If you need more help, open a new request.',
 };
 

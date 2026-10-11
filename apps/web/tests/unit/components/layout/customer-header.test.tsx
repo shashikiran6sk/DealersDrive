@@ -97,7 +97,7 @@ describe('saved cars', () => {
 });
 
 describe('the login door', () => {
-  it('offers mobile admin and dealer sign-in and support while preserving marketplace links', async () => {
+  it('offers dealer sign-in and support, but no admin entry, while preserving marketplace links', async () => {
     setLocation('/');
     render(<CustomerHeader locations={LOCATIONS} />);
     const user = userEvent.setup();
@@ -109,12 +109,12 @@ describe('the login door', () => {
       ['Buy cars', '/cars'],
       ['Dealers', '/dealers'],
       ['Dealer login', '/login?as=dealer'],
-      ['Admin login', '/admin/login'],
       ['Help and support', '/contact'],
     ]) {
       expect(within(drawer).getByRole('link', { name })).toHaveAttribute('href', href);
     }
-    await user.click(within(drawer).getByRole('link', { name: 'Admin login' }));
+    expect(within(drawer).queryByRole('link', { name: /admin/i })).toBeNull();
+    await user.click(within(drawer).getByRole('link', { name: 'Dealer login' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument();
   });

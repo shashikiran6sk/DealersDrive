@@ -237,7 +237,7 @@ describe('a support request', () => {
     expect(mail.map((message) => message.subject)).toEqual([
       `${ticket.reference}: Resolved — Dealers-Drive`,
     ]);
-    expect(mail[0]?.text).toContain('reply in the request and it will reopen');
+    expect(mail[0]?.text).toContain('choose Reopen to continue the conversation');
   });
 
   it('sends each status email once however often the outbox is drained', async () => {

@@ -18,6 +18,7 @@ import {
   type PhoneProofService,
   type SessionService,
 } from '../auth/auth.facade.js';
+import { withDealerEmailConflict } from '../dealers/dealers.facade.js';
 import { CLAIM_LINK_TTL_MS, claimTokenHash, claimUrl, mintClaimToken } from './claim-token.js';
 import {
   CLAIM_ACCOUNT_HAS_DEALERSHIP,
@@ -262,76 +263,78 @@ export function createDealerClaimsService({
         ? existing.id
         : (await identities.createWithPhone(proven, { fullName: null })).userId;
 
-      const membershipId = await withTransaction(prisma, async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId}::uuid FOR UPDATE`;
-        await assertMayOwn(userId, tx);
-        const latest = await lockedVerification(tx, row);
-        if (stateOf(latest) !== 'AWAITING_CLAIM')
-          throw new ConflictError('CLAIM_EMAIL_FIRST', CLAIM_EMAIL_FIRST);
-        if (CLOSED_STATUSES.has(latest.dealer.status))
-          throw new ConflictError('CLAIM_DEALERSHIP_CLOSED', CLAIM_DEALERSHIP_CLOSED);
-        if (proven.phone !== latest.dealer.contactPhone)
-          throw new ForbiddenError(CLAIM_PHONE_MISMATCH, { code: 'CLAIM_PHONE_MISMATCH' });
+      const membershipId = await withDealerEmailConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId}::uuid FOR UPDATE`;
+          await assertMayOwn(userId, tx);
+          const latest = await lockedVerification(tx, row);
+          if (stateOf(latest) !== 'AWAITING_CLAIM')
+            throw new ConflictError('CLAIM_EMAIL_FIRST', CLAIM_EMAIL_FIRST);
+          if (CLOSED_STATUSES.has(latest.dealer.status))
+            throw new ConflictError('CLAIM_DEALERSHIP_CLOSED', CLAIM_DEALERSHIP_CLOSED);
+          if (proven.phone !== latest.dealer.contactPhone)
+            throw new ForbiddenError(CLAIM_PHONE_MISMATCH, { code: 'CLAIM_PHONE_MISMATCH' });
 
-        const owner = await tx.dealerMember.findFirst({
-          where: { dealerId: row.dealerId, role: 'OWNER', status: 'ACTIVE' },
-          select: { id: true },
-        });
-        if (owner) throw new ConflictError('CLAIM_ALREADY_OWNED', CLAIM_ALREADY_OWNED);
-
-        const elsewhere = await tx.dealerMember.findFirst({
-          where: { userId, status: 'ACTIVE' },
-          select: { id: true },
-        });
-        if (elsewhere) {
-          throw new ConflictError('CLAIM_ACCOUNT_HAS_DEALERSHIP', CLAIM_ACCOUNT_HAS_DEALERSHIP);
-        }
-
-        const user = await tx.user.findUniqueOrThrow({
-          where: { id: userId },
-          select: { fullName: true },
-        });
-        if (!user.fullName) {
-          const contact = await tx.dealer.findUniqueOrThrow({
-            where: { id: row.dealerId },
-            select: { contactName: true },
+          const owner = await tx.dealerMember.findFirst({
+            where: { dealerId: row.dealerId, role: 'OWNER', status: 'ACTIVE' },
+            select: { id: true },
           });
-          if (contact.contactName) {
-            await tx.user.update({
-              where: { id: userId },
-              data: { fullName: contact.contactName },
-            });
-          }
-        }
+          if (owner) throw new ConflictError('CLAIM_ALREADY_OWNED', CLAIM_ALREADY_OWNED);
 
-        const member = await tx.dealerMember.upsert({
-          where: { dealerId_userId: { dealerId: row.dealerId, userId } },
-          update: { role: 'OWNER', status: 'ACTIVE', permissions: [] },
-          create: { dealerId: row.dealerId, userId, role: 'OWNER', permissions: [] },
-          select: { id: true },
-        });
-        const now = new Date();
-        await tx.dealerEmailVerification.update({
-          where: { id: row.id },
-          data: { claimedAt: now, claimedByUserId: userId },
-        });
-        await ensureSeat(tx, { userId, role: 'DEALER' });
-        await audit.record(tx, {
-          actorType: 'DEALER',
-          actorId: userId,
-          dealerId: row.dealerId,
-          action: 'dealer.claimed',
-          entityType: 'Dealer',
-          entityId: row.dealerId,
-          after: {
-            ownerUserId: userId,
-            verificationId: row.id,
-            proof: ['EMAIL_LINK', 'PHONE_OTP'],
-            accountCreated: existing === null,
-          },
-        });
-        return member.id;
-      });
+          const elsewhere = await tx.dealerMember.findFirst({
+            where: { userId, status: 'ACTIVE' },
+            select: { id: true },
+          });
+          if (elsewhere) {
+            throw new ConflictError('CLAIM_ACCOUNT_HAS_DEALERSHIP', CLAIM_ACCOUNT_HAS_DEALERSHIP);
+          }
+
+          const user = await tx.user.findUniqueOrThrow({
+            where: { id: userId },
+            select: { fullName: true },
+          });
+          if (!user.fullName) {
+            const contact = await tx.dealer.findUniqueOrThrow({
+              where: { id: row.dealerId },
+              select: { contactName: true },
+            });
+            if (contact.contactName) {
+              await tx.user.update({
+                where: { id: userId },
+                data: { fullName: contact.contactName },
+              });
+            }
+          }
+
+          const member = await tx.dealerMember.upsert({
+            where: { dealerId_userId: { dealerId: row.dealerId, userId } },
+            update: { role: 'OWNER', status: 'ACTIVE', permissions: [] },
+            create: { dealerId: row.dealerId, userId, role: 'OWNER', permissions: [] },
+            select: { id: true },
+          });
+          const now = new Date();
+          await tx.dealerEmailVerification.update({
+            where: { id: row.id },
+            data: { claimedAt: now, claimedByUserId: userId },
+          });
+          await ensureSeat(tx, { userId, role: 'DEALER' });
+          await audit.record(tx, {
+            actorType: 'DEALER',
+            actorId: userId,
+            dealerId: row.dealerId,
+            action: 'dealer.claimed',
+            entityType: 'Dealer',
+            entityId: row.dealerId,
+            after: {
+              ownerUserId: userId,
+              verificationId: row.id,
+              proof: ['EMAIL_LINK', 'PHONE_OTP'],
+              accountCreated: existing === null,
+            },
+          });
+          return member.id;
+        }),
+      );
 
       const session = await sessions.issue({
         userId,

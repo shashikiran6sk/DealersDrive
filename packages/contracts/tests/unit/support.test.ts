@@ -17,6 +17,8 @@ import {
   SupportTicketPriority,
   SupportTicketStatus,
   canCustomerReply,
+  canCustomerReopen,
+  canSupportReply,
   canTransitionSupportTicket,
   statusAfterCustomerReply,
   supportTicketReference,
@@ -54,7 +56,7 @@ describe('a customer reply', () => {
     ['OPEN', 'OPEN'],
     ['IN_PROGRESS', 'IN_PROGRESS'],
     ['WAITING_FOR_CUSTOMER', 'IN_PROGRESS'],
-    ['RESOLVED', 'OPEN'],
+    ['RESOLVED', null],
     ['CLOSED', null],
   ] as const)('leaves %s as %s', (from, to) => {
     expect(statusAfterCustomerReply(from)).toBe(to);
@@ -68,6 +70,16 @@ describe('a customer reply', () => {
         expect(canTransitionSupportTicket(status, next)).toBe(true);
       }
     }
+  });
+});
+
+describe('reopening', () => {
+  it('lets a customer reopen only a resolved request, while support may still reply to it', () => {
+    for (const status of SupportTicketStatus.options) {
+      expect(canCustomerReopen(status)).toBe(status === 'RESOLVED');
+      expect(canSupportReply(status)).toBe(status !== 'CLOSED');
+    }
+    expect(canTransitionSupportTicket('RESOLVED', 'OPEN')).toBe(true);
   });
 });
 
