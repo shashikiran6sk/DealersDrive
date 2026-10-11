@@ -1,0 +1,38 @@
+[
+  {
+    "width": 320,
+    "loadedFonts": ["manrope 400 800"],
+    "bodyFontFamily": "manrope, \"manrope Fallback\", Manrope, Arial, system-ui, sans-serif",
+    "horizontalOverflow": false,
+    "icons": ["/favicon.ico", "/icon.png?5f6afc756ebb4407", "/apple-icon.png?1b83381176c694f0"],
+    "failedAssets": []
+  },
+  {
+    "width": 390,
+    "loadedFonts": ["manrope 400 800"],
+    "bodyFontFamily": "manrope, \"manrope Fallback\", Manrope, Arial, system-ui, sans-serif",
+    "horizontalOverflow": false,
+    "icons": ["/favicon.ico", "/icon.png?5f6afc756ebb4407", "/apple-icon.png?1b83381176c694f0"],
+    "failedAssets": []
+  },
+  {
+    "width": 768,
+    "loadedFonts": ["manrope 400 800"],
+    "bodyFontFamily": "manrope, \"manrope Fallback\", Manrope, Arial, system-ui, sans-serif",
+    "horizontalOverflow": false,
+    "icons": ["/favicon.ico", "/icon.png?5f6afc756ebb4407", "/apple-icon.png?1b83381176c694f0"],
+    "failedAssets": []
+  },
+  {
+    "width": 1280,
+    "loadedFonts": ["manrope 400 800"],
+    "bodyFontFamily": "manrope, \"manrope Fallback\", Manrope, Arial, system-ui, sans-serif",
+    "horizontalOverflow": false,
+    "icons": ["/favicon.ico", "/icon.png?5f6afc756ebb4407", "/apple-icon.png?1b83381176c694f0"],
+    "failedAssets": []
+  },
+  {
+    "iconPng": 200,
+    "type": "image/png"
+  }
+]

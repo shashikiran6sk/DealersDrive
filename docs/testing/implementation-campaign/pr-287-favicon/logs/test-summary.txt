@@ -1,0 +1,758 @@
+@dealers-drive/api:test:       Coverage enabled with v8
+@dealers-drive/contracts:test:       Coverage enabled with v8
+@dealers-drive/contracts:test:  ✓ tests/unit/enums.test.ts (57 tests) 74ms
+@dealers-drive/contracts:test:  ✓ tests/unit/common.test.ts (101 tests) 56ms
+@dealers-drive/contracts:test:  ✓ tests/unit/vehicle.test.ts (34 tests) 94ms
+@dealers-drive/contracts:test:  ✓ tests/unit/listing.test.ts (13 tests) 23ms
+@dealers-drive/contracts:test:  ✓ tests/unit/support.test.ts (21 tests) 89ms
+@dealers-drive/contracts:test:  ✓ tests/unit/admin.test.ts (13 tests) 45ms
+@dealers-drive/contracts:test:  ✓ tests/unit/dealer-messages.test.ts (11 tests) 46ms
+@dealers-drive/contracts:test:  ✓ tests/unit/registration.test.ts (33 tests) 19ms
+@dealers-drive/contracts:test:  ✓ tests/unit/public.test.ts (29 tests) 28ms
+@dealers-drive/contracts:test:  ✓ tests/unit/dealer-access.test.ts (28 tests) 18ms
+@dealers-drive/contracts:test:  ✓ tests/unit/enquiry.test.ts (23 tests) 47ms
+@dealers-drive/contracts:test:  ✓ tests/unit/auth.test.ts (29 tests) 19ms
+@dealers-drive/contracts:test:  ✓ tests/unit/admin-access.test.ts (6 tests) 14ms
+@dealers-drive/contracts:test:  ✓ tests/unit/index.test.ts (4 tests) 16ms
+@dealers-drive/contracts:test:  ✓ tests/unit/vehicle-color.test.ts (25 tests) 19ms
+@dealers-drive/contracts:test:  Test Files  15 passed (15)
+@dealers-drive/contracts:test:       Tests  427 passed (427)
+@dealers-drive/contracts:test:  % Coverage report from v8
+@dealers-drive/contracts:test: =============================== Coverage summary ===============================
+@dealers-drive/web:test:  ✓ tests/unit/lib/api.test.ts (73 tests) 75ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealers/portfolio-page.test.tsx (53 tests) 2867ms
+@dealers-drive/web:test:    ✓ the dealership it shows (9)
+@dealers-drive/web:test:      ✓ renders the identity and the address 325ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealers/directory.test.tsx (38 tests) 2076ms
+@dealers-drive/web:test:    ✓ DirectoryCard (16)
+@dealers-drive/web:test:      ✓ is one link to the portfolio, not two 373ms
+@dealers-drive/web:test:    ✓ DirectoryFilters (16)
+@dealers-drive/web:test:      ✓ carries the district through a chip and a search 436ms
+@dealers-drive/web:test:      ✓ carries the city through a name search 385ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/dealers/dealers.public.service.test.ts (92 tests) 82ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/admin/admin.service.test.ts (95 tests) 135ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/dealers/dealers.service.test.ts (150 tests) 198ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/onboarding-wizard.test.tsx (68 tests) 5426ms
+@dealers-drive/web:test:    ✓ OnboardingWizard — the frame (11)
+@dealers-drive/web:test:      ✓ advances once the required fields are filled 719ms
+@dealers-drive/web:test:    ✓ OnboardingWizard — the Account step (14)
+@dealers-drive/web:test:      ✓ accepts a number spaced the way the placeholder shows it 483ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/maps/maps-link.test.ts (40 tests) 153ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/config/env.test.ts (78 tests) 1103ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/notifications/notifications.service.test.ts (35 tests) 104ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/config/platform-config.test.ts (37 tests) 52ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/listings/listing.state.test.ts (39 tests) 109ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/dealers/dealers.repository.test.ts (23 tests) 41ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/error-handler.test.ts (33 tests) 68ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/profile-form.test.tsx (47 tests) 3440ms
+@dealers-drive/web:test:    ✓ what the form offers (26)
+@dealers-drive/web:test:      ✓ shows an inline error for the future year 2090 795ms
+@dealers-drive/web:test:      ✓ shows an inline error for the future year 2400 311ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/listing-review.test.tsx (29 tests) 2121ms
+@dealers-drive/web:test:    ✓ the review screen (9)
+@dealers-drive/web:test:      ✓ shows the dealership, each section, the description and the history with its reason 867ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/storage/local.adapter.test.ts (41 tests) 133ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/rate-limit.test.ts (29 tests) 166ms
+@dealers-drive/web:test:  ✓ tests/unit/components/layout/location-selector.test.tsx (30 tests) 5635ms
+@dealers-drive/web:test:    ✓ the trigger (4)
+@dealers-drive/web:test:      ✓ reads "Select district" until one is chosen, and the district after 560ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/jobs/queue.test.ts (27 tests) 287ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/search/search.test.ts (24 tests) 86ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/request-context.test.ts (42 tests) 42ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/auth.test.ts (31 tests) 44ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/routes.test.ts (60 tests) 1356ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/config/config.service.test.ts (35 tests) 38ms
+@dealers-drive/web:test:  ✓ tests/unit/features/support/support-requests.test.tsx (23 tests) 2167ms
+@dealers-drive/web:test:    ✓ /support-requests (3)
+@dealers-drive/web:test:      ✓ reads the customer’s requests uncached, and lists them 434ms
+@dealers-drive/web:test:    ✓ SupportRequestForm (3)
+@dealers-drive/web:test:      ✓ asks for an enquiry only for the topics it helps, and opens the request it created 662ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/google.provider.test.ts (26 tests) 134ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/events/outbox-publisher.test.ts (15 tests) 89ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/phone.service.test.ts (18 tests) 118ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/support-tickets.test.tsx (13 tests) 2363ms
+@dealers-drive/web:test:    ✓ /admin/support (3)
+@dealers-drive/web:test:      ✓ shows tabs with counts, filters, and a row per ticket with its context 605ms
+@dealers-drive/web:test:    ✓ TicketControls (2)
+@dealers-drive/web:test:      ✓ offers only the allowed moves, and sends only what changed 442ms
+@dealers-drive/web:test:    ✓ TicketComposer (2)
+@dealers-drive/web:test:      ✓ replies to the customer by default, and switches to a visibly different internal note 483ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/notifications/templates.test.ts (96 tests) 91ms
+@dealers-drive/web:test:  ✓ tests/unit/components/vehicle/vehicle-gallery.test.tsx (31 tests) 5089ms
+@dealers-drive/web:test:    ✓ the gallery on the page (6)
+@dealers-drive/web:test:      ✓ shows the primary photograph in a blueprint frame with a view-all tag 736ms
+@dealers-drive/web:test:    ✓ the hero arrows — one image state for hero, strip and viewer (10)
+@dealers-drive/web:test:      ✓ opens the viewer on the photograph the hero is showing 364ms
+@dealers-drive/web:test:      ✓ shows on the hero the photograph a thumbnail opened, once the viewer closes 357ms
+@dealers-drive/web:test:      ✓ keeps the hero where the viewer was left 546ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/vehicles/vehicles.service.test.ts (27 tests) 66ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/dev-session.adapter.test.ts (19 tests) 20ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/errors.test.ts (24 tests) 47ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/logger.test.ts (23 tests) 149ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/events/bus.test.ts (15 tests) 31ms
+@dealers-drive/web:test:  ✓ tests/unit/components/vehicle/vehicle-card.test.tsx (34 tests) 2725ms
+@dealers-drive/web:test:    ✓ VehicleCard (14)
+@dealers-drive/web:test:      ✓ draws the year plate, title, price, meta row and dealer strip 600ms
+@dealers-drive/web:test:    ✓ /cars with filters (8)
+@dealers-drive/web:test:      ✓ draws the filter panel and the applied chips from the response 406ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/moderation/moderation.test.ts (25 tests) 59ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/server.test.ts (19 tests) 575ms
+@dealers-drive/web:test:  ✓ tests/unit/components/vehicle/vehicle-page.test.tsx (30 tests) 1831ms
+@dealers-drive/web:test:    ✓ the price, specifications and dealer (3)
+@dealers-drive/web:test:      ✓ names the dealership, where it is, and links to it 505ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/session.port.test.ts (36 tests) 40ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/storage/s3.adapter.test.ts (15 tests) 67ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/roles.test.ts (16 tests) 30ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/validate.test.ts (22 tests) 26ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/docs/openapi.test.ts (5 tests) 370ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/mail/resend.adapter.test.ts (18 tests) 20ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/seed/dev-vehicles.test.ts (15 tests) 148ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/audit/audit.service.test.ts (12 tests) 25ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/phone-proof.service.test.ts (22 tests) 53ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/media.service.test.ts (25 tests) 19ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/health/health.routes.test.ts (14 tests) 24ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/header-account.test.tsx (31 tests) 2292ms
+@dealers-drive/web:test:    ✓ HeaderAccount (15)
+@dealers-drive/web:test:      ✓ shows Login to somebody not signed in, and no avatar 411ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/oauth-transaction.test.ts (29 tests) 21ms
+@dealers-drive/web:test:  ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx (24 tests) 1569ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/dealer-write-authorization.test.ts (28 tests) 38ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/search/search.filters.test.ts (16 tests) 27ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/search/search.facets.test.ts (15 tests) 17ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/phone.routes.test.ts (4 tests) 915ms
+@dealers-drive/api:test:    ✓ the widget configuration is rate-limited (1)
+@dealers-drive/api:test:      ✓ allows thirty an hour and refuses the thirty-first 516ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/request-logger.test.ts (13 tests) 33ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/vehicles/vehicles.repository.test.ts (12 tests) 24ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/cache/postgres.adapter.test.ts (15 tests) 16ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/cache/memory.adapter.test.ts (21 tests) 32ms
+@dealers-drive/web:test:  ✓ tests/unit/app/seo-routes.test.tsx (21 tests) 300ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/enquiries/enquiries.admin.test.ts (9 tests) 27ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/dealers/dealers.routes.test.ts (19 tests) 92ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/search/search.similar.test.ts (20 tests) 24ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/phone-sign-in.routes.test.ts (11 tests) 1339ms
+@dealers-drive/api:test:    ✓ sign-in is rate-limited (3)
+@dealers-drive/api:test:      ✓ allows ten tries at one number and refuses the eleventh, from any address 707ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/login.test.tsx (18 tests) 2955ms
+@dealers-drive/web:test:    ✓ LoginTabs (7)
+@dealers-drive/web:test:      ✓ opens on Customer 432ms
+@dealers-drive/web:test:    ✓ CustomerLogin (7)
+@dealers-drive/web:test:      ✓ asks a new customer only for a name, then returns them where they were 686ms
+@dealers-drive/web:test:      ✓ signs an existing customer straight in — no name screen 456ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/phone-otp/msg91.adapter.test.ts (13 tests) 62ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/admin/admin.routes.test.ts (13 tests) 31ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/db/tenant-tx.test.ts (11 tests) 38ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/pagination.test.ts (23 tests) 37ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealers/dealer-search-box.test.tsx (24 tests) 11568ms
+@dealers-drive/web:test:    ✓ asking the API (4)
+@dealers-drive/web:test:      ✓ asks after the first character 1023ms
+@dealers-drive/web:test:      ✓ asks once for a word typed in one go, not once per keystroke 473ms
+@dealers-drive/web:test:      ✓ does not ask at all for an empty box 778ms
+@dealers-drive/web:test:      ✓ passes the page’s own district and towns through 370ms
+@dealers-drive/web:test:    ✓ the recommendations (5)
+@dealers-drive/web:test:      ✓ shows the matching dealerships under the input 423ms
+@dealers-drive/web:test:      ✓ highlights the first recommendation 446ms
+@dealers-drive/web:test:      ✓ marks the characters that were typed 381ms
+@dealers-drive/web:test:      ✓ marks the place on a row that matched on its place 393ms
+@dealers-drive/web:test:      ✓ says it is a combobox, and which row the reader is on 420ms
+@dealers-drive/web:test:    ✓ the keyboard (6)
+@dealers-drive/web:test:      ✓ moves the highlight down and up 454ms
+@dealers-drive/web:test:      ✓ wraps at both ends 460ms
+@dealers-drive/web:test:      ✓ searches for the highlighted row on Enter, with nothing explicitly selected 397ms
+@dealers-drive/web:test:      ✓ searches for whatever the arrows left highlighted 428ms
+@dealers-drive/web:test:      ✓ closes on Escape and keeps what was typed 411ms
+@dealers-drive/web:test:      ✓ does nothing on Enter when nothing matched 355ms
+@dealers-drive/web:test:    ✓ the pointer (4)
+@dealers-drive/web:test:      ✓ searches for a clicked recommendation 460ms
+@dealers-drive/web:test:      ✓ follows the cursor with the highlight 437ms
+@dealers-drive/web:test:      ✓ does not re-ask for a dealership that was just chosen 790ms
+@dealers-drive/web:test:    ✓ what goes wrong (5)
+@dealers-drive/web:test:      ✓ says so while it is still asking 417ms
+@dealers-drive/web:test:      ✓ says nothing matched, naming what was searched for 405ms
+@dealers-drive/web:test:      ✓ degrades to a message when the endpoint fails 373ms
+@dealers-drive/web:test:      ✓ drops an answer that arrives after the query it answered was replaced 747ms
+@dealers-drive/web:test:      ✓ does not report an abort as a failure 681ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/support/support.admin.test.ts (11 tests) 27ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/enquiry-oversight.test.tsx (10 tests) 1517ms
+@dealers-drive/web:test:    ✓ /admin/enquiries (6)
+@dealers-drive/web:test:      ✓ shows a tab per status with its count, and a row per enquiry 567ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/media-image-cache.test.ts (12 tests) 152ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/auth.facade.test.ts (5 tests) 54ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/trusted-client-ip.test.ts (8 tests) 179ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/storage-standins.test.ts (5 tests) 120ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/storage/storage.port.test.ts (7 tests) 42ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/sign-up-ticket.test.ts (12 tests) 19ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/metrics.test.ts (4 tests) 125ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/vehicles/vehicles.routes.test.ts (22 tests) 72ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/phone-verification.test.tsx (15 tests) 1803ms
+@dealers-drive/web:test:    ✓ PhoneVerification (15)
+@dealers-drive/web:test:      ✓ opens on the step’s forward action, not on a code box 334ms
+@dealers-drive/web:test:      ✓ hands the token to the server and reports what it answered 451ms
+@dealers-drive/web:test:      ✓ stops asking after three wrong codes and requires a fresh one 317ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/media-delivery-p3.test.ts (5 tests) 155ms
+@dealers-drive/web:test:  ✓ tests/unit/features/home/home-page.test.tsx (17 tests) 3660ms
+@dealers-drive/web:test:    ✓ the homepage (7)
+@dealers-drive/web:test:      ✓ shows each row with its cards and a link to the same search on /cars 688ms
+@dealers-drive/web:test:    ✓ the homepage search — the /cars search box, pointed at /cars (6)
+@dealers-drive/web:test:      ✓ suggests makes and models from the whole marketplace as the buyer types 734ms
+@dealers-drive/web:test:      ✓ opens /cars with the chosen suggestion as filters 668ms
+@dealers-drive/web:test:      ✓ opens /cars?q= with the words when Enter is pressed on free text 467ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/storage/cleanup.test.ts (9 tests) 39ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/listing-lifecycle.test.tsx (21 tests) 1860ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/verified-phone.test.ts (5 tests) 12ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/db/prisma.test.ts (6 tests) 187ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/moderation/moderation.approval.test.ts (4 tests) 13ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/media.facade.test.ts (4 tests) 32ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/media/urls.test.ts (7 tests) 11ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/not-found.test.ts (10 tests) 11ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/auth/admin-allowlist.test.ts (4 tests) 246ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/profile-actions.test.ts (23 tests) 93ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/config/config.routes.test.ts (5 tests) 17ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/saved-vehicles/saved-vehicles.mapper.test.ts (9 tests) 9ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/phone-otp/fake.adapter.test.ts (5 tests) 12ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/cache/factory.test.ts (3 tests) 320ms
+@dealers-drive/web:test:  ✓ tests/unit/features/saved/saved-cars.test.tsx (19 tests) 1354ms
+@dealers-drive/web:test:    ✓ the heart (9)
+@dealers-drive/web:test:      ✓ asks nothing when this browser was last seen signed out 392ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/media/media.routes.test.ts (4 tests) 20ms
+@dealers-drive/web:test:  ✓ tests/unit/features/enquiry/enquiry-panel.test.tsx (15 tests) 2461ms
+@dealers-drive/web:test:    ✓ an anonymous visitor (1)
+@dealers-drive/web:test:      ✓ is sent to the Customer tab, and told to come back to this car 455ms
+@dealers-drive/web:test:    ✓ a signed-in customer (8)
+@dealers-drive/web:test:      ✓ sends the message they typed 464ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/modules/vehicle-images/vehicle-images.test.ts (4 tests) 45ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/phone-otp/factory.test.ts (3 tests) 253ms
+@dealers-drive/web:test:  ✓ tests/unit/features/vehicle/actions.test.ts (20 tests) 92ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/container.test.ts (5 tests) 298ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/lifecycle.test.ts (5 tests) 14ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/actions.test.ts (16 tests) 86ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/db/prisma-pool.test.ts (1 test) 5ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/middleware/request-metrics.test.ts (2 tests) 120ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/media/sniff.test.ts (3 tests) 22ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/metrics.routes.test.ts (3 tests) 183ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/http-route.test.ts (4 tests) 14ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/msg91-widget.test.ts (17 tests) 120ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/dashboard-page.test.tsx (14 tests) 761ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/filter-panel.test.tsx (24 tests) 4721ms
+@dealers-drive/web:test:    ✓ what it offers (7)
+@dealers-drive/web:test:      ✓ lists every group in the order the brief sets, with no generic location 1024ms
+@dealers-drive/web:test:      ✓ labels each value with its count, readable as one name 367ms
+@dealers-drive/web:test:      ✓ shows the first six of a long list, and the rest on request 400ms
+@dealers-drive/web:test:    ✓ what it writes (10)
+@dealers-drive/web:test:      ✓ ticks a value into the URL, keeping the district and dropping the page 309ms
+@dealers-drive/web:test:      ✓ adds a second value to the same group, as a list 375ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/console-layout.test.tsx (10 tests) 367ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/listing-images.test.tsx (14 tests) 971ms
+@dealers-drive/web:test:    ✓ the gallery (8)
+@dealers-drive/web:test:      ✓ offers no upload once the vehicle carries the most it can 310ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/listings-page.test.tsx (10 tests) 779ms
+@dealers-drive/web:test:    ✓ /admin/listings (7)
+@dealers-drive/web:test:      ✓ shows how many are waiting and a tab per status 328ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/enquiries-page.test.tsx (15 tests) 696ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/car-search-box.test.tsx (13 tests) 4928ms
+@dealers-drive/web:test:    ✓ asking for suggestions (5)
+@dealers-drive/web:test:      ✓ asks once, after the typing pauses, through the BFF 602ms
+@dealers-drive/web:test:      ✓ keeps to the page’s district, towns and dealers 343ms
+@dealers-drive/web:test:      ✓ changes nothing on the page while a buyer is only typing 791ms
+@dealers-drive/web:test:      ✓ says so while it is asking, and when nothing matches 352ms
+@dealers-drive/web:test:      ✓ drops an answer to a search that has since been replaced 786ms
+@dealers-drive/web:test:    ✓ the suggestions (4)
+@dealers-drive/web:test:      ✓ shows each row with what it is and how many cars, marking the typed characters 384ms
+@dealers-drive/web:test:      ✓ moves with the arrows, wrapping, and takes the highlighted row on Enter 396ms
+@dealers-drive/web:test:      ✓ takes a clicked row, and a variant writes its model and the variant as the search 381ms
+@dealers-drive/web:test:      ✓ closes on Escape and on a click away, writing nothing 424ms
+@dealers-drive/web:test:    ✓ free text and clearing (3)
+@dealers-drive/web:test:      ✓ searches the typed words on Enter when there is nothing to choose 377ms
+@dealers-drive/web:test:  ✓ tests/unit/components/ui/dialog.test.tsx (12 tests) 1037ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/team-page.test.tsx (10 tests) 1393ms
+@dealers-drive/web:test:    ✓ the Team page (5)
+@dealers-drive/web:test:      ✓ lists the owner without controls and each member with a role and Remove 306ms
+@dealers-drive/web:test:    ✓ inviting a member (3)
+@dealers-drive/web:test:      ✓ sends the number and the role chosen, and closes 306ms
+@dealers-drive/web:test:  ✓ tests/unit/components/ui/service-input.test.tsx (14 tests) 1251ms
+@dealers-drive/web:test:    ✓ adding one at a time (4)
+@dealers-drive/web:test:      ✓ turns the draft into a chip when Add is pressed 396ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealer/console-nav.test.tsx (12 tests) 379ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/sign-in-actions.test.ts (11 tests) 30ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/dealer-profile-editor.test.tsx (8 tests) 1582ms
+@dealers-drive/web:test:    ✓ the review screen’s business card (7)
+@dealers-drive/web:test:      ✓ sends the services as an array, not as the line the box holds 622ms
+@dealers-drive/web:test:      ✓ sends the tagline as a string 391ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/inventory-page.test.tsx (8 tests) 769ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/dashboard-page.test.tsx (8 tests) 260ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/customer-account-actions.test.ts (8 tests) 36ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/admin-members.test.tsx (7 tests) 1151ms
+@dealers-drive/web:test:    ✓ AdminMembers (7)
+@dealers-drive/web:test:      ✓ invites with the chosen role, and says how they sign in 560ms
+@dealers-drive/web:test:      ✓ asks for a reason before disabling 312ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealer/console-utilities.test.tsx (6 tests) 686ms
+@dealers-drive/web:test:    ✓ ConsoleUtilities (6)
+@dealers-drive/web:test:      ✓ closes its disclosure before a containing Radix navigation dialog 416ms
+@dealers-drive/api:test:  ✓  unit  tests/unit/platform/telemetry/logger-runtime.test.ts (15 tests) 51723ms
+@dealers-drive/api:test:    ✓ actual production logger and transport worker (15)
+@dealers-drive/api:test:      ✓ delivers both destinations with actual configuration under production Pino 10.3.1 1587ms
+@dealers-drive/api:test:      ✓ reports terminal worker failure without exposing its error and keeps HTTP available 1287ms
+@dealers-drive/api:test:      ✓ reproduces string-level loss in Pino multi-target routing 381ms
+@dealers-drive/api:test:      ✓ delivers actual configuration with Loki enabled=false 950ms
+@dealers-drive/api:test:      ✓ delivers actual configuration with Loki enabled=true 1257ms
+@dealers-drive/api:test:      ✓ honors LOG_LEVEL=trace in both destinations 1037ms
+@dealers-drive/api:test:      ✓ honors LOG_LEVEL=warn in both destinations 1053ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after Loki HTTP 401 6218ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after Loki HTTP 403 6008ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after Loki HTTP 429 6166ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after Loki HTTP 500 6393ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after network failure: connection refusal 1722ms
+@dealers-drive/api:test:      ✓ keeps stdout and HTTP available after network failure: DNS failure 1368ms
+@dealers-drive/api:test:      ✓ does not block HTTP or stdout while a Loki batch times out 16266ms
+@dealers-drive/web:test:  ✓ tests/unit/components/ui/button.test.tsx (27 tests) 432ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/team-actions.test.ts (13 tests) 35ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/actions.test.ts (11 tests) 25ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/listing-lifecycle-actions.test.ts (14 tests) 37ms
+@dealers-drive/web:test:  ✓ tests/unit/components/layout/customer-footer.test.tsx (10 tests) 660ms
+@dealers-drive/web:test:  ✓ tests/unit/features/enquiry/my-enquiries-page.test.tsx (9 tests) 446ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/use-navigation-safe-action.test.tsx (6 tests) 467ms
+@dealers-drive/web:test:    ✓ useNavigationSafeAction (5)
+@dealers-drive/web:test:      ✓ hands any other failure to the nearest error boundary, as a transition would 317ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/profile-change-review.test.tsx (5 tests) 819ms
+@dealers-drive/web:test:    ✓ the profile-change review card (5)
+@dealers-drive/web:test:      ✓ publishes on approve, naming the change and nothing else 308ms
+@dealers-drive/web:test:      ✓ will not refuse without a reason of substance 362ms
+@dealers-drive/web:test:  ✓ tests/unit/components/errors/error-pages.test.tsx (11 tests) 719ms
+@dealers-drive/web:test:    ✓ the 404 page (2)
+@dealers-drive/web:test:      ✓ says the page was not found and offers the homepage and the cars 417ms
+@dealers-drive/web:test:  ✓ tests/unit/features/claim/claim-dealership.test.tsx (7 tests) 1263ms
+@dealers-drive/web:test:    ✓ ClaimDealership (7)
+@dealers-drive/web:test:      ✓ asks for the email first, showing only the masked address 447ms
+@dealers-drive/web:test:      ✓ claims with the OTP and opens the dealership 515ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/search-toolbar.test.tsx (11 tests) 820ms
+@dealers-drive/web:test:    ✓ the search box (7)
+@dealers-drive/web:test:      ✓ asks once, after the typing stops — not per keystroke 343ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/reactivation-queue.test.tsx (5 tests) 1110ms
+@dealers-drive/web:test:    ✓ ReactivationQueue (5)
+@dealers-drive/web:test:      ✓ approves after a confirmation, with no note required 573ms
+@dealers-drive/web:test:  ✓ tests/unit/components/layout/customer-header.test.tsx (8 tests) 617ms
+@dealers-drive/web:test:    ✓ which section is current (5)
+@dealers-drive/web:test:      ✓ marks nothing on the home page 308ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/dealer-actions.test.tsx (6 tests) 1528ms
+@dealers-drive/web:test:    ✓ dealer approval confirmation (4)
+@dealers-drive/web:test:      ✓ requires the action and the dealership name before enabling approval 906ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/listing-decisions.test.tsx (7 tests) 1152ms
+@dealers-drive/web:test:    ✓ DecisionDialog (3)
+@dealers-drive/web:test:      ✓ opens on its trigger and will not confirm until the reason is meaningful 492ms
+@dealers-drive/web:test:      ✓ sends the trimmed reason and closes on success 390ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/sales-components.test.tsx (7 tests) 445ms
+@dealers-drive/web:test:    ✓ SalesDealerList (2)
+@dealers-drive/web:test:      ✓ shows each dealership with its verification state in words 317ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/sales-actions.test.ts (7 tests) 36ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealers/location-card.test.tsx (6 tests) 400ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/mobile-filter-sheet.test.tsx (9 tests) 1678ms
+@dealers-drive/web:test:    ✓ the Filters button (3)
+@dealers-drive/web:test:      ✓ opens a labelled modal sheet 335ms
+@dealers-drive/web:test:    ✓ inside the sheet (6)
+@dealers-drive/web:test:      ✓ applies a filter at once, and stays open so another can be added 334ms
+@dealers-drive/web:test:  ✓ tests/unit/features/enquiry/actions.test.ts (8 tests) 23ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/session.test.ts (13 tests) 111ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/result-updates.test.tsx (5 tests) 1032ms
+@dealers-drive/web:test:    ✓ the filter panel across an update (1)
+@dealers-drive/web:test:      ✓ keeps a list it was opened to, and is the same element 693ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-onboarding.test.ts (101 tests) 15468ms
+@dealers-drive/api:test:    ✓ one name per city (11)
+@dealers-drive/api:test:      ✓ refuses a second dealership under the same name in the same city 827ms
+@dealers-drive/api:test:    ✓ email notifications (12)
+@dealers-drive/api:test:      ✓ emails the dealer and the admins when an application is submitted 443ms
+@dealers-drive/api:test:      ✓ emails the dealer on approval 521ms
+@dealers-drive/api:test:      ✓ uses new dealer and admin messages after requested changes are resubmitted 670ms
+@dealers-drive/api:test:      ✓ answers the request before any email exists 456ms
+@dealers-drive/api:test:      ✓ sends one email however many times the outbox is drained 478ms
+@dealers-drive/api:test:      ✓ records the delivery against the dealership 532ms
+@dealers-drive/api:test:    ✓ the yard photograph (6)
+@dealers-drive/api:test:      ✓ is required before a dealership can be submitted 310ms
+@dealers-drive/web:test:  ✓ tests/unit/app/api/search-dealers-route.test.ts (8 tests) 30ms
+@dealers-drive/web:test:  ✓ tests/unit/features/saved/saved-actions.test.ts (8 tests) 24ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/member-actions.test.ts (7 tests) 39ms
+@dealers-drive/web:test:  ✓ tests/unit/styles/dd-chip.test.tsx (5 tests) 339ms
+@dealers-drive/web:test:  ✓ tests/unit/components/layout/mobile-nav.test.tsx (4 tests) 868ms
+@dealers-drive/web:test:    ✓ MobileNav (4)
+@dealers-drive/web:test:      ✓ keeps supplied account status above shared navigation and closes its links 523ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/seo/policy.test.ts (10 tests) 41ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/seo/sitemap.test.ts (7 tests) 16ms
+@dealers-drive/web:test:  ✓ tests/unit/app/login-page.test.tsx (9 tests) 1489ms
+@dealers-drive/web:test:    ✓ /login (7)
+@dealers-drive/web:test:      ✓ opens on Customer, under one Login heading 703ms
+@dealers-drive/api:test:  ✓  integration  tests/auth.test.ts (48 tests) 3468ms
+@dealers-drive/api:test:    ✓ the authorization request (4)
+@dealers-drive/api:test:      ✓ refuses to bounce the browser anywhere but a same-site path 378ms
+@dealers-drive/api:test:    ✓ a suspended dealership account (3)
+@dealers-drive/api:test:      ✓ shuts the dealer door of a member who is also an admin, and leaves their console open 332ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/vehicle-search.test.ts (13 tests) 29ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/bff.test.ts (7 tests) 23ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/assisted-dealer-start.test.tsx (3 tests) 1398ms
+@dealers-drive/web:test:    ✓ AssistedDealerStart (3)
+@dealers-drive/web:test:      ✓ will not send a code until the dealer has consented 422ms
+@dealers-drive/web:test:      ✓ verifies with consent, then creates the dealership with the ticket 785ms
+@dealers-drive/web:test:  ✓ tests/unit/features/support/support-page.test.tsx (6 tests) 692ms
+@dealers-drive/web:test:    ✓ SupportPage (5)
+@dealers-drive/web:test:      ✓ links the customer contacts it was given 417ms
+@dealers-drive/web:test:  ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx (5 tests) 412ms
+@dealers-drive/web:test:    ✓ /dealer/vehicles/new (1)
+@dealers-drive/web:test:      ✓ opens on the registration step 309ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/use-debounced-value.test.tsx (5 tests) 104ms
+@dealers-drive/web:test:  ✓ tests/unit/components/dealer/dashboard-metrics.test.tsx (3 tests) 502ms
+@dealers-drive/web:test:    ✓ DashboardMetrics (3)
+@dealers-drive/web:test:      ✓ selects four metrics in order and preserves independently formatted API values and deltas 443ms
+@dealers-drive/web:test:  ✓ tests/unit/features/invitations/invitations-page.test.tsx (5 tests) 445ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/errors.test.ts (19 tests) 15ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/config-actions.test.ts (6 tests) 23ms
+@dealers-drive/web:test:  ✓ tests/unit/components/ui/otp-input.test.tsx (7 tests) 833ms
+@dealers-drive/web:test:    ✓ OtpInput (7)
+@dealers-drive/web:test:      ✓ renders one box per digit, labelled individually 340ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/assisted-dealer-form.test.tsx (4 tests) 868ms
+@dealers-drive/web:test:    ✓ AssistedDealerForm (4)
+@dealers-drive/web:test:      ✓ sends only filled fields, upper-casing GSTIN and PAN 608ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/config.test.ts (7 tests) 14ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/profile-page.test.tsx (4 tests) 186ms
+@dealers-drive/web:test:  ✓ tests/unit/components/ui/link-pending.test.tsx (6 tests) 438ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/logger.test.ts (6 tests) 53ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/notification-log.test.tsx (4 tests) 493ms
+@dealers-drive/web:test:    ✓ NotificationLog (4)
+@dealers-drive/web:test:      ✓ lists each delivery with its recipient, template and outcome 352ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/enquiry-roles.test.tsx (7 tests) 324ms
+@dealers-drive/web:test:  ✓ tests/unit/app/api/search-vehicles-route.test.ts (8 tests) 35ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/seo/schemas.test.ts (4 tests) 12ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/seo/site.test.ts (12 tests) 15ms
+@dealers-drive/web:test:  ✓ tests/unit/features/dealer/enquiry-actions.test.ts (4 tests) 24ms
+@dealers-drive/web:test:  ✓ tests/unit/components/forms/plate-input.test.tsx (7 tests) 666ms
+@dealers-drive/web:test:    ✓ PlateInput (7)
+@dealers-drive/web:test:      ✓ rewrites a valid plate into its readable form on blur 334ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/document-uploader.test.tsx (2 tests) 348ms
+@dealers-drive/web:test:    ✓ DocumentUploader (2)
+@dealers-drive/web:test:      ✓ uploads through the dealer’s own routes by default 308ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/sales-vehicle-list.test.tsx (3 tests) 332ms
+@dealers-drive/web:test:    ✓ SalesVehicleList (3)
+@dealers-drive/web:test:      ✓ links each prepared listing to its Sales edit page, and offers a new one 309ms
+@dealers-drive/web:test:  ✓ tests/unit/features/home/hero-banner.test.tsx (6 tests) 371ms
+@dealers-drive/web:test:  ✓ tests/unit/features/claim/claim-actions.test.ts (4 tests) 29ms
+@dealers-drive/web:test:  ✓ tests/unit/turbo-env.test.ts (3 tests) 87ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/range-presets-coexistence.test.tsx (2 tests) 681ms
+@dealers-drive/web:test:    ✓ desktop rail and mobile sheet coexistence (2)
+@dealers-drive/web:test:      ✓ keeps the first price selection checked when server results arrive 463ms
+@dealers-drive/web:test:  ✓ tests/unit/features/sales/email-verification-panel.test.tsx (3 tests) 365ms
+@dealers-drive/web:test:    ✓ EmailVerificationPanel (3)
+@dealers-drive/web:test:      ✓ says where the link went, and resends on request 314ms
+@dealers-drive/api:test:  ✓  integration  tests/membership-commit-guard.test.ts (38 tests) 18577ms
+@dealers-drive/api:test:    ✓ denies a queued listing submission when the owner removes its manager before the listing lock is released (BUG-005) 1046ms
+@dealers-drive/api:test:    ✓ blocks queued patch after actual membership removal without changing history 558ms
+@dealers-drive/api:test:    ✓ blocks queued delete after actual membership removal without changing history 375ms
+@dealers-drive/api:test:    ✓ blocks queued reserve after actual membership removal without changing history 986ms
+@dealers-drive/api:test:    ✓ blocks queued mark-sold after actual membership removal without changing history 912ms
+@dealers-drive/api:test:    ✓ blocks queued withdraw after actual membership removal without changing history 724ms
+@dealers-drive/api:test:    ✓ blocks queued request-reactivation after actual membership removal without changing history 766ms
+@dealers-drive/api:test:    ✓ blocks queued delete when the manager is downgraded to STAFF 460ms
+@dealers-drive/api:test:    ✓ blocks queued submit when the manager is downgraded to STAFF 386ms
+@dealers-drive/api:test:    ✓ blocks queued reserve when the manager is downgraded to STAFF 720ms
+@dealers-drive/api:test:    ✓ blocks queued mark-sold when the manager is downgraded to STAFF 657ms
+@dealers-drive/api:test:    ✓ blocks queued withdraw when the manager is downgraded to STAFF 740ms
+@dealers-drive/api:test:    ✓ blocks queued request-reactivation when the manager is downgraded to STAFF 760ms
+@dealers-drive/api:test:    ✓ blocks queued patch after actual dealer suspension and preserves its related history 443ms
+@dealers-drive/api:test:    ✓ blocks queued submit after actual dealer suspension and preserves its related history 441ms
+@dealers-drive/api:test:    ✓ blocks queued mark-sold after actual dealer suspension and preserves its related history 851ms
+@dealers-drive/api:test:    ✓ blocks queued request-reactivation after actual dealer suspension and preserves its related history 751ms
+@dealers-drive/api:test:    ✓ blocks the old queued session after logout and permits a fresh login with intact membership 424ms
+@dealers-drive/api:test:    ✓ blocks a queued submission after persistent account authority changes 357ms
+@dealers-drive/api:test:    ✓ blocks a queued submission after persistent expiry authority changes 312ms
+@dealers-drive/api:test:    ✓ fails closed with a retryable conflict while the member authority row is held 303ms
+@dealers-drive/api:test:    ✓ preserves permitted draft preparation for a DRAFT dealer 325ms
+@dealers-drive/api:test:    ✓ keeps personal customer authority and foreign-dealer isolation after membership removal 555ms
+@dealers-drive/api:test:    ✓ serializes removal after an already authorized submit and records the correct actor 366ms
+@dealers-drive/api:test:    ✓ serializes removal after an already authorized patch and records the correct actor 300ms
+@dealers-drive/api:test:    ✓ does not deadlock an authorized-resource guard against actual destructive dealer rejection 309ms
+@dealers-drive/api:test:    ✓ does not create stock or audit while the dealership authority is locked by another operation 305ms
+@dealers-drive/api:test:    ✓ does not transfer a queued write to a different workspace after its exact membership is removed 576ms
+@dealers-drive/api:test:    ✓ holds absent-seat authorization through commit so a new suspended seat cannot race its authority check 330ms
+@dealers-drive/web:test:  ✓ tests/unit/components/search/applied-filters.test.tsx (4 tests) 388ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/cn.test.ts (10 tests) 21ms
+@dealers-drive/web:test:  ✓ tests/unit/app/api/account-route.test.ts (3 tests) 33ms
+@dealers-drive/web:test:  ✓ tests/unit/components/forms/suggest-input.test.tsx (2 tests) 1012ms
+@dealers-drive/web:test:    ✓ SuggestInput (2)
+@dealers-drive/web:test:      ✓ offers the values already in use as the dealer types, through the BFF route 644ms
+@dealers-drive/web:test:      ✓ offers nothing when the lookup fails, and still submits what was typed 360ms
+@dealers-drive/web:test:  ✓ tests/unit/styles/filter-rail.test.ts (3 tests) 12ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/auth-hint.test.ts (8 tests) 21ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/cached-lookup.test.ts (2 tests) 10ms
+@dealers-drive/web:test:  ✓ tests/unit/features/admin/document-review.test.tsx (1 test) 219ms
+@dealers-drive/web:test:  ✓ tests/unit/next-config.test.ts (3 tests) 22ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/state-codes.test.ts (4 tests) 19ms
+@dealers-drive/api:test:  ✓  integration  tests/account-linking.test.ts (20 tests) 3351ms
+@dealers-drive/api:test:    ✓ the customer → Google dealer bug (3)
+@dealers-drive/api:test:      ✓ links a customer phone to a new Google dealer identity after the OTP 654ms
+@dealers-drive/web:test:  ✓ tests/unit/components/admin/admin-nav.test.ts (2 tests) 18ms
+@dealers-drive/web:test:  ✓ tests/unit/components/vehicle/vehicle-name.test.tsx (2 tests) 254ms
+@dealers-drive/web:test:  ✓ tests/unit/components/loading-skeletons.test.tsx (5 tests) 292ms
+@dealers-drive/web:test:  ✓ tests/unit/vercel-config.test.ts (2 tests) 9ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/seo/json-ld.test.ts (3 tests) 25ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/phone-verified.test.tsx (2 tests) 107ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/redirect-target.test.ts (8 tests) 24ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/upload.test.ts (2 tests) 8ms
+@dealers-drive/web:test:  ✓ tests/unit/lib/safe-return-path.test.ts (12 tests) 11ms
+@dealers-drive/web:test:  ✓ tests/unit/features/auth/phone-identifier.test.ts (8 tests) 10ms
+@dealers-drive/web:test:  Test Files  125 passed (125)
+@dealers-drive/web:test:       Tests  1488 passed (1488)
+@dealers-drive/api:test:  ✓  integration  tests/dealer-approval-gate.test.ts (21 tests) 8910ms
+@dealers-drive/api:test:    ✓ BUG-NEW-003 — document review cannot invent a committed upload (2)
+@dealers-drive/api:test:      ✓ refuses to verify a REQUIRED document without changing its review state 806ms
+@dealers-drive/api:test:    ✓ BUG-002 — complete application, capability and history regression (9)
+@dealers-drive/api:test:      ✓ approves a real uploaded/reviewed application once, preserving membership and audit actors 1853ms
+@dealers-drive/api:test:      ✓ refuses uploaded documents that an Admin has not verified 341ms
+@dealers-drive/api:test:      ✓ refuses an otherwise verified application with missing gstin and a misleading status 378ms
+@dealers-drive/api:test:      ✓ refuses an otherwise verified application with missing pan and a misleading status 373ms
+@dealers-drive/api:test:      ✓ refuses an otherwise verified application with missing coverMediaId and a misleading status 357ms
+@dealers-drive/api:test:      ✓ refuses legacy VERIFIED rows that have no uploaded filename 319ms
+@dealers-drive/api:test:      ✓ requires fresh owner identity completeness 344ms
+@dealers-drive/api:test:      ✓ keeps an approved dealer and its original approval history through suspension and reinstatement 439ms
+@dealers-drive/api:test:    ✓ BUG-002 / VERIFY-012 — serialized Admin decisions (3)
+@dealers-drive/api:test:      ✓ re-reads state after approval wins the dealer lock queue 410ms
+@dealers-drive/api:test:      ✓ re-reads state after changes wins the dealer lock queue 353ms
+@dealers-drive/api:test:      ✓ re-reads state after document rejection wins the dealer lock queue 395ms
+@dealers-drive/api:test:    ✓ BUG-002 — adversarial Admin authorization (2)
+@dealers-drive/api:test:      ✓ denies anonymous, dealer and cross-dealer callers, forged fields and invalid IDs 512ms
+@dealers-drive/api:test:      ✓ honors a role downgrade, logout/login and seat revocation on an existing Admin cookie 486ms
+@dealers-drive/api:test:  ✓  integration  tests/admin-support.test.ts (23 tests) 2449ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-rejection-atomicity.test.ts (15 tests) 11037ms
+@dealers-drive/api:test:    ✓ rejection must not purge a dealer after approval has passed upload checks 984ms
+@dealers-drive/api:test:    ✓ a rolled-back rejection retains all stored uploads and produces no rejection history 422ms
+@dealers-drive/api:test:    ✓ re-reads state when rejection wins against approve 444ms
+@dealers-drive/api:test:    ✓ re-reads state when rejection wins against reject 488ms
+@dealers-drive/api:test:    ✓ commits durable cleanup, retries provider failures, preserves the audit actor and sends one rejection email 1288ms
+@dealers-drive/api:test:    ✓ protects ACTIVE dealer history with ACTIVE stock from rejection 882ms
+@dealers-drive/api:test:    ✓ protects ACTIVE dealer history with RESERVED stock from rejection 769ms
+@dealers-drive/api:test:    ✓ protects ACTIVE dealer history with SOLD stock from rejection 753ms
+@dealers-drive/api:test:    ✓ protects ACTIVE dealer history with WITHDRAWN stock from rejection 939ms
+@dealers-drive/api:test:    ✓ protects SUSPENDED dealer history with ACTIVE stock from rejection 960ms
+@dealers-drive/api:test:    ✓ protects SUSPENDED dealer history with RESERVED stock from rejection 751ms
+@dealers-drive/api:test:    ✓ protects SUSPENDED dealer history with SOLD stock from rejection 776ms
+@dealers-drive/api:test:    ✓ protects SUSPENDED dealer history with WITHDRAWN stock from rejection 660ms
+@dealers-drive/api:test:    ✓ denies direct anonymous, owner and cross-dealer rejection and rejects forged fields and malformed IDs 429ms
+@dealers-drive/api:test:    ✓ honors a role downgrade, logout/login and seat revocation on an existing Admin cookie 431ms
+@dealers-drive/api:test:  ✓  integration  tests/stable-pagination.test.ts (15 tests) 14772ms
+@dealers-drive/api:test:    ✓ preserves mixed-time order and continues after a deleted anchor in saved 1240ms
+@dealers-drive/api:test:    ✓ preserves mixed-time order and continues after a deleted anchor in customer 1184ms
+@dealers-drive/api:test:    ✓ preserves mixed-time order and continues after a deleted anchor in inbox 1224ms
+@dealers-drive/api:test:    ✓ keeps foreign cursor IDs scoped and rejects malformed or forged queries in saved 430ms
+@dealers-drive/api:test:    ✓ keeps foreign cursor IDs scoped and rejects malformed or forged queries in customer 442ms
+@dealers-drive/api:test:    ✓ keeps foreign cursor IDs scoped and rejects malformed or forged queries in inbox 494ms
+@dealers-drive/api:test:    ✓ paginates tied historical rows across listing/enquiry lifecycle with a ACTIVE dealer 3338ms
+@dealers-drive/api:test:    ✓ paginates tied historical rows across listing/enquiry lifecycle with a SUSPENDED dealer 3097ms
+@dealers-drive/api:test:    ✓ enforces current membership and logout on a cursor obtained in an existing dealer session 1176ms
+@dealers-drive/api:test:  ✓  integration  tests/public-vehicle-search.test.ts (71 tests) 7852ms
+@dealers-drive/api:test:    ✓ facet counts (7)
+@dealers-drive/api:test:      ✓ equal the page each value leads to () 891ms
+@dealers-drive/api:test:      ✓ equal the page each value leads to (&fuel=petrol) 784ms
+@dealers-drive/api:test:      ✓ equal the page each value leads to (&city=arakkonam) 469ms
+@dealers-drive/api:test:      ✓ equal the page each value leads to (&brand=hyundai&transmission=manual) 793ms
+@dealers-drive/api:test:  ✓  integration  tests/sales-assisted-onboarding.test.ts (18 tests) 4952ms
+@dealers-drive/api:test:    ✓ preparing and submitting (3)
+@dealers-drive/api:test:      ✓ runs the full journey through the ordinary review 2851ms
+@dealers-drive/api:test:    ✓ separation of duties (1)
+@dealers-drive/api:test:      ✓ refuses a reviewer the decisions on a dealership they assisted 394ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-team.test.ts (23 tests) 2497ms
+@dealers-drive/api:test:  ✓  integration  tests/vehicle-images.test.ts (27 tests) 4199ms
+@dealers-drive/api:test:  ✓  integration  tests/public-media-visibility.test.ts (10 tests) 5555ms
+@dealers-drive/api:test:    ✓ refuses a previously public vehicle image immediately after dealer suspension (BUG-004) 658ms
+@dealers-drive/api:test:    ✓ does not permit reusable cached vehicle responses to bypass mutable visibility 328ms
+@dealers-drive/api:test:    ✓ answers a revalidation with 304 while visible, and 404 the moment the dealer is suspended 390ms
+@dealers-drive/api:test:    ✓ checks all derivative widths, HEAD and conditional requests after suspension and reinstatement 563ms
+@dealers-drive/api:test:    ✓ preserves ACTIVE stock, customer history and audits through suspension and reinstatement 596ms
+@dealers-drive/api:test:    ✓ preserves RESERVED stock, customer history and audits through suspension and reinstatement 542ms
+@dealers-drive/api:test:    ✓ preserves SOLD stock, customer history and audits through suspension and reinstatement 499ms
+@dealers-drive/api:test:    ✓ preserves WITHDRAWN stock, customer history and audits through suspension and reinstatement 434ms
+@dealers-drive/api:test:    ✓ rejects ID/width manipulation, unattached and non-ready images without changing another dealer 750ms
+@dealers-drive/api:test:  ✓  integration  tests/enquiries.test.ts (47 tests) 2882ms
+@dealers-drive/api:test:  ✓  integration  tests/listing-reactivation.test.ts (27 tests) 10509ms
+@dealers-drive/api:test:    ✓ the dealer asks (12)
+@dealers-drive/api:test:      ✓ files a request on a reserved car without moving it, and offers only the sale meanwhile 591ms
+@dealers-drive/api:test:      ✓ files a request on a withdrawn car, which then offers nothing more 426ms
+@dealers-drive/api:test:      ✓ shows the pending state on the inventory row 372ms
+@dealers-drive/api:test:      ✓ refuses a second request while one is waiting, and keeps one row 411ms
+@dealers-drive/api:test:      ✓ lands exactly one of two requests fired at once (a double click) 392ms
+@dealers-drive/api:test:      ✓ refuses a request on a ACTIVE car 340ms
+@dealers-drive/api:test:      ✓ refuses a request on a SOLD car 369ms
+@dealers-drive/api:test:      ✓ refuses no body with a 400 377ms
+@dealers-drive/api:test:      ✓ refuses a reason that is too long with a 400 319ms
+@dealers-drive/api:test:      ✓ refuses a status with a 400 318ms
+@dealers-drive/api:test:      ✓ refuses a dealer id with a 400 327ms
+@dealers-drive/api:test:    ✓ the admin queue (2)
+@dealers-drive/api:test:      ✓ lists pending requests oldest first, with the car, the dealer and the move asked for 348ms
+@dealers-drive/api:test:    ✓ approval (6)
+@dealers-drive/api:test:      ✓ puts a reserved car back on sale, and back on every public surface 458ms
+@dealers-drive/api:test:      ✓ puts a withdrawn car back on sale, clearing the withdrawal and keeping the slug 412ms
+@dealers-drive/api:test:      ✓ reclaims a registration a pre-R69 withdrawal released 315ms
+@dealers-drive/api:test:      ✓ refuses a car another dealership has claimed since, and moves nothing 624ms
+@dealers-drive/api:test:      ✓ refuses to decide a request twice 347ms
+@dealers-drive/api:test:    ✓ rejection (2)
+@dealers-drive/api:test:      ✓ leaves the listing where it was and tells the dealer why; they may ask again 378ms
+@dealers-drive/api:test:      ✓ keeps a reserved car reserved 386ms
+@dealers-drive/api:test:    ✓ a request the listing outran (3)
+@dealers-drive/api:test:      ✓ is closed when the reserved car is sold, and can never reactivate the sold car 377ms
+@dealers-drive/api:test:      ✓ is refused as stale if the listing moved without closing it 332ms
+@dealers-drive/api:test:      ✓ never ends with a sold car on sale when a sale and an approval race 422ms
+@dealers-drive/api:test:    ✓ who may decide (2)
+@dealers-drive/api:test:      ✓ refuses a dealer on the admin routes, even for their own request 398ms
+@dealers-drive/api:test:      ✓ refuses the signed-out 389ms
+@dealers-drive/api:test:  ✓  integration  tests/admin-enquiries.test.ts (26 tests) 2965ms
+@dealers-drive/api:test:    ✓ paging (3)
+@dealers-drive/api:test:      ✓ walks every enquiry once, by keyset, without repeating or skipping 1107ms
+@dealers-drive/api:test:  ✓  integration  tests/support-tickets.test.ts (26 tests) 1253ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-roles.test.ts (28 tests) 3111ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-enquiries.test.ts (26 tests) 2876ms
+@dealers-drive/api:test:    ✓ what the dealership sees (8)
+@dealers-drive/api:test:      ✓ pages with a cursor, newest first, without repeating a row 310ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-claims.test.ts (14 tests) 5312ms
+@dealers-drive/api:test:    ✓ the verification email (4)
+@dealers-drive/api:test:      ✓ is sent on creation, to the typed address, with a link only the email holds 3249ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-close.test.ts (14 tests) 2592ms
+@dealers-drive/api:test:    ✓ ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application (13)
+@dealers-drive/api:test:      ✓ closes a DRAFT application and keeps the record, members, documents and audit trail 369ms
+@dealers-drive/api:test:    ✓ ORIG-GAP-CLOSE — a submission queued behind a close does not reopen it (1)
+@dealers-drive/api:test:      ✓ leaves the application CLOSED when the dealer submits while the close holds the row 688ms
+@dealers-drive/api:test:  ✓  integration  tests/vehicle-api.test.ts (33 tests) 2278ms
+@dealers-drive/api:test:  ✓  integration  tests/sales-assisted-listings.test.ts (10 tests) 2544ms
+@dealers-drive/api:test:    ✓ review (3)
+@dealers-drive/api:test:      ✓ enters the ordinary queue as a Sales submission, with the reviewer told who 425ms
+@dealers-drive/api:test:      ✓ refuses every decision to the member who prepared it, even after a re-role 371ms
+@dealers-drive/api:test:  ✓  integration  tests/phone-verification.test.ts (24 tests) 1416ms
+@dealers-drive/api:test:  ✓  integration  tests/admin-members.test.ts (14 tests) 1768ms
+@dealers-drive/api:test:    ✓ who may manage members (2)
+@dealers-drive/api:test:      ✓ refuses every member route to Operations, Support and Sales 362ms
+@dealers-drive/api:test:  ✓  integration  tests/public-lifecycle.test.ts (22 tests) 3886ms
+@dealers-drive/api:test:    ✓ enquiries — enforced by the server, not by a hidden button (6)
+@dealers-drive/api:test:      ✓ takes one again once a reserved car is back on sale 379ms
+@dealers-drive/api:test:      ✓ lands at most one of an enquiry and a sale racing on one car, and never an enquiry after the sale 303ms
+@dealers-drive/api:test:    ✓ /v1/sitemap — what search engines are told to index (6)
+@dealers-drive/api:test:      ✓ drops a suspended dealership and every car it has 348ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-tenancy-hardening.test.ts (9 tests) 2179ms
+@dealers-drive/api:test:    ✓ every id-taking dealer route, from another dealership (4)
+@dealers-drive/api:test:      ✓ answers a OWNER of Dealer A with 404 for Dealer B’s rows, and changes nothing 323ms
+@dealers-drive/api:test:    ✓ limits (1)
+@dealers-drive/api:test:      ✓ stops an owner at 25 waiting invitations, and counts a renewal as none 429ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-identity-completion.test.ts (13 tests) 1419ms
+@dealers-drive/api:test:    ✓ phone first (4)
+@dealers-drive/api:test:      ✓ creates a provisional dealer: phone proved, Google missing, sent to step 1 392ms
+@dealers-drive/api:test:  ✓  integration  tests/customer-auth.test.ts (29 tests) 884ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-invitation-locking.test.ts (5 tests) 1554ms
+@dealers-drive/api:test:    ✓ BUG-001 / ADD-RACE-001 — deterministic invitation lock order (5)
+@dealers-drive/api:test:      ✓ settles withdrawal queued first without a deadlock 647ms
+@dealers-drive/api:test:  ✓  integration  tests/public-vehicles.test.ts (25 tests) 6264ms
+@dealers-drive/api:test:    ✓ what the marketplace lists (11)
+@dealers-drive/api:test:      ✓ shows the image the admin chose as primary 394ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is DRAFT 361ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is PENDING_REVIEW 386ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is CHANGES_REQUESTED 345ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is REJECTED 400ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is SOLD 359ms
+@dealers-drive/api:test:      ✓ leaves out a listing that is WITHDRAWN 362ms
+@dealers-drive/api:test:      ✓ leaves out every listing of a dealership that is no longer active 343ms
+@dealers-drive/api:test:  ✓  integration  tests/listing-approval.test.ts (17 tests) 4547ms
+@dealers-drive/api:test:    ✓ approving a listing that is ready (3)
+@dealers-drive/api:test:      ✓ publishes it, stamps publishedAt, and records who and when 382ms
+@dealers-drive/api:test:      ✓ makes its images public 301ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-listing-lifecycle.test.ts (21 tests) 2987ms
+@dealers-drive/api:test:  ✓  integration  tests/saved-vehicles.test.ts (18 tests) 4918ms
+@dealers-drive/api:test:    ✓ who may keep a list (6)
+@dealers-drive/api:test:      ✓ keeps each customer’s list to themselves 494ms
+@dealers-drive/api:test:    ✓ saving (6)
+@dealers-drive/api:test:      ✓ saves an available car and lists it with its card, photograph and time 316ms
+@dealers-drive/api:test:      ✓ saves once however many times it is pressed, even all at once 338ms
+@dealers-drive/api:test:      ✓ saves a reserved car — it is still on show — and says it is reserved 399ms
+@dealers-drive/api:test:      ✓ refuses to newly save a car after mark-sold 362ms
+@dealers-drive/api:test:    ✓ the lifecycle never deletes a saved car (3)
+@dealers-drive/api:test:      ✓ keeps it through a reservation, a sale and says what became of it 365ms
+@dealers-drive/api:test:      ✓ shows a withdrawn car as no longer available, and back again once approved back on sale 362ms
+@dealers-drive/api:test:      ✓ shows every car of a suspended dealership as no longer available 338ms
+@dealers-drive/api:test:    ✓ removing (1)
+@dealers-drive/api:test:      ✓ removes a saved car, idempotently, whatever state it is in 320ms
+@dealers-drive/api:test:    ✓ the list (2)
+@dealers-drive/api:test:      ✓ is newest first, and pages by cursor 755ms
+@dealers-drive/api:test:  ✓  integration  tests/identity-linking.test.ts (18 tests) 528ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-phone-sign-in.test.ts (22 tests) 2211ms
+@dealers-drive/api:test:    ✓ the destination does not depend on how a dealer signed in (7)
+@dealers-drive/api:test:      ✓ no dealership yet 361ms
+@dealers-drive/api:test:  ✓  integration  tests/admin-member-rbac.test.ts (13 tests) 1662ms
+@dealers-drive/api:test:    ✓ a Sales Representative (6)
+@dealers-drive/api:test:      ✓ is refused every admin console route, by API, with a 403 460ms
+@dealers-drive/api:test:  ✓  integration  tests/unified-session.test.ts (14 tests) 1697ms
+@dealers-drive/api:test:  ✓  integration  tests/enquiry-support-emails.test.ts (6 tests) 4322ms
+@dealers-drive/api:test:    ✓ an enquiry (2)
+@dealers-drive/api:test:      ✓ tells the dealership who asked about which car — without the buyer’s number 3064ms
+@dealers-drive/api:test:  ✓  integration  tests/vehicle-images-order.test.ts (15 tests) 2435ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-document-lock.test.ts (6 tests) 2356ms
+@dealers-drive/api:test:    ✓ ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT (6)
+@dealers-drive/api:test:      ✓ refuses to presign over a VERIFIED document of an ACTIVE dealer, and keeps the file 781ms
+@dealers-drive/api:test:      ✓ refuses to delete a VERIFIED document of an ACTIVE dealer, and keeps the file 361ms
+@dealers-drive/api:test:      ✓ refuses to re-commit a VERIFIED document of an ACTIVE dealer back to UPLOADED 345ms
+@dealers-drive/api:test:      ✓ still lets an ACTIVE dealer re-upload a document an admin rejected 387ms
+@dealers-drive/api:test:  ✓  integration  tests/yard-photo-moderation.test.ts (7 tests) 2729ms
+@dealers-drive/api:test:    ✓ ORIG-BUG-005 — the yard photograph is locked once a dealership leaves DRAFT (5)
+@dealers-drive/api:test:      ✓ refuses a new upload URL for an ACTIVE dealer and creates nothing 572ms
+@dealers-drive/api:test:      ✓ refuses to commit a replacement for an ACTIVE dealer and keeps the approved cover 351ms
+@dealers-drive/api:test:      ✓ refuses to delete the cover of an ACTIVE dealer and keeps serving it 339ms
+@dealers-drive/api:test:    ✓ BUG-NEW-009 — the yard photograph is public only while its dealership is (2)
+@dealers-drive/api:test:      ✓ stops serving the cover while the dealership is suspended, and serves it again on reinstatement 342ms
+@dealers-drive/api:test:      ✓ does not serve the cover of a dealership that has not been approved 342ms
+@dealers-drive/api:test:  ✓  integration  tests/public-dealer-inventory.test.ts (13 tests) 3040ms
+@dealers-drive/api:test:    ✓ the directory card (4)
+@dealers-drive/api:test:      ✓ follows an approval and a removal 307ms
+@dealers-drive/api:test:  ✓  integration  tests/listing-emails.test.ts (6 tests) 4127ms
+@dealers-drive/api:test:    ✓ a submission (2)
+@dealers-drive/api:test:      ✓ tells Operations, with a link to the listing, and not the dealer 1888ms
+@dealers-drive/api:test:      ✓ tells Operations it is back after changes, and the dealer what to change 303ms
+@dealers-drive/api:test:    ✓ a decision (2)
+@dealers-drive/api:test:      ✓ tells the dealer their listing is live, with the public link 391ms
+@dealers-drive/api:test:    ✓ reactivation (1)
+@dealers-drive/api:test:      ✓ tells Operations about a request and the dealer about the decision 445ms
+@dealers-drive/api:test:    ✓ a sale (1)
+@dealers-drive/api:test:      ✓ emails nobody 369ms
+@dealers-drive/api:test:  ✓  integration  tests/notification-foundation.test.ts (6 tests) 1847ms
+@dealers-drive/api:test:    ✓ admin emails (2)
+@dealers-drive/api:test:      ✓ send once per recipient however often the event is delivered 423ms
+@dealers-drive/api:test:  ✓  integration  tests/listing-submission.test.ts (12 tests) 2024ms
+@dealers-drive/api:test:  ✓  integration  tests/public-vehicle-page.test.ts (13 tests) 4003ms
+@dealers-drive/api:test:    ✓ an approved car (3)
+@dealers-drive/api:test:      ✓ shows the gallery in the order the admin set, with the primary marked 437ms
+@dealers-drive/api:test:    ✓ everything else is a 404 (10)
+@dealers-drive/api:test:      ✓ answers 404 for a listing that is DRAFT, exactly as for one that never existed 350ms
+@dealers-drive/api:test:      ✓ answers 404 for a listing that is PENDING_REVIEW, exactly as for one that never existed 342ms
+@dealers-drive/api:test:      ✓ answers 404 for a listing that is SOLD, exactly as for one that never existed 319ms
+@dealers-drive/api:test:      ✓ answers 404 for a listing that is WITHDRAWN, exactly as for one that never existed 332ms
+@dealers-drive/api:test:  ✓  integration  tests/moderation-decisions.test.ts (8 tests) 1716ms
+@dealers-drive/api:test:    ✓ requesting changes (3)
+@dealers-drive/api:test:      ✓ sends the listing back with the reason, and the dealer sees it, edits and resubmits 335ms
+@dealers-drive/api:test:  ✓  integration  tests/enquiry-write-authorization.test.ts (3 tests) 1161ms
+@dealers-drive/api:test:    ✓ BUG-NEW-012 — an enquiry write is authorised at commit time (3)
+@dealers-drive/api:test:      ✓ refuses a queued close from a manager removed while it waited 668ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-membership-migration.test.ts (6 tests) 269ms
+@dealers-drive/api:test:  ✓  integration  tests/vehicles.test.ts (13 tests) 533ms
+@dealers-drive/api:test:  ✓  integration  tests/moderation-review.test.ts (7 tests) 1374ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-role-actions.test.ts (5 tests) 964ms
+@dealers-drive/api:test:  ✓  integration  tests/moderation-queue.test.ts (10 tests) 1115ms
+@dealers-drive/api:test:  ✓  integration  tests/public-similar-vehicles.test.ts (11 tests) 3514ms
+@dealers-drive/api:test:  ✓  integration  tests/listing-lifecycle.test.ts (7 tests) 590ms
+@dealers-drive/api:test:  ✓  integration  tests/moderation-photography.test.ts (5 tests) 1516ms
+@dealers-drive/api:test:    ✓ photography progress (5)
+@dealers-drive/api:test:      ✓ starts as not photographed, and moves as the team records it 319ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-inventory.test.ts (8 tests) 1136ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-enquiry-counts.test.ts (2 tests) 1151ms
+@dealers-drive/api:test:    ✓ the dashboard and the session count real enquiries (2)
+@dealers-drive/api:test:      ✓ shows this week’s new enquiries, the newest few, and the new count in the session 854ms
+@dealers-drive/api:test:  ✓  integration  tests/dealer-inventory-pagination.test.ts (5 tests) 1348ms
+@dealers-drive/api:test:    ✓ BUG-NEW-007 — the dealer inventory pages stably over equal timestamps (5)
+@dealers-drive/api:test:      ✓ visits every one of five tied vehicles exactly once in pages of two 606ms
+@dealers-drive/api:test:  ✓  integration  tests/vehicle-color.test.ts (8 tests) 796ms
+@dealers-drive/api:test:  ✓  integration  tests/user-seats.test.ts (2 tests) 640ms
+@dealers-drive/api:test:    ✓ ensureSeat (2)
+@dealers-drive/api:test:      ✓ gives a seat exactly once however many callers race to give it 557ms
+@dealers-drive/api:test:  Test Files  152 passed (152)
+@dealers-drive/api:test:       Tests  3030 passed (3030)
+@dealers-drive/api:test:  % Coverage report from v8
+@dealers-drive/api:test: =============================== Coverage summary ===============================
+ Tasks:    4 successful, 4 total
+TEST_EXIT 0
