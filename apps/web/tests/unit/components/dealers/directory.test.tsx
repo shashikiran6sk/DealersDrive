@@ -274,7 +274,7 @@ describe('DirectoryCard', () => {
 
   it('marks a verified dealership, and does not mark one that is not', () => {
     const { unmount } = render(<DirectoryCard dealer={DEALER} />);
-    expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
+    expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
     // The audit mark on the cover says the same thing in the place a buyer
     // looks first, and it carries no year — nothing records when a yard was
     // audited (R28).
@@ -282,7 +282,7 @@ describe('DirectoryCard', () => {
     unmount();
 
     render(<DirectoryCard dealer={{ ...DEALER, isVerified: false }} />);
-    expect(screen.queryByText('VERIFIED DEALER')).toBeNull();
+    expect(screen.queryByText('Dealer Verified')).toBeNull();
     expect(screen.queryByText('YARD VERIFIED')).toBeNull();
   });
 });

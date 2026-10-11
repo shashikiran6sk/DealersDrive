@@ -56,7 +56,7 @@ describe('an approved car', () => {
       description: 'Single owner.',
       primaryIndex: 0,
       publishedLabel: expect.stringMatching(/^Listed /),
-      dealer: { slug: a.slug, isVerified: true },
+      dealer: { slug: a.slug, isVerified: false },
     });
     expect(body.specs).toContainEqual({ label: 'Registered at', value: 'TN 23' });
     expect(body.specs).toContainEqual({ label: 'Kilometres driven', value: '22,400 km' });

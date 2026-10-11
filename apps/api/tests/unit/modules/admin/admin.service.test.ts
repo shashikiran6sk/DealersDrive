@@ -377,6 +377,7 @@ const admin: AdminPrincipal = {
   permissions: [
     'admin:metrics:read',
     'admin:dealer:approve',
+    'admin:document:review',
     // F072 and R42 — the settings screen and the access list on it.
     'admin:config:write',
     'admin:access:manage',

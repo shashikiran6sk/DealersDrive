@@ -34,7 +34,7 @@ export const PROFILE_FORM_TEXT = {
   contactNote:
     'These are how buyers and we reach a business that has been verified. Contact support to change any of them.',
   addressNote:
-    'Your address and map pin are what your verification was about — the yard photograph, the address proof and the check we ran on them. They cannot be edited here. A dealership that has actually moved closes this account and opens a new one, so the new premises are verified the way these were. Contact support to start that.',
+    'Your business address and contact identity need review when they change. Contact support to update them. Yard ownership and photographs do not determine Dealer Verified status.',
   taxNote:
     'Verified during onboarding. Contact support to change either — a silent edit would invalidate the verification your buyers rely on.',
 

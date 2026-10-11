@@ -1,8 +1,8 @@
 export const TRUST_POINTS = [
   {
     number: '01',
-    title: 'Verified independent dealers',
-    body: 'We check dealer identity and business documents before a dealership joins the platform.',
+    title: 'Dealer verification',
+    body: 'The Dealer Verified badge follows a review of business and representative evidence. Yard ownership is not a verification requirement.',
   },
   {
     number: '02',
@@ -12,7 +12,7 @@ export const TRUST_POINTS = [
   {
     number: '03',
     title: 'Direct conversations',
-    body: 'Your enquiry goes to the dealership that owns the vehicle, without a call centre in between.',
+    body: 'Your enquiry goes directly to the dealership advertising the vehicle. Confirm the vehicle’s documents and condition with them.',
   },
   {
     number: '04',

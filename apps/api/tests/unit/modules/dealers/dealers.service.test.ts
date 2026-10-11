@@ -53,6 +53,7 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     // below is derived from it.
     slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
     status: 'ACTIVE',
+    verificationStatus: 'NOT_VERIFIED',
     statusReason: null,
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
@@ -387,7 +388,7 @@ describe('session', () => {
     });
     expect(session.dealer).toMatchObject({
       slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
-      isVerified: true,
+      isVerified: false,
       creditBalance: 39,
       creditsHeld: 2,
     });

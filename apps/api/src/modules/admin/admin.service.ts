@@ -1,3 +1,4 @@
+import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
   ADMIN_ROLE_LABELS,
   DEALER_STATUS_LABELS,
@@ -61,7 +62,11 @@ import {
   syncLegacyAdminColumns,
   type AdminPrincipal,
 } from '../auth/auth.facade.js';
-import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
+import {
+  documentKey,
+  invalidateDealerVerification,
+  type DealersService,
+} from '../dealers/dealers.facade.js';
 import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
 import { CLOSED_NOT_REJECTABLE, DEALER_NOT_CLOSABLE, DEALER_NOT_FOUND } from './admin.messages.js';
 
@@ -228,6 +233,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
   }
 
   return {
+    verification: createDealerVerificationService({ prisma, audit, storage }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
@@ -403,14 +409,20 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             type: doc.type,
             label: DOC_TYPE_LABELS[doc.type],
             status: doc.status,
-            fileName: doc.fileName,
+            fileName: admin.permissions.includes('admin:document:review') ? doc.fileName : null,
             bytes: null,
             uploadedAt: doc.createdAt.toISOString(),
-            viewUrl: readable
-              ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+            viewUrl:
+              readable && admin.permissions.includes('admin:document:review')
+                ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+                : null,
+            viewUrlExpiresAt:
+              readable && admin.permissions.includes('admin:document:review')
+                ? new Date(Date.now() + 300_000).toISOString()
+                : null,
+            rejectionReason: admin.permissions.includes('admin:document:review')
+              ? doc.rejectionReason
               : null,
-            viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
-            rejectionReason: doc.rejectionReason,
           };
         }),
       );
@@ -444,8 +456,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         statusLabel: DEALER_STATUS_LABELS[dealer.status],
         statusTone: DEALER_STATUS_TONES[dealer.status],
         statusReason: dealer.statusReason,
-        gstin: dealer.gstin,
-        pan: dealer.pan,
+        gstin: admin.permissions.includes('admin:document:review') ? dealer.gstin : null,
+        pan: admin.permissions.includes('admin:document:review') ? dealer.pan : null,
         city: dealer.city,
         district: dealer.district,
         state: dealer.state,
@@ -1017,6 +1029,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         const allVerified = allDocumentsVerified(all);
 
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
+        if (rejecting && dealer)
+          await invalidateDealerVerification(
+            tx,
+            audit,
+            dealer,
+            { actorType: 'ADMIN', actorId: admin.userId },
+            'Reviewed business evidence was rejected; a new verification review is required.',
+          );
         const returnToDraft = rejecting && dealer?.status === 'PENDING_APPROVAL';
         if (returnToDraft) {
           await tx.dealer.update({

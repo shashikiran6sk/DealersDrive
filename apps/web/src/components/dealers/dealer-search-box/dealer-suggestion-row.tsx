@@ -65,7 +65,9 @@ export function DealerSuggestionRow({
       </span>
 
       <span className="flex shrink-0 items-center gap-[8px]">
-        <span className="tag tag-ok text-[10.5px]">{DEALER_SEARCH_TEXT.verified}</span>
+        {item.isVerified ? (
+          <span className="tag tag-ok text-[10.5px]">{DEALER_SEARCH_TEXT.verified}</span>
+        ) : null}
         <span
           aria-hidden={!isHighlighted}
           className={cn(

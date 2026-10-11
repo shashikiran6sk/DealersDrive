@@ -115,7 +115,7 @@ describe('the price, specifications and dealer', () => {
     render(<VdpDealerCard dealer={detail().dealer} />);
     expect(screen.getByRole('heading', { name: 'Sri Lakshmi Motors' })).toBeInTheDocument();
     expect(screen.getByText('Katpadi, Vellore')).toBeInTheDocument();
-    expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
+    expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View dealership →' })).toHaveAttribute(
       'href',
       '/dealers/sri-lakshmi-motors',

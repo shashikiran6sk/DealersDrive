@@ -168,7 +168,7 @@ export default async function DealerPortfolioPage({
               <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
                 {dealer.brandName}
               </h1>
-              {dealer.isVerified ? <Plate size="chip">VERIFIED DEALER</Plate> : null}
+              {dealer.isVerified ? <Plate size="chip">Dealer Verified</Plate> : null}
             </div>
             {dealer.tagline ? (
               <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5] max-md:col-span-2 max-md:row-start-3 max-md:mt-2">

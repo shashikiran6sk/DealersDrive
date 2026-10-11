@@ -30,7 +30,7 @@ export const dealersPublicDocs: ModuleDocs = {
         'from. `districts` is never narrowed by anything, because a selector that dropped ' +
         'the options you did not choose is one you cannot get back out of.\n\n' +
         'A dealership with no live cars still appears, with `fromPriceLabel` as an em dash. ' +
-        'It is a verified business that has not listed yet, not an error.\n\n' +
+        'It is an approved business that has not listed yet, not an error.\n\n' +
         '`Cache-Control: public, max-age=300`.',
       audience: 'public',
       query: 'DealerDirectoryQuery',

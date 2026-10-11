@@ -76,7 +76,7 @@ export const ONBOARDING_TEXT = {
 
   documentsHeading: 'Business verification',
   documentsIntro:
-    'Your registrations, three documents and a photo of your yard, reviewed by our team. Listings can be prepared while this is pending — they go live once you are verified.',
+    'Your business documents are reviewed for approval. Yard photos are optional; Dealer Verified is a separate business and representative review. You can prepare listings while approval is pending.',
   saved: 'Saved.',
   saveRegistrations: 'Save registrations',
   stillNeeded: 'Still needed before you can submit',
@@ -88,7 +88,7 @@ export const ONBOARDING_TEXT = {
   submitIntro:
     'Once you submit, our team checks your business details and documents. You can keep adding vehicles in the meantime.',
   prepareNote:
-    'You can add vehicles and prepare listings now. Publishing needs a verified dealership and one listing credit.',
+    'You can add vehicles and prepare listings now. Publishing needs an approved dealership and one listing credit.',
   goToDashboard: 'Go to dashboard',
   submitting: 'Submitting…',
   submit: 'Submit for verification',

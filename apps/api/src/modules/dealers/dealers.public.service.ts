@@ -1,5 +1,6 @@
 import { canonicalDistrictFilterSlug } from '@dealers-drive/contracts';
 import {
+  isDealerVerified,
   distinctServices,
   formatLakh,
   initialsOf,
@@ -94,7 +95,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           carCount: stat?.count ?? 0,
           fromPricePaise: fromPrice,
           fromPriceLabel: fromPrice === null ? '—' : `from ${formatLakh(fromPrice)}`,
-          isVerified: true,
+          isVerified: isDealerVerified(dealer),
           logoUrl: null,
           coverUrl: `${env.WEB_BASE_URL}${STANDARD_DEALER_COVER_PATH}`,
         };
@@ -108,7 +109,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           total,
           totalPages: Math.ceil(total / query.limit),
         },
-        countLabel: `${total} verified ${total === 1 ? 'dealership' : 'dealerships'}`,
+        countLabel: `${total} ${total === 1 ? 'dealership' : 'dealerships'}`,
         cities: chipsOf(inDistrict, cityChip),
         districts: chipsOf(dealers, districtChip),
       };
@@ -157,7 +158,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           metaLabel: suggestMeta(carCount, dealer.cityName, dealer.districtName),
           matchedOn: hit.field,
           carCount,
-          isVerified: true,
+          isVerified: isDealerVerified(dealer),
         };
       });
 
@@ -166,7 +167,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       return {
         search: query.search,
         data,
-        countLabel: `${total} matching ${total === 1 ? 'yard' : 'yards'}`,
+        countLabel: `${total} matching ${total === 1 ? 'dealership' : 'dealerships'}`,
       };
     },
 
@@ -208,7 +209,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         brandName: dealer.brandName,
         legalName: dealer.legalName,
         initials: initialsOf(dealer.brandName),
-        isVerified: true,
+        isVerified: isDealerVerified(dealer),
         tagline: dealer.tagline?.trim() || null,
         services: distinctServices(dealer.specialities),
         address: {

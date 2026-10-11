@@ -9,7 +9,7 @@ export const DEALER_INVENTORY_TEXT = {
   locationLabel: 'Every car here is at',
   emptyTitle: 'No vehicles currently available.',
   emptyMessage: (brandName: string) =>
-    `${brandName} is verified and open for enquiries, but has no cars on the marketplace right now. Browse every car on Dealers-Drive in the meantime.`,
+    `${brandName} is open for enquiries, but has no cars on the marketplace right now. Browse every car on Dealers-Drive in the meantime.`,
   emptyAction: 'Browse all cars',
   emptyFilteredTitle: 'No vehicles match your current filters.',
   emptyFilteredMessage: (brandName: string) =>
