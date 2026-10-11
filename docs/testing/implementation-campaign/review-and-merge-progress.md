@@ -37,8 +37,8 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 4   | #291 | Service locations       | `aaceb01`     | `4f11619`         | green      | `0d3d201` | Merged, main verified |
 | 5   | #292 | Optional tagline        | `465a5cd`     | `cef8c0b`         | green      | `f2f4d7b` | Merged, main verified |
 | 6   | #293 | Admin OTP               | `e481bb0`     | `e9e8939`         | green      | `367c0b2` | Merged, main verified (real MSG91 UAT outstanding) |
-| 7   | #294 | Mobile admin            | `a17b4a4`     | `2c60ca4`         | green      | —         | Reviewed; merging |
-| 8   | #295 | Ticket messaging        | `98a5b78`     | —                 | —          | —         | Pending                                 |
+| 7   | #294 | Mobile admin            | `a17b4a4`     | `2c60ca4`         | green      | `210dfc9` | Merged, main verified |
+| 8   | #295 | Ticket messaging        | `98a5b78`     | `40fdabe`         | green      | —         | Reviewed; owner defect fixed; merging |
 | 9   | #296 | Mobile sidebar          | `cefed41`     | —                 | —          | —         | Pending                                 |
 | 10  | #297 | Dealer verification     | `23c47d1`     | —                 | —          | —         | Pending                                 |
 | 11  | #298 | Optional GSTIN          | `b500bd5`     | —                 | —          | —         | Pending                                 |
