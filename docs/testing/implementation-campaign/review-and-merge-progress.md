@@ -39,8 +39,8 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 6   | #293 | Admin OTP               | `e481bb0`     | `e9e8939`         | green      | `367c0b2` | Merged, main verified (real MSG91 UAT outstanding) |
 | 7   | #294 | Mobile admin            | `a17b4a4`     | `2c60ca4`         | green      | `210dfc9` | Merged, main verified |
 | 8   | #295 | Ticket messaging        | `98a5b78`     | `40fdabe`         | green      | `9ea8b70` | Merged, main verified |
-| 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | —         | Reviewed; merging |
-| 10  | #297 | Dealer verification     | `23c47d1`     | —                 | —          | —         | Pending                                 |
+| 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified |
+| 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | —         | Reviewed; merging |
 | 11  | #298 | Optional GSTIN          | `b500bd5`     | —                 | —          | —         | Pending                                 |
 | —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                             |
 | —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                        |
