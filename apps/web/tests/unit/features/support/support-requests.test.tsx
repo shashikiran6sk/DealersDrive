@@ -14,6 +14,7 @@ import SupportRequestsPage from '@/app/(public)/support-requests/page';
 import {
   createSupportRequestAction,
   replySupportRequestAction,
+  reopenSupportRequestAction,
 } from '@/features/support/support-actions';
 import {
   SupportReplyForm,
@@ -383,19 +384,46 @@ describe('/support-requests/[id]', () => {
     expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
   });
 
-  it('says a reply reopens a resolved request', async () => {
+  it('keeps a resolved request read-only until the customer reopens it', async () => {
+    const user = userEvent.setup();
     apiGetParsed.mockResolvedValue(
       ticket({
         status: 'RESOLVED',
         statusLabel: 'Resolved',
+        canReply: false,
+        canReopen: true,
         enquiry: { ...ticket().enquiry!, vehicleHref: null },
       }),
     );
     render(await SupportRequestPage({ params: Promise.resolve({ id: ID }) }));
-    expect(
-      screen.getByText('This request is resolved. Replying will reopen it.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This request is resolved')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
     expect(screen.queryByRole('link', { name: 'View car' })).toBeNull();
+
+    apiSend.mockRejectedValueOnce(
+      await apiError(
+        409,
+        'SUPPORT_TICKET_CLOSED',
+        'This request is closed, so it cannot take a reply.',
+      ),
+    );
+    await user.click(screen.getByRole('button', { name: 'Reopen request' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('This request is closed');
+    expect(screen.queryByLabelText('Reply to Dealers-Drive support')).toBeNull();
+
+    apiSend.mockResolvedValueOnce(
+      ticket({
+        status: 'OPEN',
+        statusLabel: 'Open',
+        canReply: true,
+        canReopen: false,
+        updatedAt: '2099-01-01T00:00:00.000Z',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Reopen request' }));
+    expect(await screen.findByLabelText('Reply to Dealers-Drive support')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reopen request' })).toBeNull();
+    expect(apiSend).toHaveBeenLastCalledWith('POST', `/v1/support/tickets/${ID}/reopen`, {});
   });
 
   it('answers another customer’s request with the 404 page, and signs a stranger in', async () => {
@@ -545,6 +573,19 @@ describe('support Server Actions', () => {
       message: 'Thanks',
     });
     expect(revalidations.paths).toEqual([`/support-requests/${ID}`, '/support-requests']);
+  });
+
+  it('reopens through the API and redraws the request and the list', async () => {
+    apiSend.mockResolvedValue(ticket({ status: 'OPEN', canReply: true }));
+    expect(await reopenSupportRequestAction(ID)).toEqual({
+      status: 'reopened',
+      ticket: ticket({ status: 'OPEN', canReply: true }),
+    });
+    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/support/tickets/${ID}/reopen`, {});
+    expect(revalidations.paths).toEqual([`/support-requests/${ID}`, '/support-requests']);
+    expect(await reopenSupportRequestAction('not-an-id')).toMatchObject({ status: 'refused' });
+    apiSend.mockRejectedValueOnce(await apiError(401, 'NOT_AUTHENTICATED'));
+    expect(await reopenSupportRequestAction(ID)).toEqual({ status: 'signed-out' });
   });
 
   it('refuses a reply it cannot send, without asking the API', async () => {

@@ -42,7 +42,7 @@ export function ApproveBlock({
       <Field
         id="approvalNote"
         label={DEALER_ACTIONS_TEXT.noteLabel}
-        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
+        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
       >
         <Input
           id="approvalNote"
@@ -55,7 +55,7 @@ export function ApproveBlock({
         id="approvalConfirm"
         label={DEALER_ACTIONS_TEXT.approveConfirmLabel}
         hint={DEALER_ACTIONS_TEXT.approveConfirmHint(approvalPhrase)}
-        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
+        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
       >
         <Input
           id="approvalConfirm"

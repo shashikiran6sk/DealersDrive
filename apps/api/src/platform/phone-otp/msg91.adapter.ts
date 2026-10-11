@@ -5,6 +5,8 @@ import { isRecord } from '../errors.js';
 
 const ENDPOINT = 'https://control.msg91.com/api/v5/widget/verifyAccessToken';
 
+const EPOCH_MILLISECONDS_FLOOR = 100_000_000_000;
+
 const IDENTIFIER_CLAIMS = ['identifier', 'mobile', 'number', 'phone', 'msisdn'] as const;
 
 export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPort {
@@ -102,12 +104,17 @@ function tokenTimes(token: string): { issuedAt?: Date; expiresAt?: Date } {
     );
     if (!isRecord(payload)) return {};
     const result: { issuedAt?: Date; expiresAt?: Date } = {};
-    if (typeof payload.iat === 'number' && Number.isSafeInteger(payload.iat))
-      result.issuedAt = new Date(payload.iat * 1000);
-    if (typeof payload.exp === 'number' && Number.isSafeInteger(payload.exp))
-      result.expiresAt = new Date(payload.exp * 1000);
+    const issuedAt = claimTime(payload.iat);
+    const expiresAt = claimTime(payload.exp);
+    if (issuedAt) result.issuedAt = issuedAt;
+    if (expiresAt) result.expiresAt = expiresAt;
     return result;
   } catch {
     return {};
   }
+}
+
+function claimTime(value: unknown): Date | undefined {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) return undefined;
+  return new Date(value < EPOCH_MILLISECONDS_FLOOR ? value * 1000 : value);
 }

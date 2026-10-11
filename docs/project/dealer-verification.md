@@ -27,6 +27,13 @@ requires reviewed GST evidence and a recorded registration check. Absence requir
 reviewed non-requirement assessment; a format match is never a registration check.
 PAN/address evidence here is the existing **platform** policy, not an invented universal law.
 
+The stored-object checks run before the decision transaction, never while it holds the shared
+admin-membership advisory lock or the dealer row: object storage has no request timeout, and a
+slow call there would otherwise stall admin sign-in admission, support replies and membership
+changes platform-wide. Inside the transaction the required document rows are re-read under lock
+and compared with what was checked (id, type, status, file, reviewer, review time, slug); any
+difference is `409 VERIFICATION_CHANGED`, so the reviewer reloads and nothing is granted.
+
 The reviewer records checks actually performed: identity, authority to represent the business,
 business existence, contact validation, legal classification, applicable regulatory authorization
 and GST applicability. Use protected case/document references, never raw PAN/Aadhaar, OTPs or
@@ -76,7 +83,6 @@ become absent until a genuine review is recorded; public directory and listing v
 preserved for approved businesses. The change also removes universal identity/GST/yard verification
 claims from public copy and SEO. Rollback before writes is transactionally rehearsed; after real
 writes prefer a forward fix to retain verification history and avoid an old writer's weaker semantics.
-No production migration, seed, reset or deployment is executed by this campaign.
 
 ## Owner UAT
 

@@ -8,6 +8,7 @@ import { documentKey } from '../src/modules/dealers/dealer-storage-keys.js';
 import { createDealerVerificationService } from '../src/modules/admin/dealer-verification.service.js';
 import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { env } from '../src/config/env.js';
+import { DealerVerificationAssessment } from '@dealers-drive/contracts';
 let h: AuthHarness;
 let fixtures: ReturnType<typeof marketplaceFixtures>;
 let admin: request.Agent;
@@ -364,6 +365,98 @@ describe('explicit dealer verification independent of yard ownership', () => {
     await decision(d.dealerId, 'REVOKED', 0, { reason: 'Synthetic unsupported transition' }).expect(
       409,
     );
+  });
+  it('checks stored evidence without holding the shared admin lock or the dealer row', async () => {
+    const d = await candidate();
+    await inReview(d.dealerId);
+    const reviewer = await h.prisma.user.findUniqueOrThrow({ where: { id: reviewerId } });
+    const observed: { adminLockFree: boolean; dealerRowFree: boolean }[] = [];
+    let serial: Promise<unknown> = Promise.resolve();
+    const probing = {
+      ...storage,
+      async head(key: string) {
+        const turn = serial.then(() =>
+          h.prisma.$transaction(async (tx) => {
+            const [lock] = await tx.$queryRaw<{ free: boolean }[]>`
+            SELECT pg_try_advisory_xact_lock(hashtext('admin_members:manage')) AS free`;
+            const rows = await tx.$queryRaw<{ id: string }[]>`
+            SELECT "id" FROM "dealers" WHERE "id" = ${d.dealerId}::uuid FOR UPDATE SKIP LOCKED`;
+            return { adminLockFree: lock?.free === true, dealerRowFree: rows.length === 1 };
+          }),
+        );
+        serial = turn;
+        observed.push(await turn);
+        return storage.head(key);
+      },
+    };
+    const service = createDealerVerificationService({
+      prisma: h.prisma,
+      audit: createAuditService(h.prisma),
+      storage: probing,
+    });
+    await service.decide(
+      {
+        kind: 'ADMIN',
+        userId: reviewer.id,
+        email: reviewer.email!,
+        adminRole: 'SUPER_ADMIN',
+        permissions: ['admin:dealer:approve'],
+      },
+      d.dealerId,
+      {
+        expectedVersion: 1,
+        status: 'VERIFIED',
+        assessment: DealerVerificationAssessment.parse(assessment),
+      },
+    );
+    expect(observed.length).toBeGreaterThan(0);
+    expect(observed.every((o) => o.adminLockFree && o.dealerRowFree)).toBe(true);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).verificationStatus,
+    ).toBe('VERIFIED');
+  });
+  it('refuses, as a reload conflict, evidence that changes after its stored objects were checked', async () => {
+    const d = await candidate();
+    await inReview(d.dealerId);
+    const reviewer = await h.prisma.user.findUniqueOrThrow({ where: { id: reviewerId } });
+    let changed = false;
+    const racing = {
+      ...storage,
+      async head(key: string) {
+        if (!changed) {
+          changed = true;
+          await h.prisma.dealerDocument.updateMany({
+            where: { dealerId: d.dealerId, type: 'PAN_CARD' },
+            data: { fileName: 'replaced.pdf', reviewedAt: new Date(Date.now() + 1000) },
+          });
+        }
+        return storage.head(key);
+      },
+    };
+    const service = createDealerVerificationService({
+      prisma: h.prisma,
+      audit: createAuditService(h.prisma),
+      storage: racing,
+    });
+    await expect(
+      service.decide(
+        {
+          kind: 'ADMIN',
+          userId: reviewer.id,
+          email: reviewer.email!,
+          adminRole: 'SUPER_ADMIN',
+          permissions: ['admin:dealer:approve'],
+        },
+        d.dealerId,
+        {
+          expectedVersion: 1,
+          status: 'VERIFIED',
+          assessment: DealerVerificationAssessment.parse(assessment),
+        },
+      ),
+    ).rejects.toMatchObject({ code: 'VERIFICATION_CHANGED' });
+    const after = await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } });
+    expect(after).toMatchObject({ verificationStatus: 'IN_REVIEW', verificationVersion: 1 });
   });
   it.each(['missing', 'disabled', 'suspended', 'user_suspended', 'role', 'deleted'] as const)(
     'rechecks %s reviewer admission inside the transaction',

@@ -7,7 +7,6 @@ export const HEADER_TEXT = {
   dealers: 'Dealers',
   login: 'Login',
   home: 'Home',
-  adminLogin: 'Admin login',
   dealerLogin: 'Dealer login',
   support: 'Help and support',
   selectDistrict: DISTRICT_PICKER_TEXT.selectDistrict,
@@ -19,7 +18,6 @@ export const HEADER_NAV = {
   cars: '/cars',
   dealers: '/dealers',
   login: '/login',
-  adminLogin: '/admin/login',
   dealerLogin: '/login?as=dealer',
   support: '/contact',
 } as const;

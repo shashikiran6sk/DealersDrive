@@ -348,15 +348,21 @@ describe('five consecutive unanswered ticket messages', () => {
       .expect(401);
     expect((await detail(t.id)).remainingMessages).toBe(0);
   });
-  it('does not let resolving or reopening bypass the quota, but a genuine reply allows reopening', async () => {
+  it('does not let resolving or reopening reset the quota; only a genuine support reply does', async () => {
     const t = await opened();
     await fill(t.id);
     await admin.patch(`/v1/admin/support/tickets/${t.id}`).send({ status: 'RESOLVED' }).expect(200);
-    await reply(t.id).expect(409);
+    expect((await reply(t.id).expect(409)).body.code).toBe('SUPPORT_TICKET_RESOLVED');
     expect((await detail(t.id)).status).toBe('RESOLVED');
+    await customer.post(`/v1/support/tickets/${t.id}/reopen`).expect(200);
+    expect(await detail(t.id)).toMatchObject({
+      status: 'OPEN',
+      remainingMessages: 0,
+      canReply: false,
+    });
+    expect((await reply(t.id).expect(409)).body.code).toBe('SUPPORT_MESSAGE_LIMIT_REACHED');
     await support(t.id).expect(201);
     await reply(t.id).expect(201);
-    expect((await detail(t.id)).status).toBe('OPEN');
     expect((await detail(t.id)).remainingMessages).toBe(4);
   });
   it('preserves closed restrictions even with allowance, and an old retry never reopens a closed ticket', async () => {

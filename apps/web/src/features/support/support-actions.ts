@@ -25,6 +25,11 @@ export type CreateSupportRequestResult =
   | { status: 'refused'; message: string }
   | { status: 'signed-out' };
 
+export type ReopenSupportRequestResult =
+  | { status: 'reopened'; ticket: CustomerSupportTicket }
+  | { status: 'refused'; code: string; message: string }
+  | { status: 'signed-out' };
+
 export type ReplySupportRequestResult =
   | { status: 'sent'; ticket?: CustomerSupportTicket }
   | { status: 'invalid'; message: string }
@@ -117,4 +122,35 @@ export async function replySupportRequestAction(
   revalidatePath(SUPPORT_ACTION_TEXT.detailPath(id.data.id));
   revalidatePath(SUPPORT_ACTION_TEXT.listPath);
   return { status: 'sent', ticket };
+}
+
+export async function reopenSupportRequestAction(
+  ticketId: string,
+): Promise<ReopenSupportRequestResult> {
+  const id = IdParam.safeParse({ id: ticketId });
+  if (!id.success)
+    return { status: 'refused', code: 'INVALID', message: SUPPORT_ACTION_TEXT.failed };
+
+  let ticket: CustomerSupportTicket;
+  try {
+    ticket = await apiSend<CustomerSupportTicket>(
+      'POST',
+      `/v1/support/tickets/${encodeURIComponent(id.data.id)}/reopen`,
+      {},
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) return { status: 'signed-out' };
+      return {
+        status: 'refused',
+        code: error.code,
+        message: error.userMessage(SUPPORT_ACTION_TEXT.failed),
+      };
+    }
+    return { status: 'refused', code: 'UNAVAILABLE', message: SUPPORT_ACTION_TEXT.unavailable };
+  }
+
+  revalidatePath(SUPPORT_ACTION_TEXT.detailPath(id.data.id));
+  revalidatePath(SUPPORT_ACTION_TEXT.listPath);
+  return { status: 'reopened', ticket };
 }

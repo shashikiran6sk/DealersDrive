@@ -4,6 +4,7 @@ import {
   SUPPORT_CATEGORY_LABELS,
   SUPPORT_STATUS_TONES,
   canCustomerReply,
+  canCustomerReopen,
   SUPPORT_UNANSWERED_MESSAGE_LIMIT,
   customerEnquiryStatus,
   formatDate,
@@ -134,6 +135,7 @@ export function toCustomerSupportTicket(row: CustomerTicketSource): CustomerSupp
     canReply:
       canCustomerReply(row.status) &&
       (row.unansweredCustomerMessages ?? 0) < SUPPORT_UNANSWERED_MESSAGE_LIMIT,
+    canReopen: canCustomerReopen(row.status),
     remainingMessages: Math.max(
       0,
       SUPPORT_UNANSWERED_MESSAGE_LIMIT - (row.unansweredCustomerMessages ?? 0),
