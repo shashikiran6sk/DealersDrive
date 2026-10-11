@@ -18,39 +18,39 @@ merge has been verified on `main`.
 
 ## Deployment facts (established 2026-10-11)
 
-| Tier | Trigger on merge to `main`                                                                                                                                                                                                                            |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| API  | `release.yml` builds images only. `deploy-dev` is commented out; images are pushed only if `AWS_DEPLOY_ENABLED == 'true'`. Production is `promote.yml`, manual.                                                                                       |
-| Web  | Vercel Git integration, project `dealersdrive-prod-web`. `vercel[bot]` created a Production deployment for `d423db1` (#290), none for #285/#286. Auto-deploy-on-merge is **unconfirmed** — the owner must confirm Vercel's production-branch setting. |
-| DB   | Migrations run only inside `_deploy.yml` (migrator task), which nothing on `main` currently invokes.                                                                                                                                                  |
+| Tier | Trigger on merge to `main`                                                                                                                                                                                                                                                                                       |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API  | `release.yml` builds images only. `deploy-dev` is commented out; images are pushed only if `AWS_DEPLOY_ENABLED == 'true'`. Production is `promote.yml`, manual.                                                                                                                                                  |
+| Web  | Vercel Git integration. The #287 merge (`5d5b5e6`) produced no Vercel deployment;, project `dealersdrive-prod-web`. `vercel[bot]` created a Production deployment for `d423db1` (#290), none for #285/#286. Auto-deploy-on-merge is **unconfirmed** — the owner must confirm Vercel's production-branch setting. |
+| DB   | Migrations run only inside `_deploy.yml` (migrator task), which nothing on `main` currently invokes.                                                                                                                                                                                                             |
 
 Consequence to watch from #288 on: a web-only Vercel deploy of `main` against
 an API that has not been promoted, when a PR changes both tiers or a contract.
 
 ## Status
 
-| #   | PR   | Feature                 | Original head | Final tested head | CI (final) | Merge SHA | State                   |
-| --- | ---- | ----------------------- | ------------- | ----------------- | ---------- | --------- | ----------------------- |
-| 1   | #287 | Favicon                 | `6bc0128`     | `ee367df`         | green      | —         | Awaiting owner approval |
-| 2   | #288 | Email uniqueness        | `9ad0c9e`     | —                 | —          | —         | Pending                 |
-| 3   | #289 | Directory image         | `451ac4e`     | —                 | —          | —         | Pending                 |
-| 4   | #291 | Service locations       | `aaceb01`     | —                 | —          | —         | Pending                 |
-| 5   | #292 | Optional tagline        | `465a5cd`     | —                 | —          | —         | Pending                 |
-| 6   | #293 | Admin OTP               | `e481bb0`     | —                 | —          | —         | Pending                 |
-| 7   | #294 | Mobile admin            | `a17b4a4`     | —                 | —          | —         | Pending                 |
-| 8   | #295 | Ticket messaging        | `98a5b78`     | —                 | —          | —         | Pending                 |
-| 9   | #296 | Mobile sidebar          | `cefed41`     | —                 | —          | —         | Pending                 |
-| 10  | #297 | Dealer verification     | `23c47d1`     | —                 | —          | —         | Pending                 |
-| 11  | #298 | Optional GSTIN          | `b500bd5`     | —                 | —          | —         | Pending                 |
-| —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started             |
-| —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched        |
+| #   | PR   | Feature                 | Original head | Final tested head | CI (final) | Merge SHA | State                                   |
+| --- | ---- | ----------------------- | ------------- | ----------------- | ---------- | --------- | --------------------------------------- |
+| 1   | #287 | Favicon                 | `6bc0128`     | `ee367df`         | green      | `5d5b5e6` | Merged, main verified (tree == ee367df) |
+| 2   | #288 | Email uniqueness        | `9ad0c9e`     | `5b6be13`         | green      | —         | Reviewed; merging                       |
+| 3   | #289 | Directory image         | `451ac4e`     | —                 | —          | —         | Pending                                 |
+| 4   | #291 | Service locations       | `aaceb01`     | —                 | —          | —         | Pending                                 |
+| 5   | #292 | Optional tagline        | `465a5cd`     | —                 | —          | —         | Pending                                 |
+| 6   | #293 | Admin OTP               | `e481bb0`     | —                 | —          | —         | Pending                                 |
+| 7   | #294 | Mobile admin            | `a17b4a4`     | —                 | —          | —         | Pending                                 |
+| 8   | #295 | Ticket messaging        | `98a5b78`     | —                 | —          | —         | Pending                                 |
+| 9   | #296 | Mobile sidebar          | `cefed41`     | —                 | —          | —         | Pending                                 |
+| 10  | #297 | Dealer verification     | `23c47d1`     | —                 | —          | —         | Pending                                 |
+| 11  | #298 | Optional GSTIN          | `b500bd5`     | —                 | —          | —         | Pending                                 |
+| —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                             |
+| —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                        |
 
 Stack ancestry at start: linear; each branch contains its parent. Migrations
 introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 
 ## Owner approvals
 
-None yet.
+- 2026-10-11: owner approved #287, then granted session-scoped authority to merge every stacked PR (admin bypass) after a thorough review and green CI on its final head. #299 remains excluded.
 
 ## Next action
 
