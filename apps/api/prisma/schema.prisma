@@ -290,11 +290,13 @@ model Dealer {
   /// distance sort that reads them is a real feature, and geocoding a typed
   /// address is its problem rather than onboarding's.
   city                   String?
-  /// The district the yard sits in, typed by the dealer and normalised on
-  /// write. The admin console filters on it — city on its own is ambiguous
-  /// across India, and support questions are district-shaped.
+  /// Canonical district display mirror. Ambiguous legacy text is retained for review.
   district               String?
   state                  String?
+  /// Stable catalogue references; legacy ambiguous text is retained for review.
+  serviceStateId         String?
+  serviceDistrictId      String?
+  locationReviewRequired Boolean                @default(false)
   addressLine            String?
   pincode                String?
   /// The dealer's own Google Maps share link, stored verbatim.
@@ -376,6 +378,8 @@ model Dealer {
   enquiries          Enquiry[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
+  serviceState       ServiceState?                @relation(fields: [serviceStateId], references: [id], onDelete: Restrict)
+  serviceDistrict    ServiceDistrict?             @relation(fields: [serviceDistrictId, serviceStateId], references: [id, stateId], onDelete: Restrict)
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -406,6 +410,7 @@ model Dealer {
   /// The admin console's location filters, which are always narrowed from the
   /// outside in: a state, then a district within it, then a town.
   @@index([state, district, city])
+  @@index([serviceDistrictId, serviceStateId])
   /// "My dealerships" in the Sales workspace, and per-member sales reporting.
   @@index([assistedByMemberId, status])
   @@map("dealers")
@@ -1452,4 +1457,38 @@ model DealerEmailVerification {
 
   @@index([dealerId, createdAt])
   @@map("dealer_email_verifications")
+}
+
+/// Geographic identity is independent of onboarding eligibility and photography coverage.
+model ServiceState {
+  id                String            @id
+  name              String            @unique
+  kind              String
+  aliases           String[]
+  active            Boolean           @default(true)
+  onboardingEnabled Boolean           @default(false)
+  version           Int               @default(1)
+  districts         ServiceDistrict[]
+  dealers           Dealer[]
+
+  @@map("service_states")
+}
+
+model ServiceDistrict {
+  id                   String       @id
+  stateId              String
+  name                 String
+  aliases              String[]
+  sourceUrl            String
+  active               Boolean      @default(true)
+  onboardingEnabled    Boolean      @default(false)
+  photographyAvailable Boolean      @default(false)
+  version              Int          @default(1)
+  state                ServiceState @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  dealers              Dealer[]
+
+  @@unique([id, stateId])
+  @@unique([stateId, name])
+  @@index([stateId, active, onboardingEnabled])
+  @@map("service_districts")
 }

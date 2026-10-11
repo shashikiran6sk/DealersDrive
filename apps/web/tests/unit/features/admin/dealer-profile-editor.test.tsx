@@ -46,6 +46,11 @@ const editor = (overrides: Partial<AdminDealerDetail> = {}) =>
   render(<DealerProfileEditor dealer={{ ...DEALER, ...overrides }} />);
 
 describe('the review screen’s business card', () => {
+  it('flags ambiguous legacy locations for review without guessing a new district', () => {
+    editor({ locationReviewRequired: true, district: 'Vellor' });
+    expect(screen.getByText(/This legacy location needs review/)).toBeInTheDocument();
+    expect(screen.getByText('Vellor')).toBeInTheDocument();
+  });
   beforeEach(() => {
     updateDealerAction.mockReset();
     updateDealerAction.mockResolvedValue({ ok: true });

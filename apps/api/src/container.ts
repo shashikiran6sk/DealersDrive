@@ -1,3 +1,7 @@
+import {
+  createServiceLocationsService,
+  type ServiceLocationsService,
+} from './modules/service-locations/service-locations.service.js';
 import { subscribeStorageCleanup } from './platform/storage/cleanup.js';
 import type { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
@@ -149,6 +153,7 @@ export interface Container {
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
+  readonly serviceLocations: ServiceLocationsService;
   readonly media: MediaService;
   readonly vehicles: VehiclesService;
   readonly moderation: ModerationService;
@@ -293,6 +298,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealersPublic,
     admin,
     publicConfig,
+    serviceLocations: createServiceLocationsService(prisma, audit),
     media,
     vehicles,
     moderation,

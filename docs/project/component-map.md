@@ -321,6 +321,21 @@ would be worse than useless. A single `<input maxlength="6">` would give the
 same behaviour for nothing and is the right control for most products; the
 cells are what this design asks for, so the keyboard work is paid for once.
 
+### C019d — `ServiceLocationFields`
+
+|                      |                                                                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Location**         | `apps/web/src/components/forms/service-location-fields/` (barrel `index.ts`; text in `service-location-fields.constants.ts`)                                             |
+| **Purpose**          | State `select` plus searchable district combobox, fed by `GET /v1/service-locations` (only active, onboarding-enabled locations). The API re-validates every submission. |
+| **Props**            | `initialState`, `initialDistrict`, `prefix?`, `errors?: { state?, district? }`, `disabled?`, `onChange?(field, value)`                                                   |
+| **States**           | loading, catalogue failed, empty, selected, existing location outside the catalogue (shown as "(existing location)", district locked), server refusal, disabled          |
+| **Dependencies**     | `Field`, `invalidProps`, `cn`, `loadServiceLocationsAction`                                                                                                              |
+| **Consumers**        | 3 (`BusinessStep`, `AssistedDealerForm`, `DealerDetailForm`)                                                                                                             |
+| **Tests**            | ✅ `apps/web/tests/unit/components/forms/service-location-fields.test.tsx`                                                                                               |
+| **Ownership**        | Shared                                                                                                                                                                   |
+| **Sandbox priority** | P1 — `Forms/ServiceLocationFields`; the sandbox aliases `@/features/service-location-actions` to a fixed Tamil Nadu catalogue                                            |
+| **Confidence**       | HIGH                                                                                                                                                                     |
+
 ---
 
 ## Layer 3 — Layout & navigation

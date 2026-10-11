@@ -243,6 +243,17 @@ function setup(options: Options = {}) {
   } as unknown as DealersRepository;
 
   const tx = {
+    $queryRaw: (parts: TemplateStringsArray, ...values: unknown[]) => {
+      if (parts.join('').includes('service_states')) {
+        return Promise.resolve(
+          values[0] === 'tamil nadu' ? [{ id: 'IN-TN', name: 'Tamil Nadu' }] : [],
+        );
+      }
+      if (parts.join('').includes('users')) return Promise.resolve([{ id: values[0] }]);
+      const key = String(values[1]);
+      const name = key.replace(/\b\w/g, (letter) => letter.toUpperCase());
+      return Promise.resolve([{ id: `IN-TN-${key.toUpperCase()}`, name }]);
+    },
     user: {
       update: (args: Record<string, unknown>) => {
         userUpdates.push(args);
@@ -826,6 +837,9 @@ describe('update', () => {
       city: 'Chennai',
       district: 'Chengalpattu',
       state: 'Tamil Nadu',
+      serviceStateId: 'IN-TN',
+      serviceDistrictId: 'IN-TN-CHENGALPATTU',
+      locationReviewRequired: false,
       pincode: '632002',
       // Stored verbatim — the host was checked by the schema, and what is
       // inside a share link is Google's business.
@@ -1561,14 +1575,12 @@ describe('update — the locality', () => {
     expect(h.updates[0]?.data).toMatchObject({ city: 'Krishnagiri', state: 'Tamil Nadu' });
   });
 
-  it('accepts a city in a state the platform has never seen before', async () => {
+  it('rejects a state unavailable for onboarding without changing the dealer', async () => {
     const h = setup();
-
-    // The point of the change. `cities` held five towns in one state, so this
-    // dealership could not be described by the product at all.
-    await h.service.update('dealer-1', { address: { city: 'Hubballi', state: 'Karnataka' } });
-
-    expect(h.updates[0]?.data).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+    await expect(
+      h.service.update('dealer-1', { address: { city: 'Hubballi', state: 'Karnataka' } }),
+    ).rejects.toMatchObject({ code: 'LOCATION_UNAVAILABLE' });
+    expect(h.updates).toEqual([]);
   });
 
   it('leaves both columns alone when the patch names neither', async () => {

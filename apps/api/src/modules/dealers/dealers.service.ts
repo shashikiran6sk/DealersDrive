@@ -1,3 +1,4 @@
+import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
   DEALER_STATUS_LABELS,
@@ -310,7 +311,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         );
       }
 
-      return this.update(dealerId, input, tx);
+      return this.update(dealerId, input, tx, true);
     },
 
     async selfUpdate(
@@ -410,6 +411,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       dealerId: string,
       input: UpdateDealerInput,
       transaction?: Tx,
+      draftOnly = false,
     ): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId, transaction);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
@@ -465,7 +467,29 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       });
 
       const work = async (tx: Tx) => {
-        if (input.contact && owner) {
+        if (owner && input.contact?.fullName !== undefined) {
+          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${owner.userId}::uuid FOR UPDATE`;
+        }
+        await repo.lockStatus(dealerId, tx);
+        const current = await requireDealer(dealerId, tx);
+        if (draftOnly && current.status !== 'DRAFT') {
+          throw new ConflictError(
+            'PROFILE_LOCKED',
+            'This dealership has been submitted for verification, so its name, address and contact details can no longer be edited here.',
+          );
+        }
+        const locationChanged =
+          (state !== undefined && state !== current.state) ||
+          (district !== undefined && district !== current.district);
+        const location = locationChanged
+          ? await resolveOnboardingLocation(
+              tx,
+              state ?? current.state ?? '',
+              district ?? current.district ?? '',
+              'body.address',
+            )
+          : {};
+        if (input.contact?.fullName !== undefined && owner) {
           await tx.user.update({
             where: { id: owner.userId },
             data: {
@@ -498,6 +522,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             ...(city === undefined ? {} : { city }),
             ...(district === undefined ? {} : { district }),
             ...(state === undefined ? {} : { state }),
+            ...location,
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
             ...(mapsUrl === undefined ? {} : { mapsUrl }),
             ...(place === undefined

@@ -1,3 +1,4 @@
+import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   DEALER_STATUS_LABELS,
   formatPhone,
@@ -483,20 +484,20 @@ export function createSalesService({
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.phone}`}))`;
           await assertPhoneFree(tx, ticket.phone);
 
+          const location = await resolveOnboardingLocation(tx, state, district);
           const dealer = await tx.dealer.create({
             data: {
               slug: await uniqueDealerSlug(tx, {
                 legalName: input.legalName,
                 city,
-                district,
-                state,
+                district: location.district,
+                state: location.state,
               }),
               brandName: input.legalName,
               legalName: input.legalName,
               status: 'DRAFT',
               city,
-              district,
-              state,
+              ...location,
               addressLine: input.addressLine,
               pincode: input.pincode,
               mapsUrl: input.mapsUrl,

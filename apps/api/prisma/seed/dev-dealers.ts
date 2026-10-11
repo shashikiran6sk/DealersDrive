@@ -1,3 +1,4 @@
+import { seedLocation } from './seed-location.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
@@ -80,8 +81,7 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     status: 'ACTIVE' as const,
     approvedAt: now,
     city: dealer.city,
-    district: dealer.district,
-    state: dealer.state,
+    ...(await seedLocation(prisma, dealer.state, dealer.district)),
     addressLine: dealer.addressLine,
     pincode: dealer.pincode,
     mapsUrl: dealer.mapsUrl,

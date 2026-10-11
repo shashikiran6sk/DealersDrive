@@ -1,3 +1,4 @@
+import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   adminHomeFor,
   formatPhone,
@@ -361,20 +362,20 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             data: { fullName: input.fullName },
           });
 
+          const location = await resolveOnboardingLocation(tx, state, district);
           const dealer = await tx.dealer.create({
             data: {
-              slug: await uniqueDealerSlug(prisma, {
+              slug: await uniqueDealerSlug(tx, {
                 legalName: input.legalName,
                 city,
-                district,
-                state,
+                district: location.district,
+                state: location.state,
               }),
               brandName: input.legalName,
               legalName: input.legalName,
               status: 'DRAFT',
               city,
-              district,
-              state,
+              ...location,
               addressLine: input.addressLine,
               pincode: input.pincode,
               mapsUrl: input.mapsUrl,
