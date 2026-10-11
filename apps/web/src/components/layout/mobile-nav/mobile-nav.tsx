@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogTitle } from '@/components/ui/dialog';
 import { LinkPendingIndicator } from '@/components/ui/link-pending';
 import { isCurrentPath } from '@/lib/nav';
 
@@ -18,6 +18,7 @@ export function MobileNav({
   heading,
   navigation,
   children,
+  showTitle = true,
 }: MobileNavProps) {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export function MobileNav({
       open={open}
       onOpenChange={(next) => setOpenPath(next ? pathname : null)}
       title={label}
+      header={showTitle ? undefined : <DialogTitle className="sr-only">{label}</DialogTitle>}
       closeLabel={MOBILE_NAV_TEXT.close}
       trigger={
         <button
