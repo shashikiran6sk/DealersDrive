@@ -281,8 +281,9 @@ describe('admin mobile credentials and challenge boundaries', () => {
   });
   it('enforces the IP request quota without relying on the general optional limiter', async () => {
     const f = await admin();
-    for (let i = 0; i < 40; i += 1)
-      await cache.increment(`admin-otp:ip:${hashToken('::ffff:127.0.0.1')}`, 600);
+    for (const loopback of ['::ffff:127.0.0.1', '127.0.0.1', '::1'])
+      for (let i = 0; i < 40; i += 1)
+        await cache.increment(`admin-otp:ip:${hashToken(loopback)}`, 600);
     await h
       .agent()
       .post(`${LOGIN}/challenge`)
@@ -407,8 +408,8 @@ describe('admin mobile credentials and challenge boundaries', () => {
     await verify(f.agent, LOGIN, c, token(f.phone)).expect(403);
     expect(providerCalls).toBe(0);
   });
-  it.each(['expired', 'old', 'future', 'missing'] as const)(
-    'rejects %s provider freshness',
+  it.each(['expired', 'old', 'future'] as const)(
+    'rejects %s provider freshness when the proof carries timestamps',
     async (kind) => {
       const f = await admin();
       const c = await challenge(f.agent, ENROLL, f.phone);
@@ -416,18 +417,46 @@ describe('admin mobile credentials and challenge boundaries', () => {
       proofs.set(t, {
         status: 'VERIFIED',
         identifier: f.phone.slice(1),
-        ...(kind === 'missing'
-          ? {}
-          : {
-              issuedAt: new Date(
-                Date.now() + (kind === 'future' ? 60_000 : kind === 'old' ? -60_000 : 0),
-              ),
-              expiresAt: new Date(Date.now() + (kind === 'expired' ? -1 : 60_000)),
-            }),
+        issuedAt: new Date(
+          Date.now() + (kind === 'future' ? 120_000 : kind === 'old' ? -120_000 : 0),
+        ),
+        expiresAt: new Date(Date.now() + (kind === 'expired' ? -1 : 60_000)),
       });
       await verify(f.agent, ENROLL, c, t).expect(403);
+      expect(await h.prisma.adminPhoneCredential.count({ where: { userId: f.userId } })).toBe(0);
     },
   );
+  it('links and then signs in with provider-verified proofs that carry no timestamps (the MSG91 widget shape)', async () => {
+    const f = await admin();
+    const untimed = () => {
+      const value = randomUUID();
+      proofs.set(value, { status: 'VERIFIED', identifier: f.phone.slice(1) });
+      return value;
+    };
+    const enrollment = await challenge(f.agent, ENROLL, f.phone);
+    const linkProof = untimed();
+    await verify(f.agent, ENROLL, enrollment, linkProof).expect(200);
+    expect(
+      await h.prisma.adminPhoneCredential.count({
+        where: { userId: f.userId, phone: f.phone, revokedAt: null },
+      }),
+    ).toBe(1);
+    await h.prisma.adminOtpChallenge.updateMany({
+      where: { phone: f.phone },
+      data: { createdAt: new Date(Date.now() - 61_000) },
+    });
+
+    const login = h.agent();
+    const replayed = await challenge(login, LOGIN, f.phone);
+    await verify(login, LOGIN, replayed, linkProof).expect(403);
+    await h.prisma.adminOtpChallenge.updateMany({
+      where: { phone: f.phone },
+      data: { createdAt: new Date(Date.now() - 61_000) },
+    });
+    const fresh = await challenge(login, LOGIN, f.phone);
+    await verify(login, LOGIN, fresh, untimed()).expect(200);
+    await login.get('/v1/admin/metrics/overview').expect(200);
+  });
   it('rejects a locally expired challenge before provider verification', async () => {
     const f = await admin();
     const c = await challenge(f.agent, ENROLL, f.phone);

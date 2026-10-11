@@ -389,6 +389,42 @@ describe('claiming', () => {
     expect(refused.body.code).toBe('CLAIM_ACCOUNT_HAS_DEALERSHIP');
   });
 
+  it('refuses, as a conflict, a claimant whose verified Google email another application reserves', async () => {
+    const target = await assisted();
+    const reserving = await assisted();
+    const holder = await h.prisma.user.create({
+      data: {
+        phone: `+91${target.phone}`,
+        phoneVerifiedAt: new Date(),
+        identities: {
+          create: {
+            provider: 'GOOGLE',
+            providerSubject: `claims-reserved-${Date.now().toString(36)}`,
+            email: reserving.email,
+            emailVerified: true,
+          },
+        },
+      },
+    });
+    const { token } = linkSentTo(target.email);
+    await confirmEmail(token);
+
+    const refused = await claim(h.agent(), token, target.phone);
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('DEALER_EMAIL_TAKEN');
+    expect(
+      await h.prisma.dealerMember.count({
+        where: { dealerId: target.dealerId, userId: holder.id },
+      }),
+    ).toBe(0);
+    const [claimed, reserved] = await Promise.all([
+      h.prisma.dealer.findUniqueOrThrow({ where: { id: target.dealerId } }),
+      h.prisma.dealer.findUniqueOrThrow({ where: { id: reserving.dealerId } }),
+    ]);
+    expect(claimed.primaryOwnerEmail).toBe(target.email);
+    expect(reserved.primaryOwnerEmail).toBe(reserving.email);
+  });
+
   it('owns the dealership once, whatever the race', async () => {
     const { email, phone, dealerId } = await assisted();
     const { token } = linkSentTo(email);

@@ -1,6 +1,6 @@
 # Admin mobile authentication
 
-PR 6, based on the certified optional-tagline branch. Google remains the initial identity
+Google remains the initial identity
 authority and a recovery method. There is no password login and no phone-based admin creation.
 
 ## Credential enrollment and recovery
@@ -38,11 +38,13 @@ their owner completes replacement; there is no automatic reassignment to another
 - Mutations require configured trusted Origin and JSON; cross-site Fetch Metadata is rejected.
   Next server actions supply the configured web Origin and retain Next's own Origin validation.
   The challenge nonce supplies browser binding for login as well as authenticated enrollment.
-- Server-side MSG91 verification must name the requested number. Admin proofs also require
-  `iat` and `exp`, with issuance no earlier than challenge creation minus five seconds and an
-  unexpired expiry. Dates are decoded only after MSG91 accepts the token. Missing, invalid,
-  future or stale claims fail closed. Existing dealer/customer proofs do not inherit this new
-  admin-specific requirement.
+- Server-side MSG91 verification must name the requested number. Admin proofs are bound to a
+  challenge: when the verified token carries an `iat`, it must be no earlier than challenge
+  creation minus 30 seconds and no later than now plus 30 seconds; when it carries an `exp`, it
+  must not have passed. Millisecond claims are read as milliseconds. Dates are decoded only after
+  MSG91 accepts the token. A token without these claims is accepted (and logged as
+  `phone_otp.proof_untimed`, purpose only) because MSG91 does not publish them; it is then bound
+  only by the controls below. Existing dealer/customer proofs do not use challenge freshness.
 - The existing global replay cache prevents reuse across purposes. Durable SHA-256 proof hashes
   also prevent successful admin redemption after cache loss. Challenge consumption, credential
   mutation or admin session issuance, rotation and success audit are one transaction. Concurrent
@@ -64,9 +66,13 @@ their owner completes replacement; there is no automatic reassignment to another
 [MSG91's widget flow](https://docs.msg91.com/otp-widget) returns a JWT after OTP verification and
 requires server-side access-token verification. Its [configuration guide](https://msg91.com/help/sendotp/how-to-integrate-the-new-login-with-otp-widget)
 describes provider-side resend and expiry settings. It does not establish that every tenant's
-JWT contains usable `iat`/`exp` claims. This implementation deliberately refuses admin access
-without them. Before eventual production rollout, verify that the configured tenant returns
-these claims and enforce OTP attempt/resend limits in the provider dashboard. The client widget
+JWT contains usable `iat`/`exp` claims. An earlier revision refused admin proofs without them;
+against the real tenant that made Profile → Security → Link mobile fail with "That verification
+could not be completed" after MSG91 had accepted the code, while customer and dealer OTP kept
+working. Untimed proofs are therefore accepted and bound by challenge, single-use and step-up
+controls instead. During the first controlled test with the real tenant, check the logs for
+`phone_otp.proof_untimed`: its absence means the tenant's tokens carry `iat` and freshness is
+enforced from it. Enforce OTP attempt/resend limits in the provider dashboard. The client widget
 can contact MSG91 directly; application challenge limits are not a claim of exclusive control
 over provider delivery. Provider limits and CAPTCHA must remain enabled. No live message delivery
 or real Google account testing is claimed by controlled local provider tests.
@@ -83,7 +89,7 @@ method of old sessions. `20261010101000_admin_phone_credentials` adds private cr
 challenge and redemption tables with canonical-number, purpose, attempt, version, binding and
 expiry constraints and supporting number/time indexes. Both migrations are transactional and
 additive. Existing person phone data and session scope are preserved; no numbers are enrolled
-automatically. No production data inventory or production migration was executed.
+automatically.
 
 Coordinate API and web rollout: old web builds forward the person cookie to admin APIs, so
 administrators must sign in again after the cookie change. Do not add a legacy shared-cookie
@@ -101,13 +107,12 @@ rejection, freshness and outages. Web tests cover challenge-before-send, backend
 enrollment, server-action cookie relay and scope-specific forwarding. Existing Google, dealer,
 customer, ownership, listing, support and account-linking suites are included in the full gate.
 
-The campaign evidence report records actual executed outcomes and screenshots. The historical
-556-case document is not a claim that all those cases have currently passed. Native Safari,
-physical devices, real SMS delivery and production tenant configuration require owner UAT.
+Native Safari, physical devices, real SMS delivery and production tenant configuration require
+owner UAT with an approved test number.
 
-A timestamp-dependent sale-notification assertion exposed by this regression campaign now
-compares delivery identities before and after the action, preserving the no-new-email invariant
-without assuming two operations cannot share the same millisecond.
+A timestamp-dependent sale-notification assertion now compares delivery identities before and
+after the action, preserving the no-new-email invariant without assuming two operations cannot
+share the same millisecond.
 
 Owner UAT: sign in with Google; link a synthetic approved test number in Profile → Security;
 sign out and use Mobile OTP; refresh and open another tab; verify a parallel customer session
@@ -115,5 +120,3 @@ survives admin logout; confirm a mobile session requires Google step-up to chang
 revoke, then recover through Google and enroll another number. Verify disabled members and
 customer/dealer-only numbers cannot sign in. Use approved test accounts and keep proof codes,
 contact details and provider credentials out of screenshots.
-
-DO NOT MERGE. No production deployment is authorized.
