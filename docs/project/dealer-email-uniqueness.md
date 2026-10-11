@@ -111,7 +111,3 @@ confirm its previous verification remains unchanged. Use the renewed mobile
 verification control after expiry and check that form values remain. Verify
 that staff can still access their authorized dealerships and cannot claim
 ownership by submitting an email.
-
-Base: `feat/dd-favicon-sizing` (#287), validated final head `6bc01285`.
-No unmerged white-label or legal changes are inherited. PR must remain open and
-unmerged, and its final-head CI plus post-creation tests must pass before PR 3.

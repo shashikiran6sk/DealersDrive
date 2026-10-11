@@ -35,9 +35,6 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
             <Link href={HEADER_NAV.dealerLogin} className="dd-nav-item min-h-12">
               {HEADER_TEXT.dealerLogin}
             </Link>
-            <Link href={HEADER_NAV.adminLogin} className="dd-nav-item min-h-12">
-              {HEADER_TEXT.adminLogin}
-            </Link>
             <Link href={HEADER_NAV.support} className="dd-nav-item min-h-12">
               {HEADER_TEXT.support}
             </Link>

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
-import { ServiceLocationFields } from '@/components/forms/service-location-fields/service-location-fields';
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';

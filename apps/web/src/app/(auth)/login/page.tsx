@@ -64,13 +64,23 @@ export default async function LoginPage({
               error={error}
             />
           }
+          footer={
+            <Link
+              href={LOGIN_TEXT.troubleHref}
+              className="mx-auto mt-[22px] flex min-h-[40px] w-fit items-center text-[13px] font-bold ink-muted underline underline-offset-[3px] hover:text-(--color-ink)"
+            >
+              {LOGIN_TEXT.trouble}
+            </Link>
+          }
+          dealerFooter={
+            <Link
+              href={LOGIN_TEXT.adminLoginHref}
+              className="mx-auto flex min-h-[40px] w-fit items-center text-[12px] font-semibold ink-subtle underline-offset-[3px] hover:text-(--color-ink) hover:underline focus-visible:underline"
+            >
+              {LOGIN_TEXT.adminLogin}
+            </Link>
+          }
         />
-        <Link
-          href={LOGIN_TEXT.troubleHref}
-          className="mx-auto mt-[22px] flex min-h-[40px] w-fit items-center text-[13px] font-bold ink-muted underline underline-offset-[3px] hover:text-(--color-ink)"
-        >
-          {LOGIN_TEXT.trouble}
-        </Link>
       </AuthShell>
     </EntryShell>
   );

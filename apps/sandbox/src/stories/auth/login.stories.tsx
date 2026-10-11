@@ -1,5 +1,6 @@
 import type { PhoneOtpWidget } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import Link from 'next/link';
 
 import { signInActionStub } from '../../mocks/sign-in-actions';
 
@@ -41,11 +42,29 @@ const meta = {
     initial: { control: 'inline-radio', options: ['customer', 'dealer'] },
     customer: { control: false },
     dealer: { control: false },
+    footer: { control: false },
+    dealerFooter: { control: false },
   },
   args: {
     initial: 'customer',
     customer: <CustomerLogin widget={FAKE_WIDGET} returnTo="/" />,
     dealer: <DealerLogin widget={FAKE_WIDGET} google={GOOGLE} returnTo={null} error={null} />,
+    footer: (
+      <Link
+        href={LOGIN_TEXT.troubleHref}
+        className="mx-auto mt-[22px] flex min-h-[40px] w-fit items-center text-[13px] font-bold ink-muted underline underline-offset-[3px]"
+      >
+        {LOGIN_TEXT.trouble}
+      </Link>
+    ),
+    dealerFooter: (
+      <Link
+        href={LOGIN_TEXT.adminLoginHref}
+        className="mx-auto flex min-h-[40px] w-fit items-center text-[12px] font-semibold ink-subtle underline-offset-[3px] hover:underline"
+      >
+        {LOGIN_TEXT.adminLogin}
+      </Link>
+    ),
   },
   beforeEach: () => {
     signInActionStub.customer = { status: 'NAME_REQUIRED', phoneDisplay: '+91 98400 12345' };

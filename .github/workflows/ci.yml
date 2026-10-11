@@ -36,18 +36,7 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - main
-      - feat/dd-favicon-sizing
-      - fix/dealer-email-uniqueness
-      - feat/standard-dealer-directory-image
-      - feat/dynamic-service-locations
-      - feat/optional-dealer-tagline
-      - feat/admin-mobile-otp
-      - feat/mobile-admin-access
-      - feat/ticket-message-limits
-      - fix/mobile-sidebar-navigation
-      - feat/dealer-verification
+    branches: [main]
 
 # One run per branch. A force-push mid-review should not leave two suites
 # racing, and the newer commit is the only one anybody cares about.
@@ -75,7 +64,7 @@ jobs:
       # creates `dealersdrive_test` from it. Change them here and the
       # integration suite cannot find a database.
       postgres:
-        image: public.ecr.aws/docker/library/postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: dealersdrive
           POSTGRES_PASSWORD: dealersdrive

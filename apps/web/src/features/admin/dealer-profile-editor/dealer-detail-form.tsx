@@ -1,6 +1,6 @@
 'use client';
 
-import { ServiceLocationFields } from '@/components/forms/service-location-fields/service-location-fields';
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
 
 import { Field } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';

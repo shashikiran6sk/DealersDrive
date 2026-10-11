@@ -5,6 +5,9 @@ export const ENQUIRY_NOT_YOURS = 'Choose one of your own enquiries, or leave the
 export const TICKET_CLOSED =
   'This request is closed, so it cannot take a reply. Create a new support request and mention its reference.';
 
+export const TICKET_RESOLVED =
+  'This request is resolved. If the problem is still there, reopen it to send another message.';
+
 export const SUPPORT_RATE_LIMITED =
   'You have sent a lot of support messages. Try again in a little while.';
 
