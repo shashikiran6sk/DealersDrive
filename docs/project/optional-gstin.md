@@ -10,7 +10,7 @@ a GSTIN is supplied. Its absence is not a universal submission blocker when no G
 an authorized reviewer records the actual non-requirement assessment and protected case reference;
 blank GSTIN alone is not an exemption. Unresolved applicability stays under review. Existing optional documents are retained, not deleted. A verified business whose
 GSTIN changes or is cleared loses the badge and requires a fresh applicability/evidence review
-under PR 10's policy. Active profile identifiers remain controlled by the existing admin workflow;
+under the dealer verification policy (`docs/project/dealer-verification.md`). Active profile identifiers remain controlled by the existing admin workflow;
 this feature does not add a weaker dealer self-edit path.
 
 Review tax registration liability from actual dealer facts, applicable statutory categories,
@@ -19,7 +19,7 @@ field. The [CBIC CGST Act reference](https://cbic-gst.gov.in/pdf/CGST-Act-Update
 distinguishes liable and voluntary registration in sections 22–25. It is a dated consolidated
 reference and later amendments/exemptions require current professional review. No universal
 threshold or exemption is hard-coded. Optional collection does not remove GST obligations.
-PR 10 requires a recorded applicable registration check or a reviewed non-requirement assessment
+Dealer verification requires a recorded applicable registration check or a reviewed non-requirement assessment
 before awarding a genuine Dealer Verified badge. Unresolved applicability remains in review.
 
 ## Database and conflicts
@@ -39,8 +39,7 @@ public business GSTIN display remains conditional on a supplied value and is not
 proof. No PAN or private certificate is added to public payloads.
 
 Before rollout, rehearse on a protected representative copy and resolve any preflight conflict
-privately. Schema first, compatible writers next; no production migration/reset/seed is executed
-by this campaign. No new environment/provider settings. After rollout prefer a forward fix to
+privately. Schema first, compatible writers next. No new environment/provider settings. After rollout prefer a forward fix to
 preserve private history rather than reinstating a universal collection blocker.
 
 ## Owner UAT
