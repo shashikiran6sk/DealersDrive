@@ -1,3 +1,4 @@
+import { ProgressiveState } from './progressive-onboarding.js';
 import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
@@ -236,6 +237,7 @@ export const DealerOnboardingProvenance = z.object({
 export type DealerOnboardingProvenance = z.infer<typeof DealerOnboardingProvenance>;
 
 export const AdminDealerDetail = z.object({
+  progressive: ProgressiveState.nullable().optional(),
   id: Uuid,
   slug: z.string(),
   brandName: z.string(),

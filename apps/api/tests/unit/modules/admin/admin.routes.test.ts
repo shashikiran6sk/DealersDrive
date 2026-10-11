@@ -39,6 +39,7 @@ describe('the surface', () => {
         'GET /metrics/overview',
         'GET /dealers',
         'GET /dealers/:id',
+        'PUT /dealers/:id/progressive-plan',
         'POST /dealers/:id/approve',
         'PATCH /dealers/:id',
         'POST /dealers/:id/reject',

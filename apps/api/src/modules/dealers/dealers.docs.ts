@@ -11,6 +11,27 @@ export const dealersDocs: ModuleDocs = {
   operations: [
     {
       method: 'get',
+      path: '/v1/dealer/progressive',
+      operationId: 'getProgressiveState',
+      tag: DOC_TAGS.dealerAccount,
+      summary: 'Progressive dealer onboarding',
+      description:
+        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
+      audience: 'dealer',
+      responses: [
+        {
+          status: 200,
+          description: 'Saved application progress.',
+          inlineSchema: {
+            anyOf: [{ $ref: '#/components/schemas/ProgressiveState' }, { type: 'null' }],
+          },
+        },
+      ],
+      errors: [401, 403, 409, 422],
+    },
+
+    {
+      method: 'get',
       path: '/v1/dealer',
       operationId: 'getDealerProfile',
       tag: DOC_TAGS.dealerAccount,

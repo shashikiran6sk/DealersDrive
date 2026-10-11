@@ -1,4 +1,6 @@
 import {
+  PROGRESSIVE_DECLARATION_VERSION,
+  type ProgressiveAssistedRegistrationInput,
   DEALER_STATUS_LABELS,
   formatPhone,
   normaliseLocality,
@@ -234,6 +236,9 @@ export function createSalesService({
 
     return {
       ...toSummary(summary, counts.get(dealerId) ?? emptyCounts()),
+      ...(dealer.progressiveRegisteredAt
+        ? { progressive: await dealers.progressiveState(dealerId) }
+        : {}),
       email: dealer.contactEmail,
       gstin: dealer.gstin,
       pan: dealer.pan,
@@ -421,7 +426,7 @@ export function createSalesService({
 
     async create(
       principal: AdminPrincipal,
-      input: CreateAssistedDealerInput,
+      input: CreateAssistedDealerInput | ProgressiveAssistedRegistrationInput,
     ): Promise<SalesDealerDetail> {
       const memberId = memberOf(principal);
       const ticket = await redeemAssistedPhoneTicket(cache, input.phoneTicket, memberId);
@@ -453,7 +458,10 @@ export function createSalesService({
         );
       }
 
-      const place = await maps.placeFor(input.mapsUrl);
+      const place =
+        'mapsUrl' in input
+          ? await maps.placeFor(input.mapsUrl)
+          : { coordinates: null, placeId: null };
       const consentAt = new Date(ticket.provenAt);
 
       const created = await withTransaction(prisma, async (tx) => {
@@ -466,12 +474,18 @@ export function createSalesService({
             brandName: input.legalName,
             legalName: input.legalName,
             status: 'DRAFT',
+            ...('declaration' in input
+              ? {
+                  progressiveRegisteredAt: new Date(),
+                  progressiveConsentVersion: PROGRESSIVE_DECLARATION_VERSION,
+                }
+              : {}),
             city,
             district,
             state,
-            addressLine: input.addressLine,
-            pincode: input.pincode,
-            mapsUrl: input.mapsUrl,
+            addressLine: 'addressLine' in input ? input.addressLine : null,
+            pincode: 'pincode' in input ? input.pincode : null,
+            mapsUrl: 'mapsUrl' in input ? input.mapsUrl : null,
             lat: place.coordinates?.lat ?? null,
             lng: place.coordinates?.lng ?? null,
             mapsPlaceId: place.placeId,
@@ -480,24 +494,25 @@ export function createSalesService({
             contactPhoneVerifiedAt: consentAt,
             contactEmail: input.email,
             contactEmailVerifiedAt: null,
-            landline: input.landline ?? null,
-            tagline: input.tagline,
-            specialities: input.specialities,
-            gstin: input.gstin ?? null,
-            pan: input.pan ?? null,
+            landline: 'landline' in input ? (input.landline ?? null) : null,
+            tagline: 'tagline' in input ? input.tagline : null,
+            specialities: 'specialities' in input ? input.specialities : [],
+            gstin: 'gstin' in input ? (input.gstin ?? null) : null,
+            pan: 'pan' in input ? (input.pan ?? null) : null,
             onboardingSource: 'ASSISTED',
             assistedByMemberId: memberId,
             assistedConsentAt: consentAt,
           },
         });
 
-        await tx.dealerDocument.createMany({
-          data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
-            dealerId: dealer.id,
-            type,
-            status: 'REQUIRED' as const,
-          })),
-        });
+        if (!('declaration' in input))
+          await tx.dealerDocument.createMany({
+            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+              dealerId: dealer.id,
+              type,
+              status: 'REQUIRED' as const,
+            })),
+          });
 
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -514,6 +529,9 @@ export function createSalesService({
             phoneVerifiedAt: consentAt.toISOString(),
             consentAt: consentAt.toISOString(),
             emailVerified: false,
+            ...('declaration' in input
+              ? { progressive: true, consentVersion: PROGRESSIVE_DECLARATION_VERSION }
+              : {}),
           },
         });
         await requestEmailVerification(tx, {

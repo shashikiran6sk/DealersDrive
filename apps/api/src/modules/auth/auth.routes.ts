@@ -19,6 +19,7 @@ import { getProviders } from './routes/get-providers.js';
 import { getSignInPhoneWidget } from './routes/get-sign-in-phone-widget.js';
 import { postAdminLogout } from './routes/post-admin-logout.js';
 import { postLogout } from './routes/post-logout.js';
+import { postProgressiveRegistration } from './routes/post-progressive-registration.js';
 import { postOnboarding } from './routes/post-onboarding.js';
 import { postPhoneAvailability } from './routes/post-phone-availability.js';
 import { postPhoneVerify } from './routes/post-phone-verify.js';
@@ -77,6 +78,7 @@ const SESSION_ROUTES: SessionAuthRoute[] = [
   getMe,
   getGoogleLinkStart,
   postOnboarding,
+  postProgressiveRegistration,
   getPhoneWidget,
   postPhoneAvailability,
   postPhoneVerify,

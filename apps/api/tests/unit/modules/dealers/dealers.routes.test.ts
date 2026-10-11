@@ -50,6 +50,7 @@ describe('the surface', () => {
         // R34 — the dealer taking back a change that is waiting for review.
         'DELETE /profile-change',
         'GET /completeness',
+        'GET /progressive',
         'POST /submit',
         'GET /documents',
         'POST /documents/presign',

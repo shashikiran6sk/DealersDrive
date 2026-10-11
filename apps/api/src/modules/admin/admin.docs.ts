@@ -15,6 +15,24 @@ export const adminDocs: ModuleDocs = {
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
+      method: 'put',
+      path: '/v1/admin/dealers/{id}/progressive-plan',
+      operationId: 'reviewProgressivePlan',
+      tag: DOC_TAGS.admin,
+      summary: 'Progressive dealer onboarding',
+      description:
+        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
+      audience: 'admin',
+      requestBody: { schema: 'ProgressivePlanInput' },
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'Saved application progress.', schema: 'ProgressiveState' },
+      ],
+      errors: [401, 403, 409, 422],
+    },
+
+    {
       method: 'get',
       path: '/v1/admin/metrics/overview',
       operationId: 'getAdminOverview',

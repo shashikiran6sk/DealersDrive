@@ -18,6 +18,22 @@ export const authDocs: ModuleDocs = {
     'never accepted anywhere in the API; it is a property of the resolved session (rule 1).',
   operations: [
     {
+      method: 'post',
+      path: '/v1/auth/dealer/register',
+      operationId: 'registerProgressiveDealer',
+      tag: DOC_TAGS.auth,
+      summary: 'Progressive dealer onboarding',
+      description:
+        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
+      audience: 'dealer',
+      requestBody: { schema: 'ProgressiveRegistrationInput' },
+      responses: [
+        { status: 201, description: 'Saved application progress.', schema: 'AuthSession' },
+      ],
+      errors: [401, 403, 409, 422],
+    },
+
+    {
       method: 'get',
       path: '/v1/auth/providers',
       operationId: 'getAuthProviders',

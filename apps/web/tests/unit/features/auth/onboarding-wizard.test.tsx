@@ -490,6 +490,7 @@ describe('OnboardingPage — the floor the server sets', () => {
   async function openedAt(dealer: { status: string } | null, step?: string): Promise<number> {
     const { apiGet } = await import('@/lib/api');
     vi.mocked(apiGet).mockImplementation((path: string) => {
+      if (path === '/v1/dealer/progressive') return Promise.resolve(null);
       if (path.startsWith('/v1/dealer/documents')) return Promise.resolve({ data: DOCUMENTS });
       if (path === '/v1/dealer') {
         // Enough of `DealerProfile` for steps 1 and 2 to prefill from: they

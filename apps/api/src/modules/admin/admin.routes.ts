@@ -1,3 +1,4 @@
+import { postProgressivePlan } from './routes/post-progressive-plan.js';
 import { Router } from 'express';
 
 import type { AdminService } from './admin.service.js';
@@ -24,6 +25,7 @@ import { putConfigKey } from './routes/put-config-key.js';
 import type { AdminRoute } from './routes/route.js';
 
 const ROUTES: AdminRoute[] = [
+  postProgressivePlan,
   getMetricsOverview,
   getDealers,
   getDealer,

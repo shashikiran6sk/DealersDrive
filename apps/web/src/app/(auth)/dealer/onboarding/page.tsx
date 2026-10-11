@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type {
   AuthProvidersResponse,
   AuthSession,
@@ -6,6 +7,7 @@ import type {
   DealerProfile,
   PhoneOtpWidget,
   YardPhotoDto,
+  ProgressiveState,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -30,6 +32,11 @@ export default async function OnboardingPage({
   searchParams: Promise<{ step?: string; error?: string }>;
 }) {
   const session = await session_();
+  if (
+    session.dealer &&
+    (await apiGet<ProgressiveState | null>('/v1/dealer/progressive', { revalidate: false }))
+  )
+    redirect('/dealer/register');
 
   if (session.dealer && !['DRAFT', 'PENDING_APPROVAL'].includes(session.dealer.status)) {
     redirect('/dealer');
@@ -63,6 +70,11 @@ export default async function OnboardingPage({
 
   return (
     <AuthShell>
+      {!session.dealer ? (
+        <Link className="btn btn-secondary mb-4 w-full" href="/dealer/register">
+          Start with basic registration
+        </Link>
+      ) : null}
       <OnboardingWizard
         step={step}
         session={session}

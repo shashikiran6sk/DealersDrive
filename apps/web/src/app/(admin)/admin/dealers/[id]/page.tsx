@@ -1,3 +1,4 @@
+import { ProgressiveAdminReview } from '@/features/progressive/admin-review';
 import type { AdminDealerDetail } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -54,6 +55,12 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       ) : null}
 
       <OnboardingProvenance onboarding={dealer.onboarding} />
+      {dealer.progressive ? (
+        <ProgressiveAdminReview
+          progressive={dealer.progressive}
+          editable={['DRAFT', 'PENDING_APPROVAL'].includes(dealer.status)}
+        />
+      ) : null}
 
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))] max-md:grid-cols-2 max-md:gap-3">
         {[
@@ -101,7 +108,9 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
             />
           ) : (
             <p className="py-3 text-[13px] ink-muted">
-              Not uploaded. A dealership cannot be submitted for verification without one.
+              {dealer.progressive
+                ? 'Not uploaded. Yard photography is optional for this application.'
+                : 'Not uploaded. A dealership cannot be submitted for verification without one.'}
             </p>
           )}
         </section>

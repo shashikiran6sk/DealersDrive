@@ -1,4 +1,6 @@
 import {
+  PROGRESSIVE_DECLARATION_VERSION,
+  type ProgressiveRegistrationInput,
   adminHomeFor,
   formatPhone,
   normaliseLocality,
@@ -264,7 +266,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       };
     },
 
-    async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
+    async onboard(
+      principal: PendingPrincipal,
+      input: OnboardingInput | ProgressiveRegistrationInput,
+    ): Promise<AuthSession> {
       const linked = await identities.identitiesOf(principal.userId);
       if (!linked.google) {
         throw new DomainError('ONBOARDING_IDENTITY_INCOMPLETE', IDENTITY_INCOMPLETE, {
@@ -308,9 +313,18 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       const phone = toE164(input.phone);
       await assertPhoneVerified(prisma, principal.userId, phone, 'body.phone');
 
-      const place = await maps.placeFor(input.mapsUrl);
+      const place =
+        'mapsUrl' in input
+          ? await maps.placeFor(input.mapsUrl)
+          : { coordinates: null, placeId: null };
 
       const created = await withTransaction(prisma, async (tx) => {
+        await tx.user.update({
+          where: { id: principal.userId },
+          data: { fullName: input.fullName },
+        });
+        if ('declaration' in input)
+          await assertPhoneVerified(tx, principal.userId, phone, 'body.phone');
         const existing = await tx.dealerMember.findFirst({
           where: { userId: principal.userId, status: 'ACTIVE' },
         });
@@ -320,11 +334,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             'This account already manages a dealership.',
           );
         }
-
-        await tx.user.update({
-          where: { id: principal.userId },
-          data: { fullName: input.fullName },
-        });
 
         const dealer = await tx.dealer.create({
           data: {
@@ -337,20 +346,27 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             brandName: input.legalName,
             legalName: input.legalName,
             status: 'DRAFT',
+            ...('declaration' in input
+              ? {
+                  contactName: input.fullName,
+                  progressiveRegisteredAt: new Date(),
+                  progressiveConsentVersion: PROGRESSIVE_DECLARATION_VERSION,
+                }
+              : {}),
             city,
             district,
             state,
-            addressLine: input.addressLine,
-            pincode: input.pincode,
-            mapsUrl: input.mapsUrl,
+            addressLine: 'addressLine' in input ? input.addressLine : null,
+            pincode: 'pincode' in input ? input.pincode : null,
+            mapsUrl: 'mapsUrl' in input ? input.mapsUrl : null,
             lat: place.coordinates?.lat ?? null,
             lng: place.coordinates?.lng ?? null,
             mapsPlaceId: place.placeId,
             contactPhone: phone,
             contactEmail: principal.email,
-            landline: input.landline ?? null,
-            tagline: input.tagline,
-            specialities: input.specialities,
+            landline: 'landline' in input ? (input.landline ?? null) : null,
+            tagline: 'tagline' in input ? input.tagline : null,
+            specialities: 'specialities' in input ? input.specialities : [],
           },
         });
 
@@ -358,13 +374,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
         });
 
-        await tx.dealerDocument.createMany({
-          data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
-            dealerId: dealer.id,
-            type,
-            status: 'REQUIRED' as const,
-          })),
-        });
+        if (!('declaration' in input))
+          await tx.dealerDocument.createMany({
+            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+              dealerId: dealer.id,
+              type,
+              status: 'REQUIRED' as const,
+            })),
+          });
 
         await audit.record(tx, {
           actorType: 'DEALER',
@@ -373,7 +390,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           action: 'dealer.onboarding.created',
           entityType: 'Dealer',
           entityId: dealer.id,
-          after: { slug: dealer.slug, brandName: dealer.brandName, status: dealer.status },
+          after: {
+            slug: dealer.slug,
+            brandName: dealer.brandName,
+            status: dealer.status,
+            ...('declaration' in input
+              ? { consentVersion: PROGRESSIVE_DECLARATION_VERSION, progressive: true }
+              : {}),
+          },
         });
 
         return { id: dealer.id, slug: dealer.slug };

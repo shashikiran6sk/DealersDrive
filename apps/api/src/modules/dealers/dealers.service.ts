@@ -1,3 +1,4 @@
+import { progressivePlan, isProgressivePlanCurrent } from './progressive-policy.js';
 import {
   dealerSessionNext,
   DEALER_STATUS_LABELS,
@@ -300,6 +301,39 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(await requireDealer(dealerId));
     },
 
+    async progressiveState(dealerId: string) {
+      const dealer = await requireDealer(dealerId);
+      if (!dealer.progressiveRegisteredAt || !dealer.progressiveConsentVersion) return null;
+      const policy = isProgressivePlanCurrent(dealer)
+        ? progressivePlan(dealer.progressivePlan)
+        : null;
+      const complete = await this.completeness(dealerId);
+      return {
+        dealerId,
+        stage:
+          dealer.status === 'ACTIVE' || dealer.status === 'PENDING_APPROVAL'
+            ? ('ACTIVATE' as const)
+            : ('VERIFY' as const),
+        registeredAt: dealer.progressiveRegisteredAt.toISOString(),
+        consentVersion: dealer.progressiveConsentVersion,
+        version: dealer.progressiveVersion,
+        classificationReviewed: isProgressivePlanCurrent(dealer),
+        requiredDocuments: policy?.requiredDocuments ?? [],
+        canSubmit: complete.canSubmit,
+        canActivate:
+          dealer.status === 'PENDING_APPROVAL' &&
+          complete.isComplete &&
+          Boolean(policy) &&
+          (policy?.requiredDocuments.every((type) =>
+            dealer.documents.some(
+              (doc) =>
+                doc.type === type && doc.status === 'VERIFIED' && doc.reviewedAt && doc.reviewedBy,
+            ),
+          ) ??
+            false),
+      };
+    },
+
     async amendDraft(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId);
       if (dealer.status !== 'DRAFT') {
@@ -408,6 +442,16 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
+      if (
+        dealer.progressiveRegisteredAt &&
+        owner &&
+        input.contact?.email !== undefined &&
+        input.contact.email.toLowerCase() !== owner.user.email?.toLowerCase()
+      )
+        throw new ConflictError(
+          'PROGRESSIVE_OWNER_PROOF_REQUIRED',
+          'Changing the proved owner identity requires a controlled account verification flow.',
+        );
 
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
@@ -443,6 +487,14 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       });
 
       const updated = await withTransaction(prisma, async (tx) => {
+        if (dealer.progressiveRegisteredAt) {
+          const status = await repo.lockStatus(dealerId, tx);
+          if (status !== 'DRAFT')
+            throw new ConflictError(
+              'PROGRESSIVE_PROFILE_LOCKED',
+              'Request a controlled correction before changing submitted or activated business details.',
+            );
+        }
         if (input.contact && owner) {
           await tx.user.update({
             where: { id: owner.userId },
@@ -456,6 +508,14 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         return repo.update(
           dealerId,
           {
+            ...(dealer.progressiveRegisteredAt
+              ? {
+                  progressiveVersion: { increment: 1 },
+                  ...(input.contact?.fullName === undefined
+                    ? {}
+                    : { contactName: input.contact.fullName }),
+                }
+              : {}),
             ...(input.legalName === undefined
               ? {}
               : { legalName: input.legalName, brandName: input.legalName }),
@@ -508,6 +568,26 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         accountMissing.push('fullName', 'email');
       }
 
+      const progressive = Boolean(dealer.progressiveRegisteredAt);
+      const policy =
+        progressive && isProgressivePlanCurrent(dealer)
+          ? progressivePlan(dealer.progressivePlan)
+          : null;
+      if (
+        progressive &&
+        owner &&
+        (!owner.user.phoneVerifiedAt ||
+          owner.user.phone !== dealer.contactPhone ||
+          !owner.user.emailVerifiedAt ||
+          owner.user.email?.toLowerCase() !== dealer.contactEmail?.toLowerCase())
+      )
+        accountMissing.push('verifiedRepresentativeContacts');
+      if (
+        progressive &&
+        dealer.onboardingSource === 'ASSISTED' &&
+        (!dealer.contactPhoneVerifiedAt || !dealer.contactEmailVerifiedAt)
+      )
+        accountMissing.push('verifiedRepresentativeContacts');
       const businessMissing: string[] = [];
       if (!dealer.legalName) businessMissing.push('legalName');
       if (!dealer.addressLine) businessMissing.push('addressLine');
@@ -515,18 +595,23 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (!dealer.district) businessMissing.push('district');
       if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
-      if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
-      if (!dealer.tagline) businessMissing.push('tagline');
-      if (dealer.specialities.length === 0) businessMissing.push('specialities');
-      if (!dealer.gstin) businessMissing.push('gstin');
-      if (!dealer.pan) businessMissing.push('pan');
+      if (!progressive && !dealer.mapsUrl) businessMissing.push('mapsUrl');
+      if (!progressive && !dealer.tagline) businessMissing.push('tagline');
+      if (!progressive && dealer.specialities.length === 0) businessMissing.push('specialities');
+      if ((!progressive || policy?.gstRequirement === 'REQUIRED') && !dealer.gstin)
+        businessMissing.push('gstin');
+      if ((!progressive || policy?.requiredDocuments.includes('PAN_CARD')) && !dealer.pan)
+        businessMissing.push('pan');
 
-      const documentsMissing: string[] = DOC_TYPES.filter((type) => {
+      if (progressive && (!policy || !isProgressivePlanCurrent(dealer)))
+        businessMissing.push('applicableVerificationReview');
+      const requiredTypes = policy?.requiredDocuments ?? (progressive ? [] : DOC_TYPES);
+      const documentsMissing: string[] = requiredTypes.filter((type) => {
         const doc = documents.find((row) => row.type === type);
         return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
       });
 
-      if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO');
+      if (!progressive && !dealer.coverMediaId) documentsMissing.push('YARD_PHOTO');
 
       const steps: CompletenessResponse['steps'] = [
         {
@@ -590,6 +675,11 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
+        if (dealer.progressiveRegisteredAt && !(await this.completeness(dealerId, tx)).isComplete)
+          throw new ConflictError(
+            'PROGRESSIVE_CHANGED',
+            'The application changed. Reload before submitting.',
+          );
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,
@@ -626,8 +716,9 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         statusLabel: 'Under review',
         submittedAt: submittedAt.toISOString(),
         expectedDecisionBy: new Date(submittedAt.getTime() + 86_400_000).toISOString(),
-        message:
-          'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
+        message: dealer.progressiveRegisteredAt
+          ? 'Your application is awaiting review of the evidence applicable to your business. Activation requires approval.'
+          : 'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
       };
     },
 

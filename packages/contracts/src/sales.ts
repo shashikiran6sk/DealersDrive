@@ -1,3 +1,4 @@
+import { ProgressiveState } from './progressive-onboarding.js';
 import { z } from 'zod';
 
 import { OnboardingInput, VerifyPhoneInput } from './auth.js';
@@ -101,6 +102,7 @@ export const SalesDealersResponse = z.object({
 export type SalesDealersResponse = z.infer<typeof SalesDealersResponse>;
 
 export const SalesDealerDetail = SalesDealerSummary.extend({
+  progressive: ProgressiveState.nullable().optional(),
   email: z.string().nullable(),
   gstin: z.string().nullable(),
   pan: z.string().nullable(),

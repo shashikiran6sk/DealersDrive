@@ -13,9 +13,16 @@ import {
   verifyDealerPhoneAction,
 } from '@/features/sales/sales-actions';
 
+import { ProgressiveAssistedRegistration } from '@/features/progressive/registration';
 import { START_TEXT } from './assisted-dealer-start.constants';
 
-export function AssistedDealerStart({ widget }: { widget: PhoneOtpWidget | null }) {
+export function AssistedDealerStart({
+  widget,
+  progressive = false,
+}: {
+  widget: PhoneOtpWidget | null;
+  progressive?: boolean;
+}) {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
@@ -23,6 +30,7 @@ export function AssistedDealerStart({ widget }: { widget: PhoneOtpWidget | null 
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  if (details && ticket && progressive) return <ProgressiveAssistedRegistration ticket={ticket} />;
   if (details && ticket) {
     return (
       <section aria-labelledby="assisted-details-heading" className="flex flex-col gap-4">
