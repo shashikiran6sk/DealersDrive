@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { Field, invalidProps } from '@/components/forms/field';
 
 import { SERVICE_LOCATION_TEXT } from './service-location-fields.constants';
+import { matchDistricts } from './utils';
 
 interface Props {
   initialState: string;
@@ -62,9 +63,7 @@ export function ServiceLocationFields({
   }, []);
   const selectedState = states.find((item) => item.name === state);
   const districts = selectedState?.districts ?? [];
-  const matches = districts.filter((item) =>
-    item.name.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  const matches = matchDistricts(districts, search);
   function choose(value: string) {
     setDistrict(value);
     setSearch(value);
