@@ -8,6 +8,7 @@ import { documentKey } from '../src/modules/dealers/dealer-storage-keys.js';
 import { createDealerVerificationService } from '../src/modules/admin/dealer-verification.service.js';
 import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { env } from '../src/config/env.js';
+import { DealerVerificationAssessment } from '@dealers-drive/contracts';
 let h: AuthHarness;
 let fixtures: ReturnType<typeof marketplaceFixtures>;
 let admin: request.Agent;
@@ -402,7 +403,11 @@ describe('explicit dealer verification independent of yard ownership', () => {
         permissions: ['admin:dealer:approve'],
       },
       d.dealerId,
-      { expectedVersion: 1, status: 'VERIFIED', assessment },
+      {
+        expectedVersion: 1,
+        status: 'VERIFIED',
+        assessment: DealerVerificationAssessment.parse(assessment),
+      },
     );
     expect(observed.length).toBeGreaterThan(0);
     expect(observed.every((o) => o.adminLockFree && o.dealerRowFree)).toBe(true);
@@ -443,7 +448,11 @@ describe('explicit dealer verification independent of yard ownership', () => {
           permissions: ['admin:dealer:approve'],
         },
         d.dealerId,
-        { expectedVersion: 1, status: 'VERIFIED', assessment },
+        {
+          expectedVersion: 1,
+          status: 'VERIFIED',
+          assessment: DealerVerificationAssessment.parse(assessment),
+        },
       ),
     ).rejects.toMatchObject({ code: 'VERIFICATION_CHANGED' });
     const after = await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } });
