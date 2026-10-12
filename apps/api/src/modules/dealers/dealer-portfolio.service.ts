@@ -13,7 +13,7 @@ import {
   type PortfolioPhotoPresignInput,
   type PortfolioPhotoPresignResponse,
 } from '@dealers-drive/contracts';
-import type { DealerPortfolioPhoto as PhotoRow, PrismaClient } from '@prisma/client';
+import type { DealerPortfolioPhoto as PhotoRow, Prisma, PrismaClient } from '@prisma/client';
 
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
@@ -42,6 +42,9 @@ import { UPLOAD_INCOMPLETE } from '../../platform/messages.js';
 
 const PREVIEW_TTL_SECONDS = 300;
 const VISIBLE: PhotoRow['status'][] = ['PENDING', 'APPROVED', 'REJECTED'];
+const COUNTED: Prisma.DealerPortfolioPhotoWhereInput = {
+  OR: [{ status: 'APPROVED' }, { status: 'PENDING', replacesId: null }],
+};
 
 export interface PortfolioDeps {
   prisma: PrismaClient;
@@ -112,7 +115,7 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
 
   async function activeCount(tx: Tx, dealerId: string): Promise<number> {
     return tx.dealerPortfolioPhoto.count({
-      where: { dealerId, status: { in: ['PENDING', 'APPROVED'] }, replacesId: null },
+      where: { dealerId, ...COUNTED },
     });
   }
 
@@ -129,11 +132,11 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
     async list(dealerId: string): Promise<DealerPortfolioResponse> {
       const rows = await prisma.dealerPortfolioPhoto.findMany({
         where: { dealerId, status: { in: VISIBLE } },
-        orderBy: [{ status: 'asc' }, { position: 'asc' }, { createdAt: 'asc' }],
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
       });
       const data = await Promise.all((await withMedia(rows)).map(toDto));
       const active = rows.filter(
-        (row) => (row.status === 'PENDING' || row.status === 'APPROVED') && !row.replacesId,
+        (row) => row.status === 'APPROVED' || (row.status === 'PENDING' && !row.replacesId),
       ).length;
       return { data, limit: PORTFOLIO_PHOTO_LIMIT, canAdd: active < PORTFOLIO_PHOTO_LIMIT };
     },
@@ -145,7 +148,7 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
       const slug = await slugOf(dealerId);
       if (!input.replacesId) {
         const current = await prisma.dealerPortfolioPhoto.count({
-          where: { dealerId, status: { in: ['PENDING', 'APPROVED'] }, replacesId: null },
+          where: { dealerId, ...COUNTED },
         });
         if (current >= PORTFOLIO_PHOTO_LIMIT)
           throw new ConflictError('PORTFOLIO_FULL', PORTFOLIO_FULL);
@@ -287,7 +290,7 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
     async forDealer(dealerId: string): Promise<DealerPortfolioPhoto[]> {
       const rows = await prisma.dealerPortfolioPhoto.findMany({
         where: { dealerId, status: { in: ['PENDING', 'APPROVED'] } },
-        orderBy: [{ status: 'asc' }, { position: 'asc' }, { createdAt: 'asc' }],
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
       });
       return Promise.all((await withMedia(rows)).map(toDto));
     },

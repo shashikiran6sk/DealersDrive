@@ -4,6 +4,11 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/listings', label: 'Listings' },
   { href: '/admin/dealers', label: 'Dealers' },
+  {
+    href: '/admin/portfolio',
+    label: 'Dealer photos',
+    permission: 'admin:portfolio:moderate',
+  },
   { href: '/admin/payments', label: 'Payments' },
   { href: '/admin/enquiries', label: 'Enquiries' },
   { href: '/admin/support', label: 'Support Tickets' },

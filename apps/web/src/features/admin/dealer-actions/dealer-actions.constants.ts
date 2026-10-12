@@ -55,4 +55,37 @@ export const DEALER_ACTIONS_TEXT = {
   rejectAlternativeTail: 'above instead — it keeps everything.',
   rejectConfirmLabel: (brandName: string) => `Type "${brandName}" to confirm`,
   approvalPhrase: (brandName: string) => `approve ${brandName.trim().toLowerCase()}`,
+
+  overrideHeading: 'Manual activation — Super admin exception',
+  overrideIntro:
+    'Activates this dealership without the standard document review, where policy permits the exception. It never marks a document verified and never grants the Dealer Verified badge: the outstanding categories stay outstanding, stay listed on this page, and are still reviewed the normal way.',
+  overrideBlockedPrefix: 'Manual activation is not available: ',
+  overrideOutstanding: 'Still unverified',
+  overrideDisclaimerHeading: 'Disclaimer',
+  overrideAcknowledge:
+    'I have read this disclaimer and the exception is permitted for this dealership.',
+  overrideJustificationLabel: 'Justification',
+  overrideJustificationHint: (min: number) =>
+    `at least ${min} characters — recorded in the audit log`,
+  overrideJustificationPlaceholder:
+    'Why policy permits activating this dealership before its documents are verified, and the approval reference',
+  overrideJustificationCount: (length: number, min: number) =>
+    length >= min ? `${length} characters` : `${length} of ${min} characters`,
+  overrideGstLabel: 'GST registration not required — review note',
+  overrideGstHint:
+    'No GSTIN is on file. Record why registration is not required and the review reference; uncertain cases stay under review.',
+  override: 'Activate manually',
+  overridden: 'Dealership activated manually. Its documents remain unverified.',
+
+  revokeHeading: 'Withdraw the manual activation',
+  revokeIntro:
+    'Returns this dealership to pending approval: its listings leave the marketplace until it is approved through the standard document review, and any Dealer Verified status is revoked.',
+  revokeLabel: 'Reason for withdrawing',
+  revokeHint: (min: number) => `at least ${min} characters`,
+  revoke: 'Withdraw manual activation',
+  revoked: 'Manual activation withdrawn. The dealership is back in standard review.',
 } as const;
+
+export const MIN_REVOKE_REASON = 20;
+
+export const MAX_REVOKE_REASON = 1000;

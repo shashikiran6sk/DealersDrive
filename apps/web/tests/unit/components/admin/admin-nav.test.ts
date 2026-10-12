@@ -20,6 +20,15 @@ describe('adminNavFor', () => {
     expect(support).toContain('/admin/support');
   });
 
+  it('offers Dealer photos only to a portfolio reviewer (#299)', () => {
+    expect(
+      adminNavFor(['admin:console', 'admin:portfolio:moderate']).map((item) => item.href),
+    ).toContain('/admin/portfolio');
+    expect(
+      adminNavFor(['admin:console', 'admin:support:manage']).map((item) => item.href),
+    ).not.toContain('/admin/portfolio');
+  });
+
   it('never offers an item that has not landed', () => {
     expect(adminNavFor(['admin:console']).map((item) => item.href)).not.toContain(
       '/admin/payments',

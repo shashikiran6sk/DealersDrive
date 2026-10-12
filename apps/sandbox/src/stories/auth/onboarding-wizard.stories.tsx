@@ -4,7 +4,6 @@ import type {
   DealerDocumentDto,
   DealerProfile,
   PhoneOtpWidget,
-  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
@@ -14,33 +13,40 @@ import { phoneActionStub } from '../../mocks/phone-actions';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
 
-const NO_YARD_PHOTO: YardPhotoDto = {
-  mediaId: null,
-  status: null,
-  fileName: null,
-  url: null,
-  uploadedAt: null,
-};
-
 function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
   return {
-    id: null,
-    type: 'GST_CERTIFICATE',
-    label: 'GST certificate',
-    status: 'REQUIRED',
-    statusLabel: 'Required — PDF or JPG, max 5 MB',
-    fileName: null,
-    uploadedAt: null,
+    id: '00000000-0000-4000-8000-0000000000d1',
+    category: 'PERSONAL_IDENTITY',
+    categoryLabel: 'Personal Identity Proof',
+    type: 'PAN_CARD',
+    label: 'PAN Card',
+    status: 'UPLOADED',
+    statusLabel: 'Submitted · awaiting review',
+    fileName: 'pan.pdf',
+    mimeType: 'application/pdf',
+    bytes: 96_000,
+    description: null,
+    uploadedAt: '2026-10-12T09:00:00.000Z',
+    reviewedAt: null,
     rejectionReason: null,
-    action: 'Upload',
+    submissionCount: 1,
+    action: 'Replace',
     ...overrides,
   };
 }
 
-const DOCUMENTS: DealerDocumentDto[] = [
-  document(),
-  document({ type: 'PAN_CARD', label: 'PAN card' }),
-  document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
+const DOCUMENTS: DealerDocumentDto[] = [];
+
+const SUBMITTED_DOCUMENTS: DealerDocumentDto[] = [
+  document({ status: 'VERIFIED', statusLabel: 'Verified' }),
+  document({
+    id: '00000000-0000-4000-8000-0000000000d2',
+    category: 'BUSINESS_IDENTITY',
+    categoryLabel: 'Business Identity Proof',
+    type: 'GST_CERTIFICATE',
+    label: 'GST Registration Certificate',
+    fileName: 'gst-certificate.pdf',
+  }),
 ];
 
 function completeness(missing: Record<string, string[]> = {}): CompletenessResponse {
@@ -117,7 +123,10 @@ const meta = {
       description: 'The floor the server resolved from the session.',
     },
     session: { control: false, description: 'GET /v1/auth/me. Step 1 is the only reader.' },
-    documents: { control: false, description: 'GET /v1/dealer/documents. Step 3 only.' },
+    documents: {
+      control: false,
+      description: 'GET /v1/dealer/documents → data (submitted rows). Step 3 only.',
+    },
     dealer: {
       control: false,
       description: 'GET /v1/dealer. Prefills steps 1–2 on the way back, and GSTIN/PAN on step 3.',
@@ -126,7 +135,6 @@ const meta = {
       control: false,
       description: 'GET /v1/dealer/completeness. Read by the error banner and step 3s Continue.',
     },
-    yardPhoto: { control: false, description: 'GET /v1/dealer/yard-photo. Step 3 only.' },
     googleLinkUrl: {
       control: 'text',
       description:
@@ -151,7 +159,6 @@ const meta = {
     documents: DOCUMENTS,
     dealer: null,
     completeness: null,
-    yardPhoto: NO_YARD_PHOTO,
     phoneWidget: FAKE_PHONE_WIDGET,
   },
   beforeEach: () => {
@@ -294,7 +301,7 @@ export const BlockersMany: Story = {
     completeness: completeness({
       account: ['phone'],
       business: ['gstin', 'pan', 'city', 'state', 'pincode'],
-      documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'],
+      documents: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'],
     }),
   },
   beforeEach: () => {
@@ -304,7 +311,7 @@ export const BlockersMany: Story = {
 };
 
 export const BlockersOne: Story = {
-  args: { step: 1, completeness: completeness({ documents: ['ADDRESS_PROOF'] }) },
+  args: { step: 1, completeness: completeness({ documents: ['BUSINESS_IDENTITY'] }) },
   beforeEach: () => {
     authActionStub.delayMs = 400;
     authActionStub.result = { message: 'Some details are still missing.' };
@@ -342,8 +349,16 @@ export const Documents: Story = {
     step: 2,
     completeness: completeness({
       business: ['tagline', 'specialities', 'gstin', 'pan'],
-      documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF', 'YARD_PHOTO'],
+      documents: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'],
     }),
+  },
+};
+
+export const DocumentsWithGstin: Story = {
+  args: {
+    step: 2,
+    dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
+    completeness: completeness({ documents: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'] }),
   },
 };
 
@@ -352,20 +367,7 @@ export const DocumentsComplete: Story = {
     step: 2,
     dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
     completeness: completeness(),
-    documents: DOCUMENTS.map((row) => ({
-      ...row,
-      status: 'VERIFIED' as const,
-      fileName: `${row.type.toLowerCase()}.pdf`,
-      statusLabel: `${row.type.toLowerCase()}.pdf · verified`,
-      action: 'Replace',
-    })),
-    yardPhoto: {
-      mediaId: '00000000-0000-4000-8000-0000000000ff',
-      status: 'READY',
-      fileName: 'yard-frontage.jpg',
-      url: 'https://placehold.co/1200x675/1f2937/e5e7eb.png?text=Yard+frontage',
-      uploadedAt: '2026-09-02T09:15:00.000Z',
-    },
+    documents: SUBMITTED_DOCUMENTS,
   },
 };
 
@@ -400,7 +402,7 @@ export const ReviewRefused: Story = {
     session: session({}, dealership('DRAFT')),
     completeness: completeness({
       business: ['pan'],
-      documents: ['ADDRESS_PROOF'],
+      documents: ['BUSINESS_IDENTITY'],
     }),
   },
   beforeEach: () => {
@@ -423,7 +425,6 @@ export const EveryStep: Story = {
             documents={args.documents}
             dealer={args.dealer}
             completeness={args.completeness}
-            yardPhoto={args.yardPhoto}
             phoneWidget={args.phoneWidget}
           />
         </div>

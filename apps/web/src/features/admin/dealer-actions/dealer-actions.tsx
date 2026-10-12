@@ -8,12 +8,14 @@ import { Banner } from '@/components/ui/primitives';
 import type { ActionResult } from '@/types';
 import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
+import { ActivationOverrideBlock } from './activation-override-block';
 import { ApproveBlock } from './approve-block';
 import { CloseBlock } from './close-block';
 import { DEALER_ACTIONS_TEXT } from './dealer-actions.constants';
 import { ReinstateBlock } from './reinstate-block';
 import { RejectBlock } from './reject-block';
 import { RequestChangesBlock } from './request-changes-block';
+import { RevokeOverrideBlock } from './revoke-override-block';
 import { SuspendBlock } from './suspend-block';
 
 export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
@@ -33,6 +35,11 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   const [rejectOpen, setRejectOpen] = useState(false);
 
   const awaitingDecision = dealer.status === 'PENDING_APPROVAL';
+  const awaitingActivation = awaitingDecision || dealer.status === 'DRAFT';
+  const showOverride =
+    awaitingActivation &&
+    (dealer.actions.canOverrideActivation || Boolean(dealer.actions.overrideBlockedReason));
+  const showRevokeOverride = dealer.actions.canRevokeOverride;
 
   function run(work: () => Promise<ActionResult>, success: string, destination?: string) {
     setError(null);
@@ -68,6 +75,10 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
         />
       ) : null}
 
+      {showOverride ? (
+        <ActivationOverrideBlock key={dealer.id} dealer={dealer} pending={pending} run={run} />
+      ) : null}
+
       {dealer.actions.canRequestChanges ? (
         <RequestChangesBlock
           dealer={dealer}
@@ -98,6 +109,10 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
         />
       ) : null}
 
+      {showRevokeOverride ? (
+        <RevokeOverrideBlock key={dealer.id} dealer={dealer} pending={pending} run={run} />
+      ) : null}
+
       {dealer.actions.canSuspend ? (
         <SuspendBlock
           dealer={dealer}
@@ -123,6 +138,8 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       ) : null}
 
       {!awaitingDecision &&
+      !showOverride &&
+      !showRevokeOverride &&
       !dealer.actions.canClose &&
       !dealer.actions.canSuspend &&
       !dealer.actions.canReinstate &&

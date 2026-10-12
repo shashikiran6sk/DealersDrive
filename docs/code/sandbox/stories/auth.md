@@ -38,70 +38,77 @@ The heading on its own, with and without the 15px subtitle line.
 
 ### `function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto`
 
-DESIGN-SPEC §3.10 step 3 — one KYC document row (C041).
+DESIGN-SPEC §3.10 step 3 — one document category slot (C041).
 
-**P0 in `component-sandbox.md`, and this is why**: the row has seven states,
-five of them decided by the API and two by the browser, and until now none of
-them could be seen without a real S3 bucket and a real rejection from a real
-moderator. Every state below is a prop.
+Since #299 a card is a **category**, not a document type: Personal Identity
+Proof or Business Identity Proof, one document in each, of whichever listed
+type the dealer chose. The fixture is a submitted row; an empty slot is
+`document: null`, because `GET /v1/dealer/documents` lists only what has been
+submitted in `data` and the uploader renders the empty card itself.
 
-The upload itself is presign → PUT straight to storage → commit. The file
-never passes through the Next server; only the signing and commit calls are
-proxied, because those need the session. There is no network here, so the
-_uploading_ and _failed_ states are the two that stay out of reach — pressing
-Upload in the sandbox opens a file picker and then fails at `fetch`, which is
-honest rather than useful.
+**P0 in `component-sandbox.md`, and this is why**: the card's states are
+decided partly by the API (in review, verified, rejected, unfinished) and
+partly by the browser (the type picked, the description typed, a refusal
+before anything is signed), and none of the API's could be seen without a
+real bucket and a real moderator. Every state below is a prop.
 
-**Delete appears on any row with a file behind it**, and Replace is a delete
-and an upload rather than a second object left in the bucket. The stored
-object's key ends in the row's id, so both paths have to know which id they
-are displacing before they overwrite it — the delete-the-prefix shortcut the
-baseline used removed nothing at all.
+The upload is presign → PUT straight to storage → commit. There is no network
+here, so pressing Upload after choosing a type opens a picker and then fails
+at `fetch` — honest rather than useful. The refusals that _are_ reachable are
+the ones checked before anything is signed: no type chosen, another
+certificate without a description, a file over 5 MB or not a PDF, JPEG or
+PNG.
 
 KYC documents are private. There is no public delivery route for them at all
 — an admin reads one through a short-lived signed URL, and every issue of one
 is audit-logged (§26.6). That is why no story here shows a thumbnail.
 
-### `export const Required: Story = { args: { document: document() } }`
+### `export const EmptyPersonal: Story =`
 
-Nothing uploaded. The sub-line carries the rules rather than the tag — a tag
-is a state, not a sentence, and "Required — PDF or JPG, max 5 MB" would push
-the row over its width.
+Nothing uploaded in the personal slot. Choose Aadhaar to see its hint: it is
+voluntary, and the hint says so, because a dealer who believes Aadhaar is
+required hands over more than the product asks for.
+
+### `export const EmptyBusiness: Story =`
+
+The business slot with no GSTIN on file: no type is preselected, and Upload
+asks for one first rather than guessing.
+
+### `export const EmptyBusinessWithGstin: Story =`
+
+With a GSTIN on file the business proof must be the GST certificate (#298), so
+it is preselected. Choose anything else to see the warning — the API would
+report the same thing as a `GST_CERTIFICATE` gap.
+
+### `export const OtherCertificateWithDescription: Story =`
+
+"Other government-issued business certificate" is the only type that needs a
+description, and the only one that shows the field. The stored description is
+prefilled, so a replacement does not have to retype it.
 
 ### `export const InReview: Story =`
 
-Uploaded, waiting on a moderator. The action becomes Replace, not Upload.
+Uploaded, waiting on a moderator. The action becomes Replace, and Delete
+appears beside it.
 
 ### `export const Verified: Story =`
 
-Verified. The type prefix in the tile is replaced by a tick.
+Verified. The category glyph in the tile is replaced by a tick.
 
-### `export const Rejected: Story =`
+### `export const RejectedWithReason: Story =`
 
-Rejected, with the reason in place of the file name.
+Rejected, with the reviewer's reason on its own line under the file. A dealer
+who reads `REJECTED` learns nothing; one who reads "too blurry to read" knows
+exactly what to send next.
 
-This is the state that justifies the whole row rendering its own sub-line: a
-dealer who reads `REJECTED` learns nothing, and a dealer who reads "Too
-blurry to read" knows exactly what to send next.
+### `export const UploadUnfinished: Story =`
 
-### `export const Uploading: Story =`
+A presign was issued and the commit never arrived. It no longer counts as
+submitted, and the card says to choose the file again.
 
-A presign was issued and the PUT has not been confirmed yet.
+### `export const BothCategories: Story =`
 
-### `export const UploadedAndRemovable: Story =`
-
-Uploaded, seen for the Delete button rather than for the tag.
-
-A row with a file behind it offers to remove it outright, not only to swap
-it. A dealer who uploaded their PAN into the address-proof slot had no way
-to undo that: Replace needs a file to replace it _with_, and there was
-nothing else to send.
-
-### `export const TheChecklist: Story =`
-
-The whole checklist, which is how a dealer actually meets it — and the only
-way to see that a long rejection reason truncates rather than reflows the
-row.
+The two cards as the Documents step and the Sales dealer page render them.
 
 ## `apps/sandbox/src/stories/auth/google-button.stories.tsx`
 
@@ -127,7 +134,7 @@ The label is a prop because onboarding says "Continue" and sign-in says "Sign in
 
 ## `apps/sandbox/src/stories/auth/onboarding-wizard.stories.tsx`
 
-### `const NO_YARD_PHOTO: YardPhotoDto =`
+### `function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto`
 
 DESIGN-SPEC §3.10 — the onboarding wizard (C040).
 
@@ -148,20 +155,20 @@ that click rather than on render, which is the slower kind of failure to
 find. It also calls `onboardingAction`, a Server Action, which the sandbox
 aliases to `src/mocks/auth-actions.ts` (coupling C-4).
 
-### `const NO_YARD_PHOTO: YardPhotoDto =`
-
-`GET /v1/dealer/yard-photo` with nothing uploaded — step 3's hero slot.
-
 ### `function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto`
 
-One row of the KYC checklist. `DocumentUploader` has its own stories; these place it in context.
+One submitted document, as `data` of `GET /v1/dealer/documents` lists it.
+`DOCUMENTS` is empty — a draft with nothing uploaded — because the two
+category cards render whether or not anything is in them. `DocumentUploader`
+has its own stories; these place it in context.
 
 ### `function completeness(missing: Record<string, string[]> = {}): CompletenessResponse`
 
 `GET /v1/dealer/completeness`. The wizard renders `missing` as words rather
 than as the field keys the API answers with — `gstin` becomes GSTIN,
-`GST_CERTIFICATE` becomes GST certificate — which is the whole of what the
-blocker-list stories are for.
+`PERSONAL_IDENTITY` becomes Personal Identity Proof — which is the whole of
+what the blocker-list stories are for. The document gap labels come from
+`DOCUMENT_GAP_LABELS` in contracts rather than being re-typed here.
 
 ### `const FAKE_PHONE_WIDGET: PhoneOtpWidget =`
 
@@ -396,14 +403,19 @@ let a dealer walk to the end of the wizard and only there be told what they
 had skipped. What counts as outstanding is the server's `completeness`
 answer, because that is the derivation `POST /v1/dealer/submit` refuses on.
 
-The yard photograph sits with the documents because this is the step where a
-dealer uploads things, but it is required for a different reason: it is the
-hero of the public portfolio, and a dealership whose storefront would open
-with an empty frame is not ready to be reviewed.
+Documents are what a **submit** needs, not what a draft needs, and the copy
+says so: the draft is already saved, and the dealer can leave and come back.
+There is no yard photograph here any more — #299 moved business photographs
+out of onboarding into the moderated portfolio.
+
+### `export const DocumentsWithGstin: Story =`
+
+A GSTIN on file: the copy names the GST certificate as the business proof and
+the business card preselects it.
 
 ### `export const DocumentsComplete: Story =`
 
-The same step once the registrations, the checklist and the photograph are done.
+The same step once the registrations and both categories are done.
 
 ### `function dealership(status: 'DRAFT' | 'PENDING_APPROVAL')`
 
@@ -545,57 +557,3 @@ Both scopes together, which is the point: they are the same control.
 ### `export const CustomClassName: Story =`
 
 The console header passes its own class rather than wrapping the button.
-
-## `apps/sandbox/src/stories/auth/yard-photo-uploader.stories.tsx`
-
-### `function photo(overrides: Partial<YardPhotoDto> = {}): YardPhotoDto`
-
-DESIGN-SPEC §3.10 step 3 — the yard photograph (C041b).
-
-The hero of the dealership's public portfolio, and the reason it is a
-separate component rather than a fourth row of the KYC checklist: a document
-row is a tick, this is the image a buyer sees first, and the dealer has to be
-shown it at a size where they can tell whether it is any good.
-
-**The instruction text is the component.** A dealer asked for "a photo" sends
-a phone snap of a car; a dealer told what the image is _for_ — straight on,
-daylight, the whole frontage, not a logo — sends the shot of the entrance
-they already have. The cost of that sentence is one line. The cost of not
-having it is a moderator rejecting the application and a day of round-trip,
-which is why it is worth looking at rather than reading past.
-
-The upload is presign → PUT straight to storage → commit, the same pipeline
-the documents use, with one difference at the far end: the photograph it
-replaces is discarded on **commit**, not on presign. A dealer who opens the
-file picker and changes their mind still has the picture they had before.
-There is no network in the sandbox, so pressing Upload opens a picker and
-then fails at `fetch` — honest rather than useful, and the same limit the
-document stories carry. The two refusals that _are_ reachable are the ones
-checked before anything is signed: a file over 10 MB, or one that is not a
-JPEG, PNG or WebP. Pick a PDF to see the second.
-
-One thing worth knowing while reading the stories: the component keys off
-`url`, not `mediaId`. The API signs a read whenever the media row exists —
-unconditionally, not only for `READY` — so the two cannot disagree, and
-there is no state where a photograph is on file but the frame reads empty.
-
-### `export const Empty: Story = { args: { photo: photo() } }`
-
-Nothing uploaded — where every dealership starts, and the state the
-instruction text has to carry on its own. Note that there is no Delete
-button: there is nothing to delete, and a disabled one would be furniture.
-
-### `export const Uploaded: Story =`
-
-Uploaded. The preview is served through a short-lived signed URL rather than
-a public path, because the dealership is not approved yet and its portfolio
-is not public until it is.
-
-Replace and Delete both appear here. Replace is the same pipeline as a first
-upload; the displaced image is removed from storage when the new one commits.
-
-### `export const WidePhotograph: Story =`
-
-A wide photograph in the same slot. Worth checking by eye: dealers send
-whatever their phone produced, and the frame has to hold a panorama and a
-near-square without either one deciding the height of the step.

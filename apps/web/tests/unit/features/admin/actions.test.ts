@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MANUAL_ACTIVATION_DISCLAIMER_VERSION } from '@dealers-drive/contracts';
+
 import { revalidations } from '../../../setup.js';
 import {
   approveDealerAction,
   closeDealerAction,
+  overrideActivationAction,
+  recordYardVisitAction,
+  revokeActivationOverrideAction,
   reinstateDealerAction,
   rejectDocumentAction,
   suspendDealerAction,
@@ -146,5 +151,65 @@ describe('a decision that changes public visibility', () => {
 
     expect(result.ok).toBe(false);
     expect([revalidations.paths, revalidations.tags]).toEqual([[], []]);
+  });
+});
+
+/**
+ * #299. The manual activation and its withdrawal both change whether the
+ * dealership is public, so both clear the public pages; a yard visit is
+ * private staff evidence and clears only the console.
+ */
+describe('manual activation and internal yard visits', () => {
+  const JUSTIFICATION =
+    'Field team met the owner at the yard; policy exception OPS-2026-114 approved.';
+
+  it('refuses a manual activation without the acknowledged disclaimer, before calling the API', async () => {
+    const result = await overrideActivationAction(DEALER, { justification: JUSTIFICATION }, SLUG);
+
+    expect(result).toEqual({
+      ok: false,
+      message: 'Read and acknowledge the manual activation disclaimer.',
+    });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('activates manually and clears the public pages', async () => {
+    const result = await overrideActivationAction(
+      DEALER,
+      {
+        justification: JUSTIFICATION,
+        acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
+      },
+      SLUG,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(`/v1/admin/dealers/${DEALER}/activation-override`),
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`, 'vehicles']);
+  });
+
+  it('refuses a withdrawal with too short a reason', async () => {
+    const result = await revokeActivationOverrideAction(DEALER, { reason: 'Too short.' }, SLUG);
+
+    expect(result.ok).toBe(false);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('records a yard visit without touching any public page', async () => {
+    const result = await recordYardVisitAction(DEALER, {
+      visitedOn: '2026-10-01',
+      outcome: 'NO_PHYSICAL_YARD',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(`/v1/admin/dealers/${DEALER}/yard-visits`),
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(revalidations.tags).toEqual([]);
+    expect(revalidations.paths).toContain('/admin');
   });
 });

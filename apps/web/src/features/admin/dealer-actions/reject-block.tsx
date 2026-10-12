@@ -48,8 +48,8 @@ export function RejectBlock({
         {DEALER_ACTIONS_TEXT.rejectWarning}
       </p>
       <p className="text-[12px] ink-muted">
-        The {dealer.documents.length} KYC {pluralLabel(dealer.documents.length, 'document')} and the
-        yard photo are erased from storage, and the dealership record is removed along with
+        The {dealer.documents.length} KYC {pluralLabel(dealer.documents.length, 'document')} and any
+        photographs are erased from storage, and the dealership record is removed along with
         everything {dealer.contactName ?? 'the applicant'} entered. They keep their Google sign-in
         and nothing else — signing in again starts onboarding from the first step, as a new
         applicant. This cannot be undone.

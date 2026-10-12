@@ -328,6 +328,21 @@ describe('safe replacement', () => {
     expect(await publicPortfolio(dealer.slug)).toHaveLength(1);
   });
 
+  it('still counts an approved replacement against the limit', async () => {
+    const dealer = await fixtures.dealership();
+    const original = await approved(dealer);
+    const replacement = await upload(dealer, { replacesId: original, body: OTHER_JPEG });
+    await reviewer.post(`/v1/admin/portfolio/${replacement}/approve`).send({}).expect(200);
+    for (let i = 1; i < PORTFOLIO_PHOTO_LIMIT; i += 1) await upload(dealer);
+
+    const response = await presign(dealer).expect(409);
+
+    expect(response.body.code).toBe('PORTFOLIO_FULL');
+    const mine = await dealer.agent.get('/v1/dealer/portfolio').expect(200);
+    expect(mine.body.canAdd).toBe(false);
+    expect(mine.body.data[0]).toMatchObject({ id: replacement, status: 'APPROVED' });
+  });
+
   it('allows one waiting replacement per photograph, and only of an approved one', async () => {
     const dealer = await fixtures.dealership();
     const original = await approved(dealer);

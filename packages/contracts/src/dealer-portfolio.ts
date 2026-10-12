@@ -23,7 +23,7 @@ export const PORTFOLIO_PHOTO_STATUS_LABELS: Record<PortfolioPhotoStatus, string>
 
 export const PORTFOLIO_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const PORTFOLIO_PHOTO_MAX_BYTES = 10 * 1024 * 1024;
-/** Approved and pending together; a replacement does not count against it. */
+/** Approved, plus pending ones that are not replacements; a waiting replacement does not count. */
 export const PORTFOLIO_PHOTO_LIMIT = 8;
 
 export const PortfolioPhotoPresignInput = z

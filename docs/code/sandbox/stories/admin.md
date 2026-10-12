@@ -274,6 +274,29 @@ and every field the applicant entered, and none of it comes back.
 Open the reject disclosure and read the paragraph before the button. That
 paragraph is the whole reason the two are not styled alike.
 
+### `export const ManualActivationAvailable: Story =`
+
+**#299** — a Super admin on an application whose documents are not verified.
+Check the disclaimer is the contract's text word for word, that the button
+stays disabled until it is ticked and the justification reaches 40
+characters, and that the block says, before anything else, that a manual
+activation never verifies a document and never grants Dealer Verified.
+
+### `export const ManualActivationWithoutGstin: Story =`
+
+No GSTIN on file, so a GST-not-required review note is required as well — the
+contract leaves it optional and the API refuses the override without it.
+
+### `export const ManualActivationBlocked: Story =`
+
+The API's `overrideBlockedReason`, shown in place of the form. A form that
+could only ever answer 409 would be a trap.
+
+### `export const ManuallyActivated: Story =`
+
+An ACTIVE dealership activated manually: suspend as usual, plus **Withdraw
+manual activation**, which needs a reason of at least 20 characters.
+
 ### `export const Pending: Story =`
 
 The action in flight. The stub holds for eight seconds so the `aria-busy`
@@ -359,34 +382,34 @@ Edit, change anything, press Save.
 
 ## `apps/sandbox/src/stories/admin/document-review.stories.tsx`
 
-### `type Document = AdminDealerDetail['documents'][number]`
+### `const meta =`
 
-D5 (C062b) — the KYC checklist with a verdict on each row.
+D5 (C062b) — the document review, by category since **#299**.
 
 **Why this component exists at all.** `POST /admin/documents/:id/verify` and
 its reject twin landed with F044 and nothing in the console called them.
-That was not merely a missing pair of buttons: approving a dealership
-requires all three documents `VERIFIED`, so with no way to verify one the
-approve control could never appear — the console had a dead end shaped like
-a missing feature. This is the half that closes it, and
-`DealerAdminActions` is the other.
+That was not merely a missing pair of buttons: approval requires the
+documents `VERIFIED`, so with no way to verify one the approve control could
+never appear — the console had a dead end shaped like a missing feature.
 
-Two things to check by eye:
+Things to check by eye:
 
-· **Only an `UPLOADED` row is decidable.** `REQUIRED` has no file behind
-it, and a row already decided is re-decided by the dealer re-uploading
-rather than by a moderator changing their mind in place. So the stories
-below differ by `status` and the controls follow, the same way they do
-against the real API.
-· **A rejection reason is mandatory and has to have substance.** The
-dealer reads it verbatim and re-uploads against it, so "no" costs a
-support call. Press Reject and type: the destructive button stays
-disabled under six characters, which is the client half of what
-`ReasonInput` enforces on the server.
+· **Personal Identity Proof first, then Business Identity Proof**, each
+under its own heading, with "nothing submitted" under an empty category
+and the outstanding list (`gaps`) above both.
+· **Only an `UPLOADED` row is decidable**, and a `VERIFIED` row offers only
+**Revoke verification** — the same endpoint as a rejection, with its own
+consequence text, because withdrawing a verification already given is a
+different act from refusing a new upload.
+· **A reason is mandatory and has to have substance.** The dealer reads it
+verbatim and resubmits against it. The destructive button stays disabled
+under six characters, the client half of what `ReasonInput` enforces.
 
 `viewUrl` is a short-lived signed URL and is the only way a KYC document is
-ever read — every issue of one is audit-logged (§26.6). The stories carry a
-placeholder so the View link is visible; there is nothing behind it.
+ever read — every issue of one is audit-logged. The fixtures carry a
+placeholder so the View link is visible; there is nothing behind it. They
+live in `src/mocks/admin-dealer.ts`, shared with the other admin dealer
+stories.
 
 The Server Actions are stubbed — `src/mocks/admin-actions.ts`, coupling C-4.
 
@@ -399,23 +422,37 @@ cached page (**R12**). Set once on the meta because no story varies it.
 
 ### `export const AwaitingDecision: Story =`
 
-The queue as a moderator finds it: three uploaded documents, none decided.
-This is the state the approve control on the dealer card is waiting on.
+One document in each category, neither decided, both categories outstanding,
+and the review history open to read.
+
+### `export const OtherCertificateWithDescription: Story =`
+
+"Other Government-Issued Business Certificate" carries the dealer's
+description of what it is and who issued it — the reviewer needs that before
+opening the file. The outstanding list shows the GST gap: a GSTIN is on file,
+so the business proof has to be the GST certificate.
 
 ### `export const MixedStates: Story =`
 
-A mixed checklist, which is what most dealerships look like partway through:
-one verified, one rejected with the reason the dealer is reading, and one
-still to upload. Only the last-but-one row offers a decision — and the
-`REQUIRED` row has no View link either, because there is no file to sign.
+A verified personal proof and a rejected business proof — the rejected row has
+no View link because the file was deleted when it was rejected, and the reason
+the dealer is reading is shown under it.
 
-### `export const AllVerified: Story =`
+### `export const VerifiedAndRevocable: Story =`
 
-Every document verified — no controls left, which is the point of the state.
+Both categories verified. Press **Revoke verification** to read what a
+revocation does before it is confirmed.
 
-### `export const Empty: Story = { args: { documents: [] } }`
+### `export const LegacySupportingSlot: Story =`
 
-Nothing uploaded at all. A sentence, not an empty box.
+An application from before the categories, still holding an address proof in
+the legacy supporting slot. It gets its own heading only when it has a
+document in it.
+
+### `export const Empty: Story =`
+
+Nothing uploaded at all. A sentence, not an empty box — and the outstanding
+list still says what is missing.
 
 ### `export const Deciding: Story =`
 
@@ -518,3 +555,35 @@ moderators working the same queue is the ordinary case, not an edge one.
 ### `export const Deciding: Story =`
 
 The decision in flight, so the busy button and the frozen card are visible.
+
+## `apps/sandbox/src/stories/admin/manual-activation-notice.stories.tsx`
+
+### `const meta =`
+
+**#299** — the persistent warning on a manually activated dealership. Check
+that the method, who and when, the justification and the unverified
+categories are all there, and that it says the activation verified nothing.
+`StandardApproval` renders nothing, which is the ordinary case.
+
+## `apps/sandbox/src/stories/admin/yard-visits-panel.stories.tsx`
+
+### `const meta =`
+
+**#299** — internal yard visits. Private staff evidence: the first line of the
+panel says it is never public, never required and not a route to Dealer
+Verified, and `NoPhysicalYard` shows that trading without a yard is recorded as
+found, in a neutral tone, as no penalty. `NotPermitted` is what a Support admin
+gets — the page passes `null` on the API's 403 and the panel renders nothing.
+
+The photograph thumbnails point at the web app's public images; the upload goes
+through the BFF, which the sandbox does not have, so it fails here by design.
+Recording a visit uses the stubbed Server Action.
+
+## `apps/sandbox/src/stories/admin/dealer-portfolio-summary.stories.tsx`
+
+### `const meta =`
+
+**#299** — the read-only portfolio summary on the admin dealer page. Approving
+and rejecting stay in the portfolio queue; the one control here is **Take
+down** on an approved photograph, which needs a reason. The Server Action is
+stubbed by `src/mocks/portfolio-actions.ts`.

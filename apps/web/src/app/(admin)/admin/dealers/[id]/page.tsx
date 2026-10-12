@@ -1,5 +1,10 @@
-import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification/dealer-verification';
-import { DealerVerificationReview, type AdminDealerDetail } from '@dealers-drive/contracts';
+import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification';
+import {
+  DealerVerificationReview,
+  YardVisitsResponse,
+  type AdminDealerDetail,
+  type YardVisitDto,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -7,16 +12,31 @@ import { notFound } from 'next/navigation';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
+import { DealerPortfolioSummary } from '@/features/admin/dealer-portfolio-summary';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
+import { ManualActivationNotice } from '@/features/admin/manual-activation-notice';
 import { OnboardingProvenance } from '@/features/admin/onboarding-provenance';
 import { ProfileChangeReview } from '@/features/admin/profile-change-review';
+import { YardVisitsPanel } from '@/features/admin/yard-visits';
 import { ApiError, apiGet, apiGetParsed } from '@/lib/api';
 import { cn } from '@/lib/cn';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Dealer' };
+
+async function yardVisitsFor(id: string): Promise<YardVisitDto[] | null> {
+  try {
+    const response = await apiGetParsed(YardVisitsResponse, `/v1/admin/dealers/${id}/yard-visits`, {
+      revalidate: false,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return null;
+    throw error;
+  }
+}
 
 export default async function AdminDealerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -35,6 +55,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       })
     : null;
 
+  const yardVisits = await yardVisitsFor(id);
+
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-4 p-5">
       <Link href="/admin/dealers" className="relative btn btn-ghost self-start">
@@ -48,6 +70,18 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
           <p className="text-[13px] ink-muted">
             {dealer.legalName} · joined <span className="tnum">{dealer.joinedLabel}</span>
           </p>
+          {dealer.mapsUrl ? (
+            <a
+              href={dealer.mapsUrl}
+              target="_blank"
+              rel="noreferrer nofollow"
+              className="text-[13px] text-(--color-accent)"
+            >
+              Open the business location in Google Maps
+            </a>
+          ) : (
+            <p className="text-[13px] ink-muted">No Google Maps location on file.</p>
+          )}
         </div>
         <StatusTag tone={dealer.statusTone} className="ml-auto">
           {dealer.statusLabel}
@@ -59,6 +93,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
           {dealer.statusReason}
         </p>
       ) : null}
+
+      <ManualActivationNotice activation={dealer.activation} />
 
       <OnboardingProvenance onboarding={dealer.onboarding} />
       {verification ? <DealerVerificationReviewPanel initial={verification} /> : null}
@@ -86,34 +122,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr))]">
         <DealerProfileEditor dealer={dealer} />
 
-        <section className="card gap-2 p-4">
-          <h2 className="text-[19px]">Yard photo</h2>
-          {dealer.mapsUrl ? (
-            <a
-              href={dealer.mapsUrl}
-              target="_blank"
-              rel="noreferrer nofollow"
-              className="text-[13px] text-(--color-accent)"
-            >
-              Open the business location in Google Maps
-            </a>
-          ) : (
-            <p className="text-[13px] ink-muted">No Google Maps location on file.</p>
-          )}
-          {dealer.yardPhotoUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={dealer.yardPhotoUrl}
-              alt={`The yard at ${dealer.brandName}`}
-              className="h-[220px] w-full border border-(--color-divider) object-cover"
-            />
-          ) : (
-            <p className="py-3 text-[13px] ink-muted">
-              Optional presentation image. Yard ownership and photographs do not determine Dealer
-              Verified status.
-            </p>
-          )}
-        </section>
+        <DealerPortfolioSummary photos={dealer.portfolio} dealerSlug={dealer.slug} />
       </div>
 
       <section className="card gap-0 p-4">
@@ -125,10 +134,17 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
               : 'required document review pending'}
           </span>
         </h2>
-        <DocumentReview documents={dealer.documents} dealerSlug={dealer.slug} />
+        <DocumentReview
+          documents={dealer.documents}
+          dealerSlug={dealer.slug}
+          gaps={dealer.documentGaps}
+          history={dealer.documentHistory}
+        />
       </section>
 
       <DealerAdminActions dealer={dealer} />
+
+      <YardVisitsPanel dealerId={dealer.id} visits={yardVisits} />
 
       <section className="card gap-0 p-4">
         <h2 className="mb-2 text-[19px]">Recent credit movements</h2>

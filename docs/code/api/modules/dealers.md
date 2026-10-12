@@ -33,8 +33,10 @@ pointing at deleted bytes.
 
 ### `async function activeCount(tx: Tx, dealerId: string): Promise<number>`
 
-The limit counts pending and approved photographs but not a replacement, so
-a full portfolio can still swap a photograph. Re-counted under the dealer
+The limit counts every approved photograph and every pending one that is not a
+replacement, so a full portfolio can still swap a photograph. An approved
+replacement keeps its `replacesId` as history and counts like any other
+approved photograph. Re-counted under the dealer
 row lock at commit — the presign check is a courtesy, not the guard.
 
 ### `async presign(`

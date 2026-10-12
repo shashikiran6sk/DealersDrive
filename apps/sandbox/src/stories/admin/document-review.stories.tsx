@@ -1,27 +1,14 @@
-import type { AdminDealerDetail } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { DocumentReview } from '@/features/admin/document-review';
 
 import { adminActionStub } from '../../mocks/admin-actions';
-
-type Document = AdminDealerDetail['documents'][number];
-
-function document(overrides: Partial<Document> = {}): Document {
-  return {
-    id: '00000000-0000-4000-8000-000000000010',
-    type: 'GST_CERTIFICATE',
-    label: 'GST certificate',
-    status: 'UPLOADED',
-    fileName: 'gst-certificate.pdf',
-    bytes: 284_112,
-    uploadedAt: '2026-09-01T10:22:00.000Z',
-    viewUrl: 'https://storage.example/signed/gst-certificate.pdf',
-    viewUrlExpiresAt: '2026-09-01T10:37:00.000Z',
-    rejectionReason: null,
-    ...overrides,
-  };
-}
+import {
+  DOCUMENT_HISTORY,
+  OTHER_CERTIFICATE,
+  PERSONAL_PAN,
+  adminDocument,
+} from '../../mocks/admin-dealer';
 
 const meta = {
   title: 'Admin/DocumentReview',
@@ -39,10 +26,16 @@ const meta = {
       );
     },
   ],
-  argTypes: { documents: { control: 'object' } },
+  argTypes: {
+    documents: { control: 'object' },
+    gaps: { control: 'object' },
+    history: { control: 'object' },
+  },
   args: {
-    documents: [document()],
+    documents: [adminDocument()],
     dealerSlug: 'sri-lakshmi-motors-vellore-tamil-nadu',
+    gaps: ['PERSONAL_IDENTITY'],
+    history: [],
   },
 } satisfies Meta<typeof DocumentReview>;
 
@@ -53,71 +46,71 @@ export const Playground: Story = {};
 
 export const AwaitingDecision: Story = {
   args: {
-    documents: [
-      document(),
-      document({
-        id: '00000000-0000-4000-8000-000000000011',
-        type: 'PAN_CARD',
-        label: 'PAN card',
-        fileName: 'pan.jpg',
-      }),
-      document({
-        id: '00000000-0000-4000-8000-000000000012',
-        type: 'ADDRESS_PROOF',
-        label: 'Address proof',
-        fileName: 'lease.pdf',
-      }),
-    ],
+    documents: [PERSONAL_PAN, adminDocument()],
+    gaps: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'],
+    history: DOCUMENT_HISTORY,
+  },
+};
+
+export const OtherCertificateWithDescription: Story = {
+  args: {
+    documents: [PERSONAL_PAN, OTHER_CERTIFICATE],
+    gaps: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'],
   },
 };
 
 export const MixedStates: Story = {
   args: {
     documents: [
-      document({ status: 'VERIFIED' }),
-      document({
-        id: '00000000-0000-4000-8000-000000000011',
-        type: 'PAN_CARD',
-        label: 'PAN card',
+      { ...PERSONAL_PAN, status: 'VERIFIED', reviewedAt: '2026-09-02T08:00:00.000Z' },
+      adminDocument({
         status: 'REJECTED',
-        rejectionReason: 'The name on the PAN does not match the GST certificate.',
-      }),
-      document({
-        id: '00000000-0000-4000-8000-000000000012',
-        type: 'ADDRESS_PROOF',
-        label: 'Address proof',
-        status: 'REQUIRED',
         fileName: null,
+        mimeType: null,
         bytes: null,
-        uploadedAt: null,
         viewUrl: null,
         viewUrlExpiresAt: null,
+        submissionCount: 2,
+        reviewedAt: '2026-09-03T09:10:00.000Z',
+        rejectionReason: 'The GSTIN on the certificate does not match the one on file.',
       }),
     ],
+    gaps: ['BUSINESS_IDENTITY'],
+    history: DOCUMENT_HISTORY,
   },
 };
 
-export const AllVerified: Story = {
+export const VerifiedAndRevocable: Story = {
   args: {
     documents: [
-      document({ status: 'VERIFIED' }),
-      document({
-        id: '00000000-0000-4000-8000-000000000011',
-        type: 'PAN_CARD',
-        label: 'PAN card',
-        status: 'VERIFIED',
-      }),
-      document({
-        id: '00000000-0000-4000-8000-000000000012',
-        type: 'ADDRESS_PROOF',
-        label: 'Address proof',
-        status: 'VERIFIED',
-      }),
+      { ...PERSONAL_PAN, status: 'VERIFIED', reviewedAt: '2026-09-02T08:00:00.000Z' },
+      adminDocument({ status: 'VERIFIED', reviewedAt: '2026-09-02T08:05:00.000Z' }),
     ],
+    gaps: [],
+    history: DOCUMENT_HISTORY,
   },
 };
 
-export const Empty: Story = { args: { documents: [] } };
+export const LegacySupportingSlot: Story = {
+  args: {
+    documents: [
+      PERSONAL_PAN,
+      adminDocument({
+        id: '00000000-0000-4000-8000-000000000013',
+        category: 'SUPPORTING',
+        categoryLabel: 'Supporting document',
+        type: 'ADDRESS_PROOF',
+        label: 'Address proof',
+        fileName: 'lease.pdf',
+      }),
+    ],
+    gaps: ['BUSINESS_IDENTITY'],
+  },
+};
+
+export const Empty: Story = {
+  args: { documents: [], gaps: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'] },
+};
 
 export const Deciding: Story = {
   decorators: [

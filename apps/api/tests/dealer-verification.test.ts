@@ -189,9 +189,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
     const r = await decision(d.dealerId, 'VERIFIED', 1);
     expect(r.body.code).toBe('CONTACT_NOT_VERIFIED');
     await h.prisma.user.update({ where: { id: d.userId }, data: { emailVerifiedAt: null } });
-    expect((await decision(d.dealerId, 'VERIFIED', 1)).body.code).toBe(
-      'CONTACT_NOT_VERIFIED',
-    );
+    expect((await decision(d.dealerId, 'VERIFIED', 1)).body.code).toBe('CONTACT_NOT_VERIFIED');
   });
   it('requires actual reviewed documents, metadata and stored objects', async () => {
     const d = await candidate();

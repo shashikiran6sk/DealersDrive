@@ -191,6 +191,31 @@ file does it: a six-character floor enforced only server-side reaches the
 moderator as a 400 they have to interpret. The floor itself is the point —
 this sentence is the whole of what the dealer will be told.
 
+### `export async function overrideActivationAction(`
+
+The Super admin manual activation (**#299**). Parsed with
+`ActivationOverrideInput` before the request leaves, and the first issue's
+message is returned as-is — the contract's own sentences ("Read and acknowledge
+the manual activation disclaimer.") are the ones the moderator should read.
+
+It revalidates the public pages like an approval does, because it is one as far
+as buyers are concerned: the dealership becomes ACTIVE and its listings become
+eligible to appear. `revokeActivationOverrideAction` clears them for the
+opposite reason.
+
+### `export async function recordYardVisitAction(`
+
+Revalidates the console and nothing public. A yard visit is private staff
+evidence (#299) — it changes nothing a buyer or the dealer can see — so clearing
+the dealership's public tags would be a cache miss with no purpose.
+
+## `apps/web/src/features/admin/actions.constants.ts`
+
+### `export const ADMIN_ACTION_TEXT`
+
+The fallback sentences for the #299 actions. They cannot live in `actions.ts`:
+a `'use server'` module may export only async functions.
+
 ## `apps/web/src/features/admin/config-actions.ts`
 
 ### `export async function updateConfigAction`

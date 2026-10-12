@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
+import { DealerGallery } from '@/components/dealers/dealer-gallery';
 import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
 import { SectionError } from '@/components/errors/section-error';
@@ -193,7 +194,7 @@ export default async function DealerPortfolioPage({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <ImageSlot label="Dealership frontage / yard photo" />
+              <ImageSlot label="Dealership photograph" />
             )}
           </Blueprint>
         </div>
@@ -228,6 +229,8 @@ export default async function DealerPortfolioPage({
 
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
+
+      <DealerGallery photos={dealer.portfolio} brandName={dealer.brandName} />
 
       {inventory.status === 'ready' ? (
         <DealerInventory

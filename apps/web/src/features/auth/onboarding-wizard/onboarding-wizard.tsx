@@ -6,7 +6,6 @@ import type {
   DealerDocumentDto,
   DealerProfile,
   PhoneOtpWidget,
-  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
@@ -39,7 +38,6 @@ export interface OnboardingWizardProps {
   documents: DealerDocumentDto[];
   dealer: DealerProfile | null;
   completeness: CompletenessResponse | null;
-  yardPhoto: YardPhotoDto | null;
   phoneWidget: PhoneOtpWidget | null;
   googleLinkUrl?: string | null;
   linkError?: string | null;
@@ -51,7 +49,6 @@ export function OnboardingWizard({
   documents,
   dealer,
   completeness,
-  yardPhoto,
   phoneWidget,
   googleLinkUrl = null,
   linkError = null,
@@ -204,7 +201,6 @@ export function OnboardingWizard({
         <DocumentsStep
           documents={documents}
           dealer={dealer}
-          yardPhoto={yardPhoto}
           completeness={completeness}
           onBack={() => router.push(ONBOARDING_PATH.account)}
           onDone={() => router.push(ONBOARDING_PATH.review)}

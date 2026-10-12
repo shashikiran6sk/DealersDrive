@@ -5,7 +5,6 @@ import type {
   DealerDocumentsResponse,
   DealerProfile,
   PhoneOtpWidget,
-  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -35,23 +34,19 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  const [documents, dealer, completeness, yardPhoto, phoneWidget, googleLinkUrl] =
-    await Promise.all([
-      session.dealer
-        ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
-        : Promise.resolve(null),
-      session.dealer
-        ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
-        : Promise.resolve(null),
-      session.dealer
-        ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
-        : Promise.resolve(null),
-      session.dealer
-        ? apiGet<YardPhotoDto>('/v1/dealer/yard-photo', { revalidate: false })
-        : Promise.resolve(null),
-      phoneWidgetOrNull(),
-      session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
-    ]);
+  const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([
+    session.dealer
+      ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
+      : Promise.resolve(null),
+    session.dealer
+      ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
+      : Promise.resolve(null),
+    session.dealer
+      ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
+      : Promise.resolve(null),
+    phoneWidgetOrNull(),
+    session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
+  ]);
 
   const params = await searchParams;
   const requested = Number(params.step ?? NaN);
@@ -69,7 +64,6 @@ export default async function OnboardingPage({
         documents={documents?.data ?? []}
         dealer={dealer}
         completeness={completeness}
-        yardPhoto={yardPhoto}
         phoneWidget={phoneWidget}
         googleLinkUrl={googleLinkUrl}
         linkError={params.error ?? null}

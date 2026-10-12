@@ -5,8 +5,7 @@ Parent: [web/app/api](../README.md)
 ## Sections
 
 - [documents](documents/README.md)
-- [yard-photo](yard-photo/README.md)
 
 ## Pages
 
-- [yard-photo](yard-photo.md)
+- [portfolio](portfolio.md)

@@ -14,6 +14,8 @@ vi.mock('@/features/admin/actions', () => ({
   rejectDealerAction: vi.fn(),
   requestDealerChangesAction: vi.fn(),
   suspendDealerAction: vi.fn(),
+  overrideActivationAction: vi.fn(),
+  revokeActivationOverrideAction: vi.fn(),
 }));
 
 // Only the moderation controls' inputs; other detail fields are never read here.
@@ -23,8 +25,17 @@ const DEALER = {
   brandName: 'Chennai cars',
   status: 'PENDING_APPROVAL',
   gstin: '33AABCS1429B1ZX',
-  actions: { canApprove: true },
-} as AdminDealerDetail;
+  activation: {
+    method: null,
+    methodLabel: null,
+    overriddenAt: null,
+    overriddenBy: null,
+    justification: null,
+    outstanding: [],
+  },
+  documentGaps: [],
+  actions: { canApprove: true, canOverrideActivation: false, overrideBlockedReason: null },
+} as unknown as AdminDealerDetail;
 
 describe('dealer approval confirmation', () => {
   beforeEach(() => approveDealerAction.mockReset().mockResolvedValue({ ok: true }));

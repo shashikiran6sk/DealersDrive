@@ -41,21 +41,29 @@ still has a screen here — the "under review" panel that closes the wizard
 
 (DESIGN-SPEC §3.10 step 4). Anything else belongs in the console.
 
-### `const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([`
+### `const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([`
 
 All dealership-scoped, so they exist only once one does.
 
-### `const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([`
+### `const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([`
 
 `GET /v1/cities` was the fifth request here, fetched for a dropdown on
 
-### `const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([`
+### `const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([`
 
 step 2. The city is typed now, so the screen no longer waits on reference
 
-### `const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([`
+### `const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([`
 
 data to render a form the dealer fills in themselves.
+
+### `apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })`
+
+Only `data` — the documents actually submitted — is handed down. The wizard
+renders the two category slots itself from `SELECTABLE_DOC_CATEGORIES`, so an
+empty slot is a card with nothing in it rather than a placeholder row the
+API had to invent. There is no yard-photograph request any more: #299 took
+the yard out of onboarding, and the routes that served it no longer exist.
 
 ### `phoneWidgetOrNull()`
 
