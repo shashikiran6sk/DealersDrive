@@ -68,3 +68,9 @@ All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged;
 
 - Opened 2026-10-12 at `5457533` (main merged in; #301's squash resolved to this branch's side except the countdown fix taken from main).
 - CI all success; squash-merged as `4ca3cd5` per the owner's instruction to merge each split PR after green CI.
+
+## #303 — truthful approval emails, /dealer/documents, direct Dealer Verified
+
+- Opened 2026-10-12; evidence in `pr-303-truthful-approval-and-documents/`.
+- Browser check found two truth problems, fixed before merge: an empty slot said "Needed to submit" on a live dealership (`0ac27ee`), and the console header labelled every ACTIVE dealership "Verified" (`2e9e2ab`).
+- Test-harness fix for a full-suite timeout (other files' outbox backlog drained by the first `drainEmails()`).
