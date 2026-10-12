@@ -247,7 +247,7 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'KYC document status',
       description:
-        'All three required documents — GST certificate, PAN card, address proof — each with ' +
+        'Business document slots — PAN/address are required by platform policy, GST certificate is required when GSTIN is supplied — each with ' +
         'its status and rejection reason if it has one. Rows are returned for documents that ' +
         'have not been uploaded yet, so the checklist is complete rather than growing. ' +
         'Verification is the owner’s business, so this needs `document:upload` (R92).',

@@ -40,6 +40,7 @@ describe('AssistedDealerForm', () => {
         legalName: 'Sri Murugan Cars',
         pan: 'AAACS1429P',
         tagline: '',
+        gstin: '',
       });
     });
     expect(await screen.findByText('Saved.')).toBeInTheDocument();
@@ -67,7 +68,7 @@ describe('AssistedDealerForm', () => {
     });
     const sent = onSubmit.mock.calls[0]?.[0] ?? {};
     expect(sent).not.toHaveProperty('landline');
-    expect(sent).not.toHaveProperty('gstin');
+    expect(sent.gstin).toBe('');
   });
 
   it('marks the fields the API refused, by name', async () => {

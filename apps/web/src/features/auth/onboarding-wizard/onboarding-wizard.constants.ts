@@ -75,6 +75,8 @@ export const ONBOARDING_TEXT = {
   taglinePlaceholder: 'Optional short description of your dealership',
 
   documentsHeading: 'Business verification',
+  gstObligation:
+    'Optional collection does not remove GST registration obligations. If you are registered, supply your GSTIN and certificate. Applicability is reviewed separately.',
   documentsIntro:
     'Your business documents are reviewed for approval. Yard photos are optional; Dealer Verified is a separate business and representative review. You can prepare listings while approval is pending.',
   saved: 'Saved.',

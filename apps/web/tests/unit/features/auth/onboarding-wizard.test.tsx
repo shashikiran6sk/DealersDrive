@@ -1254,14 +1254,24 @@ describe('OnboardingWizard — the Documents step', () => {
     );
   }
 
-  it('renders one uploader per document, whatever its state', () => {
-    render_(DOCUMENTS);
+  it('renders every applicable uploader when GSTIN is supplied', () => {
+    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX' });
 
     // The file input carries the accessible name; the visible button opens it.
     for (const label of ['GST certificate', 'PAN card', 'Address proof']) {
       expect(screen.getByLabelText(`Upload ${label}`)).toHaveAttribute('type', 'file');
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+  });
+
+  it('does not require GSTIN or an empty certificate slot for a non-GST dealer', () => {
+    render_(DOCUMENTS);
+    expect(screen.getByLabelText('GSTIN (optional where applicable)')).not.toBeRequired();
+    expect(screen.queryByLabelText('Upload GST certificate')).toBeNull();
+    expect(screen.getByLabelText('Upload PAN card')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Optional collection does not remove GST registration obligations/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -1335,7 +1345,9 @@ describe('OnboardingWizard — the Documents step', () => {
   it('prefills the registrations from the dealership record', () => {
     render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' });
 
-    expect(screen.getByLabelText('GSTIN')).toHaveValue('33AABCS1429B1ZX');
+    expect(screen.getByLabelText('GSTIN (optional where applicable)')).toHaveValue(
+      '33AABCS1429B1ZX',
+    );
     expect(screen.getByLabelText('PAN')).toHaveValue('AABCS1429B');
   });
 

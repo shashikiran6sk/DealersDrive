@@ -10,7 +10,7 @@ export function valuesOf(form: FormData, partial: boolean): Record<string, unkno
     const raw = form.get(name);
     const value = typeof raw === 'string' ? raw.trim() : '';
     if (value === '') {
-      if (name === 'tagline' && typeof raw === 'string') values[name] = '';
+      if ((name === 'tagline' || name === 'gstin') && typeof raw === 'string') values[name] = '';
       if (!partial && REQUIRED_FIELD_NAMES.has(name)) values[name] = '';
       continue;
     }

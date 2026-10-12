@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
+import { GST_REVIEW_MAX_LENGTH, GST_REVIEW_MIN_LENGTH } from './dealer-gstin.js';
 import {
   AdminRole,
   DealerDocType,
@@ -368,7 +369,18 @@ export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ApproveDealerInput = z
-  .object({ note: z.string().trim().max(300).optional() })
+  .object({
+    note: z.string().trim().max(300).optional(),
+    gstNotRequiredReview: z
+      .string()
+      .trim()
+      .min(
+        GST_REVIEW_MIN_LENGTH,
+        'Record the GST applicability review and protected case reference.',
+      )
+      .max(GST_REVIEW_MAX_LENGTH)
+      .optional(),
+  })
   .strict();
 export type ApproveDealerInput = z.infer<typeof ApproveDealerInput>;
 

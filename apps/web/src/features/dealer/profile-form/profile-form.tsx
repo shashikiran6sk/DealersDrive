@@ -165,7 +165,7 @@ export function DealerProfileForm({
         <p className="text-[12px] ink-subtle">{PROFILE_FORM_TEXT.taxNote}</p>
 
         <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))]">
-          <Field id="gstin" label="GSTIN">
+          <Field id="gstin" label="GSTIN (optional where applicable)">
             <Input id="gstin" className="font-mono" defaultValue={dealer.gstin ?? ''} disabled />
           </Field>
           <Field id="pan" label="PAN">

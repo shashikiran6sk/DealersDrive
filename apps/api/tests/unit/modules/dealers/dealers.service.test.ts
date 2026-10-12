@@ -1220,7 +1220,6 @@ describe('completeness', () => {
       // The directions link, named for the same reason the yard photograph is:
       // the public portfolio is "here is the yard, here is how to reach it".
       'mapsUrl',
-      'gstin',
       'pan',
     ]);
   });
@@ -1392,8 +1391,10 @@ describe('submitForVerification', () => {
       const domain = error as DomainError;
       expect(domain.code).toBe('PROFILE_INCOMPLETE');
       const fields = (domain.errors ?? []).map((entry) => entry.field);
-      expect(fields).toContain('gstin');
-      expect(fields).toContain('GST_CERTIFICATE');
+      expect(fields).not.toContain('gstin');
+      expect(fields).toContain('pan');
+      expect(fields).not.toContain('GST_CERTIFICATE');
+      expect(fields).toContain('PAN_CARD');
       for (const entry of domain.errors ?? []) expect(entry.code).toBe('REQUIRED');
     }
   });
