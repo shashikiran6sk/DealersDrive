@@ -42,7 +42,7 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified                              |
 | 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | `91e3533` | Merged, main verified                              |
 | 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | `6f4f040` | Merged, main verified                              |
-| —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                                        |
+| 12  | #300 | Canonical vehicle makes | `92ac922`     | `383a2b0`         | green      | —         | Reviewed; merging                                  |
 | —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                                   |
 
 Stack ancestry at start: linear; each branch contains its parent. Migrations
