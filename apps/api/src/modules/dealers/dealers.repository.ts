@@ -1,5 +1,11 @@
 import { initialsOf, slugify } from '@dealers-drive/contracts';
-import type { DealerStatus, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+import type {
+  DealerDocCategory,
+  DealerStatus,
+  ListingStatus,
+  Prisma,
+  PrismaClient,
+} from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
@@ -93,38 +99,46 @@ export function createDealersRepository(prisma: PrismaClient) {
       return (tx ?? prisma).dealerDocument.findUnique({ where: { id: documentId } });
     },
 
-    async documentByType(
-      dealerId: string,
-      type: Prisma.DealerDocumentUncheckedCreateInput['type'],
-      tx?: Tx,
-    ) {
+    async documentByCategory(dealerId: string, category: DealerDocCategory, tx?: Tx) {
       return (tx ?? prisma).dealerDocument.findUnique({
-        where: { dealerId_type: { dealerId, type } },
+        where: { dealerId_category: { dealerId, category } },
       });
     },
 
     async upsertDocument(
       dealerId: string,
-      type: Prisma.DealerDocumentUncheckedCreateInput['type'],
-      data: Omit<Prisma.DealerDocumentUncheckedUpdateInput, 'dealerId' | 'type'>,
+      category: DealerDocCategory,
+      data: Omit<Prisma.DealerDocumentUncheckedCreateInput, 'dealerId' | 'category'>,
       tx?: Tx,
     ) {
       return (tx ?? prisma).dealerDocument.upsert({
-        where: { dealerId_type: { dealerId, type } },
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
-        create: { ...(data as Prisma.DealerDocumentUncheckedCreateInput), dealerId, type },
+        where: { dealerId_category: { dealerId, category } },
+        create: { ...data, dealerId, category },
         update: data,
       });
     },
 
-    async deleteDocument(
-      dealerId: string,
-      type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+    async updateDocument(
+      documentId: string,
+      data: Prisma.DealerDocumentUncheckedUpdateInput,
       tx?: Tx,
     ) {
+      return (tx ?? prisma).dealerDocument.update({ where: { id: documentId }, data });
+    },
+
+    async deleteDocument(dealerId: string, category: DealerDocCategory, tx?: Tx) {
       const result = await (tx ?? prisma).dealerDocument.updateMany({
-        where: { dealerId, type },
-        data: { status: 'REQUIRED', mediaId: null, fileName: null, rejectionReason: null },
+        where: { dealerId, category },
+        data: {
+          status: 'REQUIRED',
+          mediaId: null,
+          fileName: null,
+          description: null,
+          mimeType: null,
+          bytes: null,
+          uploadedAt: null,
+          rejectionReason: null,
+        },
       });
       return result.count > 0;
     },

@@ -1,3 +1,4 @@
+import { DealerDocCategory, SelectableDocCategory } from './dealer-documents.js';
 import { OptionalGstin } from './dealer-gstin.js';
 import { DealerTaglineInput } from './dealer-tagline.js';
 import { z } from 'zod';
@@ -422,49 +423,49 @@ export type DealerSubmitResponse = z.infer<typeof DealerSubmitResponse>;
  * a dealer is being asked to do next.
  */
 export const DealerDocumentDto = z.object({
-  id: Uuid.nullable(),
+  id: Uuid,
+  category: DealerDocCategory,
+  categoryLabel: z.string(),
   type: DealerDocType,
   label: z.string(),
   status: DocStatus,
   statusLabel: z.string(),
   fileName: z.string().nullable(),
+  mimeType: z.string().nullable(),
+  bytes: z.number().int().nullable(),
+  description: z.string().nullable(),
   uploadedAt: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
   rejectionReason: z.string().nullable(),
+  submissionCount: z.number().int().min(0),
   action: z.string(),
 });
 export type DealerDocumentDto = z.infer<typeof DealerDocumentDto>;
 
+/**
+ * One slot per selectable category, each holding the document the dealership
+ * chose for it or nothing yet. `data` is every stored row, including a legacy
+ * supporting document an older application may hold.
+ */
+export const DealerDocumentSlot = z.object({
+  category: SelectableDocCategory,
+  label: z.string(),
+  types: z.array(z.object({ type: DealerDocType, label: z.string(), hint: z.string().nullable() })),
+  document: DealerDocumentDto.nullable(),
+});
+export type DealerDocumentSlot = z.infer<typeof DealerDocumentSlot>;
+
 export const DealerDocumentsResponse = z.object({
   data: z.array(DealerDocumentDto),
+  slots: z.array(DealerDocumentSlot),
+  requirementMet: z.boolean(),
+  gaps: z.array(z.string()),
   allVerified: z.boolean(),
 });
 export type DealerDocumentsResponse = z.infer<typeof DealerDocumentsResponse>;
 
-/**
- * The upload rules, in one place because both ends enforce them: the browser
- * checks them for the message, the presign signature bakes them in for real.
- *
- * 5 MB, and PDF, JPEG or PNG. A KYC document is a scan or a photo of a
- * certificate — anything larger is a misunderstanding rather than a need.
- */
-export const DOCUMENT_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
-export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
-
-export const DocumentPresignInput = z
-  .object({
-    type: DealerDocType,
-    fileName: z.string().trim().min(1).max(160),
-    mimeType: z.enum(DOCUMENT_MIME_TYPES),
-    bytes: z.number().int().min(1).max(DOCUMENT_MAX_BYTES),
-  })
-  .strict();
-export type DocumentPresignInput = z.infer<typeof DocumentPresignInput>;
-
 export const DocumentCommitInput = z.object({ documentId: Uuid }).strict();
 export type DocumentCommitInput = z.infer<typeof DocumentCommitInput>;
-
-export const DocTypeParam = z.object({ type: DealerDocType }).strict();
-export type DocTypeParam = z.infer<typeof DocTypeParam>;
 
 /**
  * The yard photograph — the hero of the dealership's public portfolio.

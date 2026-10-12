@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { OnboardingInput, VerifyPhoneInput } from './auth.js';
 import { Uuid } from './common.js';
+import { SelectableDocCategory } from './dealer-documents.js';
 import { SalesEmailVerification } from './dealer-claims.js';
 import {
   CompletenessResponse,
@@ -145,9 +146,7 @@ export type SalesDashboard = z.infer<typeof SalesDashboard>;
 export const ASSISTED_CONSENT_TEXT =
   'By sharing this OTP, the dealership representative authorises Dealers-Drive to create and submit this dealership profile for verification.';
 
-export const SalesDealerDocParam = z
-  .object({ id: Uuid, type: z.enum(['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) })
-  .strict();
+export const SalesDealerDocParam = z.object({ id: Uuid, category: SelectableDocCategory }).strict();
 export type SalesDealerDocParam = z.infer<typeof SalesDealerDocParam>;
 
 /** One vehicle a representative prepared for one of their dealerships (**R114**). */

@@ -1,3 +1,5 @@
+import type { DealerDocType } from '@prisma/client';
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -901,10 +903,16 @@ describe('email notifications', () => {
       })
       .expect(200);
 
-    for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+    for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
       const presigned = await agent
         .post('/v1/dealer/documents/presign')
-        .send({ type, fileName: 'doc.pdf', mimeType: 'application/pdf', bytes: 8 })
+        .send({
+          type,
+          category: documentCategoryOf(type),
+          fileName: 'doc.pdf',
+          mimeType: 'application/pdf',
+          bytes: 8,
+        })
         .expect(201);
       const url = new URL(presigned.body.uploadUrl as string);
       await agent
@@ -913,7 +921,7 @@ describe('email notifications', () => {
         .send(Buffer.from('%PDF-1.4'))
         .expect(200);
       await agent
-        .post(`/v1/dealer/documents/${type}/commit`)
+        .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
         .send({ documentId: presigned.body.documentId })
         .expect(200);
     }
@@ -1321,10 +1329,16 @@ describe('one dealership, one PAN', () => {
 describe('KYC documents — replace and remove', () => {
   const PDF = Buffer.from('%PDF-1.4 a KYC document');
 
-  async function upload(agent: ReturnType<AuthHarness['agent']>, type: string) {
+  async function upload(agent: ReturnType<AuthHarness['agent']>, type: DealerDocType) {
     const presigned = await agent
       .post('/v1/dealer/documents/presign')
-      .send({ type, fileName: 'gst.pdf', mimeType: 'application/pdf', bytes: PDF.length })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'gst.pdf',
+        mimeType: 'application/pdf',
+        bytes: PDF.length,
+      })
       .expect(201);
 
     await agent
@@ -1337,7 +1351,7 @@ describe('KYC documents — replace and remove', () => {
       .expect(200);
 
     await agent
-      .post(`/v1/dealer/documents/${type}/commit`)
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
 
@@ -1368,15 +1382,11 @@ describe('KYC documents — replace and remove', () => {
     const object = storagePath(`dealers/${dealerSlug}/documents/PAN_CARD/${documentId}`);
     expect(existsSync(object)).toBe(true);
 
-    await agent.delete('/v1/dealer/documents/PAN_CARD').expect(204);
+    await agent.delete('/v1/dealer/documents/PERSONAL_IDENTITY').expect(204);
 
     const checklist = await agent.get('/v1/dealer/documents').expect(200);
-    const row = checklist.body.data.find((doc: { type: string }) => doc.type === 'PAN_CARD') as {
-      status: string;
-      fileName: string | null;
-    };
-    expect(row.status).toBe('REQUIRED');
-    expect(row.fileName).toBeNull();
+    expect(checklist.body.slots[0].document).toBeNull();
+    expect(checklist.body.data).toEqual([]);
 
     // And the bytes are gone. The row is reachable again for a fresh upload,
     // but the file behind the old one must not survive it.
@@ -1388,14 +1398,14 @@ describe('KYC documents — replace and remove', () => {
   });
 
   /**
-   * The row always exists — onboarding creates all three as REQUIRED — so
+   * The slot always exists — onboarding creates both as REQUIRED — so
    * deleting one that was never uploaded is idempotent rather than an error.
    * There is nothing for the dealer to correct.
    */
   it('accepts a delete for a document that was never uploaded', async () => {
     const { agent } = await dealership();
 
-    await agent.delete('/v1/dealer/documents/ADDRESS_PROOF').expect(204);
+    await agent.delete('/v1/dealer/documents/BUSINESS_IDENTITY').expect(204);
   });
 });
 
@@ -1495,10 +1505,16 @@ describe('the yard photograph', () => {
         pan: `AABCS${String(1000 + counter)}B`,
       })
       .expect(200);
-    for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+    for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
       const presigned = await agent
         .post('/v1/dealer/documents/presign')
-        .send({ type, fileName: 'doc.pdf', mimeType: 'application/pdf', bytes: 8 })
+        .send({
+          type,
+          category: documentCategoryOf(type),
+          fileName: 'doc.pdf',
+          mimeType: 'application/pdf',
+          bytes: 8,
+        })
         .expect(201);
       const url = new URL(presigned.body.uploadUrl as string);
       await agent
@@ -1507,7 +1523,7 @@ describe('the yard photograph', () => {
         .send(Buffer.from('%PDF-1.4'))
         .expect(200);
       await agent
-        .post(`/v1/dealer/documents/${type}/commit`)
+        .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
         .send({ documentId: presigned.body.documentId })
         .expect(200);
     }

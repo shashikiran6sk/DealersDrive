@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { DealerDocType } from './enums.js';
 
 export const GstinValue = z
   .string()
@@ -16,7 +15,3 @@ export const OptionalGstin = z.preprocess((value) => {
   if (value === null || (typeof value === 'string' && value.trim() === '')) return null;
   return value;
 }, GstinValue.nullable().optional());
-
-export function requiredDealerDocuments(gstin: string | null | undefined): DealerDocType[] {
-  return gstin ? ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] : ['PAN_CARD', 'ADDRESS_PROOF'];
-}

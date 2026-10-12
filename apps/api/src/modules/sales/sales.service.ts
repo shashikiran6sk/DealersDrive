@@ -5,7 +5,7 @@ import {
   normaliseLocality,
   type CreateAssistedDealerInput,
   type CreateVehicleInput,
-  type DealerDocType,
+  type SelectableDocCategory,
   type DocumentCommitInput,
   type DocumentPresignInput,
   type SalesDashboard,
@@ -42,6 +42,7 @@ import {
   withDealerRegistrationConflict,
   assertDealerEmailFree,
   type DealersService,
+  EMPTY_DOCUMENT_SLOTS,
 } from '../dealers/dealers.facade.js';
 import type { AssistedVehicleActor, VehiclesService } from '../vehicles/vehicles.facade.js';
 import {
@@ -521,11 +522,7 @@ export function createSalesService({
           });
 
           await tx.dealerDocument.createMany({
-            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
-              dealerId: dealer.id,
-              type,
-              status: 'REQUIRED' as const,
-            })),
+            data: EMPTY_DOCUMENT_SLOTS.map((slot) => ({ ...slot, dealerId: dealer.id })),
           });
 
           await audit.record(tx, {
@@ -657,16 +654,23 @@ export function createSalesService({
     async commitDocument(
       principal: AdminPrincipal,
       dealerId: string,
-      type: DealerDocType,
+      category: SelectableDocCategory,
       input: DocumentCommitInput,
     ) {
       await requireEditable(principal, dealerId);
-      return dealers.commitDocument(dealerId, type, input);
+      return dealers.commitDocument(dealerId, category, input, {
+        type: 'SALES',
+        id: principal.userId,
+      });
     },
 
-    async deleteDocument(principal: AdminPrincipal, dealerId: string, type: DealerDocType) {
+    async deleteDocument(
+      principal: AdminPrincipal,
+      dealerId: string,
+      category: SelectableDocCategory,
+    ) {
       await requireEditable(principal, dealerId);
-      await dealers.deleteDocument(dealerId, type);
+      await dealers.deleteDocument(dealerId, category);
     },
 
     async presignYardPhoto(

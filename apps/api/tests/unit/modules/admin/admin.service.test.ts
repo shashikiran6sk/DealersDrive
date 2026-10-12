@@ -241,6 +241,9 @@ function setup(options: Options = {}) {
     media: {
       findMany: () => Promise.resolve(options.media ?? []),
     },
+    auditLog: {
+      findMany: () => Promise.resolve([]),
+    },
     listing: {
       count: (args: { where: { status: string } }) =>
         Promise.resolve(options.listingCounts?.[args.where.status] ?? 0),
@@ -567,17 +570,22 @@ describe('the KYC review', () => {
 
   /**
    * `allVerified` is what tells the moderator the dealership is ready — so it
-   * has to mean *all three*, not "all the ones uploaded so far".
+   * has to mean a verified proof in *each* category, not "the ones uploaded so far".
    */
-  it('reports allVerified only when all three documents are verified', async () => {
+  it('reports allVerified only when a proof in each category is verified', async () => {
     const all = setup({ siblings: ALL_VERIFIED });
-    const two = setup({ siblings: ALL_VERIFIED.slice(0, 2) });
+    const businessOnly = setup({ siblings: ALL_VERIFIED.slice(0, 1) });
     const mixed = setup({
-      siblings: [...ALL_VERIFIED.slice(0, 2), { type: 'ADDRESS_PROOF', status: 'REJECTED' }],
+      siblings: [
+        ...ALL_VERIFIED.slice(0, 1),
+        { type: 'PAN_CARD', status: 'REJECTED', fileName: null },
+      ],
     });
+    const categories = setup({ siblings: ALL_VERIFIED.slice(0, 2) });
 
     expect((await all.service.verifyDocument(moderator, 'doc-1')).allVerified).toBe(true);
-    expect((await two.service.verifyDocument(moderator, 'doc-1')).allVerified).toBe(false);
+    expect((await categories.service.verifyDocument(moderator, 'doc-1')).allVerified).toBe(true);
+    expect((await businessOnly.service.verifyDocument(moderator, 'doc-1')).allVerified).toBe(false);
     expect((await mixed.service.verifyDocument(moderator, 'doc-1')).allVerified).toBe(false);
   });
 
@@ -691,7 +699,7 @@ describe('the KYC review', () => {
 
     expect(h.dealerUpdates[0]?.data).toMatchObject({
       status: 'DRAFT',
-      statusReason: 'GST certificate: Too blurry to read.',
+      statusReason: 'GST Registration Certificate: Too blurry to read.',
     });
     expect(h.outbox[0]?.eventType).toBe('DealerChangesRequested');
     expect(result.dealerReturnedToDraft).toBe(true);

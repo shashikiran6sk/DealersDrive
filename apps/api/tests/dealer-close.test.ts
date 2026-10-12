@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { setTimeout as pause } from 'node:timers/promises';
 
 import { Client } from 'pg';
@@ -42,7 +43,13 @@ afterAll(async () => {
 async function withDocument(dealer: Dealership) {
   const presigned = await dealer.agent
     .post('/v1/dealer/documents/presign')
-    .send({ type: 'PAN_CARD', fileName: 'pan.pdf', mimeType: 'application/pdf', bytes: 8 })
+    .send({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      fileName: 'pan.pdf',
+      mimeType: 'application/pdf',
+      bytes: 8,
+    })
     .expect(201);
   const url = new URL(String(presigned.body.uploadUrl));
   await dealer.agent
@@ -51,7 +58,7 @@ async function withDocument(dealer: Dealership) {
     .send(PDF)
     .expect(200);
   await dealer.agent
-    .post('/v1/dealer/documents/PAN_CARD/commit')
+    .post('/v1/dealer/documents/PERSONAL_IDENTITY/commit')
     .send({ documentId: presigned.body.documentId })
     .expect(200);
 }
@@ -64,10 +71,16 @@ async function completeDraft() {
     .patch('/v1/dealer/onboarding')
     .send({ gstin: `33CLOSE${number}B1ZX`, pan: `CLOSE${number}B` })
     .expect(200);
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
       .post('/v1/dealer/documents/presign')
-      .send({ type, fileName: 'kyc.pdf', mimeType: 'application/pdf', bytes: PDF.length })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'kyc.pdf',
+        mimeType: 'application/pdf',
+        bytes: PDF.length,
+      })
       .expect(201);
     const url = new URL(String(presigned.body.uploadUrl));
     await dealer.agent
@@ -76,7 +89,7 @@ async function completeDraft() {
       .send(PDF)
       .expect(200);
     await dealer.agent
-      .post(`/v1/dealer/documents/${type}/commit`)
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
   }

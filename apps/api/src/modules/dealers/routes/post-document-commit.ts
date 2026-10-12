@@ -1,7 +1,7 @@
 import {
-  DocTypeParam,
+  DocCategoryParam,
   DocumentCommitInput,
-  type DocTypeParam as DocTypeParamType,
+  type DocCategoryParam as DocCategoryParamType,
   type DocumentCommitInput as DocumentCommitInputType,
 } from '@dealers-drive/contracts';
 
@@ -12,16 +12,21 @@ import { type DealersRoute } from './route.js';
 
 export const postDocumentCommit: DealersRoute = (router, service) => {
   router.post(
-    '/documents/:type/commit',
+    '/documents/:category/commit',
     requirePermission('document:upload'),
-    validate({ params: DocTypeParam, body: DocumentCommitInput }),
+    validate({ params: DocCategoryParam, body: DocumentCommitInput }),
     (req, res, next) => {
       void (async () => {
         try {
-          const { dealerId } = dealerPrincipal(req);
-          const params = validated<DocTypeParamType>(req, 'params');
+          const { dealerId, userId } = dealerPrincipal(req);
+          const params = validated<DocCategoryParamType>(req, 'params');
           const body = validated<DocumentCommitInputType>(req, 'body');
-          res.json(await service.commitDocument(dealerId, params.type, body));
+          res.json(
+            await service.commitDocument(dealerId, params.category, body, {
+              type: 'DEALER',
+              id: userId,
+            }),
+          );
         } catch (error) {
           next(error);
         }

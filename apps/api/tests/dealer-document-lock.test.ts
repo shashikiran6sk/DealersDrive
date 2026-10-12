@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import type { DealerDocType } from '@prisma/client';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -17,7 +18,7 @@ import { marketplaceFixtures } from './marketplace-fixtures.js';
  */
 
 const storage = createLocalStorage();
-const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
+const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD'] as const;
 const PDF = Buffer.from('%PDF-1.4');
 
 let h: AuthHarness;
@@ -36,7 +37,13 @@ afterAll(async () => {
 async function upload(agent: request.Agent, type: DealerDocType) {
   const presigned = await agent
     .post('/v1/dealer/documents/presign')
-    .send({ type, fileName: 'kyc.pdf', mimeType: 'application/pdf', bytes: PDF.length })
+    .send({
+      type,
+      category: documentCategoryOf(type),
+      fileName: 'kyc.pdf',
+      mimeType: 'application/pdf',
+      bytes: PDF.length,
+    })
     .expect(201);
   const url = new URL(String(presigned.body.uploadUrl));
   await agent
@@ -58,7 +65,10 @@ async function application(stage: 'PENDING_APPROVAL' | 'ACTIVE') {
     .expect(200);
   for (const type of DOC_TYPES) {
     const documentId = await upload(dealer.agent, type);
-    await dealer.agent.post(`/v1/dealer/documents/${type}/commit`).send({ documentId }).expect(200);
+    await dealer.agent
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
+      .send({ documentId })
+      .expect(200);
   }
   const jpeg = Buffer.from('\xff\xd8\xff a fixture yard photograph', 'binary');
   const cover = await dealer.agent
@@ -113,9 +123,13 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     expect(before.dealerStatus).toBe('ACTIVE');
     expect(before.documents.every((doc) => doc.status === 'VERIFIED' && doc.stored)).toBe(true);
 
-    const response = await dealer.agent
-      .post('/v1/dealer/documents/presign')
-      .send({ type: 'PAN_CARD', fileName: 'swap.pdf', mimeType: 'application/pdf', bytes: 8 });
+    const response = await dealer.agent.post('/v1/dealer/documents/presign').send({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      fileName: 'swap.pdf',
+      mimeType: 'application/pdf',
+      bytes: 8,
+    });
 
     expect({ http: response.status, code: response.body.code }).toEqual({
       http: 409,
@@ -128,7 +142,7 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     const { dealer } = await application('ACTIVE');
     const before = await snapshot(dealer.dealerId);
 
-    const response = await dealer.agent.delete('/v1/dealer/documents/GST_CERTIFICATE');
+    const response = await dealer.agent.delete('/v1/dealer/documents/BUSINESS_IDENTITY');
 
     expect({ http: response.status, code: response.body.code }).toEqual({
       http: 409,
@@ -137,18 +151,18 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     expect(await snapshot(dealer.dealerId)).toEqual(before);
   });
 
-  it('refuses to re-commit a VERIFIED document of an ACTIVE dealer back to UPLOADED', async () => {
+  it('never re-commits a VERIFIED document of an ACTIVE dealer back to UPLOADED', async () => {
     const { dealer } = await application('ACTIVE');
     const before = await snapshot(dealer.dealerId);
-    const verified = before.documents.find((doc) => doc.type === 'ADDRESS_PROOF');
+    const verified = before.documents.find((doc) => doc.type === 'PAN_CARD');
 
     const response = await dealer.agent
-      .post('/v1/dealer/documents/ADDRESS_PROOF/commit')
+      .post('/v1/dealer/documents/PERSONAL_IDENTITY/commit')
       .send({ documentId: verified?.id });
 
-    expect({ http: response.status, code: response.body.code }).toEqual({
-      http: 409,
-      code: 'DOCUMENT_LOCKED',
+    expect({ http: response.status, status: response.body.status }).toEqual({
+      http: 200,
+      status: 'VERIFIED',
     });
     expect(await snapshot(dealer.dealerId)).toEqual(before);
   });
@@ -159,10 +173,14 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     expect(before.dealerStatus).toBe('PENDING_APPROVAL');
     expect(before.documents.every((doc) => doc.status === 'UPLOADED' && doc.stored)).toBe(true);
 
-    const presign = await dealer.agent
-      .post('/v1/dealer/documents/presign')
-      .send({ type: 'PAN_CARD', fileName: 'swap.pdf', mimeType: 'application/pdf', bytes: 8 });
-    const removal = await dealer.agent.delete('/v1/dealer/documents/PAN_CARD');
+    const presign = await dealer.agent.post('/v1/dealer/documents/presign').send({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      fileName: 'swap.pdf',
+      mimeType: 'application/pdf',
+      bytes: 8,
+    });
+    const removal = await dealer.agent.delete('/v1/dealer/documents/PERSONAL_IDENTITY');
 
     expect([presign.status, removal.status]).toEqual([409, 409]);
     expect(await snapshot(dealer.dealerId)).toEqual(before);
@@ -178,7 +196,7 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
 
     const documentId = await upload(dealer.agent, 'PAN_CARD');
     const committed = await dealer.agent
-      .post('/v1/dealer/documents/PAN_CARD/commit')
+      .post('/v1/dealer/documents/PERSONAL_IDENTITY/commit')
       .send({ documentId });
 
     expect(committed.status).toBe(200);
@@ -191,20 +209,20 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     });
     expect(
       after.documents.filter((doc) => doc.type !== 'PAN_CARD').map((doc) => doc.status),
-    ).toEqual(['VERIFIED', 'VERIFIED']);
+    ).toEqual(['VERIFIED']);
   });
 
   it('still lets a DRAFT dealer replace and remove a committed document', async () => {
     const dealer = await fixtures.dealership('DRAFT');
     const first = await upload(dealer.agent, 'GST_CERTIFICATE');
     await dealer.agent
-      .post('/v1/dealer/documents/GST_CERTIFICATE/commit')
+      .post('/v1/dealer/documents/BUSINESS_IDENTITY/commit')
       .send({ documentId: first })
       .expect(200);
 
     const second = await upload(dealer.agent, 'GST_CERTIFICATE');
     await dealer.agent
-      .post('/v1/dealer/documents/GST_CERTIFICATE/commit')
+      .post('/v1/dealer/documents/BUSINESS_IDENTITY/commit')
       .send({ documentId: second })
       .expect(200);
     const replaced = await snapshot(dealer.dealerId);
@@ -216,7 +234,7 @@ describe('ORIG-BUG-004 — reviewed KYC documents are locked outside DRAFT', () 
     });
     expect(await storage.head(documentKey(slug, 'GST_CERTIFICATE', first))).toBeNull();
 
-    await dealer.agent.delete('/v1/dealer/documents/GST_CERTIFICATE').expect(204);
+    await dealer.agent.delete('/v1/dealer/documents/BUSINESS_IDENTITY').expect(204);
     expect(
       (await snapshot(dealer.dealerId)).documents.find((doc) => doc.type === 'GST_CERTIFICATE'),
     ).toMatchObject({ status: 'REQUIRED', stored: false });

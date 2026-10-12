@@ -18,6 +18,14 @@ export function sniffImageType(body: Buffer): SniffedImageType | null {
   return null;
 }
 
+export type SniffedDocumentType = 'application/pdf' | 'image/jpeg' | 'image/png';
+
+export function sniffDocumentType(body: Buffer): SniffedDocumentType | null {
+  if (ascii(body, '%PDF-', 0)) return 'application/pdf';
+  const image = sniffImageType(body);
+  return image === 'image/jpeg' || image === 'image/png' ? image : null;
+}
+
 export const IMAGE_EXTENSIONS: Record<SniffedImageType, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

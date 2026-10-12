@@ -376,6 +376,7 @@ it('preserves private yard/KYC previews without exposing originals through publi
   const doc = await dealer.agent
     .post('/v1/dealer/documents/presign')
     .send({
+      category: 'PERSONAL_IDENTITY',
       type: 'PAN_CARD',
       fileName: 'fixture-pan.pdf',
       mimeType: 'application/pdf',
@@ -390,7 +391,7 @@ it('preserves private yard/KYC previews without exposing originals through publi
     .send(pdf)
     .expect(200);
   await dealer.agent
-    .post('/v1/dealer/documents/PAN_CARD/commit')
+    .post('/v1/dealer/documents/PERSONAL_IDENTITY/commit')
     .send({ documentId: doc.body.documentId })
     .expect(200);
   const key = docUpload.searchParams.get('key') ?? '';

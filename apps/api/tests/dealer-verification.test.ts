@@ -45,13 +45,14 @@ async function candidate(gstin = false) {
         : {}),
     },
   });
-  for (const type of gstin
-    ? (['PAN_CARD', 'ADDRESS_PROOF', 'GST_CERTIFICATE'] as const)
-    : (['PAN_CARD', 'ADDRESS_PROOF'] as const)) {
+  for (const [category, type] of [
+    ['PERSONAL_IDENTITY', 'PAN_CARD'],
+    ['BUSINESS_IDENTITY', gstin ? 'GST_CERTIFICATE' : 'UDYAM'],
+  ] as const) {
     const doc = await h.prisma.dealerDocument.upsert({
-      where: { dealerId_type: { dealerId: d.dealerId, type } },
-      create: { dealerId: d.dealerId, type },
-      update: {},
+      where: { dealerId_category: { dealerId: d.dealerId, category } },
+      create: { dealerId: d.dealerId, category, type },
+      update: { type },
     });
     await storage.put(
       documentKey(d.slug, type, doc.id),
@@ -210,7 +211,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
     const d = await candidate();
     await inReview(d.dealerId);
     const doc = await h.prisma.dealerDocument.findUniqueOrThrow({
-      where: { dealerId_type: { dealerId: d.dealerId, type: 'PAN_CARD' } },
+      where: { dealerId_category: { dealerId: d.dealerId, category: 'PERSONAL_IDENTITY' } },
     });
     await h.prisma.dealerDocument.update({ where: { id: doc.id }, data: { reviewedAt: null } });
     expect((await decision(d.dealerId, 'VERIFIED', 1, { assessment })).body.code).toBe(
@@ -334,7 +335,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
     const d = await candidate();
     await verified(d.dealerId);
     const doc = await h.prisma.dealerDocument.findUniqueOrThrow({
-      where: { dealerId_type: { dealerId: d.dealerId, type: 'PAN_CARD' } },
+      where: { dealerId_category: { dealerId: d.dealerId, category: 'PERSONAL_IDENTITY' } },
     });
     await admin
       .post(`/v1/admin/documents/${doc.id}/reject`)

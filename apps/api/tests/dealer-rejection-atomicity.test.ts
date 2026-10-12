@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { setTimeout as pause } from 'node:timers/promises';
 
 import { Client } from 'pg';
@@ -53,10 +54,16 @@ async function application(verify = true) {
     .send({ gstin: `33REJEC${number}B1ZX`, pan: `REJEC${number}B` })
     .expect(200);
   const documents: string[] = [];
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
       .post('/v1/dealer/documents/presign')
-      .send({ type, fileName: 'verification.pdf', mimeType: 'application/pdf', bytes: 8 })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'verification.pdf',
+        mimeType: 'application/pdf',
+        bytes: 8,
+      })
       .expect(201);
     const url = new URL(String(presigned.body.uploadUrl));
     await dealer.agent
@@ -65,7 +72,7 @@ async function application(verify = true) {
       .send(Buffer.from('%PDF-1.4'))
       .expect(200);
     await dealer.agent
-      .post(`/v1/dealer/documents/${type}/commit`)
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
     documents.push(String(presigned.body.documentId));

@@ -27,6 +27,7 @@ import {
   normaliseDealerEmail,
   withDealerEmailConflict,
   type DealersService,
+  EMPTY_DOCUMENT_SLOTS,
 } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
 import { ADMIN_MEMBERSHIP_LOCK, isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
@@ -395,11 +396,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           });
 
           await tx.dealerDocument.createMany({
-            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
-              dealerId: dealer.id,
-              type,
-              status: 'REQUIRED' as const,
-            })),
+            data: EMPTY_DOCUMENT_SLOTS.map((slot) => ({ ...slot, dealerId: dealer.id })),
           });
 
           await audit.record(tx, {

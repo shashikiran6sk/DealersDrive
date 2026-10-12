@@ -159,11 +159,14 @@ export const salesDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/sales/dealers/:id/documents/:type/commit',
+      path: '/v1/sales/dealers/:id/documents/:category/commit',
       operationId: 'commitAssistedDealerDocument',
       tag: DOC_TAGS.sales,
       summary: 'Commit an uploaded KYC document',
-      description: 'Confirms the object exists and marks the document uploaded.',
+      description:
+        'Confirms the object exists, reads it back to check its size and content type, and ' +
+        'marks the document submitted. Documents are voluntary during assisted onboarding: the ' +
+        'representative attaches them only when the dealer chooses to supply them.',
       audience: 'admin',
       permission: 'sales:dealer:edit',
       params: 'SalesDealerDocParam',
@@ -176,7 +179,7 @@ export const salesDocs: ModuleDocs = {
     },
     {
       method: 'delete',
-      path: '/v1/sales/dealers/:id/documents/:type',
+      path: '/v1/sales/dealers/:id/documents/:category',
       operationId: 'deleteAssistedDealerDocument',
       tag: DOC_TAGS.sales,
       summary: 'Remove a KYC document',

@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { randomUUID } from 'node:crypto';
 
 import type request from 'supertest';
@@ -67,14 +68,20 @@ async function application(stage: 'PENDING_APPROVAL' | 'ACTIVE') {
     .patch('/v1/dealer/onboarding')
     .send({ gstin: `33YARDM${number}B1ZX`, pan: `YARDM${number}B` })
     .expect(200);
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
       .post('/v1/dealer/documents/presign')
-      .send({ type, fileName: 'kyc.pdf', mimeType: 'application/pdf', bytes: PDF.length })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'kyc.pdf',
+        mimeType: 'application/pdf',
+        bytes: PDF.length,
+      })
       .expect(201);
     await put(dealer.agent, presigned.body.uploadUrl, 'application/pdf', PDF);
     await dealer.agent
-      .post(`/v1/dealer/documents/${type}/commit`)
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
   }

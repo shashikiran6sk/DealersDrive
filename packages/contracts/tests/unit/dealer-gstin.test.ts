@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { OptionalGstin, requiredDealerDocuments } from '../../src/dealer-gstin.js';
+import { documentRequirement, isSubmittedDocument } from '../../src/dealer-documents.js';
+import { OptionalGstin } from '../../src/dealer-gstin.js';
 import { UpdateDealerInput } from '../../src/dealer.js';
 import { CreateAssistedDealerInput, UpdateAssistedDealerInput } from '../../src/sales.js';
 describe('optional GSTIN contracts', () => {
@@ -20,12 +21,14 @@ describe('optional GSTIN contracts', () => {
       expect(OptionalGstin.safeParse(value).success).toBe(false);
     },
   );
-  it('requires the certificate when GSTIN is supplied and preserves other business checks', () => {
-    expect(requiredDealerDocuments(null)).toEqual(['PAN_CARD', 'ADDRESS_PROOF']);
-    expect(requiredDealerDocuments('33AABCS1429P1Z5')).toEqual([
+  it('requires the certificate as the business proof when GSTIN is supplied', () => {
+    const docs = [
+      { type: 'PAN_CARD' as const, status: 'UPLOADED' as const, fileName: 'pan.pdf' },
+      { type: 'UDYAM' as const, status: 'UPLOADED' as const, fileName: 'udyam.pdf' },
+    ];
+    expect(documentRequirement(docs, null, isSubmittedDocument).gaps).toEqual([]);
+    expect(documentRequirement(docs, '33AABCS1429P1Z5', isSubmittedDocument).gaps).toEqual([
       'GST_CERTIFICATE',
-      'PAN_CARD',
-      'ADDRESS_PROOF',
     ]);
   });
 });

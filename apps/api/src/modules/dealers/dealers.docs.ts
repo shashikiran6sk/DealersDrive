@@ -245,12 +245,14 @@ export const dealersDocs: ModuleDocs = {
       path: '/v1/dealer/documents',
       operationId: 'listDealerDocuments',
       tag: DOC_TAGS.dealerAccount,
-      summary: 'KYC document status',
+      summary: 'Identity and business document slots',
       description:
-        'Business document slots — PAN/address are required by platform policy, GST certificate is required when GSTIN is supplied — each with ' +
-        'its status and rejection reason if it has one. Rows are returned for documents that ' +
-        'have not been uploaded yet, so the checklist is complete rather than growing. ' +
-        'Verification is the owner’s business, so this needs `document:upload` (R92).',
+        'One slot per category — Personal Identity Proof and Business Identity Proof — each ' +
+        'with the types it accepts and the document the dealership chose for it, its review ' +
+        'status and any rejection reason. Submission needs one of each; with a GSTIN on file the ' +
+        'business proof is its GST Registration Certificate. `requirementMet` and `gaps` say ' +
+        'which is still missing. A legacy supporting document an older application holds is in ' +
+        '`data`. Verification is the owner’s business, so this needs `document:upload` (R92).',
       audience: 'dealer',
       permission: 'document:upload',
       responses: [
@@ -271,7 +273,10 @@ export const dealersDocs: ModuleDocs = {
         'rejected at the storage edge if the actual file disagrees — the limits are not ' +
         'advisory.\n\n' +
         'Then `PUT` the bytes to `uploadUrl` with the returned `headers`, and finish with ' +
-        '`POST /v1/dealer/documents/{type}/commit`.\n\n' +
+        '`POST /v1/dealer/documents/{category}/commit`.\n\n' +
+        '`type` must belong to `category`; `OTHER_BUSINESS_CERTIFICATE` needs a `description` ' +
+        'and no other type takes one; the file name extension must match `mimeType`. Choosing a ' +
+        'new file for a slot replaces the one it held.\n\n' +
         'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
         'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
         '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
@@ -282,6 +287,7 @@ export const dealersDocs: ModuleDocs = {
         schema: 'DocumentPresignInput',
         description: 'What is about to be uploaded.',
         example: {
+          category: 'BUSINESS_IDENTITY',
           type: 'GST_CERTIFICATE',
           fileName: 'gst-certificate.pdf',
           mimeType: 'application/pdf',
@@ -299,7 +305,7 @@ export const dealersDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/dealer/documents/:type/commit',
+      path: '/v1/dealer/documents/:category/commit',
       operationId: 'commitDealerDocument',
       tag: DOC_TAGS.dealerAccount,
       summary: 'Confirm a KYC upload',
@@ -307,13 +313,17 @@ export const dealersDocs: ModuleDocs = {
         'Step 2 of 2. Verifies the object actually landed in storage before marking the ' +
         'document uploaded — a presign that was never followed by a `PUT` must not leave a ' +
         'document looking complete. A missing object is a 422 `UPLOAD_MISSING`.\n\n' +
+        'The stored bytes are then read back: a size that differs from the presign is a 422 ' +
+        '`DOCUMENT_SIZE_MISMATCH`, and content that is not a PDF, JPEG or PNG of the declared ' +
+        'type is a 422 `DOCUMENT_CONTENT_MISMATCH`. Either way the object is deleted and the ' +
+        'slot is emptied. Committing an already committed document returns it unchanged.\n\n' +
         'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
         'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
         '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
-        '`type` in the path must match the type the document was presigned as.',
+        '`category` in the path must match the slot the document was presigned into.',
       audience: 'dealer',
       permission: 'document:upload',
-      params: 'DocTypeParam',
+      params: 'DocCategoryParam',
       requestBody: {
         schema: 'DocumentCommitInput',
         description: 'The `documentId` returned by presign.',
@@ -330,7 +340,7 @@ export const dealersDocs: ModuleDocs = {
     },
     {
       method: 'delete',
-      path: '/v1/dealer/documents/:type',
+      path: '/v1/dealer/documents/:category',
       operationId: 'deleteDealerDocument',
       tag: DOC_TAGS.dealerAccount,
       summary: 'Remove a KYC document',
@@ -342,7 +352,7 @@ export const dealersDocs: ModuleDocs = {
         'OWNER only (`document:upload`).',
       audience: 'dealer',
       permission: 'document:upload',
-      params: 'DocTypeParam',
+      params: 'DocCategoryParam',
       responses: [{ status: 204, description: 'Deleted.' }],
       errors: [400, 401, 403, 404, 409],
     },

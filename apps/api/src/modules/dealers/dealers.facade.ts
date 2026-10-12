@@ -10,5 +10,6 @@ export {
 } from './dealer-email-identity.js';
 
 export { invalidateDealerVerification } from './dealer-verification.js';
+export { EMPTY_DOCUMENT_SLOTS } from './dealer-documents.mapper.js';
 
 export { withDealerRegistrationConflict } from './dealer-registration-conflict.js';

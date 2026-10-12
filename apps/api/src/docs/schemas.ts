@@ -31,7 +31,7 @@ const INPUT_SCHEMA_NAMES = [
   'IdParam',
   'SlugParam',
   'IdOrSlugParam',
-  'DocTypeParam',
+  'DocCategoryParam',
   'CursorQuery',
   'AdminDealerQuery',
   'DealerDirectoryQuery',

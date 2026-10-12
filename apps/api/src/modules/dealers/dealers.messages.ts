@@ -8,3 +8,12 @@ export const ALREADY_SUBMITTED = 'This dealership has already been submitted for
 
 export const APPLICATION_CLOSED =
   'This application has been closed and can no longer be submitted. Contact support.';
+
+export const DOCUMENT_CONTENT_MISMATCH =
+  'That file is not a readable PDF, JPEG or PNG of the type it was uploaded as. Choose the original document and upload it again.';
+
+export const DOCUMENT_SIZE_MISMATCH =
+  'The upload did not arrive complete. Upload the document again.';
+
+export const SUBMITTED_MESSAGE =
+  'Our team reviews your identity and business documents. Most dealerships hear back within one working day.';

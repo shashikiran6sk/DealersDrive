@@ -3,9 +3,12 @@ import {
   DEALER_VERIFICATION_TRANSITIONS,
   DealerVerificationAssessment,
   DealerVerificationStatus,
+  documentRequirement,
+  isVerifiedDocument,
   type DealerVerificationDecisionInput,
   type DealerVerificationReview,
 } from '@dealers-drive/contracts';
+import type { DealerDocType, DocStatus } from '@prisma/client';
 import { z } from 'zod';
 
 import { withTransaction } from '../../platform/db/tenant-tx.js';
@@ -54,20 +57,19 @@ async function currentReviewer(tx: Tx, admin: AdminPrincipal): Promise<void> {
 
 type EvidenceDocument = {
   id: string;
-  type: string;
-  status: string;
+  type: DealerDocType;
+  status: DocStatus;
   fileName: string | null;
   reviewedBy: string | null;
   reviewedAt: Date | null;
 };
 
+function reviewed(doc: EvidenceDocument): boolean {
+  return isVerifiedDocument(doc) && Boolean(doc.reviewedBy) && Boolean(doc.reviewedAt);
+}
+
 function requiredEvidence<T extends EvidenceDocument>(documents: T[], gstin: string | null): T[] {
-  return documents.filter(
-    (doc) =>
-      doc.type === 'PAN_CARD' ||
-      doc.type === 'ADDRESS_PROOF' ||
-      (gstin !== null && doc.type === 'GST_CERTIFICATE'),
-  );
+  return documentRequirement(documents, gstin, reviewed).satisfiedBy ?? [];
 }
 
 function evidenceFingerprint(slug: string, documents: EvidenceDocument[]): string {
@@ -228,14 +230,7 @@ export function createDealerVerificationService({
           await tx.$queryRaw`SELECT "id" FROM "dealer_documents" WHERE "dealerId"=${dealerId}::uuid ORDER BY "id" FOR UPDATE`;
           const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
           const required = requiredEvidence(documents, dealer.gstin);
-          const expected = dealer.gstin ? 3 : 2;
-          if (
-            required.length !== expected ||
-            required.some(
-              (doc) =>
-                doc.status !== 'VERIFIED' || !doc.fileName || !doc.reviewedBy || !doc.reviewedAt,
-            )
-          )
+          if (required.length === 0)
             throw new DomainError(
               'VERIFICATION_DOCUMENTS_REQUIRED',
               'Review the applicable uploaded business documents before granting a badge.',

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { DealerDocCategory } from './dealer-documents.js';
+
 import { CursorPage, Uuid } from './common.js';
 import { GST_REVIEW_MAX_LENGTH, GST_REVIEW_MIN_LENGTH } from './dealer-gstin.js';
 import {
@@ -161,12 +163,19 @@ export type AdminDealersResponse = z.infer<typeof AdminDealersResponse>;
 
 export const AdminDealerDocument = z.object({
   id: Uuid,
+  category: DealerDocCategory,
+  categoryLabel: z.string(),
   type: DealerDocType,
   label: z.string(),
   status: DocStatus,
   fileName: z.string().nullable(),
+  mimeType: z.string().nullable(),
+  description: z.string().nullable(),
   bytes: z.number().int().nullable(),
   uploadedAt: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
+  /** Above one means the dealership resubmitted this slot after a rejection or replacement. */
+  submissionCount: z.number().int().min(0),
   /** Short-lived, audit-logged, and the only way a document is ever read. */
   viewUrl: z.string().nullable(),
   viewUrlExpiresAt: z.string().nullable(),
@@ -303,6 +312,19 @@ export const AdminDealerDetail = z.object({
   }),
   documents: z.array(AdminDealerDocument),
   allDocumentsVerified: z.boolean(),
+  /** What is still missing from the document requirement, by category (empty when met). */
+  documentGaps: z.array(z.string()),
+  /** Document review decisions and submissions, newest first, from the audit log. */
+  documentHistory: z.array(
+    z.object({
+      at: z.string(),
+      action: z.enum(['SUBMITTED', 'VERIFIED', 'REJECTED']),
+      category: DealerDocCategory.nullable(),
+      type: DealerDocType.nullable(),
+      reason: z.string().nullable(),
+      actorType: z.string(),
+    }),
+  ),
   /**
    * The edit this dealership is waiting on, or `null` (**R34**).
    *

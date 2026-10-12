@@ -519,20 +519,31 @@ enum InvitationStatus {
 // mean the repository this feature exists to deliver did not match the
 // baseline. F040 brings the service paths, the API and the tests.
 model DealerDocument {
-  id              String        @id @default(uuid()) @db.Uuid
-  dealerId        String        @db.Uuid
+  id              String            @id @default(uuid()) @db.Uuid
+  dealerId        String            @db.Uuid
+  /// The slot: one document per category per dealership. CHECK
+  /// `dealer_documents_category_type_check` keeps `type` inside it.
+  category        DealerDocCategory
   type            DealerDocType
-  mediaId         String?       @db.Uuid
+  mediaId         String?           @db.Uuid
   fileName        String?
-  status          DocStatus     @default(REQUIRED)
+  /// Required for OTHER_BUSINESS_CERTIFICATE, refused for every other type.
+  description     String?
+  /// As declared at presign and confirmed against the stored bytes at commit.
+  mimeType        String?
+  bytes           Int?
+  uploadedAt      DateTime?
+  /// How many times a file has been committed into this slot; above one is a resubmission.
+  submissionCount Int               @default(0)
+  status          DocStatus         @default(REQUIRED)
   rejectionReason String?
-  reviewedBy      String?       @db.Uuid
+  reviewedBy      String?           @db.Uuid
   reviewedAt      DateTime?
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime          @default(now())
 
   dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
 
-  @@unique([dealerId, type])
+  @@unique([dealerId, category])
   @@index([status, createdAt])
   @@map("dealer_documents")
 }
@@ -647,6 +658,23 @@ enum DealerDocType {
   GST_CERTIFICATE
   PAN_CARD
   ADDRESS_PROOF
+  AADHAAR
+  VOTER_ID
+  DRIVING_LICENCE
+  PASSPORT
+  SHOP_ESTABLISHMENT
+  UDYAM
+  TRADE_LICENSE
+  BUSINESS_REGISTRATION
+  PARTNERSHIP_REGISTRATION
+  RTO_DEALER_AUTHORIZATION
+  OTHER_BUSINESS_CERTIFICATE
+}
+
+enum DealerDocCategory {
+  PERSONAL_IDENTITY
+  BUSINESS_IDENTITY
+  SUPPORTING
 }
 
 enum DocStatus {

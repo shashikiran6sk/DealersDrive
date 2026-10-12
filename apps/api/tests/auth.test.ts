@@ -215,7 +215,7 @@ describe('a first sign-in', () => {
 });
 
 describe('onboarding', () => {
-  it('creates the dealership, the OWNER seat and the KYC placeholders', async () => {
+  it('creates the dealership, the OWNER seat and the two empty document slots', async () => {
     const agent = h.agent();
     await h.signIn(agent);
 
@@ -244,7 +244,11 @@ describe('onboarding', () => {
     expect(dealer?.slug).toMatch(/^katpadi-auto-gallery/);
     expect(dealer?.members).toHaveLength(1);
     expect(dealer?.members[0]?.role).toBe('OWNER');
-    expect(dealer?.documents).toHaveLength(3);
+    expect(dealer?.documents.map((doc) => doc.category).sort()).toEqual([
+      'BUSINESS_IDENTITY',
+      'PERSONAL_IDENTITY',
+    ]);
+    expect(dealer?.documents.every((doc) => doc.status === 'REQUIRED')).toBe(true);
     expect(dealer?.contactPhone).toMatch(/^\+9198400\d{5}$/);
   });
 
