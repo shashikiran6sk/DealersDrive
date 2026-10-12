@@ -63,9 +63,6 @@ export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly Notifi
   ],
   DealerSuspended: [{ template: 'dealer.account.suspended', audience: DEALER, reason: true }],
   DealerReinstated: [{ template: 'dealer.account.reinstated', audience: DEALER }],
-  DealerEmailVerificationRequested: [
-    { template: 'dealer.email.verify', audience: DEALER, subjectKey: 'verificationId' },
-  ],
   DealerProfileChangeSubmitted: [
     {
       template: 'admin.profile-change.submitted',

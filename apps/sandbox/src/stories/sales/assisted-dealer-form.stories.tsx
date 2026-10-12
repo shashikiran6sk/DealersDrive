@@ -10,7 +10,6 @@ function saved(): Promise<SalesActionResult> {
 const FILLED = {
   legalName: 'Sri Murugan Cars',
   contactName: 'Murugan',
-  email: 'murugan.cars@example.in',
   addressLine1: '12 Gandhi Road',
   city: 'Katpadi',
   district: 'Vellore',
@@ -31,7 +30,7 @@ const meta = {
   args: {
     initial: {},
     initialServices: [],
-    submitLabel: 'Create dealership',
+    submitLabel: 'Save and continue',
     partial: false,
     disabled: false,
     onSubmit: saved,
@@ -39,8 +38,15 @@ const meta = {
   argTypes: {
     submitLabel: { control: 'text' },
     partial: { control: 'boolean', description: 'Edit sends only the fields that are filled.' },
-    disabled: { control: 'boolean', description: 'Locked once submitted or claimed.' },
+    disabled: {
+      control: 'boolean',
+      description: 'Locked once the dealership is no longer a draft.',
+    },
     onSubmit: { control: false },
+    doneHref: {
+      control: 'text',
+      description: 'Where to go after a successful save — the documents step (#299).',
+    },
   },
 } satisfies Meta<typeof AssistedDealerForm>;
 
@@ -54,20 +60,21 @@ export const Edit: Story = {
   args: {
     initial: FILLED,
     initialServices: ['FINANCE'],
-    submitLabel: 'Save details',
+    submitLabel: 'Save and continue',
     partial: true,
+    doneHref: '/sales/dealers/d-1/documents',
   },
 };
 
 export const Refused: Story = {
   name: 'Server refusal, by field',
   args: {
-    initial: { ...FILLED, email: 'not-an-email' },
+    initial: { ...FILLED, pincode: '12' },
     onSubmit: () =>
       Promise.resolve({
         ok: false,
         message: 'Check the highlighted fields.',
-        fieldErrors: { email: 'Enter a valid email address.' },
+        fieldErrors: { pincode: 'Enter a 6-digit pincode.' },
       }),
   },
 };

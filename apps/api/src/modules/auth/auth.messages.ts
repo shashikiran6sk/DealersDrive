@@ -47,3 +47,21 @@ export const MERGE_REFUSED_CONFLICTING =
 
 export const MERGE_REFUSED_UNAVAILABLE =
   'This mobile number is already on another account that cannot be linked. Contact support.';
+
+export const OWNER_IDENTITY_SPLIT =
+  'This mobile number and this email belong to two different Dealers-Drive accounts. Contact support to combine them.';
+
+export const OWNER_PHONE_MISMATCH =
+  'This email belongs to an account with a different mobile number. Use that number, or a different email.';
+
+export const OWNER_EMAIL_MISMATCH =
+  'This mobile number belongs to an account with a different email. Use that email, or a different number.';
+
+export const OWNER_STAFF_ACCOUNT =
+  'This phone or email belongs to a Dealers-Drive staff account, which cannot own a dealership. Use the dealer’s own details.';
+
+export const OWNER_ACCOUNT_UNAVAILABLE =
+  'The account for this phone or email is suspended and cannot own a dealership. Contact support.';
+
+export const OWNER_HAS_DEALERSHIP =
+  'This phone or email already belongs to someone who manages a dealership on Dealers-Drive.';

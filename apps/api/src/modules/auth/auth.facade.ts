@@ -20,6 +20,8 @@ export { isAllowlistedAdmin } from './admin-allowlist.js';
 
 export { assertPhoneVerified } from './verified-phone.js';
 
+export { provisionOwnerAccount, type OwnerAccount, type VerifiedContact } from './owner-account.js';
+
 export type { PhoneProofService } from './phone-proof.service.js';
 export type { IdentityService } from './identity.service.js';
 export type { SessionService } from './session.service.js';

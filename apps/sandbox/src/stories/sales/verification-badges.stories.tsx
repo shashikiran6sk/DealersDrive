@@ -21,8 +21,8 @@ type Story = StoryObj<typeof meta>;
 
 export const EmailPending: Story = { name: 'Phone verified, email pending' };
 
-export const Claimed: Story = {
-  name: 'Verified and claimed',
+export const OwnerLinked: Story = {
+  name: 'Verified, owner account linked',
   args: { dealer: { phoneVerified: true, emailVerified: true, claimed: true } },
 };
 

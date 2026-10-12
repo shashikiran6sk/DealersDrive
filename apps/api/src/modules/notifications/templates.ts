@@ -21,7 +21,7 @@ export type TemplateName =
   | 'admin.profile-change.submitted'
   | 'dealer.profile-change.approved'
   | 'dealer.profile-change.rejected'
-  | 'dealer.email.verify'
+  | 'dealer.email.code'
   | 'admin.listing.submitted'
   | 'admin.listing.resubmitted'
   | 'dealer.listing.approved'
@@ -71,6 +71,7 @@ export interface TemplateContext {
   dealerSlug?: string | null;
   actionUrl?: string;
   expiresAt?: Date;
+  code?: string;
   listing?: ListingContext;
   enquiry?: EnquiryContext;
   ticket?: TicketContext;
@@ -257,16 +258,19 @@ export function render(template: TemplateName, context: TemplateContext): Render
         action: { label: 'Open your profile', url: `${CONSOLE}/profile` },
       });
 
-    case 'dealer.email.verify':
+    case 'dealer.email.code':
       return compose({
-        subject: `Confirm your email and claim ${context.dealerName} — Dealers-Drive`,
-        heading: 'Your dealership is set up — confirm it is yours',
+        subject: 'Your Dealers-Drive verification code',
+        heading: 'Your verification code',
         greeting: context.contactName,
         paragraphs: [
-          `A Dealers-Drive representative has set up ${context.dealerName} with you. Confirm this email address, then verify your mobile number, and the dealership is yours to manage.`,
-          `The link works until ${expiryOf(context)} IST and only once. If you did not meet anyone from Dealers-Drive, ignore this email — nothing happens without the code sent to the dealership's phone.`,
+          'A Dealers-Drive representative is registering your dealership with you. Read this code to them to confirm this email address:',
         ],
-        action: { label: 'Confirm and claim', url: context.actionUrl ?? CONSOLE },
+        quote: context.code ?? '',
+        paragraphsAfter: [
+          `The code works until ${expiryOf(context)} IST and only once. Once your phone and email are confirmed, you sign in to Dealers-Drive with either of them — Google or a code to your phone.`,
+          'If you are not registering a dealership with Dealers-Drive, ignore this email. Nothing happens without this code.',
+        ],
       });
 
     case 'admin.listing.submitted':

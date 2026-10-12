@@ -986,6 +986,20 @@ Google verifying `owner@example.com` today says nothing about who held that
 address when the dealership was created, and silently merging on a matching
 string is how an expired domain becomes somebody else's inventory.
 
+### `function ownerAwaitingGoogle(`
+
+The one exception, and why it is safe. A dealership created by a Sales
+representative already has its OWNER account, whose email **we** verified with
+a code minutes or days ago (`emailVerifiedAt` set by `provisionOwnerAccount`).
+When Google then verifies the same address for a sign-in, two independent
+verifications of one inbox agree, so the identity is linked rather than refused
+— the dealer lands in their dealership instead of a second, empty account. It
+applies only to an account with no Google identity yet, a verified email on
+both sides, and an active OWNER membership of an **assisted** dealership whose
+verified contact email is this address — the one case where we proved the inbox
+ourselves at creation. A self-onboarded owner, or any account whose email was
+set some other way, keeps the refusal.
+
 ### `emailVerifiedAt: new Date()`
 
 Google is the verifier. There is no separate email round trip, and
@@ -1741,3 +1755,17 @@ Transaction authority for dealer writes. The caller first obtains its existing r
 ### `async function lockedRow<T>(`
 
 Shared row locks protect authority until commit. SKIP LOCKED plus a nonlocking existence check distinguishes absence from a conflicting operation and fails closed with409 AUTHORIZATION_BUSY. It does not wait while holding a listing resource, because rejection can hold the dealer and wait for that resource during its deletion cascade. This prevents a new lock cycle rather than retrying an unhandled database deadlock. An absent legacy dealer seat keeps its existing neutral semantics; an exclusive user lock and second seat read protect concurrent seat insertion via its foreign key. The transaction must contain no nontransactional effects before authorization succeeds.
+
+## `apps/api/src/modules/auth/owner-account.ts`
+
+### `export async function provisionOwnerAccount(`
+
+The account a Sales representative's Step 1 proves — a phone by OTP and an
+email by code — becomes the OWNER of the new dealership in the same
+transaction that creates it. An existing account is reused when the phone and
+the email lead to the same one (or only one of them leads anywhere and the
+other is not set on it); it is refused when they lead to two different
+accounts, when the account is staff in any form (a representative must never
+own a dealership), when its dealer seat is suspended or the account inactive,
+and when it already belongs to a dealership — the one-dealership rule
+onboarding enforces. Verified timestamps already on the account are kept.

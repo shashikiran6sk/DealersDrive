@@ -55,6 +55,7 @@ describe('the exported surface', () => {
         'permissionsForAdminRole',
         'permissionsForMember',
         'permissionsForRole',
+        'provisionOwnerAccount',
         'revokeAdminSessions',
         'setSeatStatus',
         'syncLegacyAdminColumns',

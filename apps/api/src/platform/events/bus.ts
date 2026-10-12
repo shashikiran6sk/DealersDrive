@@ -29,7 +29,6 @@ export type DomainEventType =
   | 'DealerApplicationClosed'
   | 'DealerProfileChangeSubmitted'
   | 'DealerProfileChangeDecided'
-  | 'DealerEmailVerificationRequested'
   | 'VehicleCreated'
   | 'VehicleUpdated'
   | 'VehicleSold'

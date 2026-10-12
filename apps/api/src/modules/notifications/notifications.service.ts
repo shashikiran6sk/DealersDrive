@@ -16,7 +16,6 @@ import type { MailerPort } from '../../platform/mail/mail.port.js';
 import { PermanentMailError } from '../../platform/mail/resend.adapter.js';
 import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { isAdmitted } from '../auth/auth.facade.js';
 import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notification.rules.js';
 import {
@@ -31,7 +30,6 @@ export interface NotificationsDeps {
   prisma: PrismaClient;
   queue: Queue;
   mailer: MailerPort;
-  claimLinks?: Pick<DealerClaimsService, 'issueLink'>;
 }
 
 export interface EmailJob extends Record<string, unknown> {
@@ -51,12 +49,7 @@ export interface EmailJob extends Record<string, unknown> {
 
 export const MAX_DELIVERY_ATTEMPTS = 6;
 
-export function createNotificationsService({
-  prisma,
-  queue,
-  mailer,
-  claimLinks,
-}: NotificationsDeps) {
+export function createNotificationsService({ prisma, queue, mailer }: NotificationsDeps) {
   async function enqueue(job: EmailJob): Promise<void> {
     await queue.send('notification.email', job);
     logger.info(
@@ -93,11 +86,6 @@ export function createNotificationsService({
   };
 
   async function handleEmailJob(job: EmailJob): Promise<void> {
-    if (job.template === 'dealer.email.verify') {
-      await sendClaimLink(job);
-      return;
-    }
-
     if (job.ticketId) {
       await sendTicketMail(job, job.ticketId);
       return;
@@ -259,43 +247,6 @@ export function createNotificationsService({
       title: vehicleTitle(listing.vehicle) || plate,
       plate,
     };
-  }
-
-  async function sendClaimLink(job: EmailJob): Promise<void> {
-    if (!claimLinks) {
-      logger.warn({ template: job.template, dealerId: job.dealerId }, 'email skipped — no links');
-      return;
-    }
-    const sent = await prisma.notificationDelivery.findFirst({
-      where: {
-        template: job.template,
-        dedupeKey: { startsWith: `${job.template}:${job.subjectId}:` },
-        status: 'SENT',
-      },
-      select: { id: true },
-    });
-    if (sent) {
-      logger.debug({ subjectId: job.subjectId }, 'verification email already sent — skipping');
-      return;
-    }
-    const link = await claimLinks.issueLink(job.subjectId);
-    if (!link) {
-      logger.info(
-        { template: job.template, dealerId: job.dealerId },
-        'email skipped — verification superseded or claimed',
-      );
-      return;
-    }
-    await sendOne(
-      job,
-      { email: link.email, name: link.name },
-      {
-        dealerName: link.dealerName,
-        contactName: link.name,
-        actionUrl: link.url,
-        expiresAt: link.expiresAt,
-      },
-    );
   }
 
   async function sendOne(

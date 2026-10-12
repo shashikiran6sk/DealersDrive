@@ -17,6 +17,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
 
+import { navigationState } from '../../../setup';
+
 /** The details form shared by create and edit: what it sends, and how a refusal reads. */
 describe('AssistedDealerForm', () => {
   it('sends only filled fields, upper-casing GSTIN and PAN', async () => {
@@ -83,7 +85,7 @@ describe('AssistedDealerForm', () => {
           Promise.resolve({
             ok: false,
             message: 'Check the highlighted fields.',
-            fieldErrors: { email: 'Enter a valid email address.' },
+            fieldErrors: { contactName: 'Enter the contact person’s name.' },
           })
         }
       />,
@@ -91,8 +93,8 @@ describe('AssistedDealerForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create dealership' }));
 
-    expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Dealer’s email/)).toHaveAttribute('aria-invalid', 'true');
+    expect(await screen.findByText('Enter the contact person’s name.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Contact person/)).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByText('Check the highlighted fields.')).toBeInTheDocument();
   });
 
@@ -109,5 +111,39 @@ describe('AssistedDealerForm', () => {
     );
     expect(screen.getByLabelText(/Contact person/)).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Save details' })).toBeDisabled();
+  });
+
+  it('has no email field: the email comes from the verified ticket (#299)', () => {
+    render(
+      <AssistedDealerForm
+        initial={{}}
+        initialServices={[]}
+        submitLabel="Save and continue"
+        partial
+        onSubmit={vi.fn()}
+      />,
+    );
+    expect(screen.queryByLabelText(/email/i)).toBeNull();
+  });
+
+  it('goes on to the next step after a successful save', async () => {
+    navigationState.pushed.length = 0;
+    const user = userEvent.setup();
+    render(
+      <AssistedDealerForm
+        initial={{ legalName: 'Sri Murugan Cars' }}
+        initialServices={[]}
+        submitLabel="Save and continue"
+        partial
+        doneHref="/sales/dealers/d-1/documents"
+        onSubmit={() => Promise.resolve({ ok: true, dealerId: 'd-1' })}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }));
+
+    await waitFor(() => {
+      expect(navigationState.pushed).toContain('/sales/dealers/d-1/documents');
+    });
   });
 });

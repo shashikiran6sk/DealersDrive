@@ -10,7 +10,7 @@ export interface PhoneVerificationProps {
   fullName: string;
   verified: boolean;
   onVerified: (phone: string, result: PhoneVerificationState) => void;
-  onContinue: () => void;
+  onContinue?: () => void;
   onBeforeSend: (form: HTMLFormElement | null) => boolean;
   onRefused?: (message: string) => void;
   initialStage?: PhoneStage;

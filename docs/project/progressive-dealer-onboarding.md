@@ -11,12 +11,35 @@ requirement.
 
 ## The stages
 
-| Step | What it collects                                                                                   | Who must finish it                                                                      |
-| ---- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| 1    | Account: verified Google identity (or the assisted claim flow), proved mobile number, consent      | Dealer, or the sales representative on the dealer's handset                             |
-| 2    | Business details: legal name, address, district, state, pin, Maps link, services; GSTIN/PAN if any | Dealer, or the sales representative — **the representative's mandatory work ends here** |
-| 3    | Documents: one Personal Identity Proof and one Business Identity Proof                             | Dealer after claiming, or the representative if the dealer hands them over              |
-| 4    | Submit for review                                                                                  | Dealer or representative, once steps 1–3 are complete                                   |
+| Step | What it collects                                                                                                       | Who must finish it                                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1    | Account: a verified mobile number **and** a verified email, consent. Self-onboarding: Google (email) + phone OTP       | Dealer, or the sales representative with the dealer's handset and inbox                 |
+| 2    | Business details: legal name, address, district, state, pin, Maps link, services; GSTIN/PAN if any — Save and continue | Dealer, or the sales representative — **the representative's mandatory work ends here** |
+| 3    | Documents: one Personal Identity Proof and one Business Identity Proof (a separate page)                               | Dealer from their own account, or the representative if the dealer hands them over      |
+| 4    | Submit for review                                                                                                      | Dealer or representative, once steps 1–3 are complete                                   |
+
+### Verify first (assisted onboarding)
+
+The representative cannot save anything until Step 1 has proved both contact
+points: an OTP on the dealer's mobile and a 6-digit code emailed to the dealer
+(10 minutes, 5 attempts, one resend a minute, five an hour; sent through the
+configured mailer — Resend in production). The account those two prove — an
+existing one, or a new one — becomes the dealership's **OWNER** in the same
+transaction that creates the draft. The dealer then signs in with Google on that
+email, or with a phone code on that number, and lands in the dealership. There
+is no claim link and no claim email any more.
+
+- Refused: a staff account as owner, an account that already belongs to a
+  dealership, and a phone and an email that belong to two different accounts.
+- Google sign-in links automatically only when both sides verified the same
+  email (our code, Google's token) and the account owns a dealership.
+- Approval and manual activation require the owner's verified phone **and**
+  email (`CONTACT_NOT_VERIFIED`).
+- Dealerships assisted before this change have no owner. The representative
+  opens one and uses **Verify now**: the dealership's own mobile by OTP and an
+  email by code. Until then it cannot be approved. The `dealer_email_verifications`
+  table is no longer written; it is kept (no destructive migration) and can be
+  dropped once no row is needed.
 
 A DRAFT is saved without documents. Documents are needed only to **submit**.
 

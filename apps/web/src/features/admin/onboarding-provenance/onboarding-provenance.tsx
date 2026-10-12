@@ -43,7 +43,7 @@ export function OnboardingProvenance({ onboarding }: { onboarding: DealerOnboard
         {assisted ? (
           <>
             <dt className="ink-muted">{PROVENANCE_TEXT.owner}</dt>
-            <dd>{onboarding.claimed ? PROVENANCE_TEXT.claimed : PROVENANCE_TEXT.unclaimed}</dd>
+            <dd>{onboarding.claimed ? PROVENANCE_TEXT.ownerLinked : PROVENANCE_TEXT.noOwner}</dd>
           </>
         ) : null}
       </dl>

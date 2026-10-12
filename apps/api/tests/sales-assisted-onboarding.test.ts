@@ -3,16 +3,20 @@ import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { env } from '../src/config/env.js';
+import { issueAssistedTicket } from '../src/modules/sales/assisted-ticket.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
+import { lastEmailCode, proveEmail, requestEmailCode } from './sales-kit.js';
 
 /**
  * R112 — a Sales Representative onboards a dealership with the dealer.
  *
- * The phone is proved on the dealer's handset by OTP, the email is captured
- * unverified, the documents go up the ordinary private path, and submission
- * enters the ordinary review — the same row, the same lifecycle, the same
- * emails. The representative never decides anything, and never sees a
- * dealership they did not assist.
+ * Verify first: the phone is proved on the dealer's handset by OTP and the
+ * email by a 6-digit code from the dealer's inbox, and the account those two
+ * prove becomes the dealership's OWNER before any business detail is saved —
+ * so the dealer signs in with Google or a phone code and lands in it. The
+ * documents go up the ordinary private path, and submission enters the
+ * ordinary review. The representative never decides anything, and never sees
+ * a dealership they did not assist.
  */
 let h: AuthHarness;
 let superAdmin: request.Agent;
@@ -65,20 +69,36 @@ async function member(email: string, role: string): Promise<request.Agent> {
   return agent;
 }
 
-async function verify(agent: request.Agent, phone = freeNumber()) {
+interface Tickets {
+  phoneTicket: string;
+  emailTicket: string;
+}
+
+const NO_TICKETS: Tickets = { phoneTicket: 'unused', emailTicket: 'unused' };
+
+async function verify(agent: request.Agent, phone = freeNumber(), email = nextEmail('owner')) {
   const res = await agent
     .post('/v1/sales/dealers/phone/verify')
     .send({ phone, accessToken: devToken(phone), consent: true })
     .expect(200);
-  return { phone, ticket: res.body.phoneTicket as string, body: res.body };
+  const proved = await proveEmail(h, agent, email);
+  const tickets: Tickets = {
+    phoneTicket: res.body.phoneTicket as string,
+    emailTicket: proved.emailTicket,
+  };
+  return { phone, email: proved.email, tickets, body: res.body };
 }
 
-function details(ticket: string, overrides: Record<string, unknown> = {}) {
+async function memberIdOf(email: string): Promise<string> {
+  const row = await h.prisma.adminMember.findFirstOrThrow({ where: { user: { email } } });
+  return row.id;
+}
+
+function details(tickets: Tickets, overrides: Record<string, unknown> = {}) {
   counter += 1;
   return {
-    phoneTicket: ticket,
+    ...tickets,
     contactName: 'Murugan S',
-    email: `murugan.${String(counter)}@gmail.com`,
     legalName: `Assisted Motors ${String(counter)} ${Date.now().toString(36)}`,
     addressLine: '7, Arcot Road',
     city: 'Katpadi',
@@ -104,7 +124,7 @@ describe('primary dealer email conflicts', () => {
     await h.signIn(owner);
     const phone = freeNumber();
     await h.proveNumber(owner, phone);
-    const fields = details('unused');
+    const fields = details(NO_TICKETS);
     const created = await owner
       .post('/v1/auth/onboarding')
       .send({
@@ -130,23 +150,25 @@ describe('primary dealer email conflicts', () => {
       (await h.prisma.dealer.findUniqueOrThrow({ where: { id: created.body.dealer.id } }))
         .primaryOwnerEmail,
     ).toBe(email);
-    expect(await h.prisma.dealerMember.count({ where: { dealerId: reserved.dealer.id } })).toBe(0);
+    const members = await h.prisma.dealerMember.findMany({
+      where: { dealerId: reserved.dealer.id },
+    });
+    expect(members.map((m) => m.userId)).not.toContain(session.body.user.id);
+    expect(members).toHaveLength(1);
     expect(
       await h.prisma.auditLog.count({
         where: { action: 'auth.identity.email_update_blocked', entityId: session.body.user.id },
       }),
     ).toBe(1);
   });
+
   it.each(['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'SUSPENDED', 'CLOSED'] as const)(
-    'refuses conflicting registration regardless of %s application status',
+    'refuses to send a code to an address another dealership holds, whatever its %s status',
     async (status) => {
       const first = await draft();
       await h.prisma.dealer.update({ where: { id: first.dealer.id }, data: { status } });
-      const { ticket } = await verify(sales);
-      const rejected = await sales
-        .post('/v1/sales/dealers')
-        .send(details(ticket, { email: `  ${first.dealer.email.toUpperCase()}  ` }))
-        .expect(409);
+      const rejected = await requestEmailCode(sales, `  ${first.dealer.email.toUpperCase()}  `);
+      expect(rejected.status).toBe(409);
       expect(rejected.body).toMatchObject({
         code: 'DEALER_EMAIL_TAKEN',
         errors: [{ field: 'body.email' }],
@@ -154,20 +176,18 @@ describe('primary dealer email conflicts', () => {
       expect(
         await h.prisma.dealer.count({ where: { primaryOwnerEmail: first.dealer.email } }),
       ).toBe(1);
-      await sales.post('/v1/sales/dealers').send(details(ticket)).expect(201);
+      const { tickets } = await verify(sales);
+      await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
     },
   );
 
-  it('allows an existing non-owner operator email without assigning ownership or changing the account', async () => {
+  it('refuses a staff account as the owner, and leaves it untouched', async () => {
     const original = await h.prisma.user.findUniqueOrThrow({ where: { email: salesEmail } });
-    const { ticket } = await verify(sales);
-    const created = await sales
-      .post('/v1/sales/dealers')
-      .send(details(ticket, { email: salesEmail }))
-      .expect(201);
-    expect(await h.prisma.dealerMember.count({ where: { dealerId: created.body.id } })).toBe(0);
+    const { tickets } = await verify(sales, freeNumber(), salesEmail);
+    const refused = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(403);
+    expect(refused.body.code).toBe('OWNER_STAFF_ACCOUNT');
+    expect(await h.prisma.dealer.count({ where: { primaryOwnerEmail: salesEmail } })).toBe(0);
     expect(await h.prisma.user.findUniqueOrThrow({ where: { id: original.id } })).toEqual(original);
-    expect(created.body.emailVerified).toBe(false);
   });
 
   it('enforces the uniqueness constraint for direct database writes even if a caller forges the derived field', async () => {
@@ -187,37 +207,53 @@ describe('primary dealer email conflicts', () => {
   });
 
   it('returns a conflict for two concurrent registrations and persists exactly one', async () => {
-    const left = await verify(sales),
-      right = await verify(otherSales);
     const email = nextEmail('race.owner');
+    const now = Date.now();
+    const [leftMember, rightMember] = await Promise.all([
+      memberIdOf(salesEmail),
+      h.prisma.adminMember
+        .findFirstOrThrow({ where: { user: { email: { contains: 'other.rep' } } } })
+        .then((row) => row.id),
+    ]);
+    const tickets = async (agent: request.Agent, memberId: string): Promise<Tickets> => {
+      const phone = freeNumber();
+      const res = await agent
+        .post('/v1/sales/dealers/phone/verify')
+        .send({ phone, accessToken: devToken(phone), consent: true })
+        .expect(200);
+      return {
+        phoneTicket: res.body.phoneTicket as string,
+        emailTicket: issueAssistedTicket('EMAIL', email, memberId, now).token,
+      };
+    };
+    const [left, right] = await Promise.all([
+      tickets(sales, leftMember),
+      tickets(otherSales, rightMember),
+    ]);
     const responses = await Promise.all([
-      sales.post('/v1/sales/dealers').send(details(left.ticket, { email })),
-      otherSales
-        .post('/v1/sales/dealers')
-        .send(details(right.ticket, { email: email.toUpperCase() })),
+      sales.post('/v1/sales/dealers').send(details(left)),
+      otherSales.post('/v1/sales/dealers').send(details(right)),
     ]);
     expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
-    expect(responses.find((r) => r.status === 409)?.body.code).toBe('DEALER_EMAIL_TAKEN');
+    expect(responses.find((r) => r.status === 409)?.body.code).toMatch(
+      /^(DEALER_EMAIL_TAKEN|OWNER_HAS_DEALERSHIP)$/,
+    );
     expect(await h.prisma.dealer.count({ where: { primaryOwnerEmail: email } })).toBe(1);
+    expect(await h.prisma.user.count({ where: { email } })).toBe(1);
   });
 
-  it('preserves the existing email and its verification state when an edit conflicts', async () => {
-    const first = await draft(),
-      second = await draft();
-    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: second.dealer.id } });
-    const rejected = await sales
-      .patch(`/v1/sales/dealers/${second.dealer.id}`)
-      .send({ email: first.dealer.email })
-      .expect(409);
-    expect(rejected.body.errors).toEqual(
-      expect.arrayContaining([expect.objectContaining({ field: 'body.email' })]),
-    );
-    expect(await h.prisma.dealer.findUniqueOrThrow({ where: { id: second.dealer.id } })).toEqual(
-      before,
-    );
+  it('never changes a verified email or phone in an edit', async () => {
+    const { dealer } = await draft();
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.id } });
+    await sales
+      .patch(`/v1/sales/dealers/${dealer.id}`)
+      .send({ email: 'someone.else@gmail.com' })
+      .expect(400);
+    await sales.patch(`/v1/sales/dealers/${dealer.id}`).send({ phone: '9840012345' }).expect(400);
+    expect(await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.id } })).toEqual(before);
   });
 
-  it('permits a staff member in multiple dealerships without reserving their email as an owner', async () => {
+  it('refuses an owner who already belongs to a dealership', async () => {
     const first = await draft(),
       second = await draft();
     const email = nextEmail('shared.staff');
@@ -230,8 +266,9 @@ describe('primary dealer email conflicts', () => {
         permissions: [],
       })),
     });
-    const { ticket } = await verify(sales);
-    await sales.post('/v1/sales/dealers').send(details(ticket, { email })).expect(201);
+    const { tickets } = await verify(sales, freeNumber(), email);
+    const refused = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(409);
+    expect(refused.body.code).toBe('OWNER_HAS_DEALERSHIP');
     expect(await h.prisma.dealerMember.count({ where: { userId: user.id, role: 'STAFF' } })).toBe(
       2,
     );
@@ -239,42 +276,11 @@ describe('primary dealer email conflicts', () => {
       0,
     );
   });
-
-  it('blocks a self-onboarding attempt against an assisted email reservation without merging accounts', async () => {
-    const assisted = await draft();
-    const email = assisted.dealer.email;
-    const phone = freeNumber();
-    h.google.claims = {
-      subject: `email-reserved-${Date.now()}`,
-      email: ` ${email.toUpperCase()} `,
-      emailVerified: true,
-    };
-    const owner = h.agent();
-    await h.signIn(owner);
-    await h.proveNumber(owner, phone);
-    const {
-      phoneTicket: _ticket,
-      contactName: _name,
-      email: _email,
-      gstin: _gstin,
-      pan: _pan,
-      ...business
-    } = details('unused');
-    const denied = await owner
-      .post('/v1/auth/onboarding')
-      .send({ ...business, fullName: 'Verified Applicant', phone })
-      .expect(409);
-    expect(denied.body.code).toBe('DEALER_EMAIL_TAKEN');
-    const user = await h.prisma.user.findUniqueOrThrow({ where: { email } });
-    expect(await h.prisma.dealerMember.count({ where: { userId: user.id } })).toBe(0);
-    expect(await h.prisma.dealerMember.count({ where: { dealerId: assisted.dealer.id } })).toBe(0);
-    expect(user.mergedIntoId).toBeNull();
-  });
 });
 
 async function draft(agent: request.Agent = sales) {
-  const { phone, ticket } = await verify(agent);
-  const created = await agent.post('/v1/sales/dealers').send(details(ticket)).expect(201);
+  const { phone, tickets } = await verify(agent);
+  const created = await agent.post('/v1/sales/dealers').send(details(tickets)).expect(201);
   return { phone, dealer: created.body as { id: string; email: string } };
 }
 
@@ -364,75 +370,256 @@ describe('verifying the dealer’s phone', () => {
   });
 });
 
+describe('verifying the dealer’s email', () => {
+  it('emails a 6-digit code and answers a challenge that does not contain it', async () => {
+    const email = nextEmail('code');
+    const sent = await requestEmailCode(sales, email).expect(200);
+    const code = lastEmailCode(h, email);
+    expect(code).toMatch(/^\d{6}$/);
+    expect(sent.body).toMatchObject({ email, resendAfterSeconds: 60 });
+    expect(JSON.stringify(sent.body)).not.toContain(code);
+    expect(
+      Buffer.from(String(sent.body.challenge).split('.')[0] ?? '', 'base64url').toString(),
+    ).not.toContain(code);
+  });
+
+  it('refuses a resend within the cooldown', async () => {
+    const email = nextEmail('cooldown');
+    await requestEmailCode(sales, email).expect(200);
+    const again = await requestEmailCode(sales, email).expect(429);
+    expect(again.body.code).toBe('EMAIL_CODE_COOLDOWN');
+    expect(Number(again.headers['retry-after'])).toBeGreaterThan(0);
+  });
+
+  it('refuses a wrong code, locks after five attempts, and spends a right one once', async () => {
+    const email = nextEmail('attempts');
+    const sent = await requestEmailCode(sales, email).expect(200);
+    const challenge = sent.body.challenge as string;
+    const code = lastEmailCode(h, email);
+    const wrong = code === '000000' ? '111111' : '000000';
+
+    const first = await sales
+      .post('/v1/sales/dealers/email/verify')
+      .send({ challenge, code: wrong })
+      .expect(422);
+    expect(first.body.code).toBe('EMAIL_CODE_INVALID');
+    const ok = await sales
+      .post('/v1/sales/dealers/email/verify')
+      .send({ challenge, code })
+      .expect(200);
+    expect(ok.body).toMatchObject({ email, emailTicket: expect.any(String) });
+    const replay = await sales
+      .post('/v1/sales/dealers/email/verify')
+      .send({ challenge, code })
+      .expect(422);
+    expect(replay.body.code).toBe('EMAIL_CODE_EXPIRED');
+
+    const other = nextEmail('locked');
+    const locked = (await requestEmailCode(sales, other).expect(200)).body.challenge as string;
+    const right = lastEmailCode(h, other);
+    const miss = right === '000000' ? '111111' : '000000';
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await sales
+        .post('/v1/sales/dealers/email/verify')
+        .send({ challenge: locked, code: miss })
+        .expect(422);
+    }
+    const after = await sales
+      .post('/v1/sales/dealers/email/verify')
+      .send({ challenge: locked, code: right })
+      .expect(422);
+    expect(after.body.code).toBe('EMAIL_CODE_LOCKED');
+  });
+
+  it('binds the challenge to the representative who asked for it', async () => {
+    const email = nextEmail('bound');
+    const challenge = (await requestEmailCode(sales, email).expect(200)).body.challenge as string;
+    const stolen = await otherSales
+      .post('/v1/sales/dealers/email/verify')
+      .send({ challenge, code: lastEmailCode(h, email) })
+      .expect(422);
+    expect(stolen.body.code).toBe('EMAIL_CODE_EXPIRED');
+  });
+
+  it('records the verification without the address or the code', async () => {
+    const email = nextEmail('audited');
+    await proveEmail(h, sales, email);
+    const audit = await h.prisma.auditLog.findFirstOrThrow({
+      where: { action: 'dealer.assisted.email_verified' },
+      orderBy: { id: 'desc' },
+    });
+    const serialised = JSON.stringify(audit);
+    expect(serialised).not.toContain(email);
+    expect(serialised).not.toContain(lastEmailCode(h, email));
+  });
+});
+
 describe('creating the dealership', () => {
-  it('is an ASSISTED draft: phone verified, email unverified, attributed, not owned', async () => {
-    const { phone, dealer } = await draft();
+  it('is an ASSISTED draft owned by the account the phone and email prove', async () => {
+    const { phone, email, tickets } = await verify(sales);
+    const created = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
     const row = await h.prisma.dealer.findUniqueOrThrow({
-      where: { id: dealer.id },
-      include: { members: true, assistedBy: { include: { user: true } } },
+      where: { id: created.body.id },
+      include: { members: { include: { user: true } }, assistedBy: { include: { user: true } } },
     });
     expect(row).toMatchObject({
       status: 'DRAFT',
       onboardingSource: 'ASSISTED',
       contactPhone: `+91${phone}`,
-      contactEmailVerifiedAt: null,
+      contactEmail: email,
     });
     expect(row.contactPhoneVerifiedAt).toBeInstanceOf(Date);
+    expect(row.contactEmailVerifiedAt).toBeInstanceOf(Date);
     expect(row.assistedConsentAt).toBeInstanceOf(Date);
     expect(row.assistedBy?.user.email).toBe(salesEmail);
-    expect(row.members).toHaveLength(0);
-    expect(await h.prisma.user.count({ where: { email: row.contactEmail ?? 'none' } })).toBe(0);
+    expect(row.members).toHaveLength(1);
+    expect(row.members[0]).toMatchObject({
+      role: 'OWNER',
+      user: { email, phone: `+91${phone}`, fullName: 'Murugan S' },
+    });
+    expect(row.members[0]?.user.emailVerifiedAt).toBeInstanceOf(Date);
+    expect(row.members[0]?.user.phoneVerifiedAt).toBeInstanceOf(Date);
+    expect(created.body).toMatchObject({ emailVerified: true, phoneVerified: true, claimed: true });
 
     const audit = await h.prisma.auditLog.findFirstOrThrow({
-      where: { action: 'dealer.assisted.created', entityId: dealer.id },
+      where: { action: 'dealer.assisted.created', entityId: created.body.id },
     });
     expect(audit.actorType).toBe('ADMIN');
   });
 
-  it('spends the ticket once, and only for the member it was issued to', async () => {
-    const { ticket } = await verify(sales);
-    await otherSales.post('/v1/sales/dealers').send(details(ticket)).expect(422);
-    await sales.post('/v1/sales/dealers').send(details(ticket)).expect(201);
-    const again = await sales.post('/v1/sales/dealers').send(details(ticket)).expect(422);
+  it('spends the tickets once, and only for the member they were issued to', async () => {
+    const { tickets } = await verify(sales);
+    await otherSales.post('/v1/sales/dealers').send(details(tickets)).expect(422);
+    await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
+    const again = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(422);
     expect(again.body.code).toBe('PHONE_TICKET_EXPIRED');
     await sales
       .post('/v1/sales/dealers')
-      .send(details(`${ticket}x`))
+      .send(details({ ...tickets, phoneTicket: `${tickets.phoneTicket}x` }))
       .expect(422);
+    const unproved = await verify(sales);
+    const noEmail = await sales
+      .post('/v1/sales/dealers')
+      .send(details({ ...unproved.tickets, emailTicket: `${unproved.tickets.emailTicket}x` }))
+      .expect(422);
+    expect(noEmail.body.code).toBe('EMAIL_TICKET_EXPIRED');
   });
 
-  it('cannot be created with a typed number, or with a dealerId', async () => {
-    const { ticket } = await verify(sales);
+  it('cannot be created with a typed number or email, or with a dealerId', async () => {
+    const { tickets } = await verify(sales);
     await sales
       .post('/v1/sales/dealers')
-      .send({ ...details(ticket), phone: '9840012345' })
+      .send({ ...details(tickets), phone: '9840012345' })
       .expect(400);
     await sales
       .post('/v1/sales/dealers')
-      .send({ ...details(ticket), dealerId: '00000000-0000-4000-8000-000000000001' })
+      .send({ ...details(tickets), email: 'typed@gmail.com' })
       .expect(400);
+    await sales
+      .post('/v1/sales/dealers')
+      .send({ ...details(tickets), dealerId: '00000000-0000-4000-8000-000000000001' })
+      .expect(400);
+  });
+
+  it('reuses an existing dealer account rather than creating a second one', async () => {
+    const email = nextEmail('returning');
+    const phone = freeNumber();
+    const user = await h.prisma.user.create({ data: { email, fullName: 'Returning Dealer' } });
+    const { tickets } = await verify(sales, phone, email);
+    const created = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
+    const owner = await h.prisma.dealerMember.findFirstOrThrow({
+      where: { dealerId: created.body.id, role: 'OWNER' },
+      include: { user: true },
+    });
+    expect(owner.userId).toBe(user.id);
+    expect(owner.user).toMatchObject({ phone: `+91${phone}`, fullName: 'Returning Dealer' });
+    expect(await h.prisma.user.count({ where: { email } })).toBe(1);
+  });
+
+  it('refuses a phone and an email that belong to two different accounts', async () => {
+    const phone = freeNumber();
+    await h.prisma.user.create({
+      data: { email: nextEmail('phone.holder'), phone: `+91${phone}`, phoneVerifiedAt: new Date() },
+    });
+    const mismatch = await verify(sales, phone, nextEmail('unheld'));
+    const refused = await sales.post('/v1/sales/dealers').send(details(mismatch.tickets));
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('OWNER_EMAIL_MISMATCH');
+
+    const held = nextEmail('email.holder');
+    await h.prisma.user.create({ data: { email: held } });
+    const split = await verify(sales, phone, held);
+    const both = await sales.post('/v1/sales/dealers').send(details(split.tickets));
+    expect(both.status).toBe(409);
+    expect(both.body.code).toBe('OWNER_IDENTITY_SPLIT');
+  });
+});
+
+describe('the dealer signs in to the dealership the representative created', () => {
+  it('with Google, on the verified email, without a second account', async () => {
+    const { phone, email, tickets } = await verify(sales);
+    const created = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
+    h.google.claims = {
+      subject: `assisted-google-${Date.now().toString(36)}`,
+      email,
+      emailVerified: true,
+    };
+    const agent = h.agent();
+    const { location } = await h.signIn(agent);
+    expect(location).not.toContain('/link');
+    const me = await agent.get('/v1/auth/me').expect(200);
+    expect(me.body.dealer.id).toBe(created.body.id);
+    expect(me.body.user).toMatchObject({ email, phone: `+91${phone}` });
+    expect(await h.prisma.user.count({ where: { email } })).toBe(1);
+    expect(
+      await h.prisma.oAuthIdentity.count({
+        where: { provider: 'GOOGLE', user: { email } },
+      }),
+    ).toBe(1);
+  });
+
+  it('with a phone code, on the verified number', async () => {
+    const { phone, tickets } = await verify(sales);
+    const created = await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
+    const agent = h.agent();
+    await agent
+      .post('/v1/auth/sign-in/phone/dealer')
+      .send({ phone, accessToken: devToken(phone) })
+      .expect(200);
+    const me = await agent.get('/v1/auth/me').expect(200);
+    expect(me.body.dealer.id).toBe(created.body.id);
+  });
+
+  it('does not auto-link Google when the provider has not verified the email', async () => {
+    const { email, tickets } = await verify(sales);
+    await sales.post('/v1/sales/dealers').send(details(tickets)).expect(201);
+    h.google.claims = {
+      subject: `assisted-unverified-${Date.now().toString(36)}`,
+      email,
+      emailVerified: false,
+    };
+    const agent = h.agent();
+    await h.signIn(agent);
+    expect(
+      await h.prisma.oAuthIdentity.count({ where: { provider: 'GOOGLE', user: { email } } }),
+    ).toBe(0);
   });
 });
 
 describe('preparing and submitting', () => {
-  it('edits the draft, and clears email verification when the address changes', async () => {
+  it('edits the draft, but not the verified contact', async () => {
     const { dealer } = await draft();
-    await h.prisma.dealer.update({
-      where: { id: dealer.id },
-      data: { contactEmailVerifiedAt: new Date() },
-    });
-
     const edited = await sales
       .patch(`/v1/sales/dealers/${dealer.id}`)
-      .send({ contactName: 'Murugan Selvam', email: 'new.address@gmail.com' })
+      .send({ contactName: 'Murugan Selvam' })
       .expect(200);
     expect(edited.body).toMatchObject({
       contactName: 'Murugan Selvam',
-      email: 'new.address@gmail.com',
-      emailVerified: false,
+      email: dealer.email,
+      emailVerified: true,
       canEdit: true,
+      canVerify: false,
     });
-    await sales.patch(`/v1/sales/dealers/${dealer.id}`).send({ phone: '9840012345' }).expect(400);
   });
 
   it('runs the full journey through the ordinary review', async () => {
@@ -443,7 +630,7 @@ describe('preparing and submitting', () => {
     expect(ready.body).toMatchObject({
       canSubmit: true,
       phoneVerified: true,
-      emailVerified: false,
+      emailVerified: true,
     });
 
     await h.drainEmails();
@@ -454,10 +641,8 @@ describe('preparing and submitting', () => {
     // R115: console mail goes to admitted Admin Members who can approve dealers — the
     // bootstrap Super admin among them — not to every allow-listed address.
     expect(mail.map((message) => message.to)).toEqual(
-      expect.arrayContaining([env.adminAllowlist[0]]),
+      expect.arrayContaining([env.adminAllowlist[0], dealer.email]),
     );
-    // R113: an address nobody has confirmed receives the claim link and nothing else.
-    expect(mail.map((message) => message.to)).not.toContain(dealer.email);
 
     const submitted = await h.prisma.auditLog.findFirstOrThrow({
       where: { action: 'dealer.submitted', entityId: dealer.id },
@@ -474,9 +659,9 @@ describe('preparing and submitting', () => {
       assistedBy: { email: salesEmail },
       phoneVerified: true,
       phoneLabel: 'Verified',
-      emailVerified: false,
-      emailLabel: 'Pending verification',
-      claimed: false,
+      emailVerified: true,
+      emailLabel: 'Verified',
+      claimed: true,
       reviewerIsAssistant: false,
     });
 
@@ -492,16 +677,13 @@ describe('preparing and submitting', () => {
     for (const doc of docs) {
       await superAdmin.post(`/v1/admin/documents/${doc.id}/verify`).send({}).expect(200);
     }
-    const link = h.mailer.sent.find((message) => message.to === dealer.email)?.text ?? '';
-    const token = /\/claim\/([A-Za-z0-9_-]+)/.exec(link)?.[1] ?? '';
-    await h.agent().post(`/v1/dealer-claims/${token}/verify-email`).send().expect(200);
 
     const beforeApproval = h.mailer.sent.length;
     await superAdmin.post(`/v1/admin/dealers/${dealer.id}/approve`).send({}).expect(200);
     await h.drainEmails();
     expect(
-      h.mailer.sent.slice(beforeApproval).find((message) => message.to === dealer.email)?.subject,
-    ).toContain('is verified');
+      h.mailer.sent.slice(beforeApproval).find((message) => message.to === dealer.email),
+    ).toBeDefined();
 
     const outcome = await sales.get(`/v1/sales/dealers/${dealer.id}`).expect(200);
     expect(outcome.body).toMatchObject({
@@ -519,6 +701,102 @@ describe('preparing and submitting', () => {
     const { dealer } = await draft();
     const refused = await sales.post(`/v1/sales/dealers/${dealer.id}/submit`).expect(422);
     expect(refused.body.code).toBe('PROFILE_INCOMPLETE');
+  });
+});
+
+describe('verifying an owner for a dealership created before verification was required', () => {
+  async function legacyDraft(status: 'DRAFT' | 'PENDING_APPROVAL' = 'DRAFT') {
+    const { phone, dealer } = await draft();
+    await h.prisma.dealerMember.deleteMany({ where: { dealerId: dealer.id } });
+    await h.prisma.dealer.update({
+      where: { id: dealer.id },
+      data: { contactEmailVerifiedAt: null, status },
+    });
+    await h.prisma.user.updateMany({
+      where: { email: dealer.email },
+      data: { email: null, phone: null, emailVerifiedAt: null, phoneVerifiedAt: null },
+    });
+    return { phone, dealer };
+  }
+
+  it('cannot be approved until its owner is verified', async () => {
+    const { dealer } = await legacyDraft();
+    await completeDocuments(sales, dealer.id);
+    await h.prisma.dealer.update({
+      where: { id: dealer.id },
+      data: { status: 'PENDING_APPROVAL' },
+    });
+    const docs = await h.prisma.dealerDocument.findMany({ where: { dealerId: dealer.id } });
+    for (const doc of docs) {
+      await superAdmin.post(`/v1/admin/documents/${doc.id}/verify`).send({}).expect(200);
+    }
+    const refused = await superAdmin
+      .post(`/v1/admin/dealers/${dealer.id}/approve`)
+      .send({})
+      .expect(422);
+    expect(refused.body.code).toBe('CONTACT_NOT_VERIFIED');
+    const view = await sales.get(`/v1/sales/dealers/${dealer.id}`).expect(200);
+    expect(view.body).toMatchObject({ canVerify: true, claimed: false });
+  });
+
+  it('attaches the owner the phone and email prove, then allows approval', async () => {
+    const { phone, dealer } = await legacyDraft();
+    await completeDocuments(sales, dealer.id);
+    const email = nextEmail('legacy.owner');
+    const phoneProof = await sales
+      .post('/v1/sales/dealers/phone/verify')
+      .send({ phone, accessToken: devToken(phone), consent: true })
+      .expect(200);
+    const proved = await proveEmail(h, sales, email);
+    const verified = await sales
+      .post(`/v1/sales/dealers/${dealer.id}/verify`)
+      .send({ phoneTicket: phoneProof.body.phoneTicket, emailTicket: proved.emailTicket })
+      .expect(200);
+    expect(verified.body).toMatchObject({
+      claimed: true,
+      emailVerified: true,
+      email,
+      canVerify: false,
+    });
+    const owner = await h.prisma.dealerMember.findFirstOrThrow({
+      where: { dealerId: dealer.id, role: 'OWNER' },
+      include: { user: true },
+    });
+    expect(owner.user).toMatchObject({ email, phone: `+91${phone}` });
+
+    const retry = await sales
+      .post('/v1/sales/dealers/phone/verify')
+      .send({ phone, accessToken: devToken(phone), consent: true })
+      .expect(409);
+    expect(retry.body.code).toBe('DEALER_PHONE_TAKEN');
+    const again = await sales
+      .post(`/v1/sales/dealers/${dealer.id}/verify`)
+      .send({
+        phoneTicket: phoneProof.body.phoneTicket,
+        emailTicket: (await proveEmail(h, sales, nextEmail('second'))).emailTicket,
+      })
+      .expect(409);
+    expect(again.body.code).toBe('VERIFY_NOT_NEEDED');
+  });
+
+  it('lets only the assisting representative prove that number again', async () => {
+    const { phone } = await legacyDraft();
+    const refused = await otherSales
+      .post('/v1/sales/dealers/phone/verify')
+      .send({ phone, accessToken: devToken(phone), consent: true })
+      .expect(409);
+    expect(refused.body.code).toBe('DEALER_PHONE_TAKEN');
+  });
+
+  it('refuses a phone ticket for a different number', async () => {
+    const { dealer } = await legacyDraft();
+    const { tickets } = await verify(sales);
+    const refused = await sales
+      .post(`/v1/sales/dealers/${dealer.id}/verify`)
+      .send(tickets)
+      .expect(422);
+    expect(refused.body.code).toBe('VERIFY_PHONE_MISMATCH');
+    expect(await h.prisma.dealerMember.count({ where: { dealerId: dealer.id } })).toBe(0);
   });
 });
 

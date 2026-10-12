@@ -1,5 +1,6 @@
 import {
-  SELECTABLE_DOC_CATEGORIES,
+  normaliseIndianMobile,
+  type PhoneOtpWidget,
   type SalesDealerDetail,
   type SalesVehiclesResponse,
 } from '@dealers-drive/contracts';
@@ -8,17 +9,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { StatusTag } from '@/components/ui/primitives';
-import { DocumentUploader, documentForCategory } from '@/features/auth/document-uploader';
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
-import { EmailVerificationPanel } from '@/features/sales/email-verification-panel';
 import { SALES_VEHICLE_TEXT, SalesVehicleList } from '@/features/sales/sales-vehicle-list';
 import { ASSISTED_FORM_TEXT } from '@/features/sales/assisted-dealer-form/assisted-dealer-form.constants';
 import { updateAssistedDealerAction } from '@/features/sales/sales-actions';
 import { RepScopeNotice } from '@/features/sales/rep-scope-notice';
 import { SALES_TEXT } from '@/features/sales/sales.constants';
-import { SubmitAssistedDealer } from '@/features/sales/submit-assisted-dealer';
-import { salesDocumentBase } from '@/features/sales/upload-paths';
 import { VerificationBadges } from '@/features/sales/verification-badges';
+import { VerifyOwnerPanel } from '@/features/sales/verify-owner-panel';
 import { ApiError, apiGet } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -44,12 +42,14 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
   }
 
   const update = updateAssistedDealerAction.bind(null, dealer.id);
-  const missing = dealer.completeness.steps
-    .filter((step) => step.key !== 'review' && !step.complete)
-    .map((step) => step.label);
+  const documentsHref = `/sales/dealers/${dealer.id}/documents`;
   const businessComplete = dealer.completeness.steps.some(
     (step) => step.key === 'business' && step.complete,
   );
+  const ownerPhone = dealer.canVerify ? normaliseIndianMobile(dealer.phoneDisplay) : null;
+  const widget = ownerPhone
+    ? await apiGet<PhoneOtpWidget>('/v1/sales/phone/widget', { revalidate: false })
+    : null;
 
   return (
     <div className="mx-auto flex max-w-[960px] flex-col gap-6 p-4 md:p-8">
@@ -62,7 +62,7 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
           <h1 className="min-w-0 text-[24px] break-words">{dealer.legalName}</h1>
           <StatusTag tone={dealer.statusTone}>{dealer.statusLabel}</StatusTag>
         </div>
-        <div className="text-[13px] ink-muted">
+        <div className="text-[13px] break-words ink-muted">
           {[dealer.contactName, dealer.phoneDisplay, dealer.email].filter(Boolean).join(' · ')}
         </div>
         <VerificationBadges dealer={dealer} />
@@ -76,14 +76,29 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
             {SALES_TEXT.statusReason(dealer.statusReason)}
           </p>
         ) : null}
+        <Link href={documentsHref} className="text-[13px] font-semibold">
+          {SALES_TEXT.documentsLink}
+        </Link>
       </div>
 
       {dealer.canEdit ? <RepScopeNotice businessComplete={businessComplete} /> : null}
 
       {!dealer.canEdit ? (
         <p className="rounded-[12px] border border-(--color-divider) bg-white p-4 text-[13px] ink-body">
-          {dealer.claimed ? SALES_TEXT.claimedNotice : SALES_TEXT.lockedNotice}
+          {dealer.claimed ? SALES_TEXT.ownerNotice : SALES_TEXT.lockedNotice}
         </p>
+      ) : null}
+
+      {ownerPhone ? (
+        <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
+          <h2 className="text-[17px]">{SALES_TEXT.verifyHeading}</h2>
+          <VerifyOwnerPanel
+            dealerId={dealer.id}
+            phone={ownerPhone}
+            phoneDisplay={dealer.phoneDisplay}
+            widget={widget}
+          />
+        </section>
       ) : null}
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
@@ -92,16 +107,12 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
       </section>
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-        <h2 className="text-[17px]">{SALES_TEXT.emailHeading}</h2>
-        <EmailVerificationPanel dealerId={dealer.id} verification={dealer.emailVerification} />
-      </section>
-
-      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-        <h2 className="text-[17px]">{SALES_TEXT.detailsHeading}</h2>
+        <h2 className="text-[17px]">
+          {dealer.canEdit ? SALES_TEXT.stepDetails : SALES_TEXT.detailsHeading}
+        </h2>
         <AssistedDealerForm
           initial={{
             contactName: dealer.contactName ?? '',
-            email: dealer.email ?? '',
             landline: dealer.landline ?? '',
             legalName: dealer.legalName,
             addressLine: dealer.address.line ?? '',
@@ -115,37 +126,13 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
             pan: dealer.pan ?? '',
           }}
           initialServices={dealer.specialities}
-          submitLabel={ASSISTED_FORM_TEXT.save}
+          submitLabel={ASSISTED_FORM_TEXT.saveAndContinue}
           partial
           disabled={!dealer.canEdit}
           onSubmit={update}
+          doneHref={documentsHref}
         />
       </section>
-
-      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-        <h2 className="text-[17px]">{SALES_TEXT.documentsHeading}</h2>
-        <p className="text-[13px] ink-muted">{SALES_TEXT.documentsIntro}</p>
-        {SELECTABLE_DOC_CATEGORIES.map((category) => (
-          <DocumentUploader
-            key={category}
-            category={category}
-            document={documentForCategory(dealer.documents, category)}
-            basePath={salesDocumentBase(dealer.id)}
-            gstinOnFile={Boolean(dealer.gstin)}
-          />
-        ))}
-      </section>
-
-      {dealer.canEdit ? (
-        <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-          <h2 className="text-[17px]">{SALES_TEXT.submitHeading}</h2>
-          <SubmitAssistedDealer
-            dealerId={dealer.id}
-            canSubmit={dealer.canSubmit}
-            missing={missing}
-          />
-        </section>
-      ) : null}
     </div>
   );
 }

@@ -146,7 +146,7 @@ export function PhoneVerification({
         display={display}
         fullName={fullName}
         accountsLinked={accountsLinked}
-        onContinue={onContinue}
+        {...(onContinue ? { onContinue } : {})}
         {...(verifiedTitle ? { title: verifiedTitle } : {})}
         {...(continueLabel ? { continueLabel } : {})}
       />

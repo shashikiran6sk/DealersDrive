@@ -6,6 +6,7 @@ import { env } from '../src/config/env.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { seedImages } from './images-kit.js';
 import { COMPLETE_VEHICLE } from './marketplace-fixtures.js';
+import { proveEmail } from './sales-kit.js';
 
 /**
  * R114 — a Sales Representative prepares listings for a dealership they
@@ -74,12 +75,13 @@ async function assistedDealer(agent: request.Agent = sales): Promise<string> {
       consent: true,
     })
     .expect(200);
+  const { emailTicket } = await proveEmail(h, agent, `imran.${String(counter)}@gmail.com`);
   const created = await agent
     .post('/v1/sales/dealers')
     .send({
       phoneTicket: verified.body.phoneTicket,
+      emailTicket,
       contactName: 'Imran K',
-      email: `imran.${String(counter)}@gmail.com`,
       legalName: `Listing Motors ${String(counter)} ${Date.now().toString(36)}`,
       addressLine: '9, Hazratganj',
       city: 'Katpadi',

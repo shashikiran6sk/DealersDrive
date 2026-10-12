@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 import { ServiceLocationFields } from '@/components/forms/service-location-fields';
@@ -29,7 +30,9 @@ export function AssistedDealerForm({
   disabled = false,
   onSubmit,
   onDone,
+  doneHref,
 }: AssistedDealerFormProps) {
+  const router = useRouter();
   const [pending, startTransition] = useNavigationSafeAction();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -50,6 +53,7 @@ export function AssistedDealerForm({
       }
       setSaved(true);
       onDone?.(result);
+      if (doneHref) router.push(doneHref);
     });
   }
 
