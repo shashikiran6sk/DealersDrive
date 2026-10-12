@@ -42,7 +42,7 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified                              |
 | 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | `91e3533` | Merged, main verified                              |
 | 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | `6f4f040` | Merged, main verified                              |
-| 12  | #300 | Canonical vehicle makes | `92ac922`     | `383a2b0`         | green      | —         | Reviewed; merging                                  |
+| 12  | #300 | Canonical vehicle makes | `92ac922`     | `383a2b0`         | green      | `5a89a9f` | Merged, main verified                              |
 | —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                                   |
 
 Stack ancestry at start: linear; each branch contains its parent. Migrations
@@ -54,4 +54,4 @@ introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 
 ## Next action
 
-All eleven stacked PRs are merged. Next: integrated regression on `main` `6f4f040`, then the canonical vehicle-make PR, then the Draft #299 revision.
+All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged; regression on `6f4f040` green. Next: Draft #299 revision (stays Draft, never merged).
