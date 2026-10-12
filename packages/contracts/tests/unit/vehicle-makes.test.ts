@@ -5,6 +5,7 @@ import {
   VEHICLE_MAKES,
   VEHICLE_MAKE_ALIASES,
   canonicalVehicleMake,
+  compactVehicleMakeKey,
   isVehicleMake,
   vehicleMakeKey,
   vehicleMakeLabel,
@@ -24,6 +25,19 @@ describe('the canonical make list', () => {
       expect(isVehicleMake(make)).toBe(true);
       expect(vehicleMakeKey(alias)).toBe(alias);
       expect(canonicalKeys.has(alias)).toBe(false);
+    }
+  });
+
+  it('keeps every key unambiguous with its spaces removed', () => {
+    const owners = new Map<string, string>();
+    const entries: [string, string][] = [
+      ...VEHICLE_MAKES.map((make): [string, string] => [vehicleMakeKey(make), make]),
+      ...Object.entries(VEHICLE_MAKE_ALIASES),
+    ];
+    for (const [key, make] of entries) {
+      const compact = compactVehicleMakeKey(key);
+      expect(owners.get(compact) ?? make).toBe(make);
+      owners.set(compact, make);
     }
   });
 
@@ -54,6 +68,13 @@ describe('resolving a typed or RC maker string', () => {
     ['Citroën', 'Citroen'],
     ['rolls royce', 'Rolls-Royce'],
     ['Force Motors Ltd', 'Force Motors'],
+    ['hyundai', 'Hyundai'],
+    ['HYUNDAI', 'Hyundai'],
+    ['marutisuzuki', 'Maruti Suzuki'],
+    ['maruthisuzuki', 'Maruti Suzuki'],
+    ['Maruthi', 'Maruti Suzuki'],
+    ['LANDROVER', 'Land Rover'],
+    ['MercedesBenz', 'Mercedes-Benz'],
   ])('%s -> %s', (input, expected) => {
     expect(canonicalVehicleMake(input)).toBe(expected);
   });

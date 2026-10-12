@@ -64,6 +64,8 @@ export type VehicleMake = (typeof VEHICLE_MAKES)[number];
  */
 export const VEHICLE_MAKE_ALIASES: Readonly<Record<string, VehicleMake>> = {
   MARUTI: 'Maruti Suzuki',
+  MARUTHI: 'Maruti Suzuki',
+  'MARUTHI SUZUKI': 'Maruti Suzuki',
   'MARUTI UDYOG': 'Maruti Suzuki',
   'TATA MOTORS': 'Tata',
   'TATA MOTORS PASSENGER VEHICLES': 'Tata',
@@ -126,14 +128,28 @@ export function vehicleMakeKey(input: string): string {
   return words.join(' ');
 }
 
-const BY_KEY: ReadonlyMap<string, VehicleMake> = new Map([
-  ...VEHICLE_MAKES.map((make): [string, VehicleMake] => [vehicleMakeKey(make), make]),
+const ENTRIES: readonly (readonly [string, VehicleMake])[] = [
+  ...VEHICLE_MAKES.map((make) => [vehicleMakeKey(make), make] as const),
   ...Object.entries(VEHICLE_MAKE_ALIASES),
-]);
+];
+const BY_KEY: ReadonlyMap<string, VehicleMake> = new Map(ENTRIES);
+
+/**
+ * The same keys with their spaces removed, so `marutisuzuki` and `LANDROVER`
+ * resolve. A compacted key that two different makes share would be ambiguous;
+ * the contracts tests assert there is none.
+ */
+export function compactVehicleMakeKey(key: string): string {
+  return key.replace(/ /g, '');
+}
+const BY_COMPACT: ReadonlyMap<string, VehicleMake> = new Map(
+  ENTRIES.map(([key, make]) => [compactVehicleMakeKey(key), make] as const),
+);
 
 /** The canonical make a typed or RC-supplied string names, or `null` if it names none. */
 export function canonicalVehicleMake(input: string): VehicleMake | null {
-  return BY_KEY.get(vehicleMakeKey(input)) ?? null;
+  const key = vehicleMakeKey(input);
+  return BY_KEY.get(key) ?? BY_COMPACT.get(compactVehicleMakeKey(key)) ?? null;
 }
 
 export function isVehicleMake(value: string): value is VehicleMake {

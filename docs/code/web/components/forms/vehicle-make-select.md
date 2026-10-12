@@ -29,7 +29,8 @@ else (`vehicles.service.ts`, `checkMake`).
 
 ### `export function matchMakes(search, saved)`
 
-Substring match on the canonical names, plus the brand an exact alias resolves
-to, so typing `Mercedes` or `M&M` still finds the brand. There is no fuzzy
+Substring match on the canonical names with case, spaces and punctuation
+ignored on both sides, plus the brand an exact alias resolves to. So
+`marutisuz`, `mercedes benz` and `M&M` all find their brand. There is no fuzzy
 matching: a list this short is scanned by eye faster than a misspelling is
 guessed at.

@@ -22,9 +22,12 @@ point of entry.
   accents are folded, `&` is read as `AND`, punctuation is removed, and
   trailing corporate words (`India`, `Pvt`, `Ltd`, …) are dropped. The result
   is then matched exactly against the canonical names and a reviewed alias
-  table. There is no fuzzy or prefix matching. A maker string that names two
-  brands, such as `SKODA AUTO VOLKSWAGEN INDIA` or `JAGUAR LAND ROVER`, is
-  deliberately not an alias.
+  table, first as is and then with spaces removed, so `marutisuzuki` and
+  `LANDROVER` resolve. A contracts test proves no compacted key belongs to two
+  brands. There is no fuzzy or prefix matching. `Maruthi`, the common South
+  Indian transliteration, is a reviewed alias of Maruti Suzuki. A maker string
+  that names two brands, such as `SKODA AUTO VOLKSWAGEN INDIA` or
+  `JAGUAR LAND ROVER`, is deliberately not an alias.
 - **Contract.** `UpdateVehicleInput.make` arrives canonical whenever the input
   resolves, so dealer, sales-assisted and API clients all store the brand's own
   spelling.
@@ -34,7 +37,14 @@ point of entry.
 - **Legacy values.** A vehicle saved before the list keeps its make when the
   same value is sent back. The combobox offers it as "(as saved)", so re-saving
   a step never forces a change to a field the dealer did not touch. Choosing a
-  canonical make replaces it, and the old value cannot then be re-entered.
+  canonical make replaces it, and the old value cannot then be re-entered. The
+  comparison is repeated against the row read under the listing lock that every
+  vehicle update takes. A stale page therefore cannot restore a legacy make
+  that a concurrent save has just replaced.
+- **Naming.** Display names follow the spellings already stored and seeded:
+  `MG` rather than `MG Motor`, and `Tata` rather than `Tata Motors`. The longer
+  forms are aliases, so changing a display name later is a list edit plus an
+  explicit data decision, never an implicit rewrite.
 
 ## Existing data
 

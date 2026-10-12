@@ -89,6 +89,10 @@ describe('matchMakes', () => {
     expect(matchMakes('rover')).toEqual(['Land Rover']);
     expect(matchMakes('M&M')).toEqual(['Mahindra']);
     expect(matchMakes('Marutii')).toEqual([]);
+    expect(matchMakes('marutisuz')).toEqual(['Maruti Suzuki']);
+    expect(matchMakes('  mercedes   benz ')).toEqual(['Mercedes-Benz']);
+    expect(matchMakes('HYUNDAI')).toEqual(['Hyundai']);
+    expect(matchMakes('maruthisuzuki')).toEqual(['Maruti Suzuki']);
     expect(matchMakes('', 'Old Make')[0]).toBe('Old Make');
   });
 });

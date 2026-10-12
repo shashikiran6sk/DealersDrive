@@ -89,7 +89,7 @@ it would bury the rows that mean something.
 `description: ''` is stored as NULL: an emptied text box is the dealer removing
 the description, not writing an empty one.
 
-### `function checkMake(input, current)`
+### `function checkMake(input, storedMake)`
 
 A make must be one of `VEHICLE_MAKES` once the contract has resolved aliases,
 with one exception: the value the vehicle already holds. Cars saved before the
@@ -99,6 +99,13 @@ did not touch, so it is accepted unchanged for that vehicle only. No stored row
 is rewritten; the search side folds those spellings into their brand at read
 time (`vehicleMakeSlug`). The check runs after the ownership lookup, so a make
 sent for another dealer's vehicle is still a 404, not a hint that the id exists.
+
+The comparison is made twice. It is made first against the row read before
+the transaction, to fail fast. It is then repeated (`checkMakeLocked`) against
+the row read after the listing lock every vehicle update takes. Without the
+second read, a page loaded before a concurrent save replaced the legacy make
+could write the legacy value back. A canonical make needs no read, because it
+is valid whatever the row holds.
 
 ## `apps/api/src/modules/vehicles/vehicles.mapper.ts`
 
