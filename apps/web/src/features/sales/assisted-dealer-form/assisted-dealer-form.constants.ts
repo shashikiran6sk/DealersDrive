@@ -45,8 +45,6 @@ export const BUSINESS_FIELDS: readonly AssistedField[] = [
     maxLength: 200,
     wide: true,
   },
-  { name: 'gstin', label: 'GSTIN (optional where applicable)', required: false },
-  { name: 'pan', label: 'PAN', required: false },
 ];
 
 export const ASSISTED_FORM_TEXT = {

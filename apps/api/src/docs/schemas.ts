@@ -51,6 +51,7 @@ const INPUT_SCHEMA_NAMES = [
   'YardVisitPhotoPresignInput',
   'YardVisitPhotoCommitInput',
   'UpdateDealerInput',
+  'DealerOnboardingInput',
   'DealerSelfUpdateInput',
   'ReasonInput',
   'ApproveDealerInput',

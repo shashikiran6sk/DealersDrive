@@ -1,7 +1,4 @@
-import {
-  UpdateDealerInput,
-  type UpdateDealerInput as UpdateDealerInputType,
-} from '@dealers-drive/contracts';
+import { DealerOnboardingInput } from '@dealers-drive/contracts';
 
 import { dealerPrincipal, requirePermission } from '../../../middleware/auth.js';
 import { validate, validated } from '../../../middleware/validate.js';
@@ -12,12 +9,12 @@ export const patchOnboarding: DealersRoute = (router, service) => {
   router.patch(
     '/onboarding',
     requirePermission('dealer:update'),
-    validate({ body: UpdateDealerInput }),
+    validate({ body: DealerOnboardingInput }),
     (req, res, next) => {
       void (async () => {
         try {
           const { dealerId } = dealerPrincipal(req);
-          const body = validated<UpdateDealerInputType>(req, 'body');
+          const body = validated<DealerOnboardingInput>(req, 'body');
           res.json(await service.amendDraft(dealerId, body));
         } catch (error) {
           next(error);

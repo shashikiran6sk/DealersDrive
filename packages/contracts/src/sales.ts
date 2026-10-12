@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { OnboardingInput, VerifyPhoneInput } from './auth.js';
 import { Uuid } from './common.js';
 import { SelectableDocCategory } from './dealer-documents.js';
-import { CompletenessResponse, DealerDocumentDto, UpdateDealerInput } from './dealer.js';
+import { CompletenessResponse, DealerDocumentDto } from './dealer.js';
 import { DealerStatus, StatusTone } from './enums.js';
 import { DealerInventoryRow } from './vehicle.js';
 
@@ -99,8 +99,6 @@ export const CreateAssistedDealerInput = OnboardingInput.omit({ fullName: true, 
     phoneTicket: Ticket,
     emailTicket: Ticket,
     contactName: ContactName,
-    gstin: UpdateDealerInput.shape.gstin,
-    pan: UpdateDealerInput.shape.pan,
   })
   .strict();
 export type CreateAssistedDealerInput = z.infer<typeof CreateAssistedDealerInput>;
@@ -191,7 +189,7 @@ export const SalesDashboard = z.object({
 export type SalesDashboard = z.infer<typeof SalesDashboard>;
 
 export const ASSISTED_CONSENT_TEXT =
-  'By sharing this OTP, the dealership representative authorises Dealers-Drive to create and submit this dealership profile for verification.';
+  'By sharing this OTP, the dealership representative authorises Dealers-Drive to create and submit this dealership profile for verification, and confirms that the dealership is responsible for its own GST registration where the law requires one.';
 
 export const SalesDealerDocParam = z.object({ id: Uuid, category: SelectableDocCategory }).strict();
 export type SalesDealerDocParam = z.infer<typeof SalesDealerDocParam>;

@@ -122,8 +122,6 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
             pincode: dealer.address.pincode ?? '',
             mapsUrl: dealer.address.mapsUrl ?? '',
             tagline: dealer.tagline ?? '',
-            gstin: dealer.gstin ?? '',
-            pan: dealer.pan ?? '',
           }}
           initialServices={dealer.specialities}
           submitLabel={ASSISTED_FORM_TEXT.saveAndContinue}

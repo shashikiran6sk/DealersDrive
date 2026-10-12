@@ -623,7 +623,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     async approveDealer(
       admin: AdminPrincipal,
       dealerId: string,
-      input: ApproveDealerInput,
+      _input: ApproveDealerInput,
     ): Promise<DealerModerationResponse> {
       assertPermission(admin, 'admin:dealer:approve');
 
@@ -671,12 +671,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }
 
-        if (!dealer.gstin && !input.gstNotRequiredReview)
-          throw new DomainError(
-            'GST_APPLICABILITY_REVIEW_REQUIRED',
-            'Record why GST registration is not required before approving a business without GSTIN. Uncertain applicability must remain under review.',
-          );
-
         const updated = await tx.dealer.update({
           where: { id: dealerId },
           data: {
@@ -700,7 +694,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           after: {
             status: 'ACTIVE',
             creditsGranted,
-            ...(dealer.gstin ? {} : { gstNotRequiredReview: input.gstNotRequiredReview }),
           },
         });
 

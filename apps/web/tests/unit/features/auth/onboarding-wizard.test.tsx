@@ -1187,7 +1187,7 @@ describe('OnboardingWizard — the Business step', () => {
 describe('OnboardingWizard — the Documents step', () => {
   function render_(
     documents: DealerDocumentDto[],
-    dealer: { gstin?: string; pan?: string } = {},
+    dealer: { gstin?: string } = {},
     blockers: CompletenessResponse | null = completeness(),
   ) {
     return render(
@@ -1228,22 +1228,29 @@ describe('OnboardingWizard — the Documents step', () => {
     expect(screen.getByText(/Your draft is saved/)).toBeInTheDocument();
   });
 
-  it('does not require GSTIN of a non-GST dealer, and states the obligation', () => {
+  /** L7: no separate GSTIN or PAN boxes; the GSTIN goes on the GST certificate's card. */
+  it('asks for no GSTIN or PAN of its own, and states the GST responsibility', () => {
     render_(DOCUMENTS);
-    expect(screen.getByLabelText('GSTIN (optional where applicable)')).not.toBeRequired();
+
+    expect(screen.queryByLabelText(/^GSTIN/)).toBeNull();
+    expect(screen.queryByLabelText('PAN')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save registrations' })).toBeNull();
     expect(
-      screen.getByText(/Optional collection does not remove GST registration obligations/),
+      screen.getByText(
+        /You are responsible for your own GST registration where the law requires one\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/choose the GST certificate as your business proof and enter your GSTIN/),
     ).toBeInTheDocument();
   });
 
-  it('asks for the GST certificate as business proof once a GSTIN is on file', () => {
+  it('starts the business card on the GST certificate, with the GSTIN on file', () => {
     render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX' });
 
-    expect(
-      screen.getByText(/so your Business Identity Proof must be your GST Registration Certificate/),
-    ).toBeInTheDocument();
     const business = screen.getByRole('region', { name: 'Business Identity Proof' });
     expect(within(business).getByLabelText('Document type')).toHaveValue('GST_CERTIFICATE');
+    expect(within(business).getByLabelText(/^GSTIN/)).toHaveValue('33AABCS1429B1ZX');
   });
 
   it('shows a submitted document in its category card', () => {
@@ -1293,16 +1300,6 @@ describe('OnboardingWizard — the Documents step', () => {
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
   });
 
-  /** GSTIN and PAN are a separate PATCH, so they save without leaving the step. */
-  it('prefills the registrations from the dealership record', () => {
-    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' });
-
-    expect(screen.getByLabelText('GSTIN (optional where applicable)')).toHaveValue(
-      '33AABCS1429B1ZX',
-    );
-    expect(screen.getByLabelText('PAN')).toHaveValue('AABCS1429B');
-  });
-
   /**
    * Every step but the first goes back. This one's Back is a navigation rather
    * than a local move, because the step it returns to re-reads the dealership.
@@ -1331,7 +1328,6 @@ describe('OnboardingWizard — the Documents step', () => {
 vi.mock('@/features/auth/actions', () => ({
   onboardingAction: vi.fn(),
   updateOnboardingAction: vi.fn(),
-  saveBusinessIdsAction: vi.fn(() => Promise.resolve({})),
   submitForVerificationAction: vi.fn(() => Promise.resolve({})),
 }));
 

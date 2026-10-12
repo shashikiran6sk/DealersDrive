@@ -2,7 +2,6 @@ export interface ActionState {
   message?: string;
   errors?: Record<string, string>;
   values?: Record<string, string>;
-  saved?: boolean;
 }
 
 export const authActionStub: {
@@ -38,13 +37,6 @@ export async function updateOnboardingAction(
   formData: FormData,
 ): Promise<ActionState> {
   return respond('updateOnboarding', formData);
-}
-
-export async function saveBusinessIdsAction(
-  _previous: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  return respond('saveBusinessIds', formData);
 }
 
 export async function submitForVerificationAction(): Promise<ActionState> {

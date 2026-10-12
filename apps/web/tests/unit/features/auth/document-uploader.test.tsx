@@ -42,7 +42,7 @@ function okJson(body: unknown): Response {
   });
 }
 
-function stubFetch() {
+function stubFetch(commit: () => Response = () => okJson({})) {
   const fetchMock = vi.fn((url: string, _init?: RequestInit) =>
     Promise.resolve(
       url.endsWith('/presign')
@@ -53,7 +53,9 @@ function stubFetch() {
             headers: {},
             expiresInSeconds: 300,
           })
-        : okJson({}),
+        : url.endsWith('/commit')
+          ? commit()
+          : okJson({}),
     ),
   );
   globalThis.fetch = fetchMock as unknown as typeof fetch;
@@ -65,6 +67,14 @@ function presignBody(fetchMock: ReturnType<typeof stubFetch>): unknown {
   const body = call?.[1]?.body;
   return typeof body === 'string' ? JSON.parse(body) : null;
 }
+
+function commitBody(fetchMock: ReturnType<typeof stubFetch>): unknown {
+  const call = fetchMock.mock.calls.find(([url]) => url.endsWith('/commit'));
+  const body = call?.[1]?.body;
+  return typeof body === 'string' ? JSON.parse(body) : null;
+}
+
+const GSTIN = '33AABCS1429B1ZX';
 
 const PDF = new File(['%PDF-1.4'], 'proof.pdf', { type: 'application/pdf' });
 
@@ -115,15 +125,155 @@ describe('DocumentUploader — the type picker', () => {
     expect(screen.getByLabelText('Describe the certificate')).toBeRequired();
   });
 
-  it('starts on the GST certificate, and warns off anything else, with a GSTIN on file', async () => {
+  it('starts on the GST certificate, and says another proof removes the GSTIN on file', async () => {
     const user = userEvent.setup();
-    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstinOnFile />);
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstin={GSTIN} />);
 
     expect(screen.getByLabelText('Document type')).toHaveValue('GST_CERTIFICATE');
-    expect(screen.queryByText(/must be your GST Registration Certificate/)).toBeNull();
+    expect(screen.queryByText(/different business proof removes the GSTIN/)).toBeNull();
 
     await user.selectOptions(screen.getByLabelText('Document type'), 'UDYAM');
-    expect(screen.getByText(/must be your GST Registration Certificate/)).toBeInTheDocument();
+    expect(screen.getByText(/different business proof removes the GSTIN/)).toBeInTheDocument();
+  });
+});
+
+/**
+ * L7 — the GSTIN is entered with the GST certificate, on its card, and nowhere
+ * else. It is optional, sent with the commit of a GST certificate only, and a
+ * refusal of it lands under the box.
+ */
+describe('DocumentUploader — the GSTIN', () => {
+  it('asks for a GSTIN only with the GST certificate', async () => {
+    const user = userEvent.setup();
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} />);
+
+    expect(screen.queryByLabelText(/^GSTIN/)).toBeNull();
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'GST_CERTIFICATE');
+    const box = screen.getByLabelText(/^GSTIN/);
+    expect(box).toHaveValue('');
+    expect(box).not.toBeRequired();
+    expect(box).toHaveAttribute('maxLength', '15');
+    expect(screen.getByText('optional — as printed on the certificate')).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'UDYAM');
+    expect(screen.queryByLabelText(/^GSTIN/)).toBeNull();
+  });
+
+  it('never asks for one on the personal card', () => {
+    render(<DocumentUploader category="PERSONAL_IDENTITY" document={null} gstin={GSTIN} />);
+
+    expect(screen.queryByLabelText(/^GSTIN/)).toBeNull();
+  });
+
+  it('prefills the GSTIN on file', () => {
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={document()} gstin={GSTIN} />);
+
+    expect(screen.getByLabelText(/^GSTIN/)).toHaveValue(GSTIN);
+  });
+
+  it('commits a GST certificate with the GSTIN, upper-cased', async () => {
+    const fetchMock = stubFetch();
+    const user = userEvent.setup();
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} />);
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'GST_CERTIFICATE');
+    await user.type(screen.getByLabelText(/^GSTIN/), '33aabcs1429b1zx');
+    expect(screen.getByLabelText(/^GSTIN/)).toHaveValue(GSTIN);
+    await user.upload(screen.getByLabelText('Upload Business Identity Proof'), PDF);
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    expect(commitBody(fetchMock)).toEqual({
+      documentId: '00000000-0000-4000-8000-000000000001',
+      gstin: GSTIN,
+    });
+    expect(presignBody(fetchMock)).not.toHaveProperty('gstin');
+  });
+
+  it('commits a GST certificate with no GSTIN as an explicit none', async () => {
+    const fetchMock = stubFetch();
+    const user = userEvent.setup();
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} />);
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'GST_CERTIFICATE');
+    await user.upload(screen.getByLabelText('Upload Business Identity Proof'), PDF);
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    expect(commitBody(fetchMock)).toEqual({
+      documentId: '00000000-0000-4000-8000-000000000001',
+      gstin: null,
+    });
+  });
+
+  it('sends no GSTIN with any other business proof, even with one on file', async () => {
+    const fetchMock = stubFetch();
+    const user = userEvent.setup();
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstin={GSTIN} />);
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'UDYAM');
+    await user.upload(screen.getByLabelText('Upload Business Identity Proof'), PDF);
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    expect(commitBody(fetchMock)).toEqual({ documentId: '00000000-0000-4000-8000-000000000001' });
+  });
+
+  it('refuses a malformed GSTIN against the box, before any upload', async () => {
+    const fetchMock = stubFetch();
+    const user = userEvent.setup();
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} />);
+
+    await user.selectOptions(screen.getByLabelText('Document type'), 'GST_CERTIFICATE');
+    await user.type(screen.getByLabelText(/^GSTIN/), '33ABC');
+    await user.upload(screen.getByLabelText('Upload Business Identity Proof'), PDF);
+
+    expect(screen.getByText(/Enter a valid 15-character GSTIN/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^GSTIN/)).toHaveAttribute('aria-invalid', 'true');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the API refusal of the GSTIN under the box', async () => {
+    const fetchMock = stubFetch(
+      () =>
+        new Response(
+          JSON.stringify({
+            type: 'about:blank',
+            title: 'Conflict',
+            status: 409,
+            code: 'GSTIN_ALREADY_REGISTERED',
+            detail: 'That GSTIN is already registered to another dealership.',
+            errors: [
+              {
+                field: 'body.gstin',
+                code: 'GSTIN_ALREADY_REGISTERED',
+                message: 'Already registered.',
+              },
+            ],
+          }),
+          { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+        ),
+    );
+    const user = userEvent.setup();
+    const refreshed = navigationState.refreshed;
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstin={GSTIN} />);
+
+    await user.upload(screen.getByLabelText('Upload Business Identity Proof'), PDF);
+
+    expect(await screen.findByText('Already registered.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^GSTIN/)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'That GSTIN is already registered to another dealership.',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(navigationState.refreshed).toBe(refreshed);
+
+    await user.clear(screen.getByLabelText(/^GSTIN/));
+    expect(screen.queryByText('Already registered.')).toBeNull();
   });
 });
 
@@ -209,7 +359,7 @@ describe('DocumentUploader — the upload', () => {
       <DocumentUploader
         category="BUSINESS_IDENTITY"
         document={null}
-        gstinOnFile
+        gstin={GSTIN}
         basePath="/api/sales/dealers/d-1/documents"
       />,
     );
@@ -229,7 +379,7 @@ describe('DocumentUploader — the upload', () => {
   it('refuses a file over 5 MB before asking for a signature', async () => {
     const fetchMock = stubFetch();
     const user = userEvent.setup();
-    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstinOnFile />);
+    render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstin={GSTIN} />);
 
     const large = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'big.pdf', {
       type: 'application/pdf',

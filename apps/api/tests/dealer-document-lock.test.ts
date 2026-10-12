@@ -59,15 +59,12 @@ async function application(stage: 'PENDING_APPROVAL' | 'ACTIVE') {
   const admin = await fixtures.moderator();
   sequence += 1;
   const number = String(2000 + sequence);
-  await dealer.agent
-    .patch('/v1/dealer/onboarding')
-    .send({ gstin: `33DLOCK${number}B1ZX`, pan: `DLOCK${number}B` })
-    .expect(200);
+  const gstin = `33DLOCK${number}B1ZX`;
   for (const type of DOC_TYPES) {
     const documentId = await upload(dealer.agent, type);
     await dealer.agent
       .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-      .send({ documentId })
+      .send({ documentId, ...(type === 'GST_CERTIFICATE' ? { gstin } : {}) })
       .expect(200);
   }
   await dealer.agent.post('/v1/dealer/submit').expect(200);

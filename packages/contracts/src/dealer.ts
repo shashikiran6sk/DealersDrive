@@ -363,6 +363,14 @@ export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
  * nothing about a DRAFT is public and the whole application is reviewed before
  * it becomes so.
  */
+/**
+ * What the dealer's own onboarding `PATCH` may write: everything an admin may,
+ * except the GSTIN and the PAN. The GSTIN comes only with the GST certificate
+ * (`DocumentCommitInput`), and the PAN is one of the identity documents.
+ */
+export const DealerOnboardingInput = UpdateDealerInput.omit({ gstin: true, pan: true }).strict();
+export type DealerOnboardingInput = z.infer<typeof DealerOnboardingInput>;
+
 export const DealerSelfUpdateInput = UpdateDealerInput.pick({
   establishedYear: true,
   tagline: true,
@@ -463,7 +471,12 @@ export const DealerDocumentsResponse = z.object({
 });
 export type DealerDocumentsResponse = z.infer<typeof DealerDocumentsResponse>;
 
-export const DocumentCommitInput = z.object({ documentId: Uuid }).strict();
+/**
+ * `gstin` is accepted only with a GST certificate: the GSTIN on file is the one
+ * on that certificate, entered beside it, and committing another business proof
+ * clears it. Blank means "no GSTIN on this certificate" (optional-gstin.md).
+ */
+export const DocumentCommitInput = z.object({ documentId: Uuid, gstin: OptionalGstin }).strict();
 export type DocumentCommitInput = z.infer<typeof DocumentCommitInput>;
 
 // ─────────── C14 media ─────────────────────────────────────────────────────

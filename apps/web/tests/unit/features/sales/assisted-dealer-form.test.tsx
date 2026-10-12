@@ -21,7 +21,7 @@ import { navigationState } from '../../../setup';
 
 /** The details form shared by create and edit: what it sends, and how a refusal reads. */
 describe('AssistedDealerForm', () => {
-  it('sends only filled fields, upper-casing GSTIN and PAN', async () => {
+  it('sends only filled fields', async () => {
     const onSubmit = vi.fn(() => Promise.resolve({ ok: true }));
     const user = userEvent.setup();
     render(
@@ -34,18 +34,33 @@ describe('AssistedDealerForm', () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/^PAN/), 'aaacs1429p');
+    await user.type(screen.getByLabelText(/^Pincode/), '632001');
     await user.click(screen.getByRole('button', { name: 'Save details' }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
         legalName: 'Sri Murugan Cars',
-        pan: 'AAACS1429P',
+        pincode: '632001',
         tagline: '',
-        gstin: '',
       });
     });
     expect(await screen.findByText('Saved.')).toBeInTheDocument();
+  });
+
+  /** L7: the GSTIN is entered with the GST certificate, and the PAN is a document. */
+  it('asks for neither a GSTIN nor a PAN', () => {
+    render(
+      <AssistedDealerForm
+        initial={{}}
+        initialServices={[]}
+        submitLabel="Save details"
+        partial
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByLabelText(/GSTIN/i)).toBeNull();
+    expect(screen.queryByLabelText(/^PAN/)).toBeNull();
   });
 
   it('sends empty required fields on create, so the schema answers in words', async () => {
@@ -70,7 +85,8 @@ describe('AssistedDealerForm', () => {
     });
     const sent = onSubmit.mock.calls[0]?.[0] ?? {};
     expect(sent).not.toHaveProperty('landline');
-    expect(sent.gstin).toBe('');
+    expect(sent).not.toHaveProperty('gstin');
+    expect(sent).not.toHaveProperty('pan');
   });
 
   it('marks the fields the API refused, by name', async () => {

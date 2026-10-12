@@ -108,6 +108,11 @@ and "Save and continue" leads here through `AssistedDealerForm`'s `doneHref`.
 The redirect is a string prop rather than an `onDone` callback because the
 dealer page is a server component and cannot hand a function to a client one.
 
+The representative types no GSTIN or PAN on the details form any more
+(**L7**). The GSTIN is entered here, on the business card beside the GST
+certificate, and the page passes the one on file to `DocumentUploader` as
+`gstin` so replacing the certificate keeps it in the box.
+
 ## `apps/web/src/features/sales/upload-paths.ts`
 
 Documents go up the same presign → PUT → commit path a dealer's do, through

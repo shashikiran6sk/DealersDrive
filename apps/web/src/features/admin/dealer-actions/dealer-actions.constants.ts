@@ -10,9 +10,6 @@ export const DEALER_ACTIONS_TEXT = {
   noteLabel: 'Note',
   approveNotePlaceholder: 'Internal — not shown to the dealer',
   approveConfirmLabel: 'Confirm approval',
-  gstReviewLabel: 'GST registration applicability review',
-  gstReviewHint:
-    'Record why registration is not required and the protected review reference. Blank GSTIN alone is not an exemption. Leave unresolved cases under review.',
   approve: 'Approve dealer',
   approved: 'Dealer approved.',
   approveBlocked:
@@ -71,9 +68,6 @@ export const DEALER_ACTIONS_TEXT = {
     'Why policy permits activating this dealership before its documents are verified, and the approval reference',
   overrideJustificationCount: (length: number, min: number) =>
     length >= min ? `${length} characters` : `${length} of ${min} characters`,
-  overrideGstLabel: 'GST registration not required — review note',
-  overrideGstHint:
-    'No GSTIN is on file. Record why registration is not required and the review reference; uncertain cases stay under review.',
   override: 'Activate manually',
   overridden: 'Dealership activated manually. Its documents remain unverified.',
 

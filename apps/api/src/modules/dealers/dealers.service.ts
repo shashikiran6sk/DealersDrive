@@ -54,6 +54,8 @@ import {
   DOCUMENT_CONTENT_MISMATCH,
   DOCUMENT_LOCKED,
   DOCUMENT_SIZE_MISMATCH,
+  GSTIN_CHANGED_REASON,
+  GSTIN_NEEDS_GST_CERTIFICATE,
   SUBMITTED_MESSAGE,
 } from './dealers.messages.js';
 import { toDealerDocumentDto, toDealerDocuments } from './dealer-documents.mapper.js';
@@ -197,6 +199,43 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     const slug = await repo.slugById(dealerId);
     if (!slug) throw new NotFoundError('That dealership no longer exists.');
     return slug;
+  }
+
+  function gstinOnCommit(
+    doc: { category: string; type: string },
+    gstin: string | null | undefined,
+  ): string | null | undefined {
+    const certificate = doc.type === 'GST_CERTIFICATE';
+    if (gstin && !certificate) {
+      throw new DomainError('GSTIN_NEEDS_GST_CERTIFICATE', GSTIN_NEEDS_GST_CERTIFICATE, {
+        errors: [
+          {
+            field: 'body.gstin',
+            code: 'GSTIN_NEEDS_GST_CERTIFICATE',
+            message: GSTIN_NEEDS_GST_CERTIFICATE,
+          },
+        ],
+      });
+    }
+    if (doc.category !== 'BUSINESS_IDENTITY') return undefined;
+    return certificate ? (gstin ?? null) : null;
+  }
+
+  async function applyGstin(tx: Tx, dealerId: string, gstin: string | null): Promise<boolean> {
+    const current = await tx.dealer.findUniqueOrThrow({
+      where: { id: dealerId },
+      select: { id: true, gstin: true, verificationStatus: true, verificationVersion: true },
+    });
+    if (current.gstin === gstin) return false;
+    await tx.dealer.update({ where: { id: dealerId }, data: { gstin } });
+    await invalidateDealerVerification(
+      tx,
+      audit,
+      current,
+      { actorType: 'SYSTEM', actorId: getContext()?.userId ?? null },
+      GSTIN_CHANGED_REASON,
+    );
+    return true;
   }
 
   async function assertNoDuplicate(
@@ -771,6 +810,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (pending.status === 'UPLOADED' || pending.status === 'VERIFIED') {
         return toDealerDocumentDto(pending);
       }
+      const gstin = gstinOnCommit(pending, input.gstin);
+      if (gstin) await assertNoDuplicate(dealerId, { gstin });
       const key = documentKey(slug, pending.type, pending.id);
       const object = await storage.head(key);
       const body = object ? await storage.get(key) : null;
@@ -784,45 +825,49 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
               ? new DomainError('DOCUMENT_CONTENT_MISMATCH', DOCUMENT_CONTENT_MISMATCH)
               : null;
 
-      const committed = await withTransaction(prisma, async (tx) => {
-        const dealerStatus = await repo.lockStatus(dealerId, tx);
-        const doc = await repo.documentById(input.documentId, tx);
-        if (!doc || doc.dealerId !== dealerId || doc.category !== category) {
-          throw new NotFoundError(DOCUMENT_NOT_FOUND);
-        }
-        if (doc.status === 'UPLOADED' || doc.status === 'VERIFIED') return { doc, fresh: false };
-        assertDocumentEditable(dealerStatus, doc);
-        if (failure) {
-          if (object) await repo.deleteDocument(dealerId, category, tx);
-          return { doc, fresh: false };
-        }
-        const updated = await repo.updateDocument(
-          doc.id,
-          {
-            status: 'UPLOADED',
-            mediaId: null,
-            uploadedAt: new Date(),
-            submissionCount: { increment: 1 },
-          },
-          tx,
-        );
-        await audit.record(tx, {
-          actorType: actor.type,
-          actorId: actor.id,
-          dealerId,
-          action: 'document.submitted',
-          entityType: 'DealerDocument',
-          entityId: doc.id,
-          after: {
-            category,
-            type: doc.type,
-            mimeType: doc.mimeType,
-            bytes: doc.bytes,
-            resubmission: updated.submissionCount > 1,
-          },
-        });
-        return { doc: updated, fresh: true };
-      });
+      const committed = await withDealerRegistrationConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          const dealerStatus = await repo.lockStatus(dealerId, tx);
+          const doc = await repo.documentById(input.documentId, tx);
+          if (!doc || doc.dealerId !== dealerId || doc.category !== category) {
+            throw new NotFoundError(DOCUMENT_NOT_FOUND);
+          }
+          if (doc.status === 'UPLOADED' || doc.status === 'VERIFIED') return { doc, fresh: false };
+          assertDocumentEditable(dealerStatus, doc);
+          if (failure) {
+            if (object) await repo.deleteDocument(dealerId, category, tx);
+            return { doc, fresh: false };
+          }
+          const updated = await repo.updateDocument(
+            doc.id,
+            {
+              status: 'UPLOADED',
+              mediaId: null,
+              uploadedAt: new Date(),
+              submissionCount: { increment: 1 },
+            },
+            tx,
+          );
+          const gstinChanged = gstin !== undefined && (await applyGstin(tx, dealerId, gstin));
+          await audit.record(tx, {
+            actorType: actor.type,
+            actorId: actor.id,
+            dealerId,
+            action: 'document.submitted',
+            entityType: 'DealerDocument',
+            entityId: doc.id,
+            after: {
+              category,
+              type: doc.type,
+              mimeType: doc.mimeType,
+              bytes: doc.bytes,
+              resubmission: updated.submissionCount > 1,
+              ...(gstinChanged ? { gstinChanged: true } : {}),
+            },
+          });
+          return { doc: updated, fresh: true };
+        }),
+      );
       if (failure) {
         if (object) await storage.delete(key);
         throw failure;

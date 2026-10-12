@@ -129,7 +129,8 @@ const meta = {
     },
     dealer: {
       control: false,
-      description: 'GET /v1/dealer. Prefills steps 1–2 on the way back, and GSTIN/PAN on step 3.',
+      description:
+        'GET /v1/dealer. Prefills steps 1–2 on the way back, and the GSTIN beside the GST certificate on step 3.',
     },
     completeness: {
       control: false,
@@ -284,7 +285,7 @@ export const BusinessFieldErrors: Story = {
 export const BusinessNameTaken: Story = {
   args: {
     step: 1,
-    completeness: completeness({ business: ['gstin', 'pan'] }),
+    completeness: completeness({ business: ['mapsUrl'] }),
   },
   beforeEach: () => {
     authActionStub.delayMs = 400;
@@ -300,7 +301,7 @@ export const BlockersMany: Story = {
     step: 1,
     completeness: completeness({
       account: ['phone'],
-      business: ['gstin', 'pan', 'city', 'state', 'pincode'],
+      business: ['city', 'state', 'pincode'],
       documents: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'],
     }),
   },
@@ -348,7 +349,7 @@ export const Documents: Story = {
   args: {
     step: 2,
     completeness: completeness({
-      business: ['tagline', 'specialities', 'gstin', 'pan'],
+      business: ['tagline', 'specialities'],
       documents: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'],
     }),
   },
@@ -357,7 +358,7 @@ export const Documents: Story = {
 export const DocumentsWithGstin: Story = {
   args: {
     step: 2,
-    dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
+    dealer: { gstin: '33AABCS1429B1ZX' } as DealerProfile,
     completeness: completeness({ documents: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'] }),
   },
 };
@@ -365,7 +366,7 @@ export const DocumentsWithGstin: Story = {
 export const DocumentsComplete: Story = {
   args: {
     step: 2,
-    dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
+    dealer: { gstin: '33AABCS1429B1ZX' } as DealerProfile,
     completeness: completeness(),
     documents: SUBMITTED_DOCUMENTS,
   },
@@ -401,7 +402,7 @@ export const ReviewRefused: Story = {
     step: 3,
     session: session({}, dealership('DRAFT')),
     completeness: completeness({
-      business: ['pan'],
+      business: ['mapsUrl'],
       documents: ['BUSINESS_IDENTITY'],
     }),
   },

@@ -1598,3 +1598,20 @@ assisted, so a reviewer can see who put it in the queue.
 Completeness for an assisted dealership reads the dealership's own contact
 columns (`contactName`, `contactEmail`, `contactPhoneVerifiedAt`) because there
 is no owner account yet to read them from.
+
+## `apps/api/src/modules/dealers/dealers.service.ts` — GSTIN on the GST certificate
+
+### `function gstinOnCommit(`
+
+Owner decision (2026-10-12, `docs/project/optional-gstin.md`): the GSTIN is
+not a field the dealer types on its own. It arrives with the GST certificate,
+and committing a business proof decides it — the certificate's box, or nothing
+for any other proof. That keeps the GSTIN on file and the document a reviewer
+reads from ever disagreeing. A personal proof leaves it alone.
+
+### `async function applyGstin(`
+
+Inside the commit's transaction, so the document and the GSTIN move together.
+A change revokes Dealer Verified like any other change to business identity;
+the uniqueness check before the transaction gives the friendly error, and
+`withDealerRegistrationConflict` maps the unique index for the race.

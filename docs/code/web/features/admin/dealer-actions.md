@@ -27,8 +27,10 @@ any other value, so if the text is ever changed the version changes with it and
 an acknowledgement of the old wording stops being accepted.
 
 The button is enabled by `ActivationOverrideInput` itself — the 40-character
-justification and the acknowledged version — plus the GST review note when no
-GSTIN is on file, which the contract leaves optional and the API requires.
+justification and the acknowledged version — and by nothing else. There is no
+GST review note any more, here or on approval (**L7**): GST registration is the
+dealership's own responsibility, which it accepts when it signs up, and a
+missing GSTIN is not something a reviewer adjudicates.
 
 ### `const blockedReason = dealer.actions.canOverrideActivation`
 

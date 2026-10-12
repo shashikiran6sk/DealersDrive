@@ -74,18 +74,14 @@ export const ONBOARDING_TEXT = {
   taglinePlaceholder: 'Optional short description of your dealership',
 
   documentsHeading: 'Business verification',
-  gstObligation:
-    'Optional collection does not remove GST registration obligations. If you are registered, supply your GSTIN and certificate. Applicability is reviewed separately.',
+  gstResponsibility:
+    'You are responsible for your own GST registration where the law requires one. If you are registered, choose the GST certificate as your business proof and enter your GSTIN with it.',
   documentsIntro:
     'Upload one Personal Identity Proof and one Business Identity Proof. Our team reviews each one before approving your dealership; Dealer Verified is a separate business and representative review. You can prepare listings while approval is pending.',
   documentsRule:
     'Documents are not needed to save your draft. To submit for review you need one document in each category. Aadhaar is voluntary: any other listed personal proof works instead.',
-  gstOnFile:
-    'Your GSTIN is on file, so your Business Identity Proof must be your GST Registration Certificate.',
   draftSaved:
     'Your draft is saved. You can leave now and come back to add documents whenever you are ready.',
-  saved: 'Saved.',
-  saveRegistrations: 'Save registrations',
   stillNeeded: 'Still needed before you can submit',
 
   underReview: 'Under review',

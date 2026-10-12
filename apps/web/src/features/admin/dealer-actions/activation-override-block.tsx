@@ -4,8 +4,6 @@ import {
   ACTIVATION_JUSTIFICATION_MAX,
   ACTIVATION_JUSTIFICATION_MIN,
   ActivationOverrideInput,
-  GST_REVIEW_MAX_LENGTH,
-  GST_REVIEW_MIN_LENGTH,
   MANUAL_ACTIVATION_DISCLAIMER,
   MANUAL_ACTIVATION_DISCLAIMER_VERSION,
   type AdminDealerDetail,
@@ -28,7 +26,6 @@ export interface ActivationOverrideBlockProps extends ActionBlockProps {
 export function ActivationOverrideBlock({ dealer, pending, run }: ActivationOverrideBlockProps) {
   const [justification, setJustification] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
-  const [gstReview, setGstReview] = useState('');
 
   const blockedReason = dealer.actions.canOverrideActivation
     ? null
@@ -46,15 +43,11 @@ export function ActivationOverrideBlock({ dealer, pending, run }: ActivationOver
     );
   }
 
-  const needsGstReview = !dealer.gstin;
   const body = {
     justification,
     ...(acknowledged ? { acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION } : {}),
-    ...(needsGstReview ? { gstNotRequiredReview: gstReview } : {}),
   };
-  const valid =
-    ActivationOverrideInput.safeParse(body).success &&
-    (!needsGstReview || gstReview.trim().length >= GST_REVIEW_MIN_LENGTH);
+  const valid = ActivationOverrideInput.safeParse(body).success;
   const canSubmit = dealer.actions.canOverrideActivation && valid && !pending;
   const outstanding = dealer.activation.outstanding;
 
@@ -107,24 +100,6 @@ export function ActivationOverrideBlock({ dealer, pending, run }: ActivationOver
         </p>
       </Field>
 
-      {needsGstReview ? (
-        <Field
-          id="overrideGstReview"
-          label={DEALER_ACTIONS_TEXT.overrideGstLabel}
-          hint={DEALER_ACTIONS_TEXT.overrideGstHint}
-        >
-          <Textarea
-            id="overrideGstReview"
-            value={gstReview}
-            rows={2}
-            minLength={GST_REVIEW_MIN_LENGTH}
-            maxLength={GST_REVIEW_MAX_LENGTH}
-            onChange={(event) => setGstReview(event.target.value)}
-            disabled={pending}
-          />
-        </Field>
-      ) : null}
-
       <Button
         variant="secondary"
         size="md"
@@ -139,14 +114,12 @@ export function ActivationOverrideBlock({ dealer, pending, run }: ActivationOver
               {
                 justification: justification.trim(),
                 acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
-                ...(needsGstReview ? { gstNotRequiredReview: gstReview.trim() } : {}),
               },
               dealer.slug,
             );
             if (result.ok) {
               setJustification('');
               setAcknowledged(false);
-              setGstReview('');
             }
             return result;
           }, DEALER_ACTIONS_TEXT.overridden);

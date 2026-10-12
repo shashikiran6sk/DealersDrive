@@ -108,8 +108,6 @@ function details(tickets: Tickets, overrides: Record<string, unknown> = {}) {
     mapsUrl: 'https://maps.app.goo.gl/assisted',
     tagline: 'Family-run since 1998, hatchbacks under six lakh.',
     specialities: ['Hatchbacks'],
-    gstin: `33ASSTD${String(1000 + counter)}B1ZX`,
-    pan: `ASSTD${String(1000 + counter)}B`,
     ...overrides,
   };
 }
@@ -285,6 +283,8 @@ async function draft(agent: request.Agent = sales) {
 }
 
 async function completeDocuments(agent: request.Agent, dealerId: string) {
+  counter += 1;
+  const gstin = `33ASSTD${String(1000 + counter)}B1ZX`;
   for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await agent
       .post(`/v1/sales/dealers/${dealerId}/documents/presign`)
@@ -304,7 +304,10 @@ async function completeDocuments(agent: request.Agent, dealerId: string) {
       .expect(200);
     await agent
       .post(`/v1/sales/dealers/${dealerId}/documents/${documentCategoryOf(type)}/commit`)
-      .send({ documentId: presigned.body.documentId })
+      .send({
+        documentId: presigned.body.documentId,
+        ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+      })
       .expect(200);
   }
 }
@@ -519,6 +522,28 @@ describe('creating the dealership', () => {
       .post('/v1/sales/dealers')
       .send({ ...details(tickets), dealerId: '00000000-0000-4000-8000-000000000001' })
       .expect(400);
+  });
+
+  it.each([
+    ['gstin', { gstin: '33ASSTD9001B1ZX' }],
+    ['pan', { pan: 'ASSTD9001B' }],
+  ])('cannot be created or edited with a typed %s', async (field, extra) => {
+    const { tickets } = await verify(sales);
+    const refused = await sales
+      .post('/v1/sales/dealers')
+      .send({ ...details(tickets), ...extra })
+      .expect(400);
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: `body.${field}`, code: 'UNRECOGNIZED_KEY' }),
+    ]);
+
+    const { dealer } = await draft();
+    const edit = await sales.patch(`/v1/sales/dealers/${dealer.id}`).send(extra).expect(400);
+    expect(edit.body.errors).toEqual([
+      expect.objectContaining({ field: `body.${field}`, code: 'UNRECOGNIZED_KEY' }),
+    ]);
+    const row = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.id } });
+    expect({ gstin: row.gstin, pan: row.pan }).toEqual({ gstin: null, pan: null });
   });
 
   it('reuses an existing dealer account rather than creating a second one', async () => {
