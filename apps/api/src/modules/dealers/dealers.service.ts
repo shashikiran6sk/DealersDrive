@@ -1,6 +1,6 @@
 import { withDealerRegistrationConflict } from './dealer-registration-conflict.js';
 import { invalidateDealerVerification } from './dealer-verification.js';
-import { isDealerVerified } from '@dealers-drive/contracts';
+import { DEALER_VERIFICATION_LABELS, isDealerVerified } from '@dealers-drive/contracts';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
@@ -49,6 +49,7 @@ import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.j
 import { documentKey } from './dealer-storage-keys.js';
 import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
+  ACTIVE_LABEL,
   ALREADY_SUBMITTED,
   APPLICATION_CLOSED,
   DOCUMENT_CONTENT_MISMATCH,
@@ -118,6 +119,11 @@ const DASHBOARD_LISTING_STATS = [
   { status: 'SOLD', label: 'Sold' },
 ] as const;
 
+function statusLabelOf(dealer: Parameters<typeof isDealerVerified>[0] & { status: DealerStatus }) {
+  if (dealer.status !== 'ACTIVE') return DEALER_STATUS_LABELS[dealer.status];
+  return isDealerVerified(dealer) ? DEALER_VERIFICATION_LABELS.VERIFIED : ACTIVE_LABEL;
+}
+
 export function createDealersService({ prisma, repo, storage, maps, audit }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
     const owner = dealer.members.find((member) => member.role === 'OWNER');
@@ -126,7 +132,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       id: dealer.id,
       slug: dealer.slug,
       status: dealer.status,
-      statusLabel: dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
+      statusLabel: statusLabelOf(dealer),
       statusReason: dealer.statusReason,
       brandName: dealer.brandName,
       legalName: dealer.legalName,
@@ -323,8 +329,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           slug: dealer.slug,
           brandName: dealer.brandName,
           status: dealer.status,
-          statusLabel:
-            dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
+          statusLabel: statusLabelOf(dealer),
           isVerified: isDealerVerified(dealer),
           creditBalance: dealer.creditBalance,
           creditsHeld: dealer.creditsHeld,

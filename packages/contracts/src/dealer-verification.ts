@@ -19,16 +19,24 @@ export const DEALER_VERIFICATION_LABELS: Record<DealerVerificationStatus, string
   REVOKED: 'Verification revoked',
 };
 
+/**
+ * A reviewer may grant Dealer Verified directly (owner decision, 2026-10-12):
+ * "Pending" and "In review" are optional labels for a review that takes time,
+ * not steps every decision must pass through. What the badge rests on — an
+ * ACTIVE dealership, a proved phone and email, both document categories
+ * verified and on file — is checked by the API on every VERIFIED decision,
+ * whichever status it comes from.
+ */
 export const DEALER_VERIFICATION_TRANSITIONS: Record<
   DealerVerificationStatus,
   readonly DealerVerificationStatus[]
 > = {
-  NOT_VERIFIED: ['PENDING', 'IN_REVIEW'],
-  PENDING: ['IN_REVIEW', 'REJECTED'],
+  NOT_VERIFIED: ['PENDING', 'IN_REVIEW', 'VERIFIED'],
+  PENDING: ['IN_REVIEW', 'VERIFIED', 'REJECTED'],
   IN_REVIEW: ['VERIFIED', 'REJECTED'],
   VERIFIED: ['REVOKED'],
-  REJECTED: ['PENDING', 'IN_REVIEW'],
-  REVOKED: ['PENDING', 'IN_REVIEW'],
+  REJECTED: ['PENDING', 'IN_REVIEW', 'VERIFIED'],
+  REVOKED: ['PENDING', 'IN_REVIEW', 'VERIFIED'],
 };
 
 /**

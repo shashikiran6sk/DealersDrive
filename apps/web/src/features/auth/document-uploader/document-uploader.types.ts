@@ -9,6 +9,8 @@ export interface DocumentUploaderProps {
   document: DealerDocumentDto | null;
   basePath?: string;
   gstin?: string | null;
+  locked?: boolean;
+  requiredTag?: string;
 }
 
 export interface DocumentTypeFieldProps {

@@ -495,3 +495,19 @@ The customer's own words — the subject, the enquiry message — appear only in
 the escaped body, **never in a subject line**. The subject line carries the
 reference, which is ours. The ticket description never appears at all: it is
 where people put account numbers and addresses.
+
+## `apps/api/src/modules/notifications/templates.ts` — truthful approval emails (#299 L8)
+
+### `case 'dealer.application.approved':`
+
+"Approved and live", never "verified". Dealer Verified is a separate review
+with its own badge; an approval email that said "you are verified" told the
+dealer something the public page then contradicted.
+
+### `case 'dealer.application.activated-manually':`
+
+A manual activation goes live before the documents are verified, so its email
+says exactly that, names the outstanding categories (worked out at send time
+from the documents, so a document uploaded in between is not asked for
+again), and links to `/dealer/documents`. The `DealerApproved` payload carries
+`activationMethod`, and the rule picks the template from it.

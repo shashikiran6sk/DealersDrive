@@ -1,6 +1,6 @@
 import type { DashboardResponse } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
 import DealerDashboardPage from '@/app/(dealer)/dealer/page';
@@ -20,11 +20,25 @@ import DealerDashboardPage from '@/app/(dealer)/dealer/page';
  * `console-layout.test.tsx`.
  */
 const apiGet = vi.fn();
+const apiGetParsed = vi.fn();
+const currentSession = vi.fn();
 
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   apiGet: (path: string) => apiGet(path) as unknown,
+  apiGetParsed: (...args: unknown[]) => apiGetParsed(...args) as unknown,
 }));
+vi.mock('@/lib/session', () => ({ currentSession: () => currentSession() as unknown }));
+
+const STAFF_SESSION = {
+  dealer: { status: 'ACTIVE' },
+  permissions: ['vehicle:read', 'enquiry:read'],
+};
+
+beforeEach(() => {
+  apiGetParsed.mockReset();
+  currentSession.mockReset().mockResolvedValue(STAFF_SESSION);
+});
 
 function dashboard(overrides: Partial<DashboardResponse> = {}): DashboardResponse {
   return {
@@ -334,5 +348,73 @@ describe('the vehicle counts (F066)', () => {
       'href',
       '/dealer/vehicles/new',
     );
+  });
+});
+
+describe('the documents reminder (L8)', () => {
+  const OWNER = ['document:upload', 'dealer:update', 'vehicle:read'];
+
+  function stubDocuments(data: unknown[]) {
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      Promise.resolve(
+        path === '/v1/dealer/documents'
+          ? { data, slots: [], requirementMet: false, gaps: [], allVerified: false }
+          : { status: 'ACTIVE', gstin: null },
+      ),
+    );
+  }
+
+  const VERIFIED = [
+    { category: 'PERSONAL_IDENTITY', type: 'PAN_CARD', status: 'VERIFIED', fileName: 'pan.pdf' },
+    { category: 'BUSINESS_IDENTITY', type: 'UDYAM', status: 'VERIFIED', fileName: 'udyam.pdf' },
+  ];
+
+  it('links an ACTIVE owner with documents outstanding to /dealer/documents', async () => {
+    currentSession.mockResolvedValue({ dealer: { status: 'ACTIVE' }, permissions: OWNER });
+    stubDocuments([]);
+    await renderPage();
+
+    expect(screen.getByText('Upload your documents for review')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Personal Identity Proof, Business Identity Proof/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Upload documents' })).toHaveAttribute(
+      'href',
+      '/dealer/documents',
+    );
+  });
+
+  it('shows nothing once both documents are verified', async () => {
+    currentSession.mockResolvedValue({ dealer: { status: 'ACTIVE' }, permissions: OWNER });
+    stubDocuments(VERIFIED);
+    await renderPage();
+
+    expect(screen.queryByText('Upload your documents for review')).toBeNull();
+  });
+
+  it('asks nothing and shows nothing for a dealership that is not ACTIVE', async () => {
+    currentSession.mockResolvedValue({ dealer: { status: 'SUSPENDED' }, permissions: OWNER });
+    stubDocuments([]);
+    await renderPage();
+
+    expect(apiGetParsed).not.toHaveBeenCalled();
+    expect(screen.queryByText('Upload your documents for review')).toBeNull();
+  });
+
+  it('asks nothing and shows nothing for a member who may not upload documents', async () => {
+    stubDocuments([]);
+    await renderPage();
+
+    expect(apiGetParsed).not.toHaveBeenCalled();
+    expect(screen.queryByText('Upload your documents for review')).toBeNull();
+  });
+
+  it('keeps the dashboard up when the documents cannot be read', async () => {
+    currentSession.mockResolvedValue({ dealer: { status: 'ACTIVE' }, permissions: OWNER });
+    apiGetParsed.mockRejectedValue(new Error('upstream down'));
+    await renderPage();
+
+    expect(screen.getByRole('heading', { name: 'Good evening, Kumar' })).toBeInTheDocument();
+    expect(screen.queryByText('Upload your documents for review')).toBeNull();
   });
 });

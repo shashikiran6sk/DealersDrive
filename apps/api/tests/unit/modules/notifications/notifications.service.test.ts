@@ -152,9 +152,13 @@ function fakePrisma(
                 slug: 'sri-lakshmi-motors',
                 tagline: 'Family-run since 1998.',
                 specialities: ['In-house workshop'],
+                gstin: null,
                 ...options.dealer,
               },
         ),
+    },
+    dealerDocument: {
+      findMany: () => Promise.resolve([]),
     },
     dealerMember: {
       findFirst: () => Promise.resolve(owner === null ? null : { user: owner }),
@@ -259,6 +263,24 @@ describe('the notification rules', () => {
 
   it('emails the dealer on approval', async () => {
     await expect(templatesFor('DealerApproved')).resolves.toEqual(['dealer.application.approved']);
+    await expect(templatesFor('DealerApproved', { activationMethod: 'STANDARD' })).resolves.toEqual(
+      ['dealer.application.approved'],
+    );
+  });
+
+  it('sends a manual activation its own email, naming what is outstanding (#299 L8)', async () => {
+    await expect(
+      templatesFor('DealerApproved', { activationMethod: 'MANUAL_OVERRIDE' }),
+    ).resolves.toEqual(['dealer.application.activated-manually']);
+
+    const { service, mailer } = setup();
+    await service.handleEmailJob({
+      template: 'dealer.application.activated-manually',
+      audience: 'dealer',
+      dealerId: 'dealer-1',
+      subjectId: 'evt-manual',
+    });
+    expect(mailer.sent[0]?.text).toContain('Personal Identity Proof and Business Identity Proof');
   });
 
   /**

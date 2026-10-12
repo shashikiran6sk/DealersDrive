@@ -54,8 +54,15 @@ describe('genuine dealer verification contracts', () => {
     expect(isDealerVerified({ status: 'ACTIVE', verificationStatus: 'VERIFIED' })).toBe(true);
     expect(isDealerVerified({ status: 'SUSPENDED', verificationStatus: 'VERIFIED' })).toBe(false);
     expect(isDealerVerified({ status: 'ACTIVE', verificationStatus: 'REVOKED' })).toBe(false);
-    expect(DEALER_VERIFICATION_TRANSITIONS.NOT_VERIFIED).not.toContain('VERIFIED');
     expect(DEALER_VERIFICATION_TRANSITIONS.VERIFIED).toEqual(['REVOKED']);
+  });
+
+  it('lets a reviewer grant Dealer Verified directly, with Pending and In review optional', () => {
+    for (const from of ['NOT_VERIFIED', 'PENDING', 'IN_REVIEW', 'REJECTED', 'REVOKED'] as const) {
+      expect(DEALER_VERIFICATION_TRANSITIONS[from]).toContain('VERIFIED');
+    }
+    expect(DEALER_VERIFICATION_TRANSITIONS.NOT_VERIFIED).not.toContain('REVOKED');
+    expect(DEALER_VERIFICATION_TRANSITIONS.NOT_VERIFIED).not.toContain('REJECTED');
   });
 
   it('refuses invalid and stale-version shapes', () => {

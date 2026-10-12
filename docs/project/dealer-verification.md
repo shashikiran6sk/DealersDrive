@@ -28,9 +28,12 @@ A row lock plus expected version rejects conflicting decisions. Every change rec
 administrator, time, previous/new status, reason and policy version atomically
 in the existing restricted audit log. UI history shows the latest 100; full history remains.
 
-NOT_VERIFIED → PENDING or IN_REVIEW; PENDING → IN_REVIEW or REJECTED; IN_REVIEW → VERIFIED
-or REJECTED; VERIFIED → REVOKED; rejected/revoked can begin a fresh review. Reasons are
-required for rejection/revocation. Direct creation of VERIFIED is refused.
+A reviewer may decide VERIFIED from NOT_VERIFIED, PENDING, IN_REVIEW, REJECTED or REVOKED
+(owner decision, 2026-10-12): PENDING and IN_REVIEW are optional labels for a review that takes
+time, not steps every decision must pass through. NOT_VERIFIED → PENDING or IN_REVIEW;
+PENDING → IN_REVIEW or REJECTED; IN_REVIEW → REJECTED; VERIFIED → REVOKED; rejected/revoked can
+begin a fresh review. Reasons are required for rejection/revocation. Every VERIFIED decision,
+whatever it comes from, runs the same evidence checks below.
 
 To decide VERIFIED, the business must separately be ACTIVE. Its representative's email and
 phone must actually be proved (self-onboarded values must match the owner; assisted records
@@ -94,8 +97,8 @@ writes prefer a forward fix to retain verification history and avoid an old writ
 ## Owner UAT
 
 1. Open an approved unverified business: no Dealer Verified badge, including suggestions/car cards.
-2. As a reviewer, open its admin detail, verify both document categories and start IN_REVIEW.
-   The form asks only for the next status.
+2. As a reviewer, open its admin detail and verify both document categories. The form asks only
+   for the next status, and "Dealer Verified" is offered straight away; "In review" is optional.
 3. Save VERIFIED; verify directory/detail/vehicle dealer badges and truthful explanatory wording.
 4. Use a business without a yard and, where properly reviewed, without GSTIN. Yard photos do not
    affect qualification. Registration obligations still apply where required.

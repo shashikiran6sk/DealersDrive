@@ -590,12 +590,15 @@ describe('documents', () => {
 });
 
 describe('toProfile', () => {
-  it('calls an ACTIVE dealership "Verified" rather than "Active"', async () => {
-    const h = setup();
-
-    // The dealer sees this word on their own profile; "Active" describes a row
-    // state, "Verified" describes what a buyer is being told about them.
-    expect((await h.service.profile('dealer-1')).statusLabel).toBe('Verified');
+  it('calls an ACTIVE dealership "Approved", never "Verified", until it is Dealer Verified (#299 L8)', async () => {
+    // The dealer sees this word on their own profile and console header. An
+    // approval — or a manual activation with no document verified — is not
+    // Dealer Verified, which is a separate review with its own badge.
+    expect((await setup().service.profile('dealer-1')).statusLabel).toBe('Approved');
+    expect(
+      (await setup({ dealer: { verificationStatus: 'VERIFIED' } }).service.profile('dealer-1'))
+        .statusLabel,
+    ).toBe('Dealer Verified');
   });
 
   it('labels every other status from the shared table', async () => {

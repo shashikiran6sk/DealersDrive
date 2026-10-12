@@ -103,8 +103,13 @@ const meta = {
       control: 'text',
       description: 'The BFF base the presign, commit and delete go to (Sales passes its own).',
     },
+    locked: {
+      control: 'boolean',
+      description:
+        'The API will not change this document (UPLOADED or VERIFIED outside DRAFT): no Upload, Replace or Delete, and a note saying so. The dealer Documents page sets it.',
+    },
   },
-  args: { category: 'PERSONAL_IDENTITY', document: null, gstin: null },
+  args: { category: 'PERSONAL_IDENTITY', document: null, gstin: null, locked: false },
 } satisfies Meta<typeof DocumentUploader>;
 
 export default meta;
@@ -166,6 +171,15 @@ export const Verified: Story = {
       mimeType: 'image/jpeg',
       reviewedAt: '2026-10-13T11:00:00.000Z',
     }),
+  },
+};
+
+export const VerifiedLocked: Story = {
+  args: {
+    category: 'BUSINESS_IDENTITY',
+    document: document({ status: 'VERIFIED', statusLabel: 'Verified' }),
+    gstin: GSTIN,
+    locked: true,
   },
 };
 
