@@ -29,6 +29,7 @@ export function DocumentsOverview({ documents, gstin, dealerStatus }: DocumentsO
               document={document}
               gstin={gstin}
               locked={isLockedDocument(document)}
+              requiredTag={DOCUMENTS_TEXT.notUploaded}
             />
           );
         })}

@@ -784,7 +784,7 @@ export const registry: RegistryEntry[] = [
       'document-uploader',
     ],
     features: ['F041'],
-    props: ['category', 'document', 'gstin', 'basePath', 'locked'],
+    props: ['category', 'document', 'gstin', 'basePath', 'locked', 'requiredTag'],
     states: [
       'empty personal',
       'empty business',

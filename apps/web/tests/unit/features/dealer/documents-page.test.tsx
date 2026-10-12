@@ -154,6 +154,8 @@ describe('DocumentsOverview', () => {
     expect(screen.getByText(/activation withdrawn if they cannot be produced/)).toBeInTheDocument();
     expect(screen.queryByText('Your documents are verified.')).toBeNull();
     expect(screen.getAllByRole('button', { name: 'Upload' })).toHaveLength(2);
+    expect(screen.getAllByText('Not uploaded yet')).toHaveLength(2);
+    expect(screen.queryByText('Needed to submit')).toBeNull();
   });
 
   it('names a rejected category, and lets the dealer replace it', () => {

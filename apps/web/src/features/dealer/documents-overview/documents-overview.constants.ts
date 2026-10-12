@@ -6,6 +6,7 @@ export const DOCUMENTS_TEXT = {
   intro:
     'Every dealership keeps one Personal Identity Proof and one Business Identity Proof on file. Our team reviews each one before it counts as verified.',
   verified: 'Your documents are verified.',
+  notUploaded: 'Not uploaded yet',
   outstandingTitle: 'Documents still to be verified',
   outstandingLead: 'Upload these for review:',
   activeExplanation:

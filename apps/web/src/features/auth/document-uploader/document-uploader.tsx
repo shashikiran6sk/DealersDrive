@@ -43,6 +43,7 @@ export function DocumentUploader({
   basePath = DEALER_DOCUMENT_BASE,
   gstin = null,
   locked = false,
+  requiredTag,
 }: DocumentUploaderProps) {
   const paths = documentPaths(basePath);
   const router = useRouter();
@@ -159,7 +160,9 @@ export function DocumentUploader({
             {CATEGORY_NOTES[category]}
           </p>
         </div>
-        <StatusTag tone={TONE[status]}>{TAG[status]}</StatusTag>
+        <StatusTag tone={TONE[status]}>
+          {status === 'REQUIRED' && requiredTag ? requiredTag : TAG[status]}
+        </StatusTag>
       </div>
 
       <DocumentTypeField
