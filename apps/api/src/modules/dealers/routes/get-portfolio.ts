@@ -2,13 +2,12 @@ import { dealerPrincipal, requirePermission } from '../../../middleware/auth.js'
 
 import { type DealersRoute } from './route.js';
 
-export const deleteYardPhoto: DealersRoute = (router, service) => {
-  router.delete('/yard-photo', requirePermission('document:upload'), (req, res, next) => {
+export const getPortfolio: DealersRoute = (router, service) => {
+  router.get('/portfolio', requirePermission('dealer:update'), (req, res, next) => {
     void (async () => {
       try {
         const { dealerId } = dealerPrincipal(req);
-        await service.deleteYardPhoto(dealerId);
-        res.status(204).end();
+        res.json(await service.portfolio.list(dealerId));
       } catch (error) {
         next(error);
       }

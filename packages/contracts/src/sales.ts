@@ -4,12 +4,7 @@ import { OnboardingInput, VerifyPhoneInput } from './auth.js';
 import { Uuid } from './common.js';
 import { SelectableDocCategory } from './dealer-documents.js';
 import { SalesEmailVerification } from './dealer-claims.js';
-import {
-  CompletenessResponse,
-  DealerDocumentDto,
-  UpdateDealerInput,
-  YardPhotoDto,
-} from './dealer.js';
+import { CompletenessResponse, DealerDocumentDto, UpdateDealerInput } from './dealer.js';
 import { DealerStatus, StatusTone } from './enums.js';
 import { DealerInventoryRow } from './vehicle.js';
 
@@ -120,7 +115,6 @@ export const SalesDealerDetail = SalesDealerSummary.extend({
   phoneVerifiedAt: z.string().nullable(),
   completeness: CompletenessResponse,
   documents: z.array(DealerDocumentDto),
-  yardPhoto: YardPhotoDto,
   canEdit: z.boolean(),
   canSubmit: z.boolean(),
   /** The latest verification link (**R113**); null before the first is requested. */

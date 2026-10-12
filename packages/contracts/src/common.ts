@@ -548,3 +548,8 @@ export function isGoogleMapsUrl(value: string): boolean {
   }
   return url.protocol === 'https:' && MAPS_HOSTS.has(url.hostname.toLowerCase());
 }
+
+/** A bare file name: no directory separators and no control characters. */
+export function isPlainFileName(name: string): boolean {
+  return ![...name].some((char) => char === '/' || char === '\\' || char.charCodeAt(0) < 0x20);
+}

@@ -340,14 +340,14 @@ it('rejects ID/width manipulation, unattached and non-ready images without chang
   expect(await storage.get(car.media.storageKey)).toEqual(car.bytes);
 });
 
-it('preserves private yard/KYC previews without exposing originals through public paths', async () => {
+it('preserves private portfolio/KYC previews without exposing originals through public paths', async () => {
   const dealer = await marketplaceFixtures(h, 'media-private').dealership('DRAFT');
   const jpeg = await readFile(new URL('./fixtures/media/browser-yard.jpg', import.meta.url));
-  const yard = await dealer.agent
-    .post('/v1/dealer/yard-photo/presign')
-    .send({ fileName: 'fixture-yard.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
+  const photo = await dealer.agent
+    .post('/v1/dealer/portfolio/presign')
+    .send({ fileName: 'fixture-forecourt.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
     .expect(201);
-  const upload = new URL(String(yard.body.uploadUrl));
+  const upload = new URL(String(photo.body.uploadUrl));
   await h
     .agent()
     .put(upload.pathname + upload.search)
@@ -355,14 +355,14 @@ it('preserves private yard/KYC previews without exposing originals through publi
     .send(jpeg)
     .expect(200);
   const committed = await dealer.agent
-    .post('/v1/dealer/yard-photo/commit')
-    .send({ mediaId: yard.body.mediaId })
-    .expect(200);
+    .post('/v1/dealer/portfolio/commit')
+    .send({ mediaId: photo.body.mediaId })
+    .expect(201);
   await h.prisma.dealer.update({
     where: { id: dealer.dealerId },
     data: { status: 'ACTIVE', approvedAt: new Date() },
   });
-  const preview = new URL(String(committed.body.url));
+  const preview = new URL(String(committed.body.previewUrl));
   const first = await h
     .agent()
     .get(preview.pathname + preview.search)
@@ -370,7 +370,15 @@ it('preserves private yard/KYC previews without exposing originals through publi
   expect(first.headers['cache-control']).toBe('private, no-store');
   await h
     .agent()
-    .get(`/media/by-media/${String(yard.body.mediaId)}/640.webp`)
+    .get(`/media/by-media/${String(photo.body.mediaId)}/640.webp`)
+    .expect(404);
+  await admin
+    .post(`/v1/admin/portfolio/${String(committed.body.id)}/approve`)
+    .send({})
+    .expect(200);
+  await h
+    .agent()
+    .get(`/media/by-media/${String(photo.body.mediaId)}/640.webp`)
     .expect(200);
   const pdf = await readFile(new URL('./fixtures/media/browser-document.pdf', import.meta.url));
   const doc = await dealer.agent
@@ -413,7 +421,7 @@ it('preserves private yard/KYC previews without exposing originals through publi
     .send({ reason: 'Private history remains authorized' })
     .expect(200);
   await dealer.agent.get('/v1/dealer/documents').expect(401);
-  await dealer.agent.get('/v1/dealer/yard-photo').expect(401);
+  await dealer.agent.get('/v1/dealer/portfolio').expect(401);
   await h
     .agent()
     .get(preview.pathname + preview.search)

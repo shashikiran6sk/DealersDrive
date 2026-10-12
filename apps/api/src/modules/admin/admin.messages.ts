@@ -34,3 +34,16 @@ export const OVERRIDE_NOT_ACTIVE =
 
 export const OVERRIDE_REVOKED_VERIFICATION =
   'The manual activation was withdrawn; a new verification review is required.';
+
+export const YARD_VISIT_FORBIDDEN =
+  'Only reviewers with yard-visit access can record or read yard visits.';
+
+export const YARD_VISIT_ACCESS_REVOKED = 'Your yard-visit access is no longer available.';
+
+export const YARD_VISIT_NOT_FOUND = 'That yard visit does not exist.';
+
+export const YARD_VISIT_PHOTO_LIMIT_REACHED =
+  'This visit already holds the most photographs it can. Record another visit instead.';
+
+export const YARD_VISIT_PHOTO_MISMATCH =
+  'That file is not a JPEG, PNG or WebP photograph of the type it was uploaded as. Choose the photograph again.';

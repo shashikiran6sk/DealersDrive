@@ -837,9 +837,6 @@ describe('one dealership, one GSTIN', () => {
  * same idempotency claim, the same delivery row.
  */
 describe('email notifications', () => {
-  /** Enough bytes for the yard-photo pipeline to accept as an image. */
-  const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
-
   async function moderator() {
     subjectCounter += 1;
     h.google.claims = {
@@ -925,21 +922,6 @@ describe('email notifications', () => {
         .send({ documentId: presigned.body.documentId })
         .expect(200);
     }
-
-    const photo = await agent
-      .post('/v1/dealer/yard-photo/presign')
-      .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
-      .expect(201);
-    const photoUrl = new URL(photo.body.uploadUrl as string);
-    await agent
-      .put(photoUrl.pathname + photoUrl.search)
-      .set('Content-Type', 'image/jpeg')
-      .send(JPEG)
-      .expect(200);
-    await agent
-      .post('/v1/dealer/yard-photo/commit')
-      .send({ mediaId: photo.body.mediaId })
-      .expect(200);
   }
 
   async function readyForApproval() {
@@ -1410,87 +1392,23 @@ describe('KYC documents — replace and remove', () => {
 });
 
 /**
- * Optional yard photography, end to end. Required identity evidence remains
- * independent of directory presentation and photographic uploads.
+ * #299 — onboarding collects no photograph. Business presentation photographs
+ * are the portfolio (after activation, moderated); yard evidence is internal.
  */
-describe('the yard photograph', () => {
-  const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
-
-  async function uploadYardPhoto(agent: ReturnType<AuthHarness['agent']>) {
-    const presigned = await agent
-      .post('/v1/dealer/yard-photo/presign')
-      .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
-      .expect(201);
-
-    const url = new URL(presigned.body.uploadUrl as string);
-    await agent
-      .put(url.pathname + url.search)
-      .set('Content-Type', 'image/jpeg')
-      .send(JPEG)
-      .expect(200);
-
-    return agent
-      .post('/v1/dealer/yard-photo/commit')
-      .send({ mediaId: presigned.body.mediaId })
-      .expect(200);
-  }
-
-  it('reads empty before anything is uploaded', async () => {
+describe('no yard photograph in onboarding', () => {
+  it.each([
+    ['get', '/v1/dealer/yard-photo'],
+    ['post', '/v1/dealer/yard-photo/presign'],
+    ['post', '/v1/dealer/yard-photo/commit'],
+    ['delete', '/v1/dealer/yard-photo'],
+  ] as const)('no longer mounts %s %s', async (method, path) => {
     const { agent } = await dealership();
 
-    const photo = await agent.get('/v1/dealer/yard-photo').expect(200);
-    expect(photo.body).toMatchObject({ mediaId: null, url: null });
-  });
-
-  it('adopts an upload onto the dealership as its cover image', async () => {
-    const { agent, dealerId } = await dealership();
-
-    const committed = await uploadYardPhoto(agent);
-
-    expect(committed.body.fileName).toBe('yard.jpg');
-    expect(committed.body.url).toBeTruthy();
-
-    const row = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
-    expect(row?.coverMediaId).toBe(committed.body.mediaId);
-  });
-
-  it('replaces one photograph with another, and takes the first away', async () => {
-    const { agent } = await dealership();
-    const first = await uploadYardPhoto(agent);
-    const second = await uploadYardPhoto(agent);
-
-    expect(second.body.mediaId).not.toBe(first.body.mediaId);
-
-    const displaced = await h.prisma.media.findUnique({
-      where: { id: first.body.mediaId as string },
-    });
-    expect(displaced?.status).toBe('ORPHAN');
-  });
-
-  it('removes it, and the dealership reads as incomplete again', async () => {
-    const { agent } = await dealership();
-    await uploadYardPhoto(agent);
-
-    await agent.delete('/v1/dealer/yard-photo').expect(204);
-
-    const photo = await agent.get('/v1/dealer/yard-photo').expect(200);
-    expect(photo.body.mediaId).toBeNull();
-
-    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
-    const documents = (completeness.body.steps as { key: string; missing: string[] }[]).find(
-      (step) => step.key === 'documents',
-    );
-    expect(documents?.missing).not.toContain('YARD_PHOTO');
-  });
-
-  it('404s a delete when there is nothing to remove', async () => {
-    const { agent } = await dealership();
-
-    await agent.delete('/v1/dealer/yard-photo').expect(404);
+    await agent[method](path).send({}).expect(404);
   });
 
   /** A submit is refused until every part of the application is there. */
-  it('is optional when the required business and identity evidence is submitted', async () => {
+  it('submits with only the business and identity evidence', async () => {
     const { agent } = await dealership();
     await agent
       .patch('/v1/dealer/onboarding')

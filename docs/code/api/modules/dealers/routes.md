@@ -40,14 +40,15 @@ comes from the principal, so nothing here is unscoped.
 is a profile a dealer is looking at; this one carries a number they are
 about to spend, and a stale balance is worse than a slow one.
 
-## `apps/api/src/modules/dealers/routes/get-yard-photo.ts`
+## `apps/api/src/modules/dealers/routes/get-portfolio.ts`
 
-### `export const getYardPhoto: DealersRoute = (router, service) =>`
+### `export const getPortfolio: DealersRoute = (router, service) =>`
 
-The yard photograph — three writes and a read, mounted beside the KYC
-documents because a dealer meets them on the same onboarding step, and
-kept separate from them because it is the opposite kind of image: destined
-for the public portfolio rather than for a moderator's eyes only.
+The portfolio photographs — a read, two upload steps and a removal (#299),
+behind `dealer:update` because what a dealership shows the public is the
+owner's call, the same as its tagline. Separate from the KYC documents
+because it is the opposite kind of image: destined for the public page,
+after a reviewer has looked at it, rather than for a reviewer's eyes only.
 
 ## `apps/api/src/modules/dealers/routes/patch-onboarding.ts`
 

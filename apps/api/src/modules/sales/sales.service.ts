@@ -21,8 +21,6 @@ import {
   type PhoneOtpWidget,
   type UpdateDealerInput,
   type UpdateVehicleInput,
-  type YardPhotoCommitInput,
-  type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
 import type { DealerStatus, Prisma, PrismaClient } from '@prisma/client';
 
@@ -231,12 +229,11 @@ export function createSalesService({
 
   async function detail(principal: AdminPrincipal, dealerId: string): Promise<SalesDealerDetail> {
     const summary = await requireAssisted(principal, dealerId);
-    const [dealer, counts, completeness, documents, yardPhoto, verification] = await Promise.all([
+    const [dealer, counts, completeness, documents, verification] = await Promise.all([
       prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } }),
       listingCounts([dealerId]),
       dealers.completeness(dealerId),
       dealers.documents(dealerId),
-      dealers.yardPhoto(dealerId),
       prisma.dealerEmailVerification.findFirst({
         where: { dealerId },
         orderBy: { createdAt: 'desc' },
@@ -272,7 +269,6 @@ export function createSalesService({
       phoneVerifiedAt: dealer.contactPhoneVerifiedAt?.toISOString() ?? null,
       completeness,
       documents: documents.data,
-      yardPhoto,
       canEdit: editable,
       canSubmit: editable && completeness.canSubmit,
       emailVerification: verification
@@ -671,29 +667,6 @@ export function createSalesService({
     ) {
       await requireEditable(principal, dealerId);
       await dealers.deleteDocument(dealerId, category);
-    },
-
-    async presignYardPhoto(
-      principal: AdminPrincipal,
-      dealerId: string,
-      input: YardPhotoPresignInput,
-    ) {
-      await requireEditable(principal, dealerId);
-      return dealers.presignYardPhoto(dealerId, input);
-    },
-
-    async commitYardPhoto(
-      principal: AdminPrincipal,
-      dealerId: string,
-      input: YardPhotoCommitInput,
-    ) {
-      await requireEditable(principal, dealerId);
-      return dealers.commitYardPhoto(dealerId, input);
-    },
-
-    async deleteYardPhoto(principal: AdminPrincipal, dealerId: string) {
-      await requireEditable(principal, dealerId);
-      await dealers.deleteYardPhoto(dealerId);
     },
 
     async resendEmailVerification(

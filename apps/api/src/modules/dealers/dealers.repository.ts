@@ -183,29 +183,12 @@ export function createDealersRepository(prisma: PrismaClient) {
       };
     },
 
-    async mediaById(mediaId: string) {
-      return prisma.media.findUnique({ where: { id: mediaId } });
-    },
-
-    async createMedia(data: Prisma.MediaUncheckedCreateInput) {
-      return prisma.media.create({ data });
-    },
-
-    async readyMediaIds(mediaIds: string[]): Promise<Set<string>> {
-      if (mediaIds.length === 0) return new Set();
-      const rows = await prisma.media.findMany({
-        where: { id: { in: mediaIds }, status: 'READY' },
-        select: { id: true },
+    async approvedPortfolio(dealerId: string) {
+      return prisma.dealerPortfolioPhoto.findMany({
+        where: { dealerId, status: 'APPROVED' },
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+        select: { mediaId: true, caption: true },
       });
-      return new Set(rows.map((row) => row.id));
-    },
-
-    async markMediaReady(mediaId: string, tx?: Tx) {
-      return (tx ?? prisma).media.update({ where: { id: mediaId }, data: { status: 'READY' } });
-    },
-
-    async orphanMedia(mediaId: string) {
-      return prisma.media.update({ where: { id: mediaId }, data: { status: 'ORPHAN' } });
     },
 
     async ownerOf(dealerId: string) {

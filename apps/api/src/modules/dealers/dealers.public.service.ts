@@ -185,9 +185,9 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const dealer = await repo.findPublicBySlug(slug);
       if (!dealer) throw new NotFoundError('That dealership is not listed.');
 
-      const [inventory, covers] = await Promise.all([
+      const [inventory, approved] = await Promise.all([
         stats.dealerStats(),
-        repo.readyMediaIds(dealer.coverMediaId ? [dealer.coverMediaId] : []),
+        repo.approvedPortfolio(dealer.id),
       ]);
       const carCount = inventory.find((row) => row.dealer_slug === slug)?.count ?? 0;
 
@@ -254,10 +254,11 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
             : []),
         ],
         logoUrl: null,
-        coverUrl:
-          dealer.coverMediaId && covers.has(dealer.coverMediaId)
-            ? mediaUrl(dealer.coverMediaId, PORTFOLIO_COVER_WIDTH)
-            : null,
+        coverUrl: approved[0] ? mediaUrl(approved[0].mediaId, PORTFOLIO_COVER_WIDTH) : null,
+        portfolio: approved.map((photo) => ({
+          url: mediaUrl(photo.mediaId, PORTFOLIO_COVER_WIDTH),
+          caption: photo.caption,
+        })),
         seo: {
           canonical: `${env.WEB_BASE_URL}/dealers/${dealer.slug}`,
           isIndexable: carCount > 0,

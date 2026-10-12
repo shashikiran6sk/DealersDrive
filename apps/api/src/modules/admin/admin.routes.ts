@@ -24,6 +24,14 @@ import { postDocumentVerify } from './routes/post-document-verify.js';
 import { postProfileChangeApprove } from './routes/post-profile-change-approve.js';
 import { postProfileChangeReject } from './routes/post-profile-change-reject.js';
 import { putConfigKey } from './routes/put-config-key.js';
+import { getDealerYardVisits } from './routes/get-dealer-yard-visits.js';
+import { getPortfolio } from './routes/get-portfolio.js';
+import { postDealerYardVisit } from './routes/post-dealer-yard-visit.js';
+import { postDealerYardVisitPhotoCommit } from './routes/post-dealer-yard-visit-photo-commit.js';
+import { postDealerYardVisitPhotoPresign } from './routes/post-dealer-yard-visit-photo-presign.js';
+import { postPortfolioApprove } from './routes/post-portfolio-approve.js';
+import { postPortfolioReject } from './routes/post-portfolio-reject.js';
+import { postPortfolioTakeDown } from './routes/post-portfolio-take-down.js';
 import type { AdminRoute } from './routes/route.js';
 
 const ROUTES: AdminRoute[] = [
@@ -40,9 +48,17 @@ const ROUTES: AdminRoute[] = [
   postDealerClose,
   postDealerSuspend,
   postDealerReinstate,
+  getDealerYardVisits,
+  postDealerYardVisit,
+  postDealerYardVisitPhotoPresign,
+  postDealerYardVisitPhotoCommit,
   getProfileChanges,
   postProfileChangeApprove,
   postProfileChangeReject,
+  getPortfolio,
+  postPortfolioApprove,
+  postPortfolioReject,
+  postPortfolioTakeDown,
   postDocumentVerify,
   postDocumentReject,
   getConfig,

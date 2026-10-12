@@ -3,6 +3,7 @@ import {
   createActivationOverrideService,
   overrideBlockReason,
 } from './activation-override.service.js';
+import { createYardVisitService } from './yard-visits.service.js';
 import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
   documentRequirement,
@@ -289,6 +290,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
   return {
     verification: createDealerVerificationService({ prisma, audit, storage }),
     activation: createActivationOverrideService({ prisma, audit, dealers }),
+    portfolio: dealers.portfolio,
+    yardVisits: createYardVisitService({ prisma, storage, audit }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
@@ -501,13 +504,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           }),
       );
 
-      const yardPhoto = dealer.coverMediaId
-        ? await prisma.media.findUnique({ where: { id: dealer.coverMediaId } })
-        : null;
-      const yardPhotoUrl =
-        yardPhoto && yardPhoto.status !== 'ORPHAN'
-          ? await storage.signedReadUrl(yardPhoto.storageKey, 300)
-          : null;
+      const [portfolio, yardVisitCount] = await Promise.all([
+        dealers.portfolio.forDealer(dealerId),
+        prisma.dealerYardVisit.count({ where: { dealerId } }),
+      ]);
 
       if (documents.some((doc) => doc.viewUrl)) {
         await audit.recordDetached({
@@ -575,7 +575,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         profileChange: dealer.profileEdits[0]
           ? toAdminProfileChange(dealer.profileEdits[0], dealer)
           : null,
-        yardPhotoUrl,
+        portfolio,
+        yardVisitCount,
         recentLedger: ledger.map((row) => ({
           id: row.id,
           delta: row.delta,
@@ -600,13 +601,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
           canEdit: admin.permissions.includes('admin:dealer:approve'),
           canOverrideActivation:
-            admin.permissions.includes('admin:dealer:activation-override') &&
-            overrideBlocked === null,
-          overrideBlockedReason: admin.permissions.includes('admin:dealer:activation-override')
+            admin.permissions.includes('admin:activation:override') && overrideBlocked === null,
+          overrideBlockedReason: admin.permissions.includes('admin:activation:override')
             ? overrideBlocked
             : null,
           canRevokeOverride:
-            admin.permissions.includes('admin:dealer:activation-override') &&
+            admin.permissions.includes('admin:activation:override') &&
             dealer.activationMethod === 'MANUAL_OVERRIDE' &&
             (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED'),
         },

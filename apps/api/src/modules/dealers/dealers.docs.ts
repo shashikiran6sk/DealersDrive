@@ -34,7 +34,7 @@ export const dealersDocs: ModuleDocs = {
         'field rather than a silent write.\n\n' +
         'The absences are the point. A dealership\u2019s registered name is what KYC was ' +
         'checked against and what its public slug is derived from; its address, town and pin ' +
-        'are what the yard photograph and the verification were *about*; its mobile and ' +
+        'are what the verification was *about*; its mobile and ' +
         'email are how a buyer reaches a business that has been vouched for. None of those ' +
         'is a preference a dealer may revise \u2014 a dealership that has genuinely moved ' +
         'closes this account and opens another, because the VERIFIED plate is a claim about ' +
@@ -358,103 +358,105 @@ export const dealersDocs: ModuleDocs = {
     },
     {
       method: 'get',
-      path: '/v1/dealer/yard-photo',
-      operationId: 'getDealerYardPhoto',
+      path: '/v1/dealer/portfolio',
+      operationId: 'getDealerPortfolio',
       tag: DOC_TAGS.dealerAccount,
-      summary: 'The yard photograph',
+      summary: 'Portfolio photographs',
       description:
-        'The image that fronts the dealership\u2019s public portfolio. `url` is a **short-lived ' +
-        'signed read of the original**, not a permanent delivery URL: the derivative pipeline ' +
-        'that content-addresses an image is F034, and until it lands the original is the only ' +
-        'copy there is.\n\n' +
-        'Every field is `null` when nothing has been uploaded yet.',
+        'The dealership\u2019s own portfolio photographs (#299): approved, awaiting review and ' +
+        'rejected. `previewUrl` is a **short-lived signed read** for the owner only; a pending ' +
+        'or rejected photograph is never public.\n\n' +
+        'Portfolio photographs are optional and are not identity evidence. They never affect ' +
+        'completeness, approval or Dealer Verified.\n\n' +
+        'OWNER only (`dealer:update`).',
       audience: 'dealer',
+      permission: 'dealer:update',
       responses: [
         {
           status: 200,
-          description: 'The yard photograph, or an empty one.',
-          schema: 'YardPhotoDto',
+          description: 'The photographs, the limit and whether another can be added.',
+          schema: 'DealerPortfolioResponse',
         },
       ],
-      errors: [401, 404],
+      errors: [401, 403],
     },
     {
       method: 'post',
-      path: '/v1/dealer/yard-photo/presign',
-      operationId: 'presignDealerYardPhoto',
+      path: '/v1/dealer/portfolio/presign',
+      operationId: 'presignDealerPortfolioPhoto',
       tag: DOC_TAGS.dealerAccount,
-      summary: 'Get an upload URL for the yard photograph',
+      summary: 'Get an upload URL for a portfolio photograph',
       description:
-        'Step 1 of 2, and the same presign \u2192 `PUT` \u2192 commit pipeline the KYC documents ' +
-        'use \u2014 different prefix, different destiny. Accepts JPEG, PNG and WebP up to 10 MB.\n\n' +
-        'Presigning does **not** displace the photograph already on the record. Nothing is ' +
-        'replaced until commit, so a dealer who changes their mind halfway through picking a ' +
-        'file still has the one they had before.\n\n' +
-        '**DRAFT only.** The yard photograph is reviewed with the application and fronts the ' +
-        'public portfolio, so once the dealership has been submitted it is locked: this call is ' +
-        'a 409 `YARD_PHOTO_LOCKED` and nothing changes.\n\n' +
-        'OWNER only (`document:upload`).',
+        'Step 1 of 2 of the presign \u2192 `PUT` \u2192 commit upload. JPEG, PNG or WebP up to ' +
+        '10 MB, into a private key.\n\n' +
+        'With `replacesId` the photograph is a replacement for an approved one, and does not ' +
+        'count against the limit. Without it, a portfolio already at the limit is a 409 ' +
+        '`PORTFOLIO_FULL`.\n\n' +
+        'OWNER only (`dealer:update`).',
       audience: 'dealer',
-      permission: 'document:upload',
+      permission: 'dealer:update',
       requestBody: {
-        schema: 'YardPhotoPresignInput',
+        schema: 'PortfolioPhotoPresignInput',
         description: 'What is about to be uploaded.',
-        example: { fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: 1_842_100 },
+        example: { fileName: 'forecourt.jpg', mimeType: 'image/jpeg', bytes: 1_842_100 },
       },
       responses: [
         {
           status: 201,
-          description: 'A signed upload URL. `mediaId` identifies the row to commit.',
-          schema: 'PresignResponse',
+          description: 'A signed upload URL. `mediaId` identifies the upload to commit.',
+          schema: 'PortfolioPhotoPresignResponse',
         },
       ],
-      errors: [400, 401, 403, 404, 409, 422],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'post',
-      path: '/v1/dealer/yard-photo/commit',
-      operationId: 'commitDealerYardPhoto',
+      path: '/v1/dealer/portfolio/commit',
+      operationId: 'commitDealerPortfolioPhoto',
       tag: DOC_TAGS.dealerAccount,
-      summary: 'Confirm the yard photograph upload',
+      summary: 'Submit a portfolio photograph for review',
       description:
-        'Step 2 of 2. HEADs the object before adopting it \u2014 a presign never followed by a ' +
-        '`PUT` must not leave the dealership looking like it has a hero image. A missing ' +
-        'object is a 422 `UPLOAD_MISSING`.\n\n' +
-        'This is where a replacement takes effect: the photograph being displaced is marked ' +
-        'ORPHAN and its bytes are deleted in the same call.\n\n' +
-        '**DRAFT only.** Once the dealership has been submitted the photograph is locked: ' +
-        'this call is a 409 `YARD_PHOTO_LOCKED` and the reviewed photograph stays.',
+        'Step 2 of 2. Reads the stored object back: a missing object is a 422 ' +
+        '`UPLOAD_MISSING`, and bytes that are not the declared image type or size are a 422 ' +
+        '`PORTFOLIO_CONTENT_MISMATCH` (the object is deleted).\n\n' +
+        'The photograph is created `PENDING` and is not public. A replacement leaves the ' +
+        'approved photograph it names on the page until a reviewer approves the replacement; ' +
+        'only one replacement per photograph may wait at a time (409 ' +
+        '`PORTFOLIO_REPLACEMENT_PENDING`). Committing the same `mediaId` twice returns the ' +
+        'same photograph.\n\n' +
+        'OWNER only (`dealer:update`).',
       audience: 'dealer',
-      permission: 'document:upload',
+      permission: 'dealer:update',
       requestBody: {
-        schema: 'YardPhotoCommitInput',
-        description: 'The `mediaId` returned by presign.',
-        example: { mediaId: '7f3c9a21-4444-4000-8000-000000000009' },
+        schema: 'PortfolioPhotoCommitInput',
+        description: 'The `mediaId` returned by presign, and an optional caption.',
+        example: { mediaId: '7f3c9a21-4444-4000-8000-000000000009', caption: 'Forecourt' },
       },
       responses: [
         {
-          status: 200,
-          description: 'The yard photograph now on the record.',
-          schema: 'YardPhotoDto',
+          status: 201,
+          description: 'The photograph, awaiting review.',
+          schema: 'DealerPortfolioPhoto',
         },
       ],
       errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'delete',
-      path: '/v1/dealer/yard-photo',
-      operationId: 'deleteDealerYardPhoto',
+      path: '/v1/dealer/portfolio/:id',
+      operationId: 'deleteDealerPortfolioPhoto',
       tag: DOC_TAGS.dealerAccount,
-      summary: 'Remove the yard photograph',
+      summary: 'Remove a portfolio photograph',
       description:
-        'Clears `coverMediaId` and deletes the explicitly selected stored object. Yard photography is optional; ' +
-        'removing it does not make an otherwise complete application incomplete. Directory cards retain the shared illustration.\n\n' +
-        '**DRAFT only.** Once the dealership has been submitted this is a 409 ' +
-        '`YARD_PHOTO_LOCKED`. OWNER only (`document:upload`).',
+        'Takes an approved photograph off the page, or withdraws a pending or rejected one, ' +
+        'and deletes its stored object. A pending replacement for a removed photograph ' +
+        'stays in review as a new photograph.\n\n' +
+        'OWNER only (`dealer:update`).',
       audience: 'dealer',
-      permission: 'document:upload',
+      permission: 'dealer:update',
+      params: 'PortfolioPhotoParam',
       responses: [{ status: 204, description: 'Removed.' }],
-      errors: [401, 403, 404, 409],
+      errors: [400, 401, 403, 404],
     },
     {
       method: 'get',

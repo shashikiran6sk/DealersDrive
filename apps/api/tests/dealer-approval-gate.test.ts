@@ -100,21 +100,6 @@ async function application(verify = true) {
       .expect(200);
     documents.push(String(presigned.body.documentId));
   }
-  const jpeg = Buffer.from('\xff\xd8\xff a fixture yard photograph', 'binary');
-  const cover = await dealer.agent
-    .post('/v1/dealer/yard-photo/presign')
-    .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
-    .expect(201);
-  const url = new URL(String(cover.body.uploadUrl));
-  await dealer.agent
-    .put(url.pathname + url.search)
-    .set('Content-Type', 'image/jpeg')
-    .send(jpeg)
-    .expect(200);
-  await dealer.agent
-    .post('/v1/dealer/yard-photo/commit')
-    .send({ mediaId: cover.body.mediaId })
-    .expect(200);
   await dealer.agent.post('/v1/dealer/submit').expect(200);
   if (verify) {
     for (const id of documents) {

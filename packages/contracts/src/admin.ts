@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { DealerActivationState } from './dealer-activation.js';
 import { DealerDocCategory } from './dealer-documents.js';
+import { DealerPortfolioPhoto } from './dealer-portfolio.js';
 
 import { CursorPage, Uuid } from './common.js';
 import { GST_REVIEW_MAX_LENGTH, GST_REVIEW_MIN_LENGTH } from './dealer-gstin.js';
@@ -337,12 +338,12 @@ export const AdminDealerDetail = z.object({
    */
   profileChange: AdminProfileChange.nullable(),
   /**
-   * The yard photograph, as a short-lived signed read. A reviewer has to be
-   * able to see it: it is the image that will front this dealership's public
-   * portfolio, and "is this actually a photograph of a yard" is a question only
-   * a person can answer.
+   * The dealership's portfolio photographs, approved and awaiting review, as
+   * short-lived signed reads (#299). A pending one is not public.
    */
-  yardPhotoUrl: z.string().nullable(),
+  portfolio: z.array(DealerPortfolioPhoto),
+  /** How many internal yard visits are on record; the evidence is fetched separately. */
+  yardVisitCount: z.number().int().min(0),
   recentLedger: z.array(
     z.object({
       id: Uuid,

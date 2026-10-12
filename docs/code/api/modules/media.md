@@ -83,19 +83,23 @@ URL instead.
 
 ### `async function isPubliclyServable(media: ServableMedia): Promise<boolean>`
 
-**A yard photograph is public only while it is the cover of an `ACTIVE`
-dealership (BUG-NEW-009).** It used to be served whatever happened to its
-dealership: during a suspension the vehicle images went 404 while the yard
-photograph — the image that fronts the portfolio — stayed 200, and a DRAFT or
-pending applicant's photograph was public by id before anyone had approved it.
-The rule is one `count` of dealers whose `coverMediaId` is this row and whose
-status is `PUBLIC_DEALER_STATUS`, so a replaced photograph stops being served
-too. The dealer and the moderator see it through a signed read URL, which is
-unaffected.
+**A dealership photograph is public only while an APPROVED portfolio row names
+it and its dealership is `ACTIVE` (#299, carrying BUG-NEW-009 forward).** It
+used to be served whatever happened to its dealership: during a suspension the
+vehicle images went 404 while the yard photograph — the image that fronted the
+portfolio — stayed 200, and a DRAFT or pending applicant's photograph was
+public by id before anyone had approved it. The rule is one `count` of
+`dealer_portfolio_photos` rows that name this media, are APPROVED and belong
+to a dealership whose status is `PUBLIC_DEALER_STATUS`. It covers
+`DEALER_PORTFOLIO` and the legacy `DEALER_COVER` rows the #299 migration
+carried over, so a pending, rejected, replaced or taken-down photograph is the
+same 404 as an id that does not exist. The dealer and the reviewer see it
+through a signed read URL, which is unaffected.
 
-**Every other owner type is refused.** Only vehicle images and yard photographs
-are ever delivered here. A logo has no upload path and KYC documents do not
-create media rows, so this changes no current response — it means a future
+**Every other owner type is refused.** Only vehicle images and approved
+portfolio photographs are ever delivered here. Yard-visit photographs
+(`DEALER_YARD_VISIT`) are internal evidence and have no public path; a logo
+has no upload path and KYC documents do not create media rows. A future
 owner type is private until a rule for it is written, rather than public
 because nobody thought to write one.
 

@@ -70,21 +70,6 @@ async function application(stage: 'PENDING_APPROVAL' | 'ACTIVE') {
       .send({ documentId })
       .expect(200);
   }
-  const jpeg = Buffer.from('\xff\xd8\xff a fixture yard photograph', 'binary');
-  const cover = await dealer.agent
-    .post('/v1/dealer/yard-photo/presign')
-    .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
-    .expect(201);
-  const coverUrl = new URL(String(cover.body.uploadUrl));
-  await dealer.agent
-    .put(coverUrl.pathname + coverUrl.search)
-    .set('Content-Type', 'image/jpeg')
-    .send(jpeg)
-    .expect(200);
-  await dealer.agent
-    .post('/v1/dealer/yard-photo/commit')
-    .send({ mediaId: cover.body.mediaId })
-    .expect(200);
   await dealer.agent.post('/v1/dealer/submit').expect(200);
   if (stage === 'ACTIVE') {
     for (const doc of await rows(dealer.dealerId)) {

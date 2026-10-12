@@ -5,6 +5,71 @@ Parent: [api](../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
+## `apps/api/src/modules/dealers/dealer-portfolio.service.ts`
+
+### `export function createDealerPortfolioService({ prisma, storage, audit }: PortfolioDeps)`
+
+Dealer portfolio photographs (#299): what a dealership chooses to show on its
+own public page. Optional, never identity evidence, and never an input to
+completeness, approval or Dealer Verified. It replaced the single yard
+photograph onboarding used to collect, which a dealership could not change
+once submitted (ORIG-BUG-005) — the moderated replacement that note asked for
+is what this is.
+
+Two state machines are kept apart on purpose: the dealership's status decides
+whether _anything_ of it is public, and a photograph's status decides whether
+_that_ photograph is. `media.serve()` asks both.
+
+### `const VISIBLE: PhotoRow['status'][] = ['PENDING', 'APPROVED', 'REJECTED']`
+
+What the owner sees. REMOVED rows are history — kept so the audit trail has
+a subject — but are not a photograph the dealer has.
+
+### `async function discard(mediaId: string): Promise<void>`
+
+Remove the bytes, keep the media row as ORPHAN so a sweeper can reconcile
+it. Always after the transaction commits: a rollback must not leave a row
+pointing at deleted bytes.
+
+### `async function activeCount(tx: Tx, dealerId: string): Promise<number>`
+
+The limit counts pending and approved photographs but not a replacement, so
+a full portfolio can still swap a photograph. Re-counted under the dealer
+row lock at commit — the presign check is a courtesy, not the guard.
+
+### `async presign(`
+
+Creates a PENDING media row under `portfolio/` and signs a PUT for exactly the
+declared type and length. Nothing is visible to anyone yet.
+
+### `async commit(`
+
+Reads the bytes back and sniffs them: a declared JPEG that is a PDF is a 422
+and the object is deleted, so nothing unverified is ever offered to a
+reviewer. The row is created PENDING. A replacement must name an APPROVED
+photograph of the same dealership, and only one may wait per photograph —
+the partial unique index enforces that even if two commits race.
+
+Idempotent per media id, because a client that lost the response retries.
+
+### `async remove(dealerId: string, userId: string, photoId: string): Promise<void>`
+
+An approved photograph is marked REMOVED rather than deleted, and a
+replacement waiting on it becomes an ordinary new photograph — the dealer
+asked to drop the old image, not to discard the one in review.
+
+### `async approve(admin: AdminPrincipal, photoId: string): Promise<PortfolioDecisionResponse>`
+
+The swap is one transaction with both rows locked: the replacement becomes
+APPROVED at the old one's position and the old one REMOVED, so the page
+shows exactly one of them at every instant. The old object is deleted
+after commit.
+
+### `async takeDown(`
+
+A moderator's removal of something already public, with a reason, audited
+separately from the dealer's own removal.
+
 ## `apps/api/src/modules/dealers/dealer-storage-keys.ts`
 
 ### `export function dealerRoot(dealerSlug: string): string`
@@ -14,7 +79,9 @@ Where a dealership's files live, in one place.
 ## One folder per dealership, named after the dealership
 
 Everything a dealership owns sits under `dealers/{slug}/` — the KYC scans
-under `documents/`, the yard photograph under `yard/`. It used to be two
+under `documents/`, portfolio photographs under `portfolio/`, internal
+yard-visit evidence under `yard-visits/{visitId}/`, and the single yard
+photograph onboarding collected before #299 under `yard/`. It used to be two
 unrelated trees keyed on the UUID: `kyc/{dealerId}/…` and
 `dealers/{dealerId}/yard/…`. That split cost something real every time
 somebody opened the bucket, because the two halves of one dealership's
@@ -22,8 +89,10 @@ upload sat in two places and neither was labelled with a name a person could
 recognise. `dealers/sri-lakshmi-motors-katpadi-vellore-tamil-nadu/` is.
 
 The prefixes still separate the private from the eventually-public — nothing
-serves `documents/`, and `yard/` is what fronts the portfolio — but they are
-now two prefixes inside one folder rather than two roots.
+serves `documents/` or `yard-visits/`, and an object under `portfolio/` (or a
+legacy `yard/` one) is served only through an APPROVED portfolio row of an
+ACTIVE dealership — but they are prefixes inside one folder rather than
+separate roots.
 
 ## The key is derived, and the slug is what it is derived from
 
@@ -44,7 +113,20 @@ A private KYC scan. There is no route that serves this prefix.
 
 ### `export function yardPhotoKey(dealerSlug: string, mediaId: string): string`
 
-The photograph destined to be the public face of the dealership.
+Where the yard photograph onboarding used to collect was stored. Nothing
+writes under it since #299; it stays because those objects still exist —
+carried over as legacy portfolio photographs — and
+`scripts/relocate-dealer-storage.ts` moves them when a slug changes.
+
+### `export function portfolioKey(dealerSlug: string, mediaId: string): string`
+
+A dealer portfolio photograph (#299). Private until a reviewer approves the
+row that names it; the public path serves it by media id, never by key.
+
+### `export function yardVisitPhotoKey(dealerSlug: string, visitId: string, mediaId: string): string`
+
+A photograph staff took on an internal yard visit. Grouped under the visit so
+one visit's evidence is one folder. No public route serves this prefix.
 
 ## `apps/api/src/modules/dealers/dealers.docs.ts`
 
@@ -86,16 +168,17 @@ body it returns from `/v1/auth/me` out of the dealership half this service
 renders. It is a type-only export, so nothing is constructed across the
 boundary — the container still does the wiring.
 
-### `export { documentKey, yardPhotoKey } from './dealer-storage-keys.js'`
+### `export { documentKey, yardVisitPhotoKey } from './dealer-storage-keys.js'`
 
 Where a dealership's private files live.
 
-The admin module needs it for two things the dealer module has no reason to
-do: signing a KYC document for a reviewer to read, and emptying the bucket
-when an application is rejected. The key is _derived_ — its last segment is
-the document row's id — so a copy of the template in the console would be a
-second definition of where a scan of somebody's PAN card is stored, and the
-day they disagreed the purge would silently leave files behind.
+The admin module needs it for things the dealer module has no reason to
+do: signing a KYC document for a reviewer to read, emptying the bucket
+when an application is rejected, and filing a yard-visit photograph under
+its visit. The key is _derived_ — its last segment is the row's id — so a
+copy of the template in the console would be a second definition of where
+a scan of somebody's PAN card is stored, and the day they disagreed the
+purge would silently leave files behind.
 
 ## `apps/api/src/modules/dealers/dealers.public.docs.ts`
 
@@ -162,8 +245,8 @@ The widths the two public surfaces ask for.
 `DirectoryCard`'s cover is a 104px band across a ~290px card, so 640 is one
 retina step above what it needs and the smallest rendition that does not
 soften on a phone. The portfolio's is a 170px band across the full 1280px
-column, which is the one place a yard photograph is looked _at_ rather than
-glanced past.
+column, which is the one place a dealership photograph is looked _at_ rather
+than glanced past.
 
 ### `export function createDealersPublicService({ repo, stats }: DealersPublicDeps)`
 
@@ -187,14 +270,6 @@ The district first: it is the wider filter, and the city chips are
 ### `const inDistrict =`
 
 counted over what it leaves.
-
-### `const covers = await repo.readyMediaIds`
-
-Asked for the page, not for the directory: 24 ids rather than every
-
-### `const covers = await repo.readyMediaIds`
-
-ACTIVE dealership's, and one query rather than one per card.
 
 ### `services: distinctServices(dealer.specialities).slice(0, 3)`
 
@@ -374,11 +449,18 @@ GSTIN is public — it is on every Indian invoice. PAN never is.
 
 ### `logoUrl: null`
 
-As above: no logo is written anywhere yet, and the cover is a URL only
+As above: no logo is written anywhere yet.
 
-### `logoUrl: null`
+### `coverUrl: approved[0] ? mediaUrl(approved[0].mediaId, PORTFOLIO_COVER_WIDTH) : null`
 
-once its bytes are actually servable.
+The first approved portfolio photograph fronts the page (#299); a
+dealership with none shows no cover. A pending replacement never appears
+here: the photograph it would replace stays until a reviewer approves it.
+
+### `portfolio: approved.map((photo) => …)`
+
+Every approved photograph, in the dealership's order, addressed by media id
+— never a storage key and never a signed read, because only these are public.
 
 ### `isIndexable: carCount > 0`
 
@@ -604,15 +686,9 @@ neither can drift from a lookup table that no longer exists (D6).
 
 ### `coverMediaId: dealer.coverMediaId`
 
-The yard photograph, as an id. The directory turns it into a URL only
-
-### `coverMediaId: dealer.coverMediaId`
-
-for the page it is rendering, and only for the rows whose media is
-
-### `coverMediaId: dealer.coverMediaId`
-
-actually servable — see `readyMediaIds` below.
+The legacy yard photograph, as an id. Nothing public is rendered from it
+since #299: the profile's cover is its first approved portfolio photograph,
+and the directory keeps the one standard image (#289).
 
 ### `async documentByType`
 
@@ -664,30 +740,12 @@ the intent — _a field nobody asked about cannot clash_ — is stated
 
 rather than inferred from a type two lines away.
 
-### `async readyMediaIds(mediaIds: string[]): Promise<Set<string>>`
+### `async approvedPortfolio(dealerId: string)`
 
-Which of these uploads can actually be served.
-
-`media.serve()` answers only for a READY row, so a `coverMediaId`
-pointing at anything else must not become a URL on a public page — the
-card would render a broken image where the honest answer is the
-`ImageSlot`. One query for the whole directory page rather than one per
-card.
-
-### `async markMediaReady(mediaId: string)`
-
-The one promotion this module performs, on commit of a yard photograph.
-
-Vehicle photos are promoted by F034's worker after it re-encodes them.
-This one has nothing to re-encode yet and is the dealership's own
-deliberate act, so it is READY the moment its bytes are confirmed.
-
-### `async orphanMedia(mediaId: string)`
-
-ORPHAN rather than a delete. The row is the only record that the bytes
-ever existed; a sweeper reconciles orphaned rows against storage, and a
-row deleted the instant its object is removed leaves nothing to reconcile
-against if the storage call is the half that fails.
+The approved portfolio photographs of one dealership, in the dealership's
+order — the only images the public profile is built from (#299). A pending
+or rejected photograph is never in this list, so it can never become a URL
+on a public page; `media.serve()` applies the same rule independently.
 
 ### `async newEnquiryCount(dealerId: string): Promise<number>`
 
@@ -891,15 +949,6 @@ The closed set. Three documents, always, in this order — the checklist is
 fixed rather than data-driven, because "which documents does KYC need" is a
 regulatory answer and not a per-dealer one.
 
-### `const YARD_PHOTO_URL_TTL_SECONDS = 300`
-
-How long a yard-photo read URL is good for.
-
-The same five minutes a KYC document gets. The image is destined to be
-public, but it is not public _yet_ — a dealership in DRAFT has not been
-looked at by anybody, and until it has, its photographs are as private as
-the rest of the application.
-
 ### `function sameServices(a: readonly string[], b: readonly string[]): boolean`
 
 Whether two service lists say the same thing (**R34**).
@@ -981,10 +1030,6 @@ uses, and GSTIN is the more specific of the two — a GSTIN embeds the PAN
 of the entity that holds it, so a dealer who fixes the GSTIN usually
 fixes the PAN with it. Reporting the derived field first would send them
 to the wrong document.
-
-### `async function discardMedia(mediaId: string): Promise<void>`
-
-Remove the bytes, keep the row as ORPHAN so a sweeper can reconcile it.
 
 ### `async session(principal: DealerPrincipal): Promise<AuthSession>`
 
@@ -1353,26 +1398,6 @@ That is true of them, and the Business step is where it is fixed.
 There is no backfill for the same reason there is none for `mapsUrl`:
 nobody but the dealer can write this sentence.
 
-### `if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO')`
-
-The yard photograph sits on the documents step because that is the
-
-### `if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO')`
-
-step where a dealer uploads things — but it is required for a
-
-### `if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO')`
-
-different reason. It is the hero of the public portfolio, and a
-
-### `if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO')`
-
-dealership whose storefront would open with an empty frame is not
-
-### `if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO')`
-
-ready to be reviewed.
-
 ### `async submitForVerification(dealerId: string): Promise<DealerSubmitResponse>`
 
 **The DRAFT check is repeated under the dealer row lock.** The first read is
@@ -1492,84 +1517,6 @@ every removed document stayed in storage. That is fixed here.
 Outside `DRAFT` a document under review or verified cannot be deleted —
 see `assertDocumentEditable` — and the bytes go only after the row has
 been reset, for the same reason as a replacement.
-
-### `async yardPhoto(dealerId: string): Promise<YardPhotoDto>`
-
-─────────── The yard photograph ──────────────────────────────────────
-
-### `async yardPhoto(dealerId: string): Promise<YardPhotoDto>`
-
-The image that will front this dealership's public portfolio.
-
-It is deliberately not a fourth `DealerDocType`. The three KYC documents
-are private, have no public delivery route and exist to be read once by a
-moderator; this one is the first thing a buyer will ever see. Sharing the
-pipeline is fine — sharing the checklist would mean sharing the privacy
-rules, and those are the part that must not be got wrong.
-
-It lands on `dealer.coverMediaId`, because a hero image of the premises
-is exactly what that slot is for.
-
-### `url: await storage.signedReadUrl(media.storageKey, YARD_PHOTO_URL_TTL_SECONDS)`
-
-A signed read of the original, not a delivery URL.
-
-The derivative pipeline that content-addresses an image and gives it
-a permanent public URL is **F034**. Until it exists the original is
-the only copy there is, and signing a read of it is the only honest
-way to show a dealer what they uploaded. When F034 lands this becomes
-`mediaUrl(media.id, …)` for a READY row and the row stops being
-PENDING; nothing else about this path changes.
-
-### `async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto>`
-
-Commit, and displace whatever was there.
-
-The delete happens _here_ rather than at presign — the opposite of the
-KYC path — because nothing is overwritten until this point. A presign
-that is never followed by a `PUT` leaves the dealership's existing yard
-photograph exactly where it was, which is what a dealer who changed their
-mind halfway through picking a file expects.
-
-### `function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void`
-
-ORIG-BUG-005. The yard photograph is part of the application — completeness
-requires it, and the moderator looks at it before approving — and it fronts
-the public portfolio. Once the application has been submitted it is locked:
-presign, commit and delete are a 409 `YARD_PHOTO_LOCKED`.
-
-Before this an `ACTIVE` dealer could replace the photograph through the API
-and the new image went public at once, with no review, while a one-line
-tagline edit waits for a moderator. The UI never offered it — the uploader
-lives only in the onboarding wizard, which an approved dealer cannot reach —
-so this closes a direct-API path rather than removing a button.
-
-A **moderated** replacement for an approved dealership, through the
-profile-change queue the tagline uses, is the eventual shape of this. It
-needs a column, a contract and a review screen, and until a product decision
-asks for it, an approved photograph changes only by sending the application
-back (`request changes` returns a pending one to DRAFT).
-
-Commit and delete take the dealer row lock and read `coverMediaId` under it,
-so a submission or an approval cannot interleave with a swap; the displaced
-object is discarded after the transaction.
-
-### `const displaced = await withTransaction(prisma, async (tx) => …)`
-
-READY, here, at commit.
-
-`media.serve()` refuses anything that is not READY, and the only thing
-that promotes a row is **F034**'s derivative worker — which does not
-exist, and whose `media.process` job nothing consumes. So every yard
-photograph ever uploaded sat at PENDING, and the public pages had no
-image to show even once the dealership was approved.
-
-Marking it here is not standing in for F034. The object has just been
-HEADed, so the bytes are known to be there, and the presigned PUT
-signed their content-type and length — which is what lets `serve()`
-fall back to the original when a row has no variants yet. F034 adds
-the re-encoded renditions and `serve()` prefers them the moment they
-exist; nothing on this path changes when it lands.
 
 ### `async dashboard(dealerId: string): Promise<DashboardResponse>`
 

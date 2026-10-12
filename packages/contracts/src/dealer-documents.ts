@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { DealerDocType, type DocStatus } from './enums.js';
+import { isPlainFileName } from './common.js';
 
 /**
  * The two evidence categories a dealership submits for review, plus the legacy
@@ -89,12 +90,7 @@ export const DocumentPresignInput = z
   .object({
     category: SelectableDocCategory,
     type: DealerDocType,
-    fileName: z
-      .string()
-      .trim()
-      .min(1)
-      .max(160)
-      .refine((name) => !/[\\/\u0000-\u001f]/.test(name), 'Use a plain file name.'),
+    fileName: z.string().trim().min(1).max(160).refine(isPlainFileName, 'Use a plain file name.'),
     mimeType: z.enum(DOCUMENT_MIME_TYPES),
     bytes: z.number().int().min(1).max(DOCUMENT_MAX_BYTES, 'Keep the file under 5 MB.'),
     description: z

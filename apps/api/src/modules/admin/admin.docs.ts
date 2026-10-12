@@ -252,7 +252,7 @@ export const adminDocs: ModuleDocs = {
         'is marked verified, Dealer Verified is untouched, and the outstanding categories ' +
         'are returned and shown. Audited as `dealer.activation_overridden`.',
       audience: 'admin',
-      permission: 'admin:dealer:activation-override',
+      permission: 'admin:activation:override',
       params: 'IdParam',
       requestBody: {
         schema: 'ActivationOverrideInput',
@@ -284,7 +284,7 @@ export const adminDocs: ModuleDocs = {
         'review. Any Dealer Verified status is revoked. 409 `ACTIVATION_OVERRIDE_NOT_ACTIVE` ' +
         'for a dealership that was not activated manually.',
       audience: 'admin',
-      permission: 'admin:dealer:activation-override',
+      permission: 'admin:activation:override',
       params: 'IdParam',
       requestBody: {
         schema: 'RevokeActivationOverrideInput',
@@ -512,6 +512,79 @@ export const adminDocs: ModuleDocs = {
     },
     {
       method: 'get',
+      path: '/v1/admin/dealers/:id/yard-visits',
+      operationId: 'listDealerYardVisits',
+      tag: DOC_TAGS.admin,
+      summary: 'Internal yard visits',
+      description:
+        'What Dealers-Drive staff found when they visited the dealership, with their ' +
+        'photographs as **short-lived signed reads** (#299). Private operational evidence: ' +
+        'never public, never required for activation, and never a route to Dealer Verified. ' +
+        'Reading photographs is audited as `dealer.yard_visits.viewed`.',
+      audience: 'admin',
+      permission: 'admin:visit:manage',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'The visits.', schema: 'YardVisitsResponse' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/yard-visits',
+      operationId: 'recordDealerYardVisit',
+      tag: DOC_TAGS.admin,
+      summary: 'Record a yard visit',
+      description:
+        'Records a visit and its outcome. `NO_PHYSICAL_YARD` is a legitimate outcome and is ' +
+        'not held against the dealership. Re-checked under the membership lock; audited as ' +
+        '`dealer.yard_visit_recorded`.',
+      audience: 'admin',
+      permission: 'admin:visit:manage',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'CreateYardVisitInput',
+        description: 'When, what was found and optional notes.',
+        example: { visitedOn: '2026-10-10', outcome: 'YARD_CONFIRMED' },
+      },
+      responses: [{ status: 201, description: 'Recorded.', schema: 'YardVisitDto' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/yard-visits/:visitId/photos/presign',
+      operationId: 'presignDealerYardVisitPhoto',
+      tag: DOC_TAGS.admin,
+      summary: 'Get an upload URL for a yard-visit photograph',
+      description:
+        'JPEG, PNG or WebP up to 10 MB into a private key under the visit. 409 ' +
+        '`YARD_VISIT_PHOTO_LIMIT` once the visit holds the most photographs it can.',
+      audience: 'admin',
+      permission: 'admin:visit:manage',
+      params: 'YardVisitParam',
+      requestBody: { schema: 'YardVisitPhotoPresignInput', description: 'The image.' },
+      responses: [
+        { status: 201, description: 'A presigned PUT.', schema: 'YardVisitPhotoPresignResponse' },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/yard-visits/:visitId/photos/commit',
+      operationId: 'commitDealerYardVisitPhoto',
+      tag: DOC_TAGS.admin,
+      summary: 'Attach a yard-visit photograph',
+      description:
+        'Reads the stored object back and checks its bytes are the declared image type and ' +
+        'size (422 `YARD_VISIT_PHOTO_MISMATCH`, object deleted). Idempotent per `mediaId`. ' +
+        'Audited as `dealer.yard_visit_photo_added`.',
+      audience: 'admin',
+      permission: 'admin:visit:manage',
+      params: 'YardVisitParam',
+      requestBody: { schema: 'YardVisitPhotoCommitInput', description: 'The media id.' },
+      responses: [{ status: 200, description: 'The visit.', schema: 'YardVisitDto' }],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
       path: '/v1/admin/profile-changes',
       operationId: 'listProfileChanges',
       tag: DOC_TAGS.admin,
@@ -613,6 +686,71 @@ export const adminDocs: ModuleDocs = {
           schema: 'ProfileChangeDecisionResponse',
         },
       ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/portfolio',
+      operationId: 'listPortfolioModeration',
+      tag: DOC_TAGS.admin,
+      summary: 'Portfolio photographs awaiting review',
+      description:
+        'Dealer portfolio photographs by status, oldest first (#299). A replacement carries ' +
+        '`replacesPreviewUrl`, the approved image it would take the place of. Every URL is a ' +
+        'short-lived signed read; nothing here is public.',
+      audience: 'admin',
+      permission: 'admin:portfolio:moderate',
+      query: 'PortfolioModerationQuery',
+      responses: [{ status: 200, description: 'The queue.', schema: 'AdminPortfolioQueue' }],
+      errors: [400, 401, 403],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/portfolio/:id/approve',
+      operationId: 'approvePortfolioPhoto',
+      tag: DOC_TAGS.admin,
+      summary: 'Approve a portfolio photograph',
+      description:
+        'Publishes the photograph. A replacement takes the position of the approved ' +
+        'photograph it names in the same transaction, and that photograph is removed and its ' +
+        'object deleted, so the page never shows both or neither. 409 ' +
+        '`PORTFOLIO_PHOTO_DECIDED` if it was already decided.',
+      audience: 'admin',
+      permission: 'admin:portfolio:moderate',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'Approved.', schema: 'PortfolioDecisionResponse' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/portfolio/:id/reject',
+      operationId: 'rejectPortfolioPhoto',
+      tag: DOC_TAGS.admin,
+      summary: 'Reject a portfolio photograph',
+      description:
+        'Rejects a pending photograph with a reason the dealer sees. A rejected replacement ' +
+        'leaves the approved photograph it named in place.',
+      audience: 'admin',
+      permission: 'admin:portfolio:moderate',
+      params: 'IdParam',
+      requestBody: { schema: 'ReasonInput', description: 'Why it was rejected.' },
+      responses: [{ status: 200, description: 'Rejected.', schema: 'PortfolioDecisionResponse' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/portfolio/:id/take-down',
+      operationId: 'takeDownPortfolioPhoto',
+      tag: DOC_TAGS.admin,
+      summary: 'Take down an approved portfolio photograph',
+      description:
+        'Removes a published photograph from the page and deletes its object, with a reason ' +
+        'that is audited. 409 `PORTFOLIO_PHOTO_NOT_PUBLISHED` for one that is not approved.',
+      audience: 'admin',
+      permission: 'admin:portfolio:moderate',
+      params: 'IdParam',
+      requestBody: { schema: 'ReasonInput', description: 'Why it was taken down.' },
+      responses: [{ status: 200, description: 'Removed.', schema: 'PortfolioDecisionResponse' }],
       errors: [400, 401, 403, 404, 409],
     },
     {

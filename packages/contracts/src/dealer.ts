@@ -8,7 +8,6 @@ import {
   DealerDocType,
   DealerStatus,
   DocStatus,
-  MediaStatus,
   ProfileChangeStatus,
   StatusTone,
 } from './enums.js';
@@ -466,51 +465,6 @@ export type DealerDocumentsResponse = z.infer<typeof DealerDocumentsResponse>;
 
 export const DocumentCommitInput = z.object({ documentId: Uuid }).strict();
 export type DocumentCommitInput = z.infer<typeof DocumentCommitInput>;
-
-/**
- * The yard photograph — the hero of the dealership's public portfolio.
- *
- * It is not a KYC document, and it deliberately does not travel with them. The
- * three KYC documents are private, have no public delivery route and exist to
- * be checked once; this image is the first thing a buyer will ever see of the
- * dealership. Same presign → PUT → commit pipeline, different prefix,
- * different destiny.
- *
- * It lands on `dealer.coverMediaId` — the cover slot the profile already
- * carries — rather than on a column of its own, because that is exactly what
- * a cover image is.
- */
-export const YARD_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
-export const YARD_PHOTO_MAX_BYTES = 10 * 1024 * 1024;
-
-export const YardPhotoPresignInput = z
-  .object({
-    fileName: z.string().trim().min(1).max(160),
-    mimeType: z.enum(YARD_PHOTO_MIME_TYPES),
-    bytes: z.number().int().min(1).max(YARD_PHOTO_MAX_BYTES),
-    width: z.number().int().min(1).max(20000).optional(),
-    height: z.number().int().min(1).max(20000).optional(),
-  })
-  .strict();
-export type YardPhotoPresignInput = z.infer<typeof YardPhotoPresignInput>;
-
-export const YardPhotoCommitInput = z.object({ mediaId: Uuid }).strict();
-export type YardPhotoCommitInput = z.infer<typeof YardPhotoCommitInput>;
-
-/**
- * `url` is a short-lived signed read rather than a delivery URL. The derivative
- * pipeline that content-addresses an image and gives it a permanent public URL
- * is **F034**; until it exists the only honest way to show the dealer what they
- * uploaded is to sign a read of the original object.
- */
-export const YardPhotoDto = z.object({
-  mediaId: Uuid.nullable(),
-  status: MediaStatus.nullable(),
-  fileName: z.string().nullable(),
-  url: z.string().nullable(),
-  uploadedAt: z.string().nullable(),
-});
-export type YardPhotoDto = z.infer<typeof YardPhotoDto>;
 
 // ─────────── C14 media ─────────────────────────────────────────────────────
 /**

@@ -253,13 +253,14 @@ Every signed document URL issued is audit-logged with the admin's
 
 identity — that is the whole access control on KYC media (§26.6).
 
-### `const yardPhoto = dealer.coverMediaId`
+### `const [portfolio, yardVisitCount] = await Promise.all([`
 
-The yard photograph, signed the same way a document is.
-
-A moderator has to be able to see it. "Is this a clear photograph of
-the premises, or is it a screenshot of a logo" is the question the
-requirement exists to ask, and it is not one the API can answer.
+The dealership's portfolio photographs, approved and awaiting review, as
+short-lived signed reads — a reviewer has to see a pending one to decide it,
+and nothing in this response is a public URL (#299). Yard visits are only
+counted here: their photographs are private evidence fetched through
+`GET /dealers/:id/yard-visits`, behind its own permission and its own audit
+row, so opening a dealership does not sign them.
 
 ### `specialities: distinctServices(dealer.specialities)`
 
@@ -314,8 +315,9 @@ reads zero; the grant returns with the ledger that can honour it.
 D4 reject — and it is a **purge**, not a status change.
 
 A rejection says "this is not a dealership we will trade with", and the
-product's answer to that is to keep nothing: the three KYC scans and the
-yard photograph are deleted from object storage, and the `dealers` row
+product's answer to that is to keep nothing: the KYC scans, portfolio
+photographs, yard-visit evidence and any legacy yard photograph are deleted
+from object storage, and the `dealers` row
 goes with them — taking its documents and its OWNER membership by
 cascade. The person keeps their verified Google account and nothing else,
 so signing in again finds no membership and drops them at step one of
@@ -343,9 +345,10 @@ dealership that goes bad is _suspended_, which is reversible.
 ### `const media = await prisma.media.findMany({ where: { dealerId } })`
 
 Every object this dealership put in the bucket: the KYC scans, whose
-keys are derived from the document rows, and the media rows — the yard
-photograph, and a logo if one was ever uploaded — which carry their own
-`storageKey`.
+keys are derived from the document rows, and the media rows — portfolio
+and yard-visit photographs, a legacy yard photograph, and a logo if one was
+ever uploaded — which carry their own `storageKey`. Every one of them is
+stamped with `dealerId`, which is what puts it in this list.
 
 ### `const removals = await Promise.allSettled(keys.map((key) => storage.delete(key)))`
 
@@ -810,3 +813,35 @@ What the reviewer is shown about how the dealership arrived: self-onboarded or
 assisted, by whom, whether phone and email are verified, whether the dealer has
 claimed it, and whether the reviewer is the assistant (in which case the action
 flags are all false and the panel says why).
+
+## `apps/api/src/modules/admin/yard-visits.service.ts`
+
+### `export function createYardVisitService({`
+
+Internal yard visits (#299): what staff found at a dealership and the
+photographs they took. Private operational evidence. It is never served on the
+public media path (`media.serve()` refuses `DEALER_YARD_VISIT`), never required
+for activation, and never a route to Dealer Verified — a yard visit is
+something staff do, not something a dealer submits.
+
+`NO_PHYSICAL_YARD` is a legitimate outcome. Many dealerships trade from an
+office or from the road, and recording that is the point; nothing reads it
+as a failure.
+
+### `async list(admin: AdminPrincipal, dealerId: string): Promise<YardVisitsResponse>`
+
+Signs each photograph for five minutes and writes `dealer.yard_visits.viewed`
+when any was signed — the same rule the KYC documents follow, because a
+photograph of somebody's premises is as personal as a scan of their PAN.
+
+### `async create(`
+
+Re-checks the reviewer under the membership lock, because recording evidence
+is a write a revoked reviewer must not make in the window before their
+session expires.
+
+### `async commitPhoto(`
+
+Reads the bytes back and sniffs them before adopting them, as every other
+upload in the product does, and caps a visit at `YARD_VISIT_PHOTO_LIMIT`
+under the visit row lock. Idempotent per media id.

@@ -50,12 +50,22 @@ describe('the surface', () => {
         'POST /dealers/:id/close',
         'POST /dealers/:id/suspend',
         'POST /dealers/:id/reinstate',
+        // #299 — internal yard visits.
+        'GET /dealers/:id/yard-visits',
+        'POST /dealers/:id/yard-visits',
+        'POST /dealers/:id/yard-visits/:visitId/photos/presign',
+        'POST /dealers/:id/yard-visits/:visitId/photos/commit',
         'POST /documents/:id/verify',
         'POST /documents/:id/reject',
         // R34 — the queue a dealer's own words wait in, and the two decisions.
         'GET /profile-changes',
         'POST /profile-changes/:id/approve',
         'POST /profile-changes/:id/reject',
+        // #299 — dealer portfolio moderation.
+        'GET /portfolio',
+        'POST /portfolio/:id/approve',
+        'POST /portfolio/:id/reject',
+        'POST /portfolio/:id/take-down',
         // F072 — the settings screen, and R42's admin access on it.
         'GET /config',
         'PUT /config/:key',

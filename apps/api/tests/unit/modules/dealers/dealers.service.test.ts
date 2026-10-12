@@ -129,22 +129,6 @@ function doc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   };
 }
 
-/** A `Media` row, as the yard-photo paths read one back. */
-function media(overrides: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
-    id: 'media-1',
-    dealerId: 'dealer-1',
-    ownerType: 'DEALER_COVER',
-    storageKey: `${DEALER_ROOT}/yard/media-1`,
-    mimeType: 'image/jpeg',
-    bytes: 184_210,
-    fileName: 'yard.jpg',
-    status: 'PENDING',
-    createdAt: new Date('2026-09-01T00:00:00.000Z'),
-    ...overrides,
-  };
-}
-
 interface Options {
   dealer?: Record<string, unknown> | null;
   documents?: Record<string, unknown>[];
@@ -159,7 +143,6 @@ interface Options {
   /** What `findConflicting` reports — a name, GSTIN or PAN already taken. */
   conflicting?: { legalName: boolean; gstin: boolean; pan: boolean };
   /** One row, or several to be looked up by id — a replacement needs two. */
-  media?: Record<string, unknown> | Record<string, unknown>[] | null;
   /**
    * The number on the owner's user row, proved (**R39**). Omitted is
    * `+919876543210` — the number the phone cases below patch to — and `null`
@@ -189,9 +172,6 @@ function setup(options: Options = {}) {
   const phoneLookups: string[] = [];
   const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
-  const mediaCreated: Record<string, unknown>[] = [];
-  const orphaned: string[] = [];
-  const readied: string[] = [];
   const conflictQueries: { dealerId: string; fields: Record<string, unknown> }[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
@@ -231,23 +211,6 @@ function setup(options: Options = {}) {
     findConflicting: (dealerId: string, fields: Record<string, unknown>) => {
       conflictQueries.push({ dealerId, fields });
       return Promise.resolve(options.conflicting ?? { legalName: false, gstin: false, pan: false });
-    },
-    mediaById: (mediaId: string) => {
-      if (!options.media) return Promise.resolve(null);
-      const rows = Array.isArray(options.media) ? options.media : [options.media];
-      return Promise.resolve(rows.find((row) => row.id === mediaId) ?? null);
-    },
-    createMedia: (data: Record<string, unknown>) => {
-      mediaCreated.push(data);
-      return Promise.resolve(data);
-    },
-    orphanMedia: (mediaId: string) => {
-      orphaned.push(mediaId);
-      return Promise.resolve({});
-    },
-    markMediaReady: (mediaId: string) => {
-      readied.push(mediaId);
-      return Promise.resolve({});
     },
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
     pendingListingCount: () => Promise.resolve(options.pendingListingCount ?? 0),
@@ -381,9 +344,6 @@ function setup(options: Options = {}) {
     phoneLookups,
     outbox,
     deletes,
-    mediaCreated,
-    orphaned,
-    readied,
     conflictQueries,
     mapsLookups,
   };
@@ -1909,281 +1869,7 @@ describe('update — the services', () => {
   });
 });
 
-/**
- * The yard photograph — the hero of the dealership's public portfolio.
- *
- * Same presign → PUT → commit pipeline as the KYC documents, under a different
- * prefix, and with the replacement happening at the opposite end of it: nothing
- * is displaced until commit, so a dealer who changes their mind halfway through
- * picking a file still has the photograph they had before.
- */
-describe('yardPhoto', () => {
-  it('reads empty when nothing has been uploaded', async () => {
-    const h = setup({ dealer: { coverMediaId: null } });
-
-    expect(await h.service.yardPhoto('dealer-1')).toEqual({
-      mediaId: null,
-      status: null,
-      fileName: null,
-      url: null,
-      uploadedAt: null,
-    });
-  });
-
-  /** A cover id pointing at a row that is gone is empty, not an error. */
-  it('reads empty when the media row has vanished', async () => {
-    const h = setup({ media: null });
-
-    expect((await h.service.yardPhoto('dealer-1')).mediaId).toBeNull();
-  });
-
-  /**
-   * A signed read of the original, not a delivery URL: the derivative pipeline
-   * that gives an image a permanent public URL is F034, and until it lands the
-   * original is the only copy there is.
-   */
-  it('signs a short-lived read of the stored object', async () => {
-    const h = setup({ media: media() });
-
-    expect(await h.service.yardPhoto('dealer-1')).toMatchObject({
-      mediaId: 'media-1',
-      fileName: 'yard.jpg',
-      url: `https://storage.test/signed/${DEALER_ROOT}/yard/media-1?ttl=300`,
-      uploadedAt: '2026-09-01T00:00:00.000Z',
-    });
-  });
-
-  /** `ORPHAN` is a stored status with no place in the wire enum. */
-  it('reports a pending upload as PROCESSING rather than PENDING', async () => {
-    const h = setup({ media: media({ status: 'PENDING' }) });
-
-    expect((await h.service.yardPhoto('dealer-1')).status).toBe('PROCESSING');
-  });
-});
-
-/**
- * The yard photograph can be changed only while the application is a DRAFT
- * (ORIG-BUG-005), so these cases run against a DRAFT dealership; the lock
- * itself is covered below and in `tests/yard-photo-moderation.test.ts`.
- */
-function draftSetup(options: Options = {}) {
-  return setup({ ...options, dealer: { status: 'DRAFT', ...(options.dealer ?? {}) } });
-}
-
-describe('ORIG-BUG-005 — the yard photograph is locked outside DRAFT', () => {
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED'])(
-    'refuses to presign, commit or delete for a %s dealer',
-    async (status) => {
-      const h = setup({
-        dealer: { status },
-        media: media(),
-        head: { bytes: 1, contentType: 'image/jpeg' },
-      });
-
-      await expect(
-        h.service.presignYardPhoto('dealer-1', {
-          fileName: 'y.jpg',
-          mimeType: 'image/jpeg',
-          bytes: 1,
-        }),
-      ).rejects.toThrow(ConflictError);
-      await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-        ConflictError,
-      );
-      await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(ConflictError);
-      expect([h.updates, h.deletes]).toEqual([[], []]);
-    },
-  );
-});
-
-describe('presignYardPhoto', () => {
-  it('keys the image under the dealership, beside its documents', async () => {
-    const h = draftSetup();
-
-    const presigned = await h.service.presignYardPhoto('dealer-1', {
-      fileName: 'yard.jpg',
-      mimeType: 'image/jpeg',
-      bytes: 184_210,
-    });
-
-    const created = h.mediaCreated[0];
-    expect(created).toMatchObject({
-      dealerId: 'dealer-1',
-      ownerType: 'DEALER_COVER',
-      status: 'PENDING',
-      fileName: 'yard.jpg',
-    });
-    expect(created?.storageKey).toBe(`${DEALER_ROOT}/yard/${String(created?.id)}`);
-    expect(presigned.mediaId).toBe(created?.id);
-  });
-
-  /** Presigning displaces nothing — that is what makes an abandoned pick safe. */
-  it('leaves the photograph already on the record alone', async () => {
-    const h = draftSetup({ media: media() });
-
-    await h.service.presignYardPhoto('dealer-1', {
-      fileName: 'new.jpg',
-      mimeType: 'image/jpeg',
-      bytes: 1000,
-    });
-
-    expect(h.deletes).toEqual([]);
-    expect(h.orphaned).toEqual([]);
-    expect(h.updates).toEqual([]);
-  });
-});
-
-describe('commitYardPhoto', () => {
-  it('refuses an upload that never landed in storage', async () => {
-    const h = draftSetup({ media: media({ id: 'media-2' }), head: null });
-
-    await expect(
-      h.service.commitYardPhoto('dealer-1', { mediaId: 'media-2' }),
-    ).rejects.toMatchObject({ code: 'UPLOAD_MISSING' });
-    expect(h.updates).toEqual([]);
-  });
-
-  it('refuses a media row belonging to another dealership', async () => {
-    const h = draftSetup({ media: media({ dealerId: 'dealer-2' }) });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      NotFoundError,
-    );
-  });
-
-  it('refuses a media row that is not a cover image', async () => {
-    const h = draftSetup({ media: media({ ownerType: 'VEHICLE' }) });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      NotFoundError,
-    );
-  });
-
-  it('adopts the upload onto the dealership', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: null },
-      media: media(),
-      head: { bytes: 184_210, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: 'media-1' } });
-  });
-
-  /**
-   * The promotion the public pages depend on.
-   *
-   * `media.serve()` answers only for a READY row, and the only thing that
-   * promotes one is **F034**'s derivative worker — which does not exist, and
-   * whose `media.process` job nothing consumes. So every yard photograph ever
-   * uploaded sat at PENDING and the directory had no image to show, even for an
-   * approved dealership.
-   *
-   * The object has just been HEADed, so this is not optimism: the bytes are
-   * known to be there, and `serve()` falls back to the original for a row with
-   * no variants yet. F034 adds the renditions and `serve()` prefers them; this
-   * line does not change when it lands.
-   */
-  it('marks the upload servable, because nothing else will', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: null },
-      media: media({ status: 'PENDING' }),
-      head: { bytes: 184_210, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.readied).toEqual(['media-1']);
-  });
-
-  /** A commit that never gets past the HEAD promotes nothing. */
-  it('leaves an incomplete upload where it is', async () => {
-    const h = draftSetup({ dealer: { coverMediaId: null }, media: media(), head: null });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      DomainError,
-    );
-    expect(h.readied).toEqual([]);
-    expect(h.updates).toEqual([]);
-  });
-
-  /**
-   * This is where a replacement takes effect. The displaced row is marked
-   * ORPHAN rather than deleted — it is the only record the bytes ever existed,
-   * and a sweeper reconciles orphans against storage.
-   */
-  it('discards the photograph it displaces', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: 'media-old' },
-      media: [
-        media({ id: 'media-old', storageKey: `${DEALER_ROOT}/yard/media-old` }),
-        media({ id: 'media-new', storageKey: `${DEALER_ROOT}/yard/media-new` }),
-      ],
-      head: { bytes: 1, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-new' });
-
-    expect(h.updates[0]?.data).toEqual({ coverMediaId: 'media-new' });
-    expect(h.orphaned).toEqual(['media-old']);
-    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-old`]);
-  });
-
-  /**
-   * Committing the row that is already on the record is a no-op, not a
-   * self-destruct. Without the identity check it would delete the object it had
-   * just adopted.
-   */
-  it('does not discard the photograph it is re-committing', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: 'media-1' },
-      media: media(),
-      head: { bytes: 1, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.deletes).toEqual([]);
-    expect(h.orphaned).toEqual([]);
-  });
-});
-
-describe('deleteYardPhoto', () => {
-  it('clears the record and removes the bytes', async () => {
-    const h = draftSetup({ media: media() });
-
-    await h.service.deleteYardPhoto('dealer-1');
-
-    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: null } });
-    expect(h.orphaned).toEqual(['media-1']);
-    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-1`]);
-  });
-
-  it('404s when there is no photograph to remove', async () => {
-    const h = draftSetup({ dealer: { coverMediaId: null } });
-
-    await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(NotFoundError);
-    expect(h.updates).toEqual([]);
-  });
-
-  /** A dangling cover id still clears; there is simply nothing to delete. */
-  it('clears a cover id whose media row has vanished', async () => {
-    const h = draftSetup({ media: null });
-
-    await h.service.deleteYardPhoto('dealer-1');
-
-    expect(h.updates[0]?.data).toEqual({ coverMediaId: null });
-    expect(h.deletes).toEqual([]);
-  });
-});
-
-/**
- * The yard photograph is required, and it is required on the documents step —
- * the step where a dealer uploads things. A dealership whose public storefront
- * would open with an empty frame is not ready to be reviewed.
- */
-describe('completeness — the yard photograph', () => {
+describe('completeness — no yard photograph is collected', () => {
   const verified = [
     doc({
       category: 'PERSONAL_IDENTITY',
@@ -2199,7 +1885,7 @@ describe('completeness — the yard photograph', () => {
     }),
   ];
 
-  it('keeps document completeness independent of an optional yard photograph', async () => {
+  it('keeps document completeness independent of any photograph', async () => {
     const h = setup({ documents: verified, dealer: { coverMediaId: null } });
 
     const state = await h.service.completeness('dealer-1');
@@ -2209,7 +1895,7 @@ describe('completeness — the yard photograph', () => {
     expect(state.isComplete).toBe(true);
   });
 
-  it('allows submission without a yard photograph when required evidence is present', async () => {
+  it('allows submission with only the two identity proofs', async () => {
     const h = setup({
       documents: verified,
       dealer: { status: 'DRAFT', coverMediaId: null },

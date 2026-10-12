@@ -241,6 +241,9 @@ function setup(options: Options = {}) {
     media: {
       findMany: () => Promise.resolve(options.media ?? []),
     },
+    dealerYardVisit: {
+      count: () => Promise.resolve(0),
+    },
     auditLog: {
       findMany: () => Promise.resolve([]),
     },
@@ -316,6 +319,7 @@ function setup(options: Options = {}) {
    * write itself is right is `dealers.service`'s own test.
    */
   const dealers = {
+    portfolio: { forDealer: () => Promise.resolve([]) },
     completeness: () =>
       Promise.resolve({
         isComplete: options.applicationComplete ?? true,
@@ -1389,8 +1393,8 @@ describe('rejectDealer', () => {
 
     const result = await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
 
-    // One folder, four objects: the three private scans and the photograph
-    // that will front the portfolio.
+    // One folder, four objects: the three private scans and the legacy yard
+    // photograph — every media row stamped with the dealership goes.
     expect(h.deletedKeys).toEqual([
       `${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-gst`,
       `${DEALER_ROOT}/documents/PAN_CARD/doc-pan`,

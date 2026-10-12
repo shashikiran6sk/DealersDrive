@@ -35,11 +35,11 @@ export const ADMIN_PERMISSIONS = {
    * admin only: it is the exception, not the path, and it never verifies a
    * document or grants Dealer Verified.
    */
-  'admin:dealer:activation-override': SUPER,
+  'admin:activation:override': SUPER,
   /** Approve or reject dealer portfolio photographs before they become public. */
   'admin:portfolio:moderate': REVIEWERS,
   /** Record a yard visit and read its private photographs. */
-  'admin:yard-visit:manage': REVIEWERS,
+  'admin:visit:manage': REVIEWERS,
   'admin:credit:grant': SUPER,
   'admin:payment:read': CONSOLE,
   'admin:payment:refund': SUPER,

@@ -387,6 +387,8 @@ model Dealer {
   sessions           Session[]
   documents          DealerDocument[]
   profileEdits       DealerProfileChange[]
+  portfolioPhotos    DealerPortfolioPhoto[]
+  yardVisits         DealerYardVisit[]
   notifications      NotificationDelivery[]
   vehicles           Vehicle[]
   listings           Listing[]
@@ -1353,6 +1355,81 @@ enum MediaOwner {
   DEALER_LOGO
   DEALER_COVER
   DEALER_DOCUMENT
+  DEALER_PORTFOLIO
+  DEALER_YARD_VISIT
+}
+
+enum PortfolioPhotoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED
+}
+
+enum YardVisitOutcome {
+  YARD_CONFIRMED
+  NO_PHYSICAL_YARD
+  NOT_ACCESSIBLE
+}
+
+/// A dealership's own portfolio photograph (#299). Private and PENDING until an
+/// admin approves it; only APPROVED rows of an ACTIVE dealership are ever served.
+/// A replacement is a new row naming the APPROVED photo it would take the place
+/// of, so the approved image stays public until the replacement is approved,
+/// and a decision always publishes exactly the image it was made on.
+model DealerPortfolioPhoto {
+  id              String               @id @default(uuid()) @db.Uuid
+  dealerId        String               @db.Uuid
+  mediaId         String               @unique @db.Uuid
+  status          PortfolioPhotoStatus @default(PENDING)
+  replacesId      String?              @db.Uuid
+  position        Int                  @default(0)
+  caption         String?
+  rejectionReason String?
+  submittedById   String?              @db.Uuid
+  reviewedById    String?              @db.Uuid
+  reviewedAt      DateTime?
+  /// Carried over from the single yard photograph onboarding used to collect.
+  legacyCover     Boolean              @default(false)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  dealer     Dealer                 @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  replaces   DealerPortfolioPhoto?  @relation("PortfolioReplacement", fields: [replacesId], references: [id], onDelete: SetNull)
+  replacedBy DealerPortfolioPhoto[] @relation("PortfolioReplacement")
+
+  @@index([dealerId, status, position])
+  @@index([status, createdAt])
+  @@map("dealer_portfolio_photos")
+}
+
+/// An internal yard visit by Dealers-Drive staff (#299): private operational
+/// evidence, never public, never required and never a route to Dealer Verified.
+model DealerYardVisit {
+  id           String           @id @default(uuid()) @db.Uuid
+  dealerId     String           @db.Uuid
+  visitedOn    DateTime         @db.Date
+  outcome      YardVisitOutcome
+  notes        String?
+  recordedById String           @db.Uuid
+  createdAt    DateTime         @default(now())
+
+  dealer Dealer                 @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  photos DealerYardVisitPhoto[]
+
+  @@index([dealerId, visitedOn])
+  @@map("dealer_yard_visits")
+}
+
+model DealerYardVisitPhoto {
+  id        String   @id @default(uuid()) @db.Uuid
+  visitId   String   @db.Uuid
+  mediaId   String   @unique @db.Uuid
+  createdAt DateTime @default(now())
+
+  visit DealerYardVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@map("dealer_yard_visit_photos")
 }
 
 enum MediaStatus {

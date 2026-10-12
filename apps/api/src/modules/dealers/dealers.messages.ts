@@ -1,9 +1,6 @@
 export const DOCUMENT_LOCKED =
   'This document has been submitted for review and can no longer be changed. Contact support if it needs correcting.';
 
-export const YARD_PHOTO_LOCKED =
-  'Your yard photograph was reviewed with your application and can no longer be changed here. Contact support if it needs replacing.';
-
 export const ALREADY_SUBMITTED = 'This dealership has already been submitted for verification.';
 
 export const APPLICATION_CLOSED =
@@ -17,3 +14,25 @@ export const DOCUMENT_SIZE_MISMATCH =
 
 export const SUBMITTED_MESSAGE =
   'Our team reviews your identity and business documents. Most dealerships hear back within one working day.';
+
+export const PORTFOLIO_FULL =
+  'Your portfolio already has the most photographs it can hold. Remove one, or replace an approved photograph instead.';
+
+export const PORTFOLIO_PHOTO_NOT_FOUND = 'That photograph does not exist.';
+
+export const PORTFOLIO_REPLACE_TARGET =
+  'Only an approved photograph can be replaced. Upload this one as a new photograph instead.';
+
+export const PORTFOLIO_REPLACEMENT_PENDING =
+  'A replacement for that photograph is already waiting for review.';
+
+export const PORTFOLIO_CONTENT_MISMATCH =
+  'That file is not a JPEG, PNG or WebP photograph of the type it was uploaded as. Choose the photograph again.';
+
+export const PORTFOLIO_PHOTO_DECIDED =
+  'That photograph has already been reviewed. Reload the queue.';
+
+export const PORTFOLIO_PHOTO_NOT_PUBLISHED = 'Only an approved photograph can be taken down.';
+
+export const PORTFOLIO_MODERATION_FORBIDDEN =
+  'Only reviewers with portfolio moderation access can decide dealer photographs.';

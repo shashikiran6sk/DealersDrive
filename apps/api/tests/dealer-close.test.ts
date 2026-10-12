@@ -93,21 +93,6 @@ async function completeDraft() {
       .send({ documentId: presigned.body.documentId })
       .expect(200);
   }
-  const jpeg = Buffer.from('\xff\xd8\xff a fixture yard photograph', 'binary');
-  const cover = await dealer.agent
-    .post('/v1/dealer/yard-photo/presign')
-    .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
-    .expect(201);
-  const coverUrl = new URL(String(cover.body.uploadUrl));
-  await dealer.agent
-    .put(coverUrl.pathname + coverUrl.search)
-    .set('Content-Type', 'image/jpeg')
-    .send(jpeg)
-    .expect(200);
-  await dealer.agent
-    .post('/v1/dealer/yard-photo/commit')
-    .send({ mediaId: cover.body.mediaId })
-    .expect(200);
   const state = await dealer.agent.get('/v1/dealer/completeness').expect(200);
   expect(state.body.canSubmit).toBe(true);
   return dealer;

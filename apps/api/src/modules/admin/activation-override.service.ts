@@ -107,7 +107,7 @@ export function createActivationOverrideService({
     await assertCurrentAdmin(
       tx,
       admin,
-      'admin:dealer:activation-override',
+      'admin:activation:override',
       OVERRIDE_FORBIDDEN,
       OVERRIDE_ACCESS_REVOKED,
     );

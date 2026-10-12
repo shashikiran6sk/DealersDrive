@@ -32,13 +32,9 @@ import {
   type DocumentPresignInput,
   type PresignResponse,
   type UpdateDealerInput,
-  type YardPhotoCommitInput,
-  type YardPhotoDto,
-  type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
 import type { DealerStatus, DocStatus, PrismaClient } from '@prisma/client';
 
-import { toMediaStatus } from '../media/media.facade.js';
 import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
@@ -50,7 +46,7 @@ import { ConflictError, DomainError, NotFoundError } from '../../platform/errors
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
-import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import { documentKey } from './dealer-storage-keys.js';
 import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
   ALREADY_SUBMITTED,
@@ -59,9 +55,9 @@ import {
   DOCUMENT_LOCKED,
   DOCUMENT_SIZE_MISMATCH,
   SUBMITTED_MESSAGE,
-  YARD_PHOTO_LOCKED,
 } from './dealers.messages.js';
 import { toDealerDocumentDto, toDealerDocuments } from './dealer-documents.mapper.js';
+import { createDealerPortfolioService } from './dealer-portfolio.service.js';
 import { sniffDocumentType } from '../../platform/media/sniff.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
@@ -69,7 +65,6 @@ import {
   DOCUMENT_NOT_FOUND,
   UNNAMED_CUSTOMER,
   UPLOAD_INCOMPLETE,
-  UPLOAD_NOT_FOUND,
 } from '../../platform/messages.js';
 
 export interface DocumentActor {
@@ -90,8 +85,6 @@ export interface DealersDeps {
   audit: AuditService;
 }
 
-const YARD_PHOTO_URL_TTL_SECONDS = 300;
-
 const DOC_EDITABLE_OUTSIDE_DRAFT: readonly DocStatus[] = ['REQUIRED', 'REJECTED', 'UPLOADING'];
 
 function assertDocumentEditable(
@@ -107,10 +100,6 @@ function assertSubmittable(dealerStatus: DealerStatus | null): void {
   if (dealerStatus === 'DRAFT') return;
   if (dealerStatus === 'CLOSED') throw new DomainError('APPLICATION_CLOSED', APPLICATION_CLOSED);
   throw new DomainError('ALREADY_SUBMITTED', ALREADY_SUBMITTED);
-}
-
-function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void {
-  if (dealerStatus !== 'DRAFT') throw new ConflictError('YARD_PHOTO_LOCKED', YARD_PHOTO_LOCKED);
 }
 
 function sameServices(a: readonly string[], b: readonly string[]): boolean {
@@ -265,14 +254,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     }
   }
 
-  async function discardMedia(mediaId: string): Promise<void> {
-    const media = await repo.mediaById(mediaId);
-    if (!media) return;
-    await repo.orphanMedia(mediaId);
-    await storage.delete(media.storageKey);
-  }
-
   return {
+    portfolio: createDealerPortfolioService({ prisma, storage, audit }),
     toProfile,
     async session(principal: DealerPrincipal): Promise<AuthSession> {
       const dealer = await requireDealer(principal.dealerId);
@@ -863,105 +846,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         return doc;
       });
       if (existing) await storage.delete(documentKey(slug, existing.type, existing.id));
-    },
-
-    async yardPhoto(dealerId: string): Promise<YardPhotoDto> {
-      const dealer = await requireDealer(dealerId);
-      if (!dealer.coverMediaId) {
-        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
-      }
-
-      const media = await repo.mediaById(dealer.coverMediaId);
-      if (!media) {
-        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
-      }
-
-      return {
-        mediaId: media.id,
-        status: toMediaStatus(media.status),
-        fileName: media.fileName,
-        url: await storage.signedReadUrl(media.storageKey, YARD_PHOTO_URL_TTL_SECONDS),
-        uploadedAt: media.createdAt.toISOString(),
-      };
-    },
-
-    async presignYardPhoto(
-      dealerId: string,
-      input: YardPhotoPresignInput,
-    ): Promise<PresignResponse> {
-      const dealer = await requireDealer(dealerId);
-      assertYardPhotoEditable(dealer.status);
-
-      const mediaId = randomUUID();
-      const key = yardPhotoKey(dealer.slug, mediaId);
-
-      await repo.createMedia({
-        id: mediaId,
-        dealerId,
-        ownerType: 'DEALER_COVER',
-        storageKey: key,
-        mimeType: input.mimeType,
-        bytes: input.bytes,
-        width: input.width ?? null,
-        height: input.height ?? null,
-        fileName: input.fileName,
-        warnings: [],
-        status: 'PENDING',
-      });
-
-      const presigned = await storage.presignPut({
-        key,
-        contentType: input.mimeType,
-        contentLength: input.bytes,
-      });
-
-      return {
-        mediaId,
-        uploadUrl: presigned.uploadUrl,
-        method: 'PUT',
-        headers: presigned.headers,
-        expiresInSeconds: presigned.expiresInSeconds,
-        maxBytes: input.bytes,
-      };
-    },
-
-    async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto> {
-      await requireDealer(dealerId);
-
-      const media = await repo.mediaById(input.mediaId);
-      if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
-        throw new NotFoundError(UPLOAD_NOT_FOUND);
-      }
-
-      const object = await storage.head(media.storageKey);
-      if (!object) {
-        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
-      }
-
-      const displaced = await withTransaction(prisma, async (tx) => {
-        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
-        const current = await repo.findById(dealerId, tx);
-        await repo.markMediaReady(media.id, tx);
-        await repo.update(dealerId, { coverMediaId: media.id }, tx);
-        return current?.coverMediaId ?? null;
-      });
-      if (displaced && displaced !== media.id) await discardMedia(displaced);
-
-      return this.yardPhoto(dealerId);
-    },
-
-    async deleteYardPhoto(dealerId: string): Promise<void> {
-      await requireDealer(dealerId);
-      const removed = await withTransaction(prisma, async (tx) => {
-        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
-        const current = await repo.findById(dealerId, tx);
-        if (!current?.coverMediaId) {
-          throw new NotFoundError('There is no yard photograph to remove.');
-        }
-        await repo.update(dealerId, { coverMediaId: null }, tx);
-        return current.coverMediaId;
-      });
-      await discardMedia(removed);
     },
 
     async dashboard(dealerId: string, viewerId?: string): Promise<DashboardResponse> {
