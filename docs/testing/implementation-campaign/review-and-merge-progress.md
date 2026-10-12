@@ -74,3 +74,4 @@ All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged;
 - Opened 2026-10-12; evidence in `pr-303-truthful-approval-and-documents/`.
 - Browser check found two truth problems, fixed before merge: an empty slot said "Needed to submit" on a live dealership (`0ac27ee`), and the console header labelled every ACTIVE dealership "Verified" (`2e9e2ab`).
 - Test-harness fix for a full-suite timeout (other files' outbox backlog drained by the first `drainEmails()`).
+- CI on `2e9e2ab`: lint · typecheck · test · build, dependency audit, semgrep, gitleaks, terraform — all success. Squash-merged into `main` as `8f7b754` on 2026-10-12.
