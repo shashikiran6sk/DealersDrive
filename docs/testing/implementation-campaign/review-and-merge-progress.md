@@ -63,3 +63,8 @@ All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged;
 - The owner merged #299 and asked for #301 to be merged after CI. `main` merged into the branch at `5e52ed5` (tree identical to `896fbe7`: #299 was squash-merged); `896fbe7` fixed a countdown race found by reproducing an intermittent test under load.
 - CI on `5e52ed5`: lint · typecheck · test · build, dependency audit, semgrep, gitleaks, terraform — all success.
 - Squash-merged into `main` as `fb0e107` on 2026-10-12.
+
+## #302 — GSTIN on the GST certificate; no GSTIN/PAN fields; no GST note
+
+- Opened 2026-10-12 at `5457533` (main merged in; #301's squash resolved to this branch's side except the countdown fix taken from main).
+- CI all success; squash-merged as `4ca3cd5` per the owner's instruction to merge each split PR after green CI.
