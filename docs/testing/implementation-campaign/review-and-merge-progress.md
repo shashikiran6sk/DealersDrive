@@ -43,7 +43,7 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | `91e3533` | Merged, main verified                              |
 | 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | `6f4f040` | Merged, main verified                              |
 | 12  | #300 | Canonical vehicle makes | `92ac922`     | `383a2b0`         | green      | `5a89a9f` | Merged, main verified                              |
-| —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                                   |
+| —   | #299 | Progressive onboarding  | `f563188`     | `0e8a6ba`         | local green| N/A       | Draft, revised; not merged (owner instruction)     |
 
 Stack ancestry at start: linear; each branch contains its parent. Migrations
 introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
@@ -54,4 +54,4 @@ introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 
 ## Next action
 
-All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged; regression on `6f4f040` green. Next: Draft #299 revision (stays Draft, never merged).
+All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged; regression on `6f4f040` green. Draft #299 revised to `0e8a6ba` (evidence: `pr-299-progressive-onboarding/`); it stays Draft and is not merged. Next: final report.
