@@ -4,28 +4,38 @@ import { useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
 
+import { DocumentCategory } from './document-category';
+import { DocumentGaps } from './document-gaps';
+import { DocumentHistory } from './document-history';
 import { DOCUMENT_REVIEW_TEXT } from './document-review.constants';
 import type { DocumentReviewProps } from './document-review.types';
-import { DocumentRow } from './document-row';
+import { groupByCategory } from './utils';
 
-export function DocumentReview({ documents, dealerSlug }: DocumentReviewProps) {
+export function DocumentReview({
+  documents,
+  dealerSlug,
+  gaps = [],
+  history = [],
+}: DocumentReviewProps) {
   const [error, setError] = useState<string | null>(null);
-
-  if (documents.length === 0) {
-    return <p className="py-3 text-[13px] ink-muted">{DOCUMENT_REVIEW_TEXT.nothingUploaded}</p>;
-  }
 
   return (
     <>
       {error ? <Banner tone="err">{error}</Banner> : null}
-      {documents.map((document) => (
-        <DocumentRow
-          key={document.id}
-          document={document}
-          dealerSlug={dealerSlug}
-          onError={setError}
-        />
-      ))}
+      <DocumentGaps gaps={gaps} />
+      {documents.length === 0 ? (
+        <p className="py-3 text-[13px] ink-muted">{DOCUMENT_REVIEW_TEXT.nothingUploaded}</p>
+      ) : (
+        groupByCategory(documents).map((group) => (
+          <DocumentCategory
+            key={group.category}
+            group={group}
+            dealerSlug={dealerSlug}
+            onError={setError}
+          />
+        ))
+      )}
+      <DocumentHistory history={history} />
     </>
   );
 }

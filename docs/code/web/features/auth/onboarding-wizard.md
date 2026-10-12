@@ -134,6 +134,16 @@ answer is what `POST /v1/dealer/submit` refuses on. Counting `REQUIRED`
 rows in the browser would be a second derivation of the same question, and
 the two would eventually disagree about whether a dealership is ready.
 
+### `{SELECTABLE_DOC_CATEGORIES.map((category) => (`
+
+Two cards, one per category, whatever has been uploaded (#299). Documents are
+not needed to save the draft — the dealership already exists by this step —
+only to submit it, and the copy says that in so many words: a dealer who
+thinks the documents gate the draft abandons the form rather than coming back
+with them. Aadhaar is named as voluntary in the step copy as well as in its
+own hint, and with a GSTIN on file the step names the GST certificate as the
+business proof.
+
 ### `<form action={submit} className="flex flex-col gap-[14px]" noValidate>`
 
 GSTIN and PAN in mono, as the review screen renders them (§3.10).

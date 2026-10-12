@@ -1,4 +1,5 @@
 import { seedLocation } from './seed-location.js';
+import { SEEDED_DOCUMENTS } from './seed-documents.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
@@ -127,11 +128,11 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
   // VERIFIED, to match the `isVerified: true` the public profile hard-codes
   // until the KYC review paths land. A dealership showing a verified badge over
   // three REQUIRED documents is a screen that contradicts itself.
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const) {
+  for (const [category, type] of SEEDED_DOCUMENTS) {
     await prisma.dealerDocument.upsert({
-      where: { dealerId_type: { dealerId: row.id, type } },
+      where: { dealerId_category: { dealerId: row.id, category } },
       update: { status: 'VERIFIED' },
-      create: { dealerId: row.id, type, status: 'VERIFIED' },
+      create: { dealerId: row.id, category, type, status: 'VERIFIED' },
     });
   }
 }

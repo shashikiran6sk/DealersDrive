@@ -5,7 +5,7 @@ import {
   normaliseLocality,
   type CreateAssistedDealerInput,
   type CreateVehicleInput,
-  type DealerDocType,
+  type SelectableDocCategory,
   type DocumentCommitInput,
   type DocumentPresignInput,
   type SalesDashboard,
@@ -21,8 +21,6 @@ import {
   type PhoneOtpWidget,
   type UpdateDealerInput,
   type UpdateVehicleInput,
-  type YardPhotoCommitInput,
-  type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
 import type { DealerStatus, Prisma, PrismaClient } from '@prisma/client';
 
@@ -42,6 +40,7 @@ import {
   withDealerRegistrationConflict,
   assertDealerEmailFree,
   type DealersService,
+  EMPTY_DOCUMENT_SLOTS,
 } from '../dealers/dealers.facade.js';
 import type { AssistedVehicleActor, VehiclesService } from '../vehicles/vehicles.facade.js';
 import {
@@ -230,12 +229,11 @@ export function createSalesService({
 
   async function detail(principal: AdminPrincipal, dealerId: string): Promise<SalesDealerDetail> {
     const summary = await requireAssisted(principal, dealerId);
-    const [dealer, counts, completeness, documents, yardPhoto, verification] = await Promise.all([
+    const [dealer, counts, completeness, documents, verification] = await Promise.all([
       prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } }),
       listingCounts([dealerId]),
       dealers.completeness(dealerId),
       dealers.documents(dealerId),
-      dealers.yardPhoto(dealerId),
       prisma.dealerEmailVerification.findFirst({
         where: { dealerId },
         orderBy: { createdAt: 'desc' },
@@ -271,7 +269,6 @@ export function createSalesService({
       phoneVerifiedAt: dealer.contactPhoneVerifiedAt?.toISOString() ?? null,
       completeness,
       documents: documents.data,
-      yardPhoto,
       canEdit: editable,
       canSubmit: editable && completeness.canSubmit,
       emailVerification: verification
@@ -521,11 +518,7 @@ export function createSalesService({
           });
 
           await tx.dealerDocument.createMany({
-            data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
-              dealerId: dealer.id,
-              type,
-              status: 'REQUIRED' as const,
-            })),
+            data: EMPTY_DOCUMENT_SLOTS.map((slot) => ({ ...slot, dealerId: dealer.id })),
           });
 
           await audit.record(tx, {
@@ -657,39 +650,23 @@ export function createSalesService({
     async commitDocument(
       principal: AdminPrincipal,
       dealerId: string,
-      type: DealerDocType,
+      category: SelectableDocCategory,
       input: DocumentCommitInput,
     ) {
       await requireEditable(principal, dealerId);
-      return dealers.commitDocument(dealerId, type, input);
+      return dealers.commitDocument(dealerId, category, input, {
+        type: 'SALES',
+        id: principal.userId,
+      });
     },
 
-    async deleteDocument(principal: AdminPrincipal, dealerId: string, type: DealerDocType) {
-      await requireEditable(principal, dealerId);
-      await dealers.deleteDocument(dealerId, type);
-    },
-
-    async presignYardPhoto(
+    async deleteDocument(
       principal: AdminPrincipal,
       dealerId: string,
-      input: YardPhotoPresignInput,
+      category: SelectableDocCategory,
     ) {
       await requireEditable(principal, dealerId);
-      return dealers.presignYardPhoto(dealerId, input);
-    },
-
-    async commitYardPhoto(
-      principal: AdminPrincipal,
-      dealerId: string,
-      input: YardPhotoCommitInput,
-    ) {
-      await requireEditable(principal, dealerId);
-      return dealers.commitYardPhoto(dealerId, input);
-    },
-
-    async deleteYardPhoto(principal: AdminPrincipal, dealerId: string) {
-      await requireEditable(principal, dealerId);
-      await dealers.deleteYardPhoto(dealerId);
+      await dealers.deleteDocument(dealerId, category);
     },
 
     async resendEmailVerification(

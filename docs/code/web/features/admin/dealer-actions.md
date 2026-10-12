@@ -5,6 +5,54 @@ Parent: [web](../../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
+## `apps/web/src/features/admin/dealer-actions/activation-override-block.tsx`
+
+### `export function ActivationOverrideBlock({ dealer, pending, run }: ActivationOverrideBlockProps)`
+
+The controlled exception to standard approval (**#299**). A Super admin may
+activate a dealership whose identity and business documents have not completed
+review, where policy permits it.
+
+**It never verifies anything, and the block says so before anything else.** No
+document is marked verified and Dealer Verified is untouched; the outstanding
+categories stay outstanding, are listed right here, and stay on the dealer page
+as a persistent warning (`ManualActivationNotice`). An override that quietly
+looked like an approval would be indistinguishable from one, which is the one
+thing it must not be.
+
+The disclaimer is `MANUAL_ACTIVATION_DISCLAIMER` from the contract, rendered
+verbatim — not paraphrased here — and the checkbox is what sends
+`acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION`. The API refuses
+any other value, so if the text is ever changed the version changes with it and
+an acknowledgement of the old wording stops being accepted.
+
+The button is enabled by `ActivationOverrideInput` itself — the 40-character
+justification and the acknowledged version — plus the GST review note when no
+GSTIN is on file, which the contract leaves optional and the API requires.
+
+### `const blockedReason = dealer.actions.canOverrideActivation`
+
+When the API offers no override it says why (`overrideBlockedReason`): a
+rejected document, incomplete business details, the reviewer assisted the
+dealership, or both categories are already verified and standard approval
+applies. The block shows that sentence instead of the form; a form that could
+only ever answer 409 is a trap.
+
+The block appears only while the dealership awaits activation (`DealerAdminActions`
+checks DRAFT or PENDING_APPROVAL). The API sets a blocked reason for every
+ACTIVE dealership too, and printing "only an application awaiting activation…"
+on every live dealer's page would be noise.
+
+## `apps/web/src/features/admin/dealer-actions/revoke-override-block.tsx`
+
+### `export function RevokeOverrideBlock({ dealer, pending, run }: RevokeOverrideBlockProps)`
+
+Withdrawing a manual activation returns the dealership to PENDING_APPROVAL,
+which takes its listings off the marketplace until it is approved the standard
+way, and revokes any Dealer Verified status. That is a public consequence, so
+the reason is required and at least 20 characters
+(`RevokeActivationOverrideInput`), and the button is destructive.
+
 ## `apps/web/src/features/admin/dealer-actions/approve-block.tsx`
 
 ### `<p className="w-full text-[12px] ink-muted">`

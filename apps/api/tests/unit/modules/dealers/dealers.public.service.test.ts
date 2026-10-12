@@ -85,18 +85,18 @@ function setup(
     dealers?: Record<string, unknown>[];
     stats?: { dealer_slug: string; count: number; from_price: bigint | null }[];
     profile?: Record<string, unknown> | null;
-    /** Media ids whose bytes are actually servable — everything else is not. */
+    /** Media ids of approved portfolio photographs — everything else is not public. */
     ready?: string[];
   } = {},
 ) {
-  const readyIdQueries: string[][] = [];
+  const readyIdQueries: string[] = [];
 
   const repo = {
     listActive: () => Promise.resolve(options.dealers ?? []),
     findPublicBySlug: () => Promise.resolve(options.profile ?? null),
-    readyMediaIds: (ids: string[]) => {
-      readyIdQueries.push(ids);
-      return Promise.resolve(new Set(ids.filter((id) => (options.ready ?? []).includes(id))));
+    approvedPortfolio: (dealerId: string) => {
+      readyIdQueries.push(dealerId);
+      return Promise.resolve((options.ready ?? []).map((mediaId) => ({ mediaId, caption: null })));
     },
   } as unknown as DealersRepository;
 
@@ -960,6 +960,28 @@ describe('profile', () => {
     const profile = await h.service.profile('sri-lakshmi-motors');
 
     expect(profile.services).toEqual(['RC Transfer', 'Finance']);
+  });
+
+  /** #299 — only approved portfolio photographs are public, and the first fronts the page. */
+  it('shows approved portfolio photographs, the first as the cover', async () => {
+    const h = setup({ profile: publicDealer(), ready: [COVER, OTHER] });
+
+    const profile = await h.service.profile('sri-lakshmi-motors');
+
+    expect(profile.coverUrl).toContain(COVER);
+    expect(profile.portfolio.map((photo) => photo.url)).toEqual([
+      expect.stringContaining(COVER),
+      expect.stringContaining(OTHER),
+    ]);
+  });
+
+  it('has no cover and an empty portfolio before anything is approved', async () => {
+    const h = setup({ profile: publicDealer({ coverMediaId: COVER }), ready: [] });
+
+    const profile = await h.service.profile('sri-lakshmi-motors');
+
+    expect(profile.coverUrl).toBeNull();
+    expect(profile.portfolio).toEqual([]);
   });
 
   it('publishes GSTIN but never PAN', async () => {

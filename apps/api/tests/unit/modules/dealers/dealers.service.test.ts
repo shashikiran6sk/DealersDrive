@@ -112,27 +112,19 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
 function doc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: 'doc-1',
+    dealerId: 'dealer-1',
+    category: 'BUSINESS_IDENTITY',
     type: 'GST_CERTIFICATE',
     status: 'REQUIRED',
     fileName: null,
+    mimeType: 'application/pdf',
+    bytes: 8,
+    description: null,
+    uploadedAt: null,
+    reviewedAt: null,
+    submissionCount: 0,
     rejectionReason: null,
     createdAt: new Date('2026-08-01T00:00:00.000Z'),
-    ...overrides,
-  };
-}
-
-/** A `Media` row, as the yard-photo paths read one back. */
-function media(overrides: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
-    id: 'media-1',
-    dealerId: 'dealer-1',
-    ownerType: 'DEALER_COVER',
-    storageKey: `${DEALER_ROOT}/yard/media-1`,
-    mimeType: 'image/jpeg',
-    bytes: 184_210,
-    fileName: 'yard.jpg',
-    status: 'PENDING',
-    createdAt: new Date('2026-09-01T00:00:00.000Z'),
     ...overrides,
   };
 }
@@ -141,15 +133,16 @@ interface Options {
   dealer?: Record<string, unknown> | null;
   documents?: Record<string, unknown>[];
   documentById?: Record<string, unknown> | null;
-  documentByType?: Record<string, unknown> | null;
+  documentInSlot?: Record<string, unknown> | null;
   deleteDocument?: boolean;
   head?: { bytes: number; contentType: string } | null;
+  /** What reading the stored object back returns. Omitted is a small, valid PDF. */
+  body?: Buffer | null;
   newEnquiryCount?: number;
   pendingListingCount?: number;
   /** What `findConflicting` reports — a name, GSTIN or PAN already taken. */
   conflicting?: { legalName: boolean; gstin: boolean; pan: boolean };
   /** One row, or several to be looked up by id — a replacement needs two. */
-  media?: Record<string, unknown> | Record<string, unknown>[] | null;
   /**
    * The number on the owner's user row, proved (**R39**). Omitted is
    * `+919876543210` — the number the phone cases below patch to — and `null`
@@ -173,14 +166,12 @@ interface Options {
 
 function setup(options: Options = {}) {
   const updates: { dealerId: string; data: Record<string, unknown> }[] = [];
-  const upserts: { type: string; data: Record<string, unknown> }[] = [];
+  const upserts: { type: unknown; data: Record<string, unknown> }[] = [];
+  const slotResets: string[] = [];
   const userUpdates: Record<string, unknown>[] = [];
   const phoneLookups: string[] = [];
   const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
-  const mediaCreated: Record<string, unknown>[] = [];
-  const orphaned: string[] = [];
-  const readied: string[] = [];
   const conflictQueries: { dealerId: string; fields: Record<string, unknown> }[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
@@ -195,39 +186,31 @@ function setup(options: Options = {}) {
     documents: () => Promise.resolve(options.documents ?? []),
     lockStatus: () => Promise.resolve(row?.status ?? null),
     documentById: () => Promise.resolve(options.documentById ?? null),
-    upsertDocument: (_dealerId: string, type: string, data: Record<string, unknown>) => {
-      upserts.push({ type, data });
+    upsertDocument: (_dealerId: string, _category: string, data: Record<string, unknown>) => {
+      upserts.push({ type: data.type, data });
       return Promise.resolve({});
     },
-    deleteDocument: () => Promise.resolve(options.deleteDocument ?? true),
-    documentByType: () =>
+    updateDocument: (_id: string, data: Record<string, unknown>) => {
+      upserts.push({ type: options.documentById?.type, data });
+      return Promise.resolve(
+        doc({ ...(options.documentById ?? {}), ...data, submissionCount: 1, fileName: 'gst.pdf' }),
+      );
+    },
+    deleteDocument: (_dealerId: string, category: string) => {
+      slotResets.push(category);
+      return Promise.resolve(options.deleteDocument ?? true);
+    },
+    documentByCategory: () =>
       Promise.resolve(
-        options.documentByType === undefined
+        options.documentInSlot === undefined
           ? (options.deleteDocument ?? true)
             ? doc()
             : null
-          : options.documentByType,
+          : options.documentInSlot,
       ),
     findConflicting: (dealerId: string, fields: Record<string, unknown>) => {
       conflictQueries.push({ dealerId, fields });
       return Promise.resolve(options.conflicting ?? { legalName: false, gstin: false, pan: false });
-    },
-    mediaById: (mediaId: string) => {
-      if (!options.media) return Promise.resolve(null);
-      const rows = Array.isArray(options.media) ? options.media : [options.media];
-      return Promise.resolve(rows.find((row) => row.id === mediaId) ?? null);
-    },
-    createMedia: (data: Record<string, unknown>) => {
-      mediaCreated.push(data);
-      return Promise.resolve(data);
-    },
-    orphanMedia: (mediaId: string) => {
-      orphaned.push(mediaId);
-      return Promise.resolve({});
-    },
-    markMediaReady: (mediaId: string) => {
-      readied.push(mediaId);
-      return Promise.resolve({});
     },
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
     pendingListingCount: () => Promise.resolve(options.pendingListingCount ?? 0),
@@ -303,6 +286,7 @@ function setup(options: Options = {}) {
       expiresInSeconds: 300,
     }),
     head: () => Promise.resolve(options.head ?? null),
+    get: () => Promise.resolve(options.body === undefined ? Buffer.from('%PDF-1.4') : options.body),
     delete: (key: string) => {
       deletes.push(key);
       return Promise.resolve();
@@ -336,9 +320,11 @@ function setup(options: Options = {}) {
    * effect of it rather than a part of it.
    */
   const audited: { action: string; entityId: string }[] = [];
+  const audits: Record<string, unknown>[] = [];
   const audit = {
     record: (_tx: unknown, entry: { action: string; entityId: string }) => {
       audited.push({ action: entry.action, entityId: entry.entityId });
+      audits.push(entry);
       return Promise.resolve();
     },
     recordDetached: (entry: { action: string; entityId: string }) => {
@@ -350,15 +336,14 @@ function setup(options: Options = {}) {
   return {
     service: createDealersService({ prisma, repo, storage, maps, audit }),
     audited,
+    audits,
     updates,
     upserts,
+    slotResets,
     userUpdates,
     phoneLookups,
     outbox,
     deletes,
-    mediaCreated,
-    orphaned,
-    readied,
     conflictQueries,
     mapsLookups,
   };
@@ -448,33 +433,80 @@ describe('session', () => {
 });
 
 describe('documents', () => {
-  it('returns all three document types even when none has been uploaded', async () => {
+  const personal = (overrides: Record<string, unknown> = {}) =>
+    doc({ id: 'doc-p', category: 'PERSONAL_IDENTITY', type: 'VOTER_ID', ...overrides });
+  const business = (overrides: Record<string, unknown> = {}) =>
+    doc({ id: 'doc-b', category: 'BUSINESS_IDENTITY', type: 'UDYAM', ...overrides });
+
+  it('offers both category slots, with every type each accepts, even when nothing is uploaded', async () => {
     const h = setup({ documents: [] });
 
     const response = await h.service.documents('dealer-1');
 
-    // The screen is a checklist; a missing row would read as "not required".
-    expect(response.data.map((row) => row.type)).toEqual([
-      'GST_CERTIFICATE',
-      'PAN_CARD',
-      'ADDRESS_PROOF',
+    expect(response.slots.map((slot) => slot.category)).toEqual([
+      'PERSONAL_IDENTITY',
+      'BUSINESS_IDENTITY',
     ]);
-    expect(response.data.every((row) => row.status === 'REQUIRED')).toBe(true);
+    expect(response.slots[0]?.types.map((option) => option.type)).toEqual([
+      'AADHAAR',
+      'PAN_CARD',
+      'VOTER_ID',
+      'DRIVING_LICENCE',
+      'PASSPORT',
+    ]);
+    expect(response.slots[0]?.types[0]?.hint).toMatch(/masked/);
+    expect(response.slots.every((slot) => slot.document === null)).toBe(true);
+    expect(response.requirementMet).toBe(false);
+    expect(response.gaps).toEqual(['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY']);
     expect(response.allVerified).toBe(false);
   });
 
-  it('reports allVerified only when every document is verified', async () => {
+  it('treats an empty placeholder row as an empty slot', async () => {
+    const h = setup({ documents: [doc({ status: 'REQUIRED' })] });
+
+    const response = await h.service.documents('dealer-1');
+    expect(response.slots[1]?.document).toBeNull();
+    expect(response.data).toEqual([]);
+  });
+
+  it('meets the requirement with one submitted proof per category', async () => {
+    const h = setup({
+      dealer: { gstin: null },
+      documents: [
+        personal({ status: 'UPLOADED', fileName: 'voter.pdf' }),
+        business({ status: 'UPLOADED', fileName: 'udyam.pdf' }),
+      ],
+    });
+
+    const response = await h.service.documents('dealer-1');
+    expect(response.requirementMet).toBe(true);
+    expect(response.gaps).toEqual([]);
+    expect(response.slots.map((slot) => slot.document?.type)).toEqual(['VOTER_ID', 'UDYAM']);
+  });
+
+  it('asks for the GST certificate as the business proof when a GSTIN is on file', async () => {
+    const h = setup({
+      dealer: { gstin: '33AAACA4432S1Z4' },
+      documents: [
+        personal({ status: 'UPLOADED', fileName: 'voter.pdf' }),
+        business({ status: 'UPLOADED', fileName: 'udyam.pdf' }),
+      ],
+    });
+
+    expect((await h.service.documents('dealer-1')).gaps).toEqual(['GST_CERTIFICATE']);
+  });
+
+  it('reports allVerified only when every submitted document is verified', async () => {
     const all = setup({
       documents: [
-        doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
-        doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
-        doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+        personal({ status: 'VERIFIED', fileName: 'v.pdf' }),
+        business({ status: 'VERIFIED', fileName: 'u.pdf' }),
       ],
     });
     const some = setup({
       documents: [
-        doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
-        doc({ type: 'PAN_CARD', status: 'UPLOADED' }),
+        personal({ status: 'VERIFIED', fileName: 'v.pdf' }),
+        business({ status: 'UPLOADED', fileName: 'u.pdf' }),
       ],
     });
 
@@ -482,87 +514,68 @@ describe('documents', () => {
     expect((await some.service.documents('dealer-1')).allVerified).toBe(false);
   });
 
-  it('offers the right action for each state', async () => {
+  it('offers the right action and status words for each state', async () => {
     const h = setup({
       documents: [
-        doc({ type: 'GST_CERTIFICATE', status: 'UPLOADING' }),
-        doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
-        doc({ type: 'ADDRESS_PROOF', status: 'REJECTED' }),
+        personal({ status: 'REJECTED', rejectionReason: 'Too blurry to read.' }),
+        business({ status: 'UPLOADING', fileName: 'udyam.pdf' }),
       ],
     });
 
-    const byType = new Map((await h.service.documents('dealer-1')).data.map((d) => [d.type, d]));
-
-    expect(byType.get('GST_CERTIFICATE')?.action).toBe('Cancel');
-    expect(byType.get('PAN_CARD')?.action).toBe('Replace');
-    expect(byType.get('ADDRESS_PROOF')?.action).toBe('Upload');
+    const [first, second] = (await h.service.documents('dealer-1')).slots.map(
+      (slot) => slot.document,
+    );
+    expect(first).toMatchObject({
+      action: 'Resubmit',
+      statusLabel: 'Rejected — upload a replacement',
+      rejectionReason: 'Too blurry to read.',
+      categoryLabel: 'Personal Identity Proof',
+      label: 'Voter ID Card',
+    });
+    expect(second).toMatchObject({
+      action: 'Upload again',
+      statusLabel: 'Upload not finished — choose the file again',
+    });
   });
 
-  it('labels each state in words a dealer can act on', async () => {
+  it('carries the metadata a dealer needs to recognise their file, and the resubmission count', async () => {
     const h = setup({
       documents: [
-        {
-          type: 'GST_CERTIFICATE',
+        business({
           status: 'UPLOADED',
-          fileName: 'gst.pdf',
-          createdAt: new Date('2026-08-01T00:00:00.000Z'),
-        },
-        doc({ type: 'PAN_CARD', status: 'VERIFIED', fileName: 'pan.pdf' }),
-        doc({ type: 'ADDRESS_PROOF', status: 'REJECTED', rejectionReason: 'Too blurry to read.' }),
+          fileName: 'udyam.pdf',
+          bytes: 2048,
+          uploadedAt: new Date('2026-10-01T00:00:00.000Z'),
+          submissionCount: 2,
+        }),
       ],
     });
 
-    const byType = new Map((await h.service.documents('dealer-1')).data.map((d) => [d.type, d]));
-
-    expect(byType.get('GST_CERTIFICATE')?.statusLabel).toBe('gst.pdf · uploaded');
-    expect(byType.get('PAN_CARD')?.statusLabel).toBe('pan.pdf · verified');
-    expect(byType.get('ADDRESS_PROOF')?.statusLabel).toBe('Too blurry to read.');
+    expect((await h.service.documents('dealer-1')).slots[1]?.document).toMatchObject({
+      id: 'doc-b',
+      fileName: 'udyam.pdf',
+      mimeType: 'application/pdf',
+      bytes: 2048,
+      uploadedAt: '2026-10-01T00:00:00.000Z',
+      submissionCount: 2,
+    });
   });
 
-  it('states the upload rules for a document not yet provided', async () => {
-    const h = setup({ documents: [] });
-
-    expect((await h.service.documents('dealer-1')).data[0]?.statusLabel).toBe(
-      'Required — PDF or JPG, max 5 MB',
-    );
-  });
-
-  it('says "Uploading…" while a presign is outstanding', async () => {
-    const h = setup({ documents: [doc({ type: 'GST_CERTIFICATE', status: 'UPLOADING' })] });
-
-    expect((await h.service.documents('dealer-1')).data[0]?.statusLabel).toBe('Uploading…');
-  });
-
-  it('falls back to a generic reason for a rejection with no note', async () => {
-    const h = setup({ documents: [doc({ type: 'GST_CERTIFICATE', status: 'REJECTED' })] });
-
-    expect((await h.service.documents('dealer-1')).data[0]?.statusLabel).toMatch(/clearer copy/);
-  });
-
-  it('names the file as "File" when the row has no name', async () => {
+  it('lists a legacy supporting document in data without giving it a slot', async () => {
     const h = setup({
-      documents: [doc({ type: 'GST_CERTIFICATE', status: 'UPLOADED', fileName: null })],
+      documents: [
+        doc({
+          category: 'SUPPORTING',
+          type: 'ADDRESS_PROOF',
+          status: 'VERIFIED',
+          fileName: 'eb.pdf',
+        }),
+      ],
     });
 
-    expect((await h.service.documents('dealer-1')).data[0]?.statusLabel).toBe('File · uploaded');
-  });
-
-  /** The row id is what the admin verification endpoints address (F044). */
-  it('carries the row id when there is one, and null when there is not', async () => {
-    const h = setup({ documents: [doc({ type: 'GST_CERTIFICATE', id: 'doc-42' })] });
-
-    const byType = new Map((await h.service.documents('dealer-1')).data.map((d) => [d.type, d]));
-
-    expect(byType.get('GST_CERTIFICATE')?.id).toBe('doc-42');
-    expect(byType.get('PAN_CARD')?.id).toBeNull();
-  });
-
-  it('serialises the upload time as an ISO string', async () => {
-    const h = setup({ documents: [doc({ status: 'UPLOADED' })] });
-
-    expect((await h.service.documents('dealer-1')).data[0]?.uploadedAt).toBe(
-      '2026-08-01T00:00:00.000Z',
-    );
+    const response = await h.service.documents('dealer-1');
+    expect(response.data.map((row) => row.type)).toEqual(['ADDRESS_PROOF']);
+    expect(response.slots.every((slot) => slot.document === null)).toBe(true);
   });
 });
 
@@ -941,6 +954,7 @@ describe('presignDocument', () => {
     const h = setup();
 
     const presigned = await h.service.presignDocument('dealer-1', {
+      category: 'BUSINESS_IDENTITY',
       type: 'GST_CERTIFICATE',
       fileName: 'gst.pdf',
       mimeType: 'application/pdf',
@@ -955,10 +969,11 @@ describe('presignDocument', () => {
     expect(presigned.uploadUrl).not.toContain('vehicles/');
   });
 
-  it('records the document as UPLOADING before handing back the URL', async () => {
+  it('records the slot as UPLOADING with the declared type, file and size before handing back the URL', async () => {
     const h = setup();
 
     const presigned = await h.service.presignDocument('dealer-1', {
+      category: 'PERSONAL_IDENTITY',
       type: 'PAN_CARD',
       fileName: 'pan.pdf',
       mimeType: 'application/pdf',
@@ -967,27 +982,74 @@ describe('presignDocument', () => {
 
     expect(h.upserts[0]).toMatchObject({
       type: 'PAN_CARD',
-      data: { id: presigned.documentId, status: 'UPLOADING', fileName: 'pan.pdf' },
+      data: {
+        id: presigned.documentId,
+        status: 'UPLOADING',
+        fileName: 'pan.pdf',
+        mimeType: 'application/pdf',
+        bytes: 1024,
+        description: null,
+      },
     });
   });
 
-  it('clears any previous rejection reason on a re-upload', async () => {
+  it('clears any previous rejection and review on a re-upload', async () => {
     const h = setup();
 
     await h.service.presignDocument('dealer-1', {
-      type: 'ADDRESS_PROOF',
-      fileName: 'eb-bill.pdf',
+      category: 'PERSONAL_IDENTITY',
+      type: 'PASSPORT',
+      fileName: 'passport.pdf',
       mimeType: 'application/pdf',
       bytes: 1024,
     });
 
     // Otherwise the dealer uploads a clearer copy and still reads "Too blurry".
-    expect(h.upserts[0]?.data).toMatchObject({ rejectionReason: null });
+    expect(h.upserts[0]?.data).toMatchObject({
+      rejectionReason: null,
+      reviewedBy: null,
+      reviewedAt: null,
+    });
+  });
+
+  it('keeps the description of another government certificate', async () => {
+    const h = setup();
+
+    await h.service.presignDocument('dealer-1', {
+      category: 'BUSINESS_IDENTITY',
+      type: 'OTHER_BUSINESS_CERTIFICATE',
+      fileName: 'licence.pdf',
+      mimeType: 'application/pdf',
+      bytes: 1024,
+      description: 'Municipal dealer licence, Vellore Corporation',
+    });
+
+    expect(h.upserts[0]?.data).toMatchObject({
+      description: 'Municipal dealer licence, Vellore Corporation',
+    });
+  });
+
+  it('deletes the object a replaced document of another type held', async () => {
+    const h = setup({
+      dealer: { status: 'DRAFT' },
+      documentInSlot: doc({ type: 'UDYAM', fileName: 'u.pdf' }),
+    });
+
+    await h.service.presignDocument('dealer-1', {
+      category: 'BUSINESS_IDENTITY',
+      type: 'TRADE_LICENSE',
+      fileName: 'licence.pdf',
+      mimeType: 'application/pdf',
+      bytes: 1024,
+    });
+
+    expect(h.deletes).toEqual([`${DEALER_ROOT}/documents/UDYAM/doc-1`]);
   });
 
   it('mints a fresh document id per presign', async () => {
     const h = setup();
     const input = {
+      category: 'BUSINESS_IDENTITY' as const,
       type: 'GST_CERTIFICATE' as const,
       fileName: 'gst.pdf',
       mimeType: 'application/pdf' as const,
@@ -1005,23 +1067,89 @@ describe('commitDocument', () => {
   const stored = {
     id: 'doc-1',
     dealerId: 'dealer-1',
+    category: 'BUSINESS_IDENTITY',
     type: 'GST_CERTIFICATE',
     status: 'UPLOADING',
+    mimeType: 'application/pdf',
+    bytes: 8,
   };
+  const landed = { bytes: 8, contentType: 'application/pdf' };
 
-  it('marks the document uploaded once the object is there', async () => {
-    const h = setup({
-      documentById: stored,
-      head: { bytes: 2048, contentType: 'application/pdf' },
-      documents: [doc({ type: 'GST_CERTIFICATE', status: 'UPLOADED', fileName: 'gst.pdf' })],
-    });
+  it('marks the document submitted once the object is there and reads as the declared type', async () => {
+    const h = setup({ documentById: stored, head: landed });
 
-    const result = await h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', {
+    const result = await h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', {
       documentId: 'doc-1',
     });
 
-    expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADED' } });
-    expect(result?.type).toBe('GST_CERTIFICATE');
+    expect(h.upserts[0]).toMatchObject({
+      data: { status: 'UPLOADED', submissionCount: { increment: 1 } },
+    });
+    expect(result.type).toBe('GST_CERTIFICATE');
+    expect(result.status).toBe('UPLOADED');
+  });
+
+  it('records the submission in the audit log without the file name', async () => {
+    const h = setup({ documentById: stored, head: landed });
+
+    await h.service.commitDocument(
+      'dealer-1',
+      'BUSINESS_IDENTITY',
+      { documentId: 'doc-1' },
+      {
+        type: 'SALES',
+        id: 'rep-1',
+      },
+    );
+
+    const entry = h.audits.find((row) => row.action === 'document.submitted');
+    expect(entry).toMatchObject({
+      actorType: 'SALES',
+      actorId: 'rep-1',
+      after: {
+        category: 'BUSINESS_IDENTITY',
+        type: 'GST_CERTIFICATE',
+        mimeType: 'application/pdf',
+      },
+    });
+    expect(JSON.stringify(entry)).not.toContain('gst.pdf');
+  });
+
+  it('returns an already committed document unchanged, so a double submit is harmless', async () => {
+    const h = setup({
+      documentById: { ...stored, status: 'UPLOADED', fileName: 'gst.pdf' },
+      head: landed,
+    });
+
+    const result = await h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', {
+      documentId: 'doc-1',
+    });
+
+    expect(result.status).toBe('UPLOADED');
+    expect(h.upserts).toEqual([]);
+  });
+
+  it.each([
+    ['an HTML page', Buffer.from('<html>!!')],
+    ['a PNG declared as a PDF', Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+  ])('refuses %s, deletes the object and empties the slot', async (_label, body) => {
+    const h = setup({ documentById: stored, head: landed, body });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
+    ).rejects.toMatchObject({ code: 'DOCUMENT_CONTENT_MISMATCH' });
+    expect(h.deletes).toEqual([`${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-1`]);
+    expect(h.slotResets).toEqual(['BUSINESS_IDENTITY']);
+    expect(h.upserts).toEqual([]);
+  });
+
+  it('refuses an object whose size differs from the presign', async () => {
+    const h = setup({ documentById: stored, head: { bytes: 9, contentType: 'application/pdf' } });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
+    ).rejects.toMatchObject({ code: 'DOCUMENT_SIZE_MISMATCH' });
+    expect(h.slotResets).toEqual(['BUSINESS_IDENTITY']);
   });
 
   it('404s a document belonging to another dealership', async () => {
@@ -1029,15 +1157,15 @@ describe('commitDocument', () => {
 
     // Cross-tenant reads answer 404, never 403 (§7).
     await expect(
-      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
     ).rejects.toThrow(NotFoundError);
   });
 
-  it('404s when the document id names a different type', async () => {
-    const h = setup({ documentById: { ...stored, type: 'PAN_CARD' } });
+  it('404s when the document id belongs to the other category', async () => {
+    const h = setup({ documentById: { ...stored, category: 'PERSONAL_IDENTITY' } });
 
     await expect(
-      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
     ).rejects.toThrow(NotFoundError);
   });
 
@@ -1045,27 +1173,26 @@ describe('commitDocument', () => {
     const h = setup({ documentById: null });
 
     await expect(
-      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
     ).rejects.toThrow(NotFoundError);
   });
 
-  it('reports UPLOAD_MISSING when nothing landed', async () => {
+  it('reports UPLOAD_MISSING when nothing landed, and leaves the slot to be retried', async () => {
     const h = setup({ documentById: stored, head: null });
 
     // A presign that was never followed by a PUT must not leave a document
     // looking complete.
     await expect(
-      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
-    ).rejects.toThrow(DomainError);
-    await expect(
-      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
-    ).rejects.toThrow(/did not complete/);
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' }),
+    ).rejects.toMatchObject({ code: 'UPLOAD_MISSING' });
     expect(h.upserts).toEqual([]);
+    expect(h.slotResets).toEqual([]);
   });
 });
 
 describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
   const input = {
+    category: 'PERSONAL_IDENTITY' as const,
     type: 'PAN_CARD' as const,
     fileName: 'pan.pdf',
     mimeType: 'application/pdf' as const,
@@ -1075,7 +1202,7 @@ describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
   it.each(['ACTIVE', 'PENDING_APPROVAL', 'SUSPENDED'])(
     'refuses to presign over a VERIFIED document of a %s dealer and deletes nothing',
     async (status) => {
-      const h = setup({ dealer: { status }, documentByType: doc({ status: 'VERIFIED' }) });
+      const h = setup({ dealer: { status }, documentInSlot: doc({ status: 'VERIFIED' }) });
 
       await expect(h.service.presignDocument('dealer-1', input)).rejects.toThrow(ConflictError);
       expect(h.upserts).toEqual([]);
@@ -1086,29 +1213,39 @@ describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
   it.each(['UPLOADED', 'VERIFIED'])(
     'refuses to delete an %s document of an ACTIVE dealer and deletes nothing',
     async (status) => {
-      const h = setup({ documentByType: doc({ status }) });
+      const h = setup({ documentInSlot: doc({ status }) });
 
-      await expect(h.service.deleteDocument('dealer-1', 'PAN_CARD')).rejects.toThrow(ConflictError);
+      await expect(h.service.deleteDocument('dealer-1', 'PERSONAL_IDENTITY')).rejects.toThrow(
+        ConflictError,
+      );
       expect(h.deletes).toEqual([]);
     },
   );
 
-  it('refuses to commit a VERIFIED document of an ACTIVE dealer', async () => {
+  it('never re-commits a VERIFIED document of an ACTIVE dealer', async () => {
     const h = setup({
-      documentById: { id: 'doc-1', dealerId: 'dealer-1', type: 'PAN_CARD', status: 'VERIFIED' },
+      documentById: {
+        id: 'doc-1',
+        dealerId: 'dealer-1',
+        category: 'PERSONAL_IDENTITY',
+        type: 'PAN_CARD',
+        status: 'VERIFIED',
+        fileName: 'pan.pdf',
+      },
       head: { bytes: 1024, contentType: 'application/pdf' },
     });
 
-    await expect(
-      h.service.commitDocument('dealer-1', 'PAN_CARD', { documentId: 'doc-1' }),
-    ).rejects.toThrow(ConflictError);
+    const result = await h.service.commitDocument('dealer-1', 'PERSONAL_IDENTITY', {
+      documentId: 'doc-1',
+    });
+    expect(result.status).toBe('VERIFIED');
     expect(h.upserts).toEqual([]);
   });
 
   it.each(['REQUIRED', 'REJECTED', 'UPLOADING'])(
     'lets an ACTIVE dealer fill a %s slot',
     async (status) => {
-      const h = setup({ documentByType: doc({ status }) });
+      const h = setup({ documentInSlot: doc({ status }) });
 
       await h.service.presignDocument('dealer-1', input);
 
@@ -1117,7 +1254,10 @@ describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
   );
 
   it('lets a DRAFT dealer replace a VERIFIED document, removing the old object after the row moves', async () => {
-    const h = setup({ dealer: { status: 'DRAFT' }, documentByType: doc({ status: 'VERIFIED' }) });
+    const h = setup({
+      dealer: { status: 'DRAFT' },
+      documentInSlot: doc({ status: 'VERIFIED', fileName: 'gst.pdf' }),
+    });
 
     await h.service.presignDocument('dealer-1', input);
 
@@ -1128,9 +1268,12 @@ describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
 
 describe('deleteDocument', () => {
   it('removes the row and the stored object', async () => {
-    const h = setup({ deleteDocument: true });
+    const h = setup({
+      dealer: { status: 'DRAFT' },
+      documentInSlot: doc({ status: 'UPLOADED', fileName: 'gst.pdf' }),
+    });
 
-    await h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE');
+    await h.service.deleteDocument('dealer-1', 'BUSINESS_IDENTITY');
 
     // The object's key ends in the row's id. The baseline deleted the *prefix*
     // — the `GST_CERTIFICATE` folder — which is a path no object occupies, so
@@ -1139,11 +1282,19 @@ describe('deleteDocument', () => {
   });
 
   it('404s when there was nothing to delete, and touches storage not at all', async () => {
-    const h = setup({ documentByType: null });
+    const h = setup({ documentInSlot: null });
 
-    await expect(h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE')).rejects.toThrow(
+    await expect(h.service.deleteDocument('dealer-1', 'BUSINESS_IDENTITY')).rejects.toThrow(
       NotFoundError,
     );
+    expect(h.deletes).toEqual([]);
+  });
+
+  it('accepts a delete of an empty slot as a no-op, touching neither row nor storage', async () => {
+    const h = setup({ documentInSlot: doc({ status: 'REQUIRED' }) });
+
+    await h.service.deleteDocument('dealer-1', 'BUSINESS_IDENTITY');
+    expect(h.slotResets).toEqual([]);
     expect(h.deletes).toEqual([]);
   });
 });
@@ -1158,9 +1309,18 @@ describe('deleteDocument', () => {
  */
 describe('completeness', () => {
   const verified = [
-    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
-    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
-    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+    doc({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      status: 'VERIFIED',
+      fileName: 'pan.pdf',
+    }),
+    doc({
+      category: 'BUSINESS_IDENTITY',
+      type: 'GST_CERTIFICATE',
+      status: 'VERIFIED',
+      fileName: 'gst.pdf',
+    }),
   ];
 
   it('reports every step complete for a finished profile', async () => {
@@ -1220,31 +1380,90 @@ describe('completeness', () => {
       // The directions link, named for the same reason the yard photograph is:
       // the public portfolio is "here is the yard, here is how to reach it".
       'mapsUrl',
-      'pan',
     ]);
+  });
+
+  it('does not require a PAN number: identity is proved by any listed personal proof', async () => {
+    const h = setup({ documents: verified, dealer: { pan: null } });
+
+    expect((await h.service.completeness('dealer-1')).steps[1]?.complete).toBe(true);
   });
 
   it('treats a missing, required or rejected document as outstanding', async () => {
     const h = setup({
       documents: [
-        doc({ type: 'GST_CERTIFICATE', status: 'REQUIRED' }),
-        doc({ type: 'PAN_CARD', status: 'REJECTED' }),
+        doc({ category: 'BUSINESS_IDENTITY', type: 'GST_CERTIFICATE', status: 'REQUIRED' }),
+        doc({ category: 'PERSONAL_IDENTITY', type: 'PAN_CARD', status: 'REJECTED' }),
       ],
     });
 
     expect((await h.service.completeness('dealer-1')).steps[2]?.missing).toEqual([
-      'GST_CERTIFICATE',
-      'PAN_CARD',
-      'ADDRESS_PROOF',
+      'PERSONAL_IDENTITY',
+      'BUSINESS_IDENTITY',
     ]);
+  });
+
+  it('does not count an upload that never finished', async () => {
+    const h = setup({
+      dealer: { gstin: null },
+      documents: [
+        doc({
+          category: 'PERSONAL_IDENTITY',
+          type: 'PASSPORT',
+          status: 'UPLOADING',
+          fileName: 'p.pdf',
+        }),
+        doc({
+          category: 'BUSINESS_IDENTITY',
+          type: 'UDYAM',
+          status: 'UPLOADED',
+          fileName: 'u.pdf',
+        }),
+      ],
+    });
+
+    expect((await h.service.completeness('dealer-1')).steps[2]?.missing).toEqual([
+      'PERSONAL_IDENTITY',
+    ]);
+  });
+
+  it('accepts the legacy PAN and address-proof set an older application holds', async () => {
+    const h = setup({
+      dealer: { gstin: null },
+      documents: [
+        doc({
+          category: 'PERSONAL_IDENTITY',
+          type: 'PAN_CARD',
+          status: 'UPLOADED',
+          fileName: 'pan.pdf',
+        }),
+        doc({
+          category: 'SUPPORTING',
+          type: 'ADDRESS_PROOF',
+          status: 'UPLOADED',
+          fileName: 'eb.pdf',
+        }),
+      ],
+    });
+
+    expect((await h.service.completeness('dealer-1')).steps[2]?.complete).toBe(true);
   });
 
   it('accepts an uploaded document that has not been reviewed yet', async () => {
     const h = setup({
       documents: [
-        doc({ type: 'GST_CERTIFICATE', status: 'UPLOADED' }),
-        doc({ type: 'PAN_CARD', status: 'UPLOADED' }),
-        doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+        doc({
+          category: 'BUSINESS_IDENTITY',
+          type: 'GST_CERTIFICATE',
+          status: 'UPLOADED',
+          fileName: 'g.pdf',
+        }),
+        doc({
+          category: 'PERSONAL_IDENTITY',
+          type: 'PAN_CARD',
+          status: 'UPLOADED',
+          fileName: 'p.pdf',
+        }),
       ],
     });
 
@@ -1304,9 +1523,18 @@ describe('completeness', () => {
  */
 describe('submitForVerification', () => {
   const verified = [
-    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
-    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
-    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+    doc({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      status: 'VERIFIED',
+      fileName: 'pan.pdf',
+    }),
+    doc({
+      category: 'BUSINESS_IDENTITY',
+      type: 'GST_CERTIFICATE',
+      status: 'VERIFIED',
+      fileName: 'gst.pdf',
+    }),
   ];
 
   it('moves a complete draft to PENDING_APPROVAL', async () => {
@@ -1392,9 +1620,9 @@ describe('submitForVerification', () => {
       expect(domain.code).toBe('PROFILE_INCOMPLETE');
       const fields = (domain.errors ?? []).map((entry) => entry.field);
       expect(fields).not.toContain('gstin');
-      expect(fields).toContain('pan');
+      expect(fields).not.toContain('pan');
       expect(fields).not.toContain('GST_CERTIFICATE');
-      expect(fields).toContain('PAN_CARD');
+      expect(fields).toEqual(expect.arrayContaining(['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY']));
       for (const entry of domain.errors ?? []) expect(entry.code).toBe('REQUIRED');
     }
   });
@@ -1641,288 +1869,23 @@ describe('update — the services', () => {
   });
 });
 
-/**
- * The yard photograph — the hero of the dealership's public portfolio.
- *
- * Same presign → PUT → commit pipeline as the KYC documents, under a different
- * prefix, and with the replacement happening at the opposite end of it: nothing
- * is displaced until commit, so a dealer who changes their mind halfway through
- * picking a file still has the photograph they had before.
- */
-describe('yardPhoto', () => {
-  it('reads empty when nothing has been uploaded', async () => {
-    const h = setup({ dealer: { coverMediaId: null } });
-
-    expect(await h.service.yardPhoto('dealer-1')).toEqual({
-      mediaId: null,
-      status: null,
-      fileName: null,
-      url: null,
-      uploadedAt: null,
-    });
-  });
-
-  /** A cover id pointing at a row that is gone is empty, not an error. */
-  it('reads empty when the media row has vanished', async () => {
-    const h = setup({ media: null });
-
-    expect((await h.service.yardPhoto('dealer-1')).mediaId).toBeNull();
-  });
-
-  /**
-   * A signed read of the original, not a delivery URL: the derivative pipeline
-   * that gives an image a permanent public URL is F034, and until it lands the
-   * original is the only copy there is.
-   */
-  it('signs a short-lived read of the stored object', async () => {
-    const h = setup({ media: media() });
-
-    expect(await h.service.yardPhoto('dealer-1')).toMatchObject({
-      mediaId: 'media-1',
-      fileName: 'yard.jpg',
-      url: `https://storage.test/signed/${DEALER_ROOT}/yard/media-1?ttl=300`,
-      uploadedAt: '2026-09-01T00:00:00.000Z',
-    });
-  });
-
-  /** `ORPHAN` is a stored status with no place in the wire enum. */
-  it('reports a pending upload as PROCESSING rather than PENDING', async () => {
-    const h = setup({ media: media({ status: 'PENDING' }) });
-
-    expect((await h.service.yardPhoto('dealer-1')).status).toBe('PROCESSING');
-  });
-});
-
-/**
- * The yard photograph can be changed only while the application is a DRAFT
- * (ORIG-BUG-005), so these cases run against a DRAFT dealership; the lock
- * itself is covered below and in `tests/yard-photo-moderation.test.ts`.
- */
-function draftSetup(options: Options = {}) {
-  return setup({ ...options, dealer: { status: 'DRAFT', ...(options.dealer ?? {}) } });
-}
-
-describe('ORIG-BUG-005 — the yard photograph is locked outside DRAFT', () => {
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED'])(
-    'refuses to presign, commit or delete for a %s dealer',
-    async (status) => {
-      const h = setup({
-        dealer: { status },
-        media: media(),
-        head: { bytes: 1, contentType: 'image/jpeg' },
-      });
-
-      await expect(
-        h.service.presignYardPhoto('dealer-1', {
-          fileName: 'y.jpg',
-          mimeType: 'image/jpeg',
-          bytes: 1,
-        }),
-      ).rejects.toThrow(ConflictError);
-      await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-        ConflictError,
-      );
-      await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(ConflictError);
-      expect([h.updates, h.deletes]).toEqual([[], []]);
-    },
-  );
-});
-
-describe('presignYardPhoto', () => {
-  it('keys the image under the dealership, beside its documents', async () => {
-    const h = draftSetup();
-
-    const presigned = await h.service.presignYardPhoto('dealer-1', {
-      fileName: 'yard.jpg',
-      mimeType: 'image/jpeg',
-      bytes: 184_210,
-    });
-
-    const created = h.mediaCreated[0];
-    expect(created).toMatchObject({
-      dealerId: 'dealer-1',
-      ownerType: 'DEALER_COVER',
-      status: 'PENDING',
-      fileName: 'yard.jpg',
-    });
-    expect(created?.storageKey).toBe(`${DEALER_ROOT}/yard/${String(created?.id)}`);
-    expect(presigned.mediaId).toBe(created?.id);
-  });
-
-  /** Presigning displaces nothing — that is what makes an abandoned pick safe. */
-  it('leaves the photograph already on the record alone', async () => {
-    const h = draftSetup({ media: media() });
-
-    await h.service.presignYardPhoto('dealer-1', {
-      fileName: 'new.jpg',
-      mimeType: 'image/jpeg',
-      bytes: 1000,
-    });
-
-    expect(h.deletes).toEqual([]);
-    expect(h.orphaned).toEqual([]);
-    expect(h.updates).toEqual([]);
-  });
-});
-
-describe('commitYardPhoto', () => {
-  it('refuses an upload that never landed in storage', async () => {
-    const h = draftSetup({ media: media({ id: 'media-2' }), head: null });
-
-    await expect(
-      h.service.commitYardPhoto('dealer-1', { mediaId: 'media-2' }),
-    ).rejects.toMatchObject({ code: 'UPLOAD_MISSING' });
-    expect(h.updates).toEqual([]);
-  });
-
-  it('refuses a media row belonging to another dealership', async () => {
-    const h = draftSetup({ media: media({ dealerId: 'dealer-2' }) });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      NotFoundError,
-    );
-  });
-
-  it('refuses a media row that is not a cover image', async () => {
-    const h = draftSetup({ media: media({ ownerType: 'VEHICLE' }) });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      NotFoundError,
-    );
-  });
-
-  it('adopts the upload onto the dealership', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: null },
-      media: media(),
-      head: { bytes: 184_210, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: 'media-1' } });
-  });
-
-  /**
-   * The promotion the public pages depend on.
-   *
-   * `media.serve()` answers only for a READY row, and the only thing that
-   * promotes one is **F034**'s derivative worker — which does not exist, and
-   * whose `media.process` job nothing consumes. So every yard photograph ever
-   * uploaded sat at PENDING and the directory had no image to show, even for an
-   * approved dealership.
-   *
-   * The object has just been HEADed, so this is not optimism: the bytes are
-   * known to be there, and `serve()` falls back to the original for a row with
-   * no variants yet. F034 adds the renditions and `serve()` prefers them; this
-   * line does not change when it lands.
-   */
-  it('marks the upload servable, because nothing else will', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: null },
-      media: media({ status: 'PENDING' }),
-      head: { bytes: 184_210, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.readied).toEqual(['media-1']);
-  });
-
-  /** A commit that never gets past the HEAD promotes nothing. */
-  it('leaves an incomplete upload where it is', async () => {
-    const h = draftSetup({ dealer: { coverMediaId: null }, media: media(), head: null });
-
-    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
-      DomainError,
-    );
-    expect(h.readied).toEqual([]);
-    expect(h.updates).toEqual([]);
-  });
-
-  /**
-   * This is where a replacement takes effect. The displaced row is marked
-   * ORPHAN rather than deleted — it is the only record the bytes ever existed,
-   * and a sweeper reconciles orphans against storage.
-   */
-  it('discards the photograph it displaces', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: 'media-old' },
-      media: [
-        media({ id: 'media-old', storageKey: `${DEALER_ROOT}/yard/media-old` }),
-        media({ id: 'media-new', storageKey: `${DEALER_ROOT}/yard/media-new` }),
-      ],
-      head: { bytes: 1, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-new' });
-
-    expect(h.updates[0]?.data).toEqual({ coverMediaId: 'media-new' });
-    expect(h.orphaned).toEqual(['media-old']);
-    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-old`]);
-  });
-
-  /**
-   * Committing the row that is already on the record is a no-op, not a
-   * self-destruct. Without the identity check it would delete the object it had
-   * just adopted.
-   */
-  it('does not discard the photograph it is re-committing', async () => {
-    const h = draftSetup({
-      dealer: { coverMediaId: 'media-1' },
-      media: media(),
-      head: { bytes: 1, contentType: 'image/jpeg' },
-    });
-
-    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
-
-    expect(h.deletes).toEqual([]);
-    expect(h.orphaned).toEqual([]);
-  });
-});
-
-describe('deleteYardPhoto', () => {
-  it('clears the record and removes the bytes', async () => {
-    const h = draftSetup({ media: media() });
-
-    await h.service.deleteYardPhoto('dealer-1');
-
-    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: null } });
-    expect(h.orphaned).toEqual(['media-1']);
-    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-1`]);
-  });
-
-  it('404s when there is no photograph to remove', async () => {
-    const h = draftSetup({ dealer: { coverMediaId: null } });
-
-    await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(NotFoundError);
-    expect(h.updates).toEqual([]);
-  });
-
-  /** A dangling cover id still clears; there is simply nothing to delete. */
-  it('clears a cover id whose media row has vanished', async () => {
-    const h = draftSetup({ media: null });
-
-    await h.service.deleteYardPhoto('dealer-1');
-
-    expect(h.updates[0]?.data).toEqual({ coverMediaId: null });
-    expect(h.deletes).toEqual([]);
-  });
-});
-
-/**
- * The yard photograph is required, and it is required on the documents step —
- * the step where a dealer uploads things. A dealership whose public storefront
- * would open with an empty frame is not ready to be reviewed.
- */
-describe('completeness — the yard photograph', () => {
+describe('completeness — no yard photograph is collected', () => {
   const verified = [
-    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
-    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
-    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+    doc({
+      category: 'PERSONAL_IDENTITY',
+      type: 'PAN_CARD',
+      status: 'VERIFIED',
+      fileName: 'pan.pdf',
+    }),
+    doc({
+      category: 'BUSINESS_IDENTITY',
+      type: 'GST_CERTIFICATE',
+      status: 'VERIFIED',
+      fileName: 'gst.pdf',
+    }),
   ];
 
-  it('keeps document completeness independent of an optional yard photograph', async () => {
+  it('keeps document completeness independent of any photograph', async () => {
     const h = setup({ documents: verified, dealer: { coverMediaId: null } });
 
     const state = await h.service.completeness('dealer-1');
@@ -1932,7 +1895,7 @@ describe('completeness — the yard photograph', () => {
     expect(state.isComplete).toBe(true);
   });
 
-  it('allows submission without a yard photograph when required evidence is present', async () => {
+  it('allows submission with only the two identity proofs', async () => {
     const h = setup({
       documents: verified,
       dealer: { status: 'DRAFT', coverMediaId: null },

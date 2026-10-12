@@ -4,9 +4,9 @@ Parent: [web/app/api/dealer](../README.md)
 
 ## Sections
 
-- [[type]]([type]/README.md)
+- [[category]]([category]/README.md)
 
 ## Pages
 
-- [[type]]([type].md)
+- [[category]]([category].md)
 - [presign](presign.md)

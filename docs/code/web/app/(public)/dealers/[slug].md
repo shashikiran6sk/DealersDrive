@@ -116,13 +116,13 @@ occupy, so nothing was traded for the alignment.
 
 ### `<img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />`
 
-The 1600px rendition — this is the one place a yard photograph
-is looked at rather than glanced past. See `dealer-card.tsx`
+The 1600px rendition of the first approved portfolio photograph (#299) —
+the one place a dealership photograph is looked at rather than glanced past. See `dealer-card.tsx`
 for why it is a plain `<img>` and why the alt is empty.
 
-### `<ImageSlot label="Dealership frontage / yard photo" />`
+### `<ImageSlot label="Dealership photograph" />`
 
-A dealership that has not uploaded one yet.
+A dealership with no approved photograph yet. A pending one never shows here.
 
 ### `<div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">`
 

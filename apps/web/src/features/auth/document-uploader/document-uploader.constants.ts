@@ -1,7 +1,10 @@
 import {
+  DOCUMENT_DESCRIPTION_MAX,
+  DOCUMENT_DESCRIPTION_MIN,
   DOCUMENT_MAX_BYTES,
   DOCUMENT_MIME_TYPES,
   type DealerDocumentDto,
+  type SelectableDocCategory,
   type StatusTone,
 } from '@dealers-drive/contracts';
 
@@ -23,8 +26,8 @@ export const TONE: Record<DealerDocumentDto['status'], StatusTone> = {
 };
 
 export const TAG: Record<DealerDocumentDto['status'], string> = {
-  REQUIRED: 'Required',
-  UPLOADING: 'Uploading',
+  REQUIRED: 'Needed to submit',
+  UPLOADING: 'Unfinished',
   UPLOADED: 'In review',
   VERIFIED: 'Verified',
   REJECTED: 'Rejected',
@@ -35,13 +38,39 @@ export const DEALER_DOCUMENT_BASE = '/api/dealer/documents';
 export function documentPaths(base: string) {
   return {
     presign: `${base}/presign`,
-    commit: (type: string) => `${base}/${type}/commit`,
-    remove: (type: string) => `${base}/${type}`,
+    commit: (category: SelectableDocCategory) => `${base}/${category}/commit`,
+    remove: (category: SelectableDocCategory) => `${base}/${category}`,
   };
 }
 
+export const CATEGORY_NOTES: Record<SelectableDocCategory, string> = {
+  PERSONAL_IDENTITY:
+    'One document that identifies the person who manages the dealership. Aadhaar is voluntary — any listed proof works instead.',
+  BUSINESS_IDENTITY: 'One government-issued document that identifies the dealership itself.',
+};
+
+export const CATEGORY_GLYPHS: Record<SelectableDocCategory, string> = {
+  PERSONAL_IDENTITY: 'ID',
+  BUSINESS_IDENTITY: 'BIZ',
+};
+
+export const DESCRIPTION_LIMITS = {
+  min: DOCUMENT_DESCRIPTION_MIN,
+  max: DOCUMENT_DESCRIPTION_MAX,
+} as const;
+
 export const DOCUMENT_UPLOADER_TEXT = {
   verifiedGlyph: '✓',
+  typeLabel: 'Document type',
+  typePlaceholder: 'Choose a document',
+  descriptionLabel: 'Describe the certificate',
+  descriptionPlaceholder: 'Name of the certificate and the authority that issued it',
+  noFile: 'No file yet — PDF, JPEG or PNG, up to 5 MB',
+  gstRequired: 'Your GSTIN is on file, so this must be your GST Registration Certificate.',
+  chooseType: 'Choose which document you are uploading first.',
+  describeFirst: `Describe the certificate and who issued it, in ${String(DOCUMENT_DESCRIPTION_MIN)}–${String(DOCUMENT_DESCRIPTION_MAX)} characters, first.`,
+  fileMeta: (label: string, status: string) => `${label} · ${status}`,
+  rejected: (reason: string) => `Rejected: ${reason}`,
   uploading: 'Uploading…',
   upload: 'Upload',
   replace: 'Replace',

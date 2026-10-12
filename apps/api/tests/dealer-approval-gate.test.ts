@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as pause } from 'node:timers/promises';
 
@@ -27,6 +28,7 @@ describe('BUG-NEW-003 — document review cannot invent a committed upload', () 
         await dealer.agent
           .post('/v1/dealer/documents/presign')
           .send({
+            category: 'BUSINESS_IDENTITY',
             type: 'GST_CERTIFICATE',
             fileName: 'unuploaded.pdf',
             mimeType: 'application/pdf',
@@ -36,7 +38,7 @@ describe('BUG-NEW-003 — document review cannot invent a committed upload', () 
       }
       const doc = await h.prisma.dealerDocument.findUniqueOrThrow({
         where: {
-          dealerId_type: { dealerId: dealer.dealerId, type: 'GST_CERTIFICATE' },
+          dealerId_category: { dealerId: dealer.dealerId, category: 'BUSINESS_IDENTITY' },
         },
       });
       expect(doc.status).toBe(status);
@@ -75,10 +77,16 @@ async function application(verify = true) {
     .send({ gstin: `33APPRO${number}B1ZX`, pan: `APPRO${number}B` })
     .expect(200);
   const documents: string[] = [];
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
       .post('/v1/dealer/documents/presign')
-      .send({ type, fileName: 'verification.pdf', mimeType: 'application/pdf', bytes: 8 })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'verification.pdf',
+        mimeType: 'application/pdf',
+        bytes: 8,
+      })
       .expect(201);
     const url = new URL(String(presigned.body.uploadUrl));
     await dealer.agent
@@ -87,26 +95,11 @@ async function application(verify = true) {
       .send(Buffer.from('%PDF-1.4'))
       .expect(200);
     await dealer.agent
-      .post(`/v1/dealer/documents/${type}/commit`)
+      .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
     documents.push(String(presigned.body.documentId));
   }
-  const jpeg = Buffer.from('\xff\xd8\xff a fixture yard photograph', 'binary');
-  const cover = await dealer.agent
-    .post('/v1/dealer/yard-photo/presign')
-    .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: jpeg.length })
-    .expect(201);
-  const url = new URL(String(cover.body.uploadUrl));
-  await dealer.agent
-    .put(url.pathname + url.search)
-    .set('Content-Type', 'image/jpeg')
-    .send(jpeg)
-    .expect(200);
-  await dealer.agent
-    .post('/v1/dealer/yard-photo/commit')
-    .send({ mediaId: cover.body.mediaId })
-    .expect(200);
   await dealer.agent.post('/v1/dealer/submit').expect(200);
   if (verify) {
     for (const id of documents) {
@@ -178,7 +171,7 @@ describe('BUG-002 / VERIFY-011 — authoritative dealer approval prerequisites',
         status,
         approvedAt: null,
         publicProfile: 404,
-        documentStatuses: ['REQUIRED', 'REQUIRED', 'REQUIRED'],
+        documentStatuses: ['REQUIRED', 'REQUIRED'],
         approvalAudits: 0,
         approvalEvents: 0,
       });
@@ -262,7 +255,7 @@ describe('BUG-002 — complete application, capability and history regression', 
     });
     expect(stored.status).toBe('ACTIVE');
     expect(stored.approvedAt).toBeInstanceOf(Date);
-    expect(stored.documents).toHaveLength(3);
+    expect(stored.documents).toHaveLength(2);
     expect(stored.documents.every((doc) => doc.status === 'VERIFIED' && doc.reviewedBy)).toBe(true);
     expect(
       await h.prisma.dealerMember.findMany({ where: { dealerId: f.dealer.dealerId } }),
@@ -338,28 +331,30 @@ describe('BUG-002 — complete application, capability and history regression', 
     ).toBe('ACTIVE');
   });
 
-  it.each(['gstin', 'pan'] as const)(
-    'preserves the applicable review gate when %s is absent',
-    async (field) => {
-      const f = await application();
-      await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { [field]: null } });
-      const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
-      expect(detail.body.actions.canApprove).toBe(field === 'gstin');
-      const response = await f.admin
-        .post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`)
-        .send({})
-        .expect(422);
-      expect(response.body.code).toBe(
-        field === 'gstin' ? 'GST_APPLICABILITY_REVIEW_REQUIRED' : 'PROFILE_INCOMPLETE',
-      );
-      expect(
-        await h.prisma.auditLog.count({
-          where: { dealerId: f.dealer.dealerId, action: 'dealer.approved' },
-        }),
-      ).toBe(0);
-      await h.agent().get(`/v1/dealers/${f.dealer.slug}`).expect(404);
-    },
-  );
+  it('preserves the GST applicability review gate when GSTIN is absent', async () => {
+    const field = 'gstin';
+    const f = await application();
+    await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { [field]: null } });
+    const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
+    expect(detail.body.actions.canApprove).toBe(true);
+    const response = await f.admin
+      .post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`)
+      .send({})
+      .expect(422);
+    expect(response.body.code).toBe('GST_APPLICABILITY_REVIEW_REQUIRED');
+    expect(
+      await h.prisma.auditLog.count({
+        where: { dealerId: f.dealer.dealerId, action: 'dealer.approved' },
+      }),
+    ).toBe(0);
+    await h.agent().get(`/v1/dealers/${f.dealer.slug}`).expect(404);
+  });
+
+  it('approves without a PAN number: a personal identity proof stands in for it', async () => {
+    const f = await application();
+    await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { pan: null } });
+    await f.admin.post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`).send({}).expect(200);
+  });
 
   it('refuses legacy VERIFIED rows that have no uploaded filename', async () => {
     const f = await application();

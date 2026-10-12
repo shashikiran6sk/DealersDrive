@@ -10,7 +10,7 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * R45 withdrew the dealer's vehicle-photo routes (`/v1/dealer/media/*`): a
  * dealer never writes vehicle media, and the admin upload lives in the
  * `vehicle-images` module with its own tests. What is left here is delivery —
- * `serve()` — and the status mapper the yard photograph still uses. The
+ * `serve()` — and the status mapper. The
  * sharp/blurhash `process()` block stays deferred with F034.
  */
 interface Row {
@@ -43,7 +43,7 @@ function mediaRow(overrides: Partial<Row> = {}): Row {
 interface Fakes {
   media?: Partial<Row> | null;
   objectBody?: Buffer | null;
-  activeCoverOwners?: number;
+  approvedPortfolioRows?: number;
 }
 
 function setup(options: Fakes = {}) {
@@ -51,7 +51,7 @@ function setup(options: Fakes = {}) {
 
   const prisma = {
     media: { findUnique: () => Promise.resolve(row) },
-    dealer: { count: () => Promise.resolve(options.activeCoverOwners ?? 1) },
+    dealerPortfolioPhoto: { count: () => Promise.resolve(options.approvedPortfolioRows ?? 1) },
   } as unknown as PrismaClient;
 
   const storage = {
@@ -169,26 +169,29 @@ describe('serve, for a vehicle image (R45)', () => {
     },
   );
 
-  it('serves a yard photograph, which belongs to no listing', async () => {
-    const h = setup({
-      objectBody: Buffer.from('x'),
-      media: { ownerType: 'DEALER_COVER', attachment: null },
-    });
+  it.each(['DEALER_PORTFOLIO', 'DEALER_COVER'])(
+    'serves an approved %s photograph of an ACTIVE dealership',
+    async (ownerType) => {
+      const h = setup({ objectBody: Buffer.from('x'), media: { ownerType, attachment: null } });
 
-    expect(await h.service.serve('media-1', 640)).toBeTruthy();
-  });
+      expect(await h.service.serve('media-1', 640)).toBeTruthy();
+    },
+  );
 
-  it('does not serve a yard photograph no ACTIVE dealership has as its cover (BUG-NEW-009)', async () => {
-    const h = setup({
-      objectBody: Buffer.from('x'),
-      media: { ownerType: 'DEALER_COVER', attachment: null },
-      activeCoverOwners: 0,
-    });
+  it.each(['DEALER_PORTFOLIO', 'DEALER_COVER'])(
+    'does not serve a %s photograph without an approved row of an ACTIVE dealership (#299, BUG-NEW-009)',
+    async (ownerType) => {
+      const h = setup({
+        objectBody: Buffer.from('x'),
+        media: { ownerType, attachment: null },
+        approvedPortfolioRows: 0,
+      });
 
-    expect(await h.service.serve('media-1', 640)).toBeNull();
-  });
+      expect(await h.service.serve('media-1', 640)).toBeNull();
+    },
+  );
 
-  it.each(['DEALER_LOGO', 'DEALER_DOCUMENT'])(
+  it.each(['DEALER_LOGO', 'DEALER_DOCUMENT', 'DEALER_YARD_VISIT'])(
     'serves no %s media on the public path',
     async (ownerType) => {
       const h = setup({ objectBody: Buffer.from('x'), media: { ownerType, attachment: null } });

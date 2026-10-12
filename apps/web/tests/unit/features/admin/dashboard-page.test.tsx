@@ -157,13 +157,15 @@ describe('the admin nav', () => {
 
   /**
    * **F048.** The first item finally points at a page. **R89** adds Enquiries
-   * and **R91** Support Tickets, immediately above Configuration.
+   * and **R91** Support Tickets, immediately above Configuration. **#299** adds
+   * Dealer photos, the portfolio moderation queue, beside Dealers.
    */
   it('offers the dashboard and implemented operations and security screens', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).toEqual([
       '/admin',
       '/admin/listings',
       '/admin/dealers',
+      '/admin/portfolio',
       '/admin/enquiries',
       '/admin/support',
       '/admin/members',

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+import { DealerActivationState } from './dealer-activation.js';
+import { DealerDocCategory } from './dealer-documents.js';
+import { DealerPortfolioPhoto } from './dealer-portfolio.js';
+
 import { CursorPage, Uuid } from './common.js';
 import { GST_REVIEW_MAX_LENGTH, GST_REVIEW_MIN_LENGTH } from './dealer-gstin.js';
 import {
@@ -161,12 +165,19 @@ export type AdminDealersResponse = z.infer<typeof AdminDealersResponse>;
 
 export const AdminDealerDocument = z.object({
   id: Uuid,
+  category: DealerDocCategory,
+  categoryLabel: z.string(),
   type: DealerDocType,
   label: z.string(),
   status: DocStatus,
   fileName: z.string().nullable(),
+  mimeType: z.string().nullable(),
+  description: z.string().nullable(),
   bytes: z.number().int().nullable(),
   uploadedAt: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
+  /** Above one means the dealership resubmitted this slot after a rejection or replacement. */
+  submissionCount: z.number().int().min(0),
   /** Short-lived, audit-logged, and the only way a document is ever read. */
   viewUrl: z.string().nullable(),
   viewUrlExpiresAt: z.string().nullable(),
@@ -303,6 +314,21 @@ export const AdminDealerDetail = z.object({
   }),
   documents: z.array(AdminDealerDocument),
   allDocumentsVerified: z.boolean(),
+  /** How this dealership was activated, and what an override left outstanding. */
+  activation: DealerActivationState,
+  /** What is still missing from the document requirement, by category (empty when met). */
+  documentGaps: z.array(z.string()),
+  /** Document review decisions and submissions, newest first, from the audit log. */
+  documentHistory: z.array(
+    z.object({
+      at: z.string(),
+      action: z.enum(['SUBMITTED', 'VERIFIED', 'REJECTED']),
+      category: DealerDocCategory.nullable(),
+      type: DealerDocType.nullable(),
+      reason: z.string().nullable(),
+      actorType: z.string(),
+    }),
+  ),
   /**
    * The edit this dealership is waiting on, or `null` (**R34**).
    *
@@ -312,12 +338,12 @@ export const AdminDealerDetail = z.object({
    */
   profileChange: AdminProfileChange.nullable(),
   /**
-   * The yard photograph, as a short-lived signed read. A reviewer has to be
-   * able to see it: it is the image that will front this dealership's public
-   * portfolio, and "is this actually a photograph of a yard" is a question only
-   * a person can answer.
+   * The dealership's portfolio photographs, approved and awaiting review, as
+   * short-lived signed reads (#299). A pending one is not public.
    */
-  yardPhotoUrl: z.string().nullable(),
+  portfolio: z.array(DealerPortfolioPhoto),
+  /** How many internal yard visits are on record; the evidence is fetched separately. */
+  yardVisitCount: z.number().int().min(0),
   recentLedger: z.array(
     z.object({
       id: Uuid,
@@ -352,6 +378,11 @@ export const AdminDealerDetail = z.object({
     canGrantCredits: z.boolean(),
     /** Whether this console may amend the dealer's own answers (D3 edit). */
     canEdit: z.boolean(),
+    /** Super admin only, and only while the dealership awaits activation (#299). */
+    canOverrideActivation: z.boolean(),
+    /** Why a manual activation is not available right now, for the console to say. */
+    overrideBlockedReason: z.string().nullable(),
+    canRevokeOverride: z.boolean(),
   }),
 });
 export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;

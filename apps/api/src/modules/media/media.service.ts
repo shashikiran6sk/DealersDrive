@@ -14,6 +14,8 @@ interface ServableMedia {
   } | null;
 }
 
+const PORTFOLIO_OWNERS: readonly MediaOwner[] = ['DEALER_PORTFOLIO', 'DEALER_COVER'];
+
 export interface LocatedImage {
   key: string;
   contentType: string;
@@ -40,11 +42,15 @@ export function createMediaService({ prisma, storage }: MediaDeps) {
         listing.dealer.status === PUBLIC_DEALER_STATUS,
       );
     }
-    if (media.ownerType === 'DEALER_COVER') {
-      const owners = await prisma.dealer.count({
-        where: { coverMediaId: media.id, status: PUBLIC_DEALER_STATUS },
+    if (PORTFOLIO_OWNERS.includes(media.ownerType)) {
+      const approved = await prisma.dealerPortfolioPhoto.count({
+        where: {
+          mediaId: media.id,
+          status: 'APPROVED',
+          dealer: { status: PUBLIC_DEALER_STATUS },
+        },
       });
-      return owners > 0;
+      return approved > 0;
     }
     return false;
   }

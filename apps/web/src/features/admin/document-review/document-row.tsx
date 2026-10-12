@@ -12,6 +12,7 @@ import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { DOC_TONE, DOCUMENT_REVIEW_TEXT, MIN_REJECTION_REASON } from './document-review.constants';
 import type { AdminDocument } from './document-review.types';
+import { documentFacts } from './utils';
 
 export interface DocumentRowProps {
   dealerSlug: string;
@@ -26,6 +27,8 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
   const [rejecting, setRejecting] = useState(false);
 
   const decidable = document.status === 'UPLOADED';
+  const revocable = document.status === 'VERIFIED';
+  const facts = documentFacts(document);
 
   function run(work: () => Promise<ActionResult>) {
     onError(null);
@@ -39,6 +42,11 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
       setReason('');
       router.refresh();
     });
+  }
+
+  function closeReason() {
+    setRejecting(false);
+    setReason('');
   }
 
   return (
@@ -73,8 +81,25 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
           </>
         ) : null}
 
+        {revocable ? (
+          <Button variant="ghost" size="sm" onClick={() => setRejecting((open) => !open)}>
+            {DOCUMENT_REVIEW_TEXT.revokeVerification}
+          </Button>
+        ) : null}
+
         <StatusTag tone={DOC_TONE[document.status]}>{document.status}</StatusTag>
       </div>
+
+      {document.description ? (
+        <p className="text-[12px] ink-secondary">
+          {DOCUMENT_REVIEW_TEXT.descriptionPrefix}
+          {document.description}
+        </p>
+      ) : null}
+
+      {facts.length > 0 ? (
+        <p className="text-[11px] ink-muted tnum [overflow-wrap:anywhere]">{facts.join(' · ')}</p>
+      ) : null}
 
       {document.rejectionReason ? (
         <p className="text-[12px] ink-muted">
@@ -83,13 +108,21 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
         </p>
       ) : null}
 
-      {rejecting ? (
+      {rejecting && (decidable || revocable) ? (
         <div className="flex flex-wrap items-center gap-2">
           <Input
-            aria-label={DOCUMENT_REVIEW_TEXT.reasonLabel(document.label)}
+            aria-label={
+              revocable
+                ? DOCUMENT_REVIEW_TEXT.revokeLabel(document.label)
+                : DOCUMENT_REVIEW_TEXT.reasonLabel(document.label)
+            }
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder={DOCUMENT_REVIEW_TEXT.reasonPlaceholder}
+            placeholder={
+              revocable
+                ? DOCUMENT_REVIEW_TEXT.revokePlaceholder
+                : DOCUMENT_REVIEW_TEXT.reasonPlaceholder
+            }
             className="min-w-[240px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
           />
           <Button
@@ -101,10 +134,15 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
               run(() => rejectDocumentAction(document.id, { reason: reason.trim() }, dealerSlug))
             }
           >
-            {DOCUMENT_REVIEW_TEXT.askForNewFile}
+            {revocable ? DOCUMENT_REVIEW_TEXT.confirmRevoke : DOCUMENT_REVIEW_TEXT.askForNewFile}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={closeReason}>
+            {DOCUMENT_REVIEW_TEXT.cancel}
           </Button>
           <p className="w-full text-[12px] ink-muted">
-            {DOCUMENT_REVIEW_TEXT.rejectConsequence(document.label)}
+            {revocable
+              ? DOCUMENT_REVIEW_TEXT.revokeConsequence(document.label)
+              : DOCUMENT_REVIEW_TEXT.rejectConsequence(document.label)}
           </p>
         </div>
       ) : null}

@@ -67,6 +67,21 @@ R34's two decisions, keyed by the change rather than by the dealership — so
 `dealerId` above carries the change id for these, as it does for the KYC
 pair.
 
+## `apps/sandbox/src/mocks/admin-dealer.ts`
+
+### `export const ISSUE_299_FIELDS`
+
+The admin dealer fields #299 added — activation, document gaps and history,
+portfolio and the yard-visit count — in one place, so every story that builds
+an `AdminDealerDetail` spreads the same defaults instead of each growing its own
+copy, and the next contract change is one edit. `OVERRIDE_ACTIONS` is the same
+for the three new `actions` flags.
+
+### `export const YARD_VISITS: YardVisitDto[]`
+
+One visit per outcome, including `NO_PHYSICAL_YARD` with a note, because that is
+the state whose wording matters most.
+
 ## `apps/sandbox/src/mocks/auth-actions.ts`
 
 ### `export interface ActionState`

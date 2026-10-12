@@ -1,20 +1,27 @@
 'use server';
 
 import {
+  ActivationOverrideInput,
   ApproveDealerInput,
+  CreateYardVisitInput,
   NoteInput,
   ReasonInput,
+  RevokeActivationOverrideInput,
   UpdateDealerInput,
+  type ActivationOverrideResponse,
   type DealerModerationResponse,
   type DealerProfile,
   type DealerPurgeResponse,
   type ProfileChangeDecisionResponse,
   type VerifyDocumentResponse,
+  type YardVisitDto,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
 import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
+
+import { ADMIN_ACTION_TEXT } from './actions.constants';
 
 export interface AdminResult<T = undefined> {
   ok: boolean;
@@ -261,5 +268,77 @@ export async function rejectProfileChangeAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not refuse that change.');
+  }
+}
+
+export async function overrideActivationAction(
+  dealerId: string,
+  input: unknown,
+  slug?: string,
+): Promise<AdminResult<ActivationOverrideResponse>> {
+  const parsed = ActivationOverrideInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? ADMIN_ACTION_TEXT.overrideInvalid,
+    };
+  }
+
+  try {
+    const data = await apiSend<ActivationOverrideResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/activation-override`,
+      parsed.data,
+    );
+    refreshAdmin(slug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, ADMIN_ACTION_TEXT.overrideFailed);
+  }
+}
+
+export async function revokeActivationOverrideAction(
+  dealerId: string,
+  input: unknown,
+  slug?: string,
+): Promise<AdminResult<ActivationOverrideResponse>> {
+  const parsed = RevokeActivationOverrideInput.safeParse(input);
+  if (!parsed.success) return { ok: false, message: ADMIN_ACTION_TEXT.revokeInvalid };
+
+  try {
+    const data = await apiSend<ActivationOverrideResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/activation-override/revoke`,
+      parsed.data,
+    );
+    refreshAdmin(slug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, ADMIN_ACTION_TEXT.revokeFailed);
+  }
+}
+
+export async function recordYardVisitAction(
+  dealerId: string,
+  input: unknown,
+): Promise<AdminResult<YardVisitDto>> {
+  const parsed = CreateYardVisitInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? ADMIN_ACTION_TEXT.visitInvalid,
+    };
+  }
+
+  try {
+    const data = await apiSend<YardVisitDto>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/yard-visits`,
+      parsed.data,
+    );
+    revalidatePath('/admin', 'layout');
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, ADMIN_ACTION_TEXT.visitFailed);
   }
 }

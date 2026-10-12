@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 
 import { adminActionStub } from '../../mocks/admin-actions';
+import { ISSUE_299_FIELDS, OVERRIDE_ACTIONS } from '../../mocks/admin-dealer';
 
 const BASE: AdminDealerDetail = {
   id: '3c8f2b10-2222-4000-8000-000000000002',
@@ -37,7 +38,7 @@ const BASE: AdminDealerDetail = {
   documents: [],
   allDocumentsVerified: false,
   profileChange: null,
-  yardPhotoUrl: null,
+  ...ISSUE_299_FIELDS,
   recentLedger: [],
   onboarding: {
     source: 'SELF',
@@ -59,6 +60,7 @@ const BASE: AdminDealerDetail = {
     canClose: false,
     canGrantCredits: false,
     canEdit: true,
+    ...OVERRIDE_ACTIONS,
   },
 };
 

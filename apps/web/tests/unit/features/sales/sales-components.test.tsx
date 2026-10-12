@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { OnboardingProvenance } from '@/features/admin/onboarding-provenance';
+import { RepScopeNotice } from '@/features/sales/rep-scope-notice';
 import { submitAssistedDealerAction } from '@/features/sales/sales-actions';
 import { SalesDealerList } from '@/features/sales/sales-dealer-list';
 import { SubmitAssistedDealer } from '@/features/sales/submit-assisted-dealer';
@@ -111,5 +112,21 @@ describe('OnboardingProvenance', () => {
     );
     expect(screen.queryByText('Sales representative')).not.toBeInTheDocument();
     expect(screen.queryByText('Owner account')).not.toBeInTheDocument();
+  });
+});
+
+describe('RepScopeNotice', () => {
+  it('tells the representative their part is done once the business details are saved', () => {
+    render(<RepScopeNotice businessComplete />);
+    expect(screen.getByText('Your part is complete')).toBeInTheDocument();
+    expect(screen.getByText(/Documents and submission are optional for you/)).toBeInTheDocument();
+  });
+
+  it('names Step 2 as what is left while the business details are incomplete', () => {
+    render(<RepScopeNotice businessComplete={false} />);
+    expect(
+      screen.getByText('Save the business details (Step 2) to complete your part'),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/after claiming the account/)).toBeInTheDocument();
   });
 });

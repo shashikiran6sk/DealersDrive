@@ -7,6 +7,7 @@ export {
   DEALER_ROOT_HREF,
   FULL_BAR,
   LANDED_NAV,
+  PHOTOS_NAV_ITEM,
   TEAM_NAV_ITEM,
 } from './console-nav.constants';
 export { ConsoleTabBar } from './console-tab-bar';

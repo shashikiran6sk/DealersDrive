@@ -36,13 +36,18 @@ export const SALES_TEXT = {
   backToList: '← My Dealerships',
   detailsHeading: 'Details',
   emailHeading: 'Email verification and claim',
-  documentsHeading: 'Documents',
-  yardHeading: 'Yard photograph',
-  submitHeading: 'Submit for verification',
+  documentsHeading: 'Documents (optional for you)',
+  documentsIntro:
+    'One Personal Identity Proof and one Business Identity Proof are needed before the dealership can be submitted for review — not to save it. Upload them only if the dealer hands them to you; otherwise the dealer adds them after claiming the account.',
+  repDoneTitle: 'Your part is complete',
+  repPendingTitle: 'Save the business details (Step 2) to complete your part',
+  repScopeNote:
+    'A sales representative’s mandatory work ends once the business details (Step 2) are saved. Documents and submission are optional for you: the dealer can upload the documents and submit for verification after claiming the account.',
+  submitHeading: 'Submit for verification (optional)',
   submit: 'Submit for verification',
   submitted: 'Submitted. Our operations team will review it.',
   submitIntro:
-    'When every section is complete, submit. An operations reviewer decides — you cannot approve your own submission.',
+    'Optional for you. When every section is complete you can submit on the dealer’s behalf, or leave it to the dealer after they claim the account. An operations reviewer decides — you cannot approve your own submission.',
   lockedNotice: 'This dealership has been submitted, so its details are read-only here.',
   claimedNotice:
     'The dealer has claimed this dealership and manages it from their own account, so its details are read-only here.',

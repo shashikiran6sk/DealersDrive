@@ -4,6 +4,12 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 
 import { adminActionStub } from '../../mocks/admin-actions';
+import {
+  ISSUE_299_FIELDS,
+  MANUAL_ACTIVATION,
+  NOT_ACTIVATED,
+  OVERRIDE_ACTIONS,
+} from '../../mocks/admin-dealer';
 
 const BASE: AdminDealerDetail = {
   id: '3c8f2b10-2222-4000-8000-000000000002',
@@ -37,7 +43,7 @@ const BASE: AdminDealerDetail = {
   documents: [],
   allDocumentsVerified: true,
   profileChange: null,
-  yardPhotoUrl: null,
+  ...ISSUE_299_FIELDS,
   recentLedger: [],
   onboarding: {
     source: 'SELF',
@@ -59,6 +65,7 @@ const BASE: AdminDealerDetail = {
     canReinstate: false,
     canGrantCredits: false,
     canEdit: true,
+    ...OVERRIDE_ACTIONS,
   },
 };
 
@@ -188,6 +195,76 @@ export const BothRefusals: Story = {
         statusTone: 'warn',
         documents: [],
       },
+    ),
+  },
+};
+
+export const ManualActivationAvailable: Story = {
+  args: {
+    dealer: dealer(
+      {
+        canApprove: false,
+        canReject: true,
+        canRequestChanges: true,
+        canClose: true,
+        canSuspend: false,
+        canOverrideActivation: true,
+      },
+      {
+        status: 'PENDING_APPROVAL',
+        statusLabel: 'Pending verification',
+        statusTone: 'warn',
+        allDocumentsVerified: false,
+        activation: NOT_ACTIVATED,
+        documentGaps: NOT_ACTIVATED.outstanding,
+      },
+    ),
+  },
+};
+
+export const ManualActivationWithoutGstin: Story = {
+  args: {
+    dealer: dealer(
+      { canSuspend: false, canClose: true, canOverrideActivation: true },
+      {
+        status: 'PENDING_APPROVAL',
+        statusLabel: 'Pending verification',
+        statusTone: 'warn',
+        gstin: null,
+        allDocumentsVerified: false,
+        activation: NOT_ACTIVATED,
+        documentGaps: NOT_ACTIVATED.outstanding,
+      },
+    ),
+  },
+};
+
+export const ManualActivationBlocked: Story = {
+  args: {
+    dealer: dealer(
+      {
+        canSuspend: false,
+        canClose: true,
+        canOverrideActivation: false,
+        overrideBlockedReason:
+          'A reviewer rejected a submitted document. Resolve the rejection before activating.',
+      },
+      {
+        status: 'PENDING_APPROVAL',
+        statusLabel: 'Pending verification',
+        statusTone: 'warn',
+        allDocumentsVerified: false,
+        activation: NOT_ACTIVATED,
+      },
+    ),
+  },
+};
+
+export const ManuallyActivated: Story = {
+  args: {
+    dealer: dealer(
+      { canSuspend: true, canRevokeOverride: true },
+      { activation: MANUAL_ACTIVATION, documentGaps: MANUAL_ACTIVATION.outstanding },
     ),
   },
 };

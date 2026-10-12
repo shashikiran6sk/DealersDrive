@@ -1,7 +1,9 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import { randomUUID } from 'node:crypto';
 import { env } from '../src/config/env.js';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { submitDocument } from './document-uploads.js';
 import { createAuthHarness, type AuthHarness } from './auth-harness.js';
 import { marketplaceFixtures } from './marketplace-fixtures.js';
 let h: AuthHarness;
@@ -27,10 +29,16 @@ describe('optional GSTIN API and stored invariant', () => {
       .expect(200);
     const pdf = Buffer.from('%PDF-1.4 protected synthetic tax evidence');
     let certificateId = '';
-    for (const type of ['PAN_CARD', 'ADDRESS_PROOF', 'GST_CERTIFICATE']) {
+    for (const type of ['PAN_CARD', 'GST_CERTIFICATE'] as const) {
       const r = await d.agent
         .post('/v1/dealer/documents/presign')
-        .send({ type, fileName: 'synthetic.pdf', mimeType: 'application/pdf', bytes: pdf.length })
+        .send({
+          type,
+          category: documentCategoryOf(type),
+          fileName: 'synthetic.pdf',
+          mimeType: 'application/pdf',
+          bytes: pdf.length,
+        })
         .expect(201);
       const u = new URL(r.body.uploadUrl);
       await d.agent
@@ -39,7 +47,7 @@ describe('optional GSTIN API and stored invariant', () => {
         .send(pdf)
         .expect(200);
       await d.agent
-        .post(`/v1/dealer/documents/${type}/commit`)
+        .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
         .send({ documentId: r.body.documentId })
         .expect(200);
       await admin.post(`/v1/admin/documents/${r.body.documentId}/verify`).send({}).expect(200);
@@ -47,25 +55,13 @@ describe('optional GSTIN API and stored invariant', () => {
     }
     await d.agent.post('/v1/dealer/submit').expect(200);
     await admin.post(`/v1/admin/dealers/${d.dealerId}/approve`).send({}).expect(200);
-    const assessment = {
-      representativeIdentity: 'Protected synthetic representative case',
-      representativeAuthority: 'Synthetic authority reviewed case',
-      businessExistence: 'Synthetic business record review case',
-      contactValidation: 'Actual local proved contact identities',
-      businessType: 'REGISTERED_VEHICLE_DEALER',
-      classificationEvidence: 'Synthetic reviewed classification case',
-      regulatoryOutcome: 'CHECKED_VALID',
-      regulatoryEvidence: 'Synthetic checked authorization case',
-      gstOutcome: 'CHECKED_VALID',
-      gstEvidence: 'Synthetic checked registration case',
-    };
     await admin
       .post(`/v1/admin/dealers/${d.dealerId}/verification`)
       .send({ status: 'IN_REVIEW', expectedVersion: 0 })
       .expect(200);
     await admin
       .post(`/v1/admin/dealers/${d.dealerId}/verification`)
-      .send({ status: 'VERIFIED', expectedVersion: 1, assessment })
+      .send({ status: 'VERIFIED', expectedVersion: 1 })
       .expect(200);
     const detail = await admin.get(`/v1/admin/dealers/${d.dealerId}`).expect(200);
     const certificateUrl = detail.body.documents.find(
@@ -139,10 +135,16 @@ describe('optional GSTIN API and stored invariant', () => {
       .send({ pan: 'NOGST1234Q', gstin: null })
       .expect(200);
     const pdf = Buffer.from('%PDF-1.4 synthetic local evidence');
-    for (const type of ['PAN_CARD', 'ADDRESS_PROOF']) {
+    for (const type of ['PAN_CARD', 'UDYAM'] as const) {
       const r = await d.agent
         .post('/v1/dealer/documents/presign')
-        .send({ type, fileName: 'synthetic.pdf', mimeType: 'application/pdf', bytes: pdf.length })
+        .send({
+          type,
+          category: documentCategoryOf(type),
+          fileName: 'synthetic.pdf',
+          mimeType: 'application/pdf',
+          bytes: pdf.length,
+        })
         .expect(201);
       const url = new URL(r.body.uploadUrl);
       await d.agent
@@ -151,7 +153,7 @@ describe('optional GSTIN API and stored invariant', () => {
         .send(pdf)
         .expect(200);
       await d.agent
-        .post(`/v1/dealer/documents/${type}/commit`)
+        .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
         .send({ documentId: r.body.documentId })
         .expect(200);
       await admin.post(`/v1/admin/documents/${r.body.documentId}/verify`).send({}).expect(200);
@@ -175,10 +177,10 @@ describe('optional GSTIN API and stored invariant', () => {
     expect(
       (
         await h.prisma.dealerDocument.findUniqueOrThrow({
-          where: { dealerId_type: { dealerId: d.dealerId, type: 'GST_CERTIFICATE' } },
+          where: { dealerId_category: { dealerId: d.dealerId, category: 'BUSINESS_IDENTITY' } },
         })
-      ).status,
-    ).toBe('REQUIRED');
+      ).type,
+    ).toBe('UDYAM');
   });
 
   it.each([null, '', ' \t\n'])('accepts absence %j and stores null', async (value) => {
@@ -241,7 +243,7 @@ describe('optional GSTIN API and stored invariant', () => {
     const tax = gstin();
     await h.prisma.dealer.update({ where: { id: d.dealerId }, data: { gstin: tax } });
     const doc = await h.prisma.dealerDocument.findUniqueOrThrow({
-      where: { dealerId_type: { dealerId: d.dealerId, type: 'GST_CERTIFICATE' } },
+      where: { dealerId_category: { dealerId: d.dealerId, category: 'BUSINESS_IDENTITY' } },
     });
     await h.prisma.dealerDocument.update({
       where: { id: doc.id },
@@ -285,14 +287,15 @@ describe('optional GSTIN API and stored invariant', () => {
       await h.prisma.dealer.count({ where: { id: { in: [a.dealerId, b.dealerId] }, gstin: null } }),
     ).toBe(2);
   });
-  it('omits GSTIN and GST certificate from universal completeness while retaining PAN', async () => {
+  it('omits GSTIN and the GST certificate from universal completeness, asking for one proof per category', async () => {
     const d = await f.dealership('DRAFT');
     const r = await d.agent.get('/v1/dealer/completeness').expect(200);
     const missing = r.body.steps.flatMap((step: { missing: string[] }) => step.missing);
     expect(missing).not.toContain('gstin');
     expect(missing).not.toContain('GST_CERTIFICATE');
-    expect(missing).toContain('pan');
-    expect(missing).toContain('PAN_CARD');
+    expect(missing).not.toContain('pan');
+    expect(missing).toEqual(expect.arrayContaining(['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY']));
+    await submitDocument(d.agent, '/v1/dealer', { category: 'BUSINESS_IDENTITY', type: 'UDYAM' });
     await d.agent.patch('/v1/dealer/onboarding').send({ gstin: gstin() }).expect(200);
     const withTax = await d.agent.get('/v1/dealer/completeness').expect(200);
     expect(withTax.body.steps.flatMap((step: { missing: string[] }) => step.missing)).toContain(

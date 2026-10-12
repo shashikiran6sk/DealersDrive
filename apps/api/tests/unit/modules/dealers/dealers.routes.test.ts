@@ -29,11 +29,12 @@ import {
  * wizard, which walks back to the steps that ask for the name and the address,
  * writes through this one instead. It is refused for anything but a DRAFT.
  *
- * The four `/yard-photo` routes have no baseline equivalent. They are the same
- * presign → PUT → commit pipeline as the KYC documents, under a different
- * prefix, for the image that fronts the dealership's public portfolio — kept
- * apart from the documents because those are private by construction and this
- * one is destined to be published.
+ * The four `/portfolio` routes (#299) have no baseline equivalent. They are the
+ * same presign → PUT → commit pipeline as the KYC documents, under a different
+ * prefix, for photographs a reviewer approves before they appear on the
+ * dealership's public page — kept apart from the documents because those are
+ * private by construction and these are destined to be published. They
+ * replaced the onboarding `/yard-photo` routes.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createDealersRouter({} as never);
@@ -53,12 +54,12 @@ describe('the surface', () => {
         'POST /submit',
         'GET /documents',
         'POST /documents/presign',
-        'POST /documents/:type/commit',
-        'DELETE /documents/:type',
-        'GET /yard-photo',
-        'POST /yard-photo/presign',
-        'POST /yard-photo/commit',
-        'DELETE /yard-photo',
+        'POST /documents/:category/commit',
+        'DELETE /documents/:category',
+        'GET /portfolio',
+        'POST /portfolio/presign',
+        'POST /portfolio/commit',
+        'DELETE /portfolio/:id',
         'GET /dashboard',
       ].sort(),
     );
@@ -77,13 +78,15 @@ describe('permissions', () => {
     ['PATCH /', 'dealer:update'],
     ['POST /submit', 'dealer:update'],
     ['POST /documents/presign', 'document:upload'],
-    ['POST /documents/:type/commit', 'document:upload'],
-    ['DELETE /documents/:type', 'document:upload'],
-    ['POST /yard-photo/presign', 'document:upload'],
-    ['POST /yard-photo/commit', 'document:upload'],
-    ['DELETE /yard-photo', 'document:upload'],
+    ['POST /documents/:category/commit', 'document:upload'],
+    ['DELETE /documents/:category', 'document:upload'],
     // R92 — the KYC checklist is verification, and verification is the owner's.
     ['GET /documents', 'document:upload'],
+    // #299 — what the dealership shows the public is the owner's call.
+    ['GET /portfolio', 'dealer:update'],
+    ['POST /portfolio/presign', 'dealer:update'],
+    ['POST /portfolio/commit', 'dealer:update'],
+    ['DELETE /portfolio/:id', 'dealer:update'],
   ])('guards %s with %s, which only OWNER holds', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });
@@ -100,11 +103,12 @@ describe('permissions', () => {
     },
   );
 
-  it('guards every write, and of the reads only the KYC checklist', () => {
+  it('guards every write, and of the reads only the KYC checklist and the portfolio', () => {
+    const guardedReads = ['GET /documents', 'GET /portfolio'];
     for (const route of routesOf(router)) {
       const guarded = permissionsOn(route).length > 0;
       const signature = `${route.method} ${route.path}`;
-      expect(guarded, signature).toBe(route.method !== 'GET' || signature === 'GET /documents');
+      expect(guarded, signature).toBe(route.method !== 'GET' || guardedReads.includes(signature));
     }
   });
 });

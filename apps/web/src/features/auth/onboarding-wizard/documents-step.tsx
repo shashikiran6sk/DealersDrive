@@ -1,18 +1,17 @@
 'use client';
 
-import type {
-  CompletenessResponse,
-  DealerDocumentDto,
-  DealerProfile,
-  YardPhotoDto,
+import {
+  SELECTABLE_DOC_CATEGORIES,
+  type CompletenessResponse,
+  type DealerDocumentDto,
+  type DealerProfile,
 } from '@dealers-drive/contracts';
 import { useActionState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Banner } from '@/components/ui/primitives';
 import { saveBusinessIdsAction, type ActionState } from '@/features/auth/actions';
-import { DocumentUploader } from '@/features/auth/document-uploader';
-import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
+import { DocumentUploader, documentForCategory } from '@/features/auth/document-uploader';
 
 import { ONBOARDING_TEXT } from './onboarding-wizard.constants';
 import { stepOutstanding } from './utils';
@@ -20,7 +19,6 @@ import { stepOutstanding } from './utils';
 export interface DocumentsStepProps {
   documents: DealerDocumentDto[];
   dealer: DealerProfile | null;
-  yardPhoto: YardPhotoDto | null;
   completeness: CompletenessResponse | null;
   onBack: () => void;
   onDone: () => void;
@@ -29,7 +27,6 @@ export interface DocumentsStepProps {
 export function DocumentsStep({
   documents,
   dealer,
-  yardPhoto,
   completeness,
   onBack,
   onDone,
@@ -87,21 +84,20 @@ export function DocumentsStep({
         </button>
       </form>
 
-      <p className="text-[13px] ink-muted">{ONBOARDING_TEXT.gstObligation}</p>
-      <div className="flex flex-col gap-[10px]">
-        {documents
-          .filter(
-            (document) =>
-              document.type !== 'GST_CERTIFICATE' ||
-              Boolean(dealer?.gstin) ||
-              document.status !== 'REQUIRED',
-          )
-          .map((document) => (
-            <DocumentUploader key={document.type} document={document} />
-          ))}
+      <div className="flex flex-col gap-[6px] text-[13px] ink-muted">
+        <p>{ONBOARDING_TEXT.documentsRule}</p>
+        <p>{dealer?.gstin ? ONBOARDING_TEXT.gstOnFile : ONBOARDING_TEXT.gstObligation}</p>
       </div>
-
-      {yardPhoto ? <YardPhotoUploader photo={yardPhoto} /> : null}
+      <div className="flex flex-col gap-[10px]">
+        {SELECTABLE_DOC_CATEGORIES.map((category) => (
+          <DocumentUploader
+            key={category}
+            category={category}
+            document={documentForCategory(documents, category)}
+            gstinOnFile={Boolean(dealer?.gstin)}
+          />
+        ))}
+      </div>
 
       {outstanding.length > 0 ? (
         <Banner tone="warn" title={ONBOARDING_TEXT.stillNeeded}>
@@ -126,6 +122,8 @@ export function DocumentsStep({
           {ONBOARDING_TEXT.continue}
         </button>
       </div>
+
+      <p className="text-[13px] ink-muted">{ONBOARDING_TEXT.draftSaved}</p>
     </div>
   );
 }

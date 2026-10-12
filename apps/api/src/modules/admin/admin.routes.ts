@@ -17,11 +17,21 @@ import { postDealerReinstate } from './routes/post-dealer-reinstate.js';
 import { postDealerReject } from './routes/post-dealer-reject.js';
 import { postDealerRequestChanges } from './routes/post-dealer-request-changes.js';
 import { postDealerSuspend } from './routes/post-dealer-suspend.js';
+import { postDealerActivationOverride } from './routes/post-dealer-activation-override.js';
+import { postDealerActivationOverrideRevoke } from './routes/post-dealer-activation-override-revoke.js';
 import { postDocumentReject } from './routes/post-document-reject.js';
 import { postDocumentVerify } from './routes/post-document-verify.js';
 import { postProfileChangeApprove } from './routes/post-profile-change-approve.js';
 import { postProfileChangeReject } from './routes/post-profile-change-reject.js';
 import { putConfigKey } from './routes/put-config-key.js';
+import { getDealerYardVisits } from './routes/get-dealer-yard-visits.js';
+import { getPortfolio } from './routes/get-portfolio.js';
+import { postDealerYardVisit } from './routes/post-dealer-yard-visit.js';
+import { postDealerYardVisitPhotoCommit } from './routes/post-dealer-yard-visit-photo-commit.js';
+import { postDealerYardVisitPhotoPresign } from './routes/post-dealer-yard-visit-photo-presign.js';
+import { postPortfolioApprove } from './routes/post-portfolio-approve.js';
+import { postPortfolioReject } from './routes/post-portfolio-reject.js';
+import { postPortfolioTakeDown } from './routes/post-portfolio-take-down.js';
 import type { AdminRoute } from './routes/route.js';
 
 const ROUTES: AdminRoute[] = [
@@ -30,15 +40,25 @@ const ROUTES: AdminRoute[] = [
   getDealers,
   getDealer,
   postDealerApprove,
+  postDealerActivationOverride,
+  postDealerActivationOverrideRevoke,
   patchDealer,
   postDealerReject,
   postDealerRequestChanges,
   postDealerClose,
   postDealerSuspend,
   postDealerReinstate,
+  getDealerYardVisits,
+  postDealerYardVisit,
+  postDealerYardVisitPhotoPresign,
+  postDealerYardVisitPhotoCommit,
   getProfileChanges,
   postProfileChangeApprove,
   postProfileChangeReject,
+  getPortfolio,
+  postPortfolioApprove,
+  postPortfolioReject,
+  postPortfolioTakeDown,
   postDocumentVerify,
   postDocumentReject,
   getConfig,

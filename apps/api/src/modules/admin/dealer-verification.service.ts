@@ -1,11 +1,13 @@
 import {
   DEALER_VERIFICATION_LABELS,
   DEALER_VERIFICATION_TRANSITIONS,
-  DealerVerificationAssessment,
   DealerVerificationStatus,
+  documentRequirement,
+  isVerifiedDocument,
   type DealerVerificationDecisionInput,
   type DealerVerificationReview,
 } from '@dealers-drive/contracts';
+import type { DealerDocType, DocStatus } from '@prisma/client';
 import { z } from 'zod';
 
 import { withTransaction } from '../../platform/db/tenant-tx.js';
@@ -16,13 +18,8 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../platform/errors.js';
-import {
-  ADMIN_MEMBERSHIP_LOCK,
-  isAdmitted,
-  isSeatSuspended,
-  permissionsForMember,
-  type AdminPrincipal,
-} from '../auth/auth.facade.js';
+import { type AdminPrincipal } from '../auth/auth.facade.js';
+import { assertCurrentAdmin } from './current-admin.js';
 import { documentKey } from '../dealers/dealers.facade.js';
 import type { AdminDeps } from './admin.service.js';
 
@@ -30,44 +27,33 @@ const ACTION = 'dealer.verification.decided';
 const HistoryPayload = z.object({
   status: DealerVerificationStatus,
   reason: z.string().nullable().optional(),
-  assessment: DealerVerificationAssessment.nullable().optional(),
 });
 
 async function currentReviewer(tx: Tx, admin: AdminPrincipal): Promise<void> {
-  if (!admin.permissions.includes('admin:dealer:approve'))
-    throw new ForbiddenError('Only authorized dealership reviewers can decide verification.');
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ADMIN_MEMBERSHIP_LOCK}))`;
-  await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${admin.userId}::uuid FOR SHARE`;
-  const actor = await tx.user.findUnique({
-    where: { id: admin.userId },
-    include: { roles: true, adminMember: true },
-  });
-  if (
-    !actor ||
-    !isAdmitted({ email: actor.email, status: actor.status, member: actor.adminMember }) ||
-    isSeatSuspended(actor.roles, 'ADMIN') ||
-    !actor.adminMember ||
-    !permissionsForMember(actor.adminMember.role).includes('admin:dealer:approve')
-  )
-    throw new ForbiddenError('Your dealership review access is no longer available.');
+  await assertCurrentAdmin(
+    tx,
+    admin,
+    'admin:dealer:approve',
+    'Only authorized dealership reviewers can decide verification.',
+    'Your dealership review access is no longer available.',
+  );
 }
 
 type EvidenceDocument = {
   id: string;
-  type: string;
-  status: string;
+  type: DealerDocType;
+  status: DocStatus;
   fileName: string | null;
   reviewedBy: string | null;
   reviewedAt: Date | null;
 };
 
+function reviewed(doc: EvidenceDocument): boolean {
+  return isVerifiedDocument(doc) && Boolean(doc.reviewedBy) && Boolean(doc.reviewedAt);
+}
+
 function requiredEvidence<T extends EvidenceDocument>(documents: T[], gstin: string | null): T[] {
-  return documents.filter(
-    (doc) =>
-      doc.type === 'PAN_CARD' ||
-      doc.type === 'ADDRESS_PROOF' ||
-      (gstin !== null && doc.type === 'GST_CERTIFICATE'),
-  );
+  return documentRequirement(documents, gstin, reviewed).satisfiedBy ?? [];
 }
 
 function evidenceFingerprint(slug: string, documents: EvidenceDocument[]): string {
@@ -113,7 +99,6 @@ export function createDealerVerificationService({
           from: before.data.status,
           to: after.data.status,
           reason: after.data.reason ?? null,
-          assessment: after.data.assessment ?? null,
         });
     }
     return {
@@ -197,19 +182,6 @@ export function createDealerVerificationService({
               'DEALER_NOT_APPROVED',
               'Approve the dealership separately before granting its verified badge.',
             );
-          if (!input.assessment)
-            throw new DomainError(
-              'VERIFICATION_EVIDENCE_REQUIRED',
-              'Record all performed verification checks.',
-            );
-          if (
-            input.assessment.businessType === 'REGISTERED_VEHICLE_DEALER' &&
-            input.assessment.regulatoryOutcome !== 'CHECKED_VALID'
-          )
-            throw new DomainError(
-              'REGULATORY_AUTHORIZATION_REQUIRED',
-              'Record the applicable registered-vehicle dealer authorization check.',
-            );
           const owner = dealer.members.find((member) => member.role === 'OWNER')?.user;
           const phoneVerified =
             dealer.onboardingSource === 'ASSISTED'
@@ -228,27 +200,10 @@ export function createDealerVerificationService({
           await tx.$queryRaw`SELECT "id" FROM "dealer_documents" WHERE "dealerId"=${dealerId}::uuid ORDER BY "id" FOR UPDATE`;
           const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
           const required = requiredEvidence(documents, dealer.gstin);
-          const expected = dealer.gstin ? 3 : 2;
-          if (
-            required.length !== expected ||
-            required.some(
-              (doc) =>
-                doc.status !== 'VERIFIED' || !doc.fileName || !doc.reviewedBy || !doc.reviewedAt,
-            )
-          )
+          if (required.length === 0)
             throw new DomainError(
               'VERIFICATION_DOCUMENTS_REQUIRED',
               'Review the applicable uploaded business documents before granting a badge.',
-            );
-          if (dealer.gstin && input.assessment.gstOutcome !== 'CHECKED_VALID')
-            throw new DomainError(
-              'GST_VERIFICATION_REQUIRED',
-              'A supplied GSTIN needs its applicable registration check.',
-            );
-          if (!dealer.gstin && input.assessment.gstOutcome !== 'NOT_REQUIRED_REVIEWED')
-            throw new DomainError(
-              'GST_APPLICABILITY_REQUIRED',
-              'Record why GST registration is not required, or collect and verify it.',
             );
           if (checkedEvidence !== evidenceFingerprint(dealer.slug, required))
             throw new ConflictError(
@@ -278,8 +233,7 @@ export function createDealerVerificationService({
             status: input.status,
             version: dealer.verificationVersion + 1,
             reason: input.reason ?? null,
-            assessment: input.assessment ?? null,
-            policyVersion: 'dd-business-verification-v1',
+            policyVersion: 'dd-business-verification-v2',
           },
         });
         return read(tx, dealerId);

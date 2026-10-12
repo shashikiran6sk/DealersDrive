@@ -73,6 +73,7 @@ const DEALER: DealerPublicProfile = {
   ],
   logoUrl: null,
   coverUrl: null,
+  portfolio: [],
   seo: {
     canonical: 'http://localhost:3000/dealers/sri-lakshmi-motors',
     title: 'Sri Lakshmi Motors — Used Car Dealer in Vellore | Dealers-Drive',
@@ -670,6 +671,38 @@ describe('structured data', () => {
       'src',
       'https://media.test/yard/1600.webp',
     );
+  });
+});
+
+/**
+ * #299 — the approved portfolio photographs, on the dealership's own page and
+ * nowhere else. The API sends approved photographs only, so the page has no
+ * status to check; what it must not do is draw an empty section around none.
+ */
+describe('the photo gallery', () => {
+  const PHOTOS = [
+    { url: 'https://media.test/portfolio/1.webp', caption: 'The yard on Katpadi Road' },
+    { url: 'https://media.test/portfolio/2.webp', caption: null },
+  ];
+
+  it('shows every approved photograph, with its caption', async () => {
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const gallery = screen.getByRole('list', { name: 'Photos of Sri Lakshmi Motors' });
+    expect(within(gallery).getAllByRole('img')).toHaveLength(2);
+    expect(within(gallery).getByText('The yard on Katpadi Road')).toBeInTheDocument();
+    expect(within(gallery).getByAltText('Sri Lakshmi Motors dealership, photo 2')).toHaveAttribute(
+      'src',
+      'https://media.test/portfolio/2.webp',
+    );
+  });
+
+  it('draws no gallery for a dealership with no approved photographs', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(screen.queryByText('Photos of the dealership')).not.toBeInTheDocument();
   });
 });
 

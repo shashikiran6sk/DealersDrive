@@ -1,7 +1,15 @@
+import {
+  activationState,
+  createActivationOverrideService,
+  overrideBlockReason,
+} from './activation-override.service.js';
+import { createYardVisitService } from './yard-visits.service.js';
 import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
-  requiredDealerDocuments,
+  documentRequirement,
+  isVerifiedDocument,
   ADMIN_ROLE_LABELS,
+  DOC_CATEGORY_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
   DOC_TYPE_LABELS,
@@ -34,6 +42,10 @@ import {
   type UpdateDealerInput,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
+import {
+  DealerDocCategory as DealerDocCategoryEnum,
+  DealerDocType as DealerDocTypeEnum,
+} from '@dealers-drive/contracts';
 import type { DealerDocument, PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
@@ -52,6 +64,7 @@ import {
   DomainError,
   ForbiddenError,
   NotFoundError,
+  isRecord,
 } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
@@ -83,12 +96,23 @@ function allDocumentsVerified(
   documents: Pick<DealerDocument, 'type' | 'status' | 'fileName'>[],
   gstin: string | null,
 ): boolean {
-  const required = requiredDealerDocuments(gstin);
-  return required.every((type) =>
-    documents.some(
-      (doc) => doc.type === type && doc.status === 'VERIFIED' && Boolean(doc.fileName),
-    ),
-  );
+  return documentRequirement(documents, gstin, isVerifiedDocument).satisfiedBy !== null;
+}
+
+const HISTORY_ACTIONS = {
+  'document.submitted': 'SUBMITTED',
+  'document.verified': 'VERIFIED',
+  'document.rejected': 'REJECTED',
+} as const;
+
+function isHistoryAction(action: string): action is keyof typeof HISTORY_ACTIONS {
+  return action in HISTORY_ACTIONS;
+}
+
+function textField(value: unknown, key: string): string | null {
+  if (!isRecord(value)) return null;
+  const field = value[key];
+  return typeof field === 'string' ? field : null;
 }
 
 const SOURCE_LABELS = { SELF: 'Self-onboarded', ASSISTED: 'Assisted by Sales' } as const;
@@ -221,6 +245,33 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     }
   }
 
+  async function documentHistory(dealerId: string): Promise<AdminDealerDetail['documentHistory']> {
+    const rows = await prisma.auditLog.findMany({
+      where: {
+        dealerId,
+        entityType: 'DealerDocument',
+        action: { in: Object.keys(HISTORY_ACTIONS) },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    return rows.flatMap((row) => {
+      if (!isHistoryAction(row.action)) return [];
+      const category = DealerDocCategoryEnum.safeParse(textField(row.after, 'category'));
+      const type = DealerDocTypeEnum.safeParse(textField(row.after, 'type'));
+      return [
+        {
+          at: row.createdAt.toISOString(),
+          action: HISTORY_ACTIONS[row.action],
+          category: category.success ? category.data : null,
+          type: type.success ? type.data : null,
+          reason: textField(row.after, 'reason'),
+          actorType: row.actorType,
+        },
+      ];
+    });
+  }
+
   async function requirePendingChange(changeId: string, tx?: Tx) {
     const change = await (tx ?? prisma).dealerProfileChange.findUnique({
       where: { id: changeId },
@@ -238,6 +289,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
   return {
     verification: createDealerVerificationService({ prisma, audit, storage }),
+    activation: createActivationOverrideService({ prisma, audit, dealers }),
+    portfolio: dealers.portfolio,
+    yardVisits: createYardVisitService({ prisma, storage, audit }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
@@ -404,40 +458,56 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const owner = dealer.members[0];
       const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
+      const overrideBlocked = overrideBlockReason({
+        status: dealer.status,
+        selfReview:
+          assistedBy(dealer, admin) ||
+          dealer.members.some((member) => member.userId === admin.userId),
+        accountComplete: application.steps[0]?.complete ?? false,
+        businessComplete: application.steps[1]?.complete ?? false,
+        documents: dealer.documents,
+        gstin: dealer.gstin,
+      });
 
+      const canReview = admin.permissions.includes('admin:document:review');
       const documents = await Promise.all(
-        dealer.documents.map(async (doc) => {
-          const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
-          return {
-            id: doc.id,
-            type: doc.type,
-            label: DOC_TYPE_LABELS[doc.type],
-            status: doc.status,
-            fileName: admin.permissions.includes('admin:document:review') ? doc.fileName : null,
-            bytes: null,
-            uploadedAt: doc.createdAt.toISOString(),
-            viewUrl:
-              readable && admin.permissions.includes('admin:document:review')
-                ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+        dealer.documents
+          .filter((doc) => doc.status !== 'REQUIRED')
+          .map(async (doc) => {
+            const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
+            return {
+              id: doc.id,
+              category: doc.category,
+              categoryLabel: DOC_CATEGORY_LABELS[doc.category],
+              type: doc.type,
+              label: DOC_TYPE_LABELS[doc.type],
+              status: doc.status,
+              fileName: canReview ? doc.fileName : null,
+              mimeType: canReview ? doc.mimeType : null,
+              description: canReview ? doc.description : null,
+              bytes: canReview ? doc.bytes : null,
+              uploadedAt: (doc.uploadedAt ?? doc.createdAt).toISOString(),
+              reviewedAt: doc.reviewedAt?.toISOString() ?? null,
+              submissionCount: doc.submissionCount,
+              viewUrl:
+                readable && admin.permissions.includes('admin:document:review')
+                  ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+                  : null,
+              viewUrlExpiresAt:
+                readable && admin.permissions.includes('admin:document:review')
+                  ? new Date(Date.now() + 300_000).toISOString()
+                  : null,
+              rejectionReason: admin.permissions.includes('admin:document:review')
+                ? doc.rejectionReason
                 : null,
-            viewUrlExpiresAt:
-              readable && admin.permissions.includes('admin:document:review')
-                ? new Date(Date.now() + 300_000).toISOString()
-                : null,
-            rejectionReason: admin.permissions.includes('admin:document:review')
-              ? doc.rejectionReason
-              : null,
-          };
-        }),
+            };
+          }),
       );
 
-      const yardPhoto = dealer.coverMediaId
-        ? await prisma.media.findUnique({ where: { id: dealer.coverMediaId } })
-        : null;
-      const yardPhotoUrl =
-        yardPhoto && yardPhoto.status !== 'ORPHAN'
-          ? await storage.signedReadUrl(yardPhoto.storageKey, 300)
-          : null;
+      const [portfolio, yardVisitCount] = await Promise.all([
+        dealers.portfolio.forDealer(dealerId),
+        prisma.dealerYardVisit.count({ where: { dealerId } }),
+      ]);
 
       if (documents.some((doc) => doc.viewUrl)) {
         await audit.recordDetached({
@@ -488,10 +558,25 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         },
         documents,
         allDocumentsVerified: allVerified,
+        activation: activationState(
+          dealer,
+          dealer.documents,
+          dealer.activationOverrideById
+            ? ((
+                await prisma.user.findUnique({
+                  where: { id: dealer.activationOverrideById },
+                  select: { email: true },
+                })
+              )?.email ?? null)
+            : null,
+        ),
+        documentGaps: documentRequirement(dealer.documents, dealer.gstin, isVerifiedDocument).gaps,
+        documentHistory: canReview ? await documentHistory(dealerId) : [],
         profileChange: dealer.profileEdits[0]
           ? toAdminProfileChange(dealer.profileEdits[0], dealer)
           : null,
-        yardPhotoUrl,
+        portfolio,
+        yardVisitCount,
         recentLedger: ledger.map((row) => ({
           id: row.id,
           delta: row.delta,
@@ -515,6 +600,15 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
           canEdit: admin.permissions.includes('admin:dealer:approve'),
+          canOverrideActivation:
+            admin.permissions.includes('admin:activation:override') && overrideBlocked === null,
+          overrideBlockedReason: admin.permissions.includes('admin:activation:override')
+            ? overrideBlocked
+            : null,
+          canRevokeOverride:
+            admin.permissions.includes('admin:activation:override') &&
+            dealer.activationMethod === 'MANUAL_OVERRIDE' &&
+            (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED'),
         },
       };
     },
@@ -550,10 +644,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'Verify the applicable uploaded business documents before approving this dealership.',
           );
         }
+        const required =
+          documentRequirement(documents, dealer.gstin, isVerifiedDocument).satisfiedBy ?? [];
         const uploads = await Promise.all(
-          documents
-            .filter((doc) => requiredDealerDocuments(dealer.gstin).includes(doc.type))
-            .map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+          required.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
         );
         if (uploads.some((object) => object === null)) {
           throw new DomainError(
@@ -574,7 +668,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
-          data: { status: 'ACTIVE', approvedAt: new Date(), statusReason: null },
+          data: {
+            status: 'ACTIVE',
+            approvedAt: new Date(),
+            statusReason: null,
+            activationMethod: 'STANDARD',
+          },
         });
 
         const creditsGranted = 0;
@@ -1029,6 +1128,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'Only a committed uploaded document can be verified.',
           );
         }
+        if (rejecting && doc.status !== 'UPLOADED' && doc.status !== 'VERIFIED') {
+          throw new ConflictError(
+            'DOCUMENT_NOT_REVIEWABLE',
+            'Only a submitted or verified document can be rejected.',
+          );
+        }
 
         await tx.dealerDocument.update({
           where: { id: documentId },
@@ -1037,13 +1142,29 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             rejectionReason: reason,
             reviewedBy: admin.userId,
             reviewedAt: new Date(),
-            ...(rejecting ? { fileName: null, mediaId: null } : {}),
+            ...(rejecting ? { fileName: null, mediaId: null, mimeType: null, bytes: null } : {}),
           },
         });
 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
         const allVerified = allDocumentsVerified(all, dealer?.gstin ?? null);
+        if (!rejecting && allVerified && dealer?.activationMethod === 'MANUAL_OVERRIDE') {
+          await tx.dealer.update({
+            where: { id: dealer.id },
+            data: { activationMethod: 'STANDARD' },
+          });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: dealer.id,
+            action: 'dealer.activation_standardised',
+            entityType: 'Dealer',
+            entityId: dealer.id,
+            before: { activationMethod: 'MANUAL_OVERRIDE' },
+            after: { activationMethod: 'STANDARD' },
+          });
+        }
         if (rejecting && dealer)
           await invalidateDealerVerification(
             tx,
@@ -1081,7 +1202,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'DealerDocument',
           entityId: documentId,
           before: { status: doc.status, fileName: doc.fileName },
-          after: { status, reason, fileDeleted: rejecting, dealerReturnedToDraft: returnToDraft },
+          after: {
+            status,
+            reason,
+            category: doc.category,
+            type: doc.type,
+            fileDeleted: rejecting,
+            dealerReturnedToDraft: returnToDraft,
+          },
         });
 
         return {

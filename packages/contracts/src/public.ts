@@ -1,6 +1,8 @@
 import { OffsetPage } from './common.js';
 import { PublicAvailability } from './listing.js';
 import { z } from 'zod';
+
+import { PublicPortfolioPhoto } from './dealer-portfolio.js';
 export const STANDARD_DEALER_COVER_PATH = '/brand/dealer-directory-cover.svg';
 
 /**
@@ -407,7 +409,10 @@ export const DealerPublicProfile = z.object({
     }),
   ),
   logoUrl: z.string().nullable(),
+  /** The first approved portfolio photograph, or null; never a pending one. */
   coverUrl: z.string().nullable(),
+  /** Every approved portfolio photograph, in the dealership's order (#299). */
+  portfolio: z.array(PublicPortfolioPhoto),
   seo: z.object({ canonical: z.string(), title: z.string(), isIndexable: z.boolean() }),
 });
 export type DealerPublicProfile = z.infer<typeof DealerPublicProfile>;

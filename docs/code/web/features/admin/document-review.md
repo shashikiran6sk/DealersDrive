@@ -15,9 +15,41 @@ Below this a reason is not a reason, and the dealer has nothing to act on.
 
 "Reject file", not "Reject" — the word alone reads as a verdict on the dealership.
 
+### `revokeConsequence: (label: string) =>`
+
+Revoking is the same API call as rejecting — `POST /v1/admin/documents/:id/reject`
+accepts a VERIFIED document as well as an UPLOADED one (**#299**) — but it is a
+different act, and the wording says so. It withdraws a verification that was
+already given: the file is deleted, any Dealer Verified badge is withdrawn until
+a new review, and the dealer is asked to submit the category again. An ACTIVE
+dealership stays active; only an application still awaiting approval returns
+to draft. A moderator reading "ask for a new file" under a document they
+verified last month would not know any of that.
+
+### `export const CATEGORY_ORDER`
+
+Personal Identity Proof first, then Business Identity Proof — the order the
+dealer's upload screen uses — and the legacy `SUPPORTING` slot last, shown only
+when an older application actually holds a document there.
+
 ## `apps/web/src/features/admin/document-review/document-review.tsx`
 
-### `export function DocumentReview({ documents, dealerSlug }: DocumentReviewProps)`
+### `export function DocumentReview({`
+
+**#299** — the review is grouped by category, says what is still outstanding
+(`documentGaps`) above the documents, and ends with the review history. An
+empty category is named rather than omitted: "nothing submitted" under Personal
+Identity Proof is the most useful line on the card when that is the gap.
+
+`gaps` and `history` are optional only so a story or a test can render the
+documents alone; the dealer page always passes both.
+
+### History
+
+`documentHistory` comes from the audit log, newest first, and is empty for an
+admin without document-review permission. It is in a `<details>` because it is
+read when something is in question — "was this rejected before, and why?" —
+not on every visit, and fifty rows would push the actions off the screen.
 
 D5 — the KYC decision, on the row it is about.
 
@@ -53,6 +85,19 @@ An uploaded document's row holds its label, View, Verify, Reject file and a
 status tag — wider than a 320 px card on one line, which ran the tag 22 px off
 the screen (ADMIN-MOBILE-DETAIL-001). The controls wrap under the label
 instead.
+
+### `const revocable = document.status === 'VERIFIED'`
+
+A verified document offers one control, **Revoke verification**, and it always
+needs a reason — the dealer reads it verbatim, and it is the only explanation
+they get for a verification disappearing.
+
+### `const facts = documentFacts(document)`
+
+File name, size, type, submission count and the upload and review dates on one
+line. `submissionCount` above one means the dealer resubmitted this slot after
+a rejection or a replacement, which is exactly what a reviewer wants to know
+before deciding it again.
 
 ### `const decidable = document.status === 'UPLOADED'`
 

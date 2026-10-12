@@ -15,3 +15,8 @@ Same shape as the media presign beside it, and for the same reason: the file
 goes **straight from the browser to storage**, and only the signing call is
 proxied — because it needs the API base URL and the session, neither of which
 belongs in a browser bundle (Rule 9).
+
+The body is `DocumentPresignInput` — category, type, file name, MIME type,
+size and, for another government certificate only, a description — parsed
+here with the same schema the API uses, so a type from the wrong category or
+a missing description is refused before the API is called.

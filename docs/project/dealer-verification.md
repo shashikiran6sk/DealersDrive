@@ -6,13 +6,24 @@ separate recorded business/representative review. Yard ownership, photographs, l
 moderation, vehicle inspection and ownership of every vehicle are not evidence of this badge.
 The standard directory image remains identical for every card.
 
-## Policy v1
+## Policy v2 (#299)
 
-Only current admitted MODERATOR/SUPER_ADMIN reviewers can read assessment history and decide.
+A decision is the next status and, for a rejection or revocation, a reason. The free-text
+assessment v1 required — ten fields restating identity, authority, business existence,
+contact validation, classification, regulatory and GST checks — is removed from the form, the
+contract and the audit payload (`policyVersion: dd-business-verification-v2`). Everything the
+badge rests on is checked by the API instead of typed by the reviewer: the dealership is
+ACTIVE, its representative's phone and email are proved, and **both document categories**
+(Personal and Business Identity Proof, with the GST certificate when a GSTIN is on file) were
+verified by an administrator and are still in protected storage. GST applicability for a
+dealership without a GSTIN is recorded once, at approval (#298) or manual activation (#299).
+Old audit rows that carry an assessment still read; the assessment is simply not shown.
+
+Only current admitted MODERATOR/SUPER_ADMIN reviewers can read verification history and decide.
 The API rechecks membership and role within the transaction. A dealership member or the person
 who assisted its onboarding cannot self-review, even after obtaining an admin seat.
 A row lock plus expected version rejects conflicting decisions. Every change records the
-administrator, time, previous/new status, reason, assessment and policy version atomically
+administrator, time, previous/new status, reason and policy version atomically
 in the existing restricted audit log. UI history shows the latest 100; full history remains.
 
 NOT_VERIFIED → PENDING or IN_REVIEW; PENDING → IN_REVIEW or REJECTED; IN_REVIEW → VERIFIED
@@ -21,11 +32,9 @@ required for rejection/revocation. Direct creation of VERIFIED is refused.
 
 To decide VERIFIED, the business must separately be ACTIVE. Its representative's email and
 phone must actually be proved (self-onboarded values must match the owner; assisted records
-use the existing linked contact proofs). Applicable private PAN/address documents must have
-been reviewed by an administrator and still exist in protected storage. Supplied GSTIN also
-requires reviewed GST evidence and a recorded registration check. Absence requires an explicit
-reviewed non-requirement assessment; a format match is never a registration check.
-PAN/address evidence here is the existing **platform** policy, not an invented universal law.
+use the existing linked contact proofs). One document per category must have been reviewed by
+an administrator and still exist in protected storage; a supplied GSTIN means the business proof
+must be its GST certificate. A format match is never a registration check.
 
 The stored-object checks run before the decision transaction, never while it holds the shared
 admin-membership advisory lock or the dealer row: object storage has no request timeout, and a
@@ -34,20 +43,16 @@ changes platform-wide. Inside the transaction the required document rows are re-
 and compared with what was checked (id, type, status, file, reviewer, review time, slug); any
 difference is `409 VERIFICATION_CHANGED`, so the reviewer reloads and nothing is granted.
 
-The reviewer records checks actually performed: identity, authority to represent the business,
-business existence, contact validation, legal classification, applicable regulatory authorization
-and GST applicability. Use protected case/document references, never raw PAN/Aadhaar, OTPs or
-signed private URLs in notes. Text fields escape on rendering. Public DTOs carry only the safe
-boolean, never assessment notes, documents, reviewer identifiers or PAN. Existing public GSTIN display remains a business contact field,
-not proof of active registration.
+Reasons escape on rendering. Public DTOs carry only the safe boolean, never reasons,
+documents, reviewer identifiers or PAN. Existing public GSTIN display remains a business contact
+field, not proof of active registration.
 SUPPORT members do not receive private KYC files, names/rejection notes or PAN/GST identifiers
 from the dealer detail response. Existing admin admission still protects all routes.
 
-Classification is explicit. A dealer of registered vehicles requires CHECKED_VALID regulatory
-authorization; a reviewed intermediary classification may record reviewed non-applicability
-with its legal case reference. Uncertain classification must remain IN_REVIEW. The interface
-cannot prove that an administrator performed an external check; audit attribution and protected
-evidence references are the accountable review record. No automatic government verification
+Business classification (registered-vehicle dealer or intermediary) and applicable regulatory
+authorization are no longer recorded per decision. An RTO dealer authorisation is accepted as a
+Business Identity Proof; whether it must be required for some dealer classes is an open legal
+question (`docs/project/progressive-dealer-onboarding.md`). No automatic government verification
 or legal exemption determination is claimed.
 
 Government references reviewed for this policy:
@@ -87,8 +92,8 @@ writes prefer a forward fix to retain verification history and avoid an old writ
 ## Owner UAT
 
 1. Open an approved unverified business: no Dealer Verified badge, including suggestions/car cards.
-2. As a reviewer, open its admin detail and start IN_REVIEW. Review private evidence independently
-   of any yard image. Record all performed checks and applicable legal/tax outcomes.
+2. As a reviewer, open its admin detail, verify both document categories and start IN_REVIEW.
+   The form asks only for the next status.
 3. Save VERIFIED; verify directory/detail/vehicle dealer badges and truthful explanatory wording.
 4. Use a business without a yard and, where properly reviewed, without GSTIN. Yard photos do not
    affect qualification. Registration obligations still apply where required.
@@ -97,7 +102,7 @@ writes prefer a forward fix to retain verification history and avoid an old writ
    review without disabling the business. Marketing edits do not revoke.
 7. Try dealer/staff/sales/SUPPORT actors, assisting reviewer, forged requests and concurrent versions.
    They must not bypass role, self-review, evidence or concurrency controls.
-8. Inspect public responses for document/assessment/identifier leakage and mobile/desktop layout.
+8. Inspect public responses for document/reason/identifier leakage and mobile/desktop layout.
 
 Post-creation browser UAT found public profile data remained cached after a verification
 write even though the API returned the correct badge state. Verification actions now

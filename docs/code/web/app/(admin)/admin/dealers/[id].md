@@ -30,9 +30,9 @@ The three used to share one auto-fit row, which meant the KYC checklist
 page. Every row on it carries a label, a view link, two decisions, a
 status tag and, when a moderator is rejecting, a reason field: it wraps
 into four lines per document at that width and the buttons end up under
-the file name they belong to. Business and Yard photo are short,
-read-only and pair naturally; the checklist is the working surface and
-gets the width.
+the file name they belong to. Business details and the portfolio summary
+are short, mostly read-only and pair naturally; the checklist is the
+working surface and gets the width.
 
 ### `{dealer.profileChange ? <ProfileChangeReview change={dealer.profileChange} /> : null}`
 
@@ -47,20 +47,33 @@ below the KYC checklist is one that gets scrolled past.
 It renders only when there is something waiting. `profileChange` is
 PENDING-only on the response, so a decided edit simply stops appearing.
 
-### `<section className="card gap-2 p-4">`
+### `async function yardVisitsFor(id: string): Promise<YardVisitDto[] | null>`
 
-The yard photograph.
+The internal yard visits are fetched separately from the dealer (the detail
+carries only `yardVisitCount`) because they have their own permission,
+`admin:visit:manage`, which a Support admin does not hold. A 403 is turned into
+`null` and the panel renders nothing; any other failure still fails the page,
+as every other read on it does. The signed photograph URLs are minted per read,
+so nothing here is cached.
 
-It is the image that will front this dealership's public portfolio,
-and the only question the requirement exists to ask — "is this
-actually a clear photograph of the premises" — is one a person has to
-answer. `yardPhotoUrl` is a short-lived signed read, like the KYC
-documents beside it.
+### `<ManualActivationNotice activation={dealer.activation} />`
+
+Directly under the name and status, ahead of everything else: a dealership
+activated by a Super admin's override is live without verified documents, and
+every later reviewer should know that before reading anything else (**#299**).
+It renders nothing for a standard approval.
+
+### `<DealerPortfolioSummary photos={dealer.portfolio} dealerSlug={dealer.slug} />`
+
+In the place the "Yard photo" card used to hold. Yard photographs left
+onboarding in #299 — a yard is neither required nor evidence of anything a
+buyer relies on — and the dealership's own public imagery is now its
+moderated portfolio, decided in the portfolio queue and summarised here.
 
 ### `{dealer.mapsUrl ?`
 
-The pin, next to the picture, because they answer the same question
-from two sides: is there really a yard, and is it where the address
-says. The link opens in a new tab with `noreferrer` — it is a URL a
-dealer supplied, and the API has already refused anything that is
-not an https Google Maps host.
+The pin, under the dealership's name. It used to sit beside the yard
+photograph because the two answered the same question; with the photograph
+gone it belongs with the dealership's identity. The link opens in a new tab
+with `noreferrer` — it is a URL a dealer supplied, and the API has already
+refused anything that is not an https Google Maps host.

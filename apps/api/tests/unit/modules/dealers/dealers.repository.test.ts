@@ -295,22 +295,28 @@ describe('the KYC document methods', () => {
     expect(calls[0]?.args).toEqual({ where: { id: 'doc-1' } });
   });
 
-  it('upserts on the dealership-and-type pair', async () => {
+  it('upserts on the dealership-and-category slot', async () => {
     const { prisma, calls } = fakePrisma();
 
-    await createDealersRepository(prisma).upsertDocument('dealer-1', 'GST_CERTIFICATE', {
+    await createDealersRepository(prisma).upsertDocument('dealer-1', 'BUSINESS_IDENTITY', {
+      type: 'UDYAM',
       status: 'UPLOADING',
-      fileName: 'gst.pdf',
+      fileName: 'udyam.pdf',
     });
 
-    // One row per type per dealership: re-uploading replaces rather than
-    // accumulating, so the checklist cannot show two GST certificates.
+    // One document per category per dealership: choosing another type for the
+    // slot replaces rather than accumulating, so a review never sees two.
     expect(calls[0]).toMatchObject({
       method: 'upsert',
       args: {
-        where: { dealerId_type: { dealerId: 'dealer-1', type: 'GST_CERTIFICATE' } },
-        create: { dealerId: 'dealer-1', type: 'GST_CERTIFICATE', status: 'UPLOADING' },
-        update: { status: 'UPLOADING', fileName: 'gst.pdf' },
+        where: { dealerId_category: { dealerId: 'dealer-1', category: 'BUSINESS_IDENTITY' } },
+        create: {
+          dealerId: 'dealer-1',
+          category: 'BUSINESS_IDENTITY',
+          type: 'UDYAM',
+          status: 'UPLOADING',
+        },
+        update: { type: 'UDYAM', status: 'UPLOADING', fileName: 'udyam.pdf' },
       },
     });
   });
@@ -320,7 +326,7 @@ describe('the KYC document methods', () => {
 
     const removed = await createDealersRepository(prisma).deleteDocument(
       'dealer-1',
-      'GST_CERTIFICATE',
+      'BUSINESS_IDENTITY',
     );
 
     // The checklist needs the row to keep showing the requirement; clearing the
@@ -328,8 +334,16 @@ describe('the KYC document methods', () => {
     expect(calls[0]).toMatchObject({
       method: 'updateMany',
       args: {
-        where: { dealerId: 'dealer-1', type: 'GST_CERTIFICATE' },
-        data: { status: 'REQUIRED', mediaId: null, fileName: null, rejectionReason: null },
+        where: { dealerId: 'dealer-1', category: 'BUSINESS_IDENTITY' },
+        data: {
+          status: 'REQUIRED',
+          mediaId: null,
+          fileName: null,
+          description: null,
+          mimeType: null,
+          bytes: null,
+          rejectionReason: null,
+        },
       },
     });
     expect(removed).toBe(true);
@@ -338,15 +352,15 @@ describe('the KYC document methods', () => {
   it('reports false when there was nothing to reset', async () => {
     const { prisma } = fakePrisma({ 'dealerDocument.updateMany': { count: 0 } });
 
-    expect(await createDealersRepository(prisma).deleteDocument('dealer-1', 'PAN_CARD')).toBe(
-      false,
-    );
+    expect(
+      await createDealersRepository(prisma).deleteDocument('dealer-1', 'PERSONAL_IDENTITY'),
+    ).toBe(false);
   });
 
   it('scopes the delete by dealership, so one tenant cannot clear another’s', async () => {
     const { prisma, calls } = fakePrisma({ 'dealerDocument.updateMany': { count: 0 } });
 
-    await createDealersRepository(prisma).deleteDocument('dealer-1', 'PAN_CARD');
+    await createDealersRepository(prisma).deleteDocument('dealer-1', 'PERSONAL_IDENTITY');
 
     expect((calls[0]?.args.where as Record<string, unknown>).dealerId).toBe('dealer-1');
   });

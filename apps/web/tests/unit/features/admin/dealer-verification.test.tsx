@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DealerVerificationReview } from '@dealers-drive/contracts';
-import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification/dealer-verification';
+import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification';
 import { decideDealerVerification } from '@/features/admin/dealer-verification/actions';
 import type * as Api from '@/lib/api';
 import { revalidations } from '../../../setup';
@@ -57,34 +57,31 @@ describe('genuine admin verification workflow', () => {
     );
     expect(screen.getByText('Not verified', { selector: 'p' })).toBeInTheDocument();
   });
-  it('requires performed evidence and separates legal applicability from yard photos', () => {
-    render(
-      <DealerVerificationReviewPanel
-        initial={{
-          ...initial,
-          status: 'IN_REVIEW',
-          statusLabel: 'Verification in review',
-          transitions: ['VERIFIED', 'REJECTED'],
-        }}
-      />,
-    );
-    expect(
-      screen.getByRole('group', { name: 'Record checks actually performed' }),
-    ).toBeInTheDocument();
-    for (const name of [
-      'Representative identity evidence',
-      'Authority to represent the business',
-      'Business existence evidence',
-      'Contact validation evidence',
-      'Business classification and legal review reference',
-      'Applicable authorization check or reviewed non-applicability',
-      'GST registration check or reviewed non-requirement',
-    ])
-      expect(screen.getByLabelText(name)).toBeRequired();
-    expect(screen.getByText(/Yard ownership and photos are optional/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Unresolved legal applicability must remain in review/),
-    ).toBeInTheDocument();
+  it('grants the badge with a status alone — no typed evidence fields (#299)', async () => {
+    const inReview: DealerVerificationReview = {
+      ...initial,
+      status: 'IN_REVIEW',
+      statusLabel: 'Verification in review',
+      version: 1,
+      transitions: ['VERIFIED', 'REJECTED'],
+    };
+    send.mockResolvedValue({
+      ...inReview,
+      status: 'VERIFIED',
+      statusLabel: 'Dealer Verified',
+      version: 2,
+      transitions: ['REVOKED'],
+    });
+    const user = userEvent.setup();
+    render(<DealerVerificationReviewPanel initial={inReview} />);
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+    expect(screen.queryByRole('group')).toBeNull();
+    expect(screen.getByText(/Yard photographs play no part/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save verification decision' }));
+    expect(send).toHaveBeenCalledWith('POST', `/v1/admin/dealers/${id}/verification`, {
+      expectedVersion: 1,
+      status: 'VERIFIED',
+    });
   });
   it('shows API refusal and does not invent a successful decision', async () => {
     send.mockRejectedValue(new TypeError('unavailable'));
@@ -111,7 +108,6 @@ describe('genuine admin verification workflow', () => {
           from: 'IN_REVIEW',
           to: 'VERIFIED',
           reason: '<script>synthetic unsafe text</script>',
-          assessment: null,
         },
       ],
     };
@@ -122,8 +118,17 @@ describe('genuine admin verification workflow', () => {
     expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(1);
   });
   it('validates forged or incomplete decisions before calling the API', async () => {
+    expect((await decideDealerVerification(id, { expectedVersion: 0, status: 'REVOKED' })).ok).toBe(
+      false,
+    );
     expect(
-      (await decideDealerVerification(id, { expectedVersion: 0, status: 'VERIFIED' })).ok,
+      (
+        await decideDealerVerification(id, {
+          expectedVersion: 0,
+          status: 'VERIFIED',
+          assessment: { representativeIdentity: 'Synthetic protected identity case 1' },
+        })
+      ).ok,
     ).toBe(false);
     expect(
       (await decideDealerVerification('wrong', { expectedVersion: 0, status: 'IN_REVIEW' })).ok,

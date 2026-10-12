@@ -1,19 +1,23 @@
-import type { SalesDealerDetail, SalesVehiclesResponse } from '@dealers-drive/contracts';
+import {
+  SELECTABLE_DOC_CATEGORIES,
+  type SalesDealerDetail,
+  type SalesVehiclesResponse,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { StatusTag } from '@/components/ui/primitives';
-import { DocumentUploader } from '@/features/auth/document-uploader';
-import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
+import { DocumentUploader, documentForCategory } from '@/features/auth/document-uploader';
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
 import { EmailVerificationPanel } from '@/features/sales/email-verification-panel';
 import { SALES_VEHICLE_TEXT, SalesVehicleList } from '@/features/sales/sales-vehicle-list';
 import { ASSISTED_FORM_TEXT } from '@/features/sales/assisted-dealer-form/assisted-dealer-form.constants';
 import { updateAssistedDealerAction } from '@/features/sales/sales-actions';
+import { RepScopeNotice } from '@/features/sales/rep-scope-notice';
 import { SALES_TEXT } from '@/features/sales/sales.constants';
 import { SubmitAssistedDealer } from '@/features/sales/submit-assisted-dealer';
-import { salesDocumentBase, salesYardPhotoPaths } from '@/features/sales/upload-paths';
+import { salesDocumentBase } from '@/features/sales/upload-paths';
 import { VerificationBadges } from '@/features/sales/verification-badges';
 import { ApiError, apiGet } from '@/lib/api';
 
@@ -43,6 +47,9 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
   const missing = dealer.completeness.steps
     .filter((step) => step.key !== 'review' && !step.complete)
     .map((step) => step.label);
+  const businessComplete = dealer.completeness.steps.some(
+    (step) => step.key === 'business' && step.complete,
+  );
 
   return (
     <div className="mx-auto flex max-w-[960px] flex-col gap-6 p-4 md:p-8">
@@ -70,6 +77,8 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
           </p>
         ) : null}
       </div>
+
+      {dealer.canEdit ? <RepScopeNotice businessComplete={businessComplete} /> : null}
 
       {!dealer.canEdit ? (
         <p className="rounded-[12px] border border-(--color-divider) bg-white p-4 text-[13px] ink-body">
@@ -115,18 +124,16 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
         <h2 className="text-[17px]">{SALES_TEXT.documentsHeading}</h2>
-        {dealer.documents.map((document) => (
+        <p className="text-[13px] ink-muted">{SALES_TEXT.documentsIntro}</p>
+        {SELECTABLE_DOC_CATEGORIES.map((category) => (
           <DocumentUploader
-            key={document.type}
-            document={document}
+            key={category}
+            category={category}
+            document={documentForCategory(dealer.documents, category)}
             basePath={salesDocumentBase(dealer.id)}
+            gstinOnFile={Boolean(dealer.gstin)}
           />
         ))}
-      </section>
-
-      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-        <h2 className="text-[17px]">{SALES_TEXT.yardHeading}</h2>
-        <YardPhotoUploader photo={dealer.yardPhoto} paths={salesYardPhotoPaths(dealer.id)} />
       </section>
 
       {dealer.canEdit ? (

@@ -79,11 +79,27 @@ Finding **D-6**, and the reason this field exists. The file is
 contracts DTO — so a search for the obvious name has to land here rather
 than returning a type and inviting a second card.
 
-### `props: ['step', 'session', 'documents', 'dealer', 'completeness', 'yardPhoto']`
+### `props: ['step', 'session', 'documents', 'dealer', 'completeness']`
 
 `cities` is gone rather than pending: the `cities` table went with it,
-and step 2 types its city. `yardPhoto` takes its place in the list —
-step 3 renders the hero photograph alongside the KYC checklist.
+and step 2 types its city. `yardPhoto` went too (#299): business
+photographs left onboarding for the moderated portfolio, so step 3 renders
+only the two document categories.
+
+### `props: ['category', 'document', 'gstinOnFile', 'basePath']`
+
+C041 is one category slot rather than one document row. `category` decides
+which types the picker offers, `document` is whatever is in the slot or
+`null`, and `gstinOnFile` preselects (and insists on) the GST certificate for
+the business slot. `basePath` is the same plain string the Sales page has
+always passed, so the dealer and the representative share one uploader.
+
+### `name: 'RepScopeNotice'`
+
+The sentence the Sales dealer page leads with: a representative's mandatory
+work ends with the business details (Step 2). Without it, two sections of
+upload controls and a submit button read as a to-do list the representative
+has to finish before leaving the dealer.
 
 ### `purpose: "A dealer's proposed tagline and services, old beside new, with publish and refuse."`
 

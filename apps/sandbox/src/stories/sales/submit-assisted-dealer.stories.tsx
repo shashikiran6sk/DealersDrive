@@ -25,5 +25,5 @@ type Story = StoryObj<typeof meta>;
 export const Ready: Story = {};
 
 export const Incomplete: Story = {
-  args: { canSubmit: false, missing: ['Documents', 'Yard photo'] },
+  args: { canSubmit: false, missing: ['Documents'] },
 };

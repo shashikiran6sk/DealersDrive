@@ -19,8 +19,9 @@ field. The [CBIC CGST Act reference](https://cbic-gst.gov.in/pdf/CGST-Act-Update
 distinguishes liable and voluntary registration in sections 22–25. It is a dated consolidated
 reference and later amendments/exemptions require current professional review. No universal
 threshold or exemption is hard-coded. Optional collection does not remove GST obligations.
-Dealer verification requires a recorded applicable registration check or a reviewed non-requirement assessment
-before awarding a genuine Dealer Verified badge. Unresolved applicability remains in review.
+Dealer verification with a GSTIN on file requires the reviewed GST certificate; without one, GST
+applicability is recorded once at approval or manual activation (#299 removed the per-decision
+assessment). Unresolved applicability remains in review.
 
 ## Database and conflicts
 

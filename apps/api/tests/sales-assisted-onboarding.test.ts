@@ -1,3 +1,4 @@
+import { documentCategoryOf } from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -20,8 +21,6 @@ let otherSales: request.Agent;
 let salesEmail: string;
 let counter = 0;
 let tokens = 0;
-
-const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
 
 beforeAll(async () => {
   h = await createAuthHarness(createFakeGoogle());
@@ -280,10 +279,16 @@ async function draft(agent: request.Agent = sales) {
 }
 
 async function completeDocuments(agent: request.Agent, dealerId: string) {
-  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await agent
       .post(`/v1/sales/dealers/${dealerId}/documents/presign`)
-      .send({ type, fileName: 'doc.pdf', mimeType: 'application/pdf', bytes: 8 })
+      .send({
+        type,
+        category: documentCategoryOf(type),
+        fileName: 'doc.pdf',
+        mimeType: 'application/pdf',
+        bytes: 8,
+      })
       .expect(201);
     const url = new URL(presigned.body.uploadUrl as string);
     await agent
@@ -292,24 +297,10 @@ async function completeDocuments(agent: request.Agent, dealerId: string) {
       .send(Buffer.from('%PDF-1.4'))
       .expect(200);
     await agent
-      .post(`/v1/sales/dealers/${dealerId}/documents/${type}/commit`)
+      .post(`/v1/sales/dealers/${dealerId}/documents/${documentCategoryOf(type)}/commit`)
       .send({ documentId: presigned.body.documentId })
       .expect(200);
   }
-  const photo = await agent
-    .post(`/v1/sales/dealers/${dealerId}/yard-photo/presign`)
-    .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
-    .expect(201);
-  const photoUrl = new URL(photo.body.uploadUrl as string);
-  await agent
-    .put(photoUrl.pathname + photoUrl.search)
-    .set('Content-Type', 'image/jpeg')
-    .send(JPEG)
-    .expect(200);
-  await agent
-    .post(`/v1/sales/dealers/${dealerId}/yard-photo/commit`)
-    .send({ mediaId: photo.body.mediaId })
-    .expect(200);
 }
 
 describe('verifying the dealer’s phone', () => {
@@ -572,13 +563,14 @@ describe('scope', () => {
     const calls = [
       otherSales.get(base),
       otherSales.patch(base).send({ contactName: 'Hijack' }),
-      otherSales
-        .post(`${base}/documents/presign`)
-        .send({ type: 'PAN_CARD', fileName: 'x.pdf', mimeType: 'application/pdf', bytes: 8 }),
-      otherSales.delete(`${base}/documents/PAN_CARD`),
-      otherSales
-        .post(`${base}/yard-photo/presign`)
-        .send({ fileName: 'y.jpg', mimeType: 'image/jpeg', bytes: 8 }),
+      otherSales.post(`${base}/documents/presign`).send({
+        category: 'PERSONAL_IDENTITY',
+        type: 'PAN_CARD',
+        fileName: 'x.pdf',
+        mimeType: 'application/pdf',
+        bytes: 8,
+      }),
+      otherSales.delete(`${base}/documents/PERSONAL_IDENTITY`),
       otherSales.post(`${base}/submit`),
     ];
     for (const call of calls) {

@@ -68,3 +68,15 @@ export async function approveProfileChangeAction(changeId: string) {
 export async function rejectProfileChangeAction(changeId: string, input: unknown) {
   return respond('rejectProfileChange', changeId, input);
 }
+
+export async function overrideActivationAction(dealerId: string, input: unknown) {
+  return respond('overrideActivation', dealerId, input);
+}
+
+export async function revokeActivationOverrideAction(dealerId: string, input: unknown) {
+  return respond('revokeActivationOverride', dealerId, input);
+}
+
+export async function recordYardVisitAction(dealerId: string, input: unknown) {
+  return respond('recordYardVisit', dealerId, input);
+}

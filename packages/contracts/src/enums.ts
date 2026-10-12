@@ -126,7 +126,22 @@ export type AdminRole = z.infer<typeof AdminRole>;
 export const AdminMemberStatus = z.enum(['INVITED', 'ACTIVE', 'DISABLED']);
 export type AdminMemberStatus = z.infer<typeof AdminMemberStatus>;
 
-export const DealerDocType = z.enum(['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']);
+export const DealerDocType = z.enum([
+  'GST_CERTIFICATE',
+  'PAN_CARD',
+  'ADDRESS_PROOF',
+  'AADHAAR',
+  'VOTER_ID',
+  'DRIVING_LICENCE',
+  'PASSPORT',
+  'SHOP_ESTABLISHMENT',
+  'UDYAM',
+  'TRADE_LICENSE',
+  'BUSINESS_REGISTRATION',
+  'PARTNERSHIP_REGISTRATION',
+  'RTO_DEALER_AUTHORIZATION',
+  'OTHER_BUSINESS_CERTIFICATE',
+]);
 export type DealerDocType = z.infer<typeof DealerDocType>;
 
 export const DocStatus = z.enum(['REQUIRED', 'UPLOADING', 'UPLOADED', 'VERIFIED', 'REJECTED']);
@@ -380,8 +395,19 @@ export const ENQUIRY_STATUS_TONES: Record<EnquiryStatus, StatusTone> = {
 };
 
 export const DOC_TYPE_LABELS: Record<DealerDocType, string> = {
-  GST_CERTIFICATE: 'GST certificate',
-  PAN_CARD: 'PAN card',
+  AADHAAR: 'Aadhaar Card (Voluntary)',
+  PAN_CARD: 'PAN Card',
+  VOTER_ID: 'Voter ID Card',
+  DRIVING_LICENCE: 'Driving Licence',
+  PASSPORT: 'Passport',
+  SHOP_ESTABLISHMENT: 'Shop & Establishment Registration Certificate',
+  GST_CERTIFICATE: 'GST Registration Certificate',
+  UDYAM: 'Udyam Registration Certificate',
+  TRADE_LICENSE: 'Trade Licence',
+  BUSINESS_REGISTRATION: 'Business Registration / Incorporation Certificate',
+  PARTNERSHIP_REGISTRATION: 'Partnership Registration Certificate',
+  RTO_DEALER_AUTHORIZATION: 'RTO Dealer Authorisation Certificate',
+  OTHER_BUSINESS_CERTIFICATE: 'Other Government-Issued Business Certificate',
   ADDRESS_PROOF: 'Address proof',
 };
 

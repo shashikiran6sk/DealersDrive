@@ -26,6 +26,12 @@ private document checks, verification/review permissions and approval guards
 are retained. Existing photo upload, replacement and explicit removal behavior
 is unchanged; this PR performs no deletion of existing files.
 
+**Since #299 (draft).** Onboarding no longer collects a yard photograph. An
+individual dealer page shows the dealership's _approved_ portfolio photographs
+(`docs/project/progressive-dealer-onboarding.md`); a legacy yard cover became
+an approved legacy portfolio photograph for ACTIVE and SUSPENDED dealerships.
+Directory cards are unchanged: they keep this shared illustration.
+
 Validation covers identical asset selection with/without uploaded photos,
 private/unready media, zero directory yard queries, submission without a yard
 photo when required evidence is present, photo/detail authorization regressions,

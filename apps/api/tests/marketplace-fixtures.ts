@@ -134,5 +134,27 @@ export function marketplaceFixtures(h: AuthHarness, label: string) {
     return agent;
   }
 
-  return { dealership, member, moderator };
+  /**
+   * An admin console member of a given role, invited by the bootstrap Super
+   * admin and signed in through the same Google admin flow as a person would.
+   */
+  async function staff(
+    role: 'SUPPORT' | 'MODERATOR' | 'SUPER_ADMIN' | 'SALES_REP',
+  ): Promise<request.Agent> {
+    const n = next();
+    const email = `${label}.${role.toLowerCase()}${String(n)}@dealers-drive.test`;
+    const inviter = await moderator();
+    await inviter.post('/v1/admin/access').send({ email, adminRole: role }).expect(201);
+    h.google.claims = {
+      subject: `${label}-staff-${String(n)}`,
+      email,
+      emailVerified: true,
+      name: `Fixture ${role}`,
+    };
+    const agent = h.agent();
+    await h.signInAdmin(agent);
+    return agent;
+  }
+
+  return { dealership, member, moderator, staff };
 }

@@ -30,6 +30,16 @@ export const ADMIN_PERMISSIONS = {
   'admin:document:review': REVIEWERS,
   'admin:listing:moderate': REVIEWERS,
   'admin:media:upload': REVIEWERS,
+  /**
+   * Activate a dealership without the standard document review (#299). Super
+   * admin only: it is the exception, not the path, and it never verifies a
+   * document or grants Dealer Verified.
+   */
+  'admin:activation:override': SUPER,
+  /** Approve or reject dealer portfolio photographs before they become public. */
+  'admin:portfolio:moderate': REVIEWERS,
+  /** Record a yard visit and read its private photographs. */
+  'admin:visit:manage': REVIEWERS,
   'admin:credit:grant': SUPER,
   'admin:payment:read': CONSOLE,
   'admin:payment:refund': SUPER,

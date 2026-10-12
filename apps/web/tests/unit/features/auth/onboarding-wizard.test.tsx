@@ -15,7 +15,6 @@ import type {
   AuthSession,
   CompletenessResponse,
   DealerDocumentDto,
-  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -96,37 +95,35 @@ function completeness(missing: Record<string, string[]> = {}): CompletenessRespo
   };
 }
 
-/** One row of the KYC checklist, as `GET /v1/dealer/documents` returns it. */
+/** One submitted document, as `GET /v1/dealer/documents` lists it in `data`. */
 function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
   return {
-    id: null,
-    type: 'GST_CERTIFICATE',
-    label: 'GST certificate',
-    status: 'REQUIRED',
-    statusLabel: 'Required — PDF or JPG, max 5 MB',
-    fileName: null,
-    uploadedAt: null,
+    id: '00000000-0000-4000-8000-0000000000d1',
+    category: 'PERSONAL_IDENTITY',
+    categoryLabel: 'Personal Identity Proof',
+    type: 'PAN_CARD',
+    label: 'PAN Card',
+    status: 'UPLOADED',
+    statusLabel: 'Submitted · awaiting review',
+    fileName: 'pan.pdf',
+    mimeType: 'application/pdf',
+    bytes: 1024,
+    description: null,
+    uploadedAt: '2026-10-12T09:00:00.000Z',
+    reviewedAt: null,
     rejectionReason: null,
-    action: 'Upload',
+    submissionCount: 1,
+    action: 'Replace',
     ...overrides,
   };
 }
 
-/** The three rows the API always returns, all outstanding. */
-const DOCUMENTS: DealerDocumentDto[] = [
-  document(),
-  document({ type: 'PAN_CARD', label: 'PAN card' }),
-  document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
-];
-
-/** `GET /v1/dealer/yard-photo` before anything has been uploaded. */
-const NO_YARD_PHOTO: YardPhotoDto = {
-  mediaId: null,
-  status: null,
-  fileName: null,
-  url: null,
-  uploadedAt: null,
-};
+/**
+ * `data` lists submitted documents only — the two category slots are rendered
+ * whether or not anything is in them, so a draft with nothing uploaded is an
+ * empty list.
+ */
+const DOCUMENTS: DealerDocumentDto[] = [];
 
 /**
  * A session for a Google account that has signed in and has no dealership yet
@@ -288,7 +285,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -313,7 +309,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -334,7 +329,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -354,7 +348,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -381,7 +374,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -405,7 +397,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -430,7 +421,6 @@ describe('OnboardingWizard — the frame', () => {
           documents={[]}
           dealer={null}
           completeness={null}
-          yardPhoto={null}
           phoneWidget={FAKE_WIDGET}
         />,
       );
@@ -457,7 +447,6 @@ describe('OnboardingWizard — the frame', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -527,7 +516,6 @@ describe('OnboardingPage — the floor the server sets', () => {
         });
       }
       if (path.startsWith('/v1/dealer/completeness')) return Promise.resolve(completeness());
-      if (path.startsWith('/v1/dealer/yard-photo')) return Promise.resolve(NO_YARD_PHOTO);
       return Promise.resolve(sessionWith(dealer));
     });
 
@@ -608,7 +596,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -635,7 +622,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -662,7 +648,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
         googleLinkUrl="http://api.test/v1/auth/google/link/start?returnTo=%2Fdealer%2Fonboarding"
       />,
@@ -689,7 +674,6 @@ describe('OnboardingWizard — the Account step', () => {
           documents={[]}
           dealer={null}
           completeness={null}
-          yardPhoto={null}
           phoneWidget={FAKE_WIDGET}
           googleLinkUrl="http://api.test/v1/auth/google/link/start"
         />,
@@ -713,7 +697,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
         googleLinkUrl={null}
         linkError="identity_already_linked"
@@ -733,7 +716,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
         linkError="<script>alert(1)</script>"
       />,
@@ -750,7 +732,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -768,7 +749,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -792,7 +772,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={dealerProfile()}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -817,7 +796,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -844,7 +822,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -868,7 +845,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -896,7 +872,6 @@ describe('OnboardingWizard — the Account step', () => {
           documents={[]}
           dealer={null}
           completeness={null}
-          yardPhoto={null}
           phoneWidget={FAKE_WIDGET}
         />,
       );
@@ -925,7 +900,6 @@ describe('OnboardingWizard — the Account step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -960,7 +934,6 @@ describe('OnboardingWizard — the Business step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1041,7 +1014,6 @@ describe('OnboardingWizard — the Business step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1192,7 +1164,6 @@ describe('OnboardingWizard — the Business step', () => {
         documents={[]}
         dealer={null}
         completeness={null}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1205,26 +1176,19 @@ describe('OnboardingWizard — the Business step', () => {
 });
 
 /**
- * F041 — step 3.
+ * F041 — step 3, as #299 reshaped it.
  *
- * This step is reached by navigation rather than locally, so the frame's
- * Back/Continue row is gone and the step brings its own. Three claims are worth
- * pinning: the checklist is a row per required document whatever their state,
- * the yard photograph sits alongside them, and **Continue does not move while
- * anything is outstanding**.
- *
- * That last one replaces a "Skip for now" and a Continue that merely *counted*
- * what was missing. Both let a dealer walk to the end of the wizard and only
- * there be told what they had skipped — the same information, three screens
- * too late. What counts as outstanding is the server's `completeness` answer,
- * because it is the same derivation `POST /v1/dealer/submit` refuses on.
+ * Two category cards, one document each, whatever has been uploaded; no yard
+ * photograph. Documents are what a submit needs, not what a draft needs, and
+ * the copy says so. **Continue does not move while anything is outstanding**:
+ * what counts as outstanding is the server's `completeness` answer, because it
+ * is the same derivation `POST /v1/dealer/submit` refuses on.
  */
 describe('OnboardingWizard — the Documents step', () => {
   function render_(
     documents: DealerDocumentDto[],
     dealer: { gstin?: string; pan?: string } = {},
     blockers: CompletenessResponse | null = completeness(),
-    photo: YardPhotoDto = NO_YARD_PHOTO,
   ) {
     return render(
       <OnboardingWizard
@@ -1233,13 +1197,6 @@ describe('OnboardingWizard — the Documents step', () => {
           dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
         })}
         documents={documents}
-        /*
-         * `contact` is here now because step 1 reads it on every render, not
-         * only when it is the visible step (**R39**): the number it holds is
-         * what the verification panel compares the session's verified one
-         * against, so it is initialised with the component rather than with
-         * the fieldset.
-         */
         dealer={
           {
             specialities: [],
@@ -1248,59 +1205,54 @@ describe('OnboardingWizard — the Documents step', () => {
           } as never
         }
         completeness={blockers}
-        yardPhoto={photo}
         phoneWidget={FAKE_WIDGET}
       />,
     );
   }
 
-  it('renders every applicable uploader when GSTIN is supplied', () => {
-    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX' });
+  it('renders one card per document category, and nothing for a yard', () => {
+    render_(DOCUMENTS);
 
-    // The file input carries the accessible name; the visible button opens it.
-    for (const label of ['GST certificate', 'PAN card', 'Address proof']) {
+    for (const label of ['Personal Identity Proof', 'Business Identity Proof']) {
+      expect(screen.getByRole('region', { name: label })).toBeInTheDocument();
       expect(screen.getByLabelText(`Upload ${label}`)).toHaveAttribute('type', 'file');
-      expect(screen.getByText(label)).toBeInTheDocument();
     }
+    expect(screen.queryByText(/yard/i)).toBeNull();
   });
 
-  it('does not require GSTIN or an empty certificate slot for a non-GST dealer', () => {
+  it('says documents are not needed for a draft, only to submit', () => {
+    render_(DOCUMENTS);
+
+    expect(screen.getByText(/Documents are not needed to save your draft/)).toBeInTheDocument();
+    expect(screen.getByText(/one document in each category/)).toBeInTheDocument();
+    expect(screen.getByText(/Your draft is saved/)).toBeInTheDocument();
+  });
+
+  it('does not require GSTIN of a non-GST dealer, and states the obligation', () => {
     render_(DOCUMENTS);
     expect(screen.getByLabelText('GSTIN (optional where applicable)')).not.toBeRequired();
-    expect(screen.queryByLabelText('Upload GST certificate')).toBeNull();
-    expect(screen.getByLabelText('Upload PAN card')).toBeInTheDocument();
     expect(
       screen.getByText(/Optional collection does not remove GST registration obligations/),
     ).toBeInTheDocument();
   });
 
-  /**
-   * The yard photograph is on this step because it is where a dealer uploads
-   * things, and it is required for a different reason from the three beside it:
-   * it fronts the public portfolio rather than being read once by a moderator.
-   */
-  it('asks for a photo of the yard, and says what it is for', () => {
-    render_(DOCUMENTS);
+  it('asks for the GST certificate as business proof once a GSTIN is on file', () => {
+    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX' });
 
-    expect(screen.getByLabelText('Upload a photo of your yard')).toHaveAttribute('type', 'file');
-    expect(screen.getByText(/Optional. Approved yard photos appear only/)).toBeInTheDocument();
-    expect(screen.getByText(/clear, well-lit photograph of your yard/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/so your Business Identity Proof must be your GST Registration Certificate/),
+    ).toBeInTheDocument();
+    const business = screen.getByRole('region', { name: 'Business Identity Proof' });
+    expect(within(business).getByLabelText('Document type')).toHaveValue('GST_CERTIFICATE');
   });
 
-  it('shows the photo back once one has been uploaded', () => {
-    render_(DOCUMENTS, {}, completeness(), {
-      mediaId: '00000000-0000-4000-8000-00000000000a',
-      status: 'PENDING',
-      fileName: 'yard.jpg',
-      url: 'https://storage.example/signed/yard.jpg',
-      uploadedAt: '2026-09-04T00:00:00.000Z',
-    });
+  it('shows a submitted document in its category card', () => {
+    render_([document()]);
 
-    expect(screen.getByAltText('The dealership yard, as buyers will see it')).toHaveAttribute(
-      'src',
-      'https://storage.example/signed/yard.jpg',
-    );
-    expect(screen.getByRole('button', { name: 'Replace photo' })).toBeInTheDocument();
+    const personal = screen.getByRole('region', { name: 'Personal Identity Proof' });
+    expect(within(personal).getByText('pan.pdf')).toBeInTheDocument();
+    expect(within(personal).getByLabelText('Document type')).toHaveValue('PAN_CARD');
+    expect(within(personal).getByRole('button', { name: 'Replace' })).toBeInTheDocument();
   });
 
   /** Nothing outstanding, so the step moves on — by navigation, as it is reached. */
@@ -1313,7 +1265,7 @@ describe('OnboardingWizard — the Documents step', () => {
   });
 
   it('holds Continue while anything is still outstanding', () => {
-    render_(DOCUMENTS, {}, completeness({ documents: ['GST_CERTIFICATE', 'YARD_PHOTO'] }));
+    render_(DOCUMENTS, {}, completeness({ documents: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'] }));
 
     expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
   });
@@ -1323,20 +1275,20 @@ describe('OnboardingWizard — the Documents step', () => {
     render_(
       DOCUMENTS,
       {},
-      completeness({ business: ['gstin'], documents: ['PAN_CARD', 'YARD_PHOTO'] }),
+      completeness({ business: ['gstin'], documents: ['PERSONAL_IDENTITY', 'GST_CERTIFICATE'] }),
     );
 
     const banner = screen.getByRole('status');
     expect([...banner.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
-      'PAN card',
-      'Photo of your yard',
+      'Personal Identity Proof',
+      'GST Registration Certificate (your GSTIN is on file)',
       'GSTIN',
     ]);
   });
 
   /** There is no way to skip past it any more, because there was never a step after. */
   it('offers no way to skip the step', () => {
-    render_(DOCUMENTS, {}, completeness({ documents: ['GST_CERTIFICATE'] }));
+    render_(DOCUMENTS, {}, completeness({ documents: ['BUSINESS_IDENTITY'] }));
 
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
   });
@@ -1407,7 +1359,6 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         documents={[]}
         dealer={null}
         completeness={blockers}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1424,7 +1375,11 @@ describe('OnboardingWizard — the outstanding-items list', () => {
     );
 
     expect(await screen.findByText('Some details are still missing.')).toBeInTheDocument();
-    expect(blockersShown()).toEqual(['GSTIN', 'City', 'GST certificate']);
+    expect(blockersShown()).toEqual([
+      'GSTIN',
+      'City',
+      'GST Registration Certificate (your GSTIN is on file)',
+    ]);
   });
 
   /** An unmapped key still reaches the dealer, ugly rather than invisible. */
@@ -1494,7 +1449,6 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         documents={[]}
         dealer={null}
         completeness={completeness({ business: ['gstin'] })}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1532,7 +1486,6 @@ describe('OnboardingWizard — the Review step', () => {
         documents={[]}
         dealer={null}
         completeness={blockers}
-        yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
       />,
     );
@@ -1591,7 +1544,7 @@ describe('OnboardingWizard — the Review step', () => {
     });
 
     const user = userEvent.setup();
-    render_('DRAFT', completeness({ documents: ['ADDRESS_PROOF'], business: ['pan'] }));
+    render_('DRAFT', completeness({ documents: ['BUSINESS_IDENTITY'], business: ['pan'] }));
 
     await user.click(screen.getByRole('button', { name: 'Submit for verification' }));
 
@@ -1599,7 +1552,7 @@ describe('OnboardingWizard — the Review step', () => {
     const banner = screen.getByRole('status');
     expect([...banner.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
       'PAN',
-      'Address proof',
+      'Business Identity Proof',
     ]);
   });
 });

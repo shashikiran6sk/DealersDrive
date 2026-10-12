@@ -1,4 +1,5 @@
 import { seedLocation } from './seed-location.js';
+import { SEEDED_DOCUMENTS } from './seed-documents.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
@@ -118,8 +119,9 @@ async function seedDealers(): Promise<void> {
     });
 
     await prisma.dealerDocument.createMany({
-      data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+      data: SEEDED_DOCUMENTS.map(([category, type]) => ({
         dealerId: dealer.id,
+        category,
         type,
         status: 'VERIFIED' as const,
       })),

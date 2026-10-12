@@ -265,31 +265,38 @@ enum AdminMemberSource {
 
 // ─────────── DEALERS (the tenant) ────────────────────────────────────────
 model Dealer {
-  id                     String                   @id @default(uuid()) @db.Uuid
-  slug                   String                   @unique
+  id                       String                   @id @default(uuid()) @db.Uuid
+  slug                     String                   @unique
   /// The display mirror of `legalName`, written by the server and by nothing
   /// else. Onboarding asks for one name; this is where it is shown from.
-  brandName              String
+  brandName                String
   /// Unique **per city** — see `@@unique([legalName, city])` below.
-  legalName              String
+  legalName                String
   /// Unique where present. Nullable columns permit many NULLs in a Postgres
   /// unique index, which is exactly right: a dealership that has not entered a
   /// GSTIN yet must not collide with every other one that has not either.
-  gstin                  String?                  @unique
+  gstin                    String?                  @unique
   /// Unique where present, on the same reasoning as `gstin` above — a PAN
   /// identifies one taxable entity, so two dealerships holding one is one
   /// business applying twice or a typo carrying somebody else's identity into a
   /// KYC review. Nullable, so the many dealerships that have not entered one
   /// yet do not collide with each other (**R38**).
-  pan                    String?                  @unique
-  tagline                String?
-  logoMediaId            String?                  @db.Uuid
-  coverMediaId           String?                  @db.Uuid
-  status                 DealerStatus             @default(DRAFT)
-  verificationStatus     DealerVerificationStatus @default(NOT_VERIFIED)
-  verificationVersion    Int                      @default(0)
-  verificationVerifiedAt DateTime?
-  verificationReviewerId String?                  @db.Uuid
+  pan                      String?                  @unique
+  tagline                  String?
+  logoMediaId              String?                  @db.Uuid
+  coverMediaId             String?                  @db.Uuid
+  status                   DealerStatus             @default(DRAFT)
+  /// How the dealership became ACTIVE (#299). NULL until it has been activated.
+  activationMethod         DealerActivationMethod?
+  /// The last manual activation: when, by which admin user, and why. CHECK
+  /// `dealers_activation_override_check` requires all three for MANUAL_OVERRIDE.
+  activationOverrideAt     DateTime?
+  activationOverrideById   String?                  @db.Uuid
+  activationOverrideReason String?
+  verificationStatus       DealerVerificationStatus @default(NOT_VERIFIED)
+  verificationVersion      Int                      @default(0)
+  verificationVerifiedAt   DateTime?
+  verificationReviewerId   String?                  @db.Uuid
   /// Locality as text, not as a foreign key to a five-row table.
   ///
   /// `cityId -> cities.id` is gone, and with it the constraint that a
@@ -297,16 +304,16 @@ model Dealer {
   /// came off that row and are now written by nothing; they stay because the
   /// distance sort that reads them is a real feature, and geocoding a typed
   /// address is its problem rather than onboarding's.
-  city                   String?
+  city                     String?
   /// Canonical district display mirror. Ambiguous legacy text is retained for review.
-  district               String?
-  state                  String?
+  district                 String?
+  state                    String?
   /// Stable catalogue references; legacy ambiguous text is retained for review.
-  serviceStateId         String?
-  serviceDistrictId      String?
-  locationReviewRequired Boolean                  @default(false)
-  addressLine            String?
-  pincode                String?
+  serviceStateId           String?
+  serviceDistrictId        String?
+  locationReviewRequired   Boolean                  @default(false)
+  addressLine              String?
+  pincode                  String?
   /// The dealer's own Google Maps share link, stored verbatim.
   ///
   /// Verbatim is the point: a share link survives the dealer moving their pin,
@@ -317,9 +324,9 @@ model Dealer {
   /// The three columns below are read *out* of it at write time (**R10**,
   /// `platform/maps/maps-link.ts`) and never geocoded from the address above.
   /// They are what the portfolio draws with; this is what it links to.
-  mapsUrl                String?
-  lat                    Float?
-  lng                    Float?
+  mapsUrl                  String?
+  lat                      Float?
+  lng                      Float?
   /// Google's own feature id for the yard, `0x…:0x…`, when the link named one.
   ///
   /// The pin centres a map. This makes it a map *of a dealership*: handed back
@@ -331,48 +338,48 @@ model Dealer {
   /// read back out at request time, so the only rows this column exists for are
   /// the ones whose id cost a redirect to discover: `maps.app.goo.gl`, which is
   /// what Google's Share sheet gives on a phone.
-  mapsPlaceId            String?
-  contactPhone           String?
-  contactEmail           String?
+  mapsPlaceId              String?
+  contactPhone             String?
+  contactEmail             String?
   /// Database-maintained primary ownership identity, separate from public contact
   /// details. Unclaimed assisted applications reserve their declared email;
   /// claimed owners use their verified Google identity (or existing account email).
   /// Never accepts ownership proof and never appears in public DTOs.
-  primaryOwnerEmail      String?                  @unique
+  primaryOwnerEmail        String?                  @unique
   /// The contact person's name, for an assisted dealership that has no owner
   /// account yet. A self-onboarded dealership reads it from the OWNER's user.
-  contactName            String?
+  contactName              String?
   /// When `contactPhone` was proved by OTP on the dealer's handset during
   /// assisted onboarding. Self-onboarded dealerships prove the owner's phone on
   /// the user row instead, so this stays NULL for them.
-  contactPhoneVerifiedAt DateTime?
+  contactPhoneVerifiedAt   DateTime?
   /// When the dealer proved they receive mail at `contactEmail`. An address a
   /// Sales Representative typed is never trusted until this is set.
-  contactEmailVerifiedAt DateTime?
+  contactEmailVerifiedAt   DateTime?
   /// SELF — the dealer onboarded themselves. ASSISTED — a Sales Representative
   /// did it with them, recorded in `assistedByMemberId`. The lifecycle is the
   /// same either way; only who did the typing differs.
-  onboardingSource       DealerOnboardingSource   @default(SELF)
+  onboardingSource         DealerOnboardingSource   @default(SELF)
   /// The Admin Member who assisted. They assist; they never own — ownership is
   /// a DealerMember OWNER row, which only the dealer's own sign-in creates.
-  assistedByMemberId     String?                  @db.Uuid
+  assistedByMemberId       String?                  @db.Uuid
   /// When the dealership representative gave consent, by sharing the OTP, for
   /// Dealers-Drive to create and submit this profile on their behalf.
-  assistedConsentAt      DateTime?
-  landline               String?
-  workingHours           Json?
-  establishedYear        Int?
-  specialities           String[]
+  assistedConsentAt        DateTime?
+  landline                 String?
+  workingHours             Json?
+  establishedYear          Int?
+  specialities             String[]
   /// MIRROR of the newest CreditTransaction.balanceAfter. Never authoritative
   /// on its own — every write path re-reads the ledger under FOR UPDATE (§26.2).
-  creditBalance          Int                      @default(0)
-  creditsHeld            Int                      @default(0)
-  activeListings         Int                      @default(0)
-  medianResponseMins     Int?
-  approvedAt             DateTime?
-  suspendedAt            DateTime?
-  statusReason           String?
-  createdAt              DateTime                 @default(now())
+  creditBalance            Int                      @default(0)
+  creditsHeld              Int                      @default(0)
+  activeListings           Int                      @default(0)
+  medianResponseMins       Int?
+  approvedAt               DateTime?
+  suspendedAt              DateTime?
+  statusReason             String?
+  createdAt                DateTime                 @default(now())
 
   assistedBy         AdminMember?                 @relation(fields: [assistedByMemberId], references: [id], onDelete: Restrict)
   members            DealerMember[]
@@ -380,6 +387,8 @@ model Dealer {
   sessions           Session[]
   documents          DealerDocument[]
   profileEdits       DealerProfileChange[]
+  portfolioPhotos    DealerPortfolioPhoto[]
+  yardVisits         DealerYardVisit[]
   notifications      NotificationDelivery[]
   vehicles           Vehicle[]
   listings           Listing[]
@@ -519,20 +528,31 @@ enum InvitationStatus {
 // mean the repository this feature exists to deliver did not match the
 // baseline. F040 brings the service paths, the API and the tests.
 model DealerDocument {
-  id              String        @id @default(uuid()) @db.Uuid
-  dealerId        String        @db.Uuid
+  id              String            @id @default(uuid()) @db.Uuid
+  dealerId        String            @db.Uuid
+  /// The slot: one document per category per dealership. CHECK
+  /// `dealer_documents_category_type_check` keeps `type` inside it.
+  category        DealerDocCategory
   type            DealerDocType
-  mediaId         String?       @db.Uuid
+  mediaId         String?           @db.Uuid
   fileName        String?
-  status          DocStatus     @default(REQUIRED)
+  /// Required for OTHER_BUSINESS_CERTIFICATE, refused for every other type.
+  description     String?
+  /// As declared at presign and confirmed against the stored bytes at commit.
+  mimeType        String?
+  bytes           Int?
+  uploadedAt      DateTime?
+  /// How many times a file has been committed into this slot; above one is a resubmission.
+  submissionCount Int               @default(0)
+  status          DocStatus         @default(REQUIRED)
   rejectionReason String?
-  reviewedBy      String?       @db.Uuid
+  reviewedBy      String?           @db.Uuid
   reviewedAt      DateTime?
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime          @default(now())
 
   dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
 
-  @@unique([dealerId, type])
+  @@unique([dealerId, category])
   @@index([status, createdAt])
   @@map("dealer_documents")
 }
@@ -647,6 +667,28 @@ enum DealerDocType {
   GST_CERTIFICATE
   PAN_CARD
   ADDRESS_PROOF
+  AADHAAR
+  VOTER_ID
+  DRIVING_LICENCE
+  PASSPORT
+  SHOP_ESTABLISHMENT
+  UDYAM
+  TRADE_LICENSE
+  BUSINESS_REGISTRATION
+  PARTNERSHIP_REGISTRATION
+  RTO_DEALER_AUTHORIZATION
+  OTHER_BUSINESS_CERTIFICATE
+}
+
+enum DealerActivationMethod {
+  STANDARD
+  MANUAL_OVERRIDE
+}
+
+enum DealerDocCategory {
+  PERSONAL_IDENTITY
+  BUSINESS_IDENTITY
+  SUPPORTING
 }
 
 enum DocStatus {
@@ -1313,6 +1355,81 @@ enum MediaOwner {
   DEALER_LOGO
   DEALER_COVER
   DEALER_DOCUMENT
+  DEALER_PORTFOLIO
+  DEALER_YARD_VISIT
+}
+
+enum PortfolioPhotoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED
+}
+
+enum YardVisitOutcome {
+  YARD_CONFIRMED
+  NO_PHYSICAL_YARD
+  NOT_ACCESSIBLE
+}
+
+/// A dealership's own portfolio photograph (#299). Private and PENDING until an
+/// admin approves it; only APPROVED rows of an ACTIVE dealership are ever served.
+/// A replacement is a new row naming the APPROVED photo it would take the place
+/// of, so the approved image stays public until the replacement is approved,
+/// and a decision always publishes exactly the image it was made on.
+model DealerPortfolioPhoto {
+  id              String               @id @default(uuid()) @db.Uuid
+  dealerId        String               @db.Uuid
+  mediaId         String               @unique @db.Uuid
+  status          PortfolioPhotoStatus @default(PENDING)
+  replacesId      String?              @db.Uuid
+  position        Int                  @default(0)
+  caption         String?
+  rejectionReason String?
+  submittedById   String?              @db.Uuid
+  reviewedById    String?              @db.Uuid
+  reviewedAt      DateTime?
+  /// Carried over from the single yard photograph onboarding used to collect.
+  legacyCover     Boolean              @default(false)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  dealer     Dealer                 @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  replaces   DealerPortfolioPhoto?  @relation("PortfolioReplacement", fields: [replacesId], references: [id], onDelete: SetNull)
+  replacedBy DealerPortfolioPhoto[] @relation("PortfolioReplacement")
+
+  @@index([dealerId, status, position])
+  @@index([status, createdAt])
+  @@map("dealer_portfolio_photos")
+}
+
+/// An internal yard visit by Dealers-Drive staff (#299): private operational
+/// evidence, never public, never required and never a route to Dealer Verified.
+model DealerYardVisit {
+  id           String           @id @default(uuid()) @db.Uuid
+  dealerId     String           @db.Uuid
+  visitedOn    DateTime         @db.Date
+  outcome      YardVisitOutcome
+  notes        String?
+  recordedById String           @db.Uuid
+  createdAt    DateTime         @default(now())
+
+  dealer Dealer                 @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  photos DealerYardVisitPhoto[]
+
+  @@index([dealerId, visitedOn])
+  @@map("dealer_yard_visits")
+}
+
+model DealerYardVisitPhoto {
+  id        String   @id @default(uuid()) @db.Uuid
+  visitId   String   @db.Uuid
+  mediaId   String   @unique @db.Uuid
+  createdAt DateTime @default(now())
+
+  visit DealerYardVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@map("dealer_yard_visit_photos")
 }
 
 enum MediaStatus {

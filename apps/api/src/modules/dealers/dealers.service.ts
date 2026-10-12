@@ -4,10 +4,10 @@ import { isDealerVerified } from '@dealers-drive/contracts';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
-  requiredDealerDocuments,
+  documentRequirement,
+  isSubmittedDocument,
   DEALER_STATUS_LABELS,
   distinctServices,
-  DOC_TYPE_LABELS,
   formatDate,
   formatPhone,
   formatRegistration,
@@ -20,7 +20,9 @@ import {
   vehicleTitle,
   type AuthSession,
   type CompletenessResponse,
+  type DealerDocumentDto,
   type DealerDocumentsResponse,
+  type SelectableDocCategory,
   type DashboardResponse,
   type DealerSubmitResponse,
   type DealerProfile,
@@ -30,13 +32,9 @@ import {
   type DocumentPresignInput,
   type PresignResponse,
   type UpdateDealerInput,
-  type YardPhotoCommitInput,
-  type YardPhotoDto,
-  type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
-import type { DealerDocType, DealerStatus, DocStatus, PrismaClient } from '@prisma/client';
+import type { DealerStatus, DocStatus, PrismaClient } from '@prisma/client';
 
-import { toMediaStatus } from '../media/media.facade.js';
 import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
@@ -48,22 +46,31 @@ import { ConflictError, DomainError, NotFoundError } from '../../platform/errors
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
-import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import { documentKey } from './dealer-storage-keys.js';
 import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
   ALREADY_SUBMITTED,
   APPLICATION_CLOSED,
+  DOCUMENT_CONTENT_MISMATCH,
   DOCUMENT_LOCKED,
-  YARD_PHOTO_LOCKED,
+  DOCUMENT_SIZE_MISMATCH,
+  SUBMITTED_MESSAGE,
 } from './dealers.messages.js';
+import { toDealerDocumentDto, toDealerDocuments } from './dealer-documents.mapper.js';
+import { createDealerPortfolioService } from './dealer-portfolio.service.js';
+import { sniffDocumentType } from '../../platform/media/sniff.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
   ALREADY_REGISTERED,
   DOCUMENT_NOT_FOUND,
   UNNAMED_CUSTOMER,
   UPLOAD_INCOMPLETE,
-  UPLOAD_NOT_FOUND,
 } from '../../platform/messages.js';
+
+export interface DocumentActor {
+  type: 'DEALER' | 'SALES';
+  id: string | null;
+}
 
 export interface SubmissionActor {
   type: 'DEALER' | 'ADMIN';
@@ -77,10 +84,6 @@ export interface DealersDeps {
   maps: MapsPort;
   audit: AuditService;
 }
-
-const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
-
-const YARD_PHOTO_URL_TTL_SECONDS = 300;
 
 const DOC_EDITABLE_OUTSIDE_DRAFT: readonly DocStatus[] = ['REQUIRED', 'REJECTED', 'UPLOADING'];
 
@@ -97,10 +100,6 @@ function assertSubmittable(dealerStatus: DealerStatus | null): void {
   if (dealerStatus === 'DRAFT') return;
   if (dealerStatus === 'CLOSED') throw new DomainError('APPLICATION_CLOSED', APPLICATION_CLOSED);
   throw new DomainError('ALREADY_SUBMITTED', ALREADY_SUBMITTED);
-}
-
-function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void {
-  if (dealerStatus !== 'DRAFT') throw new ConflictError('YARD_PHOTO_LOCKED', YARD_PHOTO_LOCKED);
 }
 
 function sameServices(a: readonly string[], b: readonly string[]): boolean {
@@ -255,14 +254,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     }
   }
 
-  async function discardMedia(mediaId: string): Promise<void> {
-    const media = await repo.mediaById(mediaId);
-    if (!media) return;
-    await repo.orphanMedia(mediaId);
-    await storage.delete(media.storageKey);
-  }
-
   return {
+    portfolio: createDealerPortfolioService({ prisma, storage, audit }),
     toProfile,
     async session(principal: DealerPrincipal): Promise<AuthSession> {
       const dealer = await requireDealer(principal.dealerId);
@@ -605,12 +598,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (!dealer.pincode) businessMissing.push('pincode');
       if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
       if (dealer.specialities.length === 0) businessMissing.push('specialities');
-      if (!dealer.pan) businessMissing.push('pan');
 
-      const documentsMissing: string[] = requiredDealerDocuments(dealer.gstin).filter((type) => {
-        const doc = documents.find((row) => row.type === type);
-        return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
-      });
+      const documentsMissing: string[] = documentRequirement(
+        documents,
+        dealer.gstin,
+        isSubmittedDocument,
+      ).gaps;
 
       const steps: CompletenessResponse['steps'] = [
         {
@@ -710,41 +703,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         statusLabel: 'Under review',
         submittedAt: submittedAt.toISOString(),
         expectedDecisionBy: new Date(submittedAt.getTime() + 86_400_000).toISOString(),
-        message:
-          'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
+        message: SUBMITTED_MESSAGE,
       };
     },
 
     async documents(dealerId: string): Promise<DealerDocumentsResponse> {
-      const rows = await repo.documents(dealerId);
-
-      const data = DOC_TYPES.map((type) => {
-        const doc = rows.find((row) => row.type === type);
-        const status = doc?.status ?? 'REQUIRED';
-
-        return {
-          id: doc?.id ?? null,
-          type,
-          label: DOC_TYPE_LABELS[type],
-          status,
-          statusLabel: documentStatusLabel(
-            status,
-            doc?.fileName ?? null,
-            doc?.rejectionReason ?? null,
-          ),
-          fileName: doc?.fileName ?? null,
-          uploadedAt: doc?.createdAt.toISOString() ?? null,
-          rejectionReason: doc?.rejectionReason ?? null,
-          action:
-            status === 'REQUIRED' || status === 'REJECTED'
-              ? 'Upload'
-              : status === 'UPLOADING'
-                ? 'Cancel'
-                : 'Replace',
-        };
-      });
-
-      return { data, allVerified: data.every((doc) => doc.status === 'VERIFIED') };
+      const dealer = await requireDealer(dealerId);
+      return toDealerDocuments(await repo.documents(dealerId), dealer.gstin);
     },
 
     async presignDocument(dealerId: string, input: DocumentPresignInput): Promise<PresignResponse> {
@@ -754,24 +719,31 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       const previous = await withTransaction(prisma, async (tx) => {
         const dealerStatus = await repo.lockStatus(dealerId, tx);
-        const existing = await repo.documentByType(dealerId, input.type, tx);
+        const existing = await repo.documentByCategory(dealerId, input.category, tx);
         assertDocumentEditable(dealerStatus, existing);
 
         await repo.upsertDocument(
           dealerId,
-          input.type,
+          input.category,
           {
             id: documentId,
+            type: input.type,
             status: 'UPLOADING',
             fileName: input.fileName,
+            description: input.description ?? null,
+            mimeType: input.mimeType,
+            bytes: input.bytes,
+            uploadedAt: null,
             mediaId: null,
             rejectionReason: null,
+            reviewedBy: null,
+            reviewedAt: null,
           },
           tx,
         );
         return existing;
       });
-      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
+      if (previous?.fileName) await storage.delete(documentKey(slug, previous.type, previous.id));
 
       const presigned = await storage.presignPut({
         key,
@@ -788,138 +760,92 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       };
     },
 
-    async commitDocument(dealerId: string, type: DealerDocType, input: DocumentCommitInput) {
+    async commitDocument(
+      dealerId: string,
+      category: SelectableDocCategory,
+      input: DocumentCommitInput,
+      actor: DocumentActor = { type: 'DEALER', id: null },
+    ): Promise<DealerDocumentDto> {
       const slug = await requireSlug(dealerId);
-      const object = await storage.head(documentKey(slug, type, input.documentId));
+      const pending = await repo.documentById(input.documentId);
+      if (!pending || pending.dealerId !== dealerId || pending.category !== category) {
+        throw new NotFoundError(DOCUMENT_NOT_FOUND);
+      }
+      if (pending.status === 'UPLOADED' || pending.status === 'VERIFIED') {
+        return toDealerDocumentDto(pending);
+      }
+      const key = documentKey(slug, pending.type, pending.id);
+      const object = await storage.head(key);
+      const body = object ? await storage.get(key) : null;
+      const sniffed = body ? sniffDocumentType(body) : null;
+      const failure =
+        !object || !body
+          ? new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE)
+          : object.bytes !== pending.bytes || body.length !== pending.bytes
+            ? new DomainError('DOCUMENT_SIZE_MISMATCH', DOCUMENT_SIZE_MISMATCH)
+            : sniffed !== pending.mimeType
+              ? new DomainError('DOCUMENT_CONTENT_MISMATCH', DOCUMENT_CONTENT_MISMATCH)
+              : null;
 
-      await withTransaction(prisma, async (tx) => {
+      const committed = await withTransaction(prisma, async (tx) => {
         const dealerStatus = await repo.lockStatus(dealerId, tx);
         const doc = await repo.documentById(input.documentId, tx);
-        if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
+        if (!doc || doc.dealerId !== dealerId || doc.category !== category) {
           throw new NotFoundError(DOCUMENT_NOT_FOUND);
         }
+        if (doc.status === 'UPLOADED' || doc.status === 'VERIFIED') return { doc, fresh: false };
         assertDocumentEditable(dealerStatus, doc);
-        if (!object) {
-          throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
+        if (failure) {
+          if (object) await repo.deleteDocument(dealerId, category, tx);
+          return { doc, fresh: false };
         }
-
-        await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null }, tx);
+        const updated = await repo.updateDocument(
+          doc.id,
+          {
+            status: 'UPLOADED',
+            mediaId: null,
+            uploadedAt: new Date(),
+            submissionCount: { increment: 1 },
+          },
+          tx,
+        );
+        await audit.record(tx, {
+          actorType: actor.type,
+          actorId: actor.id,
+          dealerId,
+          action: 'document.submitted',
+          entityType: 'DealerDocument',
+          entityId: doc.id,
+          after: {
+            category,
+            type: doc.type,
+            mimeType: doc.mimeType,
+            bytes: doc.bytes,
+            resubmission: updated.submissionCount > 1,
+          },
+        });
+        return { doc: updated, fresh: true };
       });
-      const response = await this.documents(dealerId);
-      return response.data.find((row) => row.type === type);
+      if (failure) {
+        if (object) await storage.delete(key);
+        throw failure;
+      }
+      return toDealerDocumentDto(committed.doc);
     },
 
-    async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
+    async deleteDocument(dealerId: string, category: SelectableDocCategory): Promise<void> {
       const slug = await requireSlug(dealerId);
       const existing = await withTransaction(prisma, async (tx) => {
         const dealerStatus = await repo.lockStatus(dealerId, tx);
-        const doc = await repo.documentByType(dealerId, type, tx);
+        const doc = await repo.documentByCategory(dealerId, category, tx);
         if (!doc) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        if (doc.status === 'REQUIRED') return null;
         assertDocumentEditable(dealerStatus, doc);
 
-        await repo.deleteDocument(dealerId, type, tx);
+        await repo.deleteDocument(dealerId, category, tx);
         return doc;
       });
-      await storage.delete(documentKey(slug, type, existing.id));
-    },
-
-    async yardPhoto(dealerId: string): Promise<YardPhotoDto> {
-      const dealer = await requireDealer(dealerId);
-      if (!dealer.coverMediaId) {
-        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
-      }
-
-      const media = await repo.mediaById(dealer.coverMediaId);
-      if (!media) {
-        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
-      }
-
-      return {
-        mediaId: media.id,
-        status: toMediaStatus(media.status),
-        fileName: media.fileName,
-        url: await storage.signedReadUrl(media.storageKey, YARD_PHOTO_URL_TTL_SECONDS),
-        uploadedAt: media.createdAt.toISOString(),
-      };
-    },
-
-    async presignYardPhoto(
-      dealerId: string,
-      input: YardPhotoPresignInput,
-    ): Promise<PresignResponse> {
-      const dealer = await requireDealer(dealerId);
-      assertYardPhotoEditable(dealer.status);
-
-      const mediaId = randomUUID();
-      const key = yardPhotoKey(dealer.slug, mediaId);
-
-      await repo.createMedia({
-        id: mediaId,
-        dealerId,
-        ownerType: 'DEALER_COVER',
-        storageKey: key,
-        mimeType: input.mimeType,
-        bytes: input.bytes,
-        width: input.width ?? null,
-        height: input.height ?? null,
-        fileName: input.fileName,
-        warnings: [],
-        status: 'PENDING',
-      });
-
-      const presigned = await storage.presignPut({
-        key,
-        contentType: input.mimeType,
-        contentLength: input.bytes,
-      });
-
-      return {
-        mediaId,
-        uploadUrl: presigned.uploadUrl,
-        method: 'PUT',
-        headers: presigned.headers,
-        expiresInSeconds: presigned.expiresInSeconds,
-        maxBytes: input.bytes,
-      };
-    },
-
-    async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto> {
-      await requireDealer(dealerId);
-
-      const media = await repo.mediaById(input.mediaId);
-      if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
-        throw new NotFoundError(UPLOAD_NOT_FOUND);
-      }
-
-      const object = await storage.head(media.storageKey);
-      if (!object) {
-        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
-      }
-
-      const displaced = await withTransaction(prisma, async (tx) => {
-        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
-        const current = await repo.findById(dealerId, tx);
-        await repo.markMediaReady(media.id, tx);
-        await repo.update(dealerId, { coverMediaId: media.id }, tx);
-        return current?.coverMediaId ?? null;
-      });
-      if (displaced && displaced !== media.id) await discardMedia(displaced);
-
-      return this.yardPhoto(dealerId);
-    },
-
-    async deleteYardPhoto(dealerId: string): Promise<void> {
-      await requireDealer(dealerId);
-      const removed = await withTransaction(prisma, async (tx) => {
-        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
-        const current = await repo.findById(dealerId, tx);
-        if (!current?.coverMediaId) {
-          throw new NotFoundError('There is no yard photograph to remove.');
-        }
-        await repo.update(dealerId, { coverMediaId: null }, tx);
-        return current.coverMediaId;
-      });
-      await discardMedia(removed);
+      if (existing) await storage.delete(documentKey(slug, existing.type, existing.id));
     },
 
     async dashboard(dealerId: string, viewerId?: string): Promise<DashboardResponse> {
@@ -1088,25 +1014,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 }
 
 export type DealersService = ReturnType<typeof createDealersService>;
-
-function documentStatusLabel(
-  status: string,
-  fileName: string | null,
-  rejectionReason: string | null,
-): string {
-  switch (status) {
-    case 'UPLOADED':
-      return `${fileName ?? 'File'} · uploaded`;
-    case 'VERIFIED':
-      return `${fileName ?? 'File'} · verified`;
-    case 'UPLOADING':
-      return 'Uploading…';
-    case 'REJECTED':
-      return rejectionReason ?? 'Rejected — please upload a clearer copy';
-    default:
-      return 'Required — PDF or JPG, max 5 MB';
-  }
-}
 
 function greeting(): string {
   const hour = Number(

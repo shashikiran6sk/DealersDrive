@@ -1014,6 +1014,35 @@ a parent re-render that happens to pass the same string restarts the
 timer, and a buyer typing steadily while something else re-renders around
 them would never see the request fire at all.
 
+## `apps/web/src/lib/dates.ts`
+
+### `export function formatIstDate(iso: string): string`
+
+Dates on the admin dealer page — document uploads and reviews, the review
+history, yard visits, the manual activation — are read by staff in India about
+events in India, so they are formatted in `Asia/Kolkata` whatever timezone the
+server renders in. A string that is not a date comes back unchanged rather than
+throwing a `RangeError` into the page.
+
+## `apps/web/src/lib/document-gaps.ts`
+
+### `export function documentGapLabel(code: string): string`
+
+`documentGaps` and `activation.outstanding` carry requirement codes. The
+contract's `DOCUMENT_GAP_LABELS` is written for the dealer ("your GSTIN is on
+file"); the admin wording overrides that one entry. Shared by the document
+review's outstanding list, the manual activation block and the manual
+activation notice, so one page cannot word the same gap three ways. An unknown
+code is shown as itself rather than dropped.
+
+## `apps/web/src/lib/admin-bff.ts`
+
+### `export function yardVisitPhotoPath(`
+
+The API path for the yard-visit photograph proxies, or `null` when either id is
+not a UUID — the admin counterpart of `salesDealerPath`, and `proxyJson`
+answers `null` with a 400 before any request is made.
+
 ## `apps/web/src/lib/api.ts` — the error model's input side
 
 [`docs/errors.md`](../../errors.md) is the operating note; these are the reasons
