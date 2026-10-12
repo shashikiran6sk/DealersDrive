@@ -222,23 +222,6 @@ export const ManualActivationAvailable: Story = {
   },
 };
 
-export const ManualActivationWithoutGstin: Story = {
-  args: {
-    dealer: dealer(
-      { canSuspend: false, canClose: true, canOverrideActivation: true },
-      {
-        status: 'PENDING_APPROVAL',
-        statusLabel: 'Pending verification',
-        statusTone: 'warn',
-        gstin: null,
-        allDocumentsVerified: false,
-        activation: NOT_ACTIVATED,
-        documentGaps: NOT_ACTIVATED.outstanding,
-      },
-    ),
-  },
-};
-
 export const ManualActivationBlocked: Story = {
   args: {
     dealer: dealer(

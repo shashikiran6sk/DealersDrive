@@ -62,8 +62,8 @@ function withActions(
 /**
  * #299 — the controlled exception to standard approval. Super admin only (the
  * API decides, through `canOverrideActivation`), a justification of at least
- * forty characters, the disclaimer shown verbatim and ticked, and a GST review
- * note when no GSTIN is on file. It never verifies a document.
+ * forty characters, and the disclaimer shown verbatim and ticked. It never
+ * verifies a document.
  */
 describe('manual activation', () => {
   beforeEach(() => overrideActivationAction.mockReset().mockResolvedValue({ ok: true }));
@@ -109,19 +109,15 @@ describe('manual activation', () => {
     ).toBeInTheDocument();
   });
 
-  it('requires and sends a GST-not-required review when no GSTIN is on file', async () => {
+  /** L7: no GSTIN on file asks for nothing more, and sends no GST note. */
+  it('asks for no GST review when no GSTIN is on file, and sends none', async () => {
     const user = userEvent.setup();
     render(<DealerAdminActions dealer={withActions({}, { gstin: null })} />);
     const button = screen.getByRole('button', { name: 'Activate manually' });
+    expect(screen.queryByLabelText(/GST/)).toBeNull();
 
     await user.type(screen.getByLabelText(/^Justification/), JUSTIFICATION);
     await user.click(screen.getByRole('checkbox'));
-    expect(button).toBeDisabled();
-
-    await user.type(
-      screen.getByLabelText(/GST registration not required/),
-      'Turnover below threshold; review GST-REV-0042.',
-    );
     expect(button).toBeEnabled();
     await user.click(button);
 
@@ -130,7 +126,6 @@ describe('manual activation', () => {
       {
         justification: JUSTIFICATION,
         acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
-        gstNotRequiredReview: 'Turnover below threshold; review GST-REV-0042.',
       },
       DEALER.slug,
     );

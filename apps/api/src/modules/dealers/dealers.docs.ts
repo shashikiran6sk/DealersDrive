@@ -42,10 +42,11 @@ export const dealersDocs: ModuleDocs = {
         'GSTIN and PAN are absent for the neighbouring reason: they were verified against a ' +
         'document, and a silent edit would invalidate that check. The console has rendered ' +
         'them read-only since it was built; this is the same rule at the API.\n\n' +
-        'Two routes keep the wider shape. `PATCH /v1/dealer/onboarding` takes ' +
-        '`UpdateDealerInput` while the dealership is a **DRAFT** \u2014 nothing has been ' +
-        'verified about it yet \u2014 and `PATCH /v1/admin/dealers/{id}` takes it for a ' +
-        'moderator with the certificate in hand.\n\n' +
+        '`PATCH /v1/dealer/onboarding` takes the wider `DealerOnboardingInput` while the ' +
+        'dealership is a **DRAFT** \u2014 everything except the GSTIN, which is entered with ' +
+        'the GST certificate, and the PAN, which is an identity document. ' +
+        '`PATCH /v1/admin/dealers/{id}` takes `UpdateDealerInput` for a moderator with the ' +
+        'certificate in hand.\n\n' +
         '**Partial by design**: an absent field is untouched. Tagline is optional; null or ' +
         'blank text requests removal through the same review queue. Services remain nonempty ' +
         'when supplied.\n\n' +
@@ -182,11 +183,11 @@ export const dealersDocs: ModuleDocs = {
       audience: 'dealer',
       permission: 'dealer:update',
       requestBody: {
-        schema: 'UpdateDealerInput',
-        description: 'Only the fields being changed.',
+        schema: 'DealerOnboardingInput',
+        description:
+          'Only the fields being changed. The GSTIN is not here: it is entered with the GST certificate when that document is committed, and the PAN is an identity document.',
         example: {
           legalName: 'Sri Lakshmi Motors',
-          gstin: '33AABCS1429P1Z5',
           address: {
             line: '142 Katpadi Main Road',
             city: 'Vellore',
@@ -320,14 +321,20 @@ export const dealersDocs: ModuleDocs = {
         'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
         'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
         '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
-        '`category` in the path must match the slot the document was presigned into.',
+        '`category` in the path must match the slot the document was presigned into.\n\n' +
+        '**GSTIN.** The GSTIN on file is the one on the GST certificate. Committing a ' +
+        '`GST_CERTIFICATE` sets it from `gstin` (blank or absent: none), committing any other ' +
+        'business proof clears it, and sending `gstin` with any other document is a 422 ' +
+        '`GSTIN_NEEDS_GST_CERTIFICATE`. A GSTIN another dealership holds is a 409 ' +
+        '`GSTIN_ALREADY_REGISTERED`. A change revokes Dealer Verified, as any change to ' +
+        'business identity does.',
       audience: 'dealer',
       permission: 'document:upload',
       params: 'DocCategoryParam',
       requestBody: {
         schema: 'DocumentCommitInput',
-        description: 'The `documentId` returned by presign.',
-        example: { documentId: '7f3c9a21-4444-4000-8000-000000000004' },
+        description: 'The `documentId` returned by presign, and the GSTIN with a GST certificate.',
+        example: { documentId: '7f3c9a21-4444-4000-8000-000000000004', gstin: '33AABCS1429P1Z5' },
       },
       responses: [
         {

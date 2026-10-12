@@ -450,10 +450,7 @@ describe('admin review, per category', () => {
     await h.prisma.dealer.update({ where: { id: dealer.dealerId }, data: { pan: null } });
     await moderator.post(`/v1/admin/documents/${personal.id}/verify`).send({}).expect(200);
     await moderator.post(`/v1/admin/documents/${business.id}/verify`).send({}).expect(200);
-    await moderator
-      .post(`/v1/admin/dealers/${dealer.dealerId}/approve`)
-      .send({ gstNotRequiredReview: 'Turnover below the threshold; reviewed case DOC-299-01.' })
-      .expect(200);
+    await moderator.post(`/v1/admin/dealers/${dealer.dealerId}/approve`).send({}).expect(200);
     const approved = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } });
     expect(approved).toMatchObject({ status: 'ACTIVE', verificationStatus: 'NOT_VERIFIED' });
   });
@@ -498,9 +495,6 @@ describe('a legacy application keeps working', () => {
     for (const doc of [personal, address]) {
       await moderator.post(`/v1/admin/documents/${doc.id}/verify`).send({}).expect(200);
     }
-    await moderator
-      .post(`/v1/admin/dealers/${dealer.dealerId}/approve`)
-      .send({ gstNotRequiredReview: 'Legacy application without GSTIN; reviewed case LEGACY-01.' })
-      .expect(200);
+    await moderator.post(`/v1/admin/dealers/${dealer.dealerId}/approve`).send({}).expect(200);
   });
 });

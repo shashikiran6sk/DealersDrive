@@ -52,6 +52,13 @@ been created the create path cannot be walked a second time — it would refuse
 with `DEALER_ALREADY_EXISTS`. So the same two steps PATCH instead, which is
 what `PATCH /v1/dealer` is partial for.
 
+It parses with `DealerOnboardingInput`, the dealer's own slice of
+`UpdateDealerInput`: everything but the GSTIN and the PAN (**L7**). There is
+no longer a "save registrations" action beside it. The GSTIN is entered on the
+GST certificate's card and travels with that document's commit (see
+[the document uploader](auth/document-uploader.md)), and the PAN is one of the
+identity documents rather than a box of its own.
+
 `phone` is deliberately not sent. It is the login identity, and changing it
 needs an OTP round-trip on the new number that onboarding does not have.
 
@@ -77,23 +84,6 @@ than one that has to sign in again.
 ### `(await cookies()).delete(SESSION_COOKIE)`
 
 Already expired, already revoked, API down — all end the same way.
-
-### `export async function saveBusinessIdsAction`
-
-C2, from onboarding step 3 — the two registrations the KYC review needs
-alongside the uploaded documents (DESIGN-SPEC §3.10).
-
-A separate write from the dealership itself because it happens after the
-tenant exists, and because a dealer can come back to it: `PATCH /v1/dealer`
-is partial, so filling one field never blanks the other.
-
-### `await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data)`
-
-The onboarding route (**R27**) — GSTIN and PAN are verified against a
-
-### `await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data)`
-
-document, so they are not on the profile screen's schema either.
 
 ### `export async function submitForVerificationAction(): Promise<ActionState>`
 

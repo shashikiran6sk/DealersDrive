@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cookieJar, revalidations } from '../../../setup.js';
+import { cookieJar } from '../../../setup.js';
 import {
   onboardingAction,
-  saveBusinessIdsAction,
   signOutAction,
   submitForVerificationAction,
   updateOnboardingAction,
@@ -196,68 +195,6 @@ describe('onboarding', () => {
     expect(state.errors?.city).toBeTruthy();
     expect(state.errors?.address).toBeUndefined();
     expect(calls).toHaveLength(0);
-  });
-});
-
-describe('the business registrations', () => {
-  it('patches the dealership and revalidates the wizard', async () => {
-    globalThis.fetch = respond(200, {});
-
-    const state = await saveBusinessIdsAction(
-      {},
-      form({ gstin: '33aaccp1234h1zq', pan: 'aaccp1234h' }),
-    );
-
-    expect(state.saved).toBe(true);
-    expect(calls[0]?.init.method).toBe('PATCH');
-    // Upper-cased before validation: a registration is not case-sensitive, and
-    // rejecting a lower-case paste would be pedantry.
-    expect(bodyOf(calls[0])).toContain('33AACCP1234H1ZQ');
-    expect(revalidations.paths).toContain('/dealer/onboarding');
-  });
-
-  it('reports an invalid GSTIN against the field', async () => {
-    globalThis.fetch = respond(200, {});
-
-    const state = await saveBusinessIdsAction({}, form({ gstin: 'nope', pan: 'AACCP1234H' }));
-
-    expect(state.errors?.gstin).toBeTruthy();
-    expect(calls).toHaveLength(0);
-  });
-
-  /**
-   * **R38.** The API's 409 has to reach the PAN box, not just the banner.
-   *
-   * `fieldErrors()` strips the `body.` prefix, so `body.pan` lands on the `pan`
-   * key the wizard renders `<Field id="pan">` from — the same path GSTIN has
-   * always taken. Asserted because a duplicate that produces only a banner is a
-   * dealer staring at two boxes and being told one of them is wrong.
-   */
-  it.each([
-    [
-      'gstin',
-      'GSTIN_ALREADY_REGISTERED',
-      'That GSTIN is already registered to another dealership.',
-    ],
-    ['pan', 'PAN_ALREADY_REGISTERED', 'That PAN is already registered to another dealership.'],
-  ])('puts a duplicate %s on its own box and in the banner', async (field, code, detail) => {
-    globalThis.fetch = respond(409, {
-      code,
-      detail,
-      errors: [{ field: `body.${field}`, code, message: 'Already registered.' }],
-    });
-
-    const state = await saveBusinessIdsAction(
-      {},
-      form({ gstin: '33AACCP1234H1ZQ', pan: 'AACCP1234H' }),
-    );
-
-    expect(state.errors?.[field]).toBe('Already registered.');
-    expect(state.message).toBe(detail);
-    // And what the dealer typed comes back, so the other box is not emptied by
-    // a refusal about this one.
-    expect(state.values?.pan).toBe('AACCP1234H');
-    expect(state.saved).toBeUndefined();
   });
 });
 

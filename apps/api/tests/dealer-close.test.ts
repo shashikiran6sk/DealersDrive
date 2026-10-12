@@ -67,10 +67,7 @@ async function completeDraft() {
   const dealer = await fixtures.dealership('DRAFT');
   sequence += 1;
   const number = String(5000 + sequence);
-  await dealer.agent
-    .patch('/v1/dealer/onboarding')
-    .send({ gstin: `33CLOSE${number}B1ZX`, pan: `CLOSE${number}B` })
-    .expect(200);
+  const gstin = `33CLOSE${number}B1ZX`;
   for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
       .post('/v1/dealer/documents/presign')
@@ -90,7 +87,10 @@ async function completeDraft() {
       .expect(200);
     await dealer.agent
       .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-      .send({ documentId: presigned.body.documentId })
+      .send({
+        documentId: presigned.body.documentId,
+        ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+      })
       .expect(200);
   }
   const state = await dealer.agent.get('/v1/dealer/completeness').expect(200);

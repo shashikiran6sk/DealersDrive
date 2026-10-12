@@ -36,3 +36,9 @@ export const PORTFOLIO_PHOTO_NOT_PUBLISHED = 'Only an approved photograph can be
 
 export const PORTFOLIO_MODERATION_FORBIDDEN =
   'Only reviewers with portfolio moderation access can decide dealer photographs.';
+
+export const GSTIN_NEEDS_GST_CERTIFICATE =
+  'A GSTIN goes with the GST certificate. Choose “GST certificate” as the business proof to add one.';
+
+export const GSTIN_CHANGED_REASON =
+  'The GSTIN on file changed with a new business proof; a new review is required.';

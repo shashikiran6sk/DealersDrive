@@ -1,12 +1,11 @@
 'use server';
 
 import {
+  DealerOnboardingInput,
   OnboardingInput,
-  UpdateDealerInput,
   type AuthSession,
   type DealerSubmitResponse,
 } from '@dealers-drive/contracts';
-import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -18,7 +17,6 @@ export interface ActionState {
   message?: string;
   errors?: Record<string, string>;
   values?: Record<string, string>;
-  saved?: boolean;
 }
 
 const ONBOARDING_FIELDS = [
@@ -87,7 +85,7 @@ export async function updateOnboardingAction(
     ONBOARDING_FIELDS.map((field) => [field, text(formData, field)]),
   );
 
-  const parsed = UpdateDealerInput.safeParse({
+  const parsed = DealerOnboardingInput.safeParse({
     legalName: text(formData, 'legalName').trim(),
     tagline: text(formData, 'tagline').trim(),
     specialities: servicesOf(text(formData, 'specialities')),
@@ -134,35 +132,6 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
   (await cookies()).delete(scope === 'admin' ? ADMIN_SESSION_COOKIE : SESSION_COOKIE);
   if (scope !== 'admin') await writeAuthHint(false);
   redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
-}
-
-export async function saveBusinessIdsAction(
-  _previous: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const values = {
-    gstin: text(formData, 'gstin').trim().toUpperCase(),
-    pan: text(formData, 'pan').trim().toUpperCase(),
-  };
-
-  const parsed = UpdateDealerInput.safeParse(values);
-  if (!parsed.success) return { errors: fieldErrors(parsed.error.issues), values };
-
-  try {
-    await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data);
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return {
-        message: error.userMessage('Those could not be saved.'),
-        errors: apiFieldErrors(error),
-        values,
-      };
-    }
-    return { message: 'The API is unavailable. Try again shortly.', values };
-  }
-
-  revalidatePath('/dealer/onboarding');
-  return { values, saved: true };
 }
 
 export async function submitForVerificationAction(): Promise<ActionState> {

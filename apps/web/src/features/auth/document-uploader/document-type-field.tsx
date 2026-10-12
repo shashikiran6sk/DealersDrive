@@ -4,7 +4,7 @@ import { DOC_CATEGORY_TYPES, DOC_TYPE_HINTS, DOC_TYPE_LABELS } from '@dealers-dr
 
 import { DESCRIPTION_LIMITS, DOCUMENT_UPLOADER_TEXT } from './document-uploader.constants';
 import type { DocumentTypeFieldProps } from './document-uploader.types';
-import { categoryType, needsDescription } from './utils';
+import { carriesGstin, categoryType, needsDescription } from './utils';
 
 export function DocumentTypeField({
   id,
@@ -20,7 +20,7 @@ export function DocumentTypeField({
   const hintId = `${id}-hint`;
   const descriptionId = `${id}-description`;
   const hint = type ? DOC_TYPE_HINTS[type] : undefined;
-  const gstMismatch = category === 'BUSINESS_IDENTITY' && gstinOnFile && type !== 'GST_CERTIFICATE';
+  const gstMismatch = category === 'BUSINESS_IDENTITY' && gstinOnFile && !carriesGstin(type);
 
   return (
     <div className="flex flex-col gap-[10px]">
@@ -45,7 +45,7 @@ export function DocumentTypeField({
           <div id={hintId} className="mt-1 flex flex-col gap-[2px] text-[12px] ink-subtle">
             {hint ? <span>{hint}</span> : null}
             {gstMismatch ? (
-              <span className="text-(--color-warn)">{DOCUMENT_UPLOADER_TEXT.gstRequired}</span>
+              <span className="text-(--color-warn)">{DOCUMENT_UPLOADER_TEXT.gstinCleared}</span>
             ) : null}
           </div>
         ) : null}

@@ -587,8 +587,6 @@ export function createSalesService({
               landline: input.landline ?? null,
               tagline: input.tagline,
               specialities: input.specialities,
-              gstin: input.gstin ?? null,
-              pan: input.pan ?? null,
               onboardingSource: 'ASSISTED',
               assistedByMemberId: memberId,
               assistedConsentAt: consentAt,
@@ -645,8 +643,6 @@ export function createSalesService({
       const patch: UpdateDealerInput = {
         ...(input.legalName === undefined ? {} : { legalName: input.legalName }),
         ...(input.tagline === undefined ? {} : { tagline: input.tagline }),
-        ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
-        ...(input.pan === undefined ? {} : { pan: input.pan }),
         ...(input.specialities === undefined ? {} : { specialities: input.specialities }),
         ...(input.landline === undefined ? {} : { contact: { landline: input.landline } }),
         ...(input.addressLine === undefined &&

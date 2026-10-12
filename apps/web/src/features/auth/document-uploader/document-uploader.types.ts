@@ -8,7 +8,7 @@ export interface DocumentUploaderProps {
   category: SelectableDocCategory;
   document: DealerDocumentDto | null;
   basePath?: string;
-  gstinOnFile?: boolean;
+  gstin?: string | null;
 }
 
 export interface DocumentTypeFieldProps {
@@ -20,4 +20,17 @@ export interface DocumentTypeFieldProps {
   onDescriptionChange: (description: string) => void;
   gstinOnFile: boolean;
   disabled: boolean;
+}
+
+export interface GstinFieldProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  error: string | null;
+  disabled: boolean;
+}
+
+export interface CommitRefusal {
+  message: string | null;
+  gstin: string | null;
 }

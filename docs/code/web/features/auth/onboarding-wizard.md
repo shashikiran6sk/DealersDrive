@@ -141,12 +141,14 @@ not needed to save the draft — the dealership already exists by this step —
 only to submit it, and the copy says that in so many words: a dealer who
 thinks the documents gate the draft abandons the form rather than coming back
 with them. Aadhaar is named as voluntary in the step copy as well as in its
-own hint, and with a GSTIN on file the step names the GST certificate as the
-business proof.
+own hint.
 
-### `<form action={submit} className="flex flex-col gap-[14px]" noValidate>`
-
-GSTIN and PAN in mono, as the review screen renders them (§3.10).
+The step has no GSTIN or PAN boxes of its own (**L7**). It states the GST
+responsibility once — the dealership is responsible for its own registration
+where the law requires one — and points a registered dealer at the GST
+certificate, whose card carries the GSTIN box. Asking for the GSTIN beside the
+document that proves it means the two cannot disagree, and a dealer who is not
+registered is never shown a blank box that looks like a requirement.
 
 ### `{outstanding.length > 0 ?`
 

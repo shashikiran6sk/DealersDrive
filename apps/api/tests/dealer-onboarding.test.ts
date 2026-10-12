@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { AuthHarness } from './auth-harness.js';
 import { createAuthHarness, createFakeGoogle } from './auth-harness.js';
 import { env } from '../src/config/env.js';
+import { uploadDocument } from './document-uploads.js';
 
 /** Where the local-disk adapter puts a key. `STORAGE_LOCAL_DIR` is set by the runner. */
 function storagePath(key: string): string {
@@ -790,18 +791,36 @@ describe('the contact number, after onboarding', () => {
   });
 });
 
+/**
+ * **L7** — the GSTIN is entered with the GST certificate, so the uniqueness
+ * check is met on the certificate's commit rather than on the onboarding form.
+ */
 describe('one dealership, one GSTIN', () => {
   const gstin = '33AABCS1429B1ZX';
 
+  async function commitCertificate(agent: ReturnType<AuthHarness['agent']>, value: string) {
+    const documentId = await uploadDocument(agent, '/v1/dealer', {
+      category: 'BUSINESS_IDENTITY',
+      type: 'GST_CERTIFICATE',
+    });
+    return agent
+      .post('/v1/dealer/documents/BUSINESS_IDENTITY/commit')
+      .send({ documentId, gstin: value });
+  }
+
   it('refuses a GSTIN another dealership already registered', async () => {
     const first = await dealership();
-    await first.agent.patch('/v1/dealer/onboarding').send({ gstin }).expect(200);
+    expect((await commitCertificate(first.agent, gstin)).status).toBe(200);
 
     const second = await dealership();
-    const refused = await second.agent.patch('/v1/dealer/onboarding').send({ gstin }).expect(409);
+    const refused = await commitCertificate(second.agent, gstin);
 
+    expect(refused.status).toBe(409);
     expect(refused.body.code).toBe('GSTIN_ALREADY_REGISTERED');
     expect(refused.body.errors?.[0]?.field).toBe('body.gstin');
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: second.dealerId } })).gstin,
+    ).toBeNull();
   });
 
   /**
@@ -816,10 +835,24 @@ describe('one dealership, one GSTIN', () => {
     expect(none).toBeGreaterThan(1);
   });
 
-  it('lets a dealership re-save its own GSTIN', async () => {
-    const { agent } = await dealership();
-    await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
-    await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
+  it('lets a dealership re-commit a certificate carrying its own GSTIN', async () => {
+    const { agent, dealerId } = await dealership();
+    expect((await commitCertificate(agent, '33AABCS1429B1Z5')).status).toBe(200);
+    expect((await commitCertificate(agent, '33AABCS1429B1Z5')).status).toBe(200);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).gstin).toBe(
+      '33AABCS1429B1Z5',
+    );
+  });
+
+  it('is not a field of the onboarding form', async () => {
+    const { agent, dealerId } = await dealership();
+
+    const refused = await agent.patch('/v1/dealer/onboarding').send({ gstin }).expect(400);
+
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: 'body.gstin', code: 'UNRECOGNIZED_KEY' }),
+    ]);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).gstin).toBeNull();
   });
 });
 
@@ -892,13 +925,7 @@ describe('email notifications', () => {
 
   /** Everything `POST /v1/dealer/submit` refuses without. */
   async function completeApplication(agent: ReturnType<AuthHarness['agent']>): Promise<void> {
-    await agent
-      .patch('/v1/dealer/onboarding')
-      .send({
-        gstin: `33MAILR${String(1000 + counter)}B1ZX`,
-        pan: `MAILR${String(1000 + counter)}B`,
-      })
-      .expect(200);
+    const gstin = `33MAILR${String(1000 + counter)}B1ZX`;
 
     for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
       const presigned = await agent
@@ -919,7 +946,10 @@ describe('email notifications', () => {
         .expect(200);
       await agent
         .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-        .send({ documentId: presigned.body.documentId })
+        .send({
+          documentId: presigned.body.documentId,
+          ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+        })
         .expect(200);
     }
   }
@@ -1185,14 +1215,15 @@ describe('email notifications', () => {
 /**
  * **R38 — PAN joined GSTIN.**
  *
- * The asymmetry before this was not a decision. Both are read off a document by
- * the same moderator on the same screen, and both identify one taxable entity —
- * so two dealerships holding one PAN is either one business applying twice, or a
- * typo that has quietly carried somebody else's tax identity into a KYC review.
+ * Both identify one taxable entity, so two dealerships holding one PAN is either
+ * one business applying twice, or a typo that has quietly carried somebody
+ * else's tax identity into a KYC review.
  *
- * These mirror the GSTIN block above case for case, deliberately: the two rules
- * are the same rule, and a reader comparing the blocks should find no
- * difference to explain.
+ * Since **L7** the dealer no longer types a PAN — a PAN card is one of the
+ * personal identity documents — so the onboarding form refuses the field. The
+ * column and its unique index remain, and the moderator's correction route
+ * (`PATCH /v1/admin/dealers/:id`) still writes it, so the constraint is
+ * asserted there.
  */
 describe('one dealership, one PAN', () => {
   /*
@@ -1203,29 +1234,46 @@ describe('one dealership, one PAN', () => {
    */
   const pan = 'PQRCS9001W';
 
-  it('refuses a PAN another dealership already registered', async () => {
-    const first = await dealership();
-    await first.agent.patch('/v1/dealer/onboarding').send({ pan }).expect(200);
+  async function moderator() {
+    subjectCounter += 1;
+    h.google.claims = {
+      subject: `pan-mod-sub-${subjectCounter}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const agent = h.agent();
+    await h.signInAdmin(agent);
+    return agent;
+  }
 
-    const second = await dealership();
-    const refused = await second.agent.patch('/v1/dealer/onboarding').send({ pan }).expect(409);
+  it('is not a field of the onboarding form', async () => {
+    const { agent, dealerId } = await dealership();
 
-    expect(refused.body.code).toBe('PAN_ALREADY_REGISTERED');
-    expect(refused.body.errors?.[0]?.field).toBe('body.pan');
-    expect(refused.body.errors?.[0]?.code).toBe('PAN_ALREADY_REGISTERED');
+    const refused = await agent.patch('/v1/dealer/onboarding').send({ pan }).expect(400);
+
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: 'body.pan', code: 'UNRECOGNIZED_KEY' }),
+    ]);
+    expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).pan).toBeNull();
   });
 
-  /**
-   * The contract upper-cases before the regex, so a lower-case PAN is the same
-   * PAN by the time it reaches the check. Asserted because it is the case a
-   * case-sensitive index would let straight through.
-   */
-  it('refuses it however the second dealer typed it', async () => {
+  it('refuses a PAN another dealership already registered, however it was typed', async () => {
     const first = await dealership();
-    await first.agent.patch('/v1/dealer/onboarding').send({ pan: 'ZZBCS4321Q' }).expect(200);
-
     const second = await dealership();
-    await second.agent.patch('/v1/dealer/onboarding').send({ pan: '  zzbcs4321q  ' }).expect(409);
+    const admin = await moderator();
+    await admin.patch(`/v1/admin/dealers/${first.dealerId}`).send({ pan }).expect(200);
+
+    const refused = await admin
+      .patch(`/v1/admin/dealers/${second.dealerId}`)
+      .send({ pan: `  ${pan.toLowerCase()}  ` })
+      .expect(409);
+
+    expect(refused.body.code).toBe('PAN_ALREADY_REGISTERED');
+    expect(refused.body.errors?.[0]).toMatchObject({
+      field: 'body.pan',
+      code: 'PAN_ALREADY_REGISTERED',
+    });
   });
 
   /**
@@ -1241,60 +1289,35 @@ describe('one dealership, one PAN', () => {
   });
 
   /** The `id: { not: exceptDealerId }` clause, from the outside. */
-  it('lets a dealership re-save its own PAN', async () => {
-    const { agent } = await dealership();
-    await agent.patch('/v1/dealer/onboarding').send({ pan: 'BBBCS1111R' }).expect(200);
-    await agent.patch('/v1/dealer/onboarding').send({ pan: 'BBBCS1111R' }).expect(200);
+  it('lets a dealership re-save its own PAN alongside another edit', async () => {
+    const { dealerId } = await dealership();
+    const admin = await moderator();
+    await admin.patch(`/v1/admin/dealers/${dealerId}`).send({ pan: 'BBBCS1111R' }).expect(200);
+
+    const saved = await admin
+      .patch(`/v1/admin/dealers/${dealerId}`)
+      .send({ pan: 'BBBCS1111R', legalName: 'A Different Name' })
+      .expect(200);
+
+    expect(saved.body.pan).toBe('BBBCS1111R');
   });
 
   /**
-   * The case that matters most for an existing dealership: editing something
-   * else entirely, while holding a PAN, must not be refused by its own row.
-   */
-  it('lets a dealership edit its profile without tripping on its own PAN', async () => {
-    const { agent } = await dealership();
-    await agent
-      .patch('/v1/dealer/onboarding')
-      .send({ pan: 'CCBCS2222S', gstin: '33CCBCS2222S1ZX' })
-      .expect(200);
-
-    await agent
-      .patch('/v1/dealer/onboarding')
-      .send({ pan: 'CCBCS2222S', gstin: '33CCBCS2222S1ZX', legalName: 'A Different Name' })
-      .expect(200);
-  });
-
-  /** A dealership may of course move to a PAN nobody holds. */
-  it('accepts a PAN no other dealership has', async () => {
-    const first = await dealership();
-    await first.agent.patch('/v1/dealer/onboarding').send({ pan: 'DDBCS3333T' }).expect(200);
-
-    const second = await dealership();
-    const saved = await second.agent
-      .patch('/v1/dealer/onboarding')
-      .send({ pan: 'EEBCS4444U' })
-      .expect(200);
-
-    expect(saved.body.pan).toBe('EEBCS4444U');
-  });
-
-  /**
-   * Both duplicated in one submit is answered about the **GSTIN**. One field
-   * error at a time is the shape of every check on this path, and a GSTIN
-   * embeds the PAN of the entity that holds it — so a dealer who corrects the
-   * GSTIN usually corrects the PAN with it, and naming the derived field first
-   * would send them to the wrong document.
+   * Both duplicated in one write is answered about the **GSTIN**: a GSTIN
+   * embeds the PAN of the entity that holds it, so naming the derived field
+   * first would send the reader to the wrong document.
    */
   it('names the GSTIN when both collide', async () => {
     const first = await dealership();
-    await first.agent
-      .patch('/v1/dealer/onboarding')
+    const second = await dealership();
+    const admin = await moderator();
+    await admin
+      .patch(`/v1/admin/dealers/${first.dealerId}`)
       .send({ gstin: '33FFBCS5555V1ZX', pan: 'FFBCS5555V' })
       .expect(200);
 
-    const second = await dealership();
-    const refused = await second.agent
-      .patch('/v1/dealer/onboarding')
+    const refused = await admin
+      .patch(`/v1/admin/dealers/${second.dealerId}`)
       .send({ gstin: '33FFBCS5555V1ZX', pan: 'FFBCS5555V' })
       .expect(409);
 
@@ -1410,19 +1433,11 @@ describe('no yard photograph in onboarding', () => {
   /** A submit is refused until every part of the application is there. */
   it('submits with only the business and identity evidence', async () => {
     const { agent } = await dealership();
-    await agent
-      .patch('/v1/dealer/onboarding')
-      /*
-       * Both derived from `counter` since **R38**. The GSTIN always was,
-       * because it has always been unique; the PAN was a literal, which was
-       * safe only while exactly one test wrote it. It is unique now too, so
-       * the next test to reach for this line cannot break the one above it.
-       */
-      .send({
-        gstin: `33AABCS${String(1000 + counter)}B1ZX`,
-        pan: `AABCS${String(1000 + counter)}B`,
-      })
-      .expect(200);
+    /*
+     * Derived from `counter`, because it is unique. Since L7 it is entered
+     * with the GST certificate rather than on the onboarding form.
+     */
+    const gstin = `33AABCS${String(1000 + counter)}B1ZX`;
     for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
       const presigned = await agent
         .post('/v1/dealer/documents/presign')
@@ -1442,7 +1457,10 @@ describe('no yard photograph in onboarding', () => {
         .expect(200);
       await agent
         .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-        .send({ documentId: presigned.body.documentId })
+        .send({
+          documentId: presigned.body.documentId,
+          ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+        })
         .expect(200);
     }
 

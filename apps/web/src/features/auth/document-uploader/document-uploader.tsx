@@ -26,20 +26,32 @@ import {
   TONE,
 } from './document-uploader.constants';
 import type { DocumentUploaderProps } from './document-uploader.types';
-import { descriptionIsValid, initialType, needsDescription } from './utils';
+import { GstinField } from './gstin-field';
+import {
+  carriesGstin,
+  commitBody,
+  commitRefusal,
+  descriptionIsValid,
+  gstinProblem,
+  initialType,
+  needsDescription,
+} from './utils';
 
 export function DocumentUploader({
   category,
   document,
   basePath = DEALER_DOCUMENT_BASE,
-  gstinOnFile = false,
+  gstin = null,
 }: DocumentUploaderProps) {
   const paths = documentPaths(basePath);
   const router = useRouter();
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
+  const gstinOnFile = Boolean(gstin);
   const [type, setType] = useState(() => initialType(category, document, gstinOnFile));
   const [description, setDescription] = useState(document?.description ?? '');
+  const [gstinValue, setGstinValue] = useState(gstin ?? '');
+  const [gstinError, setGstinError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'upload' | 'delete' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +59,7 @@ export function DocumentUploader({
   const headingId = `${id}-heading`;
   const status = document?.status ?? 'REQUIRED';
   const uploaded = status !== 'REQUIRED';
+  const withGstin = carriesGstin(type);
 
   function readyProblem(): string | null {
     if (!type) return DOCUMENT_UPLOADER_TEXT.chooseType;
@@ -56,10 +69,16 @@ export function DocumentUploader({
     return null;
   }
 
+  function gstinReady(): boolean {
+    const problem = withGstin ? gstinProblem(gstinValue) : null;
+    setGstinError(problem);
+    return problem === null;
+  }
+
   function choose(): void {
     const problem = readyProblem();
     setError(problem);
-    if (!problem) input.current?.click();
+    if (!problem && gstinReady()) input.current?.click();
   }
 
   async function upload(file: File): Promise<void> {
@@ -74,6 +93,7 @@ export function DocumentUploader({
       setError(problem);
       return;
     }
+    if (!gstinReady()) return;
 
     setBusy('upload');
     try {
@@ -90,8 +110,16 @@ export function DocumentUploader({
 
       await putToStorage(signed, file);
 
-      const commit = await postJson(paths.commit(category), { documentId });
-      if (!commit.ok) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.commitFailed);
+      const commit = await postJson(
+        paths.commit(category),
+        commitBody(documentId, type, gstinValue),
+      );
+      if (!commit.ok) {
+        const refusal = await commitRefusal(commit);
+        setGstinError(refusal.gstin);
+        setError(refusal.message);
+        return;
+      }
 
       router.refresh();
     } catch (caught) {
@@ -142,6 +170,19 @@ export function DocumentUploader({
         gstinOnFile={gstinOnFile}
         disabled={busy !== null}
       />
+
+      {withGstin ? (
+        <GstinField
+          id={`${id}-gstin`}
+          value={gstinValue}
+          onChange={(value) => {
+            setGstinValue(value);
+            setGstinError(null);
+          }}
+          error={gstinError}
+          disabled={busy !== null}
+        />
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-[12px] border border-dashed border-(--color-divider) p-[11px]">
         <div className="flex h-8 w-8 flex-none items-center justify-center bg-(--color-surface) font-mono text-[11px]">

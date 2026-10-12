@@ -49,10 +49,7 @@ async function application(verify = true) {
   const admin = await fixtures.moderator();
   applicationSequence += 1;
   const number = String(1000 + applicationSequence);
-  await dealer.agent
-    .patch('/v1/dealer/onboarding')
-    .send({ gstin: `33REJEC${number}B1ZX`, pan: `REJEC${number}B` })
-    .expect(200);
+  const gstin = `33REJEC${number}B1ZX`;
   const documents: string[] = [];
   for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
@@ -73,7 +70,10 @@ async function application(verify = true) {
       .expect(200);
     await dealer.agent
       .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-      .send({ documentId: presigned.body.documentId })
+      .send({
+        documentId: presigned.body.documentId,
+        ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+      })
       .expect(200);
     documents.push(String(presigned.body.documentId));
   }

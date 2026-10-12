@@ -56,7 +56,41 @@ Nothing is preselected for an empty personal slot. The first type in that
 list is Aadhaar, which is voluntary; defaulting to it would quietly steer a
 dealer towards the one document the product goes out of its way not to ask
 for. With a GSTIN on file the business slot starts on the GST certificate,
-because that is the only business proof that will satisfy the requirement.
+because that is the proof the GSTIN was entered with, and choosing another one
+would remove it.
+
+### `gstin = null,`
+
+The GSTIN on file, as a value rather than the `gstinOnFile` flag it replaced
+(**L7**). The dealer and the Sales representative no longer type a GSTIN in a
+separate field: it is entered on this card, beside the GST certificate it is
+printed on, and the value on file pre-fills that box so replacing the
+certificate does not quietly drop it.
+
+### `function gstinReady(): boolean`
+
+The GSTIN is checked with the contract's own `OptionalGstin` before the file
+picker opens, for the same reason as `readyProblem`: the BFF parses the commit
+with `DocumentCommitInput`, and a malformed GSTIN would otherwise be found out
+only after the bytes were in storage, as a 400 that names nothing. The
+refusal goes under the box, not into the card's alert.
+
+### `commitBody(documentId, type, gstinValue)`
+
+`gstin` is sent with a GST certificate and with nothing else. The API answers
+a GSTIN on any other type with a 422 (`GSTIN_NEEDS_GST_CERTIFICATE`), and
+committing another business proof clears the GSTIN on file by itself, so
+there is nothing to send. A blank box on a GST certificate is sent as `null`
+— "this certificate carries no GSTIN" — rather than omitted.
+
+### `const refusal = await commitRefusal(commit);`
+
+A refused commit can be about the GSTIN — `GSTIN_ALREADY_REGISTERED` (409) or,
+in principle, `GSTIN_NEEDS_GST_CERTIFICATE` (422) — and the API names the field
+`body.gstin`. That message goes under the GSTIN box, and the problem's
+`detail` goes in the card's alert unless it would say the same words twice. A
+5xx keeps the old generic sentence: what a gateway says about itself is not
+something to put in front of a dealer.
 
 ### `function readyProblem(): string | null`
 
@@ -91,11 +125,23 @@ it is the only type whose name does not say what the document is. The
 contract refuses a description on any other type, so showing the field
 elsewhere would be inviting a 400.
 
-### `const gstMismatch = category === 'BUSINESS_IDENTITY' && gstinOnFile && type !== 'GST_CERTIFICATE'`
+### `const gstMismatch = category === 'BUSINESS_IDENTITY' && gstinOnFile && !carriesGstin(type);`
 
-A warning, not a block. The API still accepts another business proof and
-reports the GST certificate as an outstanding gap; saying so beside the
-picker is cheaper than the dealer finding out on the Review step.
+A warning, not a block. The API accepts another business proof, and
+committing one clears the GSTIN on file (**L7**) — the GSTIN belongs to the
+GST certificate it was entered with. Saying so beside the picker is cheaper
+than the dealer finding the GSTIN gone from their profile afterwards.
+
+## `apps/web/src/features/auth/document-uploader/gstin-field.tsx`
+
+### `export function GstinField({ id, value, onChange, error, disabled }: GstinFieldProps)`
+
+Rendered only beside a GST certificate. Optional, fifteen characters, and
+upper-cased as it is typed, because a GSTIN is not case-sensitive and the
+contract upper-cases it anyway; showing the dealer the form it will be stored
+in is better than a silent transform. Private to the uploader, so it is not
+exported from the barrel and has no sandbox entry of its own — it is a state
+of `DocumentUploader` (`GstCertificateWithGstin`, `GstinAlreadyRegistered`).
 
 ## `apps/web/src/features/auth/document-uploader/utils.ts`
 

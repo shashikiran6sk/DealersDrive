@@ -1,5 +1,6 @@
 import type { DealerDocumentDto } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { useEffect, type ReactNode } from 'react';
 
 import { DocumentUploader } from '@/features/auth/document-uploader';
 
@@ -25,6 +26,53 @@ function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto
   };
 }
 
+const GSTIN = '33AABCS1429B1ZX';
+
+const GSTIN_REFUSAL = {
+  type: 'about:blank',
+  title: 'Conflict',
+  status: 409,
+  code: 'GSTIN_ALREADY_REGISTERED',
+  detail: 'That GSTIN is already registered to another dealership.',
+  errors: [
+    { field: 'body.gstin', code: 'GSTIN_ALREADY_REGISTERED', message: 'Already registered.' },
+  ],
+};
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+function RefusingCommit({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    const real = window.fetch.bind(window);
+    window.fetch = (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.endsWith('/presign')) {
+        return Promise.resolve(
+          json({
+            documentId: '00000000-0000-4000-8000-000000000001',
+            uploadUrl: 'https://storage.sandbox/put',
+            method: 'PUT',
+            headers: {},
+            expiresInSeconds: 300,
+          }),
+        );
+      }
+      if (url.startsWith('https://storage.sandbox/')) return Promise.resolve(json({}));
+      if (url.endsWith('/commit')) return Promise.resolve(json(GSTIN_REFUSAL, 409));
+      return real(input);
+    };
+    return () => {
+      window.fetch = real;
+    };
+  }, []);
+  return <>{children}</>;
+}
+
 const meta = {
   title: 'Forms/DocumentUploader',
   component: DocumentUploader,
@@ -46,16 +94,17 @@ const meta = {
       control: 'object',
       description: 'The document in this slot, or null when nothing has been submitted.',
     },
-    gstinOnFile: {
-      control: 'boolean',
-      description: 'With a GSTIN on file the business proof must be the GST certificate.',
+    gstin: {
+      control: 'text',
+      description:
+        'The GSTIN on file, or null. Pre-fills the GSTIN box beside a GST certificate and starts the business card on that type; another business proof removes it on commit.',
     },
     basePath: {
       control: 'text',
       description: 'The BFF base the presign, commit and delete go to (Sales passes its own).',
     },
   },
-  args: { category: 'PERSONAL_IDENTITY', document: null, gstinOnFile: false },
+  args: { category: 'PERSONAL_IDENTITY', document: null, gstin: null },
 } satisfies Meta<typeof DocumentUploader>;
 
 export default meta;
@@ -68,7 +117,23 @@ export const EmptyPersonal: Story = { args: { category: 'PERSONAL_IDENTITY', doc
 export const EmptyBusiness: Story = { args: { category: 'BUSINESS_IDENTITY', document: null } };
 
 export const EmptyBusinessWithGstin: Story = {
-  args: { category: 'BUSINESS_IDENTITY', document: null, gstinOnFile: true },
+  args: { category: 'BUSINESS_IDENTITY', document: null, gstin: GSTIN },
+};
+
+export const GstCertificateWithGstin: Story = {
+  args: { category: 'BUSINESS_IDENTITY', document: document(), gstin: GSTIN },
+};
+
+export const GstinAlreadyRegistered: Story = {
+  args: { category: 'BUSINESS_IDENTITY', document: null, gstin: GSTIN },
+  render: (args) => (
+    <RefusingCommit>
+      <p style={{ fontSize: 12, marginBottom: 8 }}>
+        Upload any PDF: the commit is refused with a 409 on the GSTIN.
+      </p>
+      <DocumentUploader {...args} />
+    </RefusingCommit>
+  ),
 };
 
 export const OtherCertificateWithDescription: Story = {
@@ -140,7 +205,7 @@ export const BothCategories: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <DocumentUploader category="PERSONAL_IDENTITY" document={null} />
-      <DocumentUploader category="BUSINESS_IDENTITY" document={document()} gstinOnFile />
+      <DocumentUploader category="BUSINESS_IDENTITY" document={document()} gstin={GSTIN} />
     </div>
   ),
 };

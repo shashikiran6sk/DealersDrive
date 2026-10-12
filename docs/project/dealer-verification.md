@@ -15,8 +15,10 @@ contract and the audit payload (`policyVersion: dd-business-verification-v2`). E
 badge rests on is checked by the API instead of typed by the reviewer: the dealership is
 ACTIVE, its representative's phone and email are proved, and **both document categories**
 (Personal and Business Identity Proof, with the GST certificate when a GSTIN is on file) were
-verified by an administrator and are still in protected storage. GST applicability for a
-dealership without a GSTIN is recorded once, at approval (#298) or manual activation (#299).
+verified by an administrator and are still in protected storage. No GST applicability note is
+recorded at approval or manual activation any more (owner decision, 2026-10-12): the dealer
+accepts responsibility for its own GST registration in the onboarding text, and a GSTIN, when
+there is one, comes with the GST certificate.
 Old audit rows that carry an assessment still read; the assessment is simply not shown.
 
 Only current admitted MODERATOR/SUPER_ADMIN reviewers can read verification history and decide.

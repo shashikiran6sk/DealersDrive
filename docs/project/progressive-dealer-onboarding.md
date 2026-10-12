@@ -11,12 +11,12 @@ requirement.
 
 ## The stages
 
-| Step | What it collects                                                                                                       | Who must finish it                                                                      |
-| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| 1    | Account: a verified mobile number **and** a verified email, consent. Self-onboarding: Google (email) + phone OTP       | Dealer, or the sales representative with the dealer's handset and inbox                 |
-| 2    | Business details: legal name, address, district, state, pin, Maps link, services; GSTIN/PAN if any — Save and continue | Dealer, or the sales representative — **the representative's mandatory work ends here** |
-| 3    | Documents: one Personal Identity Proof and one Business Identity Proof (a separate page)                               | Dealer from their own account, or the representative if the dealer hands them over      |
-| 4    | Submit for review                                                                                                      | Dealer or representative, once steps 1–3 are complete                                   |
+| Step | What it collects                                                                                                 | Who must finish it                                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1    | Account: a verified mobile number **and** a verified email, consent. Self-onboarding: Google (email) + phone OTP | Dealer, or the sales representative with the dealer's handset and inbox                 |
+| 2    | Business details: legal name, address, district, state, pin, Maps link, services — Save and continue             | Dealer, or the sales representative — **the representative's mandatory work ends here** |
+| 3    | Documents: one Personal Identity Proof and one Business Identity Proof (a separate page)                         | Dealer from their own account, or the representative if the dealer hands them over      |
+| 4    | Submit for review                                                                                                | Dealer or representative, once steps 1–3 are complete                                   |
 
 ### Verify first (assisted onboarding)
 
@@ -52,7 +52,9 @@ One document per category; the dealer chooses which.
 | Personal Identity Proof | Aadhaar (**voluntary**, masked), PAN card, Voter ID, Driving licence, Passport                                                                                                     |
 | Business Identity Proof | Shop & Establishment certificate, GST certificate, Udyam registration, Trade licence, Business registration, Partnership registration, RTO dealer authorisation, Other (described) |
 
-- With a GSTIN on file, the business proof must be the **GST certificate**
+- The GSTIN is entered in an optional box on the business proof card when the
+  dealer chooses the **GST certificate**; another business proof clears it. With
+  a GSTIN on file, the business proof must be the **GST certificate**
   (`docs/project/optional-gstin.md`).
 - "Other business certificate" requires a description of what it is and who
   issued it.
@@ -99,9 +101,9 @@ rather than asks the reviewer to restate. See `docs/project/dealer-verification.
 
 A Super admin may activate a dealership whose documents are not verified.
 
-- Requires a justification of at least 40 characters, acknowledgement of the
-  versioned disclaimer, and — when no GSTIN is on file — a recorded GST
-  applicability review.
+- Requires a justification of at least 40 characters and acknowledgement of
+  the versioned disclaimer. No GST note is asked for (owner decision,
+  `docs/project/optional-gstin.md`).
 - Refused unless the dealership is DRAFT or PENDING_APPROVAL, the account and
   phone checks and the business details are complete, and no submitted document
   stands rejected. When both categories are already verified it is refused in

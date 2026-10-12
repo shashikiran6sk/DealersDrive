@@ -174,6 +174,7 @@ function setup(options: Options = {}) {
   const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
   const conflictQueries: { dealerId: string; fields: Record<string, unknown> }[] = [];
+  const dealerWrites: Record<string, unknown>[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
 
@@ -228,6 +229,13 @@ function setup(options: Options = {}) {
   } as unknown as DealersRepository;
 
   const tx = {
+    dealer: {
+      findUniqueOrThrow: () => Promise.resolve(row),
+      update: (args: { data: Record<string, unknown> }) => {
+        dealerWrites.push(args.data);
+        return Promise.resolve({});
+      },
+    },
     $queryRaw: (parts: TemplateStringsArray, ...values: unknown[]) => {
       if (parts.join('').includes('service_states')) {
         return Promise.resolve(
@@ -346,6 +354,7 @@ function setup(options: Options = {}) {
     outbox,
     deletes,
     conflictQueries,
+    dealerWrites,
     mapsLookups,
   };
 }
@@ -1114,6 +1123,95 @@ describe('commitDocument', () => {
       },
     });
     expect(JSON.stringify(entry)).not.toContain('gst.pdf');
+  });
+
+  it('writes the GSTIN entered with a GST certificate, and marks the change in the audit', async () => {
+    const h = setup({ dealer: { gstin: null }, documentById: stored, head: landed });
+
+    await h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', {
+      documentId: 'doc-1',
+      gstin: '33AAACA4432S1Z4',
+    });
+
+    expect(h.conflictQueries).toEqual([
+      { dealerId: 'dealer-1', fields: { gstin: '33AAACA4432S1Z4' } },
+    ]);
+    expect(h.dealerWrites).toEqual([{ gstin: '33AAACA4432S1Z4' }]);
+    expect(h.audits.find((row) => row.action === 'document.submitted')).toMatchObject({
+      after: { gstinChanged: true },
+    });
+  });
+
+  it('leaves the row alone when the certificate carries the GSTIN already on file', async () => {
+    const h = setup({ documentById: stored, head: landed });
+
+    await h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', {
+      documentId: 'doc-1',
+      gstin: '33AABCS1429B1ZX',
+    });
+
+    expect(h.dealerWrites).toEqual([]);
+    expect(h.audits.find((row) => row.action === 'document.submitted')).not.toHaveProperty(
+      'after.gstinChanged',
+    );
+  });
+
+  it('clears the GSTIN when another business proof is committed', async () => {
+    const h = setup({ documentById: { ...stored, type: 'UDYAM' }, head: landed });
+
+    await h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', { documentId: 'doc-1' });
+
+    expect(h.conflictQueries).toEqual([]);
+    expect(h.dealerWrites).toEqual([{ gstin: null }]);
+  });
+
+  it('never touches the GSTIN on a personal identity commit', async () => {
+    const h = setup({
+      documentById: { ...stored, category: 'PERSONAL_IDENTITY', type: 'PAN_CARD' },
+      head: landed,
+    });
+
+    await h.service.commitDocument('dealer-1', 'PERSONAL_IDENTITY', { documentId: 'doc-1' });
+
+    expect(h.dealerWrites).toEqual([]);
+  });
+
+  it('refuses a GSTIN with any document but the GST certificate, and commits nothing', async () => {
+    const h = setup({
+      documentById: { ...stored, category: 'PERSONAL_IDENTITY', type: 'PAN_CARD' },
+      head: landed,
+    });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'PERSONAL_IDENTITY', {
+        documentId: 'doc-1',
+        gstin: '33AAACA4432S1Z4',
+      }),
+    ).rejects.toMatchObject({
+      status: 422,
+      code: 'GSTIN_NEEDS_GST_CERTIFICATE',
+      errors: [expect.objectContaining({ field: 'body.gstin' })],
+    });
+    expect(h.upserts).toEqual([]);
+    expect(h.dealerWrites).toEqual([]);
+  });
+
+  it('refuses a GSTIN another dealership holds, and commits nothing', async () => {
+    const h = setup({
+      dealer: { gstin: null },
+      documentById: stored,
+      head: landed,
+      conflicting: { legalName: false, gstin: true, pan: false },
+    });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'BUSINESS_IDENTITY', {
+        documentId: 'doc-1',
+        gstin: '33AAACA4432S1Z4',
+      }),
+    ).rejects.toMatchObject({ status: 409, code: 'GSTIN_ALREADY_REGISTERED' });
+    expect(h.upserts).toEqual([]);
+    expect(h.dealerWrites).toEqual([]);
   });
 
   it('returns an already committed document unchanged, so a double submit is harmless', async () => {

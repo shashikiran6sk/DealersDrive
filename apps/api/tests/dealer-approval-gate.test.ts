@@ -72,10 +72,7 @@ async function application(verify = true) {
   const admin = await fixtures.moderator();
   applicationSequence += 1;
   const number = String(1000 + applicationSequence);
-  await dealer.agent
-    .patch('/v1/dealer/onboarding')
-    .send({ gstin: `33APPRO${number}B1ZX`, pan: `APPRO${number}B` })
-    .expect(200);
+  const gstin = `33APPRO${number}B1ZX`;
   const documents: string[] = [];
   for (const type of ['GST_CERTIFICATE', 'PAN_CARD'] as const) {
     const presigned = await dealer.agent
@@ -96,7 +93,10 @@ async function application(verify = true) {
       .expect(200);
     await dealer.agent
       .post(`/v1/dealer/documents/${documentCategoryOf(type)}/commit`)
-      .send({ documentId: presigned.body.documentId })
+      .send({
+        documentId: presigned.body.documentId,
+        ...(type === 'GST_CERTIFICATE' ? { gstin } : {}),
+      })
       .expect(200);
     documents.push(String(presigned.body.documentId));
   }
@@ -331,17 +331,31 @@ describe('BUG-002 — complete application, capability and history regression', 
     ).toBe('ACTIVE');
   });
 
-  it('preserves the GST applicability review gate when GSTIN is absent', async () => {
-    const field = 'gstin';
+  it('approves a dealership without a GSTIN with no GST note', async () => {
     const f = await application();
-    await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { [field]: null } });
+    await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { gstin: null } });
     const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
     expect(detail.body.actions.canApprove).toBe(true);
+    await f.admin.post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`).send({}).expect(200);
+    const approved = await h.prisma.auditLog.findFirstOrThrow({
+      where: { dealerId: f.dealer.dealerId, action: 'dealer.approved' },
+    });
+    expect(approved.after).not.toHaveProperty('gstNotRequiredReview');
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: f.dealer.dealerId } })).status,
+    ).toBe('ACTIVE');
+  });
+
+  it('refuses a gstNotRequiredReview field with a 400 that names it, and approves nothing', async () => {
+    const f = await application();
+    await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { gstin: null } });
     const response = await f.admin
       .post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`)
-      .send({})
-      .expect(422);
-    expect(response.body.code).toBe('GST_APPLICABILITY_REVIEW_REQUIRED');
+      .send({ gstNotRequiredReview: 'Turnover below the threshold; reviewed case GATE-01.' })
+      .expect(400);
+    expect(response.body.errors).toEqual([
+      expect.objectContaining({ field: 'body.gstNotRequiredReview', code: 'UNRECOGNIZED_KEY' }),
+    ]);
     expect(
       await h.prisma.auditLog.count({
         where: { dealerId: f.dealer.dealerId, action: 'dealer.approved' },

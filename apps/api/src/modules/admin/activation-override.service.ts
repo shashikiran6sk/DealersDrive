@@ -15,12 +15,7 @@ import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import {
-  ConflictError,
-  DomainError,
-  ForbiddenError,
-  NotFoundError,
-} from '../../platform/errors.js';
+import { ConflictError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import { invalidateDealerVerification } from '../dealers/dealers.facade.js';
 import type { AdminDeps } from './admin.service.js';
@@ -138,12 +133,6 @@ export function createActivationOverrideService({
           gstin: dealer.gstin,
         });
         if (blocked) throw new ConflictError('ACTIVATION_OVERRIDE_BLOCKED', blocked);
-        if (!dealer.gstin && !input.gstNotRequiredReview) {
-          throw new DomainError(
-            'GST_APPLICABILITY_REVIEW_REQUIRED',
-            'Record why GST registration is not required before activating a business without GSTIN. Uncertain applicability must remain under review.',
-          );
-        }
 
         const now = new Date();
         const updated = await tx.dealer.update({
@@ -175,7 +164,6 @@ export function createActivationOverrideService({
             disclaimerVersion: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
             outstanding: state.outstanding,
             verificationStatus: dealer.verificationStatus,
-            ...(dealer.gstin ? {} : { gstNotRequiredReview: input.gstNotRequiredReview }),
           },
         });
         await enqueueOutbox(tx, {

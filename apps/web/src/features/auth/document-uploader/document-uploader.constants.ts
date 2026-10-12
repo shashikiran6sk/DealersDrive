@@ -54,6 +54,10 @@ export const CATEGORY_GLYPHS: Record<SelectableDocCategory, string> = {
   BUSINESS_IDENTITY: 'BIZ',
 };
 
+export const GSTIN_LENGTH = 15;
+
+export const GSTIN_FIELD = 'body.gstin';
+
 export const DESCRIPTION_LIMITS = {
   min: DOCUMENT_DESCRIPTION_MIN,
   max: DOCUMENT_DESCRIPTION_MAX,
@@ -66,7 +70,12 @@ export const DOCUMENT_UPLOADER_TEXT = {
   descriptionLabel: 'Describe the certificate',
   descriptionPlaceholder: 'Name of the certificate and the authority that issued it',
   noFile: 'No file yet — PDF, JPEG or PNG, up to 5 MB',
-  gstRequired: 'Your GSTIN is on file, so this must be your GST Registration Certificate.',
+  gstinCleared:
+    'Your GSTIN is on file with your GST Registration Certificate. Choosing a different business proof removes the GSTIN.',
+  gstinLabel: 'GSTIN',
+  gstinHint: 'optional — as printed on the certificate',
+  gstinPlaceholder: '33ABCDE1234F1Z5',
+  gstinInvalid: 'Enter a valid 15-character GSTIN, or leave it blank.',
   chooseType: 'Choose which document you are uploading first.',
   describeFirst: `Describe the certificate and who issued it, in ${String(DOCUMENT_DESCRIPTION_MIN)}–${String(DOCUMENT_DESCRIPTION_MAX)} characters, first.`,
   fileMeta: (label: string, status: string) => `${label} · ${status}`,

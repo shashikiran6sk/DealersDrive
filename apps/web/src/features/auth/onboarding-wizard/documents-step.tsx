@@ -6,11 +6,8 @@ import {
   type DealerDocumentDto,
   type DealerProfile,
 } from '@dealers-drive/contracts';
-import { useActionState } from 'react';
 
-import { Field, invalidProps } from '@/components/forms/field';
 import { Banner } from '@/components/ui/primitives';
-import { saveBusinessIdsAction, type ActionState } from '@/features/auth/actions';
 import { DocumentUploader, documentForCategory } from '@/features/auth/document-uploader';
 
 import { ONBOARDING_TEXT } from './onboarding-wizard.constants';
@@ -31,9 +28,6 @@ export function DocumentsStep({
   onBack,
   onDone,
 }: DocumentsStepProps) {
-  const [state, submit, pending] = useActionState<ActionState, FormData>(saveBusinessIdsAction, {});
-  const values = state.values ?? {};
-
   const outstanding = stepOutstanding(completeness, 'documents').concat(
     stepOutstanding(completeness, 'business'),
   );
@@ -47,46 +41,9 @@ export function DocumentsStep({
         <p className="mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.documentsIntro}</p>
       </div>
 
-      {state.message ? <Banner tone="err">{state.message}</Banner> : null}
-      {state.saved ? <Banner tone="ok">{ONBOARDING_TEXT.saved}</Banner> : null}
-
-      <form action={submit} className="flex flex-col gap-[14px]" noValidate>
-        <div className="grid gap-[14px] sm:grid-cols-2">
-          <Field id="gstin" label="GSTIN (optional where applicable)" error={state.errors?.gstin}>
-            <input
-              id="gstin"
-              name="gstin"
-              className="input font-mono uppercase"
-              placeholder="33ABCDE1234F1Z5"
-              maxLength={15}
-              defaultValue={values.gstin === undefined ? (dealer?.gstin ?? '') : values.gstin}
-              {...invalidProps('gstin', state.errors?.gstin)}
-            />
-          </Field>
-
-          <Field id="pan" label="PAN" error={state.errors?.pan}>
-            <input
-              id="pan"
-              name="pan"
-              className="input font-mono uppercase"
-              placeholder="ABCDE1234F"
-              maxLength={10}
-              defaultValue={values.pan ?? dealer?.pan ?? ''}
-              required
-              aria-required="true"
-              {...invalidProps('pan', state.errors?.pan)}
-            />
-          </Field>
-        </div>
-
-        <button type="submit" className="btn btn-secondary self-start" disabled={pending}>
-          {pending ? ONBOARDING_TEXT.saving : ONBOARDING_TEXT.saveRegistrations}
-        </button>
-      </form>
-
       <div className="flex flex-col gap-[6px] text-[13px] ink-muted">
         <p>{ONBOARDING_TEXT.documentsRule}</p>
-        <p>{dealer?.gstin ? ONBOARDING_TEXT.gstOnFile : ONBOARDING_TEXT.gstObligation}</p>
+        <p>{ONBOARDING_TEXT.gstResponsibility}</p>
       </div>
       <div className="flex flex-col gap-[10px]">
         {SELECTABLE_DOC_CATEGORIES.map((category) => (
@@ -94,7 +51,7 @@ export function DocumentsStep({
             key={category}
             category={category}
             document={documentForCategory(documents, category)}
-            gstinOnFile={Boolean(dealer?.gstin)}
+            gstin={dealer?.gstin ?? null}
           />
         ))}
       </div>

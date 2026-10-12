@@ -20,13 +20,11 @@ let superAdmin: request.Agent;
 
 const JUSTIFICATION =
   'Owner identity and yard confirmed in person by the field team; policy exception OPS-2026-114 approved.';
-const GST_REVIEW = 'No GST registration required: turnover below threshold, case GST-OPS-114.';
 
 function overrideBody(extra: Record<string, unknown> = {}) {
   return {
     acknowledgedDisclaimer: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
     justification: JUSTIFICATION,
-    gstNotRequiredReview: GST_REVIEW,
     ...extra,
   };
 }
@@ -85,8 +83,8 @@ describe('an authorized manual activation', () => {
       disclaimerVersion: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
       justification: JUSTIFICATION,
       outstanding: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'],
-      gstNotRequiredReview: GST_REVIEW,
     });
+    expect(audit.after).not.toHaveProperty('gstNotRequiredReview');
     expect(
       await h.prisma.outboxEvent.count({
         where: { aggregateId: d.dealerId, eventType: 'DealerApproved' },
@@ -180,6 +178,10 @@ describe('what it requires', () => {
     ['no acknowledged disclaimer', { acknowledgedDisclaimer: undefined }],
     ['an outdated disclaimer version', { acknowledgedDisclaimer: 'manual-activation-2020-01-01' }],
     ['a dealerId in the body', { dealerId: '11111111-1111-4111-8111-111111111111' }],
+    [
+      'a gstNotRequiredReview field',
+      { gstNotRequiredReview: 'No GST registration required: turnover below threshold.' },
+    ],
   ])('refuses %s with a 400', async (_label, change) => {
     const d = await dealer();
     await superAdmin
@@ -189,13 +191,26 @@ describe('what it requires', () => {
     expect((await row(d.dealerId)).status).toBe('DRAFT');
   });
 
-  it('still requires the GST applicability review when no GSTIN is on file', async () => {
+  it('manually activates a dealership without a GSTIN with no GST note', async () => {
+    const d = await dealer();
+    expect((await row(d.dealerId)).gstin).toBeNull();
+    await superAdmin
+      .post(`/v1/admin/dealers/${d.dealerId}/activation-override`)
+      .send(overrideBody())
+      .expect(200);
+    expect((await row(d.dealerId)).status).toBe('ACTIVE');
+  });
+
+  it('names gstNotRequiredReview in the 400', async () => {
     const d = await dealer();
     const refused = await superAdmin
       .post(`/v1/admin/dealers/${d.dealerId}/activation-override`)
-      .send(overrideBody({ gstNotRequiredReview: undefined }))
-      .expect(422);
-    expect(refused.body.code).toBe('GST_APPLICABILITY_REVIEW_REQUIRED');
+      .send(overrideBody({ gstNotRequiredReview: 'Turnover below the GST threshold, OPS-114.' }))
+      .expect(400);
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: 'body.gstNotRequiredReview', code: 'UNRECOGNIZED_KEY' }),
+    ]);
+    expect((await row(d.dealerId)).status).toBe('DRAFT');
   });
 });
 

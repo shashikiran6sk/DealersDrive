@@ -34,7 +34,6 @@ export const ActivationOverrideInput = z
     acknowledgedDisclaimer: z.literal(MANUAL_ACTIVATION_DISCLAIMER_VERSION, {
       error: 'Read and acknowledge the manual activation disclaimer.',
     }),
-    gstNotRequiredReview: z.string().trim().min(20).max(1000).optional(),
   })
   .strict();
 export type ActivationOverrideInput = z.infer<typeof ActivationOverrideInput>;

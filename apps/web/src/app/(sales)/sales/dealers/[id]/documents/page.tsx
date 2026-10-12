@@ -58,7 +58,7 @@ export default async function AssistedDealerDocumentsPage({
             category={category}
             document={documentForCategory(dealer.documents, category)}
             basePath={salesDocumentBase(dealer.id)}
-            gstinOnFile={Boolean(dealer.gstin)}
+            gstin={dealer.gstin}
           />
         ))}
       </section>

@@ -14,7 +14,6 @@ const FILLED = {
   city: 'Katpadi',
   district: 'Vellore',
   pincode: '632007',
-  pan: 'AAACS1429P',
 };
 
 const meta = {
