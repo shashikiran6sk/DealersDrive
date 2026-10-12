@@ -19,3 +19,5 @@ export const DEALER_NOT_APPROVED =
 
 export const ASSISTED_DEALER_INACTIVE =
   'This dealership is not open for listings: it is suspended, rejected or closed.';
+
+export const VEHICLE_MAKE_UNKNOWN = 'Choose the make from the list.';

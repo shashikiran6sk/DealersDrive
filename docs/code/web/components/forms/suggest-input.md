@@ -7,9 +7,10 @@ Parent: [web](../../../README.md)
 ### `export function SuggestInput(...)`
 
 The suggest-existing control **F060** asked for and **R46** made universal: as a
-dealer types a make or model, the values other vehicles already carry are
-offered, so `Maruti Suzuki` is one facet rather than three spellings of it. It is
-a suggestion, never a closed list — a genuinely new model must be enterable.
+dealer types a model, the values other vehicles already carry are offered, so
+`Swift Dzire` is one facet rather than three spellings of it. It is a suggestion,
+never a closed list — a genuinely new model must be enterable. The make has its
+own closed list instead, in [vehicle-make-select](vehicle-make-select.md).
 
 A native `<datalist>` rather than a custom combobox: the browser supplies the
 keyboard contract, the screen-reader semantics and the mobile picker, and the

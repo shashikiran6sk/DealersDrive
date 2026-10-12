@@ -1,4 +1,9 @@
-import { slugify, type CarSuggestion, type CarSuggestionKind } from '@dealers-drive/contracts';
+import {
+  slugify,
+  vehicleMakeLabel,
+  type CarSuggestion,
+  type CarSuggestionKind,
+} from '@dealers-drive/contracts';
 import type { Prisma } from '@prisma/client';
 
 import { listingWhere, wordsOf } from './search.filters.js';
@@ -75,7 +80,7 @@ function candidatesOf(rows: readonly SuggestRow[]): Candidate[] {
   const all = new Map<string, Candidate>();
 
   for (const row of rows) {
-    const make = row.make?.trim() ?? '';
+    const make = row.make ? vehicleMakeLabel(row.make) : '';
     const brand = slugify(make);
     if (!brand) continue;
     add(all, `b:${brand}`, { kind: 'BRAND', brand, model: null }, make, null, row.count);

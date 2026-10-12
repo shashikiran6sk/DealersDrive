@@ -51,7 +51,9 @@ describe('normaliseVehicleText', () => {
 
 describe('VehicleFieldSchemas', () => {
   it('normalises free text on the way in', () => {
-    expect(VehicleFieldSchemas.make.parse('  Tata  Motors ')).toBe('Tata Motors');
+    expect(VehicleFieldSchemas.model.parse('  Grand   i10 Nios ')).toBe('Grand i10 Nios');
+    expect(VehicleFieldSchemas.make.parse('  Some  Maker ')).toBe('Some Maker');
+    expect(VehicleFieldSchemas.make.parse('  Tata  Motors ')).toBe('Tata');
   });
 
   it('refuses an empty make once the whitespace is gone', () => {

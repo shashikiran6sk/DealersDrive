@@ -33,9 +33,13 @@ A count of zero is reported as `null`, and the service turns that into the same
 The write-time half of the D1 guard rail, which R46 makes apply to every
 vehicle rather than only to the RC fallback. A make or model typed in a
 different case from one already stored adopts the stored spelling — the
-**oldest**, so the first dealer to type `Maruti Suzuki` decides how it reads for
+**oldest**, so the first dealer to type `Swift Dzire` decides how it reads for
 everybody after them. Whitespace is collapsed by the contract before this is
 asked; spelling, abbreviation and synonyms are deliberately left alone.
+
+The service now asks it for models only. A make is resolved by the contract to
+one of `VEHICLE_MAKES` (`packages/contracts/src/vehicle-makes.ts`), aliases
+included, so there is no stored spelling left for it to adopt.
 
 ### `async suggestions(field, prefix, limit)`
 
@@ -84,6 +88,17 @@ it would bury the rows that mean something.
 
 `description: ''` is stored as NULL: an emptied text box is the dealer removing
 the description, not writing an empty one.
+
+### `function checkMake(input, current)`
+
+A make must be one of `VEHICLE_MAKES` once the contract has resolved aliases,
+with one exception: the value the vehicle already holds. Cars saved before the
+list existed carry whatever was typed, and the wizard sends the make back on
+every save of its step. Refusing that would make a dealer change a field they
+did not touch, so it is accepted unchanged for that vehicle only. No stored row
+is rewritten; the search side folds those spellings into their brand at read
+time (`vehicleMakeSlug`). The check runs after the ownership lookup, so a make
+sent for another dealer's vehicle is still a 404, not a hint that the id exists.
 
 ## `apps/api/src/modules/vehicles/vehicles.mapper.ts`
 

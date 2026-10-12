@@ -176,6 +176,12 @@ consequences worth keeping:
 - a slug nobody carries resolves to **no spellings**, and `make IN ()` is an
   empty page. It must never resolve to "no filter".
 
+Makes are keyed by `vehicleMakeSlug` rather than plain `slugify`: a stored
+spelling that resolves to a canonical brand (`Maruti`, `MARUTI SUZUKI INDIA
+LTD`) takes that brand's slug. The brand facet (`brandFacet`), the model
+facet's `parent` and the car suggestions use the same key and label, so a
+legacy row sits under its brand without being rewritten.
+
 It is not a second slug rule written in SQL: `slugify` normalises Unicode,
 which a `regexp_replace` would not, and two rules would eventually disagree.
 

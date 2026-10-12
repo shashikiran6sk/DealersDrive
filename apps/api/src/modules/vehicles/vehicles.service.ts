@@ -2,6 +2,7 @@ import {
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
+  isVehicleMake,
   parseRegistration,
   vehicleIssues,
   type CreateVehicleInput,
@@ -38,6 +39,7 @@ import {
   DUPLICATE_REGISTRATION,
   REGISTRATION_ALREADY_LISTED,
   VEHICLE_INCOMPLETE,
+  VEHICLE_MAKE_UNKNOWN,
   VEHICLE_NOT_DELETABLE,
   VEHICLE_NOT_EDITABLE,
   VEHICLE_NOT_FOUND,
@@ -168,6 +170,13 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     return (await repo.existingSpelling(field, value)) ?? value;
   }
 
+  function checkMake(input: UpdateVehicleInput, current: VehicleRow): void {
+    if (!input.make || isVehicleMake(input.make) || input.make === current.make) return;
+    throw new DomainError('VEHICLE_MAKE_UNKNOWN', VEHICLE_MAKE_UNKNOWN, {
+      errors: [{ field: 'make', code: 'UNKNOWN_MAKE', message: VEHICLE_MAKE_UNKNOWN }],
+    });
+  }
+
   async function writeOf(input: UpdateVehicleInput): Promise<VehicleWrite> {
     const data: VehicleWrite = {};
 
@@ -175,7 +184,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       data.registrationNumber = input.registrationNumber;
       data.rtoCode = rtoCodeOf(input.registrationNumber);
     }
-    if (input.make !== undefined) data.make = input.make && (await spelled('make', input.make));
+    if (input.make !== undefined) data.make = input.make;
     if (input.model !== undefined) {
       data.model = input.model && (await spelled('model', input.model));
     }
@@ -301,6 +310,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         throw duplicate();
       }
 
+      checkMake(input, current);
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
       if (fields.length === 0) return toDealerVehicle(current, actor.permissions);
@@ -469,6 +479,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         throw duplicate();
       }
 
+      checkMake(input, current);
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
       if (fields.length === 0) return toDealerVehicle(current, ASSISTED_VEHICLE_PERMISSIONS);

@@ -48,3 +48,5 @@ export * from './admin-phone.js';
 export * from './dealer-verification.js';
 
 export * from './dealer-gstin.js';
+
+export * from './vehicle-makes.js';
