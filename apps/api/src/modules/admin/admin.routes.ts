@@ -17,6 +17,8 @@ import { postDealerReinstate } from './routes/post-dealer-reinstate.js';
 import { postDealerReject } from './routes/post-dealer-reject.js';
 import { postDealerRequestChanges } from './routes/post-dealer-request-changes.js';
 import { postDealerSuspend } from './routes/post-dealer-suspend.js';
+import { postDealerActivationOverride } from './routes/post-dealer-activation-override.js';
+import { postDealerActivationOverrideRevoke } from './routes/post-dealer-activation-override-revoke.js';
 import { postDocumentReject } from './routes/post-document-reject.js';
 import { postDocumentVerify } from './routes/post-document-verify.js';
 import { postProfileChangeApprove } from './routes/post-profile-change-approve.js';
@@ -30,6 +32,8 @@ const ROUTES: AdminRoute[] = [
   getDealers,
   getDealer,
   postDealerApprove,
+  postDealerActivationOverride,
+  postDealerActivationOverrideRevoke,
   patchDealer,
   postDealerReject,
   postDealerRequestChanges,

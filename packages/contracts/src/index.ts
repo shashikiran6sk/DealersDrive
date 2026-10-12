@@ -52,3 +52,4 @@ export * from './dealer-gstin.js';
 export * from './vehicle-makes.js';
 
 export * from './dealer-documents.js';
+export * from './dealer-activation.js';

@@ -42,6 +42,8 @@ describe('the surface', () => {
         'GET /dealers/:id/verification',
         'POST /dealers/:id/verification',
         'POST /dealers/:id/approve',
+        'POST /dealers/:id/activation-override',
+        'POST /dealers/:id/activation-override/revoke',
         'PATCH /dealers/:id',
         'POST /dealers/:id/reject',
         'POST /dealers/:id/request-changes',

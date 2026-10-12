@@ -316,7 +316,14 @@ function setup(options: Options = {}) {
    * write itself is right is `dealers.service`'s own test.
    */
   const dealers = {
-    completeness: () => Promise.resolve({ isComplete: options.applicationComplete ?? true }),
+    completeness: () =>
+      Promise.resolve({
+        isComplete: options.applicationComplete ?? true,
+        steps: [
+          { key: 'account', complete: true, missing: [] },
+          { key: 'business', complete: options.applicationComplete ?? true, missing: [] },
+        ],
+      }),
     update: (dealerId: string, input: unknown) => {
       dealerPatches.push({ dealerId, input });
       return Promise.resolve({ id: dealerId, legalName: 'Sri Lakshmi Motors Pvt Ltd' });

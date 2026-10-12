@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { DealerActivationState } from './dealer-activation.js';
 import { DealerDocCategory } from './dealer-documents.js';
 
 import { CursorPage, Uuid } from './common.js';
@@ -312,6 +313,8 @@ export const AdminDealerDetail = z.object({
   }),
   documents: z.array(AdminDealerDocument),
   allDocumentsVerified: z.boolean(),
+  /** How this dealership was activated, and what an override left outstanding. */
+  activation: DealerActivationState,
   /** What is still missing from the document requirement, by category (empty when met). */
   documentGaps: z.array(z.string()),
   /** Document review decisions and submissions, newest first, from the audit log. */
@@ -374,6 +377,11 @@ export const AdminDealerDetail = z.object({
     canGrantCredits: z.boolean(),
     /** Whether this console may amend the dealer's own answers (D3 edit). */
     canEdit: z.boolean(),
+    /** Super admin only, and only while the dealership awaits activation (#299). */
+    canOverrideActivation: z.boolean(),
+    /** Why a manual activation is not available right now, for the console to say. */
+    overrideBlockedReason: z.string().nullable(),
+    canRevokeOverride: z.boolean(),
   }),
 });
 export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;

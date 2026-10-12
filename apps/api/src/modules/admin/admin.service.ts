@@ -1,3 +1,8 @@
+import {
+  activationState,
+  createActivationOverrideService,
+  overrideBlockReason,
+} from './activation-override.service.js';
 import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
   documentRequirement,
@@ -283,6 +288,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
   return {
     verification: createDealerVerificationService({ prisma, audit, storage }),
+    activation: createActivationOverrideService({ prisma, audit, dealers }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
@@ -449,6 +455,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const owner = dealer.members[0];
       const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
+      const overrideBlocked = overrideBlockReason({
+        status: dealer.status,
+        selfReview:
+          assistedBy(dealer, admin) ||
+          dealer.members.some((member) => member.userId === admin.userId),
+        accountComplete: application.steps[0]?.complete ?? false,
+        businessComplete: application.steps[1]?.complete ?? false,
+        documents: dealer.documents,
+        gstin: dealer.gstin,
+      });
 
       const canReview = admin.permissions.includes('admin:document:review');
       const documents = await Promise.all(
@@ -542,6 +558,18 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         },
         documents,
         allDocumentsVerified: allVerified,
+        activation: activationState(
+          dealer,
+          dealer.documents,
+          dealer.activationOverrideById
+            ? ((
+                await prisma.user.findUnique({
+                  where: { id: dealer.activationOverrideById },
+                  select: { email: true },
+                })
+              )?.email ?? null)
+            : null,
+        ),
         documentGaps: documentRequirement(dealer.documents, dealer.gstin, isVerifiedDocument).gaps,
         documentHistory: canReview ? await documentHistory(dealerId) : [],
         profileChange: dealer.profileEdits[0]
@@ -571,6 +599,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
           canEdit: admin.permissions.includes('admin:dealer:approve'),
+          canOverrideActivation:
+            admin.permissions.includes('admin:dealer:activation-override') &&
+            overrideBlocked === null,
+          overrideBlockedReason: admin.permissions.includes('admin:dealer:activation-override')
+            ? overrideBlocked
+            : null,
+          canRevokeOverride:
+            admin.permissions.includes('admin:dealer:activation-override') &&
+            dealer.activationMethod === 'MANUAL_OVERRIDE' &&
+            (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED'),
         },
       };
     },
@@ -630,7 +668,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
-          data: { status: 'ACTIVE', approvedAt: new Date(), statusReason: null },
+          data: {
+            status: 'ACTIVE',
+            approvedAt: new Date(),
+            statusReason: null,
+            activationMethod: 'STANDARD',
+          },
         });
 
         const creditsGranted = 0;
@@ -1106,6 +1149,22 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
         const allVerified = allDocumentsVerified(all, dealer?.gstin ?? null);
+        if (!rejecting && allVerified && dealer?.activationMethod === 'MANUAL_OVERRIDE') {
+          await tx.dealer.update({
+            where: { id: dealer.id },
+            data: { activationMethod: 'STANDARD' },
+          });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: dealer.id,
+            action: 'dealer.activation_standardised',
+            entityType: 'Dealer',
+            entityId: dealer.id,
+            before: { activationMethod: 'MANUAL_OVERRIDE' },
+            after: { activationMethod: 'STANDARD' },
+          });
+        }
         if (rejecting && dealer)
           await invalidateDealerVerification(
             tx,

@@ -19,13 +19,8 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../platform/errors.js';
-import {
-  ADMIN_MEMBERSHIP_LOCK,
-  isAdmitted,
-  isSeatSuspended,
-  permissionsForMember,
-  type AdminPrincipal,
-} from '../auth/auth.facade.js';
+import { type AdminPrincipal } from '../auth/auth.facade.js';
+import { assertCurrentAdmin } from './current-admin.js';
 import { documentKey } from '../dealers/dealers.facade.js';
 import type { AdminDeps } from './admin.service.js';
 
@@ -37,22 +32,13 @@ const HistoryPayload = z.object({
 });
 
 async function currentReviewer(tx: Tx, admin: AdminPrincipal): Promise<void> {
-  if (!admin.permissions.includes('admin:dealer:approve'))
-    throw new ForbiddenError('Only authorized dealership reviewers can decide verification.');
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ADMIN_MEMBERSHIP_LOCK}))`;
-  await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${admin.userId}::uuid FOR SHARE`;
-  const actor = await tx.user.findUnique({
-    where: { id: admin.userId },
-    include: { roles: true, adminMember: true },
-  });
-  if (
-    !actor ||
-    !isAdmitted({ email: actor.email, status: actor.status, member: actor.adminMember }) ||
-    isSeatSuspended(actor.roles, 'ADMIN') ||
-    !actor.adminMember ||
-    !permissionsForMember(actor.adminMember.role).includes('admin:dealer:approve')
-  )
-    throw new ForbiddenError('Your dealership review access is no longer available.');
+  await assertCurrentAdmin(
+    tx,
+    admin,
+    'admin:dealer:approve',
+    'Only authorized dealership reviewers can decide verification.',
+    'Your dealership review access is no longer available.',
+  );
 }
 
 type EvidenceDocument = {

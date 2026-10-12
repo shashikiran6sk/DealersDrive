@@ -233,6 +233,73 @@ export const adminDocs: ModuleDocs = {
       errors: [400, 401, 403, 404, 409],
     },
     {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/activation-override',
+      operationId: 'overrideDealerActivation',
+      tag: DOC_TAGS.admin,
+      summary: 'Activate a dealership without the standard document review',
+      description:
+        'The controlled exception to standard approval (#299). Super admin only, re-checked ' +
+        'under the membership lock. Requires the disclaimer version ' +
+        '(`acknowledgedDisclaimer`) and a justification of at least 40 characters, and a GST ' +
+        'applicability review when no GSTIN is on file.\n\n' +
+        'Refused with 409 `ACTIVATION_OVERRIDE_BLOCKED` unless the dealership is DRAFT or ' +
+        'PENDING_APPROVAL, the representative account and phone checks and the business ' +
+        'details are complete, no submitted document stands rejected, and the documents are ' +
+        'not already verified (standard approval applies then). The assisting representative ' +
+        'and members of the dealership get 403 `SELF_REVIEW_FORBIDDEN`.\n\n' +
+        'The dealership becomes ACTIVE with `activationMethod` MANUAL_OVERRIDE. No document ' +
+        'is marked verified, Dealer Verified is untouched, and the outstanding categories ' +
+        'are returned and shown. Audited as `dealer.activation_overridden`.',
+      audience: 'admin',
+      permission: 'admin:dealer:activation-override',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ActivationOverrideInput',
+        description: 'The acknowledged disclaimer version and the justification.',
+        example: {
+          acknowledgedDisclaimer: 'manual-activation-2026-10-12',
+          justification:
+            'Field team verified the yard and owner in person; policy exception case OPS-2026-114 approved.',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Activated manually; documents still outstanding are listed.',
+          schema: 'ActivationOverrideResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/activation-override/revoke',
+      operationId: 'revokeDealerActivationOverride',
+      tag: DOC_TAGS.admin,
+      summary: 'Withdraw a manual activation',
+      description:
+        'Returns a manually activated dealership to PENDING_APPROVAL with the reason, which ' +
+        'takes its listings off the marketplace until it is approved through the standard ' +
+        'review. Any Dealer Verified status is revoked. 409 `ACTIVATION_OVERRIDE_NOT_ACTIVE` ' +
+        'for a dealership that was not activated manually.',
+      audience: 'admin',
+      permission: 'admin:dealer:activation-override',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'RevokeActivationOverrideInput',
+        description: 'Why the manual activation is withdrawn.',
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Withdrawn.',
+          schema: 'ActivationOverrideResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
       method: 'patch',
       path: '/v1/admin/dealers/:id',
       operationId: 'updateAdminDealer',

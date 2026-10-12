@@ -32,6 +32,8 @@ const INPUT_SCHEMA_NAMES = [
   'SlugParam',
   'IdOrSlugParam',
   'DocCategoryParam',
+  'ActivationOverrideInput',
+  'RevokeActivationOverrideInput',
   'CursorQuery',
   'AdminDealerQuery',
   'DealerDirectoryQuery',
