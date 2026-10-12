@@ -205,6 +205,19 @@ export async function createAuthHarness(
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
 
+  /*
+   * Every file shares one outbox, and events another file never drained would
+   * otherwise be published by this file's first `drainEmails()` — each admin
+   * email fanning out to every Admin Member the run has admitted so far. Late
+   * in a full run that backlog alone outlasted a 30-second test. A file starts
+   * with the outbox it found marked handled, so it publishes only its own
+   * events and asserts only on its own email.
+   */
+  await container.prisma.outboxEvent.updateMany({
+    where: { publishedAt: null },
+    data: { publishedAt: new Date() },
+  });
+
   return {
     app,
     server,

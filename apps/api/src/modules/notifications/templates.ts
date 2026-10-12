@@ -13,6 +13,7 @@ export type TemplateName =
   | 'dealer.application.resubmitted'
   | 'admin.application.resubmitted'
   | 'dealer.application.approved'
+  | 'dealer.application.activated-manually'
   | 'dealer.application.rejected'
   | 'dealer.application.changes-requested'
   | 'dealer.application.closed'
@@ -72,12 +73,14 @@ export interface TemplateContext {
   actionUrl?: string;
   expiresAt?: Date;
   code?: string;
+  outstanding?: string[];
   listing?: ListingContext;
   enquiry?: EnquiryContext;
   ticket?: TicketContext;
 }
 
 const CONSOLE = `${env.WEB_BASE_URL}/dealer`;
+const DOCUMENTS = `${env.WEB_BASE_URL}/dealer/documents`;
 const ADMIN_QUEUE = `${env.WEB_BASE_URL}/admin/dealers`;
 const SUPPORT_REQUESTS = `${env.WEB_BASE_URL}/support-requests`;
 const ADMIN_SUPPORT = `${env.WEB_BASE_URL}/admin/support`;
@@ -143,14 +146,27 @@ export function render(template: TemplateName, context: TemplateContext): Render
 
     case 'dealer.application.approved':
       return compose({
-        subject: `${context.dealerName} is verified — Dealers-Drive`,
-        heading: 'You are verified',
+        subject: `${context.dealerName} is approved and live — Dealers-Drive`,
+        heading: 'Your dealership is live',
         greeting: context.contactName,
         paragraphs: [
-          `${context.dealerName} has been verified and is live on Dealers-Drive. Buyers can find your dealership in the directory and see your page.`,
-          'You can start listing cars now. Every listing you publish appears alongside your verified badge.',
+          `${context.dealerName} has been approved and is live on Dealers-Drive. Buyers can find your dealership in the directory and see your page.`,
+          'You can start listing cars now. Our team reviewed your identity and business documents as part of the approval.',
         ],
         action: { label: 'Go to your console', url: CONSOLE },
+      });
+
+    case 'dealer.application.activated-manually':
+      return compose({
+        subject: `${context.dealerName} is live — upload your documents — Dealers-Drive`,
+        heading: 'Your dealership is live',
+        greeting: context.contactName,
+        paragraphs: [
+          `${context.dealerName} is live on Dealers-Drive, and you can start listing cars now.`,
+          outstandingLine(context.outstanding ?? []),
+          'Until they are verified your dealership cannot be considered for the Dealer Verified badge, and the activation can be withdrawn if the documents cannot be produced.',
+        ],
+        action: { label: 'Upload your documents', url: DOCUMENTS },
       });
 
     case 'dealer.application.rejected':
@@ -506,6 +522,17 @@ interface Composition {
   quote?: string | null;
   paragraphsAfter?: string[];
   action?: { label: string; url: string };
+}
+
+function outstandingLine(outstanding: readonly string[]): string {
+  if (outstanding.length === 0) {
+    return 'Your documents have not been verified yet. Upload your identity and business proofs so our team can review them.';
+  }
+  const named =
+    outstanding.length === 1
+      ? outstanding[0]
+      : `${outstanding.slice(0, -1).join(', ')} and ${outstanding[outstanding.length - 1]}`;
+  return `Your documents have not been verified yet. Upload your ${named} so our team can review ${outstanding.length === 1 ? 'it' : 'them'}.`;
 }
 
 function compose(parts: Composition): RenderedEmail {

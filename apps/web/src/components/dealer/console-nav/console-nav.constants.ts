@@ -21,6 +21,8 @@ export const LANDED_NAV: NavItem[] = DEALER_NAV.filter((item) => !NOT_YET_BUILT.
 
 export const PHOTOS_NAV_ITEM: NavItem = { href: '/dealer/photos', label: 'Photos' };
 
+export const DOCUMENTS_NAV_ITEM: NavItem = { href: '/dealer/documents', label: 'Documents' };
+
 export const TEAM_NAV_ITEM: NavItem = { href: '/dealer/team', label: 'Team' };
 
 export const FULL_BAR = 5;

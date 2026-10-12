@@ -50,6 +50,12 @@ to empty with the bytes gone.
 can hand its own BFF base to this client component; a function prop cannot
 be serialised across that boundary.
 
+`locked` hides Upload, Replace and Delete — and the file input — and says the
+document can no longer be changed here. The API refuses to change an UPLOADED
+or VERIFIED document outside DRAFT, and the dealer Documents page (L8) is the
+one consumer that renders such documents; onboarding (DRAFT) and Sales never
+pass it.
+
 ### `const [type, setType] = useState(() => initialType(category, document, gstinOnFile))`
 
 Nothing is preselected for an empty personal slot. The first type in that

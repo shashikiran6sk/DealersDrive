@@ -53,7 +53,15 @@ export const NOTIFICATION_RULES: Partial<Record<DomainEventType, readonly Notifi
       audience: admins('admin:dealer:approve'),
     },
   ],
-  DealerApproved: [{ template: 'dealer.application.approved', audience: DEALER }],
+  DealerApproved: [
+    {
+      template: (event) =>
+        payloadOf(event).activationMethod === 'MANUAL_OVERRIDE'
+          ? 'dealer.application.activated-manually'
+          : 'dealer.application.approved',
+      audience: DEALER,
+    },
+  ],
   DealerRejected: [{ template: 'dealer.application.rejected', audience: DEALER, reason: true }],
   DealerChangesRequested: [
     { template: 'dealer.application.changes-requested', audience: DEALER, reason: true },

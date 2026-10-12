@@ -173,7 +173,7 @@ export function createActivationOverrideService({
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? 'dealer-activation-override',
-          payload: { dealerId },
+          payload: { dealerId, activationMethod: 'MANUAL_OVERRIDE' },
         });
 
         return { dealerId, status: updated.status, activation: state };

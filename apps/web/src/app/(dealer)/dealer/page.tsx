@@ -1,4 +1,10 @@
-import type { DashboardResponse } from '@dealers-drive/contracts';
+import {
+  canDealer,
+  DealerDocumentsResponse,
+  DealerProfile,
+  type DashboardResponse,
+  type DocumentRequirementGap,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -8,14 +14,19 @@ import { DashboardMetrics } from '@/components/dealer/dashboard-metrics';
 import { ButtonLink } from '@/components/ui/button';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Banner } from '@/components/ui/primitives';
-import { apiGet } from '@/lib/api';
+import { DocumentsReminder, outstandingDocuments } from '@/features/dealer/documents-overview';
+import { apiGet, apiGetParsed } from '@/lib/api';
+import { currentSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
 export default async function DealerDashboardPage() {
-  const dashboard = await apiGet<DashboardResponse>('/v1/dealer/dashboard', { revalidate: false });
+  const [dashboard, documentGaps] = await Promise.all([
+    apiGet<DashboardResponse>('/v1/dealer/dashboard', { revalidate: false }),
+    outstandingDocumentsOrNone(),
+  ]);
 
   return (
     <div className="flex flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
@@ -28,6 +39,8 @@ export default async function DealerDashboardPage() {
           + {ADD_VEHICLE_LABEL}
         </ButtonLink>
       </div>
+
+      <DocumentsReminder gaps={documentGaps} />
 
       {dashboard.alerts.map((alert) => (
         <Banner
@@ -51,4 +64,20 @@ export default async function DealerDashboardPage() {
       </div>
     </div>
   );
+}
+
+async function outstandingDocumentsOrNone(): Promise<DocumentRequirementGap[]> {
+  const session = await currentSession();
+  if (session?.dealer?.status !== 'ACTIVE') return [];
+  if (!canDealer(session.permissions, 'document:upload')) return [];
+
+  try {
+    const [documents, dealer] = await Promise.all([
+      apiGetParsed(DealerDocumentsResponse, '/v1/dealer/documents', { revalidate: false }),
+      apiGetParsed(DealerProfile, '/v1/dealer', { revalidate: false }),
+    ]);
+    return outstandingDocuments(documents.data, dealer.gstin);
+  } catch {
+    return [];
+  }
 }

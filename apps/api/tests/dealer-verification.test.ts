@@ -89,7 +89,14 @@ describe('explicit dealer verification independent of yard ownership', () => {
     expect((await publicProfile(d.slug)).isVerified).toBe(false);
     const review = await admin.get(`/v1/admin/dealers/${d.dealerId}/verification`).expect(200);
     expect(review.body).toMatchObject({ status: 'NOT_VERIFIED', version: 0, history: [] });
-    expect(review.body.transitions).not.toContain('VERIFIED');
+    expect(review.body.transitions).toContain('VERIFIED');
+  });
+  it('grants Dealer Verified directly from Not verified, with the same evidence checks', async () => {
+    const d = await candidate();
+    const review = await decision(d.dealerId, 'VERIFIED', 0).expect(200);
+    expect(review.body).toMatchObject({ status: 'VERIFIED', version: 1 });
+    expect(review.body.history).toHaveLength(1);
+    expect((await publicProfile(d.slug)).isVerified).toBe(true);
   });
   it('verifies with no yard and publishes only safe metadata', async () => {
     const d = await candidate();
@@ -165,14 +172,20 @@ describe('explicit dealer verification independent of yard ownership', () => {
       (await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).verificationVersion,
     ).toBe(1);
   });
-  it('refuses skipping review, a forged field and the retired free-text assessment', async () => {
+  it('refuses a transition that does not exist, a forged field and the retired free-text assessment', async () => {
     const d = await candidate();
-    await decision(d.dealerId, 'VERIFIED', 0).expect(409);
+    await decision(d.dealerId, 'REVOKED', 0, { reason: 'Nothing to revoke yet.' }).expect(409);
     await inReview(d.dealerId);
     await decision(d.dealerId, 'VERIFIED', 1, { isVerified: true }).expect(400);
     await decision(d.dealerId, 'VERIFIED', 1, {
       assessment: { representativeIdentity: 'Synthetic protected identity case 1' },
     }).expect(400);
+  });
+  it('applies the evidence checks to a direct decision too', async () => {
+    const d = await candidate();
+    await h.prisma.dealer.update({ where: { id: d.dealerId }, data: { status: 'SUSPENDED' } });
+    const r = await decision(d.dealerId, 'VERIFIED', 0);
+    expect(r.body.code).toBe('DEALER_NOT_APPROVED');
   });
   it.each(['DRAFT', 'PENDING_APPROVAL', 'SUSPENDED', 'REJECTED', 'CLOSED'] as const)(
     'cannot grant a verified badge to %s dealership',

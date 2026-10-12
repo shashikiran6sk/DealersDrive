@@ -91,4 +91,6 @@ export const DOCUMENT_UPLOADER_TEXT = {
   uploadFailed: 'That upload failed.',
   removeUnknown: 'That could not be removed.',
   inputLabel: (label: string) => `Upload ${label}`,
+  locked:
+    'This document is with our team and can no longer be changed here. Contact support if it needs correcting.',
 } as const;

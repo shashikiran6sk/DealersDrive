@@ -42,6 +42,7 @@ export function DocumentUploader({
   document,
   basePath = DEALER_DOCUMENT_BASE,
   gstin = null,
+  locked = false,
 }: DocumentUploaderProps) {
   const paths = documentPaths(basePath);
   const router = useRouter();
@@ -60,6 +61,7 @@ export function DocumentUploader({
   const status = document?.status ?? 'REQUIRED';
   const uploaded = status !== 'REQUIRED';
   const withGstin = carriesGstin(type);
+  const frozen = busy !== null || locked;
 
   function readyProblem(): string | null {
     if (!type) return DOCUMENT_UPLOADER_TEXT.chooseType;
@@ -168,7 +170,7 @@ export function DocumentUploader({
         description={description}
         onDescriptionChange={setDescription}
         gstinOnFile={gstinOnFile}
-        disabled={busy !== null}
+        disabled={frozen}
       />
 
       {withGstin ? (
@@ -180,7 +182,7 @@ export function DocumentUploader({
             setGstinError(null);
           }}
           error={gstinError}
-          disabled={busy !== null}
+          disabled={frozen}
         />
       ) : null}
 
@@ -200,44 +202,50 @@ export function DocumentUploader({
           ) : null}
         </div>
 
-        <input
-          ref={input}
-          type="file"
-          className="sr-only"
-          accept={DOCUMENT_MIME_TYPES.join(',')}
-          aria-label={DOCUMENT_UPLOADER_TEXT.inputLabel(label)}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void upload(file);
-            event.target.value = '';
-          }}
-        />
+        {locked ? null : (
+          <input
+            ref={input}
+            type="file"
+            className="sr-only"
+            accept={DOCUMENT_MIME_TYPES.join(',')}
+            aria-label={DOCUMENT_UPLOADER_TEXT.inputLabel(label)}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void upload(file);
+              event.target.value = '';
+            }}
+          />
+        )}
 
-        <div className="flex gap-[8px]">
-          <button
-            type="button"
-            className="btn btn-secondary text-[12px]"
-            disabled={busy !== null}
-            onClick={choose}
-          >
-            {busy === 'upload'
-              ? DOCUMENT_UPLOADER_TEXT.uploading
-              : uploaded
-                ? DOCUMENT_UPLOADER_TEXT.replace
-                : DOCUMENT_UPLOADER_TEXT.upload}
-          </button>
-
-          {uploaded ? (
+        {locked ? null : (
+          <div className="flex gap-[8px]">
             <button
               type="button"
-              className="btn btn-ghost text-[12px] text-(--color-err)"
+              className="btn btn-secondary text-[12px]"
               disabled={busy !== null}
-              onClick={() => void remove()}
+              onClick={choose}
             >
-              {busy === 'delete' ? DOCUMENT_UPLOADER_TEXT.removing : DOCUMENT_UPLOADER_TEXT.remove}
+              {busy === 'upload'
+                ? DOCUMENT_UPLOADER_TEXT.uploading
+                : uploaded
+                  ? DOCUMENT_UPLOADER_TEXT.replace
+                  : DOCUMENT_UPLOADER_TEXT.upload}
             </button>
-          ) : null}
-        </div>
+
+            {uploaded ? (
+              <button
+                type="button"
+                className="btn btn-ghost text-[12px] text-(--color-err)"
+                disabled={busy !== null}
+                onClick={() => void remove()}
+              >
+                {busy === 'delete'
+                  ? DOCUMENT_UPLOADER_TEXT.removing
+                  : DOCUMENT_UPLOADER_TEXT.remove}
+              </button>
+            ) : null}
+          </div>
+        )}
       </div>
 
       {document?.rejectionReason && status === 'REJECTED' ? (
@@ -245,6 +253,8 @@ export function DocumentUploader({
           {DOCUMENT_UPLOADER_TEXT.rejected(document.rejectionReason)}
         </p>
       ) : null}
+
+      {locked ? <p className="text-[12px] ink-subtle">{DOCUMENT_UPLOADER_TEXT.locked}</p> : null}
 
       {error ? (
         <p role="alert" className="text-[12px] text-(--color-err)">

@@ -1,5 +1,8 @@
 import {
   ADMIN_PERMISSIONS,
+  DOCUMENT_GAP_LABELS,
+  documentRequirement,
+  isVerifiedDocument,
   formatRegistration,
   supportTicketReference,
   SupportTicketStatus,
@@ -125,7 +128,14 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
 
     const dealer = await prisma.dealer.findUnique({
       where: { id: dealerId },
-      select: { brandName: true, legalName: true, slug: true, tagline: true, specialities: true },
+      select: {
+        brandName: true,
+        legalName: true,
+        slug: true,
+        tagline: true,
+        specialities: true,
+        gstin: true,
+      },
     });
     if (!dealer) {
       logger.warn({ template: job.template, dealerId: job.dealerId }, 'email skipped — no dealer');
@@ -157,9 +167,15 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       return;
     }
 
+    const outstanding =
+      job.template === 'dealer.application.activated-manually'
+        ? await outstandingDocuments(dealerId, dealer.gstin)
+        : null;
+
     for (const recipient of recipients) {
       await sendOne(job, recipient, {
         dealerName: dealer.brandName || dealer.legalName,
+        ...(outstanding ? { outstanding } : {}),
         contactName: recipient.name,
         reason: job.reason ?? null,
         tagline: proposal ? proposal.tagline : dealer.tagline,
@@ -169,6 +185,16 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         ...(enquiry ? { enquiry } : {}),
       });
     }
+  }
+
+  async function outstandingDocuments(dealerId: string, gstin: string | null): Promise<string[]> {
+    const documents = await prisma.dealerDocument.findMany({
+      where: { dealerId },
+      select: { type: true, status: true, fileName: true },
+    });
+    return documentRequirement(documents, gstin, isVerifiedDocument).gaps.map(
+      (gap) => DOCUMENT_GAP_LABELS[gap],
+    );
   }
 
   async function enquiryContext(enquiryId: string): Promise<EnquiryContext | null> {

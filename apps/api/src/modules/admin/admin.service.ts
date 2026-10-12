@@ -704,7 +704,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? 'dealer-approve',
-          payload: { dealerId },
+          payload: { dealerId, activationMethod: 'STANDARD' },
         });
 
         return {

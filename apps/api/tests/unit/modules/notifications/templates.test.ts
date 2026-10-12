@@ -21,6 +21,7 @@ const ALL: TemplateName[] = [
   'dealer.application.resubmitted',
   'admin.application.resubmitted',
   'dealer.application.approved',
+  'dealer.application.activated-manually',
   'dealer.application.rejected',
   'dealer.application.changes-requested',
   'dealer.application.closed',
@@ -281,5 +282,35 @@ describe('the email verification code', () => {
     expect(email.html).toContain('482915');
     expect(email.text).toMatch(/works until .* IST and only once/);
     expect(email.text).not.toContain('/claim');
+  });
+});
+
+describe('approval emails say only what is true (#299 L8)', () => {
+  it('a standard approval says approved and live, never verified', () => {
+    const email = render('dealer.application.approved', CONTEXT);
+
+    expect(email.subject).toContain('approved and live');
+    expect(`${email.subject} ${email.text}`).not.toMatch(/\bverified\b/i);
+  });
+
+  it('a manual activation names the outstanding documents and links to the documents page', () => {
+    const email = render('dealer.application.activated-manually', {
+      ...CONTEXT,
+      outstanding: ['Personal Identity Proof', 'Business Identity Proof'],
+    });
+
+    expect(email.text).toContain('Personal Identity Proof and Business Identity Proof');
+    expect(email.text).toContain('/dealer/documents');
+    expect(email.text).toMatch(/not been verified yet/);
+    expect(email.text).not.toMatch(/you are verified|has been verified/i);
+  });
+
+  it('a manual activation with one document outstanding names it alone', () => {
+    const email = render('dealer.application.activated-manually', {
+      ...CONTEXT,
+      outstanding: ['Business Identity Proof'],
+    });
+
+    expect(email.text).toContain('Upload your Business Identity Proof so our team can review it.');
   });
 });
