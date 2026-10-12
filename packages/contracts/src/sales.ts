@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { OnboardingInput, VerifyPhoneInput } from './auth.js';
 import { Uuid } from './common.js';
 import { SelectableDocCategory } from './dealer-documents.js';
-import { SalesEmailVerification } from './dealer-claims.js';
 import { CompletenessResponse, DealerDocumentDto, UpdateDealerInput } from './dealer.js';
 import { DealerStatus, StatusTone } from './enums.js';
 import { DealerInventoryRow } from './vehicle.js';
@@ -51,11 +50,55 @@ const ContactEmail = z.string().trim().toLowerCase().email('Enter a valid email 
  * onboarding — `OnboardingInput` minus who is typing (`fullName`, `phone`),
  * plus the contact the representative is speaking to.
  */
+const Ticket = z.string().trim().min(1).max(2048);
+
+/**
+ * Step 1 of the assisted flow, the email half (#299): the representative asks
+ * for a 6-digit code to the dealer's address. The response carries a signed
+ * challenge — the code itself is only ever in the email.
+ */
+export const SalesEmailCodeInput = z.object({ email: ContactEmail }).strict();
+export type SalesEmailCodeInput = z.infer<typeof SalesEmailCodeInput>;
+
+export const SalesEmailCodeResponse = z.object({
+  email: z.string(),
+  challenge: z.string(),
+  expiresAt: z.string(),
+  resendAfterSeconds: z.number().int(),
+});
+export type SalesEmailCodeResponse = z.infer<typeof SalesEmailCodeResponse>;
+
+export const ASSISTED_EMAIL_CODE_LENGTH = 6;
+
+export const SalesEmailVerifyInput = z
+  .object({
+    challenge: z.string().trim().min(1).max(4096),
+    code: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'Enter the 6-digit code from the email.'),
+  })
+  .strict();
+export type SalesEmailVerifyInput = z.infer<typeof SalesEmailVerifyInput>;
+
+export const SalesEmailVerifyResponse = z.object({
+  email: z.string(),
+  verifiedAt: z.string(),
+  emailTicket: z.string(),
+  expiresAt: z.string(),
+});
+export type SalesEmailVerifyResponse = z.infer<typeof SalesEmailVerifyResponse>;
+
+/**
+ * The dealership is created only once both the phone and the email are proved:
+ * the two tickets are what Step 1 hands Step 2, and the account the dealer
+ * signs in with is made from them in the same transaction (#299).
+ */
 export const CreateAssistedDealerInput = OnboardingInput.omit({ fullName: true, phone: true })
   .extend({
-    phoneTicket: z.string().trim().min(1).max(2048),
+    phoneTicket: Ticket,
+    emailTicket: Ticket,
     contactName: ContactName,
-    email: ContactEmail,
     gstin: UpdateDealerInput.shape.gstin,
     pan: UpdateDealerInput.shape.pan,
   })
@@ -63,10 +106,19 @@ export const CreateAssistedDealerInput = OnboardingInput.omit({ fullName: true, 
 export type CreateAssistedDealerInput = z.infer<typeof CreateAssistedDealerInput>;
 
 /** A partial patch while the dealership is still a draft. The phone is not in it. */
-export const UpdateAssistedDealerInput = CreateAssistedDealerInput.omit({ phoneTicket: true })
+export const UpdateAssistedDealerInput = CreateAssistedDealerInput.omit({
+  phoneTicket: true,
+  emailTicket: true,
+})
   .partial()
   .strict();
 export type UpdateAssistedDealerInput = z.infer<typeof UpdateAssistedDealerInput>;
+
+/** "Verify now" for an assisted dealership created before #299 that has no owner account. */
+export const VerifyAssistedDealerInput = z
+  .object({ phoneTicket: Ticket, emailTicket: Ticket })
+  .strict();
+export type VerifyAssistedDealerInput = z.infer<typeof VerifyAssistedDealerInput>;
 
 export const SalesDealersQuery = z.object({ status: DealerStatus.optional() }).strict();
 export type SalesDealersQuery = z.infer<typeof SalesDealersQuery>;
@@ -84,6 +136,7 @@ export const SalesDealerSummary = z.object({
   phoneDisplay: z.string(),
   phoneVerified: z.boolean(),
   emailVerified: z.boolean(),
+  /** An owner account exists: the dealer can sign in with the verified phone or Google. */
   claimed: z.boolean(),
   createdAt: z.string(),
   listings: z.object({ draft: z.number().int(), review: z.number().int(), live: z.number().int() }),
@@ -117,8 +170,8 @@ export const SalesDealerDetail = SalesDealerSummary.extend({
   documents: z.array(DealerDocumentDto),
   canEdit: z.boolean(),
   canSubmit: z.boolean(),
-  /** The latest verification link (**R113**); null before the first is requested. */
-  emailVerification: SalesEmailVerification.nullable(),
+  /** No owner account yet (created before #299): the representative can verify it now. */
+  canVerify: z.boolean(),
 });
 export type SalesDealerDetail = z.infer<typeof SalesDealerDetail>;
 

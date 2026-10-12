@@ -5,7 +5,7 @@ export const PROVENANCE_TEXT = {
   phone: 'Phone',
   email: 'Email',
   owner: 'Owner account',
-  claimed: 'Claimed by the dealer',
-  unclaimed: 'Not claimed yet',
+  ownerLinked: 'Owner account linked',
+  noOwner: 'No owner account yet',
   selfReview: 'You assisted with this dealership, so another reviewer has to make its decisions.',
 } as const;

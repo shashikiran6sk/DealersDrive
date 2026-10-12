@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { submitDocument } from './document-uploads.js';
 import { createAuthHarness, type AuthHarness } from './auth-harness.js';
 import { marketplaceFixtures } from './marketplace-fixtures.js';
+import { proveEmail } from './sales-kit.js';
 let h: AuthHarness;
 let f: ReturnType<typeof marketplaceFixtures>;
 let admin: request.Agent;
@@ -104,12 +105,17 @@ describe('optional GSTIN API and stored invariant', () => {
         consent: true,
       })
       .expect(200);
+    const { emailTicket } = await proveEmail(
+      h,
+      sales,
+      `synthetic-assisted-${randomUUID()}@example.test`,
+    );
     const created = await sales
       .post('/v1/sales/dealers')
       .send({
         phoneTicket: proof.body.phoneTicket,
+        emailTicket,
         contactName: 'Synthetic Assisted Owner',
-        email: `synthetic-assisted-${randomUUID()}@example.test`,
         legalName: `Synthetic Assisted GST ${randomUUID()}`,
         addressLine: '18, Synthetic Road',
         city: 'Katpadi',

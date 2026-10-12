@@ -21,11 +21,6 @@ import {
 } from './modules/auth/admin-phone.service.js';
 import { createSalesService, type SalesService } from './modules/sales/sales.service.js';
 import {
-  createDealerClaimsService,
-  type DealerClaimsService,
-} from './modules/dealer-claims/dealer-claims.service.js';
-import { createIdentityService } from './modules/auth/identity.service.js';
-import {
   createAdminNotificationsService,
   type AdminNotificationsService,
 } from './modules/notifications/notifications.admin.service.js';
@@ -148,7 +143,6 @@ export interface Container {
   readonly adminSupport: AdminSupportService;
   readonly adminMembers: AdminMembersService;
   readonly sales: SalesService;
-  readonly dealerClaims: DealerClaimsService;
   readonly adminNotifications: AdminNotificationsService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
@@ -246,18 +240,10 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage });
-  const dealerClaims = createDealerClaimsService({
-    prisma,
-    audit,
-    sessions: sessionStore,
-    proof: createPhoneProofService({ otp: phoneOtp, cache }),
-    identities: createIdentityService({ prisma, audit }),
-  });
   const notifications = createNotificationsService({
     prisma,
     queue,
     mailer,
-    claimLinks: dealerClaims,
   });
   const vehicles = createVehiclesService({
     prisma,
@@ -327,10 +313,10 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
       proof: createPhoneProofService({ otp: phoneOtp, cache }),
       otpDriver: phoneOtp.driver,
       maps,
+      mailer,
       dealers,
       vehicles,
     }),
-    dealerClaims,
     adminNotifications: createAdminNotificationsService({ prisma }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),

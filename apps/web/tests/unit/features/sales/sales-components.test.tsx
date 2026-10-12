@@ -46,6 +46,17 @@ describe('SalesDealerList', () => {
     expect(screen.getByText('0 live · 1 in review · 2 drafts')).toBeInTheDocument();
   });
 
+  it('names a linked owner account in words', () => {
+    render(
+      <SalesDealerList
+        dealers={[summary({ emailVerified: true, claimed: true })]}
+        emptyLabel="None"
+      />,
+    );
+    expect(screen.getByText('Owner account linked')).toBeInTheDocument();
+    expect(screen.getByText('Email verified')).toBeInTheDocument();
+  });
+
   it('says so when there is nothing', () => {
     render(<SalesDealerList dealers={[]} emptyLabel="No dealerships yet." />);
     expect(screen.getByText('No dealerships yet.')).toBeInTheDocument();
@@ -89,7 +100,12 @@ describe('OnboardingProvenance', () => {
     expect(screen.getByText(/arun@dealers-drive.in/)).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
     expect(screen.getByText('Pending verification')).toBeInTheDocument();
-    expect(screen.getByText('Not claimed yet')).toBeInTheDocument();
+    expect(screen.getByText('No owner account yet')).toBeInTheDocument();
+  });
+
+  it('says when the owner account is linked', () => {
+    render(<OnboardingProvenance onboarding={{ ...ASSISTED, claimed: true }} />);
+    expect(screen.getByText('Owner account linked')).toBeInTheDocument();
   });
 
   it('warns a reviewer who assisted that they may not decide', () => {
@@ -127,6 +143,6 @@ describe('RepScopeNotice', () => {
     expect(
       screen.getByText('Save the business details (Step 2) to complete your part'),
     ).toBeInTheDocument();
-    expect(screen.getByText(/after claiming the account/)).toBeInTheDocument();
+    expect(screen.getByText(/later from their own account/)).toBeInTheDocument();
   });
 });

@@ -580,13 +580,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const accountMissing: string[] = [];
       if (owner) {
         if (!owner.user.fullName) accountMissing.push('fullName');
-        if (!owner.user.email) accountMissing.push('email');
-      } else if (dealer.onboardingSource === 'ASSISTED') {
-        if (!dealer.contactName) accountMissing.push('fullName');
-        if (!dealer.contactEmail) accountMissing.push('email');
-        if (!dealer.contactPhone || !dealer.contactPhoneVerifiedAt) accountMissing.push('phone');
+        if (!owner.user.email || !owner.user.emailVerifiedAt) accountMissing.push('email');
+        if (!owner.user.phone || !owner.user.phoneVerifiedAt) accountMissing.push('phone');
       } else {
-        accountMissing.push('fullName', 'email');
+        accountMissing.push('owner');
       }
 
       const businessMissing: string[] = [];

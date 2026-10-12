@@ -27,6 +27,10 @@ const meta = {
       control: false,
       description: 'GET /v1/sales/phone/widget — null when OTP is not configured (**R112**).',
     },
+    initialVerified: {
+      control: false,
+      description: 'Sandbox entry point: both codes already accepted, tickets in hand (#299).',
+    },
   },
 } satisfies Meta<typeof AssistedDealerStart>;
 
@@ -34,8 +38,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const ConsentAndOtp: Story = {
-  name: 'Consent, then the dealer’s OTP',
+  name: 'Consent, the dealer’s OTP, then the email code',
   args: { widget: FAKE_WIDGET },
+};
+
+export const BothVerified: Story = {
+  name: 'Mobile and email verified — continue',
+  args: {
+    widget: FAKE_WIDGET,
+    initialVerified: {
+      phone: '9840012345',
+      phoneTicket: 'sandbox-ticket',
+      email: 'selvi@gmail.com',
+      emailTicket: 'sandbox-email-ticket',
+    },
+  },
 };
 
 export const OtpUnavailable: Story = {

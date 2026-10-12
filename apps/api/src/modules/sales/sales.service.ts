@@ -13,6 +13,10 @@ import {
   type SalesDealerSummary,
   type SalesDealersQuery,
   type SalesDealersResponse,
+  type SalesEmailCodeInput,
+  type SalesEmailCodeResponse,
+  type SalesEmailVerifyInput,
+  type SalesEmailVerifyResponse,
   type SalesPhoneVerifyInput,
   type SalesPhoneVerifyResponse,
   type SalesVehiclesResponse,
@@ -21,6 +25,7 @@ import {
   type PhoneOtpWidget,
   type UpdateDealerInput,
   type UpdateVehicleInput,
+  type VerifyAssistedDealerInput,
 } from '@dealers-drive/contracts';
 import type { DealerStatus, Prisma, PrismaClient } from '@prisma/client';
 
@@ -28,40 +33,59 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { CachePort } from '../../platform/cache/cache.port.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
-import { ConflictError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+  UpstreamUnavailableError,
+} from '../../platform/errors.js';
+import type { MailerPort } from '../../platform/mail/mail.port.js';
 import type { MapsPort } from '../../platform/maps/maps-link.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import type { AdminPrincipal, PhoneProofService } from '../auth/auth.facade.js';
-import { requestEmailVerification, withinCooldown } from '../dealer-claims/dealer-claims.facade.js';
+import {
+  provisionOwnerAccount,
+  type AdminPrincipal,
+  type PhoneProofService,
+} from '../auth/auth.facade.js';
+import { renderEmail } from '../notifications/notifications.facade.js';
 import {
   uniqueDealerSlug,
   normaliseDealerEmail,
   withDealerRegistrationConflict,
-  assertDealerEmailFree,
   type DealersService,
   EMPTY_DOCUMENT_SLOTS,
 } from '../dealers/dealers.facade.js';
 import type { AssistedVehicleActor, VehiclesService } from '../vehicles/vehicles.facade.js';
 import {
-  issueAssistedPhoneTicket,
-  redeemAssistedPhoneTicket,
-  openAssistedPhoneTicket,
-} from './assisted-phone-ticket.js';
+  assertMaySendCode,
+  EMAIL_CODE_RESEND_SECONDS,
+  issueEmailChallenge,
+  verifyEmailChallenge,
+} from './assisted-email-code.js';
+import {
+  issueAssistedTicket,
+  openUnspentTicket,
+  redeemAssistedTicket,
+  type AssistedTicket,
+} from './assisted-ticket.js';
 import {
   ASSISTED_DEALER_LOCKED,
   ASSISTED_DEALER_NOT_FOUND,
+  DEALER_EMAIL_TAKEN,
   DEALER_PHONE_TAKEN,
+  EMAIL_CODE_SEND_FAILED,
   SALES_APPROVED_LABEL,
-  VERIFICATION_COOLDOWN,
-  VERIFICATION_NO_EMAIL,
-  VERIFICATION_NOT_EDITABLE,
+  VERIFY_NOT_NEEDED,
+  VERIFY_PHONE_MISMATCH,
 } from './sales.messages.js';
 
 export interface SalesDeps {
   prisma: PrismaClient;
   audit: AuditService;
   cache: CachePort;
+  mailer: MailerPort;
   proof: Pick<PhoneProofService, 'prove' | 'widget'>;
   otpDriver: PhoneOtpPort['driver'];
   maps: MapsPort;
@@ -121,6 +145,14 @@ function phoneTaken(): ConflictError {
 
 const CLOSED_FOR_LISTINGS: readonly DealerStatus[] = ['SUSPENDED', 'REJECTED', 'CLOSED'];
 
+const VERIFIABLE: readonly DealerStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED'];
+
+function emailTaken(): ConflictError {
+  return new ConflictError('DEALER_EMAIL_TAKEN', DEALER_EMAIL_TAKEN, {
+    errors: [{ field: 'body.email', code: 'DEALER_EMAIL_TAKEN', message: DEALER_EMAIL_TAKEN }],
+  });
+}
+
 function assistedActor(principal: AdminPrincipal, dealerId: string): AssistedVehicleActor {
   return { dealerId, userId: principal.userId, memberId: memberOf(principal) };
 }
@@ -133,16 +165,33 @@ export function createSalesService({
   prisma,
   audit,
   cache,
+  mailer,
   proof,
   otpDriver,
   maps,
   dealers,
   vehicles,
 }: SalesDeps) {
-  async function assertPhoneFree(db: PrismaClient | Tx, phone: string): Promise<void> {
+  async function assertPhoneFree(
+    db: PrismaClient | Tx,
+    phone: string,
+    awaitingOwnerFor?: string,
+  ): Promise<void> {
     const [dealer, member] = await Promise.all([
       db.dealer.findFirst({
-        where: { contactPhone: phone, status: { in: [...OPEN_DEALER_STATUSES] } },
+        where: {
+          contactPhone: phone,
+          status: { in: [...OPEN_DEALER_STATUSES] },
+          ...(awaitingOwnerFor
+            ? {
+                NOT: {
+                  assistedByMemberId: awaitingOwnerFor,
+                  status: { in: [...VERIFIABLE] },
+                  members: { none: { status: 'ACTIVE' } },
+                },
+              }
+            : {}),
+        },
         select: { id: true },
       }),
       db.dealerMember.findFirst({
@@ -155,6 +204,54 @@ export function createSalesService({
       }),
     ]);
     if (dealer || member) throw phoneTaken();
+  }
+
+  async function assertEmailFree(
+    db: PrismaClient | Tx,
+    email: string,
+    exceptDealerId?: string,
+  ): Promise<void> {
+    const holder = await db.dealer.findUnique({
+      where: { primaryOwnerEmail: normaliseDealerEmail(email) },
+      select: { id: true },
+    });
+    if (holder && holder.id !== exceptDealerId) throw emailTaken();
+  }
+
+  async function openTickets(
+    input: { phoneTicket: string; emailTicket: string },
+    memberId: string,
+  ): Promise<{ phone: AssistedTicket; email: AssistedTicket }> {
+    const phone = await openUnspentTicket(cache, 'PHONE', input.phoneTicket, memberId);
+    const email = await openUnspentTicket(cache, 'EMAIL', input.emailTicket, memberId);
+    return { phone, email };
+  }
+
+  async function redeemTickets(
+    input: { phoneTicket: string; emailTicket: string },
+    memberId: string,
+  ): Promise<{ phone: AssistedTicket; email: AssistedTicket }> {
+    const phone = await redeemAssistedTicket(cache, 'PHONE', input.phoneTicket, memberId);
+    const email = await redeemAssistedTicket(cache, 'EMAIL', input.emailTicket, memberId);
+    return { phone, email };
+  }
+
+  async function attachOwner(
+    tx: Tx,
+    dealerId: string,
+    contact: { phone: AssistedTicket; email: AssistedTicket; fullName: string | null },
+  ): Promise<string> {
+    const owner = await provisionOwnerAccount(tx, {
+      phone: contact.phone.value,
+      phoneVerifiedAt: new Date(contact.phone.provenAt),
+      email: contact.email.value,
+      emailVerifiedAt: new Date(contact.email.provenAt),
+      fullName: contact.fullName,
+    });
+    await tx.dealerMember.create({
+      data: { dealerId, userId: owner.userId, role: 'OWNER', permissions: [] },
+    });
+    return owner.userId;
   }
 
   async function listingCounts(dealerIds: readonly string[]): Promise<Map<string, ListingCounts>> {
@@ -222,32 +319,20 @@ export function createSalesService({
     db: PrismaClient | Tx = prisma,
   ): Promise<void> {
     const dealer = await requireAssisted(principal, dealerId, db);
-    if (dealer.status !== 'DRAFT' || dealer.members.length > 0) {
+    if (dealer.status !== 'DRAFT') {
       throw new ConflictError('ASSISTED_DEALER_LOCKED', ASSISTED_DEALER_LOCKED);
     }
   }
 
   async function detail(principal: AdminPrincipal, dealerId: string): Promise<SalesDealerDetail> {
     const summary = await requireAssisted(principal, dealerId);
-    const [dealer, counts, completeness, documents, verification] = await Promise.all([
+    const [dealer, counts, completeness, documents] = await Promise.all([
       prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } }),
       listingCounts([dealerId]),
       dealers.completeness(dealerId),
       dealers.documents(dealerId),
-      prisma.dealerEmailVerification.findFirst({
-        where: { dealerId },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          email: true,
-          createdAt: true,
-          sentAt: true,
-          expiresAt: true,
-          verifiedAt: true,
-          claimedAt: true,
-        },
-      }),
     ]);
-    const editable = summary.status === 'DRAFT' && summary.members.length === 0;
+    const editable = summary.status === 'DRAFT';
 
     return {
       ...toSummary(summary, counts.get(dealerId) ?? emptyCounts()),
@@ -271,16 +356,7 @@ export function createSalesService({
       documents: documents.data,
       canEdit: editable,
       canSubmit: editable && completeness.canSubmit,
-      emailVerification: verification
-        ? {
-            email: verification.email,
-            sentAt: verification.sentAt?.toISOString() ?? null,
-            expiresAt: verification.expiresAt?.toISOString() ?? null,
-            verifiedAt: verification.verifiedAt?.toISOString() ?? null,
-            claimedAt: verification.claimedAt?.toISOString() ?? null,
-            canResend: summary.members.length === 0 && !withinCooldown(verification),
-          }
-        : null,
+      canVerify: summary.members.length === 0 && VERIFIABLE.includes(summary.status),
     };
   }
 
@@ -409,9 +485,9 @@ export function createSalesService({
         userId: principal.userId,
         ip: context.ip,
       });
-      await assertPhoneFree(prisma, phone);
+      await assertPhoneFree(prisma, phone, memberId);
 
-      const ticket = issueAssistedPhoneTicket(phone, memberId, provenAt.getTime());
+      const ticket = issueAssistedTicket('PHONE', phone, memberId, provenAt.getTime());
 
       await audit.recordDetached({
         actorType: 'ADMIN',
@@ -440,10 +516,9 @@ export function createSalesService({
       input: CreateAssistedDealerInput,
     ): Promise<SalesDealerDetail> {
       const memberId = memberOf(principal);
-      if (openAssistedPhoneTicket(input.phoneTicket, memberId)) {
-        await assertDealerEmailFree(prisma, input.email);
-      }
-      const ticket = await redeemAssistedPhoneTicket(cache, input.phoneTicket, memberId);
+      const opened = await openTickets(input, memberId);
+      await assertEmailFree(prisma, opened.email.value);
+      await assertPhoneFree(prisma, opened.phone.value);
 
       const city = normaliseLocality(input.city);
       const district = normaliseLocality(input.district);
@@ -473,13 +548,16 @@ export function createSalesService({
       }
 
       const place = await maps.placeFor(input.mapsUrl);
+      const tickets = await redeemTickets(input, memberId);
+      const ticket = tickets.phone;
       const consentAt = new Date(ticket.provenAt);
+      const email = tickets.email.value;
 
-      const email = normaliseDealerEmail(input.email);
       const created = await withDealerRegistrationConflict(() =>
         withTransaction(prisma, async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.phone}`}))`;
-          await assertPhoneFree(tx, ticket.phone);
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`assisted-phone:${ticket.value}`}))`;
+          await assertPhoneFree(tx, ticket.value);
+          await assertEmailFree(tx, email);
 
           const location = await resolveOnboardingLocation(tx, state, district);
           const dealer = await tx.dealer.create({
@@ -502,10 +580,10 @@ export function createSalesService({
               lng: place.coordinates?.lng ?? null,
               mapsPlaceId: place.placeId,
               contactName: input.contactName,
-              contactPhone: ticket.phone,
+              contactPhone: ticket.value,
               contactPhoneVerifiedAt: consentAt,
               contactEmail: email,
-              contactEmailVerifiedAt: null,
+              contactEmailVerifiedAt: new Date(tickets.email.provenAt),
               landline: input.landline ?? null,
               tagline: input.tagline,
               specialities: input.specialities,
@@ -519,6 +597,10 @@ export function createSalesService({
 
           await tx.dealerDocument.createMany({
             data: EMPTY_DOCUMENT_SLOTS.map((slot) => ({ ...slot, dealerId: dealer.id })),
+          });
+          const ownerUserId = await attachOwner(tx, dealer.id, {
+            ...tickets,
+            fullName: input.contactName,
           });
 
           await audit.record(tx, {
@@ -535,14 +617,9 @@ export function createSalesService({
               assistedByMemberId: memberId,
               phoneVerifiedAt: consentAt.toISOString(),
               consentAt: consentAt.toISOString(),
-              emailVerified: false,
+              emailVerified: true,
+              ownerUserId,
             },
-          });
-          await requestEmailVerification(tx, {
-            dealerId: dealer.id,
-            email,
-            memberId,
-            actorUserId: principal.userId,
           });
 
           return dealer;
@@ -564,7 +641,6 @@ export function createSalesService({
       input: UpdateAssistedDealerInput,
     ): Promise<SalesDealerDetail> {
       await requireEditable(principal, dealerId);
-      const email = input.email === undefined ? undefined : normaliseDealerEmail(input.email);
 
       const patch: UpdateDealerInput = {
         ...(input.legalName === undefined ? {} : { legalName: input.legalName }),
@@ -572,14 +648,7 @@ export function createSalesService({
         ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
         ...(input.pan === undefined ? {} : { pan: input.pan }),
         ...(input.specialities === undefined ? {} : { specialities: input.specialities }),
-        ...(input.email === undefined && input.landline === undefined
-          ? {}
-          : {
-              contact: {
-                ...(email === undefined ? {} : { email }),
-                ...(input.landline === undefined ? {} : { landline: input.landline }),
-              },
-            }),
+        ...(input.landline === undefined ? {} : { contact: { landline: input.landline } }),
         ...(input.addressLine === undefined &&
         input.city === undefined &&
         input.district === undefined &&
@@ -603,16 +672,11 @@ export function createSalesService({
         withTransaction(prisma, async (tx) => {
           await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
           await requireEditable(principal, dealerId, tx);
-          const current = await tx.dealer.findUniqueOrThrow({ where: { id: dealerId } });
-          const emailChanged = email !== undefined && email !== current.contactEmail;
           await dealers.amendDraft(dealerId, patch, tx);
-          if (input.contactName !== undefined || emailChanged) {
+          if (input.contactName !== undefined) {
             await tx.dealer.update({
               where: { id: dealerId },
-              data: {
-                ...(input.contactName === undefined ? {} : { contactName: input.contactName }),
-                ...(emailChanged ? { contactEmailVerifiedAt: null } : {}),
-              },
+              data: { contactName: input.contactName },
             });
           }
           await audit.record(tx, {
@@ -622,16 +686,8 @@ export function createSalesService({
             action: 'dealer.assisted.updated',
             entityType: 'Dealer',
             entityId: dealerId,
-            after: { fields: Object.keys(input), emailChanged },
+            after: { fields: Object.keys(input) },
           });
-          if (emailChanged && email) {
-            await requestEmailVerification(tx, {
-              dealerId,
-              email,
-              memberId: memberOf(principal),
-              actorUserId: principal.userId,
-            });
-          }
         }),
       );
 
@@ -669,48 +725,133 @@ export function createSalesService({
       await dealers.deleteDocument(dealerId, category);
     },
 
-    async resendEmailVerification(
+    async sendEmailCode(
+      principal: AdminPrincipal,
+      input: SalesEmailCodeInput,
+    ): Promise<SalesEmailCodeResponse> {
+      const memberId = memberOf(principal);
+      const email = normaliseDealerEmail(input.email);
+      await assertEmailFree(prisma, email);
+      await assertMaySendCode(cache, email);
+
+      const issued = issueEmailChallenge(email, memberId);
+      const rendered = renderEmail('dealer.email.code', {
+        dealerName: '',
+        contactName: null,
+        code: issued.code,
+        expiresAt: issued.expiresAt,
+      });
+      try {
+        await mailer.send({
+          to: email,
+          subject: rendered.subject,
+          html: rendered.html,
+          text: rendered.text,
+          tag: 'dealer.email.code',
+          idempotencyKey: `dealer.email.code:${issued.challenge.slice(-24)}`,
+        });
+      } catch (error) {
+        logger.warn({ err: error, adminMemberId: memberId }, 'email code could not be sent');
+        throw new UpstreamUnavailableError(EMAIL_CODE_SEND_FAILED, {
+          code: 'EMAIL_CODE_SEND_FAILED',
+        });
+      }
+      logger.info(
+        { event: 'sales.email.code_sent', adminMemberId: memberId, driver: mailer.driver },
+        'email code sent for assisted onboarding',
+      );
+      return {
+        email,
+        challenge: issued.challenge,
+        expiresAt: issued.expiresAt.toISOString(),
+        resendAfterSeconds: EMAIL_CODE_RESEND_SECONDS,
+      };
+    },
+
+    async verifyEmail(
+      principal: AdminPrincipal,
+      input: SalesEmailVerifyInput,
+    ): Promise<SalesEmailVerifyResponse> {
+      const memberId = memberOf(principal);
+      const proven = await verifyEmailChallenge(cache, input.challenge, input.code, memberId);
+      await assertEmailFree(prisma, proven.email);
+      const ticket = issueAssistedTicket('EMAIL', proven.email, memberId, proven.provenAt);
+      await audit.recordDetached({
+        actorType: 'ADMIN',
+        actorId: principal.userId,
+        action: 'dealer.assisted.email_verified',
+        entityType: 'AdminMember',
+        entityId: memberId,
+        after: { emailDomain: proven.email.split('@')[1] ?? null },
+      });
+      return {
+        email: proven.email,
+        verifiedAt: new Date(proven.provenAt).toISOString(),
+        emailTicket: ticket.token,
+        expiresAt: ticket.expiresAt.toISOString(),
+      };
+    },
+
+    async verifyExisting(
       principal: AdminPrincipal,
       dealerId: string,
+      input: VerifyAssistedDealerInput,
     ): Promise<SalesDealerDetail> {
       const memberId = memberOf(principal);
       const summary = await requireAssisted(principal, dealerId);
-      if (summary.members.length > 0) {
-        throw new ConflictError('VERIFICATION_NOT_EDITABLE', VERIFICATION_NOT_EDITABLE);
+      if (summary.members.length > 0 || !VERIFIABLE.includes(summary.status)) {
+        throw new ConflictError('VERIFY_NOT_NEEDED', VERIFY_NOT_NEEDED);
       }
-      await withTransaction(prisma, async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
-        const dealer = await tx.dealer.findUniqueOrThrow({
-          where: { id: dealerId },
-          select: { contactEmail: true },
-        });
-        if (!dealer.contactEmail) {
-          throw new ConflictError('VERIFICATION_NO_EMAIL', VERIFICATION_NO_EMAIL);
-        }
-        const last = await tx.dealerEmailVerification.findFirst({
-          where: { dealerId },
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
-        });
-        if (withinCooldown(last)) {
-          throw new ConflictError('VERIFICATION_COOLDOWN', VERIFICATION_COOLDOWN);
-        }
-        await requestEmailVerification(tx, {
-          dealerId,
-          email: dealer.contactEmail,
-          memberId,
-          actorUserId: principal.userId,
-        });
-        await audit.record(tx, {
-          actorType: 'ADMIN',
-          actorId: principal.userId,
-          dealerId,
-          action: 'dealer.assisted.verification_resent',
-          entityType: 'Dealer',
-          entityId: dealerId,
-          after: { assistedByMemberId: memberId },
-        });
+      const opened = await openTickets(input, memberId);
+      const dealer = await prisma.dealer.findUniqueOrThrow({
+        where: { id: dealerId },
+        select: { contactPhone: true },
       });
+      if (opened.phone.value !== dealer.contactPhone) {
+        throw new DomainError('VERIFY_PHONE_MISMATCH', VERIFY_PHONE_MISMATCH, {
+          errors: [
+            {
+              field: 'body.phoneTicket',
+              code: 'VERIFY_PHONE_MISMATCH',
+              message: VERIFY_PHONE_MISMATCH,
+            },
+          ],
+        });
+      }
+      await assertEmailFree(prisma, opened.email.value, dealerId);
+      const tickets = await redeemTickets(input, memberId);
+
+      await withDealerRegistrationConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+          const locked = await requireAssisted(principal, dealerId, tx);
+          if (locked.members.length > 0) {
+            throw new ConflictError('VERIFY_NOT_NEEDED', VERIFY_NOT_NEEDED);
+          }
+          await assertEmailFree(tx, tickets.email.value, dealerId);
+          await tx.dealer.update({
+            where: { id: dealerId },
+            data: {
+              contactEmail: tickets.email.value,
+              contactEmailVerifiedAt: new Date(tickets.email.provenAt),
+              contactPhoneVerifiedAt: new Date(tickets.phone.provenAt),
+            },
+          });
+          const ownerUserId = await attachOwner(tx, dealerId, {
+            ...tickets,
+            fullName: locked.contactName,
+          });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: principal.userId,
+            dealerId,
+            action: 'dealer.assisted.verified',
+            entityType: 'Dealer',
+            entityId: dealerId,
+            after: { ownerUserId, proof: ['PHONE_OTP', 'EMAIL_CODE'] },
+          });
+        }),
+      );
       return detail(principal, dealerId);
     },
 

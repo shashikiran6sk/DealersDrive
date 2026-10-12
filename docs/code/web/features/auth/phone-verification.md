@@ -225,6 +225,11 @@ real message.
 
 The number is settled, and the step's forward action is Continue.
 
+`onContinue` is optional since #299. Assisted onboarding proves the phone and
+the email on one screen, so the phone's own Continue would offer to leave
+before the email is done; without `onContinue` the panel shows the verified
+state and no footer, and the owning screen decides when to move on.
+
 ## `apps/web/src/features/auth/phone-verification/utils.ts`
 
 ### `export function identifierOf(phone: string): string`

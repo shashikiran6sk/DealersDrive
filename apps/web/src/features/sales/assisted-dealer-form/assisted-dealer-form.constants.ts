@@ -12,15 +12,6 @@ export interface AssistedField {
 
 export const CONTACT_FIELDS: readonly AssistedField[] = [
   { name: 'contactName', label: 'Contact person', required: true, autoComplete: 'off' },
-  {
-    name: 'email',
-    label: 'Dealer’s email',
-    hint: 'stays unverified until the dealer confirms it',
-    type: 'email',
-    inputMode: 'email',
-    required: true,
-    autoComplete: 'off',
-  },
   { name: 'landline', label: 'Landline', hint: 'optional', type: 'tel', required: false },
 ];
 
@@ -63,8 +54,7 @@ export const ASSISTED_FORM_TEXT = {
   businessLegend: 'Dealership',
   servicesLabel: 'What the yard does',
   servicesHint: 'add one at a time',
-  create: 'Create dealership',
-  save: 'Save details',
+  saveAndContinue: 'Save and continue',
   saved: 'Saved.',
 } as const;
 

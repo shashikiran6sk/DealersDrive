@@ -8,4 +8,5 @@ export interface AssistedDealerFormProps {
   disabled?: boolean;
   onSubmit: (values: Record<string, unknown>) => Promise<SalesActionResult>;
   onDone?: (result: SalesActionResult) => void;
+  doneHref?: string;
 }

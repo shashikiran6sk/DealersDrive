@@ -310,6 +310,13 @@ and quietly moving nothing. `creditsGranted` stays in the response and
 reads zero; the grant returns with the ledger that can honour it.
 ────────────────────────────────────────────────────────────────────────
 
+### `throw new DomainError('CONTACT_NOT_VERIFIED', CONTACT_NOT_VERIFIED)`
+
+Approval needs an owner whose mobile number and email are both verified. It
+is asked separately from `PROFILE_INCOMPLETE` so the console can say what is
+wrong: for an assisted dealership created before verify-first onboarding, the
+fix is a Sales representative's "Verify now", not more typing by the reviewer.
+
 ### `async rejectDealer`
 
 D4 reject — and it is a **purge**, not a status change.

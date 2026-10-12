@@ -82,7 +82,12 @@ import {
   type DealersService,
 } from '../dealers/dealers.facade.js';
 import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
-import { CLOSED_NOT_REJECTABLE, DEALER_NOT_CLOSABLE, DEALER_NOT_FOUND } from './admin.messages.js';
+import {
+  CLOSED_NOT_REJECTABLE,
+  CONTACT_NOT_VERIFIED,
+  DEALER_NOT_CLOSABLE,
+  DEALER_NOT_FOUND,
+} from './admin.messages.js';
 
 export interface AdminDeps {
   prisma: PrismaClient;
@@ -116,6 +121,8 @@ function textField(value: unknown, key: string): string | null {
 }
 
 const SOURCE_LABELS = { SELF: 'Self-onboarded', ASSISTED: 'Assisted by Sales' } as const;
+
+const CONTACT_FIELDS: readonly string[] = ['owner', 'email', 'phone'];
 
 interface AssistedRow {
   onboardingSource: 'SELF' | 'ASSISTED';
@@ -656,6 +663,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           );
         }
         const application = await dealers.completeness(dealerId, tx);
+        const account = application.steps[0]?.missing ?? [];
+        if (account.some((field) => CONTACT_FIELDS.includes(field))) {
+          throw new DomainError('CONTACT_NOT_VERIFIED', CONTACT_NOT_VERIFIED);
+        }
         if (!application.isComplete) {
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }

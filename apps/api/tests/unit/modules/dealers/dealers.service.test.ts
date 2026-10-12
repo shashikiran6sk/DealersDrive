@@ -96,6 +96,7 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
         user: {
           fullName: 'Ramesh Kumar',
           phone: '9840012345',
+          phoneVerifiedAt: new Date('2026-01-02T00:00:00.000Z'),
           email: 'owner@sri-lakshmi-motors.in',
           emailVerifiedAt: new Date('2026-01-02T00:00:00.000Z'),
         },
@@ -1347,7 +1348,7 @@ describe('completeness', () => {
 
     // The stepper renders these verbatim, so a vague "incomplete" would leave
     // the dealer clicking around looking for the field.
-    expect(account?.missing).toEqual(['fullName', 'email']);
+    expect(account?.missing).toEqual(['fullName', 'email', 'phone']);
     expect(account?.complete).toBe(false);
   });
 

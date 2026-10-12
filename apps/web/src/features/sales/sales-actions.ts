@@ -2,10 +2,15 @@
 
 import {
   CreateAssistedDealerInput,
+  SalesEmailCodeInput,
+  SalesEmailVerifyInput,
   SalesPhoneVerifyInput,
   UpdateAssistedDealerInput,
+  VerifyAssistedDealerInput,
   type DealerSubmitResponse,
   type SalesDealerDetail,
+  type SalesEmailCodeResponse,
+  type SalesEmailVerifyResponse,
   type SalesPhoneVerifyResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
@@ -20,6 +25,21 @@ export interface SalesActionResult {
   message?: string;
   fieldErrors?: Record<string, string>;
   dealerId?: string;
+}
+
+export interface EmailCodeResult {
+  ok: boolean;
+  email?: string;
+  challenge?: string;
+  resendAfterSeconds?: number;
+  message?: string;
+}
+
+export interface EmailVerifyResult {
+  ok: boolean;
+  email?: string;
+  emailTicket?: string;
+  message?: string;
 }
 
 function fieldErrorsOf(issues: readonly { path: readonly PropertyKey[]; message: string }[]) {
@@ -131,15 +151,85 @@ export async function submitAssistedDealerAction(dealerId: string): Promise<Sale
   }
 }
 
-export async function resendVerificationAction(dealerId: string): Promise<SalesActionResult> {
+export async function sendDealerEmailCodeAction(email: string): Promise<EmailCodeResult> {
+  const parsed = SalesEmailCodeInput.safeParse({ email });
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? SALES_ACTION_TEXT.invalid };
+  }
+  try {
+    const result = await apiSend<SalesEmailCodeResponse>(
+      'POST',
+      '/v1/sales/dealers/email/code',
+      parsed.data,
+    );
+    return {
+      ok: true,
+      email: result.email,
+      challenge: result.challenge,
+      resendAfterSeconds: result.resendAfterSeconds,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        ok: false,
+        message:
+          error.status === 503
+            ? SALES_ACTION_TEXT.emailSendFailed
+            : error.userMessage(SALES_ACTION_TEXT.emailSendFailed),
+      };
+    }
+    return { ok: false, message: SALES_ACTION_TEXT.unavailable };
+  }
+}
+
+export async function verifyDealerEmailAction(
+  challenge: string,
+  code: string,
+): Promise<EmailVerifyResult> {
+  const parsed = SalesEmailVerifyInput.safeParse({ challenge, code });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? SALES_ACTION_TEXT.emailVerifyFailed,
+    };
+  }
+  try {
+    const result = await apiSend<SalesEmailVerifyResponse>(
+      'POST',
+      '/v1/sales/dealers/email/verify',
+      parsed.data,
+    );
+    return { ok: true, email: result.email, emailTicket: result.emailTicket };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, message: error.userMessage(SALES_ACTION_TEXT.emailVerifyFailed) };
+    }
+    return { ok: false, message: SALES_ACTION_TEXT.unavailable };
+  }
+}
+
+export async function verifyAssistedDealerOwnerAction(
+  dealerId: string,
+  input: unknown,
+): Promise<SalesActionResult> {
+  const parsed = VerifyAssistedDealerInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: SALES_ACTION_TEXT.ownerVerifyFailed,
+      fieldErrors: fieldErrorsOf(parsed.error.issues),
+    };
+  }
   try {
     await apiSend<SalesDealerDetail>(
       'POST',
-      `/v1/sales/dealers/${encodeURIComponent(dealerId)}/email-verification`,
+      `/v1/sales/dealers/${encodeURIComponent(dealerId)}/verify`,
+      parsed.data,
     );
     revalidatePath(`/sales/dealers/${dealerId}`);
+    revalidatePath('/sales');
     return { ok: true, dealerId };
   } catch (error) {
-    return failure(error, SALES_ACTION_TEXT.resendFailed);
+    return failure(error, SALES_ACTION_TEXT.ownerVerifyFailed);
   }
 }

@@ -14,9 +14,11 @@ import { getPhoneWidget } from './routes/get-phone-widget.js';
 import { patchDealer } from './routes/patch-dealer.js';
 import { postDealerDocumentCommit } from './routes/post-dealer-document-commit.js';
 import { postDealerDocumentPresign } from './routes/post-dealer-document-presign.js';
-import { postDealerEmailVerification } from './routes/post-dealer-email-verification.js';
 import { postDealerSubmit } from './routes/post-dealer-submit.js';
 import { postDealer } from './routes/post-dealer.js';
+import { postDealerVerify } from './routes/post-dealer-verify.js';
+import { postEmailCode } from './routes/post-email-code.js';
+import { postEmailVerify } from './routes/post-email-verify.js';
 import { postPhoneVerify } from './routes/post-phone-verify.js';
 import type { SalesRoute } from './routes/route.js';
 import type { SalesService } from './sales.service.js';
@@ -25,11 +27,13 @@ const ROUTES: SalesRoute[] = [
   getDashboard,
   getPhoneWidget,
   postPhoneVerify,
+  postEmailCode,
+  postEmailVerify,
   getDealers,
   postDealer,
   getDealer,
   patchDealer,
-  postDealerEmailVerification,
+  postDealerVerify,
   postDealerDocumentPresign,
   postDealerDocumentCommit,
   deleteDealerDocument,

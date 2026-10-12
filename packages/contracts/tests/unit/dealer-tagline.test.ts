@@ -29,8 +29,8 @@ describe('optional dealer tagline', () => {
       CreateAssistedDealerInput.safeParse({
         ...business,
         contactName: 'Synthetic Representative',
-        email: 'synthetic@example.test',
         phoneTicket: 'fixture-ticket',
+        emailTicket: 'fixture-ticket',
         tagline: value,
       }).success,
     ).toBe(true);

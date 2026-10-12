@@ -16,7 +16,7 @@ export function VerificationBadges({
       <StatusTag tone={dealer.emailVerified ? 'ok' : 'warn'}>
         {dealer.emailVerified ? SALES_TEXT.emailVerified : SALES_TEXT.emailPending}
       </StatusTag>
-      {dealer.claimed ? <StatusTag tone="neutral">{SALES_TEXT.claimed}</StatusTag> : null}
+      {dealer.claimed ? <StatusTag tone="neutral">{SALES_TEXT.ownerLinked}</StatusTag> : null}
     </div>
   );
 }

@@ -34,6 +34,11 @@ type Story = StoryObj<typeof meta>;
 
 export const Assisted: Story = { name: 'Assisted, email pending' };
 
+export const OwnerLinked: Story = {
+  name: 'Assisted, owner account linked',
+  args: { onboarding: { ...ASSISTED, emailVerified: true, emailLabel: 'Verified', claimed: true } },
+};
+
 export const ReviewerAssisted: Story = {
   name: 'The reviewer is the assistant',
   args: { onboarding: { ...ASSISTED, reviewerIsAssistant: true } },

@@ -9,7 +9,7 @@ export interface PhoneVerifiedProps {
   display: string;
   fullName: string;
   accountsLinked?: boolean;
-  onContinue: () => void;
+  onContinue?: () => void;
   title?: string;
   continueLabel?: string;
 }
@@ -41,12 +41,14 @@ export function PhoneVerified({
         <StatusTag tone="ok">{PHONE_TEXT.verifiedTag}</StatusTag>
       </div>
 
-      <div className="mt-[16px] flex flex-wrap items-center justify-between gap-[10px] border-t border-[color-mix(in_srgb,#0f7a5a_30%,transparent)] pt-[14px]">
-        <span className="text-[12px] ink-secondary">{PHONE_TEXT.nextStep}</span>
-        <Button variant="primary" size="md" onClick={onContinue}>
-          {continueLabel}
-        </Button>
-      </div>
+      {onContinue ? (
+        <div className="mt-[16px] flex flex-wrap items-center justify-between gap-[10px] border-t border-[color-mix(in_srgb,#0f7a5a_30%,transparent)] pt-[14px]">
+          <span className="text-[12px] ink-secondary">{PHONE_TEXT.nextStep}</span>
+          <Button variant="primary" size="md" onClick={onContinue}>
+            {continueLabel}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

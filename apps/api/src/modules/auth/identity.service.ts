@@ -38,6 +38,110 @@ export function createIdentityService({ prisma, audit }: IdentityDeps) {
     return prisma.user.findUnique({ where: { phone }, include: { roles: true } });
   }
 
+  async function ownerAwaitingGoogle(
+    user: {
+      id: string;
+      email: string | null;
+      emailVerifiedAt: Date | null;
+      identities: { provider: string }[];
+    },
+    claims: OAuthClaims,
+  ): Promise<boolean> {
+    if (!claims.emailVerified || user.emailVerifiedAt === null || !user.email) return false;
+    if (user.identities.some((identity) => identity.provider === 'GOOGLE')) return false;
+    const owner = await prisma.dealerMember.count({
+      where: {
+        userId: user.id,
+        role: 'OWNER',
+        status: 'ACTIVE',
+        dealer: {
+          onboardingSource: 'ASSISTED',
+          contactEmailVerifiedAt: { not: null },
+          contactEmail: { equals: user.email, mode: 'insensitive' },
+        },
+      },
+    });
+    return owner > 0;
+  }
+
+  async function linkGoogle(userId: string, claims: OAuthClaims): Promise<{ linked: boolean }> {
+    const now = new Date();
+
+    try {
+      return await withTransaction(prisma, async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId}::uuid FOR UPDATE`;
+
+        const bySubject = await tx.oAuthIdentity.findUnique({
+          where: {
+            provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject },
+          },
+        });
+
+        if (bySubject && bySubject.userId !== userId) throw refusal('subject-held');
+
+        if (bySubject) {
+          await tx.oAuthIdentity.update({
+            where: { id: bySubject.id },
+            data: { email: claims.email, emailVerified: claims.emailVerified, lastLoginAt: now },
+          });
+          return { linked: false };
+        }
+
+        const own = await tx.oAuthIdentity.findFirst({
+          where: { userId, provider: 'GOOGLE' },
+          select: { id: true },
+        });
+        if (own) {
+          throw new ConflictError(IDENTITY_ALREADY_LINKED, OTHER_GOOGLE_ALREADY_LINKED);
+        }
+
+        const emailHolder = await tx.user.findUnique({
+          where: { email: claims.email },
+          select: { id: true },
+        });
+        if (emailHolder && emailHolder.id !== userId) throw refusal('email-held');
+
+        const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+
+        await tx.oAuthIdentity.create({
+          data: {
+            userId,
+            provider: 'GOOGLE',
+            providerSubject: claims.subject,
+            email: claims.email,
+            emailVerified: claims.emailVerified,
+            displayName: claims.name ?? null,
+            pictureUrl: claims.picture ?? null,
+            lastLoginAt: now,
+          },
+        });
+
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            email: user.email ?? claims.email,
+            emailVerifiedAt: user.emailVerifiedAt ?? now,
+            fullName: user.fullName ?? claims.name ?? null,
+          },
+        });
+
+        await audit.record(tx, {
+          actorType: 'DEALER',
+          actorId: userId,
+          action: 'auth.identity.linked',
+          entityType: 'User',
+          entityId: userId,
+          after: { provider: 'GOOGLE' },
+        });
+
+        return { linked: true };
+      });
+    } catch (error) {
+      if (errorCode(error) === 'P2002') throw refusal('lost-race');
+      throw error;
+    }
+  }
+
   return {
     async identitiesOf(userId: string): Promise<UserIdentities> {
       const user = await prisma.user.findUnique({
@@ -116,6 +220,15 @@ export function createIdentityService({ prisma, audit }: IdentityDeps) {
         include: { identities: true },
       });
 
+      if (collision && (await ownerAwaitingGoogle(collision, claims))) {
+        await linkGoogle(collision.id, claims);
+        logger.info(
+          { event: 'auth.identity.linked', provider: 'GOOGLE', userId: collision.id },
+          'google sign-in linked to a dealership owner whose email was verified',
+        );
+        return collision.id;
+      }
+
       if (collision) {
         logger.warn(
           { event: 'auth.oauth.failed', reason: 'unlinked-account' },
@@ -151,6 +264,8 @@ export function createIdentityService({ prisma, audit }: IdentityDeps) {
       });
     },
 
+    linkGoogle,
+
     async absorbGoogleHolder(userId: string, claims: OAuthClaims): Promise<{ merged: boolean }> {
       const held = await prisma.oAuthIdentity.findUnique({
         where: {
@@ -168,84 +283,6 @@ export function createIdentityService({ prisma, audit }: IdentityDeps) {
         });
         return { merged: outcome.merged };
       });
-    },
-
-    async linkGoogle(userId: string, claims: OAuthClaims): Promise<{ linked: boolean }> {
-      const now = new Date();
-
-      try {
-        return await withTransaction(prisma, async (tx) => {
-          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId}::uuid FOR UPDATE`;
-
-          const bySubject = await tx.oAuthIdentity.findUnique({
-            where: {
-              provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject },
-            },
-          });
-
-          if (bySubject && bySubject.userId !== userId) throw refusal('subject-held');
-
-          if (bySubject) {
-            await tx.oAuthIdentity.update({
-              where: { id: bySubject.id },
-              data: { email: claims.email, emailVerified: claims.emailVerified, lastLoginAt: now },
-            });
-            return { linked: false };
-          }
-
-          const own = await tx.oAuthIdentity.findFirst({
-            where: { userId, provider: 'GOOGLE' },
-            select: { id: true },
-          });
-          if (own) {
-            throw new ConflictError(IDENTITY_ALREADY_LINKED, OTHER_GOOGLE_ALREADY_LINKED);
-          }
-
-          const emailHolder = await tx.user.findUnique({
-            where: { email: claims.email },
-            select: { id: true },
-          });
-          if (emailHolder && emailHolder.id !== userId) throw refusal('email-held');
-
-          const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
-
-          await tx.oAuthIdentity.create({
-            data: {
-              userId,
-              provider: 'GOOGLE',
-              providerSubject: claims.subject,
-              email: claims.email,
-              emailVerified: claims.emailVerified,
-              displayName: claims.name ?? null,
-              pictureUrl: claims.picture ?? null,
-              lastLoginAt: now,
-            },
-          });
-
-          await tx.user.update({
-            where: { id: userId },
-            data: {
-              email: user.email ?? claims.email,
-              emailVerifiedAt: user.emailVerifiedAt ?? now,
-              fullName: user.fullName ?? claims.name ?? null,
-            },
-          });
-
-          await audit.record(tx, {
-            actorType: 'DEALER',
-            actorId: userId,
-            action: 'auth.identity.linked',
-            entityType: 'User',
-            entityId: userId,
-            after: { provider: 'GOOGLE' },
-          });
-
-          return { linked: true };
-        });
-      } catch (error) {
-        if (errorCode(error) === 'P2002') throw refusal('lost-race');
-        throw error;
-      }
     },
   };
 }

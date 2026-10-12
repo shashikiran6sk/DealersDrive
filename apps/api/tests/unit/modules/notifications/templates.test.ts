@@ -29,7 +29,7 @@ const ALL: TemplateName[] = [
   'admin.profile-change.submitted',
   'dealer.profile-change.approved',
   'dealer.profile-change.rejected',
-  'dealer.email.verify',
+  'dealer.email.code',
   'admin.listing.submitted',
   'admin.listing.resubmitted',
   'dealer.listing.approved',
@@ -51,7 +51,8 @@ const CONTEXT = {
   tagline: 'Family-run since 1998.',
   specialities: ['In-house workshop', 'RC transfer'],
   dealerSlug: 'sri-lakshmi-motors',
-  actionUrl: 'https://dealers-drive.test/claim/abc',
+  actionUrl: 'https://dealers-drive.test/dealer',
+  code: '482915',
   expiresAt: new Date('2026-10-09T10:00:00.000Z'),
   listing: {
     id: '33333333-3333-4333-8333-333333333333',
@@ -269,5 +270,16 @@ describe('the enquiry and support emails (R117)', () => {
     expect(render('admin.support.ticket-created', CONTEXT).text).toContain(
       '/admin/support/44444444-4444-4444-8444-444444444444',
     );
+  });
+});
+
+describe('the email verification code', () => {
+  it('quotes the code and says how long it lasts', () => {
+    const email = render('dealer.email.code', { ...CONTEXT, code: '482915' });
+
+    expect(email.text).toContain('482915');
+    expect(email.html).toContain('482915');
+    expect(email.text).toMatch(/works until .* IST and only once/);
+    expect(email.text).not.toContain('/claim');
   });
 });

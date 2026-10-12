@@ -5,7 +5,6 @@ import { createEventBus, type DomainEvent } from '../../../../src/platform/event
 import { createInlineQueue } from '../../../../src/platform/jobs/queue.js';
 import type { MailMessage, MailerPort } from '../../../../src/platform/mail/mail.port.js';
 import { PermanentMailError } from '../../../../src/platform/mail/resend.adapter.js';
-import type { ClaimLink } from '../../../../src/modules/dealer-claims/dealer-claims.facade.js';
 import { NOTIFICATION_RULES } from '../../../../src/modules/notifications/notification.rules.js';
 import {
   MAX_DELIVERY_ATTEMPTS,
@@ -198,19 +197,10 @@ function recordingMailer(
   };
 }
 
-function setup(
-  options: Parameters<typeof fakePrisma>[0] = {},
-  mailer = recordingMailer(),
-  claimLinks?: { issueLink: (id: string) => Promise<ClaimLink | null> },
-) {
+function setup(options: Parameters<typeof fakePrisma>[0] = {}, mailer = recordingMailer()) {
   const { prisma, rows } = fakePrisma(options);
   const queue = createInlineQueue();
-  const service = createNotificationsService({
-    prisma,
-    queue,
-    mailer,
-    ...(claimLinks ? { claimLinks } : {}),
-  });
+  const service = createNotificationsService({ prisma, queue, mailer });
   return { service, prisma, rows, queue, mailer };
 }
 
@@ -541,69 +531,7 @@ describe('recipients', () => {
   });
 });
 
-describe('the claim link (R113)', () => {
-  function links(result: ClaimLink | null = LINK) {
-    const issued: string[] = [];
-    return {
-      issued,
-      issueLink: (id: string) => {
-        issued.push(id);
-        return Promise.resolve(result);
-      },
-    };
-  }
-
-  const LINK: ClaimLink = {
-    email: 'selvi@gmail.com',
-    name: 'Selvi R',
-    dealerName: 'Claimable Motors',
-    url: 'https://dealers-drive.test/claim/abc123',
-    expiresAt: new Date('2026-10-09T10:00:00.000Z'),
-  };
-
-  async function request(claimLinks: ReturnType<typeof links>, mailer = recordingMailer()) {
-    const { service } = setup({}, mailer, claimLinks);
-    const bus = createEventBus();
-    service.subscribe(bus);
-    await service.work();
-    await bus.publish({
-      ...event('DealerEmailVerificationRequested', { verificationId: 'ver-1' }),
-      aggregateType: 'DealerEmailVerification',
-      aggregateId: 'ver-1',
-    });
-    return { service, mailer };
-  }
-
-  it('mints the link at send time and emails it to the verification’s address', async () => {
-    const claimLinks = links();
-    const { mailer } = await request(claimLinks);
-
-    expect(claimLinks.issued).toEqual(['ver-1']);
-    expect(mailer.sent).toHaveLength(1);
-    expect(mailer.sent[0]).toMatchObject({ to: 'selvi@gmail.com', tag: 'dealer.email.verify' });
-    expect(mailer.sent[0]?.text).toContain(LINK.url);
-    expect(mailer.sent[0]?.subject).toContain('Claimable Motors');
-  });
-
-  it('does not mint a second link once the email has been sent', async () => {
-    const claimLinks = links();
-    const { service, mailer } = await request(claimLinks);
-    await service.handleEmailJob({
-      template: 'dealer.email.verify',
-      audience: 'dealer',
-      dealerId: 'dealer-1',
-      subjectId: 'ver-1',
-    });
-
-    expect(claimLinks.issued).toEqual(['ver-1']);
-    expect(mailer.sent).toHaveLength(1);
-  });
-
-  it('sends nothing for a superseded or claimed verification', async () => {
-    const { mailer } = await request(links(null));
-    expect(mailer.sent).toHaveLength(0);
-  });
-
+describe('a dealership with no owner yet', () => {
   it('sends an unclaimed dealership’s mail only to a verified address', async () => {
     const dealerQueries: unknown[] = [];
     const { service, mailer } = setup({ owner: null, dealerQueries });
@@ -738,13 +666,6 @@ describe('the rules table (R115)', () => {
     ).toMatchObject({ template: 'dealer.profile-change.rejected', reason: 'No.' });
   });
 
-  it('keys the claim email on the verification, and drops a malformed event', () => {
-    const [rule] = NOTIFICATION_RULES.DealerEmailVerificationRequested ?? [];
-    expect(
-      rule && jobOf(event('DealerEmailVerificationRequested', { verificationId: 'ver-1' }), rule),
-    ).toMatchObject({ subjectId: 'ver-1' });
-    expect(rule && jobOf(event('DealerEmailVerificationRequested', {}), rule)).toBeNull();
-  });
   it('carries the enquiry and the listing for the dealer (R117)', () => {
     const [rule] = NOTIFICATION_RULES.EnquiryCreated ?? [];
     expect(

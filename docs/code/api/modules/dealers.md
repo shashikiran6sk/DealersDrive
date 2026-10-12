@@ -1363,6 +1363,13 @@ the mirror stale would publish the old number.
 
 C3. Drives the onboarding stepper and gates `POST /v1/dealer/submit`.
 
+The account step asks for an OWNER whose email **and** mobile number are both
+verified. A self-onboarded owner has both by construction (Google, then the
+phone step); an assisted one has both since verify-first onboarding. An
+assisted dealership with no owner — created before that — reports `owner`
+missing, and because approval and manual activation both read this step, it
+cannot go live until a representative runs "Verify now".
+
 ### `if (!dealer.district) businessMissing.push('district')`
 
 The district joins the required set rather than sitting beside it as a

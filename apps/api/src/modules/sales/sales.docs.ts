@@ -63,6 +63,48 @@ export const salesDocs: ModuleDocs = {
       errors: [400, 401, 403, 409, 422, 429, 503],
     },
     {
+      method: 'post',
+      path: '/v1/sales/dealers/email/code',
+      operationId: 'sendAssistedDealerEmailCode',
+      tag: DOC_TAGS.sales,
+      summary: 'Email the dealer a 6-digit code',
+      description:
+        'Emails a 6-digit code to the dealer\u2019s address and answers a signed `challenge` that carries no code in the clear. The code lasts 10 minutes and allows 5 attempts. A new code for the same address is refused for 60 seconds (`429 EMAIL_CODE_COOLDOWN`) and after 5 in an hour (`429 EMAIL_CODE_TOO_MANY`). An address that already belongs to another dealership is a **409** `DEALER_EMAIL_TAKEN`. Nothing is created yet.',
+      audience: 'admin',
+      permission: 'sales:dealer:create',
+      requestBody: {
+        schema: 'SalesEmailCodeInput',
+        description: "The dealer's email address.",
+        example: { email: 'owner@example.com' },
+      },
+      responses: [{ status: 200, description: 'Sent.', schema: 'SalesEmailCodeResponse' }],
+      errors: [400, 401, 403, 409, 429, 503],
+    },
+    {
+      method: 'post',
+      path: '/v1/sales/dealers/email/verify',
+      operationId: 'verifyAssistedDealerEmail',
+      tag: DOC_TAGS.sales,
+      summary: "Verify the dealer's email by its code",
+      description:
+        'Checks the code the dealer read from their inbox against the `challenge`. A wrong code is a **422** `EMAIL_CODE_INVALID`; the sixth attempt is `EMAIL_CODE_LOCKED`; an expired or already-used challenge is `EMAIL_CODE_EXPIRED`. Answers a single-use `emailTicket` (30 minutes) bound to this member and address.',
+      audience: 'admin',
+      permission: 'sales:dealer:create',
+      requestBody: {
+        schema: 'SalesEmailVerifyInput',
+        description: 'The challenge and the code.',
+        example: { challenge: '<challenge>', code: '482915' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Verified; ticket issued.',
+          schema: 'SalesEmailVerifyResponse',
+        },
+      ],
+      errors: [400, 401, 403, 422, 429],
+    },
+    {
       method: 'get',
       path: '/v1/sales/dealers',
       operationId: 'listAssistedDealers',
@@ -85,7 +127,7 @@ export const salesDocs: ModuleDocs = {
       tag: DOC_TAGS.sales,
       summary: 'Start an assisted dealership',
       description:
-        "Redeems the `phoneTicket` (once) and creates the dealership as a `DRAFT` with `onboardingSource: ASSISTED`, the phone verified and the consent time recorded. The email is stored **unverified** \u2014 it never becomes a sign-in identity until the dealer proves it. Same business-field rules as the dealer's own onboarding; same name-per-city and GSTIN/PAN uniqueness.",
+        "Redeems the `phoneTicket` and the `emailTicket` (once each) and creates the dealership as a `DRAFT` with `onboardingSource: ASSISTED`, the phone and email verified and the consent time recorded. The account those two prove \u2014 an existing one, or a new one \u2014 becomes the dealership's OWNER, so the dealer signs in with Google or a phone code without creating another account. A staff account, an account that already runs a dealership, or a phone and email that belong to two different accounts is refused. Same business-field rules as the dealer's own onboarding; same name-per-city and GSTIN/PAN uniqueness.",
       audience: 'admin',
       permission: 'sales:dealer:create',
       requestBody: {
@@ -115,8 +157,7 @@ export const salesDocs: ModuleDocs = {
       operationId: 'updateAssistedDealer',
       tag: DOC_TAGS.sales,
       summary: 'Edit an assisted draft',
-      description:
-        'While `DRAFT` and not yet claimed by the dealer. The phone cannot be changed here. Changing the email clears its verification.',
+      description: 'While `DRAFT`. The verified mobile number and email cannot be changed here.',
       audience: 'admin',
       permission: 'sales:dealer:edit',
       params: 'IdParam',
@@ -130,17 +171,21 @@ export const salesDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/sales/dealers/:id/email-verification',
-      operationId: 'resendAssistedDealerEmailVerification',
+      path: '/v1/sales/dealers/:id/verify',
+      operationId: 'verifyAssistedDealerContacts',
       tag: DOC_TAGS.sales,
-      summary: 'Send the dealer a new verification link',
+      summary: 'Verify an existing dealership\u2019s owner',
       description:
-        'Supersedes every earlier link and emails a new one to the dealership’s current address (**R113**). A link is also sent automatically when the dealership is created and whenever its email changes. Refused within a minute of the previous one (`409 VERIFICATION_COOLDOWN`) and once the dealer has claimed the dealership (`409 VERIFICATION_NOT_EDITABLE`). The representative never sees the link.',
+        'For a dealership this member assisted before contact verification was required, and which has no owner yet. Redeems a `phoneTicket` for the dealership\u2019s own mobile number and an `emailTicket` for the owner\u2019s email, records both as verified, and makes the account they prove the dealership\u2019s OWNER \u2014 the same account the dealer then signs in to with Google or a phone code. A dealership that already has an owner is a **409** `VERIFY_NOT_NEEDED`; a ticket for another number is a **422** `VERIFY_PHONE_MISMATCH`.',
       audience: 'admin',
       permission: 'sales:dealer:edit',
       params: 'IdParam',
-      responses: [{ status: 200, description: 'Queued.', schema: 'SalesDealerDetail' }],
-      errors: [400, 401, 403, 404, 409],
+      requestBody: {
+        schema: 'VerifyAssistedDealerInput',
+        description: 'The two tickets from Step 1.',
+      },
+      responses: [{ status: 200, description: 'Verified.', schema: 'SalesDealerDetail' }],
+      errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'post',

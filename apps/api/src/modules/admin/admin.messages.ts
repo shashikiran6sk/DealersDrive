@@ -18,7 +18,10 @@ export const OVERRIDE_SELF_REVIEW =
   'You assisted with or belong to this dealership, so another administrator has to decide it.';
 
 export const OVERRIDE_ACCOUNT_INCOMPLETE =
-  "The representative's account details or phone verification are incomplete. Those checks are never waived.";
+  "The owner's account is incomplete: a verified mobile number and a verified email are required. Those checks are never waived.";
+
+export const CONTACT_NOT_VERIFIED =
+  "The owner's mobile number and email must both be verified before this dealership can be approved.";
 
 export const OVERRIDE_BUSINESS_INCOMPLETE =
   'Complete the business details first. Manual activation waives only the document review.';
