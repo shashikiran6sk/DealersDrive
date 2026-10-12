@@ -60,4 +60,6 @@ All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged;
 ## #301 — verify-first assisted onboarding (stacked on #299)
 
 - Opened 2026-10-12 at `2366250`; evidence in `pr-301-verify-first-onboarding/`.
-- Not merged: merging is left to the owner (the session's merge attempt was blocked).
+- The owner merged #299 and asked for #301 to be merged after CI. `main` merged into the branch at `5e52ed5` (tree identical to `896fbe7`: #299 was squash-merged); `896fbe7` fixed a countdown race found by reproducing an intermittent test under load.
+- CI on `5e52ed5`: lint · typecheck · test · build, dependency audit, semgrep, gitleaks, terraform — all success.
+- Squash-merged into `main` as `fb0e107` on 2026-10-12.
