@@ -7,7 +7,7 @@ merge has been verified on `main`.
 
 ## Ground rules in force
 
-- One owner approval per merge. No blanket approval.
+- Merges proceed under the owner's session-scoped authority (see Owner approvals): thorough review and green CI on the final head first.
 - No force-push, no history rewrite (CLAUDE.md §3). Each next PR is reconciled
   by merging the new `main` into its branch: `main` squash-merges under strict
   up-to-date protection, so the squash tree equals the PR's final head and the
@@ -29,21 +29,21 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 
 ## Status
 
-| #   | PR   | Feature                 | Original head | Final tested head | CI (final) | Merge SHA | State                                   |
-| --- | ---- | ----------------------- | ------------- | ----------------- | ---------- | --------- | --------------------------------------- |
-| 1   | #287 | Favicon                 | `6bc0128`     | `ee367df`         | green      | `5d5b5e6` | Merged, main verified (tree == ee367df) |
-| 2   | #288 | Email uniqueness        | `9ad0c9e`     | `5b6be13`         | green      | `19c1100` | Merged, main verified |
-| 3   | #289 | Directory image         | `451ac4e`     | `22dbc37`         | green      | `e8f0e55` | Merged, main verified |
-| 4   | #291 | Service locations       | `aaceb01`     | `4f11619`         | green      | `0d3d201` | Merged, main verified |
-| 5   | #292 | Optional tagline        | `465a5cd`     | `cef8c0b`         | green      | `f2f4d7b` | Merged, main verified |
+| #   | PR   | Feature                 | Original head | Final tested head | CI (final) | Merge SHA | State                                              |
+| --- | ---- | ----------------------- | ------------- | ----------------- | ---------- | --------- | -------------------------------------------------- |
+| 1   | #287 | Favicon                 | `6bc0128`     | `ee367df`         | green      | `5d5b5e6` | Merged, main verified (tree == ee367df)            |
+| 2   | #288 | Email uniqueness        | `9ad0c9e`     | `5b6be13`         | green      | `19c1100` | Merged, main verified                              |
+| 3   | #289 | Directory image         | `451ac4e`     | `22dbc37`         | green      | `e8f0e55` | Merged, main verified                              |
+| 4   | #291 | Service locations       | `aaceb01`     | `4f11619`         | green      | `0d3d201` | Merged, main verified                              |
+| 5   | #292 | Optional tagline        | `465a5cd`     | `cef8c0b`         | green      | `f2f4d7b` | Merged, main verified                              |
 | 6   | #293 | Admin OTP               | `e481bb0`     | `e9e8939`         | green      | `367c0b2` | Merged, main verified (real MSG91 UAT outstanding) |
-| 7   | #294 | Mobile admin            | `a17b4a4`     | `2c60ca4`         | green      | `210dfc9` | Merged, main verified |
-| 8   | #295 | Ticket messaging        | `98a5b78`     | `40fdabe`         | green      | `9ea8b70` | Merged, main verified |
-| 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified |
-| 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | —         | Reviewed; merging |
-| 11  | #298 | Optional GSTIN          | `b500bd5`     | —                 | —          | —         | Pending                                 |
-| —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                             |
-| —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                        |
+| 7   | #294 | Mobile admin            | `a17b4a4`     | `2c60ca4`         | green      | `210dfc9` | Merged, main verified                              |
+| 8   | #295 | Ticket messaging        | `98a5b78`     | `40fdabe`         | green      | `9ea8b70` | Merged, main verified                              |
+| 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified                              |
+| 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | `91e3533` | Merged, main verified                              |
+| 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | —         | Reviewed; merging                                  |
+| —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                                        |
+| —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                                   |
 
 Stack ancestry at start: linear; each branch contains its parent. Migrations
 introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
@@ -54,6 +54,4 @@ introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 
 ## Next action
 
-Owner merge decision on #287. After the merge: verify `main`, then merge the
-new `main` into `fix/dealer-email-uniqueness`, retarget #288 to `main`, confirm
-its three-dot diff is #288-only, and begin its review.
+Merge #298, verify `main`, then run the integrated regression on the merged `main`.
