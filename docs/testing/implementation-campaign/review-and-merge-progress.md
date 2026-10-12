@@ -55,3 +55,9 @@ introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 ## Next action
 
 All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged; regression on `6f4f040` green. Draft #299 revised to `0e8a6ba` (evidence: `pr-299-progressive-onboarding/`); it stays Draft and is not merged. Next: final report.
+
+
+## #301 — verify-first assisted onboarding (stacked on #299)
+
+- Opened 2026-10-12 at `2366250`; evidence in `pr-301-verify-first-onboarding/`.
+- Not merged: merging is left to the owner (the session's merge attempt was blocked).
