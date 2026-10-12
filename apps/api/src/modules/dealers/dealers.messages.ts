@@ -42,3 +42,5 @@ export const GSTIN_NEEDS_GST_CERTIFICATE =
 
 export const GSTIN_CHANGED_REASON =
   'The GSTIN on file changed with a new business proof; a new review is required.';
+
+export const ACTIVE_LABEL = 'Approved';

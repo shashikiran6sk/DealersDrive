@@ -1615,3 +1615,13 @@ Inside the commit's transaction, so the document and the GSTIN move together.
 A change revokes Dealer Verified like any other change to business identity;
 the uniqueness check before the transaction gives the friendly error, and
 `withDealerRegistrationConflict` maps the unique index for the race.
+
+## `apps/api/src/modules/dealers/dealers.service.ts` — the status word (#299 L8)
+
+### `function statusLabelOf(`
+
+An ACTIVE dealership used to be labelled "Verified" on the dealer's own
+console and profile, which a manual activation with no document verified made
+plainly untrue — and Dealer Verified is a separate review with its own badge.
+ACTIVE now reads "Approved", and "Dealer Verified" only when that review has
+granted it.
