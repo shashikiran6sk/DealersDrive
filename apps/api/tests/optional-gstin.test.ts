@@ -55,25 +55,13 @@ describe('optional GSTIN API and stored invariant', () => {
     }
     await d.agent.post('/v1/dealer/submit').expect(200);
     await admin.post(`/v1/admin/dealers/${d.dealerId}/approve`).send({}).expect(200);
-    const assessment = {
-      representativeIdentity: 'Protected synthetic representative case',
-      representativeAuthority: 'Synthetic authority reviewed case',
-      businessExistence: 'Synthetic business record review case',
-      contactValidation: 'Actual local proved contact identities',
-      businessType: 'REGISTERED_VEHICLE_DEALER',
-      classificationEvidence: 'Synthetic reviewed classification case',
-      regulatoryOutcome: 'CHECKED_VALID',
-      regulatoryEvidence: 'Synthetic checked authorization case',
-      gstOutcome: 'CHECKED_VALID',
-      gstEvidence: 'Synthetic checked registration case',
-    };
     await admin
       .post(`/v1/admin/dealers/${d.dealerId}/verification`)
       .send({ status: 'IN_REVIEW', expectedVersion: 0 })
       .expect(200);
     await admin
       .post(`/v1/admin/dealers/${d.dealerId}/verification`)
-      .send({ status: 'VERIFIED', expectedVersion: 1, assessment })
+      .send({ status: 'VERIFIED', expectedVersion: 1 })
       .expect(200);
     const detail = await admin.get(`/v1/admin/dealers/${d.dealerId}`).expect(200);
     const certificateUrl = detail.body.documents.find(

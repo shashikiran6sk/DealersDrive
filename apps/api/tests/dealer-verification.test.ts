@@ -8,24 +8,11 @@ import { documentKey } from '../src/modules/dealers/dealer-storage-keys.js';
 import { createDealerVerificationService } from '../src/modules/admin/dealer-verification.service.js';
 import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { env } from '../src/config/env.js';
-import { DealerVerificationAssessment } from '@dealers-drive/contracts';
 let h: AuthHarness;
 let fixtures: ReturnType<typeof marketplaceFixtures>;
 let admin: request.Agent;
 let reviewerId: string;
 const storage = createLocalStorage();
-const assessment = {
-  representativeIdentity: 'Synthetic protected identity case 1',
-  representativeAuthority: 'Synthetic authority case reviewed 1',
-  businessExistence: 'Synthetic registry case reviewed 1',
-  contactValidation: 'Synthetic phone and email proofs 1',
-  businessType: 'REGISTERED_VEHICLE_DEALER',
-  classificationEvidence: 'Synthetic statutory classification case 1',
-  regulatoryOutcome: 'CHECKED_VALID',
-  regulatoryEvidence: 'Synthetic authorization record case 1',
-  gstOutcome: 'NOT_REQUIRED_REVIEWED',
-  gstEvidence: 'Synthetic tax applicability case 1',
-};
 beforeAll(async () => {
   h = await createAuthHarness();
   fixtures = marketplaceFixtures(h, 'verification');
@@ -84,9 +71,9 @@ function decision(
 async function inReview(id: string) {
   await decision(id, 'IN_REVIEW', 0).expect(200);
 }
-async function verified(id: string, checks = assessment) {
+async function verified(id: string) {
   await inReview(id);
-  return decision(id, 'VERIFIED', 1, { assessment: checks }).expect(200);
+  return decision(id, 'VERIFIED', 1).expect(200);
 }
 async function publicProfile(slug: string) {
   return (await h.agent().get(`/v1/dealers/${slug}`).expect(200)).body as { isVerified: boolean };
@@ -105,7 +92,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
     expect(review.body).toMatchObject({ status: 'VERIFIED', version: 2, reviewerId });
     expect(review.body.verifiedAt).toBeTruthy();
     expect(review.body.history).toHaveLength(2);
-    expect(review.body.history[0].assessment).toEqual(assessment);
+    expect(review.body.history[0]).not.toHaveProperty('assessment');
     const profile = await h.agent().get(`/v1/dealers/${d.slug}`).expect(200);
     expect(profile.body.isVerified).toBe(true);
     const publicText = JSON.stringify(profile.body);
@@ -153,7 +140,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
       reason: 'Synthetic evidence needs correction',
     }).expect(200);
     await decision(d.dealerId, 'IN_REVIEW', 2).expect(200);
-    await decision(d.dealerId, 'VERIFIED', 3, { assessment }).expect(200);
+    await decision(d.dealerId, 'VERIFIED', 3).expect(200);
     await decision(d.dealerId, 'REVOKED', 4, {
       reason: 'Synthetic business evidence was withdrawn',
     }).expect(200);
@@ -173,15 +160,14 @@ describe('explicit dealer verification independent of yard ownership', () => {
       (await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).verificationVersion,
     ).toBe(1);
   });
-  it('refuses skipping review and forged/short/missing checks', async () => {
+  it('refuses skipping review, a forged field and the retired free-text assessment', async () => {
     const d = await candidate();
-    await decision(d.dealerId, 'VERIFIED', 0, { assessment }).expect(409);
+    await decision(d.dealerId, 'VERIFIED', 0).expect(409);
     await inReview(d.dealerId);
-    await decision(d.dealerId, 'VERIFIED', 1).expect(400);
+    await decision(d.dealerId, 'VERIFIED', 1, { isVerified: true }).expect(400);
     await decision(d.dealerId, 'VERIFIED', 1, {
-      assessment: { ...assessment, representativeIdentity: 'yes' },
+      assessment: { representativeIdentity: 'Synthetic protected identity case 1' },
     }).expect(400);
-    await decision(d.dealerId, 'VERIFIED', 1, { assessment, isVerified: true }).expect(400);
   });
   it.each(['DRAFT', 'PENDING_APPROVAL', 'SUSPENDED', 'REJECTED', 'CLOSED'] as const)(
     'cannot grant a verified badge to %s dealership',
@@ -189,7 +175,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
       const d = await candidate();
       await h.prisma.dealer.update({ where: { id: d.dealerId }, data: { status } });
       await inReview(d.dealerId);
-      const r = await decision(d.dealerId, 'VERIFIED', 1, { assessment });
+      const r = await decision(d.dealerId, 'VERIFIED', 1);
       expect(r.body.code).toBe('DEALER_NOT_APPROVED');
     },
   );
@@ -200,10 +186,10 @@ describe('explicit dealer verification independent of yard ownership', () => {
       where: { id: d.dealerId },
       data: { contactPhone: '+919000007777' },
     });
-    const r = await decision(d.dealerId, 'VERIFIED', 1, { assessment });
+    const r = await decision(d.dealerId, 'VERIFIED', 1);
     expect(r.body.code).toBe('CONTACT_NOT_VERIFIED');
     await h.prisma.user.update({ where: { id: d.userId }, data: { emailVerifiedAt: null } });
-    expect((await decision(d.dealerId, 'VERIFIED', 1, { assessment })).body.code).toBe(
+    expect((await decision(d.dealerId, 'VERIFIED', 1)).body.code).toBe(
       'CONTACT_NOT_VERIFIED',
     );
   });
@@ -214,7 +200,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
       where: { dealerId_category: { dealerId: d.dealerId, category: 'PERSONAL_IDENTITY' } },
     });
     await h.prisma.dealerDocument.update({ where: { id: doc.id }, data: { reviewedAt: null } });
-    expect((await decision(d.dealerId, 'VERIFIED', 1, { assessment })).body.code).toBe(
+    expect((await decision(d.dealerId, 'VERIFIED', 1)).body.code).toBe(
       'VERIFICATION_DOCUMENTS_REQUIRED',
     );
     await h.prisma.dealerDocument.update({
@@ -222,46 +208,14 @@ describe('explicit dealer verification independent of yard ownership', () => {
       data: { reviewedAt: new Date() },
     });
     await storage.delete(documentKey(d.slug, doc.type, doc.id));
-    expect((await decision(d.dealerId, 'VERIFIED', 1, { assessment })).body.code).toBe(
+    expect((await decision(d.dealerId, 'VERIFIED', 1)).body.code).toBe(
       'VERIFICATION_DOCUMENT_MISSING',
     );
   });
-  it('requires applicable authorization for registered-vehicle dealers', async () => {
-    const d = await candidate();
-    await inReview(d.dealerId);
-    expect(
-      (
-        await decision(d.dealerId, 'VERIFIED', 1, {
-          assessment: { ...assessment, regulatoryOutcome: 'NOT_APPLICABLE_REVIEWED' },
-        })
-      ).body.code,
-    ).toBe('REGULATORY_AUTHORIZATION_REQUIRED');
-    await decision(d.dealerId, 'VERIFIED', 1, {
-      assessment: {
-        ...assessment,
-        businessType: 'INTERMEDIARY_REVIEWED',
-        regulatoryOutcome: 'NOT_APPLICABLE_REVIEWED',
-      },
-    }).expect(200);
-  });
-  it('supports reviewed non-GST businesses and checks supplied GST evidence separately', async () => {
+  it('verifies a GSTIN holder on its reviewed GST certificate, with no typed attestation', async () => {
     const d = await candidate(true);
     await inReview(d.dealerId);
-    expect((await decision(d.dealerId, 'VERIFIED', 1, { assessment })).body.code).toBe(
-      'GST_VERIFICATION_REQUIRED',
-    );
-    await decision(d.dealerId, 'VERIFIED', 1, {
-      assessment: { ...assessment, gstOutcome: 'CHECKED_VALID' },
-    }).expect(200);
-    const noGst = await candidate();
-    await inReview(noGst.dealerId);
-    expect(
-      (
-        await decision(noGst.dealerId, 'VERIFIED', 1, {
-          assessment: { ...assessment, gstOutcome: 'CHECKED_VALID' },
-        })
-      ).body.code,
-    ).toBe('GST_APPLICABILITY_REQUIRED');
+    await decision(d.dealerId, 'VERIFIED', 1).expect(200);
   });
   it('blocks anonymous/dealer/support actors and keeps reviewer history private', async () => {
     const d = await candidate();
@@ -404,11 +358,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
         permissions: ['admin:dealer:approve'],
       },
       d.dealerId,
-      {
-        expectedVersion: 1,
-        status: 'VERIFIED',
-        assessment: DealerVerificationAssessment.parse(assessment),
-      },
+      { expectedVersion: 1, status: 'VERIFIED' },
     );
     expect(observed.length).toBeGreaterThan(0);
     expect(observed.every((o) => o.adminLockFree && o.dealerRowFree)).toBe(true);
@@ -449,11 +399,7 @@ describe('explicit dealer verification independent of yard ownership', () => {
           permissions: ['admin:dealer:approve'],
         },
         d.dealerId,
-        {
-          expectedVersion: 1,
-          status: 'VERIFIED',
-          assessment: DealerVerificationAssessment.parse(assessment),
-        },
+        { expectedVersion: 1, status: 'VERIFIED' },
       ),
     ).rejects.toMatchObject({ code: 'VERIFICATION_CHANGED' });
     const after = await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } });

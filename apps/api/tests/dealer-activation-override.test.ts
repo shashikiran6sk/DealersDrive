@@ -118,18 +118,6 @@ describe('an authorized manual activation', () => {
     const badge = await superAdmin.post(`/v1/admin/dealers/${d.dealerId}/verification`).send({
       expectedVersion: 1,
       status: 'VERIFIED',
-      assessment: {
-        representativeIdentity: 'Synthetic representative identity check record 1',
-        representativeAuthority: 'Synthetic representative authority record 1',
-        businessExistence: 'Synthetic business existence record 1',
-        contactValidation: 'Synthetic contact validation record 1',
-        businessType: 'INTERMEDIARY_REVIEWED',
-        classificationEvidence: 'Synthetic classification evidence record 1',
-        regulatoryOutcome: 'NOT_APPLICABLE_REVIEWED',
-        regulatoryEvidence: 'Synthetic authorization record case 1',
-        gstOutcome: 'NOT_REQUIRED_REVIEWED',
-        gstEvidence: 'Synthetic tax applicability case 1',
-      },
     });
     expect(badge.status).toBeGreaterThanOrEqual(400);
     expect((await row(d.dealerId)).verificationStatus).not.toBe('VERIFIED');

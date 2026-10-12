@@ -33,8 +33,7 @@ export async function invalidateDealerVerification(
       status: 'REVOKED',
       version: dealer.verificationVersion + 1,
       reason,
-      assessment: null,
-      policyVersion: 'dd-business-verification-v1',
+      policyVersion: 'dd-business-verification-v2',
       documentReviewsInvalidated: true,
     },
   });

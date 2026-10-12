@@ -9,6 +9,8 @@ import { revalidatePath } from 'next/cache';
 import { ApiError, apiSend } from '@/lib/api';
 import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
 
+import { DEALER_VERIFICATION_TEXT } from './dealer-verification.constants';
+
 export async function decideDealerVerification(
   dealerId: string,
   input: unknown,
@@ -19,8 +21,8 @@ export async function decideDealerVerification(
     return {
       ok: false,
       message: body.success
-        ? 'Invalid dealership.'
-        : (body.error.issues[0]?.message ?? 'Check the verification decision.'),
+        ? DEALER_VERIFICATION_TEXT.invalidDealer
+        : (body.error.issues[0]?.message ?? DEALER_VERIFICATION_TEXT.invalidDecision),
     };
   try {
     const review = await apiSend<DealerVerificationReview>(
@@ -37,8 +39,8 @@ export async function decideDealerVerification(
       ok: false,
       message:
         error instanceof ApiError
-          ? error.userMessage('Could not save the verification decision.')
-          : 'Verification service is unavailable.',
+          ? error.userMessage(DEALER_VERIFICATION_TEXT.saveFailed)
+          : DEALER_VERIFICATION_TEXT.unavailable,
     };
   }
 }

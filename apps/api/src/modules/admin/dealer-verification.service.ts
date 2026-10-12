@@ -1,7 +1,6 @@
 import {
   DEALER_VERIFICATION_LABELS,
   DEALER_VERIFICATION_TRANSITIONS,
-  DealerVerificationAssessment,
   DealerVerificationStatus,
   documentRequirement,
   isVerifiedDocument,
@@ -28,7 +27,6 @@ const ACTION = 'dealer.verification.decided';
 const HistoryPayload = z.object({
   status: DealerVerificationStatus,
   reason: z.string().nullable().optional(),
-  assessment: DealerVerificationAssessment.nullable().optional(),
 });
 
 async function currentReviewer(tx: Tx, admin: AdminPrincipal): Promise<void> {
@@ -101,7 +99,6 @@ export function createDealerVerificationService({
           from: before.data.status,
           to: after.data.status,
           reason: after.data.reason ?? null,
-          assessment: after.data.assessment ?? null,
         });
     }
     return {
@@ -185,19 +182,6 @@ export function createDealerVerificationService({
               'DEALER_NOT_APPROVED',
               'Approve the dealership separately before granting its verified badge.',
             );
-          if (!input.assessment)
-            throw new DomainError(
-              'VERIFICATION_EVIDENCE_REQUIRED',
-              'Record all performed verification checks.',
-            );
-          if (
-            input.assessment.businessType === 'REGISTERED_VEHICLE_DEALER' &&
-            input.assessment.regulatoryOutcome !== 'CHECKED_VALID'
-          )
-            throw new DomainError(
-              'REGULATORY_AUTHORIZATION_REQUIRED',
-              'Record the applicable registered-vehicle dealer authorization check.',
-            );
           const owner = dealer.members.find((member) => member.role === 'OWNER')?.user;
           const phoneVerified =
             dealer.onboardingSource === 'ASSISTED'
@@ -220,16 +204,6 @@ export function createDealerVerificationService({
             throw new DomainError(
               'VERIFICATION_DOCUMENTS_REQUIRED',
               'Review the applicable uploaded business documents before granting a badge.',
-            );
-          if (dealer.gstin && input.assessment.gstOutcome !== 'CHECKED_VALID')
-            throw new DomainError(
-              'GST_VERIFICATION_REQUIRED',
-              'A supplied GSTIN needs its applicable registration check.',
-            );
-          if (!dealer.gstin && input.assessment.gstOutcome !== 'NOT_REQUIRED_REVIEWED')
-            throw new DomainError(
-              'GST_APPLICABILITY_REQUIRED',
-              'Record why GST registration is not required, or collect and verify it.',
             );
           if (checkedEvidence !== evidenceFingerprint(dealer.slug, required))
             throw new ConflictError(
@@ -259,8 +233,7 @@ export function createDealerVerificationService({
             status: input.status,
             version: dealer.verificationVersion + 1,
             reason: input.reason ?? null,
-            assessment: input.assessment ?? null,
-            policyVersion: 'dd-business-verification-v1',
+            policyVersion: 'dd-business-verification-v2',
           },
         });
         return read(tx, dealerId);

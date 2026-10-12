@@ -31,50 +31,22 @@ export const DEALER_VERIFICATION_TRANSITIONS: Record<
   REVOKED: ['PENDING', 'IN_REVIEW'],
 };
 
-const EvidenceReference = z
-  .string()
-  .trim()
-  .min(20, 'Describe the check and its evidence reference.')
-  .max(2000);
-export const DealerVerificationAssessment = z
-  .object({
-    representativeIdentity: EvidenceReference,
-    representativeAuthority: EvidenceReference,
-    businessExistence: EvidenceReference,
-    contactValidation: EvidenceReference,
-    businessType: z.enum(['REGISTERED_VEHICLE_DEALER', 'INTERMEDIARY_REVIEWED']),
-    classificationEvidence: EvidenceReference,
-    regulatoryOutcome: z.enum(['CHECKED_VALID', 'NOT_APPLICABLE_REVIEWED']),
-    regulatoryEvidence: EvidenceReference,
-    gstOutcome: z.enum(['CHECKED_VALID', 'NOT_REQUIRED_REVIEWED']),
-    gstEvidence: EvidenceReference,
-  })
-  .strict();
-export type DealerVerificationAssessment = z.infer<typeof DealerVerificationAssessment>;
-
+/**
+ * A verification decision is a status and, for a rejection or revocation, the
+ * reason. What a Dealer Verified badge rests on is checked by the API, not
+ * typed by the reviewer: an approved dealership, verified contact details and
+ * both document categories reviewed and on file (#299).
+ */
 export const DealerVerificationDecisionInput = z
   .object({
     expectedVersion: z.number().int().min(0),
     status: DealerVerificationStatus.exclude(['NOT_VERIFIED']),
     reason: z.string().trim().min(10).max(2000).optional(),
-    assessment: DealerVerificationAssessment.optional(),
   })
   .strict()
   .superRefine((value, ctx) => {
-    if (value.status === 'VERIFIED' && !value.assessment)
-      ctx.addIssue({
-        code: 'custom',
-        path: ['assessment'],
-        message: 'Record all performed verification checks.',
-      });
     if ((value.status === 'REJECTED' || value.status === 'REVOKED') && !value.reason)
       ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Record the decision reason.' });
-    if (value.status !== 'VERIFIED' && value.assessment)
-      ctx.addIssue({
-        code: 'custom',
-        path: ['assessment'],
-        message: 'Assessment belongs to a verified decision.',
-      });
   });
 export type DealerVerificationDecisionInput = z.infer<typeof DealerVerificationDecisionInput>;
 
@@ -94,7 +66,6 @@ export const DealerVerificationReview = z.object({
       from: DealerVerificationStatus,
       to: DealerVerificationStatus,
       reason: z.string().nullable(),
-      assessment: DealerVerificationAssessment.nullable(),
     }),
   ),
 });

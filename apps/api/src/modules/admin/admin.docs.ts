@@ -41,7 +41,7 @@ export const adminDocs: ModuleDocs = {
       tag: DOC_TAGS.admin,
       summary: 'Record a genuine verification decision',
       description:
-        'Optimistic version and locked transaction. Verified requires active approval, contact proof, reviewed applicable documents and recorded identity/business/regulatory/GST assessments. Yard ownership is never a criterion. Assistants and dealership members cannot self-approve; rejected/revoked need reasons. Core evidence changes revoke the badge.',
+        'Optimistic version and locked transaction. Verified requires active approval, verified contact details and both document categories reviewed and on file; the body is the status and, for a rejection or revocation, the reason (#299 removed the free-text assessment). Yard ownership is never a criterion. Assistants and dealership members cannot self-approve; rejected/revoked need reasons. Core evidence changes revoke the badge.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',
