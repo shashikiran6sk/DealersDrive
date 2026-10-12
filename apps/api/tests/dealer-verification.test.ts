@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createAuthHarness, type AuthHarness } from './auth-harness.js';
@@ -21,15 +21,20 @@ beforeAll(async () => {
     .id;
 });
 afterAll(async () => h.close());
+function uniquePan(): string {
+  const bytes = randomBytes(8);
+  const letters = [...bytes.subarray(0, 4)].map((b) => String.fromCharCode(65 + (b % 26))).join('');
+  const digits = [...bytes.subarray(4)].map((b) => String(b % 10)).join('');
+  return `V${letters}${digits}Q`;
+}
 async function candidate(gstin = false) {
   const d = await fixtures.dealership();
+  const pan = uniquePan();
   await h.prisma.dealer.update({
     where: { id: d.dealerId },
     data: {
-      pan: `VRFYX${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}Q`,
-      ...(gstin
-        ? { gstin: `33VRFYX${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}Q1Z1` }
-        : {}),
+      pan,
+      ...(gstin ? { gstin: `33${pan}1Z1` } : {}),
     },
   });
   for (const [category, type] of [
