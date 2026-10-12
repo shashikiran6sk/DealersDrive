@@ -12,7 +12,7 @@ import {
   SUPPORT_TICKET_TRANSITIONS,
   SupportTicketPriority,
   SupportTicketStatus,
-  canCustomerReply,
+  canSupportReply,
   customerEnquiryStatus,
   formatDate,
   formatDateTime,
@@ -288,7 +288,7 @@ export function toAdminSupportDetail(
     description: row.description,
     resolvedLabel: row.resolvedAt ? formatDateTime(row.resolvedAt) : null,
     closedLabel: row.closedAt ? formatDateTime(row.closedAt) : null,
-    canReply: canCustomerReply(row.status),
+    canReply: canSupportReply(row.status),
     transitions: [...SUPPORT_TICKET_TRANSITIONS[row.status]],
     customer: {
       id: row.customer.id,

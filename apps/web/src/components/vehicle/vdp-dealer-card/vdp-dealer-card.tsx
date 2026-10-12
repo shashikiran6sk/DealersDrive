@@ -30,7 +30,11 @@ export function VdpDealerCard({ dealer }: { dealer: PublicVehicleDetail['dealer'
           <LinkPendingLabel>{VDP_DEALER_TEXT.view}</LinkPendingLabel>
         </Link>
       </div>
-      <p className="text-[12px] ink-subtle">{VDP_DEALER_TEXT.trust}</p>
+      <p className="text-[12px] ink-subtle">
+        {dealer.isVerified
+          ? VDP_DEALER_TEXT.trust
+          : 'Contact the dealership about this vehicle and check its documents before you visit.'}
+      </p>
     </section>
   );
 }

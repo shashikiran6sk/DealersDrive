@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { PhoneVerification } from '@/features/auth/phone-verification';
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
 import {
@@ -13,24 +14,18 @@ import {
   verifyDealerPhoneAction,
 } from '@/features/sales/sales-actions';
 
-import { ProgressiveAssistedRegistration } from '@/features/progressive/registration';
 import { START_TEXT } from './assisted-dealer-start.constants';
 
-export function AssistedDealerStart({
-  widget,
-  progressive = false,
-}: {
-  widget: PhoneOtpWidget | null;
-  progressive?: boolean;
-}) {
+export function AssistedDealerStart({ widget }: { widget: PhoneOtpWidget | null }) {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [ticket, setTicket] = useState<string | null>(null);
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedValues, setSavedValues] = useState<Record<string, string>>({});
+  const [savedServices, setSavedServices] = useState<string[]>([]);
 
-  if (details && ticket && progressive) return <ProgressiveAssistedRegistration ticket={ticket} />;
   if (details && ticket) {
     return (
       <section aria-labelledby="assisted-details-heading" className="flex flex-col gap-4">
@@ -39,15 +34,41 @@ export function AssistedDealerStart({
         </h2>
         <p className="text-[12px] ink-muted">{START_TEXT.ticketNote}</p>
         <AssistedDealerForm
-          initial={{}}
-          initialServices={[]}
+          initial={savedValues}
+          initialServices={savedServices}
           submitLabel={START_TEXT.create}
           partial={false}
-          onSubmit={(values) => createAssistedDealerAction({ ...values, phoneTicket: ticket })}
+          onSubmit={(values) => {
+            const saved: Record<string, string> = {};
+            for (const [name, value] of Object.entries(values)) {
+              if (typeof value === 'string') saved[name] = value;
+            }
+            setSavedValues(saved);
+            if (Array.isArray(values.specialities)) {
+              setSavedServices(
+                values.specialities.filter((value): value is string => typeof value === 'string'),
+              );
+            }
+            return createAssistedDealerAction({ ...values, phoneTicket: ticket });
+          }}
           onDone={(result) => {
             if (result.dealerId) router.push(`/sales/dealers/${result.dealerId}`);
           }}
         />
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-[12px] ink-muted">{START_TEXT.reverifyHint}</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            onClick={() => {
+              setTicket(null);
+              setDetails(false);
+            }}
+          >
+            {START_TEXT.reverify}
+          </Button>
+        </div>
       </section>
     );
   }

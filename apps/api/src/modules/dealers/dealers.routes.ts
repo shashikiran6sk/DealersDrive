@@ -1,4 +1,3 @@
-import { getProgressive } from './routes/get-progressive.js';
 import { Router } from 'express';
 
 import type { DealersService } from './dealers.service.js';
@@ -21,7 +20,6 @@ import type { DealersRoute } from './routes/route.js';
 
 const ROUTES: DealersRoute[] = [
   getProfile,
-  getProgressive,
   patchProfile,
   deleteProfileChange,
   patchOnboarding,

@@ -14,7 +14,7 @@ import { PublicShell } from '@/components/layout/public-shell';
 
 import { navigationState } from '../../../setup';
 
-vi.mock('next/font/google', () => ({ Manrope: () => ({ variable: 'font-manrope' }) }));
+vi.mock('next/font/local', () => ({ default: () => ({ variable: 'font-manrope' }) }));
 
 /**
  * The branded 404 and error screens. What is pinned here is what a restyle

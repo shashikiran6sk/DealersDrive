@@ -15,21 +15,124 @@ export const adminDocs: ModuleDocs = {
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
-      method: 'put',
-      path: '/v1/admin/dealers/{id}/progressive-plan',
-      operationId: 'reviewProgressivePlan',
+      method: 'get',
+      path: '/v1/admin/dealers/:id/verification',
+      operationId: 'getDealerVerification',
       tag: DOC_TAGS.admin,
-      summary: 'Progressive dealer onboarding',
+      summary: 'Restricted dealership verification review and history',
       description:
-        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
+        'Active authorized reviewers only. Latest 100 audit decisions with private evidence references; no public KYC payload. Approval and verification are distinct.',
       audience: 'admin',
-      requestBody: { schema: 'ProgressivePlanInput' },
       permission: 'admin:dealer:approve',
       params: 'IdParam',
       responses: [
-        { status: 200, description: 'Saved application progress.', schema: 'ProgressiveState' },
+        {
+          status: 200,
+          description: 'Review status and restricted history.',
+          schema: 'DealerVerificationReview',
+        },
       ],
-      errors: [401, 403, 409, 422],
+      errors: [401, 403, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/verification',
+      operationId: 'decideDealerVerification',
+      tag: DOC_TAGS.admin,
+      summary: 'Record a genuine verification decision',
+      description:
+        'Optimistic version and locked transaction. Verified requires active approval, contact proof, reviewed applicable documents and recorded identity/business/regulatory/GST assessments. Yard ownership is never a criterion. Assistants and dealership members cannot self-approve; rejected/revoked need reasons. Core evidence changes revoke the badge.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: { schema: 'DealerVerificationDecisionInput', required: true },
+      responses: [
+        {
+          status: 200,
+          description: 'Recorded decision and history.',
+          schema: 'DealerVerificationReview',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/service-locations',
+      operationId: 'getServiceLocations',
+      tag: DOC_TAGS.admin,
+      summary: 'Configured service locations',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/service-locations/history',
+      operationId: 'getServiceLocationHistory',
+      tag: DOC_TAGS.admin,
+      summary: 'Service location audit history',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationHistory' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/service-locations/state/:id',
+      operationId: 'updateServiceState',
+      tag: DOC_TAGS.admin,
+      summary: 'Change state availability',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      params: 'ServiceLocationParam',
+      requestBody: { schema: 'ServiceLocationSettings', required: true },
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/service-locations/district/:id',
+      operationId: 'updateServiceDistrict',
+      tag: DOC_TAGS.admin,
+      summary: 'Change district availability and photography coverage',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      params: 'ServiceLocationParam',
+      requestBody: { schema: 'ServiceLocationSettings', required: true },
+      responses: [
+        { status: 200, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/service-locations/districts',
+      operationId: 'addServiceDistrict',
+      tag: DOC_TAGS.admin,
+      summary: 'Add a government-reviewed canonical district',
+      description:
+        'Existing dealer locations and listings are preserved. Changes are audited; stale versions return 409. New districts start disabled for onboarding and photography.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      requestBody: { schema: 'AddServiceDistrictInput', required: true },
+      responses: [
+        { status: 201, description: 'Configuration result.', schema: 'ServiceLocationsResponse' },
+      ],
+      errors: [401, 403, 404, 409, 422],
     },
 
     {

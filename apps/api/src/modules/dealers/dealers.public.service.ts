@@ -1,7 +1,10 @@
+import { canonicalDistrictFilterSlug } from '@dealers-drive/contracts';
 import {
+  isDealerVerified,
   distinctServices,
   formatLakh,
   initialsOf,
+  STANDARD_DEALER_COVER_PATH,
   type DealerCard,
   type DealerDirectoryQuery,
   type DealerDirectoryResponse,
@@ -30,7 +33,6 @@ export interface DealerInventoryStats {
   dealerStats(): Promise<DealerInventoryStat[]>;
 }
 
-const CARD_COVER_WIDTH = 640;
 const PORTFOLIO_COVER_WIDTH = 1600;
 
 export interface DealersPublicDeps {
@@ -47,7 +49,11 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
       const inDistrict =
         query.district && query.district !== 'all'
-          ? dealers.filter((dealer) => dealer.districtSlug === query.district)
+          ? dealers.filter(
+              (dealer) =>
+                canonicalDistrictFilterSlug(dealer.districtSlug ?? '') ===
+                canonicalDistrictFilterSlug(query.district ?? ''),
+            )
           : dealers;
 
       const cities = citySlugsIn(query.city);
@@ -67,10 +73,6 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const start = (query.page - 1) * query.limit;
       const paged = filtered.slice(start, start + query.limit);
 
-      const covers = await repo.readyMediaIds(
-        paged.map((dealer) => dealer.coverMediaId).filter((id): id is string => id !== null),
-      );
-
       const data: DealerCard[] = paged.map((dealer) => {
         const stat = byDealer.get(dealer.slug);
         const fromPrice =
@@ -88,17 +90,14 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           state,
           yearsOperating: dealer.yearsOperating,
           yearsLabel: locationLabel(city, state, dealer.yearsOperating),
-          tagline: dealer.tagline,
+          tagline: dealer.tagline?.trim() || null,
           services: distinctServices(dealer.specialities).slice(0, 3),
           carCount: stat?.count ?? 0,
           fromPricePaise: fromPrice,
           fromPriceLabel: fromPrice === null ? '—' : `from ${formatLakh(fromPrice)}`,
-          isVerified: true,
+          isVerified: isDealerVerified(dealer),
           logoUrl: null,
-          coverUrl:
-            dealer.coverMediaId && covers.has(dealer.coverMediaId)
-              ? mediaUrl(dealer.coverMediaId, CARD_COVER_WIDTH)
-              : null,
+          coverUrl: `${env.WEB_BASE_URL}${STANDARD_DEALER_COVER_PATH}`,
         };
       });
 
@@ -110,7 +109,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           total,
           totalPages: Math.ceil(total / query.limit),
         },
-        countLabel: `${total} verified ${total === 1 ? 'dealership' : 'dealerships'}`,
+        countLabel: `${total} ${total === 1 ? 'dealership' : 'dealerships'}`,
         cities: chipsOf(inDistrict, cityChip),
         districts: chipsOf(dealers, districtChip),
       };
@@ -122,7 +121,12 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
       const cities = citySlugsIn(query.city);
       const inScope = dealers.filter((dealer) => {
-        if (query.district && query.district !== 'all' && dealer.districtSlug !== query.district) {
+        if (
+          query.district &&
+          query.district !== 'all' &&
+          canonicalDistrictFilterSlug(dealer.districtSlug ?? '') !==
+            canonicalDistrictFilterSlug(query.district ?? '')
+        ) {
           return false;
         }
         if (cities.size > 0 && (dealer.citySlug === null || !cities.has(dealer.citySlug))) {
@@ -154,7 +158,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           metaLabel: suggestMeta(carCount, dealer.cityName, dealer.districtName),
           matchedOn: hit.field,
           carCount,
-          isVerified: true,
+          isVerified: isDealerVerified(dealer),
         };
       });
 
@@ -163,7 +167,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       return {
         search: query.search,
         data,
-        countLabel: `${total} matching ${total === 1 ? 'yard' : 'yards'}`,
+        countLabel: `${total} matching ${total === 1 ? 'dealership' : 'dealerships'}`,
       };
     },
 
@@ -205,8 +209,8 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         brandName: dealer.brandName,
         legalName: dealer.legalName,
         initials: initialsOf(dealer.brandName),
-        isVerified: true,
-        tagline: dealer.tagline,
+        isVerified: isDealerVerified(dealer),
+        tagline: dealer.tagline?.trim() || null,
         services: distinctServices(dealer.specialities),
         address: {
           line: dealer.addressLine,

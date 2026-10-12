@@ -1,6 +1,7 @@
 import {
   OWNER_BUCKET_MIN,
   slugify,
+  vehicleMakeSlug,
   type BodyTypeSlug,
   type ColorSlug,
   type DealerVehicleQuery,
@@ -98,11 +99,15 @@ export function wordsOf(q: string | undefined): string[] {
     .slice(0, MAX_WORDS);
 }
 
-function spellingsOf(values: readonly (string | null)[], slugs: readonly string[]): string[] {
+function spellingsOf(
+  values: readonly (string | null)[],
+  slugs: readonly string[],
+  keyOf: (value: string) => string = slugify,
+): string[] {
   const wanted = new Set(slugs);
   const found = new Set<string>();
   for (const value of values) {
-    if (value !== null && wanted.has(slugify(value))) found.add(value);
+    if (value !== null && wanted.has(keyOf(value))) found.add(value);
   }
   return [...found];
 }
@@ -119,7 +124,9 @@ export function resolveFilters(
 
   return {
     words: wordsOf(query.q),
-    ...(query.brand ? { makes: spellingsOf(vocabulary?.makes ?? [], query.brand) } : {}),
+    ...(query.brand
+      ? { makes: spellingsOf(vocabulary?.makes ?? [], query.brand, vehicleMakeSlug) }
+      : {}),
     ...(query.model
       ? {
           models: spellingsOf(

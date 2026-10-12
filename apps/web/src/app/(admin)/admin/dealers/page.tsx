@@ -129,7 +129,7 @@ export default async function AdminDealersPage({
       {dealers.data.length === 0 ? (
         <EmptyState title="No dealers here" message="Nothing matches this filter." />
       ) : (
-        <Table columns={COLUMNS} caption="Every dealership on the platform">
+        <Table scrollHint columns={COLUMNS} caption="Every dealership on the platform">
           {dealers.data.map((dealer) => (
             <tr key={dealer.id}>
               <td>

@@ -69,6 +69,7 @@ function row(overrides: Partial<VehicleRow> = {}): VehicleRow {
 function setup(
   repoOverrides: Record<string, unknown> = {},
   locked: ListingStatus | null = 'DRAFT',
+  lockedMake: string | null = null,
 ) {
   const repo = {
     create: vi.fn(async () => row()),
@@ -99,6 +100,7 @@ function setup(
       create: async () => listing(),
       findUnique: async () => (locked ? listing(locked) : null),
     },
+    vehicle: { findUnique: vi.fn(async () => ({ make: lockedMake })) },
   };
   const prisma = {
     $transaction: async (work: (client: unknown) => Promise<unknown>) => work(tx),
@@ -198,6 +200,52 @@ describe('update', () => {
     const boom = new Error('deadlock');
     const { service } = setup({ updateOwned: vi.fn(async () => Promise.reject(boom)) });
     await expect(service.update(ACTOR, ID, { make: 'Tata' })).rejects.toBe(boom);
+  });
+});
+
+describe('a make outside the canonical list', () => {
+  const LEGACY = 'Hindustan Ambassador Co';
+
+  it('is refused before any write when the vehicle does not already hold it', async () => {
+    const { service, repo } = setup();
+    await expect(service.update(ACTOR, ID, { make: LEGACY })).rejects.toMatchObject({
+      status: 422,
+      code: 'VEHICLE_MAKE_UNKNOWN',
+    });
+    expect(repo.updateOwned).not.toHaveBeenCalled();
+  });
+
+  it('is kept when the vehicle still holds it under the row lock', async () => {
+    const { service, repo } = setup(
+      { findOwned: vi.fn(async () => row({ make: LEGACY })) },
+      'DRAFT',
+      LEGACY,
+    );
+    await service.update(ACTOR, ID, { make: LEGACY, model: 'Classic' });
+    expect(repo.updateOwned).toHaveBeenCalledWith(
+      ACTOR.dealerId,
+      ID,
+      expect.objectContaining({ make: LEGACY }),
+      expect.anything(),
+    );
+  });
+
+  it('is refused when a concurrent save replaced it before the lock, so a stale page cannot restore it', async () => {
+    const { service, repo } = setup(
+      { findOwned: vi.fn(async () => row({ make: LEGACY })) },
+      'DRAFT',
+      'Tata',
+    );
+    await expect(service.update(ACTOR, ID, { make: LEGACY })).rejects.toMatchObject({
+      code: 'VEHICLE_MAKE_UNKNOWN',
+    });
+    expect(repo.updateOwned).not.toHaveBeenCalled();
+  });
+
+  it('never reads the locked row for a canonical make', async () => {
+    const { service, repo } = setup({}, 'DRAFT', 'Something Else');
+    await service.update(ACTOR, ID, { make: 'Tata' });
+    expect(repo.updateOwned).toHaveBeenCalled();
   });
 });
 

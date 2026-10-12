@@ -53,6 +53,7 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     // below is derived from it.
     slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
     status: 'ACTIVE',
+    verificationStatus: 'NOT_VERIFIED',
     statusReason: null,
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
@@ -243,6 +244,17 @@ function setup(options: Options = {}) {
   } as unknown as DealersRepository;
 
   const tx = {
+    $queryRaw: (parts: TemplateStringsArray, ...values: unknown[]) => {
+      if (parts.join('').includes('service_states')) {
+        return Promise.resolve(
+          values[0] === 'tamil nadu' ? [{ id: 'IN-TN', name: 'Tamil Nadu' }] : [],
+        );
+      }
+      if (parts.join('').includes('users')) return Promise.resolve([{ id: values[0] }]);
+      const key = String(values[1]);
+      const name = key.replace(/\b\w/g, (letter) => letter.toUpperCase());
+      return Promise.resolve([{ id: `IN-TN-${key.toUpperCase()}`, name }]);
+    },
     user: {
       update: (args: Record<string, unknown>) => {
         userUpdates.push(args);
@@ -376,7 +388,7 @@ describe('session', () => {
     });
     expect(session.dealer).toMatchObject({
       slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
-      isVerified: true,
+      isVerified: false,
       creditBalance: 39,
       creditsHeld: 2,
     });
@@ -687,21 +699,34 @@ describe('update', () => {
     expect(h.updates[0]?.data).toEqual({ tagline: 'Trusted since 1998' });
   });
 
-  it('splits contact details between the user row and the dealership row', async () => {
+  it('keeps the verified owner identity while updating contact details', async () => {
     const h = setup();
 
     await h.service.update('dealer-1', {
-      contact: { fullName: 'Ramesh K', email: 'new@example.com', landline: '0416 111 2222' },
+      contact: {
+        fullName: 'Ramesh K',
+        email: 'owner@sri-lakshmi-motors.in',
+        landline: '0416 111 2222',
+      },
     });
 
     expect(h.userUpdates[0]).toMatchObject({
       where: { id: 'user-1' },
-      data: { fullName: 'Ramesh K', email: 'new@example.com' },
+      data: { fullName: 'Ramesh K' },
     });
     expect(h.updates[0]?.data).toMatchObject({
-      contactEmail: 'new@example.com',
+      contactEmail: 'owner@sri-lakshmi-motors.in',
       landline: '0416 111 2222',
     });
+  });
+
+  it('refuses an unverified change to the owner account email', async () => {
+    const h = setup();
+    await expect(
+      h.service.update('dealer-1', { contact: { email: 'someone@example.test' } }),
+    ).rejects.toMatchObject({ code: 'OWNER_EMAIL_PROOF_REQUIRED' });
+    expect(h.userUpdates).toHaveLength(0);
+    expect(h.updates).toHaveLength(0);
   });
 
   it('leaves the phone alone when the patch does not mention it', async () => {
@@ -813,6 +838,9 @@ describe('update', () => {
       city: 'Chennai',
       district: 'Chengalpattu',
       state: 'Tamil Nadu',
+      serviceStateId: 'IN-TN',
+      serviceDistrictId: 'IN-TN-CHENGALPATTU',
+      locationReviewRequired: false,
       pincode: '632002',
       // Stored verbatim — the host was checked by the schema, and what is
       // inside a share link is Google's business.
@@ -1192,7 +1220,6 @@ describe('completeness', () => {
       // The directions link, named for the same reason the yard photograph is:
       // the public portfolio is "here is the yard, here is how to reach it".
       'mapsUrl',
-      'gstin',
       'pan',
     ]);
   });
@@ -1364,8 +1391,10 @@ describe('submitForVerification', () => {
       const domain = error as DomainError;
       expect(domain.code).toBe('PROFILE_INCOMPLETE');
       const fields = (domain.errors ?? []).map((entry) => entry.field);
-      expect(fields).toContain('gstin');
-      expect(fields).toContain('GST_CERTIFICATE');
+      expect(fields).not.toContain('gstin');
+      expect(fields).toContain('pan');
+      expect(fields).not.toContain('GST_CERTIFICATE');
+      expect(fields).toContain('PAN_CARD');
       for (const entry of domain.errors ?? []) expect(entry.code).toBe('REQUIRED');
     }
   });
@@ -1548,14 +1577,12 @@ describe('update — the locality', () => {
     expect(h.updates[0]?.data).toMatchObject({ city: 'Krishnagiri', state: 'Tamil Nadu' });
   });
 
-  it('accepts a city in a state the platform has never seen before', async () => {
+  it('rejects a state unavailable for onboarding without changing the dealer', async () => {
     const h = setup();
-
-    // The point of the change. `cities` held five towns in one state, so this
-    // dealership could not be described by the product at all.
-    await h.service.update('dealer-1', { address: { city: 'Hubballi', state: 'Karnataka' } });
-
-    expect(h.updates[0]?.data).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+    await expect(
+      h.service.update('dealer-1', { address: { city: 'Hubballi', state: 'Karnataka' } }),
+    ).rejects.toMatchObject({ code: 'LOCATION_UNAVAILABLE' });
+    expect(h.updates).toEqual([]);
   });
 
   it('leaves both columns alone when the patch names neither', async () => {
@@ -1895,24 +1922,24 @@ describe('completeness — the yard photograph', () => {
     doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
   ];
 
-  it('names it as outstanding when there is none', async () => {
+  it('keeps document completeness independent of an optional yard photograph', async () => {
     const h = setup({ documents: verified, dealer: { coverMediaId: null } });
 
     const state = await h.service.completeness('dealer-1');
 
-    expect(state.steps[2]?.missing).toEqual(['YARD_PHOTO']);
-    expect(state.steps[2]?.complete).toBe(false);
-    expect(state.isComplete).toBe(false);
+    expect(state.steps[2]?.missing).toEqual([]);
+    expect(state.steps[2]?.complete).toBe(true);
+    expect(state.isComplete).toBe(true);
   });
 
-  it('refuses the submit until one is uploaded', async () => {
+  it('allows submission without a yard photograph when required evidence is present', async () => {
     const h = setup({
       documents: verified,
       dealer: { status: 'DRAFT', coverMediaId: null },
     });
 
-    await expect(h.service.submitForVerification('dealer-1')).rejects.toMatchObject({
-      code: 'PROFILE_INCOMPLETE',
+    await expect(h.service.submitForVerification('dealer-1')).resolves.toMatchObject({
+      status: 'PENDING_APPROVAL',
     });
   });
 });

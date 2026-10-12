@@ -24,11 +24,11 @@ import {
   dealerFacet,
   fuelFacet,
   locationScope,
+  brandFacet,
   modelFacet,
   oneDealerScope,
   ownerFacet,
   rangeFacets,
-  textFacet,
   transmissionFacet,
   yearFacet,
   type LocationScope,
@@ -135,7 +135,7 @@ export function createSearchService({ repo }: SearchDeps) {
 
     return {
       cities: inDistrict ? cityFacet(byDealer, scope, location?.city) : [],
-      brands: textFacet(brands, query.brand),
+      brands: brandFacet(brands, query.brand),
       models: modelFacet(models, query.model),
       fuelTypes: fuelFacet(fuels, query.fuel),
       transmissions: transmissionFacet(transmissions, query.transmission),

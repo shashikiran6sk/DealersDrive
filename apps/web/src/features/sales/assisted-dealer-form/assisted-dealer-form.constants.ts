@@ -7,6 +7,7 @@ export interface AssistedField {
   autoComplete?: string;
   required: boolean;
   wide?: boolean;
+  maxLength?: number;
 }
 
 export const CONTACT_FIELDS: readonly AssistedField[] = [
@@ -48,11 +49,12 @@ export const BUSINESS_FIELDS: readonly AssistedField[] = [
   {
     name: 'tagline',
     label: 'One line about the dealership',
-    hint: 'buyers read this',
-    required: true,
+    hint: 'optional — buyers read this',
+    required: false,
+    maxLength: 200,
     wide: true,
   },
-  { name: 'gstin', label: 'GSTIN', required: false },
+  { name: 'gstin', label: 'GSTIN (optional where applicable)', required: false },
   { name: 'pan', label: 'PAN', required: false },
 ];
 

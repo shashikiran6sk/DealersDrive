@@ -46,7 +46,14 @@ export const JustCreated: Story = {
 
 export const Resolved: Story = {
   args: {
-    ticket: { ...CONVERSATION, status: 'RESOLVED', statusLabel: 'Resolved', statusTone: 'ok' },
+    ticket: {
+      ...CONVERSATION,
+      status: 'RESOLVED',
+      statusLabel: 'Resolved',
+      statusTone: 'ok',
+      canReply: false,
+      canReopen: true,
+    },
   },
 };
 

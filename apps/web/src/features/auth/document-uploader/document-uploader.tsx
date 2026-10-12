@@ -86,7 +86,7 @@ export function DocumentUploader({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-[12px] border border-dashed border-(--color-divider) p-[13px]">
+    <div className="flex items-center gap-[12px] border border-dashed border-(--color-divider) p-[13px]">
       <div className="flex h-8 w-8 flex-none items-center justify-center bg-(--color-surface) font-mono text-[11px]">
         {document.status === 'VERIFIED'
           ? DOCUMENT_UPLOADER_TEXT.verifiedGlyph

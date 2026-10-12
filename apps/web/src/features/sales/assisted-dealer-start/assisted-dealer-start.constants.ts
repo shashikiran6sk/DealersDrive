@@ -13,4 +13,6 @@ export const START_TEXT = {
   continue: 'Continue to dealership details',
   create: 'Create dealership',
   ticketNote: 'Finish this step within 30 minutes, or verify the number again.',
+  reverifyHint: 'If mobile verification expires, verify again. Your entered details will be kept.',
+  reverify: 'Verify mobile again',
 } as const;

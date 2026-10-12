@@ -1,5 +1,8 @@
 import {
+  canCustomerReopen,
   statusAfterCustomerReply,
+  SUPPORT_UNANSWERED_MESSAGE_LIMIT,
+  SUPPORT_MESSAGE_LIMIT_TEXT,
   type CreateSupportTicketInput,
   type CustomerSupportTicket,
   type CustomerSupportTicketQuery,
@@ -22,7 +25,13 @@ import {
   toCustomerSupportTicket,
   toSupportTicketRow,
 } from './support.mapper.js';
-import { ENQUIRY_NOT_YOURS, TICKET_CLOSED, TICKET_NOT_FOUND } from './support.messages.js';
+import {
+  ENQUIRY_NOT_YOURS,
+  TICKET_CLOSED,
+  TICKET_NOT_FOUND,
+  TICKET_RESOLVED,
+} from './support.messages.js';
+import { isPersistedRetry } from './message-retry.js';
 
 export interface SupportDeps {
   prisma: PrismaClient;
@@ -151,10 +160,30 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
 
         const current = await tx.supportTicket.findUniqueOrThrow({
           where: { id: ticketId },
-          select: { status: true },
+          select: { status: true, unansweredCustomerMessages: true },
         });
+        if (
+          await isPersistedRetry(
+            tx,
+            ticketId,
+            'CUSTOMER',
+            input.message,
+            input.clientMessageId,
+            customer.userId,
+          )
+        )
+          return;
         const next = statusAfterCustomerReply(current.status);
+        if (current.status === 'RESOLVED')
+          throw new ConflictError('SUPPORT_TICKET_RESOLVED', TICKET_RESOLVED);
         if (next === null) throw new ConflictError('SUPPORT_TICKET_CLOSED', TICKET_CLOSED);
+        if (current.unansweredCustomerMessages >= SUPPORT_UNANSWERED_MESSAGE_LIMIT) {
+          logger.info(
+            { event: 'support_ticket.message_limit', ticketId },
+            'customer reply quota reached',
+          );
+          throw new ConflictError('SUPPORT_MESSAGE_LIMIT_REACHED', SUPPORT_MESSAGE_LIMIT_TEXT);
+        }
 
         const now = new Date();
         await tx.supportTicketMessage.create({
@@ -163,6 +192,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
             authorType: 'CUSTOMER',
             authorId: customer.userId,
             body: input.message,
+            clientMessageId: input.clientMessageId ?? null,
             createdAt: now,
           },
         });
@@ -170,8 +200,8 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
           where: { id: ticketId },
           data: {
             status: next,
+            unansweredCustomerMessages: { increment: 1 },
             updatedAt: now,
-            ...(current.status === 'RESOLVED' ? { resolvedAt: null } : {}),
           },
         });
 
@@ -179,10 +209,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
           await audit.record(tx, {
             actorType: 'CUSTOMER',
             actorId: customer.userId,
-            action:
-              current.status === 'RESOLVED'
-                ? 'support_ticket.reopened'
-                : 'support_ticket.status_changed',
+            action: 'support_ticket.status_changed',
             entityType: 'SupportTicket',
             entityId: ticketId,
             before: { status: current.status },
@@ -191,6 +218,42 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
         }
       });
 
+      return read(customer.userId, ticketId);
+    },
+
+    async reopen(customer: CustomerPrincipal, ticketId: string): Promise<CustomerSupportTicket> {
+      await withTransaction(prisma, async (tx) => {
+        const locked = await tx.$queryRaw<{ id: string }[]>`
+          SELECT "id" FROM "support_tickets"
+          WHERE "id" = ${ticketId}::uuid AND "customerId" = ${customer.userId}::uuid
+          FOR UPDATE`;
+        if (locked.length === 0) throw ticketNotFound();
+
+        const current = await tx.supportTicket.findUniqueOrThrow({
+          where: { id: ticketId },
+          select: { status: true },
+        });
+        if (current.status === 'CLOSED') {
+          throw new ConflictError('SUPPORT_TICKET_CLOSED', TICKET_CLOSED);
+        }
+        if (!canCustomerReopen(current.status)) return;
+
+        await tx.supportTicket.update({
+          where: { id: ticketId },
+          data: { status: 'OPEN', resolvedAt: null, updatedAt: new Date() },
+        });
+        await audit.record(tx, {
+          actorType: 'CUSTOMER',
+          actorId: customer.userId,
+          action: 'support_ticket.reopened',
+          entityType: 'SupportTicket',
+          entityId: ticketId,
+          before: { status: current.status },
+          after: { status: 'OPEN', cause: 'customer_reopen' },
+        });
+      });
+
+      logger.info({ event: 'support_ticket.reopened', ticketId }, 'support ticket reopened');
       return read(customer.userId, ticketId);
     },
   };

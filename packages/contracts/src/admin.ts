@@ -1,7 +1,7 @@
-import { ProgressiveState } from './progressive-onboarding.js';
 import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
+import { GST_REVIEW_MAX_LENGTH, GST_REVIEW_MIN_LENGTH } from './dealer-gstin.js';
 import {
   AdminRole,
   DealerDocType,
@@ -189,9 +189,8 @@ export type AdminDealerDocument = z.infer<typeof AdminDealerDocument>;
  * in their head, and a reviewer holding a value in their head is a reviewer who
  * approves a phone number appended to a sentence they half-remember.
  *
- * `null` and `[]` on the proposed side keep the meaning they have in the
- * database: this request does not touch that field. The console renders those
- * rows as unchanged rather than as cleared.
+ * `taglineChanged` distinguishes removal from an unchanged nullable tagline.
+ * An empty services array still means unchanged.
  */
 export const AdminProfileChange = z.object({
   id: Uuid,
@@ -202,8 +201,9 @@ export const AdminProfileChange = z.object({
   status: ProfileChangeStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,
-  /** What the dealer is asking for. `null` / `[]` mean "not part of this edit". */
+  /** A null tagline is a removal only when taglineChanged is true. */
   tagline: z.string().nullable(),
+  taglineChanged: z.boolean().optional(),
   specialities: z.array(z.string()),
   /** What buyers see right now, and will keep seeing unless this is approved. */
   liveTagline: z.string().nullable(),
@@ -237,8 +237,6 @@ export const DealerOnboardingProvenance = z.object({
 export type DealerOnboardingProvenance = z.infer<typeof DealerOnboardingProvenance>;
 
 export const AdminDealerDetail = z.object({
-  progressive: ProgressiveState.nullable().optional(),
-  progressiveReviewAllowed: z.boolean().optional(),
   id: Uuid,
   slug: z.string(),
   brandName: z.string(),
@@ -253,6 +251,7 @@ export const AdminDealerDetail = z.object({
   city: z.string().nullable(),
   district: z.string().nullable(),
   state: z.string().nullable(),
+  locationReviewRequired: z.boolean().optional(),
   addressLine: z.string().nullable(),
   pincode: z.string().nullable(),
   /**
@@ -370,7 +369,18 @@ export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ApproveDealerInput = z
-  .object({ note: z.string().trim().max(300).optional() })
+  .object({
+    note: z.string().trim().max(300).optional(),
+    gstNotRequiredReview: z
+      .string()
+      .trim()
+      .min(
+        GST_REVIEW_MIN_LENGTH,
+        'Record the GST applicability review and protected case reference.',
+      )
+      .max(GST_REVIEW_MAX_LENGTH)
+      .optional(),
+  })
   .strict();
 export type ApproveDealerInput = z.infer<typeof ApproveDealerInput>;
 

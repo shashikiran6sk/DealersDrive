@@ -31,7 +31,7 @@ import { production } from '../lib/seo/env';
  * the wiring — that each page actually asks for it, with its own title.
  */
 vi.mock('next/server', () => ({ connection: () => Promise.resolve() }));
-vi.mock('next/font/google', () => ({ Manrope: () => ({ variable: 'font-manrope' }) }));
+vi.mock('next/font/local', () => ({ default: () => ({ variable: 'font-manrope' }) }));
 
 const apiGet = vi.fn();
 const apiGetParsed = vi.fn();
@@ -171,7 +171,7 @@ describe('/', () => {
     expect(meta.title).toEqual({
       absolute: 'Dealers-Drive | Used Cars from Verified Independent Dealers',
     });
-    expect(meta.description).toMatch(/verified independent dealers/);
+    expect(meta.description).toMatch(/independent dealers/);
     expect(meta.alternates?.canonical).toBe('https://www.dealers-drive.com/');
     expect(meta.robots).toMatchObject({ index: true, follow: true });
   });

@@ -37,6 +37,8 @@ import { NotFoundError } from '../../../../src/platform/errors.js';
  */
 function activeDealer(overrides: Record<string, unknown> = {}) {
   return {
+    status: 'ACTIVE',
+    verificationStatus: 'VERIFIED',
     id: '3c8f2b10-2222-4000-8000-000000000002',
     slug: 'sri-lakshmi-motors',
     brandName: 'Sri Lakshmi Motors',
@@ -55,6 +57,8 @@ function activeDealer(overrides: Record<string, unknown> = {}) {
 
 function publicDealer(overrides: Record<string, unknown> = {}) {
   return {
+    status: 'ACTIVE',
+    verificationStatus: 'VERIFIED',
     slug: 'sri-lakshmi-motors',
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
@@ -430,9 +434,9 @@ describe('directory', () => {
     const many = setup({ dealers: [activeDealer(), activeDealer({ slug: 'b' })] });
     const none = setup({ dealers: [] });
 
-    expect((await one.service.directory(query())).countLabel).toBe('1 verified dealership');
-    expect((await many.service.directory(query())).countLabel).toBe('2 verified dealerships');
-    expect((await none.service.directory(query())).countLabel).toBe('0 verified dealerships');
+    expect((await one.service.directory(query())).countLabel).toBe('1 dealership');
+    expect((await many.service.directory(query())).countLabel).toBe('2 dealerships');
+    expect((await none.service.directory(query())).countLabel).toBe('0 dealerships');
   });
 
   it('offers city chips counted by dealership, busiest first', async () => {
@@ -504,7 +508,7 @@ describe('directory', () => {
    * URL on a page a CDN cached five minutes ago survives the bucket being
    * reorganised underneath it (`platform/media/urls.ts`).
    */
-  it('addresses the yard photograph by media id, not by storage key', async () => {
+  it('uses the standard directory image instead of exposing uploaded yard media', async () => {
     const h = setup({
       dealers: [activeDealer({ coverMediaId: COVER })],
       ready: [COVER],
@@ -512,7 +516,7 @@ describe('directory', () => {
 
     const card = (await h.service.directory(query())).data[0];
 
-    expect(card?.coverUrl).toBe(`${env.MEDIA_BASE_URL}/by-media/${COVER}/640.webp`);
+    expect(card?.coverUrl).toBe(`${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`);
     expect(card?.coverUrl).not.toContain('dealers/');
   });
 
@@ -522,16 +526,20 @@ describe('directory', () => {
    * ORPHAN, and `media.serve()` refuses both. Emitting a URL for either is a
    * broken image on the card, where `ImageSlot` is the more honest answer.
    */
-  it('shows no cover for an upload that is not ready to be served', async () => {
+  it('uses the same standard image for a private or unready yard upload', async () => {
     const h = setup({ dealers: [activeDealer({ coverMediaId: COVER })], ready: [] });
 
-    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBe(
+      `${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`,
+    );
   });
 
-  it('shows no cover for a dealership that never uploaded one', async () => {
+  it('uses the same standard image for a dealership without a yard upload', async () => {
     const h = setup({ dealers: [activeDealer({ coverMediaId: null })] });
 
-    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBe(
+      `${env.WEB_BASE_URL}/brand/dealer-directory-cover.svg`,
+    );
   });
 
   /**
@@ -542,7 +550,7 @@ describe('directory', () => {
    * about all of them would grow with the platform for no visible benefit, and
    * asking per card would be twelve round trips.
    */
-  it('asks about the covers on the page, not about every dealership', async () => {
+  it('does not query yard media for directory cards', async () => {
     const h = setup({
       dealers: [
         activeDealer({ slug: 'a', coverMediaId: COVER }),
@@ -553,7 +561,7 @@ describe('directory', () => {
 
     await h.service.directory(query({ limit: 1 }));
 
-    expect(h.readyIdQueries).toEqual([[COVER]]);
+    expect(h.readyIdQueries).toEqual([]);
   });
 
   /** Nothing writes `logoMediaId`, so there is no image to address. */
@@ -717,14 +725,14 @@ describe('suggest', () => {
     const response = await h.service.suggest(suggestQuery({ search: 'velocity', limit: 6 }));
 
     expect(response.data).toHaveLength(6);
-    // Not "6 matching yards": the label is what tells a buyer to keep typing.
-    expect(response.countLabel).toBe('9 matching yards');
+    // Not "6 matching dealerships": the label is what tells a buyer to keep typing.
+    expect(response.countLabel).toBe('9 matching dealerships');
   });
 
-  it('says "yard" in the singular', async () => {
+  it('uses dealership in the singular', async () => {
     const h = setup({ dealers: [activeDealer({ brandName: 'Velavan Cars' })] });
 
-    expect((await h.service.suggest(suggestQuery())).countLabel).toBe('1 matching yard');
+    expect((await h.service.suggest(suggestQuery())).countLabel).toBe('1 matching dealership');
   });
 
   it('echoes the search back, so the client can drop a stale answer', async () => {
@@ -739,7 +747,7 @@ describe('suggest', () => {
     const response = await h.service.suggest(suggestQuery({ search: 'zzzz' }));
 
     expect(response.data).toEqual([]);
-    expect(response.countLabel).toBe('0 matching yards');
+    expect(response.countLabel).toBe('0 matching dealerships');
   });
 
   it('composes the meta line from the inventory and the place', async () => {

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { PhoneOtpWidget } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 
@@ -19,9 +18,6 @@ export default async function NewAssistedDealerPage() {
         <h1 className="text-[26px]">{SALES_TEXT.newHeading}</h1>
         <p className="mt-1 max-w-[70ch] text-[13px] ink-muted">{SALES_TEXT.newIntro}</p>
       </div>
-      <Link href="/sales/dealers/register" className="btn btn-secondary self-start">
-        Start with basic registration
-      </Link>
       <AssistedDealerStart widget={widget} />
     </div>
   );

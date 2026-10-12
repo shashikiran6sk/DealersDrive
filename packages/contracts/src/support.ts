@@ -91,18 +91,26 @@ export function canTransitionSupportTicket(
 
 /** A customer may write on any ticket that is not closed. */
 export function canCustomerReply(status: SupportTicketStatus): boolean {
+  return status !== 'CLOSED' && status !== 'RESOLVED';
+}
+
+export function canCustomerReopen(status: SupportTicketStatus): boolean {
+  return status === 'RESOLVED';
+}
+
+export function canSupportReply(status: SupportTicketStatus): boolean {
   return status !== 'CLOSED';
 }
 
 /**
  * Where a customer's reply leaves the ticket. Waiting on the customer, their
- * answer hands it back to support; resolved, a reply means it was not, so it
- * reopens. Open or in progress, nothing changes. Closed takes no reply at all.
+ * answer hands it back to support. Open or in progress, nothing changes.
+ * Resolved and closed take no reply: a resolved request is reopened explicitly
+ * first, and a closed one is final.
  */
 export function statusAfterCustomerReply(status: SupportTicketStatus): SupportTicketStatus | null {
-  if (status === 'CLOSED') return null;
+  if (status === 'CLOSED' || status === 'RESOLVED') return null;
   if (status === 'WAITING_FOR_CUSTOMER') return 'IN_PROGRESS';
-  if (status === 'RESOLVED') return 'OPEN';
   return status;
 }
 
@@ -208,7 +216,12 @@ export const CreateSupportTicketInput = z
 export type CreateSupportTicketInput = z.infer<typeof CreateSupportTicketInput>;
 
 /** `POST /v1/support/tickets/:id/messages` — a reply in the conversation. */
-export const SupportMessageInput = z.object({ message: SupportMessageBody }).strict();
+export const SUPPORT_UNANSWERED_MESSAGE_LIMIT = 5;
+export const SUPPORT_MESSAGE_LIMIT_TEXT =
+  "You've sent five messages. Please wait for our support team to reply before sending more.";
+export const SupportMessageInput = z
+  .object({ message: SupportMessageBody, clientMessageId: Uuid.optional() })
+  .strict();
 export type SupportMessageInput = z.infer<typeof SupportMessageInput>;
 
 /** `GET /v1/support/tickets` — most recently active first. */
@@ -280,6 +293,8 @@ export type CustomerSupportEnquiry = z.infer<typeof CustomerSupportEnquiry>;
 export const CustomerSupportTicket = SupportTicketRow.extend({
   description: z.string(),
   canReply: z.boolean(),
+  canReopen: z.boolean().optional(),
+  remainingMessages: z.number().int().min(0).max(SUPPORT_UNANSWERED_MESSAGE_LIMIT).optional(),
   messages: z.array(SupportMessage),
   enquiry: CustomerSupportEnquiry.nullable(),
 });

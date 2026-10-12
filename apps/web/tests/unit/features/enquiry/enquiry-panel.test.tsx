@@ -246,7 +246,9 @@ describe('coming back from sign-in', () => {
 
     expect(await screen.findByRole('button', { name: 'Send enquiry' })).toBeInTheDocument();
     expect(screen.getByText('Shashikiran')).toBeInTheDocument();
-    expect(scroll.mock.instances[0]).toBe(screen.getByRole('textbox', { name: /message/i }));
+    await waitFor(() => {
+      expect(scroll.mock.instances[0]).toBe(screen.getByRole('textbox', { name: /message/i }));
+    });
   });
 
   it('drops ?enquire=1 once the enquiry is sent, so a reload does not reopen it', async () => {

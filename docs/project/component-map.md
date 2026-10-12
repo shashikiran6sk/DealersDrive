@@ -321,6 +321,36 @@ would be worse than useless. A single `<input maxlength="6">` would give the
 same behaviour for nothing and is the right control for most products; the
 cells are what this design asks for, so the keyboard work is paid for once.
 
+### C019d — `ServiceLocationFields`
+
+|                      |                                                                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Location**         | `apps/web/src/components/forms/service-location-fields/` (barrel `index.ts`; text in `service-location-fields.constants.ts`)                                             |
+| **Purpose**          | State `select` plus searchable district combobox, fed by `GET /v1/service-locations` (only active, onboarding-enabled locations). The API re-validates every submission. |
+| **Props**            | `initialState`, `initialDistrict`, `prefix?`, `errors?: { state?, district? }`, `disabled?`, `onChange?(field, value)`                                                   |
+| **States**           | loading, catalogue failed, empty, selected, existing location outside the catalogue (shown as "(existing location)", district locked), server refusal, disabled          |
+| **Dependencies**     | `Field`, `invalidProps`, `cn`, `loadServiceLocationsAction`                                                                                                              |
+| **Consumers**        | 3 (`BusinessStep`, `AssistedDealerForm`, `DealerDetailForm`)                                                                                                             |
+| **Tests**            | ✅ `apps/web/tests/unit/components/forms/service-location-fields.test.tsx`                                                                                               |
+| **Ownership**        | Shared                                                                                                                                                                   |
+| **Sandbox priority** | P1 — `Forms/ServiceLocationFields`; the sandbox aliases `@/features/service-location-actions` to a fixed Tamil Nadu catalogue                                            |
+| **Confidence**       | HIGH                                                                                                                                                                     |
+
+### C019e — `VehicleMakeSelect`
+
+|                      |                                                                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `apps/web/src/components/forms/vehicle-make-select/` (barrel `index.ts`; text in `vehicle-make-select.constants.ts`; matching in `utils.ts`)                                                             |
+| **Purpose**          | Searchable make combobox over `VEHICLE_MAKES` from `packages/contracts`. A reviewed alias typed and left resolves to its brand. Posts the canonical name in a hidden `make` field; the API re-validates. |
+| **Props**            | `id`, `name?` (defaults to `id`), `defaultValue?`, `placeholder?`, `required?`, `disabled?`, `aria-invalid?`, `aria-describedby?`                                                                        |
+| **States**           | empty, selected, alias resolves to brand, saved outside the list (offered as "(as saved)" and kept on re-save), invalid, disabled, no match                                                              |
+| **Dependencies**     | `canonicalVehicleMake`, `VEHICLE_MAKES`, `cn`                                                                                                                                                            |
+| **Consumers**        | 1 (`BasicsStep`, used by the dealer and the sales-assisted wizard)                                                                                                                                       |
+| **Tests**            | ✅ `apps/web/tests/unit/components/forms/vehicle-make-select.test.tsx`                                                                                                                                   |
+| **Ownership**        | Shared                                                                                                                                                                                                   |
+| **Sandbox priority** | P1 — `Forms/VehicleMakeSelect`                                                                                                                                                                           |
+| **Confidence**       | HIGH                                                                                                                                                                                                     |
+
 ---
 
 ## Layer 3 — Layout & navigation
@@ -1254,7 +1284,7 @@ and either returns or hands over to `CustomerNameStep` (one Name field);
 | Component          | Props                                                                              | States                                                          |
 | ------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `PhoneSignIn`      | `widget`, `idPrefix`, `onProved`, `verifyLabel?`, `initialStage?`, `initialPhone?` | number · invalid number · code entry · refused · not configured |
-| `LoginTabs`        | `initial`, `customer`, `dealer`                                                    | customer · dealer                                               |
+| `LoginTabs`        | `initial`, `customer`, `dealer`, `footer?`, `dealerFooter?` (Dealer tab only)      | customer · dealer                                               |
 | `CustomerLogin`    | `widget`, `returnTo`                                                               | number · code · name required · unavailable                     |
 | `CustomerNameStep` | `phoneDisplay`, `onCreated`, `onRestart`                                           | empty · refused · ticket expired · creating                     |
 | `DealerLogin`      | `widget`, `google`, `returnTo`, `error`                                            | Google + phone · Google refused · Google not configured         |
@@ -1436,12 +1466,12 @@ press. `SupportRequestDetail` is `/support-requests/[id]`: the request, its
 enquiry, the conversation (`SupportMessageBubble`) and `SupportReplyForm`, or a
 pointer to a new request once closed. `SupportRequestCallout` leads `/contact`.
 
-| Component               | Props                                                           | States                                                 |
-| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                        |
-| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused  |
-| `SupportRequestDetail`  | `ticket`                                                        | awaiting your reply · just created · resolved · closed |
-| `SupportRequestCallout` | —                                                               | default                                                |
+| Component               | Props                                                           | States                                                                                      |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                                                             |
+| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused                                       |
+| `SupportRequestDetail`  | `ticket` (`canReply`, `canReopen`, `remainingMessages`)         | awaiting your reply · just created · resolved (Reopen panel, `SupportReopenPanel`) · closed |
+| `SupportRequestCallout` | —                                                               | default                                                                                     |
 
 **Changed:** `SupportPage` leads with `SupportRequestCallout` and heads the
 contact cards "Other ways to reach us"; `AccountMenu` gains Support requests after

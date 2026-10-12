@@ -1,4 +1,3 @@
-import { postProgressiveDealer } from './routes/post-progressive-dealer.js';
 import { Router } from 'express';
 
 import type { RateLimiter } from '../../middleware/rate-limit.js';
@@ -31,7 +30,6 @@ const ROUTES: SalesRoute[] = [
   postPhoneVerify,
   getDealers,
   postDealer,
-  postProgressiveDealer,
   getDealer,
   patchDealer,
   postDealerEmailVerification,

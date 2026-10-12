@@ -8,8 +8,8 @@ export const SERVICES_SHOWN = 3;
 import { countLabel } from '@/lib/plural';
 
 export const DEALER_CARD_TEXT = {
-  approvedDealer: 'APPROVED DEALER',
-  verifiedDealer: 'VERIFIED DEALER',
-  coverAlt: (brandName: string) => `${brandName} — dealership image`,
+  verifiedDealer: 'Dealer Verified',
+  coverAlt:
+    'Standard conceptual dealership illustration shared by all Dealers-Drive directory cards',
   carsListed: (carCount: number) => `${countLabel(carCount, 'car')} listed`,
 } as const;

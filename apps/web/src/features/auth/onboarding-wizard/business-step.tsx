@@ -2,12 +2,14 @@
 
 import type { DealerProfile } from '@dealers-drive/contracts';
 
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
+
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
 import { ServiceInput } from '@/components/ui/service-input';
 import { servicesOf } from '@/lib/services';
 
-import { ONBOARDING_TEXT, TAGLINE_MAX, TAGLINE_MIN } from './onboarding-wizard.constants';
+import { ONBOARDING_TEXT, TAGLINE_MAX } from './onboarding-wizard.constants';
 
 export interface BusinessStepProps {
   dealer: DealerProfile | null;
@@ -75,32 +77,11 @@ export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepPro
             />
           </Field>
 
-          <Field id="district" label="District" error={errors.district}>
-            <input
-              id="district"
-              name="district"
-              defaultValue={values.district ?? dealer?.address.district ?? ''}
-              className="input"
-              placeholder="Vellore"
-              required
-              aria-required="true"
-              {...invalidProps('district', errors.district)}
-            />
-          </Field>
-
-          <Field id="state" label="State" error={errors.state}>
-            <input
-              id="state"
-              name="state"
-              defaultValue={values.state ?? dealer?.address.state ?? ''}
-              className="input"
-              autoComplete="address-level1"
-              placeholder="Tamil Nadu"
-              required
-              aria-required="true"
-              {...invalidProps('state', errors.state)}
-            />
-          </Field>
+          <ServiceLocationFields
+            initialState={values.state ?? dealer?.address.state ?? ''}
+            initialDistrict={values.district ?? dealer?.address.district ?? ''}
+            errors={errors}
+          />
 
           <Field id="pincode" label="Pincode" error={errors.pincode}>
             <input
@@ -158,19 +139,16 @@ export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepPro
           <Field
             id="tagline"
             label="One line about your dealership"
-            hint="shown under your name on your public page"
+            hint="optional — shown on your public page"
             error={errors.tagline}
             className="sm:col-span-2"
           >
             <Input
               id="tagline"
               name="tagline"
-              minLength={TAGLINE_MIN}
               maxLength={TAGLINE_MAX}
               defaultValue={values.tagline ?? dealer?.tagline ?? ''}
               placeholder={ONBOARDING_TEXT.taglinePlaceholder}
-              required
-              aria-required="true"
               {...invalidProps('tagline', errors.tagline)}
             />
             <p className="mt-[4px] text-[11px] ink-subtle">

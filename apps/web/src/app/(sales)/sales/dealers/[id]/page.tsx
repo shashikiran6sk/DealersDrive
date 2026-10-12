@@ -1,4 +1,3 @@
-import { AssistedProgress } from '@/features/progressive/assisted-progress';
 import type { SalesDealerDetail, SalesVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -90,56 +89,45 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
         <h2 className="text-[17px]">{SALES_TEXT.detailsHeading}</h2>
-        {dealer.progressive ? (
-          <AssistedProgress dealer={dealer} />
-        ) : (
-          <AssistedDealerForm
-            initial={{
-              contactName: dealer.contactName ?? '',
-              email: dealer.email ?? '',
-              landline: dealer.landline ?? '',
-              legalName: dealer.legalName,
-              addressLine: dealer.address.line ?? '',
-              city: dealer.address.city ?? '',
-              district: dealer.address.district ?? '',
-              state: dealer.address.state ?? '',
-              pincode: dealer.address.pincode ?? '',
-              mapsUrl: dealer.address.mapsUrl ?? '',
-              tagline: dealer.tagline ?? '',
-              gstin: dealer.gstin ?? '',
-              pan: dealer.pan ?? '',
-            }}
-            initialServices={dealer.specialities}
-            submitLabel={ASSISTED_FORM_TEXT.save}
-            partial
-            disabled={!dealer.canEdit}
-            onSubmit={update}
-          />
-        )}
+        <AssistedDealerForm
+          initial={{
+            contactName: dealer.contactName ?? '',
+            email: dealer.email ?? '',
+            landline: dealer.landline ?? '',
+            legalName: dealer.legalName,
+            addressLine: dealer.address.line ?? '',
+            city: dealer.address.city ?? '',
+            district: dealer.address.district ?? '',
+            state: dealer.address.state ?? '',
+            pincode: dealer.address.pincode ?? '',
+            mapsUrl: dealer.address.mapsUrl ?? '',
+            tagline: dealer.tagline ?? '',
+            gstin: dealer.gstin ?? '',
+            pan: dealer.pan ?? '',
+          }}
+          initialServices={dealer.specialities}
+          submitLabel={ASSISTED_FORM_TEXT.save}
+          partial
+          disabled={!dealer.canEdit}
+          onSubmit={update}
+        />
       </section>
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
         <h2 className="text-[17px]">{SALES_TEXT.documentsHeading}</h2>
-        {dealer.documents
-          .filter(
-            (document) =>
-              !dealer.progressive || dealer.progressive.requiredDocuments.includes(document.type),
-          )
-          .map((document) => (
-            <DocumentUploader
-              key={document.type}
-              document={document}
-              basePath={salesDocumentBase(dealer.id)}
-            />
-          ))}
+        {dealer.documents.map((document) => (
+          <DocumentUploader
+            key={document.type}
+            document={document}
+            basePath={salesDocumentBase(dealer.id)}
+          />
+        ))}
       </section>
 
-      {!dealer.progressive ? (
-        <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
-          <h2 className="text-[17px]">{SALES_TEXT.yardHeading}</h2>
-          <YardPhotoUploader photo={dealer.yardPhoto} paths={salesYardPhotoPaths(dealer.id)} />
-        </section>
-      ) : null}
+      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
+        <h2 className="text-[17px]">{SALES_TEXT.yardHeading}</h2>
+        <YardPhotoUploader photo={dealer.yardPhoto} paths={salesYardPhotoPaths(dealer.id)} />
+      </section>
 
       {dealer.canEdit ? (
         <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">

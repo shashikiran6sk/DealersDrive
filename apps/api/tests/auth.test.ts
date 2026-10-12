@@ -333,13 +333,13 @@ describe('onboarding', () => {
     const agent = h.agent();
     await h.signIn(agent);
 
-    const created = await onboard(agent, { city: 'hubballi', state: 'karnataka' });
+    const created = await onboard(agent, { city: 'katpadi', state: 'tn' });
 
     expect(created.body.dealer.status).toBe('DRAFT');
 
     const profile = await agent.get('/v1/dealer').expect(200);
     // Normalised on the way in, so one town cannot become three facets.
-    expect(profile.body.address).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+    expect(profile.body.address).toMatchObject({ city: 'Katpadi', state: 'Tamil Nadu' });
 
     newAccount();
     const other = h.agent();

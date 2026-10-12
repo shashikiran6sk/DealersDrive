@@ -1,6 +1,5 @@
+import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
-  PROGRESSIVE_DECLARATION_VERSION,
-  type ProgressiveRegistrationInput,
   adminHomeFor,
   formatPhone,
   normaliseLocality,
@@ -23,9 +22,14 @@ import {
   UnauthorizedError,
 } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
+import {
+  uniqueDealerSlug,
+  normaliseDealerEmail,
+  withDealerEmailConflict,
+  type DealersService,
+} from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
-import { isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
+import { ADMIN_MEMBERSHIP_LOCK, isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
 import {
   ACCOUNT_SUSPENDED,
   DEALERSHIP_SUSPENDED,
@@ -187,11 +191,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      const claims = await oauth.exchange({
+      const verified = await oauth.exchange({
         code: input.code,
         codeVerifier: transaction.codeVerifier,
         nonce: transaction.nonce,
       });
+      const claims = { ...verified, email: normaliseDealerEmail(verified.email) };
 
       logger.info({ event: 'auth.oauth.verified', provider: 'GOOGLE' }, 'oauth identity verified');
 
@@ -222,16 +227,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         }
 
         userId = existing.userId;
-        await prisma.oAuthIdentity.update({
-          where: { id: existing.id },
-          data: {
-            email: claims.email,
-            emailVerified: claims.emailVerified,
-            displayName: claims.name ?? existing.displayName,
-            pictureUrl: claims.picture ?? existing.pictureUrl,
-            lastLoginAt: new Date(),
-          },
-        });
+        try {
+          await withDealerEmailConflict(() =>
+            prisma.oAuthIdentity.update({
+              where: { id: existing.id },
+              data: {
+                email: claims.email,
+                emailVerified: claims.emailVerified,
+                displayName: claims.name ?? existing.displayName,
+                pictureUrl: claims.picture ?? existing.pictureUrl,
+                lastLoginAt: new Date(),
+              },
+            }),
+          );
+        } catch (error) {
+          if (!(error instanceof ConflictError) || error.code !== 'DEALER_EMAIL_TAKEN') throw error;
+          await prisma.oAuthIdentity.update({
+            where: { id: existing.id },
+            data: { lastLoginAt: new Date() },
+          });
+          await audit.recordDetached({
+            actorType: 'DEALER',
+            actorId: userId,
+            action: 'auth.identity.email_update_blocked',
+            entityType: 'User',
+            entityId: userId,
+            after: { reason: 'conflicting_primary_dealer_identity' },
+          });
+        }
         await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
       } else {
         userId = await identities.createWithGoogle(claims);
@@ -266,10 +289,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       };
     },
 
-    async onboard(
-      principal: PendingPrincipal,
-      input: OnboardingInput | ProgressiveRegistrationInput,
-    ): Promise<AuthSession> {
+    async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
       const linked = await identities.identitiesOf(principal.userId);
       if (!linked.google) {
         throw new DomainError('ONBOARDING_IDENTITY_INCOMPLETE', IDENTITY_INCOMPLETE, {
@@ -282,6 +302,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           ],
         });
       }
+      const email = normaliseDealerEmail(linked.google.email);
 
       const city = normaliseLocality(input.city);
       const district = normaliseLocality(input.district);
@@ -313,68 +334,66 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       const phone = toE164(input.phone);
       await assertPhoneVerified(prisma, principal.userId, phone, 'body.phone');
 
-      const place =
-        'mapsUrl' in input
-          ? await maps.placeFor(input.mapsUrl)
-          : { coordinates: null, placeId: null };
+      const place = await maps.placeFor(input.mapsUrl);
 
-      const created = await withTransaction(prisma, async (tx) => {
-        await tx.user.update({
-          where: { id: principal.userId },
-          data: { fullName: input.fullName },
-        });
-        if ('declaration' in input)
+      const created = await withDealerEmailConflict(() =>
+        withTransaction(prisma, async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
+          const currentUser = await tx.user.findUniqueOrThrow({
+            where: { id: principal.userId },
+            include: { roles: true },
+          });
+          if (currentUser.status !== 'ACTIVE' || isSeatSuspended(currentUser.roles, 'DEALER')) {
+            throw new ForbiddenError(ACCOUNT_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
+          }
           await assertPhoneVerified(tx, principal.userId, phone, 'body.phone');
-        const existing = await tx.dealerMember.findFirst({
-          where: { userId: principal.userId, status: 'ACTIVE' },
-        });
-        if (existing) {
-          throw new ConflictError(
-            'DEALER_ALREADY_EXISTS',
-            'This account already manages a dealership.',
-          );
-        }
+          const existing = await tx.dealerMember.findFirst({
+            where: { userId: principal.userId, status: 'ACTIVE' },
+          });
+          if (existing) {
+            throw new ConflictError(
+              'DEALER_ALREADY_EXISTS',
+              'This account already manages a dealership.',
+            );
+          }
 
-        const dealer = await tx.dealer.create({
-          data: {
-            slug: await uniqueDealerSlug(prisma, {
+          await tx.user.update({
+            where: { id: principal.userId },
+            data: { fullName: input.fullName },
+          });
+
+          const location = await resolveOnboardingLocation(tx, state, district);
+          const dealer = await tx.dealer.create({
+            data: {
+              slug: await uniqueDealerSlug(tx, {
+                legalName: input.legalName,
+                city,
+                district: location.district,
+                state: location.state,
+              }),
+              brandName: input.legalName,
               legalName: input.legalName,
+              status: 'DRAFT',
               city,
-              district,
-              state,
-            }),
-            brandName: input.legalName,
-            legalName: input.legalName,
-            status: 'DRAFT',
-            ...('declaration' in input
-              ? {
-                  contactName: input.fullName,
-                  progressiveRegisteredAt: new Date(),
-                  progressiveConsentVersion: PROGRESSIVE_DECLARATION_VERSION,
-                }
-              : {}),
-            city,
-            district,
-            state,
-            addressLine: 'addressLine' in input ? input.addressLine : null,
-            pincode: 'pincode' in input ? input.pincode : null,
-            mapsUrl: 'mapsUrl' in input ? input.mapsUrl : null,
-            lat: place.coordinates?.lat ?? null,
-            lng: place.coordinates?.lng ?? null,
-            mapsPlaceId: place.placeId,
-            contactPhone: phone,
-            contactEmail: principal.email,
-            landline: 'landline' in input ? (input.landline ?? null) : null,
-            tagline: 'tagline' in input ? input.tagline : null,
-            specialities: 'specialities' in input ? input.specialities : [],
-          },
-        });
+              ...location,
+              addressLine: input.addressLine,
+              pincode: input.pincode,
+              mapsUrl: input.mapsUrl,
+              lat: place.coordinates?.lat ?? null,
+              lng: place.coordinates?.lng ?? null,
+              mapsPlaceId: place.placeId,
+              contactPhone: phone,
+              contactEmail: email,
+              landline: input.landline ?? null,
+              tagline: input.tagline,
+              specialities: input.specialities,
+            },
+          });
 
-        await tx.dealerMember.create({
-          data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
-        });
+          await tx.dealerMember.create({
+            data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
+          });
 
-        if (!('declaration' in input))
           await tx.dealerDocument.createMany({
             data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
               dealerId: dealer.id,
@@ -383,25 +402,19 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             })),
           });
 
-        await audit.record(tx, {
-          actorType: 'DEALER',
-          actorId: principal.userId,
-          dealerId: dealer.id,
-          action: 'dealer.onboarding.created',
-          entityType: 'Dealer',
-          entityId: dealer.id,
-          after: {
-            slug: dealer.slug,
-            brandName: dealer.brandName,
-            status: dealer.status,
-            ...('declaration' in input
-              ? { consentVersion: PROGRESSIVE_DECLARATION_VERSION, progressive: true }
-              : {}),
-          },
-        });
+          await audit.record(tx, {
+            actorType: 'DEALER',
+            actorId: principal.userId,
+            dealerId: dealer.id,
+            action: 'dealer.onboarding.created',
+            entityType: 'Dealer',
+            entityId: dealer.id,
+            after: { slug: dealer.slug, brandName: dealer.brandName, status: dealer.status },
+          });
 
-        return { id: dealer.id, slug: dealer.slug };
-      });
+          return { id: dealer.id, slug: dealer.slug };
+        }),
+      );
 
       logger.info(
         { event: 'dealer.onboarding.created', dealerId: created.id, userId: principal.userId },
@@ -417,6 +430,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         dealerStatus: 'DRAFT',
         permissions: permissionsForRole('OWNER'),
       });
+    },
+
+    async logoutAdmin(token: string | undefined): Promise<void> {
+      if (await sessions.resolve(token, 'ADMIN')) await sessions.revoke(token);
     },
 
     async logout(token: string | undefined, userId?: string): Promise<void> {
@@ -479,11 +496,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
     const identity = await prisma.oAuthIdentity.findUnique({
       where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
-      include: { user: { include: { adminMember: true } } },
+      include: { user: { include: { adminMember: true, roles: true } } },
     });
     const byEmail = identity
       ? null
-      : await prisma.user.findUnique({ where: { email }, include: { adminMember: true } });
+      : await prisma.user.findUnique({
+          where: { email },
+          include: { adminMember: true, roles: true },
+        });
     const known = identity?.user ?? byEmail;
     const member = known?.adminMember ?? null;
 
@@ -514,7 +534,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       );
     }
 
-    if (known && known.status !== 'ACTIVE') {
+    if (known && (known.status !== 'ACTIVE' || isSeatSuspended(known.roles, 'ADMIN'))) {
       throw new ForbiddenError('This account has been suspended. Contact support.', {
         code: 'ACCOUNT_SUSPENDED',
       });
@@ -523,6 +543,24 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     const now = new Date();
 
     const admin = await withTransaction(prisma, async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ADMIN_MEMBERSHIP_LOCK}))`;
+      if (known) {
+        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${known.id}::uuid FOR UPDATE`;
+        await tx.$queryRaw`SELECT "id" FROM "admin_members" WHERE "userId" = ${known.id}::uuid FOR SHARE`;
+        await tx.$queryRaw`SELECT "id" FROM "user_roles" WHERE "userId" = ${known.id}::uuid AND "role" = 'ADMIN' FOR SHARE`;
+        const currentUser = await tx.user.findUniqueOrThrow({
+          where: { id: known.id },
+          include: { adminMember: true, roles: true },
+        });
+        if (currentUser.status !== 'ACTIVE' || isSeatSuspended(currentUser.roles, 'ADMIN'))
+          throw new ForbiddenError('This account has been suspended. Contact support.', {
+            code: 'ACCOUNT_SUSPENDED',
+          });
+        if (currentUser.adminMember?.status === 'DISABLED')
+          throw new ForbiddenError('Your admin access has been withdrawn.', {
+            code: 'ADMIN_ACCESS_REVOKED',
+          });
+      }
       const user =
         known ??
         (await tx.user.create({
@@ -608,22 +646,25 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         });
       }
 
-      return { user, member: saved };
-    });
-
-    if (!isAdmitted({ email, status: 'ACTIVE', member: admin.member })) {
-      throw new ForbiddenError(
-        'That Google account is not authorised for the Dealers-Drive admin console.',
-        { code: 'ADMIN_NOT_ALLOWLISTED' },
+      if (!isAdmitted({ email, status: 'ACTIVE', member: saved })) {
+        throw new ForbiddenError(
+          'That Google account is not authorised for the Dealers-Drive admin console.',
+          { code: 'ADMIN_NOT_ALLOWLISTED' },
+        );
+      }
+      const session = await sessions.issue(
+        {
+          userId: user.id,
+          scope: 'ADMIN',
+          authenticationMethod: 'GOOGLE',
+          ip: input.ip,
+          userAgent: input.userAgent,
+        },
+        tx,
       );
-    }
-
-    const session = await sessions.issue({
-      userId: admin.user.id,
-      scope: 'ADMIN',
-      ip: input.ip,
-      userAgent: input.userAgent,
+      return { user, member: saved, session };
     });
+    const session = admin.session;
 
     logger.info(
       { event: 'admin.login.success', userId: admin.user.id, adminMemberId: admin.member.id },

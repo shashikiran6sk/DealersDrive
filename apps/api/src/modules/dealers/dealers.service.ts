@@ -1,6 +1,10 @@
-import { progressivePlan, isProgressivePlanCurrent } from './progressive-policy.js';
+import { withDealerRegistrationConflict } from './dealer-registration-conflict.js';
+import { invalidateDealerVerification } from './dealer-verification.js';
+import { isDealerVerified } from '@dealers-drive/contracts';
+import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   dealerSessionNext,
+  requiredDealerDocuments,
   DEALER_STATUS_LABELS,
   distinctServices,
   DOC_TYPE_LABELS,
@@ -45,6 +49,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
   ALREADY_SUBMITTED,
   APPLICATION_CLOSED,
@@ -175,6 +180,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       status: row.status,
       statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
       tagline: row.tagline,
+      taglineChanged: row.taglineChanged || row.tagline !== null,
       specialities: row.specialities,
       submittedAtLabel: formatDate(row.createdAt),
       reviewedAtLabel: row.reviewedAt ? formatDate(row.reviewedAt) : null,
@@ -287,7 +293,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           status: dealer.status,
           statusLabel:
             dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
-          isVerified: dealer.status === 'ACTIVE',
+          isVerified: isDealerVerified(dealer),
           creditBalance: dealer.creditBalance,
           creditsHeld: dealer.creditsHeld,
         },
@@ -301,41 +307,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(await requireDealer(dealerId));
     },
 
-    async progressiveState(dealerId: string) {
-      const dealer = await requireDealer(dealerId);
-      if (!dealer.progressiveRegisteredAt || !dealer.progressiveConsentVersion) return null;
-      const policy = isProgressivePlanCurrent(dealer)
-        ? progressivePlan(dealer.progressivePlan)
-        : null;
-      const complete = await this.completeness(dealerId);
-      return {
-        dealerId,
-        stage:
-          dealer.status === 'ACTIVE' || dealer.status === 'PENDING_APPROVAL'
-            ? ('ACTIVATE' as const)
-            : ('VERIFY' as const),
-        registeredAt: dealer.progressiveRegisteredAt.toISOString(),
-        consentVersion: dealer.progressiveConsentVersion,
-        version: dealer.progressiveVersion,
-        classificationReviewed: isProgressivePlanCurrent(dealer),
-        requiredDocuments: policy?.requiredDocuments ?? [],
-        canSubmit: complete.canSubmit,
-        canActivate:
-          dealer.status === 'PENDING_APPROVAL' &&
-          complete.isComplete &&
-          Boolean(policy) &&
-          (policy?.requiredDocuments.every((type) =>
-            dealer.documents.some(
-              (doc) =>
-                doc.type === type && doc.status === 'VERIFIED' && doc.reviewedAt && doc.reviewedBy,
-            ),
-          ) ??
-            false),
-      };
-    },
-
-    async amendDraft(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
-      const dealer = await requireDealer(dealerId);
+    async amendDraft(dealerId: string, input: UpdateDealerInput, tx?: Tx): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId, tx);
       if (dealer.status !== 'DRAFT') {
         throw new ConflictError(
           'PROFILE_LOCKED',
@@ -343,7 +316,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         );
       }
 
-      return this.update(dealerId, input);
+      return this.update(dealerId, input, tx, true);
     },
 
     async selfUpdate(
@@ -359,8 +332,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         await this.update(dealerId, { establishedYear: input.establishedYear });
       }
 
-      const tagline =
-        input.tagline === undefined || input.tagline === dealer.tagline ? null : input.tagline;
+      const taglineChanged = input.tagline !== undefined && input.tagline !== dealer.tagline;
+      const tagline = taglineChanged ? (input.tagline ?? null) : null;
 
       const typedServices =
         input.specialities === undefined ? null : distinctServices(input.specialities);
@@ -369,7 +342,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? []
           : typedServices;
 
-      if (tagline === null && specialities.length === 0) {
+      if (!taglineChanged && specialities.length === 0) {
         return toProfile(await requireDealer(dealerId));
       }
 
@@ -383,7 +356,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       await withTransaction(prisma, async (tx) => {
         const saved = await tx.dealerProfileChange.create({
-          data: { dealerId, tagline, specialities, submittedBy: actorUserId },
+          data: { dealerId, tagline, taglineChanged, specialities, submittedBy: actorUserId },
         });
 
         await audit.record(tx, {
@@ -394,7 +367,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           entityType: 'DealerProfileChange',
           entityId: saved.id,
           before: { tagline: dealer.tagline, specialities: dealer.specialities },
-          after: { tagline, specialities },
+          after: { tagline, taglineChanged, specialities },
         });
 
         await enqueueOutbox(tx, {
@@ -422,6 +395,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       }
 
       await withTransaction(prisma, async (tx) => {
+        await repo.lockStatus(dealerId, tx);
+        const current = await requireDealer(dealerId, tx);
+        if (
+          !current.profileEdits.some((row) => row.id === pending.id && row.status === 'PENDING')
+        ) {
+          throw new NotFoundError('You have no change waiting for review.');
+        }
         await tx.dealerProfileChange.delete({ where: { id: pending.id } });
 
         await audit.record(tx, {
@@ -439,19 +419,31 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(await requireDealer(dealerId));
     },
 
-    async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
-      const dealer = await requireDealer(dealerId);
+    async update(
+      dealerId: string,
+      input: UpdateDealerInput,
+      transaction?: Tx,
+      draftOnly = false,
+    ): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId, transaction);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
-      if (
-        dealer.progressiveRegisteredAt &&
-        owner &&
-        input.contact?.email !== undefined &&
-        input.contact.email.toLowerCase() !== owner.user.email?.toLowerCase()
-      )
+      const email =
+        input.contact?.email === undefined ? undefined : normaliseDealerEmail(input.contact.email);
+      if (owner && email !== undefined && email !== normaliseDealerEmail(owner.user.email ?? '')) {
         throw new ConflictError(
-          'PROGRESSIVE_OWNER_PROOF_REQUIRED',
-          'Changing the proved owner identity requires a controlled account verification flow.',
+          'OWNER_EMAIL_PROOF_REQUIRED',
+          'The owner’s email is a verified account identity. Contact support to change it.',
+          {
+            errors: [
+              {
+                field: 'body.contact.email',
+                code: 'OWNER_EMAIL_PROOF_REQUIRED',
+                message: 'Changing the owner’s identity requires verification.',
+              },
+            ],
+          },
         );
+      }
 
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
@@ -482,40 +474,66 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         ...(input.legalName === undefined || nameCity === undefined
           ? {}
           : { legalName: input.legalName, city: nameCity }),
-        ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
+        ...(input.gstin ? { gstin: input.gstin } : {}),
         ...(input.pan === undefined ? {} : { pan: input.pan }),
       });
 
-      const updated = await withTransaction(prisma, async (tx) => {
-        if (dealer.progressiveRegisteredAt) {
-          const status = await repo.lockStatus(dealerId, tx);
-          if (status !== 'DRAFT')
-            throw new ConflictError(
-              'PROGRESSIVE_PROFILE_LOCKED',
-              'Request a controlled correction before changing submitted or activated business details.',
-            );
+      const work = async (tx: Tx) => {
+        if (owner && input.contact?.fullName !== undefined) {
+          await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${owner.userId}::uuid FOR UPDATE`;
         }
-        if (input.contact && owner) {
+        await repo.lockStatus(dealerId, tx);
+        const current = await requireDealer(dealerId, tx);
+        if (draftOnly && current.status !== 'DRAFT') {
+          throw new ConflictError(
+            'PROFILE_LOCKED',
+            'This dealership has been submitted for verification, so its name, address and contact details can no longer be edited here.',
+          );
+        }
+        const locationChanged =
+          (state !== undefined && state !== current.state) ||
+          (district !== undefined && district !== current.district);
+        const location = locationChanged
+          ? await resolveOnboardingLocation(
+              tx,
+              state ?? current.state ?? '',
+              district ?? current.district ?? '',
+              'body.address',
+            )
+          : {};
+        if (input.contact?.fullName !== undefined && owner) {
           await tx.user.update({
             where: { id: owner.userId },
             data: {
               ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
-              ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
             },
           });
         }
 
+        const identityChanged =
+          (input.legalName !== undefined && input.legalName !== current.legalName) ||
+          (input.gstin !== undefined && input.gstin !== current.gstin) ||
+          (input.pan !== undefined && input.pan !== current.pan) ||
+          (email !== undefined && email !== current.contactEmail) ||
+          (phone !== undefined && phone !== current.contactPhone) ||
+          (input.contact?.fullName !== undefined &&
+            input.contact.fullName !==
+              current.members.find((member) => member.role === 'OWNER')?.user.fullName) ||
+          (input.address?.line !== undefined && input.address.line !== current.addressLine) ||
+          (city !== undefined && city !== current.city) ||
+          locationChanged ||
+          (input.address?.pincode !== undefined && input.address.pincode !== current.pincode);
+        if (identityChanged)
+          await invalidateDealerVerification(
+            tx,
+            audit,
+            current,
+            { actorType: 'SYSTEM', actorId: getContext()?.userId ?? null },
+            'Business identity or contact evidence changed; a new review is required.',
+          );
         return repo.update(
           dealerId,
           {
-            ...(dealer.progressiveRegisteredAt
-              ? {
-                  progressiveVersion: { increment: 1 },
-                  ...(input.contact?.fullName === undefined
-                    ? {}
-                    : { contactName: input.contact.fullName }),
-                }
-              : {}),
             ...(input.legalName === undefined
               ? {}
               : { legalName: input.legalName, brandName: input.legalName }),
@@ -527,13 +545,17 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
               : { establishedYear: input.establishedYear }),
             ...(specialities === undefined ? {} : { specialities }),
             ...(input.workingHours === undefined ? {} : { workingHours: input.workingHours }),
-            ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
+            ...(email === undefined ? {} : { contactEmail: email }),
+            ...(email === undefined || email === dealer.contactEmail
+              ? {}
+              : { contactEmailVerifiedAt: null }),
             ...(phone === undefined ? {} : { contactPhone: phone }),
             ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
             ...(city === undefined ? {} : { city }),
             ...(district === undefined ? {} : { district }),
             ...(state === undefined ? {} : { state }),
+            ...location,
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
             ...(mapsUrl === undefined ? {} : { mapsUrl }),
             ...(place === undefined
@@ -546,7 +568,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           },
           tx,
         );
-      });
+      };
+      const updated = transaction
+        ? await work(transaction)
+        : await withDealerRegistrationConflict(
+            () => withTransaction(prisma, work),
+            'body.contact.email',
+          );
 
       return toProfile(updated);
     },
@@ -568,26 +596,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         accountMissing.push('fullName', 'email');
       }
 
-      const progressive = Boolean(dealer.progressiveRegisteredAt);
-      const policy =
-        progressive && isProgressivePlanCurrent(dealer)
-          ? progressivePlan(dealer.progressivePlan)
-          : null;
-      if (
-        progressive &&
-        owner &&
-        (!owner.user.phoneVerifiedAt ||
-          owner.user.phone !== dealer.contactPhone ||
-          !owner.user.emailVerifiedAt ||
-          owner.user.email?.toLowerCase() !== dealer.contactEmail?.toLowerCase())
-      )
-        accountMissing.push('verifiedRepresentativeContacts');
-      if (
-        progressive &&
-        dealer.onboardingSource === 'ASSISTED' &&
-        (!dealer.contactPhoneVerifiedAt || !dealer.contactEmailVerifiedAt)
-      )
-        accountMissing.push('verifiedRepresentativeContacts');
       const businessMissing: string[] = [];
       if (!dealer.legalName) businessMissing.push('legalName');
       if (!dealer.addressLine) businessMissing.push('addressLine');
@@ -595,23 +603,14 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       if (!dealer.district) businessMissing.push('district');
       if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
-      if (!progressive && !dealer.mapsUrl) businessMissing.push('mapsUrl');
-      if (!progressive && !dealer.tagline) businessMissing.push('tagline');
-      if (!progressive && dealer.specialities.length === 0) businessMissing.push('specialities');
-      if ((!progressive || policy?.gstRequirement === 'REQUIRED') && !dealer.gstin)
-        businessMissing.push('gstin');
-      if ((!progressive || policy?.requiredDocuments.includes('PAN_CARD')) && !dealer.pan)
-        businessMissing.push('pan');
+      if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
+      if (dealer.specialities.length === 0) businessMissing.push('specialities');
+      if (!dealer.pan) businessMissing.push('pan');
 
-      if (progressive && (!policy || !isProgressivePlanCurrent(dealer)))
-        businessMissing.push('applicableVerificationReview');
-      const requiredTypes = policy?.requiredDocuments ?? (progressive ? [] : DOC_TYPES);
-      const documentsMissing: string[] = requiredTypes.filter((type) => {
+      const documentsMissing: string[] = requiredDealerDocuments(dealer.gstin).filter((type) => {
         const doc = documents.find((row) => row.type === type);
         return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
       });
-
-      if (!progressive && !dealer.coverMediaId) documentsMissing.push('YARD_PHOTO');
 
       const steps: CompletenessResponse['steps'] = [
         {
@@ -675,11 +674,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
-        if (dealer.progressiveRegisteredAt && !(await this.completeness(dealerId, tx)).isComplete)
-          throw new ConflictError(
-            'PROGRESSIVE_CHANGED',
-            'The application changed. Reload before submitting.',
-          );
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,
@@ -716,9 +710,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         statusLabel: 'Under review',
         submittedAt: submittedAt.toISOString(),
         expectedDecisionBy: new Date(submittedAt.getTime() + 86_400_000).toISOString(),
-        message: dealer.progressiveRegisteredAt
-          ? 'Your application is awaiting review of the evidence applicable to your business. Activation requires approval.'
-          : 'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
+        message:
+          'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
       };
     },
 

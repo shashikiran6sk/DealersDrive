@@ -124,15 +124,13 @@ export default async function DealerDirectoryPage({
       </nav>
 
       <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="text-[26px] sm:text-[30px]">
-          {place ? `Dealers in ${place}` : 'Verified dealers'}
-        </h1>
+        <h1 className="text-[26px] sm:text-[30px]">{place ? `Dealers in ${place}` : 'Dealers'}</h1>
         <span className="text-[14px] ink-muted tnum">{directory.countLabel}</span>
       </div>
 
       <p className="mb-[20px] mt-[8px] max-w-[62ch] text-[14px] leading-[1.6] ink-muted">
-        Every dealership below is identity- and GST-verified by Dealers-Drive. The cars belong to
-        them — enquiries go straight to the yard.
+        Look for the Dealer Verified badge for a reviewed business and representative. Verification
+        does not certify every vehicle’s condition or ownership. Enquiries go to the dealership.
       </p>
 
       <DirectoryFilters
@@ -154,8 +152,8 @@ export default async function DealerDirectoryPage({
           title="No dealerships match that search"
           message={
             q
-              ? `Nothing here is called "${q}". Clear the search to see every verified dealership.`
-              : 'No verified dealerships have listed cars in this area yet.'
+              ? `Nothing here is called "${q}". Clear the search to see every dealership.`
+              : 'No dealerships have listed cars in this area yet.'
           }
           action={
             <Link href="/dealers" className="relative btn btn-primary">

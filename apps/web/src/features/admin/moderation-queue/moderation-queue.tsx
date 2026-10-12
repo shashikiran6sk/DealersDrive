@@ -86,7 +86,7 @@ export function ModerationQueue({ listings, q }: { listings: AdminListingsRespon
           <EmptyState title={MODERATION_TEXT.emptyTitle} message={MODERATION_TEXT.emptyMessage} />
         )
       ) : (
-        <Table columns={COLUMNS} caption={MODERATION_TEXT.caption}>
+        <Table scrollHint columns={COLUMNS} caption={MODERATION_TEXT.caption}>
           {listings.data.map((row) => (
             <QueueRow key={row.id} row={row} />
           ))}

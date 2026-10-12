@@ -66,7 +66,7 @@ export const VEHICLE_WIZARD_TEXT = {
   notSaved: 'That could not be saved.',
   numbersOnly: 'Enter digits only.',
   makeHint: 'as on the RC',
-  makePlaceholder: 'Hyundai',
+  makePlaceholder: 'Search, e.g. Hyundai',
   modelPlaceholder: 'Creta',
   variantPlaceholder: 'SX(O)',
   variantHint: 'optional',

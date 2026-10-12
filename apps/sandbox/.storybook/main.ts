@@ -34,6 +34,10 @@ const config: StorybookConfig = {
      */
     viteConfig.resolve.alias = [
       {
+        find: '@/features/service-location-actions',
+        replacement: new URL('../src/mocks/service-location-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/auth/actions',
         replacement: new URL('../src/mocks/auth-actions.ts', import.meta.url).pathname,
       },

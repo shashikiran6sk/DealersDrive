@@ -1,5 +1,6 @@
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { env } from '../src/config/env.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
@@ -104,6 +105,63 @@ function claim(agent: request.Agent, token: string, phone: string, code?: string
 }
 
 describe('the verification email', () => {
+  it('does not let an obsolete proof verify an email changed while the request waits', async () => {
+    const { email, dealerId } = await assisted();
+    const { token } = linkSentTo(email);
+    let unlock = () => {};
+    let ready = () => {};
+    const held = new Promise<void>((resolve) => {
+      ready = resolve;
+    });
+    const release = new Promise<void>((resolve) => {
+      unlock = resolve;
+    });
+    const newEmail = nextEmail('corrected.contact');
+    const edit = h.prisma.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+        ready();
+        await release;
+        await tx.dealer.update({
+          where: { id: dealerId },
+          data: { contactEmail: newEmail, contactEmailVerifiedAt: null },
+        });
+      },
+      { timeout: 15_000 },
+    );
+    await held;
+    const attempt = h
+      .agent()
+      .post(`/v1/dealer-claims/${token}/verify-email`)
+      .send()
+      .then((r) => r);
+    try {
+      let waiting = false;
+      for (let i = 0; i < 100; i++) {
+        const rows = await h.prisma.$queryRaw<
+          { n: bigint }[]
+        >`SELECT count(*) AS n FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND query LIKE '%dealers%'`;
+        if (Number(rows[0]?.n) > 0) {
+          waiting = true;
+          break;
+        }
+        await delay(10);
+      }
+      expect(waiting).toBe(true);
+    } finally {
+      unlock();
+    }
+    await edit;
+    const response = await attempt;
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('CLAIM_LINK_SUPERSEDED');
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).contactEmailVerifiedAt,
+    ).toBeNull();
+    expect(
+      (await h.prisma.dealerEmailVerification.findFirstOrThrow({ where: { dealerId } })).verifiedAt,
+    ).toBeNull();
+  });
   it('is sent on creation, to the typed address, with a link only the email holds', async () => {
     const { email, dealerId } = await assisted();
     const { token, text } = linkSentTo(email);
@@ -329,6 +387,42 @@ describe('claiming', () => {
     const refused = await claim(h.agent(), busyToken, busy.phone);
     expect(refused.status).toBe(409);
     expect(refused.body.code).toBe('CLAIM_ACCOUNT_HAS_DEALERSHIP');
+  });
+
+  it('refuses, as a conflict, a claimant whose verified Google email another application reserves', async () => {
+    const target = await assisted();
+    const reserving = await assisted();
+    const holder = await h.prisma.user.create({
+      data: {
+        phone: `+91${target.phone}`,
+        phoneVerifiedAt: new Date(),
+        identities: {
+          create: {
+            provider: 'GOOGLE',
+            providerSubject: `claims-reserved-${Date.now().toString(36)}`,
+            email: reserving.email,
+            emailVerified: true,
+          },
+        },
+      },
+    });
+    const { token } = linkSentTo(target.email);
+    await confirmEmail(token);
+
+    const refused = await claim(h.agent(), token, target.phone);
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('DEALER_EMAIL_TAKEN');
+    expect(
+      await h.prisma.dealerMember.count({
+        where: { dealerId: target.dealerId, userId: holder.id },
+      }),
+    ).toBe(0);
+    const [claimed, reserved] = await Promise.all([
+      h.prisma.dealer.findUniqueOrThrow({ where: { id: target.dealerId } }),
+      h.prisma.dealer.findUniqueOrThrow({ where: { id: reserving.dealerId } }),
+    ]);
+    expect(claimed.primaryOwnerEmail).toBe(target.email);
+    expect(reserved.primaryOwnerEmail).toBe(reserving.email);
   });
 
   it('owns the dealership once, whatever the race', async () => {

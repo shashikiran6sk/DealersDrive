@@ -3,6 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { OnboardingInput } from '../../src/auth.js';
 import { UpdateDealerInput } from '../../src/dealer.js';
 
+it('normalizes contact email without Gmail-specific alias rewriting', () => {
+  expect(
+    UpdateDealerInput.parse({ contact: { email: '  Dealer.Name+yard@Example.TEST  ' } }).contact
+      ?.email,
+  ).toBe('dealer.name+yard@example.test');
+  expect(UpdateDealerInput.safeParse({ contact: { email: 'not-an-email' } }).success).toBe(false);
+  expect(
+    UpdateDealerInput.safeParse({ contact: { email: `${'x'.repeat(160)}@example.test` } }).success,
+  ).toBe(false);
+});
+
 /**
  * R30 — what a dealer is told when a bound refuses them.
  *
@@ -95,9 +106,11 @@ describe('the service list says what is wrong in the dealer’s own words', () =
 
 describe('the tagline says what is wrong in the dealer’s own words', () => {
   it('answers a line too short and a line too long', () => {
-    expectHuman(messagesFor(UpdateDealerInput.safeParse({ tagline: 'Cars' })));
     expectHuman(messagesFor(UpdateDealerInput.safeParse({ tagline: 'x'.repeat(201) })));
-    expectHuman(messagesFor(OnboardingInput.safeParse({ ...ONBOARDING, tagline: 'Cars' })));
+    expectHuman(messagesFor(UpdateDealerInput.safeParse({ tagline: 'x'.repeat(201) })));
+    expectHuman(
+      messagesFor(OnboardingInput.safeParse({ ...ONBOARDING, tagline: 'x'.repeat(201) })),
+    );
   });
 });
 
@@ -124,8 +137,8 @@ describe('the two schemas answer identically', () => {
     expect(messagesFor(UpdateDealerInput.safeParse({ specialities: services }))).toEqual(
       messagesFor(OnboardingInput.safeParse({ ...ONBOARDING, specialities: services })),
     );
-    expect(messagesFor(UpdateDealerInput.safeParse({ tagline: 'Cars' }))).toEqual(
-      messagesFor(OnboardingInput.safeParse({ ...ONBOARDING, tagline: 'Cars' })),
+    expect(messagesFor(UpdateDealerInput.safeParse({ tagline: 'x'.repeat(201) }))).toEqual(
+      messagesFor(OnboardingInput.safeParse({ ...ONBOARDING, tagline: 'x'.repeat(201) })),
     );
   });
 });

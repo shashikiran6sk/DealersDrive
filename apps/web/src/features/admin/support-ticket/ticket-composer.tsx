@@ -17,6 +17,7 @@ type Mode = 'reply' | 'note';
 export function TicketComposer({
   ticketId,
   canReply,
+  onSaved,
   reply = replyToTicketAction,
   note = addTicketNoteAction,
 }: TicketComposerProps) {
@@ -27,6 +28,7 @@ export function TicketComposer({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
+  const replyId = useRef<string | null>(null);
   const isNote = mode === 'note';
 
   return (
@@ -43,10 +45,15 @@ export function TicketComposer({
         inFlight.current = true;
         setError(null);
         startTransition(async () => {
-          const result = isNote ? await note(ticketId, text) : await reply(ticketId, text);
+          replyId.current ??= crypto.randomUUID();
+          const result = isNote
+            ? await note(ticketId, text)
+            : await reply(ticketId, text, replyId.current);
           inFlight.current = false;
           if (result.ok) {
+            if (result.ticket) onSaved?.(result.ticket);
             setText('');
+            replyId.current = null;
             router.refresh();
             return;
           }
@@ -73,6 +80,7 @@ export function TicketComposer({
             className="seg-opt"
             onClick={() => {
               setMode(option);
+              replyId.current = null;
               setError(null);
             }}
           >
@@ -106,6 +114,7 @@ export function TicketComposer({
         className="min-h-[110px] bg-white py-[8px]"
         onChange={(event) => {
           setText(event.target.value);
+          replyId.current = null;
         }}
       />
       {error ? (

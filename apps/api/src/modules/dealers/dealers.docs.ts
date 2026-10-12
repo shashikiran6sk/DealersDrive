@@ -11,27 +11,6 @@ export const dealersDocs: ModuleDocs = {
   operations: [
     {
       method: 'get',
-      path: '/v1/dealer/progressive',
-      operationId: 'getProgressiveState',
-      tag: DOC_TAGS.dealerAccount,
-      summary: 'Progressive dealer onboarding',
-      description:
-        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
-      audience: 'dealer',
-      responses: [
-        {
-          status: 200,
-          description: 'Saved application progress.',
-          inlineSchema: {
-            anyOf: [{ $ref: '#/components/schemas/ProgressiveState' }, { type: 'null' }],
-          },
-        },
-      ],
-      errors: [401, 403, 409, 422],
-    },
-
-    {
-      method: 'get',
       path: '/v1/dealer',
       operationId: 'getDealerProfile',
       tag: DOC_TAGS.dealerAccount,
@@ -67,9 +46,9 @@ export const dealersDocs: ModuleDocs = {
         '`UpdateDealerInput` while the dealership is a **DRAFT** \u2014 nothing has been ' +
         'verified about it yet \u2014 and `PATCH /v1/admin/dealers/{id}` takes it for a ' +
         'moderator with the certificate in hand.\n\n' +
-        '**Partial by design**: an absent field is untouched, never cleared. `tagline` and ' +
-        '`specialities` may not be *emptied* though (R26) \u2014 a dealer must not be able ' +
-        'to delete here what onboarding insisted on.\n\n' +
+        '**Partial by design**: an absent field is untouched. Tagline is optional; null or ' +
+        'blank text requests removal through the same review queue. Services remain nonempty ' +
+        'when supplied.\n\n' +
         'OWNER only (`dealer:update`) \u2014 a manager or salesperson gets a 403.\n\n' +
         '## Two of the three wait for a moderator (R34)\n\n' +
         'On an **ACTIVE** dealership `tagline` and `specialities` do not reach the ' +
@@ -268,7 +247,7 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'KYC document status',
       description:
-        'All three required documents — GST certificate, PAN card, address proof — each with ' +
+        'Business document slots — PAN/address are required by platform policy, GST certificate is required when GSTIN is supplied — each with ' +
         'its status and rejection reason if it has one. Rows are returned for documents that ' +
         'have not been uploaded yet, so the checklist is complete rather than growing. ' +
         'Verification is the owner’s business, so this needs `document:upload` (R92).',
@@ -458,9 +437,8 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'Remove the yard photograph',
       description:
-        'Clears `coverMediaId` and deletes the stored object. The dealership then reads as ' +
-        'incomplete again \u2014 `GET /v1/dealer/completeness` lists `YARD_PHOTO` as missing, ' +
-        'and `POST /v1/dealer/submit` refuses until one is uploaded.\n\n' +
+        'Clears `coverMediaId` and deletes the explicitly selected stored object. Yard photography is optional; ' +
+        'removing it does not make an otherwise complete application incomplete. Directory cards retain the shared illustration.\n\n' +
         '**DRAFT only.** Once the dealership has been submitted this is a 409 ' +
         '`YARD_PHOTO_LOCKED`. OWNER only (`document:upload`).',
       audience: 'dealer',

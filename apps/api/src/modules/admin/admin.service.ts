@@ -1,8 +1,6 @@
+import { createDealerVerificationService } from './dealer-verification.service.js';
 import {
-  createProgressiveReviewService,
-  assertProgressiveReviewer,
-} from './progressive-review.service.js';
-import {
+  requiredDealerDocuments,
   ADMIN_ROLE_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
@@ -67,8 +65,7 @@ import {
 } from '../auth/auth.facade.js';
 import {
   documentKey,
-  progressivePlan,
-  isProgressivePlanCurrent,
+  invalidateDealerVerification,
   type DealersService,
 } from '../dealers/dealers.facade.js';
 import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
@@ -82,12 +79,15 @@ export interface AdminDeps {
   dealers: DealersService;
 }
 
-const REQUIRED_DOCUMENTS = 3;
-
-function allDocumentsVerified(documents: Pick<DealerDocument, 'status' | 'fileName'>[]): boolean {
-  return (
-    documents.length === REQUIRED_DOCUMENTS &&
-    documents.every((doc) => doc.status === 'VERIFIED' && Boolean(doc.fileName))
+function allDocumentsVerified(
+  documents: Pick<DealerDocument, 'type' | 'status' | 'fileName'>[],
+  gstin: string | null,
+): boolean {
+  const required = requiredDealerDocuments(gstin);
+  return required.every((type) =>
+    documents.some(
+      (doc) => doc.type === type && doc.status === 'VERIFIED' && Boolean(doc.fileName),
+    ),
   );
 }
 
@@ -154,6 +154,7 @@ function toAdminProfileChange(
     dealerId: string;
     status: ProfileChangeStatus;
     tagline: string | null;
+    taglineChanged?: boolean;
     specialities: string[];
     createdAt: Date;
     decisionReason: string | null;
@@ -171,6 +172,7 @@ function toAdminProfileChange(
     statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
     statusTone: PROFILE_CHANGE_STATUS_TONES[row.status],
     tagline: row.tagline,
+    taglineChanged: row.taglineChanged || row.tagline !== null,
     specialities: row.specialities,
     liveTagline: dealer.tagline,
     liveSpecialities: distinctServices(dealer.specialities),
@@ -219,8 +221,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     }
   }
 
-  async function requirePendingChange(changeId: string) {
-    const change = await prisma.dealerProfileChange.findUnique({
+  async function requirePendingChange(changeId: string, tx?: Tx) {
+    const change = await (tx ?? prisma).dealerProfileChange.findUnique({
       where: { id: changeId },
       include: { dealer: true },
     });
@@ -235,7 +237,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
   }
 
   return {
-    progressive: createProgressiveReviewService({ prisma, audit }),
+    verification: createDealerVerificationService({ prisma, audit, storage }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
@@ -368,7 +370,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           joinedAt: dealer.createdAt.toISOString(),
           joinedLabel: formatDate(dealer.createdAt),
           creditBalance: dealer.creditBalance,
-          documentsVerified: allDocumentsVerified(dealer.documents),
+          documentsVerified: allDocumentsVerified(dealer.documents, dealer.gstin),
           hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
@@ -400,38 +402,31 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       }[] = [];
 
       const owner = dealer.members[0];
-      const policy = dealer.progressiveRegisteredAt
-        ? progressivePlan(dealer.progressivePlan)
-        : null;
-      const allVerified = policy
-        ? isProgressivePlanCurrent(dealer) &&
-          policy.requiredDocuments.every((type) =>
-            dealer.documents.some(
-              (doc) => doc.type === type && doc.status === 'VERIFIED' && doc.fileName,
-            ),
-          )
-        : allDocumentsVerified(dealer.documents);
+      const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
 
-      const canReadPrivateEvidence =
-        !dealer.progressiveRegisteredAt || admin.permissions.includes('admin:document:review');
       const documents = await Promise.all(
         dealer.documents.map(async (doc) => {
-          const readable =
-            canReadPrivateEvidence && (doc.status === 'UPLOADED' || doc.status === 'VERIFIED');
+          const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
           return {
             id: doc.id,
             type: doc.type,
             label: DOC_TYPE_LABELS[doc.type],
             status: doc.status,
-            fileName: canReadPrivateEvidence ? doc.fileName : null,
+            fileName: admin.permissions.includes('admin:document:review') ? doc.fileName : null,
             bytes: null,
             uploadedAt: doc.createdAt.toISOString(),
-            viewUrl: readable
-              ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+            viewUrl:
+              readable && admin.permissions.includes('admin:document:review')
+                ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
+                : null,
+            viewUrlExpiresAt:
+              readable && admin.permissions.includes('admin:document:review')
+                ? new Date(Date.now() + 300_000).toISOString()
+                : null,
+            rejectionReason: admin.permissions.includes('admin:document:review')
+              ? doc.rejectionReason
               : null,
-            viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
-            rejectionReason: canReadPrivateEvidence ? doc.rejectionReason : null,
           };
         }),
       );
@@ -440,7 +435,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         ? await prisma.media.findUnique({ where: { id: dealer.coverMediaId } })
         : null;
       const yardPhotoUrl =
-        canReadPrivateEvidence && yardPhoto && yardPhoto.status !== 'ORPHAN'
+        yardPhoto && yardPhoto.status !== 'ORPHAN'
           ? await storage.signedReadUrl(yardPhoto.storageKey, 300)
           : null;
 
@@ -456,13 +451,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       }
 
       return {
-        ...(dealer.progressiveRegisteredAt
-          ? {
-              progressive: await dealers.progressiveState(dealer.id),
-              progressiveReviewAllowed:
-                admin.permissions.includes('admin:dealer:approve') && !assistedBy(dealer, admin),
-            }
-          : {}),
         id: dealer.id,
         slug: dealer.slug,
         brandName: dealer.brandName,
@@ -472,11 +460,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         statusLabel: DEALER_STATUS_LABELS[dealer.status],
         statusTone: DEALER_STATUS_TONES[dealer.status],
         statusReason: dealer.statusReason,
-        gstin: dealer.gstin,
-        pan: canReadPrivateEvidence ? dealer.pan : null,
+        gstin: admin.permissions.includes('admin:document:review') ? dealer.gstin : null,
+        pan: admin.permissions.includes('admin:document:review') ? dealer.pan : null,
         city: dealer.city,
         district: dealer.district,
         state: dealer.state,
+        locationReviewRequired: dealer.locationReviewRequired,
         addressLine: dealer.addressLine,
         pincode: dealer.pincode,
         mapsUrl: dealer.mapsUrl,
@@ -513,8 +502,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         })),
         actions: {
           canApprove:
-            (!dealer.progressiveRegisteredAt ||
-              admin.permissions.includes('admin:dealer:approve')) &&
             dealer.status === 'PENDING_APPROVAL' &&
             allVerified &&
             application.isComplete &&
@@ -527,9 +514,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
-          canEdit:
-            admin.permissions.includes('admin:dealer:approve') &&
-            (!dealer.progressiveRegisteredAt || dealer.status === 'DRAFT'),
+          canEdit: admin.permissions.includes('admin:dealer:approve'),
         },
       };
     },
@@ -537,7 +522,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     async approveDealer(
       admin: AdminPrincipal,
       dealerId: string,
-      _input: ApproveDealerInput,
+      input: ApproveDealerInput,
     ): Promise<DealerModerationResponse> {
       assertPermission(admin, 'admin:dealer:approve');
 
@@ -559,39 +544,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           SELECT "id" FROM "dealer_documents" WHERE "dealerId" = ${dealerId}::uuid
           ORDER BY "id" FOR UPDATE`;
         const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
-        const policy = dealer.progressiveRegisteredAt
-          ? progressivePlan(dealer.progressivePlan)
-          : null;
-        if (dealer.progressiveRegisteredAt && (!policy || !isProgressivePlanCurrent(dealer)))
-          throw new DomainError(
-            'PROGRESSIVE_REVIEW_REQUIRED',
-            'Record the applicable legal and evidence review for the current business identity before activation.',
-          );
-        const applicable = policy
-          ? documents.filter((doc) => policy.requiredDocuments.includes(doc.type))
-          : documents;
-        const verified = policy
-          ? policy.requiredDocuments.every((type) =>
-              applicable.some(
-                (doc) =>
-                  doc.type === type &&
-                  doc.status === 'VERIFIED' &&
-                  doc.fileName &&
-                  doc.reviewedBy &&
-                  doc.reviewedAt,
-              ),
-            )
-          : allDocumentsVerified(documents);
-        if (!verified) {
+        if (!allDocumentsVerified(documents, dealer.gstin)) {
           throw new DomainError(
             'DOCUMENTS_NOT_VERIFIED',
-            policy
-              ? 'Verify each applicable document before activation.'
-              : 'Verify all three uploaded KYC documents before approving this dealership.',
+            'Verify the applicable uploaded business documents before approving this dealership.',
           );
         }
         const uploads = await Promise.all(
-          applicable.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+          documents
+            .filter((doc) => requiredDealerDocuments(dealer.gstin).includes(doc.type))
+            .map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
         );
         if (uploads.some((object) => object === null)) {
           throw new DomainError(
@@ -604,33 +566,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }
 
-        if (dealer.progressiveRegisteredAt) {
-          await assertProgressiveReviewer(tx, admin);
-          if (
-            await tx.dealerMember.findFirst({
-              where: { dealerId, userId: admin.userId, status: 'ACTIVE' },
-            })
-          )
-            throw new ForbiddenError('Another reviewer must activate this application.');
-          const owner = await tx.dealerMember.findFirst({
-            where: { dealerId, role: 'OWNER', status: 'ACTIVE' },
-            include: { user: true },
-          });
-          const proved =
-            dealer.onboardingSource === 'ASSISTED'
-              ? Boolean(dealer.contactPhoneVerifiedAt && dealer.contactEmailVerifiedAt)
-              : Boolean(
-                  owner?.user.phoneVerifiedAt &&
-                  owner.user.emailVerifiedAt &&
-                  owner.user.phone === dealer.contactPhone &&
-                  owner.user.email?.toLowerCase() === dealer.contactEmail?.toLowerCase(),
-                );
-          if (!proved)
-            throw new DomainError(
-              'PROGRESSIVE_CONTACT_PROOF_REQUIRED',
-              'Prove the representative phone and email before activation. A typed assisted email is not proof.',
-            );
-        }
+        if (!dealer.gstin && !input.gstNotRequiredReview)
+          throw new DomainError(
+            'GST_APPLICABILITY_REVIEW_REQUIRED',
+            'Record why GST registration is not required before approving a business without GSTIN. Uncertain applicability must remain under review.',
+          );
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
@@ -647,7 +587,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'Dealer',
           entityId: dealerId,
           before: { status: dealer.status },
-          after: { status: 'ACTIVE', creditsGranted },
+          after: {
+            status: 'ACTIVE',
+            creditsGranted,
+            ...(dealer.gstin ? {} : { gstNotRequiredReview: input.gstNotRequiredReview }),
+          },
         });
 
         await enqueueOutbox(tx, {
@@ -986,43 +930,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           );
         }
 
-        if (status === 'ACTIVE' && dealer.progressiveRegisteredAt) {
-          await assertProgressiveReviewer(tx, admin);
-          if (dealer.members.some((member) => member.userId === admin.userId))
-            throw new ForbiddenError('Another reviewer must reinstate this business.');
-          const policy = progressivePlan(dealer.progressivePlan);
-          const docs = await tx.dealerDocument.findMany({ where: { dealerId } });
-          if (
-            !policy ||
-            !isProgressivePlanCurrent(dealer) ||
-            !(await dealers.completeness(dealerId, tx)).isComplete ||
-            !policy.requiredDocuments.every((type) =>
-              docs.some(
-                (doc) =>
-                  doc.type === type &&
-                  doc.status === 'VERIFIED' &&
-                  doc.fileName &&
-                  doc.reviewedBy &&
-                  doc.reviewedAt,
-              ),
-            )
-          )
-            throw new ConflictError(
-              'PROGRESSIVE_REVIEW_REQUIRED',
-              'Applicable verification must remain valid before reinstatement.',
-            );
-          const objects = await Promise.all(
-            docs
-              .filter((doc) => policy.requiredDocuments.includes(doc.type))
-              .map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
-          );
-          if (objects.some((object) => object === null))
-            throw new ConflictError(
-              'PROGRESSIVE_EVIDENCE_MISSING',
-              'Applicable evidence is unavailable. Complete controlled reverification before reinstatement.',
-            );
-        }
-
         const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 
         const updated = await tx.dealer.update({
@@ -1135,37 +1042,17 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
-        const allVerified = allDocumentsVerified(all);
-
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
+        const allVerified = allDocumentsVerified(all, dealer?.gstin ?? null);
+        if (rejecting && dealer)
+          await invalidateDealerVerification(
+            tx,
+            audit,
+            dealer,
+            { actorType: 'ADMIN', actorId: admin.userId },
+            'Reviewed business evidence was rejected; a new verification review is required.',
+          );
         const returnToDraft = rejecting && dealer?.status === 'PENDING_APPROVAL';
-        if (
-          rejecting &&
-          dealer?.progressiveRegisteredAt &&
-          dealer.status === 'ACTIVE' &&
-          progressivePlan(dealer.progressivePlan)?.requiredDocuments.includes(doc.type)
-        ) {
-          await assertProgressiveReviewer(tx, admin);
-          await tx.dealer.update({
-            where: { id: dealer.id },
-            data: {
-              status: 'SUSPENDED',
-              suspendedAt: new Date(),
-              statusReason: 'Applicable verification evidence requires review.',
-            },
-          });
-          await audit.record(tx, {
-            actorType: 'ADMIN',
-            actorId: admin.userId,
-            dealerId: dealer.id,
-            action: 'dealer.progressive.activation_suspended',
-            entityType: 'Dealer',
-            entityId: dealer.id,
-            before: { status: 'ACTIVE' },
-            after: { status: 'SUSPENDED', documentType: doc.type },
-          });
-        }
-
         if (returnToDraft) {
           await tx.dealer.update({
             where: { id: doc.dealerId },
@@ -1240,12 +1127,20 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const change = await requirePendingChange(changeId);
 
-      await dealers.update(change.dealerId, {
-        ...(change.tagline === null ? {} : { tagline: change.tagline }),
-        ...(change.specialities.length === 0 ? {} : { specialities: change.specialities }),
-      });
-
       const decided = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, change.dealerId);
+        await tx.$queryRaw`SELECT "id" FROM "dealer_profile_changes" WHERE "id" = ${changeId}::uuid FOR UPDATE`;
+        const current = await requirePendingChange(changeId, tx);
+        await dealers.update(
+          current.dealerId,
+          {
+            ...(current.taglineChanged || current.tagline !== null
+              ? { tagline: current.tagline }
+              : {}),
+            ...(current.specialities.length === 0 ? {} : { specialities: current.specialities }),
+          },
+          tx,
+        );
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: { status: 'APPROVED', reviewedBy: admin.userId, reviewedAt: new Date() },
@@ -1259,10 +1154,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'DealerProfileChange',
           entityId: changeId,
           before: {
-            tagline: change.dealer.tagline,
-            specialities: change.dealer.specialities,
+            tagline: current.dealer.tagline,
+            specialities: current.dealer.specialities,
           },
-          after: { tagline: change.tagline, specialities: change.specialities },
+          after: {
+            tagline: current.tagline,
+            taglineChanged: current.taglineChanged || current.tagline !== null,
+            specialities: current.specialities,
+          },
         });
 
         await enqueueOutbox(tx, {
@@ -1299,6 +1198,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const change = await requirePendingChange(changeId);
 
       const decided = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, change.dealerId);
+        await tx.$queryRaw`SELECT "id" FROM "dealer_profile_changes" WHERE "id" = ${changeId}::uuid FOR UPDATE`;
+        await requirePendingChange(changeId, tx);
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: {

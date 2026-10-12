@@ -50,13 +50,15 @@ model User {
   mergedInto User?  @relation("UserMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
   absorbed   User[] @relation("UserMerge")
 
-  adminMember   AdminMember?
-  sessions      Session[]
-  memberships   DealerMember[]
-  identities    OAuthIdentity[]
-  roles         UserRole[]
-  enquiries     Enquiry[]
-  savedVehicles SavedVehicle[]
+  adminOtpChallenges   AdminOtpChallenge[]
+  adminPhoneCredential AdminPhoneCredential?
+  adminMember          AdminMember?
+  sessions             Session[]
+  memberships          DealerMember[]
+  identities           OAuthIdentity[]
+  roles                UserRole[]
+  enquiries            Enquiry[]
+  savedVehicles        SavedVehicle[]
 
   enquiriesContacted Enquiry[] @relation("EnquiryContactedBy")
   enquiriesClosed    Enquiry[] @relation("EnquiryClosedBy")
@@ -128,25 +130,27 @@ enum UserRoleStatus {
 }
 
 model Session {
-  id             String       @id @default(uuid()) @db.Uuid
-  userId         String       @db.Uuid
-  tokenHash      String       @unique
+  id                   String       @id @default(uuid()) @db.Uuid
+  userId               String       @db.Uuid
+  tokenHash            String       @unique
   /// A dealer session can never satisfy `requireAdmin`, and an admin session can
   /// never satisfy `requireDealer` — even when one human holds both seats.
-  scope          SessionScope @default(DEALER)
-  expiresAt      DateTime
-  revokedAt      DateTime?
-  ip             String?
-  userAgent      String?
+  scope                SessionScope @default(DEALER)
+  authenticationMethod String?
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  ip                   String?
+  userAgent            String?
   /// The dealership this session is working in (**R93**), for a person who
   /// belongs to more than one. A preference, never a grant: the membership is
   /// re-read on every request, and a dealership this person can no longer
   /// enter is skipped as if this were NULL.
-  activeDealerId String?      @db.Uuid
-  createdAt      DateTime     @default(now())
+  activeDealerId       String?      @db.Uuid
+  createdAt            DateTime     @default(now())
 
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeDealer Dealer? @relation(fields: [activeDealerId], references: [id], onDelete: SetNull)
+  adminOtpChallenges AdminOtpChallenge[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeDealer       Dealer?             @relation(fields: [activeDealerId], references: [id], onDelete: SetNull)
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
@@ -261,31 +265,31 @@ enum AdminMemberSource {
 
 // ─────────── DEALERS (the tenant) ────────────────────────────────────────
 model Dealer {
-  id                        String                 @id @default(uuid()) @db.Uuid
-  slug                      String                 @unique
+  id                     String                   @id @default(uuid()) @db.Uuid
+  slug                   String                   @unique
   /// The display mirror of `legalName`, written by the server and by nothing
   /// else. Onboarding asks for one name; this is where it is shown from.
-  brandName                 String
+  brandName              String
   /// Unique **per city** — see `@@unique([legalName, city])` below.
-  legalName                 String
+  legalName              String
   /// Unique where present. Nullable columns permit many NULLs in a Postgres
   /// unique index, which is exactly right: a dealership that has not entered a
   /// GSTIN yet must not collide with every other one that has not either.
-  gstin                     String?                @unique
+  gstin                  String?                  @unique
   /// Unique where present, on the same reasoning as `gstin` above — a PAN
   /// identifies one taxable entity, so two dealerships holding one is one
   /// business applying twice or a typo carrying somebody else's identity into a
   /// KYC review. Nullable, so the many dealerships that have not entered one
   /// yet do not collide with each other (**R38**).
-  pan                       String?                @unique
-  tagline                   String?
-  logoMediaId               String?                @db.Uuid
-  coverMediaId              String?                @db.Uuid
-  progressiveRegisteredAt   DateTime?
-  progressiveConsentVersion String?
-  progressivePlan           Json?
-  progressiveVersion        Int                    @default(0)
-  status                    DealerStatus           @default(DRAFT)
+  pan                    String?                  @unique
+  tagline                String?
+  logoMediaId            String?                  @db.Uuid
+  coverMediaId           String?                  @db.Uuid
+  status                 DealerStatus             @default(DRAFT)
+  verificationStatus     DealerVerificationStatus @default(NOT_VERIFIED)
+  verificationVersion    Int                      @default(0)
+  verificationVerifiedAt DateTime?
+  verificationReviewerId String?                  @db.Uuid
   /// Locality as text, not as a foreign key to a five-row table.
   ///
   /// `cityId -> cities.id` is gone, and with it the constraint that a
@@ -293,14 +297,16 @@ model Dealer {
   /// came off that row and are now written by nothing; they stay because the
   /// distance sort that reads them is a real feature, and geocoding a typed
   /// address is its problem rather than onboarding's.
-  city                      String?
-  /// The district the yard sits in, typed by the dealer and normalised on
-  /// write. The admin console filters on it — city on its own is ambiguous
-  /// across India, and support questions are district-shaped.
-  district                  String?
-  state                     String?
-  addressLine               String?
-  pincode                   String?
+  city                   String?
+  /// Canonical district display mirror. Ambiguous legacy text is retained for review.
+  district               String?
+  state                  String?
+  /// Stable catalogue references; legacy ambiguous text is retained for review.
+  serviceStateId         String?
+  serviceDistrictId      String?
+  locationReviewRequired Boolean                  @default(false)
+  addressLine            String?
+  pincode                String?
   /// The dealer's own Google Maps share link, stored verbatim.
   ///
   /// Verbatim is the point: a share link survives the dealer moving their pin,
@@ -311,9 +317,9 @@ model Dealer {
   /// The three columns below are read *out* of it at write time (**R10**,
   /// `platform/maps/maps-link.ts`) and never geocoded from the address above.
   /// They are what the portfolio draws with; this is what it links to.
-  mapsUrl                   String?
-  lat                       Float?
-  lng                       Float?
+  mapsUrl                String?
+  lat                    Float?
+  lng                    Float?
   /// Google's own feature id for the yard, `0x…:0x…`, when the link named one.
   ///
   /// The pin centres a map. This makes it a map *of a dealership*: handed back
@@ -325,43 +331,48 @@ model Dealer {
   /// read back out at request time, so the only rows this column exists for are
   /// the ones whose id cost a redirect to discover: `maps.app.goo.gl`, which is
   /// what Google's Share sheet gives on a phone.
-  mapsPlaceId               String?
-  contactPhone              String?
-  contactEmail              String?
+  mapsPlaceId            String?
+  contactPhone           String?
+  contactEmail           String?
+  /// Database-maintained primary ownership identity, separate from public contact
+  /// details. Unclaimed assisted applications reserve their declared email;
+  /// claimed owners use their verified Google identity (or existing account email).
+  /// Never accepts ownership proof and never appears in public DTOs.
+  primaryOwnerEmail      String?                  @unique
   /// The contact person's name, for an assisted dealership that has no owner
   /// account yet. A self-onboarded dealership reads it from the OWNER's user.
-  contactName               String?
+  contactName            String?
   /// When `contactPhone` was proved by OTP on the dealer's handset during
   /// assisted onboarding. Self-onboarded dealerships prove the owner's phone on
   /// the user row instead, so this stays NULL for them.
-  contactPhoneVerifiedAt    DateTime?
+  contactPhoneVerifiedAt DateTime?
   /// When the dealer proved they receive mail at `contactEmail`. An address a
   /// Sales Representative typed is never trusted until this is set.
-  contactEmailVerifiedAt    DateTime?
+  contactEmailVerifiedAt DateTime?
   /// SELF — the dealer onboarded themselves. ASSISTED — a Sales Representative
   /// did it with them, recorded in `assistedByMemberId`. The lifecycle is the
   /// same either way; only who did the typing differs.
-  onboardingSource          DealerOnboardingSource @default(SELF)
+  onboardingSource       DealerOnboardingSource   @default(SELF)
   /// The Admin Member who assisted. They assist; they never own — ownership is
   /// a DealerMember OWNER row, which only the dealer's own sign-in creates.
-  assistedByMemberId        String?                @db.Uuid
+  assistedByMemberId     String?                  @db.Uuid
   /// When the dealership representative gave consent, by sharing the OTP, for
   /// Dealers-Drive to create and submit this profile on their behalf.
-  assistedConsentAt         DateTime?
-  landline                  String?
-  workingHours              Json?
-  establishedYear           Int?
-  specialities              String[]
+  assistedConsentAt      DateTime?
+  landline               String?
+  workingHours           Json?
+  establishedYear        Int?
+  specialities           String[]
   /// MIRROR of the newest CreditTransaction.balanceAfter. Never authoritative
   /// on its own — every write path re-reads the ledger under FOR UPDATE (§26.2).
-  creditBalance             Int                    @default(0)
-  creditsHeld               Int                    @default(0)
-  activeListings            Int                    @default(0)
-  medianResponseMins        Int?
-  approvedAt                DateTime?
-  suspendedAt               DateTime?
-  statusReason              String?
-  createdAt                 DateTime               @default(now())
+  creditBalance          Int                      @default(0)
+  creditsHeld            Int                      @default(0)
+  activeListings         Int                      @default(0)
+  medianResponseMins     Int?
+  approvedAt             DateTime?
+  suspendedAt            DateTime?
+  statusReason           String?
+  createdAt              DateTime                 @default(now())
 
   assistedBy         AdminMember?                 @relation(fields: [assistedByMemberId], references: [id], onDelete: Restrict)
   members            DealerMember[]
@@ -375,6 +386,8 @@ model Dealer {
   enquiries          Enquiry[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
+  serviceState       ServiceState?                @relation(fields: [serviceStateId], references: [id], onDelete: Restrict)
+  serviceDistrict    ServiceDistrict?             @relation(fields: [serviceDistrictId, serviceStateId], references: [id, stateId], onDelete: Restrict)
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -401,10 +414,12 @@ model Dealer {
   /// straight past a case-sensitive index — that read is the error message,
   /// this is the constraint.
   @@unique([legalName, city])
+  @@index([verificationStatus])
   @@index([status, city])
   /// The admin console's location filters, which are always narrowed from the
   /// outside in: a state, then a district within it, then a town.
   @@index([state, district, city])
+  @@index([serviceDistrictId, serviceStateId])
   /// "My dealerships" in the Sales workspace, and per-member sales reporting.
   @@index([assistedByMemberId, status])
   @@map("dealers")
@@ -545,15 +560,10 @@ model DealerProfileChange {
   dealerId String              @db.Uuid
   status   ProfileChangeStatus @default(PENDING)
 
-  /// The proposed line, or NULL when this request does not touch it.
-  ///
-  /// NULL is unambiguous here in a way it would not be on `dealers.tagline`:
-  /// the field cannot be *emptied* — `DealerSelfUpdateInput` puts a floor of
-  /// ten characters on it — so a request carrying NULL is a request about the
-  /// services only. The same reasoning gives the empty array below its meaning:
-  /// the floor on the list is one entry.
-  tagline      String?
-  specialities String[]
+  /// Null plus taglineChanged means removal; null without it means unchanged.
+  tagline        String?
+  taglineChanged Boolean  @default(false)
+  specialities   String[]
 
   /// Who typed it. `dealerId` says whose profile; this says whose hands.
   submittedBy    String?   @db.Uuid
@@ -607,6 +617,15 @@ enum DealerStatus {
 }
 
 /// R92 renamed `SALES` to `STAFF` in place (`ALTER TYPE … RENAME VALUE`).
+enum DealerVerificationStatus {
+  NOT_VERIFIED
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  REVOKED
+}
+
 enum DealerOnboardingSource {
   SELF
   ASSISTED
@@ -1026,29 +1045,30 @@ model Enquiry {
 /// `description` is the customer's opening message and is stored here once;
 /// the replies that follow are `SupportTicketMessage` rows.
 model SupportTicket {
-  id              String                @id @default(uuid()) @db.Uuid
-  number          Int                   @unique @default(autoincrement())
-  customerId      String                @db.Uuid
-  category        SupportTicketCategory
-  subject         String
-  description     String
-  status          SupportTicketStatus   @default(OPEN)
+  id                         String                @id @default(uuid()) @db.Uuid
+  number                     Int                   @unique @default(autoincrement())
+  customerId                 String                @db.Uuid
+  category                   SupportTicketCategory
+  subject                    String
+  description                String
+  unansweredCustomerMessages Int                   @default(0)
+  status                     SupportTicketStatus   @default(OPEN)
   /// Support's own triage. A customer never sets it and is never shown it.
-  priority        SupportTicketPriority @default(NORMAL)
+  priority                   SupportTicketPriority @default(NORMAL)
   /// Optional, and checked on write to be the customer's own enquiry.
   /// `SetNull`: an enquiry is never deleted by the lifecycle, but a ticket
   /// must outlive one that is removed by hand.
-  enquiryId       String?               @db.Uuid
+  enquiryId                  String?               @db.Uuid
   /// The operator working the ticket (**R91**) — a platform admin, checked on
   /// write. NULL is unassigned. `SetNull`: a removed account leaves the
   /// ticket unassigned rather than taking it with it.
-  assignedAdminId String?               @db.Uuid
-  createdAt       DateTime              @default(now())
+  assignedAdminId            String?               @db.Uuid
+  createdAt                  DateTime              @default(now())
   /// Last activity: set by every message as well as every change, so the
   /// lists sort by what last happened on the ticket.
-  updatedAt       DateTime              @updatedAt
-  resolvedAt      DateTime?
-  closedAt        DateTime?
+  updatedAt                  DateTime              @updatedAt
+  resolvedAt                 DateTime?
+  closedAt                   DateTime?
 
   customer User                   @relation("SupportTicketCustomer", fields: [customerId], references: [id], onDelete: Cascade)
   enquiry  Enquiry?               @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
@@ -1076,16 +1096,18 @@ model SupportTicket {
 /// request, so neither side can write as the other. `authorId` is the person;
 /// `SetNull` keeps the conversation when an account is removed.
 model SupportTicketMessage {
-  id         String               @id @default(uuid()) @db.Uuid
-  ticketId   String               @db.Uuid
-  authorType SupportMessageAuthor
-  authorId   String?              @db.Uuid
-  body       String
-  createdAt  DateTime             @default(now())
+  id              String               @id @default(uuid()) @db.Uuid
+  ticketId        String               @db.Uuid
+  authorType      SupportMessageAuthor
+  authorId        String?              @db.Uuid
+  body            String
+  clientMessageId String?              @db.Uuid
+  createdAt       DateTime             @default(now())
 
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   author User?         @relation("SupportMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
+  @@unique([ticketId, authorType, clientMessageId])
   /// A ticket's conversation in order.
   @@index([ticketId, createdAt])
   @@map("support_ticket_messages")
@@ -1451,4 +1473,86 @@ model DealerEmailVerification {
 
   @@index([dealerId, createdAt])
   @@map("dealer_email_verifications")
+}
+
+/// Geographic identity is independent of onboarding eligibility and photography coverage.
+model ServiceState {
+  id                String            @id
+  name              String            @unique
+  kind              String
+  aliases           String[]
+  active            Boolean           @default(true)
+  onboardingEnabled Boolean           @default(false)
+  version           Int               @default(1)
+  districts         ServiceDistrict[]
+  dealers           Dealer[]
+
+  @@map("service_states")
+}
+
+model ServiceDistrict {
+  id                   String       @id
+  stateId              String
+  name                 String
+  aliases              String[]
+  sourceUrl            String
+  active               Boolean      @default(true)
+  onboardingEnabled    Boolean      @default(false)
+  photographyAvailable Boolean      @default(false)
+  version              Int          @default(1)
+  state                ServiceState @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  dealers              Dealer[]
+
+  @@unique([id, stateId])
+  @@unique([stateId, name])
+  @@index([stateId, active, onboardingEnabled])
+  @@map("service_districts")
+}
+
+model AdminPhoneCredential {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @unique @db.Uuid
+  phone           String              @unique
+  phoneVerifiedAt DateTime
+  version         Int                 @default(1)
+  revokedAt       DateTime?
+  createdAt       DateTime            @default(now())
+  challenges      AdminOtpChallenge[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("admin_phone_credentials")
+}
+
+model AdminOtpChallenge {
+  id                String    @id @default(uuid()) @db.Uuid
+  purpose           String
+  phone             String
+  userId            String?   @db.Uuid
+  sessionId         String?   @db.Uuid
+  credentialId      String?   @db.Uuid
+  credentialVersion Int?
+  browserTokenHash  String
+  attempts          Int       @default(0)
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  user       User?                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  session    Session?              @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  credential AdminPhoneCredential? @relation(fields: [credentialId], references: [id], onDelete: Restrict)
+  redemption AdminOtpRedemption?
+
+  @@index([phone, createdAt])
+  @@index([expiresAt])
+  @@map("admin_otp_challenges")
+}
+
+model AdminOtpRedemption {
+  tokenHash   String   @id
+  challengeId String   @unique @db.Uuid
+  redeemedAt  DateTime @default(now())
+
+  challenge AdminOtpChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
+
+  @@map("admin_otp_redemptions")
 }

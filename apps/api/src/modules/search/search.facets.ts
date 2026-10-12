@@ -1,5 +1,6 @@
 import {
   BODY_TYPE_LABELS,
+  canonicalDistrictFilterSlug,
   FUEL_LABELS,
   OWNER_BUCKET_LABELS,
   OWNER_BUCKET_MIN,
@@ -7,6 +8,8 @@ import {
   VEHICLE_COLOR_LABELS,
   VehicleColor as ColorEnum,
   slugify,
+  vehicleMakeLabel,
+  vehicleMakeSlug,
   type FacetOption,
   type OwnerBucket,
   type RangeFacet,
@@ -52,7 +55,11 @@ export function locationScope(
   const cities = new Set(query.city ?? []);
   const chosen = new Set(query.dealer ?? []);
   const inScope = query.district
-    ? dealers.filter((dealer) => slugOf(dealer.district) === query.district)
+    ? dealers.filter(
+        (dealer) =>
+          canonicalDistrictFilterSlug(slugOf(dealer.district)) ===
+          canonicalDistrictFilterSlug(query.district ?? ''),
+      )
     : dealers;
 
   const narrowed = cities.size > 0 || chosen.size > 0;
@@ -157,6 +164,16 @@ export function textFacet(
   return withSelected(options, selected);
 }
 
+export function brandFacet(
+  rows: readonly Counted<string | null>[],
+  selected: readonly string[] | undefined,
+): FacetOption[] {
+  return textFacet(
+    rows.map((row) => ({ ...row, value: row.value === null ? null : vehicleMakeLabel(row.value) })),
+    selected,
+  );
+}
+
 export function modelFacet(
   rows: readonly { make: string | null; model: string | null; count: number }[],
   selected: readonly string[] | undefined,
@@ -170,7 +187,7 @@ export function modelFacet(
               key: slugify(row.model),
               spelling: row.model.trim(),
               count: row.count,
-              parent: slugOf(row.make),
+              parent: row.make ? vehicleMakeSlug(row.make) : '',
             },
           ],
     ),

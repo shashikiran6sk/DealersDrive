@@ -1,7 +1,7 @@
 export const VDP_DEALER_TEXT = {
   soldBy: 'Sold by',
-  verified: 'VERIFIED DEALER',
+  verified: 'Dealer Verified',
   view: 'View dealership →',
   trust:
-    'Dealers-Drive verified this dealership and photographed this car before it went live. The car belongs to the dealership; ask them anything before you visit.',
+    'The Dealer Verified badge identifies a reviewed business and representative. It does not certify vehicle condition or legal ownership of every listed car. Ask the dealership about this vehicle before you visit.',
 } as const;

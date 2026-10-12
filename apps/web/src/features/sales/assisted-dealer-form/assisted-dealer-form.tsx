@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { ServiceLocationFields } from '@/components/forms/service-location-fields';
+
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +69,7 @@ export function AssistedDealerForm({
           name={field.name}
           type={field.type ?? 'text'}
           inputMode={field.inputMode}
+          maxLength={field.maxLength}
           autoComplete={field.autoComplete}
           defaultValue={initial[field.name] ?? ''}
           required={field.required && !partial}
@@ -91,7 +94,20 @@ export function AssistedDealerForm({
         <legend className="mb-2 text-[15px] font-semibold">
           {ASSISTED_FORM_TEXT.businessLegend}
         </legend>
-        {BUSINESS_FIELDS.map(renderField)}
+        {BUSINESS_FIELDS.map((field) =>
+          field.name === 'district' ? (
+            <ServiceLocationFields
+              key="service-locations"
+              prefix="assisted-"
+              initialState={initial.state ?? ''}
+              initialDistrict={initial.district ?? ''}
+              errors={errors}
+              disabled={disabled}
+            />
+          ) : field.name === 'state' ? null : (
+            renderField(field)
+          ),
+        )}
         <Field
           id="assisted-specialities"
           label={ASSISTED_FORM_TEXT.servicesLabel}

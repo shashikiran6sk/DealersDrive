@@ -241,10 +241,12 @@ describe('DirectoryCard', () => {
     expect(row?.getAttribute('style')).toContain('-24px');
   });
 
-  it('names the missing photograph rather than showing a blank frame', () => {
+  it('uses the shared conceptual image when there is no uploaded photograph', () => {
     render(<DirectoryCard dealer={DEALER} />);
 
-    expect(screen.getByText(/Sri Lakshmi Motors — dealership image/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /Standard conceptual dealership illustration/ }),
+    ).toHaveAttribute('src', '/brand/dealer-directory-cover.svg');
   });
 
   /**
@@ -257,7 +259,7 @@ describe('DirectoryCard', () => {
    * and a decorative image with a description is the usual way a card becomes
    * tiring to listen to.
    */
-  it('shows the yard photograph when there is one, without describing it twice', () => {
+  it('keeps the same standard image even when an uploaded yard image exists', () => {
     const { container } = render(
       <DirectoryCard
         dealer={{ ...DEALER, coverUrl: 'https://media.test/by-media/media-1/640.webp' }}
@@ -265,22 +267,22 @@ describe('DirectoryCard', () => {
     );
 
     const image = container.querySelector('img');
-    expect(image?.getAttribute('src')).toBe('https://media.test/by-media/media-1/640.webp');
-    expect(image?.getAttribute('alt')).toBe('');
+    expect(image?.getAttribute('src')).toBe('/brand/dealer-directory-cover.svg');
+    expect(image?.getAttribute('alt')).toContain('conceptual');
     expect(screen.queryByText(/yard photo/i)).toBeNull();
   });
 
   it('marks a verified dealership, and does not mark one that is not', () => {
     const { unmount } = render(<DirectoryCard dealer={DEALER} />);
-    expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
-    // The cover stamp reflects approval without claiming yard inspection.
-    expect(screen.getByText('APPROVED DEALER')).toBeInTheDocument();
+    expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
+    // The audit mark on the cover says the same thing in the place a buyer
+    // looks first, and it carries no year — nothing records when a yard was
+    // audited (R28).
     expect(screen.queryByText('YARD VERIFIED')).toBeNull();
     unmount();
 
     render(<DirectoryCard dealer={{ ...DEALER, isVerified: false }} />);
-    expect(screen.queryByText('VERIFIED DEALER')).toBeNull();
-    expect(screen.queryByText('APPROVED DEALER')).toBeNull();
+    expect(screen.queryByText('Dealer Verified')).toBeNull();
     expect(screen.queryByText('YARD VERIFIED')).toBeNull();
   });
 });

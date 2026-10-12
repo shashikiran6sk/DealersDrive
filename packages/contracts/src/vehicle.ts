@@ -15,6 +15,7 @@ import {
 } from './enums.js';
 import { DealerListing, ListingLifecycleAction } from './listing.js';
 import { RegistrationNumber } from './registration.js';
+import { canonicalVehicleMake } from './vehicle-makes.js';
 
 /**
  * The vehicle a dealership enters by hand (**F055**, as revised by **R45** and
@@ -56,7 +57,9 @@ export function maxVehicleYear(now: Date = new Date()): number {
  * The API goes one step further on write and adopts the spelling already in use
  * for the same make or model, compared case-insensitively — see
  * `vehicles.service.ts` — which is what stops `maruti suzuki` becoming a second
- * facet of the first.
+ * facet of the first. A make additionally resolves to its canonical brand
+ * through `canonicalVehicleMake` (`vehicle-makes.ts`), so `MARUTI SUZUKI INDIA
+ * LTD` arrives as `Maruti Suzuki`.
  */
 export function normaliseVehicleText(input: string): string {
   return input.trim().replace(/\s+/g, ' ');
@@ -75,7 +78,9 @@ const Year = z
   .refine((year) => year <= maxVehicleYear(), 'That year is in the future.');
 
 export const VehicleFieldSchemas = {
-  make: VehicleText(VEHICLE_LIMITS.textMax),
+  make: VehicleText(VEHICLE_LIMITS.textMax).transform(
+    (value) => canonicalVehicleMake(value) ?? value,
+  ),
   model: VehicleText(VEHICLE_LIMITS.textMax),
   variant: VehicleText(VEHICLE_LIMITS.textMax),
   manufacturingYear: Year,

@@ -1,3 +1,7 @@
+import {
+  createServiceLocationsService,
+  type ServiceLocationsService,
+} from './modules/service-locations/service-locations.service.js';
 import { subscribeStorageCleanup } from './platform/storage/cleanup.js';
 import type { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
@@ -11,6 +15,10 @@ import {
   type AdminMembersService,
 } from './modules/admin-members/admin-members.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
+import {
+  createAdminPhoneService,
+  type AdminPhoneService,
+} from './modules/auth/admin-phone.service.js';
 import { createSalesService, type SalesService } from './modules/sales/sales.service.js';
 import {
   createDealerClaimsService,
@@ -129,6 +137,7 @@ export interface Container {
   readonly oauth: OAuthProvider;
   readonly guards: ReturnType<typeof createAuthMiddleware> & { requireCustomer: RequestHandler };
   readonly auth: AuthService;
+  readonly adminPhone: AdminPhoneService;
   readonly phoneOtp: PhoneOtpPort;
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
@@ -149,6 +158,7 @@ export interface Container {
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
+  readonly serviceLocations: ServiceLocationsService;
   readonly media: MediaService;
   readonly vehicles: VehiclesService;
   readonly moderation: ModerationService;
@@ -282,6 +292,13 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     oauth,
     guards,
     auth,
+    adminPhone: createAdminPhoneService({
+      prisma,
+      sessions: sessionStore,
+      proof: createPhoneProofService({ otp: phoneOtp, cache }),
+      cache,
+      audit,
+    }),
     phoneOtp,
     phone,
     phoneSignIn,
@@ -293,6 +310,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealersPublic,
     admin,
     publicConfig,
+    serviceLocations: createServiceLocationsService(prisma, audit),
     media,
     vehicles,
     moderation,

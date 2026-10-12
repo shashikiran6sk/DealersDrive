@@ -353,12 +353,22 @@ describe('the conversation', () => {
     });
   });
 
-  it('reopens a resolved request when the customer replies', async () => {
+  it('takes no reply on a resolved request until the customer reopens it explicitly', async () => {
     const ticket = await opened(asha);
+    await reply(asha, ticket.id, 'First, before it was resolved.').expect(201);
     await setStatus(ticket.id, 'RESOLVED');
-    const after = (await reply(asha, ticket.id, 'It happened again.').expect(201))
+
+    const resolved = (await asha.agent.get(`/v1/support/tickets/${ticket.id}`).expect(200))
       .body as CustomerSupportTicket;
-    expect(after.status).toBe('OPEN');
+    expect(resolved).toMatchObject({ status: 'RESOLVED', canReply: false, canReopen: true });
+    const refused = await reply(asha, ticket.id, 'It happened again.').expect(409);
+    expect(refused.body.code).toBe('SUPPORT_TICKET_RESOLVED');
+    expect(await h.prisma.supportTicketMessage.count({ where: { ticketId: ticket.id } })).toBe(1);
+
+    const reopened = (await asha.agent.post(`/v1/support/tickets/${ticket.id}/reopen`).expect(200))
+      .body as CustomerSupportTicket;
+    expect(reopened).toMatchObject({ status: 'OPEN', canReply: true, canReopen: false });
+    expect(reopened.messages).toHaveLength(1);
     const row = await h.prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } });
     expect(row.resolvedAt).toBeNull();
     const trail = await h.prisma.auditLog.findMany({
@@ -369,6 +379,62 @@ describe('the conversation', () => {
       },
     });
     expect(trail).toHaveLength(1);
+    expect(trail[0]).toMatchObject({
+      actorType: 'CUSTOMER',
+      before: { status: 'RESOLVED' },
+      after: { status: 'OPEN', cause: 'customer_reopen' },
+    });
+    await reply(asha, ticket.id, 'It happened again.').expect(201);
+  });
+
+  it('reopens only the customer’s own resolved request, never a closed one, and is idempotent', async () => {
+    const ticket = await opened(asha);
+    await setStatus(ticket.id, 'RESOLVED');
+    await ravi.agent.post(`/v1/support/tickets/${ticket.id}/reopen`).expect(404);
+    expect(
+      (await h.prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status,
+    ).toBe('RESOLVED');
+
+    const results = await Promise.all(
+      [1, 2, 3].map(() => asha.agent.post(`/v1/support/tickets/${ticket.id}/reopen`)),
+    );
+    expect(results.map((r) => r.status)).toEqual([200, 200, 200]);
+    expect(
+      await h.prisma.auditLog.count({
+        where: {
+          entityType: 'SupportTicket',
+          entityId: ticket.id,
+          action: 'support_ticket.reopened',
+        },
+      }),
+    ).toBe(1);
+
+    const closed = await opened(asha);
+    await setStatus(closed.id, 'CLOSED');
+    const refused = await asha.agent.post(`/v1/support/tickets/${closed.id}/reopen`).expect(409);
+    expect(refused.body.code).toBe('SUPPORT_TICKET_CLOSED');
+    const shown = (await asha.agent.get(`/v1/support/tickets/${closed.id}`).expect(200))
+      .body as CustomerSupportTicket;
+    expect(shown).toMatchObject({ status: 'CLOSED', canReply: false, canReopen: false });
+  });
+
+  it('serializes a close racing a reply so no message lands on a closed request', async () => {
+    const ticket = await opened(asha);
+    const [message] = await Promise.all([
+      reply(asha, ticket.id, 'Racing the close.'),
+      setStatus(ticket.id, 'CLOSED'),
+    ]);
+    const row = await h.prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } });
+    expect(row.status).toBe('CLOSED');
+    const messages = await h.prisma.supportTicketMessage.findMany({
+      where: { ticketId: ticket.id },
+    });
+    if (message.status === 201) {
+      expect(messages).toHaveLength(1);
+    } else {
+      expect(message.status).toBe(409);
+      expect(messages).toHaveLength(0);
+    }
   });
 
   it('takes no reply on a closed request, and says so', async () => {

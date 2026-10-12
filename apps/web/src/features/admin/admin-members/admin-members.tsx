@@ -75,7 +75,7 @@ export function AdminMembers({ members, counts, status }: AdminMembersProps) {
           id="member-email"
           label={MEMBERS_TEXT.emailLabel}
           hint={MEMBERS_TEXT.emailHint}
-          className="min-w-[240px] max-md:min-w-0 max-md:max-w-full flex-[2]"
+          className="min-w-[240px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-[2]"
         >
           <Input
             id="member-email"
@@ -91,7 +91,7 @@ export function AdminMembers({ members, counts, status }: AdminMembersProps) {
           id="member-name"
           label={MEMBERS_TEXT.nameLabel}
           hint={MEMBERS_TEXT.nameHint}
-          className="min-w-[180px] max-md:min-w-0 max-md:max-w-full flex-1"
+          className="min-w-[180px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
         >
           <Input
             id="member-name"
@@ -103,7 +103,7 @@ export function AdminMembers({ members, counts, status }: AdminMembersProps) {
         <Field
           id="member-role"
           label={MEMBERS_TEXT.roleLabel}
-          className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
+          className="min-w-[220px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
         >
           <Select
             id="member-role"
@@ -143,7 +143,7 @@ export function AdminMembers({ members, counts, status }: AdminMembersProps) {
         ))}
       </nav>
 
-      <Table columns={[...MEMBER_COLUMNS]} caption={MEMBERS_TEXT.caption}>
+      <Table scrollHint columns={[...MEMBER_COLUMNS]} caption={MEMBERS_TEXT.caption}>
         {members.length === 0 ? (
           <tr>
             <td colSpan={MEMBER_COLUMNS.length} className="text-center ink-muted">

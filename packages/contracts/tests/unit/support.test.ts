@@ -17,6 +17,8 @@ import {
   SupportTicketPriority,
   SupportTicketStatus,
   canCustomerReply,
+  canCustomerReopen,
+  canSupportReply,
   canTransitionSupportTicket,
   statusAfterCustomerReply,
   supportTicketReference,
@@ -54,7 +56,7 @@ describe('a customer reply', () => {
     ['OPEN', 'OPEN'],
     ['IN_PROGRESS', 'IN_PROGRESS'],
     ['WAITING_FOR_CUSTOMER', 'IN_PROGRESS'],
-    ['RESOLVED', 'OPEN'],
+    ['RESOLVED', null],
     ['CLOSED', null],
   ] as const)('leaves %s as %s', (from, to) => {
     expect(statusAfterCustomerReply(from)).toBe(to);
@@ -68,6 +70,16 @@ describe('a customer reply', () => {
         expect(canTransitionSupportTicket(status, next)).toBe(true);
       }
     }
+  });
+});
+
+describe('reopening', () => {
+  it('lets a customer reopen only a resolved request, while support may still reply to it', () => {
+    for (const status of SupportTicketStatus.options) {
+      expect(canCustomerReopen(status)).toBe(status === 'RESOLVED');
+      expect(canSupportReply(status)).toBe(status !== 'CLOSED');
+    }
+    expect(canTransitionSupportTicket('RESOLVED', 'OPEN')).toBe(true);
   });
 });
 
@@ -129,6 +141,19 @@ describe('CreateSupportTicketInput', () => {
 });
 
 describe('SupportMessageInput', () => {
+  it('accepts only a UUID retry identifier and does not accept quota or author controls', () => {
+    const clientMessageId = '11111111-1111-4111-8111-111111111111';
+    expect(SupportMessageInput.parse({ message: ' Reply ', clientMessageId })).toEqual({
+      message: 'Reply',
+      clientMessageId,
+    });
+    expect(
+      SupportMessageInput.safeParse({ message: 'Reply', clientMessageId: 'forged' }).success,
+    ).toBe(false);
+    expect(SupportMessageInput.safeParse({ message: 'Reply', remainingMessages: 5 }).success).toBe(
+      false,
+    );
+  });
   it('takes a message and nothing else', () => {
     expect(SupportMessageInput.parse({ message: ' Thanks ' })).toEqual({ message: 'Thanks' });
     expect(SupportMessageInput.safeParse({ message: 'x', authorType: 'SUPPORT' }).success).toBe(

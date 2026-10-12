@@ -42,6 +42,7 @@ describe('the exported surface', () => {
   it('exposes the approved permission, transaction authorization, seat and allow-list surface', () => {
     expect(Object.keys(auth).sort()).toEqual(
       [
+        'ADMIN_MEMBERSHIP_LOCK',
         'assertPhoneVerified',
         'authorizeDealerWrite',
         'ensureSeat',

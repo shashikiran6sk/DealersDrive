@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { SUPPORT_MESSAGE_LIMIT_TEXT, type CustomerSupportTicket } from '@dealers-drive/contracts';
 
 import { ButtonLink } from '@/components/ui/button';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
@@ -12,14 +16,23 @@ import {
 import type { SupportRequestDetailProps } from './support-requests.types';
 import { SupportMessageBubble } from './support-message-bubble';
 import { SupportReplyForm } from './support-reply-form';
+import { SupportReopenPanel } from './support-reopen-panel';
 
 function replyHint(status: SupportRequestDetailProps['ticket']['status']): string | null {
-  if (status === 'RESOLVED') return SUPPORT_DETAIL_TEXT.resolvedNote;
   if (status === 'WAITING_FOR_CUSTOMER') return SUPPORT_DETAIL_TEXT.waitingNote;
   return null;
 }
 
-export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
+export function SupportRequestDetail({ ticket: initialTicket }: SupportRequestDetailProps) {
+  const [savedTicket, setSavedTicket] = useState<CustomerSupportTicket | null>(null);
+  const ticket =
+    savedTicket &&
+    savedTicket.id === initialTicket.id &&
+    (savedTicket.messages.length > initialTicket.messages.length ||
+      (savedTicket.messages.length === initialTicket.messages.length &&
+        savedTicket.updatedAt > initialTicket.updatedAt))
+      ? savedTicket
+      : initialTicket;
   return (
     <div className="flex flex-col gap-[18px]">
       <Link href={SUPPORT_REQUESTS_PATH} className="relative btn btn-ghost self-start">
@@ -98,7 +111,21 @@ export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
 
       {ticket.canReply ? (
         <section className="card bg-white p-[16px]">
-          <SupportReplyForm ticketId={ticket.id} hint={replyHint(ticket.status)} />
+          <SupportReplyForm
+            ticketId={ticket.id}
+            hint={replyHint(ticket.status)}
+            remainingMessages={ticket.remainingMessages}
+            onSent={setSavedTicket}
+          />
+        </section>
+      ) : ticket.status === 'RESOLVED' && ticket.canReopen !== false ? (
+        <SupportReopenPanel ticketId={ticket.id} onReopened={setSavedTicket} />
+      ) : ticket.status !== 'CLOSED' && ticket.remainingMessages === 0 ? (
+        <section className="card gap-3 bg-white p-4" aria-live="polite">
+          <p>{SUPPORT_MESSAGE_LIMIT_TEXT}</p>
+          <Link href={SUPPORT_DETAIL_TEXT.urgentHelpHref} className="text-[13px] font-bold">
+            {SUPPORT_DETAIL_TEXT.urgentHelp}
+          </Link>
         </section>
       ) : (
         <EmptyState

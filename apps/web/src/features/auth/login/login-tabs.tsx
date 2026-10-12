@@ -12,9 +12,11 @@ export interface LoginTabsProps {
   initial: LoginAudience;
   customer: ReactNode;
   dealer: ReactNode;
+  footer?: ReactNode;
+  dealerFooter?: ReactNode;
 }
 
-export function LoginTabs({ initial, customer, dealer }: LoginTabsProps) {
+export function LoginTabs({ initial, customer, dealer, footer, dealerFooter }: LoginTabsProps) {
   const [active, setActive] = useState<LoginAudience>(initial);
   const tabs = useRef<Partial<Record<LoginAudience, HTMLButtonElement | null>>>({});
 
@@ -46,77 +48,81 @@ export function LoginTabs({ initial, customer, dealer }: LoginTabsProps) {
   }
 
   return (
-    <div className="flex flex-col gap-[22px]">
-      <div
-        role="tablist"
-        aria-label={LOGIN_TEXT.tabsLabel}
-        className="flex items-center justify-start gap-[10px]"
-        onKeyDown={onKeyDown}
-      >
-        {LOGIN_AUDIENCES.map((audience, index) => (
-          <span key={audience} className="contents">
-            {index === 1 ? (
-              <span
-                aria-hidden="true"
-                data-slot="switch"
+    <>
+      <div className="flex flex-col gap-[22px]">
+        <div
+          role="tablist"
+          aria-label={LOGIN_TEXT.tabsLabel}
+          className="flex items-center justify-start gap-[10px]"
+          onKeyDown={onKeyDown}
+        >
+          {LOGIN_AUDIENCES.map((audience, index) => (
+            <span key={audience} className="contents">
+              {index === 1 ? (
+                <span
+                  aria-hidden="true"
+                  data-slot="switch"
+                  className={cn(
+                    'relative h-[26px] w-[44px] flex-none cursor-pointer rounded-full border border-(--color-divider) p-[3px] transition-colors',
+                    active === 'dealer' ? 'bg-(--color-ink)' : 'bg-(--color-neutral-300)',
+                  )}
+                  onClick={() => {
+                    select(active === 'dealer' ? 'customer' : 'dealer');
+                  }}
+                >
+                  <span
+                    className={cn(
+                      'block h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform',
+                      active === 'dealer' && 'translate-x-[18px]',
+                    )}
+                  />
+                </span>
+              ) : null}
+              <button
+                ref={(element) => {
+                  tabs.current[audience] = element;
+                }}
+                type="button"
+                role="tab"
+                id={`login-tab-${audience}`}
+                aria-controls={`login-panel-${audience}`}
+                aria-selected={active === audience}
+                tabIndex={active === audience ? 0 : -1}
                 className={cn(
-                  'relative h-[26px] w-[44px] flex-none cursor-pointer rounded-full border border-(--color-divider) p-[3px] transition-colors',
-                  active === 'dealer' ? 'bg-(--color-ink)' : 'bg-(--color-neutral-300)',
+                  'min-h-[44px] rounded-[8px] px-[4px] text-[13px] transition-colors',
+                  active === audience
+                    ? 'font-extrabold text-(--color-ink)'
+                    : 'font-bold ink-muted hover:text-(--color-ink)',
                 )}
                 onClick={() => {
-                  select(active === 'dealer' ? 'customer' : 'dealer');
+                  select(audience);
                 }}
               >
-                <span
-                  className={cn(
-                    'block h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform',
-                    active === 'dealer' && 'translate-x-[18px]',
-                  )}
-                />
-              </span>
-            ) : null}
-            <button
-              ref={(element) => {
-                tabs.current[audience] = element;
-              }}
-              type="button"
-              role="tab"
-              id={`login-tab-${audience}`}
-              aria-controls={`login-panel-${audience}`}
-              aria-selected={active === audience}
-              tabIndex={active === audience ? 0 : -1}
-              className={cn(
-                'min-h-[44px] rounded-[8px] px-[4px] text-[13px] transition-colors',
-                active === audience
-                  ? 'font-extrabold text-(--color-ink)'
-                  : 'font-bold ink-muted hover:text-(--color-ink)',
-              )}
-              onClick={() => {
-                select(audience);
-              }}
-            >
-              {LOGIN_TEXT.tabs[audience]}
-            </button>
-          </span>
-        ))}
-      </div>
+                {LOGIN_TEXT.tabs[audience]}
+              </button>
+            </span>
+          ))}
+        </div>
 
-      <div
-        role="tabpanel"
-        id="login-panel-customer"
-        aria-labelledby="login-tab-customer"
-        hidden={active !== 'customer'}
-      >
-        {customer}
+        <div
+          role="tabpanel"
+          id="login-panel-customer"
+          aria-labelledby="login-tab-customer"
+          hidden={active !== 'customer'}
+        >
+          {customer}
+        </div>
+        <div
+          role="tabpanel"
+          id="login-panel-dealer"
+          aria-labelledby="login-tab-dealer"
+          hidden={active !== 'dealer'}
+        >
+          {dealer}
+        </div>
       </div>
-      <div
-        role="tabpanel"
-        id="login-panel-dealer"
-        aria-labelledby="login-tab-dealer"
-        hidden={active !== 'dealer'}
-      >
-        {dealer}
-      </div>
-    </div>
+      {footer}
+      {active === 'dealer' ? dealerFooter : null}
+    </>
   );
 }

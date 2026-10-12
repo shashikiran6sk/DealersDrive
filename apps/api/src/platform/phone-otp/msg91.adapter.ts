@@ -5,6 +5,8 @@ import { isRecord } from '../errors.js';
 
 const ENDPOINT = 'https://control.msg91.com/api/v5/widget/verifyAccessToken';
 
+const EPOCH_MILLISECONDS_FLOOR = 100_000_000_000;
+
 const IDENTIFIER_CLAIMS = ['identifier', 'mobile', 'number', 'phone', 'msisdn'] as const;
 
 export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPort {
@@ -29,12 +31,10 @@ export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPo
       }
 
       const body: unknown = await response.json().catch(() => null);
+      if (response.status >= 500 || response.status === 429) return { status: 'UNAVAILABLE' };
 
       if (!response.ok || !isSuccess(body)) {
-        logger.info(
-          { driver: 'msg91', status: response.status, providerMessage: messageOf(body) },
-          'msg91 refused an access token',
-        );
+        logger.info({ driver: 'msg91', status: response.status }, 'msg91 refused an access token');
         return { status: 'REJECTED', reason: 'the provider refused the token' };
       }
 
@@ -47,17 +47,13 @@ export function createMsg91PhoneOtp(fetchImpl: typeof fetch = fetch): PhoneOtpPo
         return { status: 'REJECTED', reason: 'the provider named no identifier' };
       }
 
-      return { status: 'VERIFIED', identifier };
+      return { status: 'VERIFIED', identifier, ...tokenTimes(accessToken) };
     },
   };
 }
 
 function isSuccess(body: unknown): boolean {
   return isRecord(body) && text(body.type).toLowerCase() === 'success';
-}
-
-function messageOf(body: unknown): string {
-  return isRecord(body) ? text(body.message).slice(0, 200) : '';
 }
 
 function text(value: unknown): string {
@@ -99,4 +95,26 @@ function asIdentifier(value: unknown): MsisdnDigits | null {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   const text = String(value).trim().replace(/^\+/, '');
   return /^\d{8,15}$/.test(text) ? text : null;
+}
+
+function tokenTimes(token: string): { issuedAt?: Date; expiresAt?: Date } {
+  try {
+    const payload: unknown = JSON.parse(
+      Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8'),
+    );
+    if (!isRecord(payload)) return {};
+    const result: { issuedAt?: Date; expiresAt?: Date } = {};
+    const issuedAt = claimTime(payload.iat);
+    const expiresAt = claimTime(payload.exp);
+    if (issuedAt) result.issuedAt = issuedAt;
+    if (expiresAt) result.expiresAt = expiresAt;
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function claimTime(value: unknown): Date | undefined {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) return undefined;
+  return new Date(value < EPOCH_MILLISECONDS_FLOOR ? value * 1000 : value);
 }

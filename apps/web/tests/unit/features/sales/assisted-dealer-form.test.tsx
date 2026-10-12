@@ -1,3 +1,16 @@
+vi.mock('@/features/service-location-actions', () => ({
+  loadServiceLocationsAction: () =>
+    Promise.resolve({
+      data: [
+        {
+          id: 'IN-TN',
+          name: 'Tamil Nadu',
+          districts: [{ id: 'IN-TN-VELLORE', stateId: 'IN-TN', name: 'Vellore' }],
+        },
+      ],
+    }),
+}));
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -23,7 +36,12 @@ describe('AssistedDealerForm', () => {
     await user.click(screen.getByRole('button', { name: 'Save details' }));
 
     await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledWith({ legalName: 'Sri Murugan Cars', pan: 'AAACS1429P' });
+      expect(onSubmit).toHaveBeenCalledWith({
+        legalName: 'Sri Murugan Cars',
+        pan: 'AAACS1429P',
+        tagline: '',
+        gstin: '',
+      });
     });
     expect(await screen.findByText('Saved.')).toBeInTheDocument();
   });
@@ -50,7 +68,7 @@ describe('AssistedDealerForm', () => {
     });
     const sent = onSubmit.mock.calls[0]?.[0] ?? {};
     expect(sent).not.toHaveProperty('landline');
-    expect(sent).not.toHaveProperty('gstin');
+    expect(sent.gstin).toBe('');
   });
 
   it('marks the fields the API refused, by name', async () => {

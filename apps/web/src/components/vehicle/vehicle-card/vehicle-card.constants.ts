@@ -1,5 +1,5 @@
 export const VEHICLE_CARD_TEXT = {
-  verified: 'Verified',
+  verified: 'Dealer Verified',
   noPhoto: 'Photographs coming soon',
   priceOnRequest: 'Price on request',
   photoCount: (count: number) => `${count} photos`,

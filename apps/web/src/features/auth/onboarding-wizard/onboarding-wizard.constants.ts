@@ -16,7 +16,7 @@ export const ONBOARDING_PATH = {
   dashboard: '/dealer',
 } as const;
 
-export const TAGLINE_MIN = 10;
+export const TAGLINE_MIN = 0;
 export const TAGLINE_MAX = 200;
 
 export const MISSING_LABELS: Record<string, string> = {
@@ -72,12 +72,13 @@ export const ONBOARDING_TEXT = {
   businessLegend: 'Your dealership',
   businessHeading: 'Dealership information',
   businessIntro: 'This is what buyers see on every one of your listings.',
-  taglinePlaceholder:
-    'Quality pre-owned cars since 1998 — professionally inspected, with expert support.',
+  taglinePlaceholder: 'Optional short description of your dealership',
 
   documentsHeading: 'Business verification',
+  gstObligation:
+    'Optional collection does not remove GST registration obligations. If you are registered, supply your GSTIN and certificate. Applicability is reviewed separately.',
   documentsIntro:
-    'Your registrations, three documents and a photo of your yard, reviewed by our team. Listings can be prepared while this is pending — they go live once you are verified.',
+    'Your business documents are reviewed for approval. Yard photos are optional; Dealer Verified is a separate business and representative review. You can prepare listings while approval is pending.',
   saved: 'Saved.',
   saveRegistrations: 'Save registrations',
   stillNeeded: 'Still needed before you can submit',
@@ -89,7 +90,7 @@ export const ONBOARDING_TEXT = {
   submitIntro:
     'Once you submit, our team checks your business details and documents. You can keep adding vehicles in the meantime.',
   prepareNote:
-    'You can add vehicles and prepare listings now. Publishing needs a verified dealership and one listing credit.',
+    'You can add vehicles and prepare listings now. Publishing needs an approved dealership and one listing credit.',
   goToDashboard: 'Go to dashboard',
   submitting: 'Submitting…',
   submit: 'Submit for verification',

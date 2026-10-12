@@ -606,6 +606,27 @@ describe('qs', () => {
  * shared", which is what these tests pin.
  */
 describe('forwarding the session', () => {
+  it.each(['/v1/admin/profile/security', '/v1/auth/admin/phone/verify', '/v1/sales/dealers'])(
+    'forwards only the admin cookie to %s',
+    async (path) => {
+      cookieJar.set('dd_session', 'person-token');
+      cookieJar.set('dd_admin_session', 'admin-token');
+      globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+      await apiGet(path, { revalidate: false });
+      expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
+        'dd_admin_session=admin-token',
+      );
+    },
+  );
+  it('keeps person requests separate when both cookies exist', async () => {
+    cookieJar.set('dd_session', 'person-token');
+    cookieJar.set('dd_admin_session', 'admin-token');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+    await apiGet('/v1/auth/customer/me', { revalidate: false });
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
+      'dd_session=person-token',
+    );
+  });
   it('sends the cookie on an uncached read', async () => {
     cookieJar.set('dd_session', 'the-token');
     globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;

@@ -19,6 +19,7 @@ import { ConflictError, ForbiddenError, NotFoundError } from '../../platform/err
 import { logger } from '../../platform/telemetry/logger.js';
 import {
   isAllowlistedAdmin,
+  ADMIN_MEMBERSHIP_LOCK,
   revokeAdminSessions,
   syncLegacyAdminColumns,
   type AdminPrincipal,
@@ -47,7 +48,7 @@ const MEMBER_INCLUDE = { user: { select: { email: true, fullName: true } } } as 
 
 const HISTORY_LIMIT = 50;
 
-const MEMBERSHIP_LOCK = 'admin_members:manage';
+const MEMBERSHIP_LOCK = ADMIN_MEMBERSHIP_LOCK;
 
 function assertManager(admin: AdminPrincipal): void {
   if (!admin.permissions.includes('admin:access:manage')) {

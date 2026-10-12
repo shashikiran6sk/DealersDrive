@@ -1,3 +1,16 @@
+vi.mock('@/features/service-location-actions', () => ({
+  loadServiceLocationsAction: () =>
+    Promise.resolve({
+      data: [
+        {
+          id: 'IN-TN',
+          name: 'Tamil Nadu',
+          districts: [{ id: 'IN-TN-VELLORE', stateId: 'IN-TN', name: 'Vellore' }],
+        },
+      ],
+    }),
+}));
+
 import type {
   AuthSession,
   CompletenessResponse,
@@ -490,7 +503,6 @@ describe('OnboardingPage — the floor the server sets', () => {
   async function openedAt(dealer: { status: string } | null, step?: string): Promise<number> {
     const { apiGet } = await import('@/lib/api');
     vi.mocked(apiGet).mockImplementation((path: string) => {
-      if (path === '/v1/dealer/progressive') return Promise.resolve(null);
       if (path.startsWith('/v1/dealer/documents')) return Promise.resolve({ data: DOCUMENTS });
       if (path === '/v1/dealer') {
         // Enough of `DealerProfile` for steps 1 and 2 to prefill from: they
@@ -960,19 +972,17 @@ describe('OnboardingWizard — the Business step', () => {
    * The reach of the product used to be a database migration: five towns in
    * one state, and a dealer outside them could not finish this form at all.
    */
-  it('asks for the city and the state as text, both required', async () => {
-    await onBusinessStep();
-
+  it('keeps town or city as text and selects a permitted state', async () => {
+    const user = await onBusinessStep();
     const city = screen.getByLabelText('City');
+    expect(city.tagName).toBe('INPUT');
+    expect(city).toBeRequired();
     const state = screen.getByLabelText('State');
-
-    for (const field of [city, state]) {
-      expect(field.tagName).toBe('INPUT');
-      expect(field).toBeEnabled();
-      expect(field).toBeRequired();
-    }
-    expect(city).toHaveAttribute('name', 'city');
-    expect(state).toHaveAttribute('name', 'state');
+    await waitFor(() => expect(state).toBeEnabled());
+    expect(state.tagName).toBe('SELECT');
+    expect(state).toBeRequired();
+    await user.selectOptions(state, 'Tamil Nadu');
+    expect(state).toHaveValue('Tamil Nadu');
   });
 
   /**
@@ -987,18 +997,18 @@ describe('OnboardingWizard — the Business step', () => {
    * `required` box with no `minLength` is satisfied by `-`, and the browser is
    * the first of the two validators a dealer meets.
    */
-  it('asks for a tagline and a service list, both required', async () => {
+  it('keeps services required and makes the tagline optional', async () => {
     await onBusinessStep();
 
     const tagline = screen.getByLabelText(/one line about your dealership/i);
     const services = screen.getByLabelText(/services you offer/i);
 
-    for (const field of [tagline, services]) {
-      expect(field.tagName).toBe('INPUT');
-      expect(field).toBeRequired();
-    }
+    expect(tagline.tagName).toBe('INPUT');
+    expect(tagline).not.toBeRequired();
+    expect(services).toBeRequired();
     expect(tagline).toHaveAttribute('name', 'tagline');
-    expect(tagline).toHaveAttribute('minLength', '10');
+    expect(tagline).toHaveAttribute('maxLength', '200');
+    expect(tagline).not.toHaveAttribute('minLength');
 
     /*
      * **R37.** The services box the dealer types into is the *draft*, and a
@@ -1051,14 +1061,13 @@ describe('OnboardingWizard — the Business step', () => {
     expect(screen.getByText(/first three on your directory card/i)).toBeInTheDocument();
   });
 
-  it('takes a city and a state the platform has never seen before', async () => {
+  it('accepts any town while restricting state choices to enabled locations', async () => {
     const user = await onBusinessStep();
-
-    await user.type(screen.getByLabelText('City'), 'Hubballi');
-    await user.type(screen.getByLabelText('State'), 'Karnataka');
-
-    expect(screen.getByLabelText('City')).toHaveValue('Hubballi');
-    expect(screen.getByLabelText('State')).toHaveValue('Karnataka');
+    await user.type(screen.getByLabelText('City'), 'Katpadi');
+    await waitFor(() => expect(screen.getByLabelText('State')).toBeEnabled());
+    await user.selectOptions(screen.getByLabelText('State'), 'Tamil Nadu');
+    expect(screen.getByLabelText('City')).toHaveValue('Katpadi');
+    expect(screen.queryByRole('option', { name: 'Karnataka' })).not.toBeInTheDocument();
   });
 
   /**
@@ -1066,18 +1075,19 @@ describe('OnboardingWizard — the Business step', () => {
    * they are: the admin console filters on all three, and a dealership that
    * skipped the question is one the filter would silently omit.
    */
-  it('asks for the district alongside the city and the state', async () => {
+  it('searches and persists a canonical district alongside the separate city', async () => {
     const user = await onBusinessStep();
-
-    const district = screen.getByLabelText('District');
-    expect(district.tagName).toBe('INPUT');
-    expect(district).toHaveAttribute('name', 'district');
-    expect(district).toBeRequired();
-
-    await user.type(district, 'Dharwad');
-    expect(district).toHaveValue('Dharwad');
+    await waitFor(() => expect(screen.getByLabelText('State')).toBeEnabled());
+    await user.selectOptions(screen.getByLabelText('State'), 'Tamil Nadu');
+    const district = screen.getByRole('combobox', { name: 'District' });
+    await user.type(district, 'Vell');
+    await user.click(screen.getByRole('button', { name: 'Vellore' }));
+    expect(district).toHaveValue('Vellore');
     expect(district.closest('form')).toBe(
       screen.getByRole('button', { name: 'Continue' }).closest('form'),
+    );
+    expect(district.closest('form')?.querySelector('input[name="district"]')).toHaveValue(
+      'Vellore',
     );
   });
 
@@ -1244,14 +1254,24 @@ describe('OnboardingWizard — the Documents step', () => {
     );
   }
 
-  it('renders one uploader per document, whatever its state', () => {
-    render_(DOCUMENTS);
+  it('renders every applicable uploader when GSTIN is supplied', () => {
+    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX' });
 
     // The file input carries the accessible name; the visible button opens it.
     for (const label of ['GST certificate', 'PAN card', 'Address proof']) {
       expect(screen.getByLabelText(`Upload ${label}`)).toHaveAttribute('type', 'file');
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+  });
+
+  it('does not require GSTIN or an empty certificate slot for a non-GST dealer', () => {
+    render_(DOCUMENTS);
+    expect(screen.getByLabelText('GSTIN (optional where applicable)')).not.toBeRequired();
+    expect(screen.queryByLabelText('Upload GST certificate')).toBeNull();
+    expect(screen.getByLabelText('Upload PAN card')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Optional collection does not remove GST registration obligations/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -1263,7 +1283,7 @@ describe('OnboardingWizard — the Documents step', () => {
     render_(DOCUMENTS);
 
     expect(screen.getByLabelText('Upload a photo of your yard')).toHaveAttribute('type', 'file');
-    expect(screen.getByText(/first thing buyers see/)).toBeInTheDocument();
+    expect(screen.getByText(/Optional. Approved yard photos appear only/)).toBeInTheDocument();
     expect(screen.getByText(/clear, well-lit photograph of your yard/)).toBeInTheDocument();
   });
 
@@ -1325,7 +1345,9 @@ describe('OnboardingWizard — the Documents step', () => {
   it('prefills the registrations from the dealership record', () => {
     render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' });
 
-    expect(screen.getByLabelText('GSTIN')).toHaveValue('33AABCS1429B1ZX');
+    expect(screen.getByLabelText('GSTIN (optional where applicable)')).toHaveValue(
+      '33AABCS1429B1ZX',
+    );
     expect(screen.getByLabelText('PAN')).toHaveValue('AABCS1429B');
   });
 

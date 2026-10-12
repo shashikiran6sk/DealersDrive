@@ -324,18 +324,34 @@ describe('BUG-002 — complete application, capability and history regression', 
     ).toBe('PENDING_APPROVAL');
   });
 
-  it.each(['gstin', 'pan', 'coverMediaId'] as const)(
-    'refuses an otherwise verified application with missing %s and a misleading status',
+  it('can approve a submitted application with verified required documents and no yard photograph', async () => {
+    const f = await application();
+    await h.prisma.dealer.update({
+      where: { id: f.dealer.dealerId },
+      data: { coverMediaId: null },
+    });
+    const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
+    expect(detail.body.actions.canApprove).toBe(true);
+    await f.admin.post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`).send({}).expect(200);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: f.dealer.dealerId } })).status,
+    ).toBe('ACTIVE');
+  });
+
+  it.each(['gstin', 'pan'] as const)(
+    'preserves the applicable review gate when %s is absent',
     async (field) => {
       const f = await application();
       await h.prisma.dealer.update({ where: { id: f.dealer.dealerId }, data: { [field]: null } });
       const detail = await f.admin.get(`/v1/admin/dealers/${f.dealer.dealerId}`).expect(200);
-      expect(detail.body.actions.canApprove).toBe(false);
+      expect(detail.body.actions.canApprove).toBe(field === 'gstin');
       const response = await f.admin
         .post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`)
         .send({})
         .expect(422);
-      expect(response.body.code).toBe('PROFILE_INCOMPLETE');
+      expect(response.body.code).toBe(
+        field === 'gstin' ? 'GST_APPLICABILITY_REVIEW_REQUIRED' : 'PROFILE_INCOMPLETE',
+      );
       expect(
         await h.prisma.auditLog.count({
           where: { dealerId: f.dealer.dealerId, action: 'dealer.approved' },

@@ -23,6 +23,49 @@ function respond(body: unknown, status = 200): typeof fetch {
 }
 
 describe('the MSG91 phone-OTP adapter', () => {
+  it('exposes JWT freshness only after successful provider verification', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const value = jwt({ identifier: '919840012345', iat: now, exp: now + 300 });
+    const accepted = await createMsg91PhoneOtp(respond({ type: 'success' })).identify(value);
+    expect(accepted).toMatchObject({
+      status: 'VERIFIED',
+      issuedAt: new Date(now * 1000),
+      expiresAt: new Date((now + 300) * 1000),
+    });
+    expect(await createMsg91PhoneOtp(respond({ type: 'error' }, 401)).identify(value)).toEqual({
+      status: 'REJECTED',
+      reason: 'the provider refused the token',
+    });
+  });
+  it.each([429, 500, 503])('reports provider status %s as unavailable', async (status) => {
+    expect(
+      await createMsg91PhoneOtp(respond({ type: 'error' }, status)).identify('opaque'),
+    ).toEqual({ status: 'UNAVAILABLE' });
+  });
+  it('reports no timestamps for a provider-verified token that carries none', async () => {
+    const opaque = await createMsg91PhoneOtp(
+      respond({ type: 'success', message: '919840012345' }),
+    ).identify('opaque-widget-token');
+    expect(opaque).toEqual({ status: 'VERIFIED', identifier: '919840012345' });
+
+    const untimedJwt = await createMsg91PhoneOtp(respond({ type: 'success' })).identify(
+      jwt({ identifier: '919840012345' }),
+    );
+    expect(untimedJwt).toEqual({ status: 'VERIFIED', identifier: '919840012345' });
+  });
+
+  it('reads millisecond timestamps as milliseconds, not as a date in the far future', async () => {
+    const now = Date.now();
+    const verdict = await createMsg91PhoneOtp(respond({ type: 'success' })).identify(
+      jwt({ identifier: '919840012345', iat: now, exp: now + 300_000 }),
+    );
+    expect(verdict).toMatchObject({
+      status: 'VERIFIED',
+      issuedAt: new Date(now),
+      expiresAt: new Date(now + 300_000),
+    });
+  });
+
   it('posts the token and the auth key to the widget endpoint', async () => {
     const fetchImpl = respond({ type: 'success', message: '919840012345' });
     await createMsg91PhoneOtp(fetchImpl).identify('token-1');
@@ -121,7 +164,7 @@ describe('the MSG91 phone-OTP adapter', () => {
     );
 
     await expect(createMsg91PhoneOtp(fetchImpl).identify('token')).resolves.toMatchObject({
-      status: 'REJECTED',
+      status: 'UNAVAILABLE',
     });
   });
 });

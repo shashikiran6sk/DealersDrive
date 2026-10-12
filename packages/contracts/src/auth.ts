@@ -1,3 +1,4 @@
+import { DealerTaglineInput } from './dealer-tagline.js';
 import { z } from 'zod';
 
 import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
@@ -141,42 +142,8 @@ export const OnboardingInput = z
      */
     mapsUrl: GoogleMapsUrl,
     landline: z.string().trim().max(24).optional(),
-    /**
-     * The dealership in one line — the sentence the public portfolio runs
-     * under its name, and the blurb on its directory card.
-     *
-     * It replaces `about`, which asked for the same thing at forty times the
-     * length. That field wanted two or three sentences and got either a
-     * paragraph nobody read or twenty characters of "we sell used cars": the
-     * form insisted on prose, and prose is the thing a person filling in a
-     * sign-up form at the end of a working day is least able to produce.
-     *
-     * A line is a question a dealer can answer. "Family-run since 1998,
-     * hatchbacks under ₹6 lakh" is the whole of what a buyer wants from this
-     * field, and it is what the two surfaces that render it are sized for
-     * — two clamped lines on the card, one paragraph in the portfolio header.
-     *
-     * **Required, on the same footing as the address and the Maps link.** The
-     * public portfolio is the page a dealership is judged on before anybody
-     * drives anywhere, and a page with a photograph, a pin and no sentence
-     * reads as an unfinished listing rather than a business. Optional here
-     * would mean blank on most rows: a field a form does not insist on is a
-     * field that gets skipped.
-     *
-     * The floor is 10 characters, not 1, for the reason `about`'s floor of 20
-     * existed — a required field with no minimum is satisfied by `-` and buys
-     * nothing except the false belief that every portfolio has a line on it.
-     * Ten is short enough that "Since 2004" clears it exactly and long enough
-     * that a single evasive word does not.
-     *
-     * The upper bound matches `UpdateDealerInput.tagline`, so what onboarding
-     * accepts and what the profile screen accepts cannot drift.
-     */
-    tagline: z
-      .string()
-      .trim()
-      .min(10, 'One line buyers will read under your name.')
-      .max(200, 'Keep it to one line — 200 characters at most.'),
+    /** Optional marketing text; absence/blank becomes null, while omitted patches preserve the live value. */
+    tagline: DealerTaglineInput,
     /**
      * What the yard actually does, as a set of short labels.
      *

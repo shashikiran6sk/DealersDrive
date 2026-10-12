@@ -9,13 +9,13 @@ export const TITLE_TEMPLATE = `%s${TITLE_SEPARATOR}${SITE_NAME}`;
 export const HOME_TITLE = `${SITE_NAME}${TITLE_SEPARATOR}Used Cars from Verified Independent Dealers`;
 
 export const SITE_DESCRIPTION =
-  'Browse used cars from verified independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership that owns the car.';
+  'Browse used cars from independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership advertising the car.';
 
 export const DEFAULT_SOCIAL_IMAGE = {
   path: '/og/dealers-drive.png',
   width: 1200,
   height: 630,
-  alt: 'Dealers-Drive — used cars from verified independent dealers',
+  alt: 'Dealers-Drive — used cars from independent dealers',
 } as const;
 
 export const LOGO_PATH = '/brand/dealers-drive-light.png';

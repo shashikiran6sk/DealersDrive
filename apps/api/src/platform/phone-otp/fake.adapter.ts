@@ -24,5 +24,10 @@ function verdict(accessToken: string, devCode: string): PhoneOtpVerdict {
     return { status: 'REJECTED', reason: 'no identifier in the token' };
   }
 
-  return { status: 'VERIFIED', identifier };
+  return {
+    status: 'VERIFIED',
+    identifier,
+    issuedAt: new Date(),
+    expiresAt: new Date(Date.now() + 300_000),
+  };
 }

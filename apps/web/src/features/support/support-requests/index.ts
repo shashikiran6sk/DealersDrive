@@ -23,3 +23,4 @@ export type {
   SupportRequestRowProps,
 } from './support-requests.types';
 export { supportRequestHref, supportRequestsHref } from './utils';
+export { SupportReopenPanel } from './support-reopen-panel';

@@ -13,23 +13,6 @@ export const salesDocs: ModuleDocs = {
     'lifecycle, the same notifications — with its provenance recorded.',
   operations: [
     {
-      method: 'post',
-      path: '/v1/sales/dealers/register',
-      operationId: 'registerProgressiveAssistedDealer',
-      tag: DOC_TAGS.sales,
-      summary: 'Progressive dealer onboarding',
-      description:
-        'Independent draft: save registration separately from applicable evidence review and controlled activation. Existing identity, ownership and consent rules apply. Private case evidence is not serialized in public progress metadata.',
-      audience: 'admin',
-      requestBody: { schema: 'ProgressiveAssistedRegistrationInput' },
-      permission: 'sales:dealer:create',
-      responses: [
-        { status: 201, description: 'Saved application progress.', schema: 'SalesDealerDetail' },
-      ],
-      errors: [401, 403, 409, 422],
-    },
-
-    {
       method: 'get',
       path: '/v1/sales/dashboard',
       operationId: 'getSalesDashboard',

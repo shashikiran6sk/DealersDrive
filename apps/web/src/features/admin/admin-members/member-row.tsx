@@ -47,6 +47,7 @@ export function MemberRow({
             </label>
             <Select
               id={roleId}
+              className="min-w-[140px]!"
               value={member.role}
               disabled={pending}
               onChange={(event) => onRoleChange(member, event.target.value)}

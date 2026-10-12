@@ -6,7 +6,7 @@ export const DEALER_SEARCH_TEXT = {
   groupLabelInDistrict: (districtName: string) => `Dealerships in ${districtName} district`,
   noMatch: (search: string) => `No dealership matches “${search}”.`,
   noMatchGeneric: 'No dealerships match that search.',
-  verified: '✓ Verified',
+  verified: 'Dealer Verified',
   selectHint: 'Select ↵',
 } as const;
 

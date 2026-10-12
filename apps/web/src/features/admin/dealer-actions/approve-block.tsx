@@ -1,6 +1,12 @@
 'use client';
 
-import type { AdminDealerDetail } from '@dealers-drive/contracts';
+import { useState } from 'react';
+
+import {
+  GST_REVIEW_MAX_LENGTH,
+  GST_REVIEW_MIN_LENGTH,
+  type AdminDealerDetail,
+} from '@dealers-drive/contracts';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -27,15 +33,20 @@ export function ApproveBlock({
   confirm,
   onConfirmChange,
 }: ApproveBlockProps) {
+  const [taxReview, setTaxReview] = useState({ dealerId: dealer.id, text: '' });
+  const taxText = taxReview.dealerId === dealer.id ? taxReview.text : '';
   const approvalPhrase = DEALER_ACTIONS_TEXT.approvalPhrase(dealer.brandName);
-  const canApprove = dealer.actions.canApprove && confirm.trim().toLowerCase() === approvalPhrase;
+  const canApprove =
+    dealer.actions.canApprove &&
+    confirm.trim().toLowerCase() === approvalPhrase &&
+    (Boolean(dealer.gstin) || taxText.trim().length >= GST_REVIEW_MIN_LENGTH);
 
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
       <Field
         id="approvalNote"
         label={DEALER_ACTIONS_TEXT.noteLabel}
-        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
+        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
       >
         <Input
           id="approvalNote"
@@ -48,7 +59,7 @@ export function ApproveBlock({
         id="approvalConfirm"
         label={DEALER_ACTIONS_TEXT.approveConfirmLabel}
         hint={DEALER_ACTIONS_TEXT.approveConfirmHint(approvalPhrase)}
-        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full flex-1"
+        className="min-w-[220px] max-md:min-w-0 max-md:max-w-full max-md:basis-full flex-1"
       >
         <Input
           id="approvalConfirm"
@@ -58,6 +69,24 @@ export function ApproveBlock({
           disabled={pending}
         />
       </Field>
+      {!dealer.gstin ? (
+        <Field
+          id="gstApplicabilityReview"
+          label={DEALER_ACTIONS_TEXT.gstReviewLabel}
+          hint={DEALER_ACTIONS_TEXT.gstReviewHint}
+          className="w-full"
+        >
+          <Input
+            id="gstApplicabilityReview"
+            value={taxText}
+            required
+            minLength={GST_REVIEW_MIN_LENGTH}
+            maxLength={GST_REVIEW_MAX_LENGTH}
+            onChange={(event) => setTaxReview({ dealerId: dealer.id, text: event.target.value })}
+            disabled={pending}
+          />
+        </Field>
+      ) : null}
       <Button
         variant="primary"
         size="md"
@@ -68,7 +97,10 @@ export function ApproveBlock({
           run(async () => {
             const result = await approveDealerAction(
               dealer.id,
-              { ...(note.trim() ? { note: note.trim() } : {}) },
+              {
+                ...(note.trim() ? { note: note.trim() } : {}),
+                ...(!dealer.gstin ? { gstNotRequiredReview: taxText.trim() } : {}),
+              },
               dealer.slug,
             );
             if (result.ok) onConfirmChange('');

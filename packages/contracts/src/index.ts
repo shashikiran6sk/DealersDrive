@@ -40,4 +40,13 @@ export * from './support.js';
 /** Bumped when a breaking change ships; surfaced in the API's /health/ready. */
 export const CONTRACTS_VERSION = '1.0.0';
 
-export * from './progressive-onboarding.js';
+export * from './service-locations.js';
+
+export * from './dealer-tagline.js';
+export * from './admin-phone.js';
+
+export * from './dealer-verification.js';
+
+export * from './dealer-gstin.js';
+
+export * from './vehicle-makes.js';
