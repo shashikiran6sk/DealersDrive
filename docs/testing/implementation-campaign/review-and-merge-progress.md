@@ -41,7 +41,7 @@ an API that has not been promoted, when a PR changes both tiers or a contract.
 | 8   | #295 | Ticket messaging        | `98a5b78`     | `40fdabe`         | green      | `9ea8b70` | Merged, main verified                              |
 | 9   | #296 | Mobile sidebar          | `cefed41`     | `1180e1c`         | green      | `2f16932` | Merged, main verified                              |
 | 10  | #297 | Dealer verification     | `23c47d1`     | `b5ef50b`         | green      | `91e3533` | Merged, main verified                              |
-| 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | —         | Reviewed; merging                                  |
+| 11  | #298 | Optional GSTIN          | `b500bd5`     | `8310fba`         | green      | `6f4f040` | Merged, main verified                              |
 | —   | new  | Canonical vehicle makes | —             | —                 | —          | —         | Not started                                        |
 | —   | #299 | Progressive onboarding  | `f563188`     | —                 | —          | N/A       | Draft, untouched                                   |
 
@@ -54,4 +54,4 @@ introduced per PR: #288 1, #291 2, #292 1, #293 2, #295 1, #297 1, #298 1.
 
 ## Next action
 
-Merge #298, verify `main`, then run the integrated regression on the merged `main`.
+All eleven stacked PRs are merged. Next: integrated regression on `main` `6f4f040`, then the canonical vehicle-make PR, then the Draft #299 revision.

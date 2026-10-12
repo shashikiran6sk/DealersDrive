@@ -1,0 +1,121 @@
+{
+ "login": {
+  "320": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false
+  },
+  "360": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false
+  },
+  "390": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false,
+   "keyboardFocusable": true,
+   "navigatedTo": "/admin/login",
+   "afterBack": "/login"
+  },
+  "428": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false
+  },
+  "768": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false
+  },
+  "1280": {
+   "customerTabAdminLinks": 0,
+   "dealerTabAdminLinks": 1,
+   "belowSupport": true,
+   "tapHeight": 40,
+   "overflow": false
+  }
+ },
+ "admin": {
+  "320/admin": {
+   "status": 200,
+   "path": "/admin",
+   "overflow": false
+  },
+  "320/admin/dealers": {
+   "status": 200,
+   "path": "/admin/dealers",
+   "overflow": false
+  },
+  "320/admin/listings": {
+   "status": 200,
+   "path": "/admin/listings",
+   "overflow": false
+  },
+  "320/admin/support": {
+   "status": 200,
+   "path": "/admin/support",
+   "overflow": false
+  },
+  "320/admin/enquiries": {
+   "status": 200,
+   "path": "/admin/enquiries",
+   "overflow": false
+  },
+  "320/admin/config": {
+   "status": 200,
+   "path": "/admin/config",
+   "overflow": false
+  },
+  "320/admin/profile/security": {
+   "status": 200,
+   "path": "/admin/profile/security",
+   "overflow": false
+  },
+  "390/admin": {
+   "status": 200,
+   "path": "/admin",
+   "overflow": false
+  },
+  "390/admin/dealers": {
+   "status": 200,
+   "path": "/admin/dealers",
+   "overflow": false
+  },
+  "390/admin/listings": {
+   "status": 200,
+   "path": "/admin/listings",
+   "overflow": false
+  },
+  "390/admin/support": {
+   "status": 200,
+   "path": "/admin/support",
+   "overflow": false
+  },
+  "390/admin/enquiries": {
+   "status": 200,
+   "path": "/admin/enquiries",
+   "overflow": false
+  },
+  "390/admin/config": {
+   "status": 200,
+   "path": "/admin/config",
+   "overflow": false
+  },
+  "390/admin/profile/security": {
+   "status": 200,
+   "path": "/admin/profile/security",
+   "overflow": false
+  }
+ }
+}
