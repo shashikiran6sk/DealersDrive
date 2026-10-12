@@ -349,6 +349,21 @@ describe('rankSuggestions', () => {
     ]);
   });
 
+  it('suggests a legacy alias spelling as its canonical brand', () => {
+    const { data } = rankSuggestions(
+      [
+        { make: 'Maruti', model: 'Swift', variant: null, count: 2 },
+        { make: 'Maruti Suzuki', model: 'Swift', variant: null, count: 1 },
+      ],
+      'maruti',
+      10,
+    );
+    expect(data.map((row) => [row.kind, row.label, row.brand, row.count])).toEqual([
+      ['BRAND', 'Maruti Suzuki', 'maruti-suzuki', 3],
+      ['MODEL', 'Maruti Suzuki Swift', 'maruti-suzuki', 3],
+    ]);
+  });
+
   it('skips a car with no make, and cuts to the limit while counting every match', () => {
     expect(rankSuggestions(rows, 'orphan', 10)).toEqual({ data: [], total: 0 });
     const cut = rankSuggestions(rows, 'hyundai', 2);

@@ -2,6 +2,7 @@ import {
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
+  isVehicleMake,
   parseRegistration,
   vehicleIssues,
   type CreateVehicleInput,
@@ -38,6 +39,7 @@ import {
   DUPLICATE_REGISTRATION,
   REGISTRATION_ALREADY_LISTED,
   VEHICLE_INCOMPLETE,
+  VEHICLE_MAKE_UNKNOWN,
   VEHICLE_NOT_DELETABLE,
   VEHICLE_NOT_EDITABLE,
   VEHICLE_NOT_FOUND,
@@ -168,6 +170,26 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     return (await repo.existingSpelling(field, value)) ?? value;
   }
 
+  function offListMake(input: UpdateVehicleInput): boolean {
+    return typeof input.make === 'string' && !isVehicleMake(input.make);
+  }
+
+  function checkMake(input: UpdateVehicleInput, storedMake: string | null): void {
+    if (!offListMake(input) || input.make === storedMake) return;
+    throw new DomainError('VEHICLE_MAKE_UNKNOWN', VEHICLE_MAKE_UNKNOWN, {
+      errors: [{ field: 'make', code: 'UNKNOWN_MAKE', message: VEHICLE_MAKE_UNKNOWN }],
+    });
+  }
+
+  async function checkMakeLocked(tx: Tx, input: UpdateVehicleInput, vehicleId: string) {
+    if (!offListMake(input)) return;
+    const locked = await tx.vehicle.findUnique({
+      where: { id: vehicleId },
+      select: { make: true },
+    });
+    checkMake(input, locked?.make ?? null);
+  }
+
   async function writeOf(input: UpdateVehicleInput): Promise<VehicleWrite> {
     const data: VehicleWrite = {};
 
@@ -175,7 +197,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       data.registrationNumber = input.registrationNumber;
       data.rtoCode = rtoCodeOf(input.registrationNumber);
     }
-    if (input.make !== undefined) data.make = input.make && (await spelled('make', input.make));
+    if (input.make !== undefined) data.make = input.make;
     if (input.model !== undefined) {
       data.model = input.model && (await spelled('model', input.model));
     }
@@ -301,6 +323,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         throw duplicate();
       }
 
+      checkMake(input, current.make);
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
       if (fields.length === 0) return toDealerVehicle(current, actor.permissions);
@@ -308,6 +331,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       try {
         const updated = await withTransaction(prisma, async (tx) => {
           const permissions = await lockEditable(tx, actor, vehicleId);
+          await checkMakeLocked(tx, input, vehicleId);
           const row = await repo.updateOwned(actor.dealerId, vehicleId, data, tx);
           if (!row) throw notFound();
           await audit.record(tx, {
@@ -469,6 +493,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         throw duplicate();
       }
 
+      checkMake(input, current.make);
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
       if (fields.length === 0) return toDealerVehicle(current, ASSISTED_VEHICLE_PERMISSIONS);
@@ -483,6 +508,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
               extra: { listingStatus: listing.status },
             });
           }
+          await checkMakeLocked(tx, input, vehicleId);
           const row = await repo.updateOwned(actor.dealerId, vehicleId, data, tx);
           if (!row) throw notFound();
           await audit.record(tx, {

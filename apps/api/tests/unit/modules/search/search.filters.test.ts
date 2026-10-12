@@ -71,6 +71,21 @@ describe('text a dealer typed, matched by its slug', () => {
     expect(filtersOf({ color: 'white,other' }).colors).toEqual(['WHITE', 'OTHER']);
   });
 
+  it('files a legacy alias spelling under its canonical brand without rewriting it', () => {
+    const query = PublicVehicleQuery.parse({ brand: 'maruti-suzuki' });
+    const filters = resolveFilters(query, {
+      makes: ['Maruti Suzuki', 'Maruti', 'MARUTI SUZUKI INDIA LTD', 'Hyundai', 'Tata Motors'],
+      models: [],
+    });
+    expect(filters.makes).toEqual(['Maruti Suzuki', 'Maruti', 'MARUTI SUZUKI INDIA LTD']);
+    expect(
+      resolveFilters(PublicVehicleQuery.parse({ brand: 'tata' }), {
+        makes: ['Tata', 'Tata Motors'],
+        models: [],
+      }).makes,
+    ).toEqual(['Tata', 'Tata Motors']);
+  });
+
   it('resolves a slug nobody carries to nothing, which is an empty page rather than no filter', () => {
     const filters = filtersOf({ brand: 'bugatti' });
     expect(filters.makes).toEqual([]);

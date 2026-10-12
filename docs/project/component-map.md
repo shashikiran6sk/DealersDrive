@@ -336,6 +336,21 @@ cells are what this design asks for, so the keyboard work is paid for once.
 | **Sandbox priority** | P1 — `Forms/ServiceLocationFields`; the sandbox aliases `@/features/service-location-actions` to a fixed Tamil Nadu catalogue                                            |
 | **Confidence**       | HIGH                                                                                                                                                                     |
 
+### C019e — `VehicleMakeSelect`
+
+|                      |                                                                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `apps/web/src/components/forms/vehicle-make-select/` (barrel `index.ts`; text in `vehicle-make-select.constants.ts`; matching in `utils.ts`)                                                             |
+| **Purpose**          | Searchable make combobox over `VEHICLE_MAKES` from `packages/contracts`. A reviewed alias typed and left resolves to its brand. Posts the canonical name in a hidden `make` field; the API re-validates. |
+| **Props**            | `id`, `name?` (defaults to `id`), `defaultValue?`, `placeholder?`, `required?`, `disabled?`, `aria-invalid?`, `aria-describedby?`                                                                        |
+| **States**           | empty, selected, alias resolves to brand, saved outside the list (offered as "(as saved)" and kept on re-save), invalid, disabled, no match                                                              |
+| **Dependencies**     | `canonicalVehicleMake`, `VEHICLE_MAKES`, `cn`                                                                                                                                                            |
+| **Consumers**        | 1 (`BasicsStep`, used by the dealer and the sales-assisted wizard)                                                                                                                                       |
+| **Tests**            | ✅ `apps/web/tests/unit/components/forms/vehicle-make-select.test.tsx`                                                                                                                                   |
+| **Ownership**        | Shared                                                                                                                                                                                                   |
+| **Sandbox priority** | P1 — `Forms/VehicleMakeSelect`                                                                                                                                                                           |
+| **Confidence**       | HIGH                                                                                                                                                                                                     |
+
 ---
 
 ## Layer 3 — Layout & navigation

@@ -5,6 +5,7 @@ import {
   dealerFacet,
   fuelFacet,
   locationScope,
+  brandFacet,
   modelFacet,
   oneDealerScope,
   ownerFacet,
@@ -136,6 +137,30 @@ describe('text facets', () => {
     ).toEqual([
       { value: 'hyundai', label: 'Hyundai', count: 5 },
       { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 5 },
+    ]);
+  });
+
+  it('files legacy make spellings under their canonical brand, labelled canonically', () => {
+    expect(
+      brandFacet(
+        [
+          { value: 'Maruti', count: 3 },
+          { value: 'MARUTI SUZUKI INDIA LTD', count: 2 },
+          { value: 'maruti suzuki', count: 1 },
+          { value: 'Hindustan Ambassador Co', count: 1 },
+          { value: null, count: 4 },
+        ],
+        undefined,
+      ),
+    ).toEqual([
+      { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 6 },
+      { value: 'hindustan-ambassador-co', label: 'Hindustan Ambassador Co', count: 1 },
+    ]);
+  });
+
+  it('names the canonical brand as the parent of a model saved under an alias', () => {
+    expect(modelFacet([{ make: 'TATA MOTORS LTD', model: 'Nexon', count: 2 }], undefined)).toEqual([
+      { value: 'nexon', label: 'Nexon', count: 2, parent: 'tata' },
     ]);
   });
 

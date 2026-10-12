@@ -150,6 +150,14 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
           ],
         }),
       },
+      vehicleMakeUnknown: {
+        summary: 'The make is not one of the canonical manufacturers',
+        value: problem(422, 'VEHICLE_MAKE_UNKNOWN', 'Choose the make from the list.', {
+          errors: [
+            { field: 'make', code: 'UNKNOWN_MAKE', message: 'Choose the make from the list.' },
+          ],
+        }),
+      },
       vehicleIncomplete: {
         summary: 'Required vehicle details are missing',
         value: problem(422, 'VEHICLE_INCOMPLETE', 'This vehicle is missing some details.', {

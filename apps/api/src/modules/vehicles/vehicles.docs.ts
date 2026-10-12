@@ -108,8 +108,12 @@ export const vehiclesDocs: ModuleDocs = {
         'Partial by design: the wizard sends only the current step’s fields, so `Back` ' +
         'never blanks another step. An omitted field is left alone; `null` clears an optional ' +
         'one.\n\n' +
-        'A make or model typed in a different case from one already in use adopts the stored ' +
-        'spelling. Money is integer paise (`pricePaise: 145000000` is ₹14,50,000).\n\n' +
+        'A make is one of the canonical manufacturers (`VEHICLE_MAKES` in contracts); a ' +
+        'reviewed alias such as `MARUTI SUZUKI INDIA LTD` resolves to its brand, and any other ' +
+        'new value is a `422 VEHICLE_MAKE_UNKNOWN` naming `make`. A vehicle saved before the list ' +
+        'keeps its stored make when it is sent back unchanged. A model typed in a different case ' +
+        'from one already in use adopts the stored spelling. Money is integer paise ' +
+        '(`pricePaise: 145000000` is ₹14,50,000).\n\n' +
         'Changing the registration number re-runs the duplicate check against the ' +
         'dealership’s other vehicles.',
       audience: 'dealer',

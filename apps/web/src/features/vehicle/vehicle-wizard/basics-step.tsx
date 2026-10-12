@@ -11,6 +11,7 @@ import {
 
 import { invalidProps } from '@/components/forms/field';
 import { SuggestInput } from '@/components/forms/suggest-input';
+import { VehicleMakeSelect } from '@/components/forms/vehicle-make-select';
 import { Input, Select } from '@/components/ui/input';
 
 import { StepField } from './step-field';
@@ -25,12 +26,10 @@ export function BasicsStep({ vehicle, errors, values }: StepProps) {
   return (
     <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
       <StepField name="make" errors={errors} hint={VEHICLE_WIZARD_TEXT.makeHint}>
-        <SuggestInput
+        <VehicleMakeSelect
           id="make"
-          field="make"
           defaultValue={value('make')}
           placeholder={VEHICLE_WIZARD_TEXT.makePlaceholder}
-          maxLength={VEHICLE_LIMITS.textMax}
           required
           {...invalidProps('make', errors.make)}
         />

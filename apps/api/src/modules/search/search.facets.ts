@@ -8,6 +8,8 @@ import {
   VEHICLE_COLOR_LABELS,
   VehicleColor as ColorEnum,
   slugify,
+  vehicleMakeLabel,
+  vehicleMakeSlug,
   type FacetOption,
   type OwnerBucket,
   type RangeFacet,
@@ -162,6 +164,16 @@ export function textFacet(
   return withSelected(options, selected);
 }
 
+export function brandFacet(
+  rows: readonly Counted<string | null>[],
+  selected: readonly string[] | undefined,
+): FacetOption[] {
+  return textFacet(
+    rows.map((row) => ({ ...row, value: row.value === null ? null : vehicleMakeLabel(row.value) })),
+    selected,
+  );
+}
+
 export function modelFacet(
   rows: readonly { make: string | null; model: string | null; count: number }[],
   selected: readonly string[] | undefined,
@@ -175,7 +187,7 @@ export function modelFacet(
               key: slugify(row.model),
               spelling: row.model.trim(),
               count: row.count,
-              parent: slugOf(row.make),
+              parent: row.make ? vehicleMakeSlug(row.make) : '',
             },
           ],
     ),

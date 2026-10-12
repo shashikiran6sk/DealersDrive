@@ -190,6 +190,54 @@ describe('saving wizard steps', () => {
     expect(suggestions.body).toEqual({ field: 'make', values: ['Maruti Suzuki'] });
   });
 
+  it('resolves a reviewed manufacturer alias to its canonical make', async () => {
+    const { id } = await draft();
+    const saved = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'Maruti Suzuki India Pvt. Ltd.' })
+      .expect(200);
+    expect(saved.body.make).toBe('Maruti Suzuki');
+
+    const tata = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'TATA MOTORS LTD' })
+      .expect(200);
+    expect(tata.body.make).toBe('Tata');
+  });
+
+  it('refuses a make that is not a known manufacturer, naming the field', async () => {
+    const { id } = await draft();
+    const refused = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'Skoda Auto Volkswagen India' })
+      .expect(422);
+    expect(refused.body).toMatchObject({
+      code: 'VEHICLE_MAKE_UNKNOWN',
+      errors: [{ field: 'make', code: 'UNKNOWN_MAKE' }],
+    });
+    const stored = await h.prisma.vehicle.findUniqueOrThrow({ where: { id } });
+    expect(stored.make).toBeNull();
+  });
+
+  it('keeps a make saved before the list when it is sent back unchanged, and only that one', async () => {
+    const { id } = await draft();
+    await h.prisma.vehicle.update({ where: { id }, data: { make: 'Hindustan Ambassador Co' } });
+
+    const resaved = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'Hindustan Ambassador Co', model: 'Classic' })
+      .expect(200);
+    expect(resaved.body).toMatchObject({ make: 'Hindustan Ambassador Co', model: 'Classic' });
+
+    await a.agent.patch(`/v1/dealer/vehicles/${id}`).send({ make: 'Some Other Maker' }).expect(422);
+
+    const chosen = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'Hindustan Motors' })
+      .expect(200);
+    expect(chosen.body.make).toBe('Hindustan Motors');
+  });
+
   it('clears an optional field with null', async () => {
     const { id } = await draft();
     await a.agent.patch(`/v1/dealer/vehicles/${id}`).send({ variant: 'LX' });
