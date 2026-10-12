@@ -36,14 +36,16 @@ export function EmailCodeVerification({
       ? Date.now() + EMAIL_RESEND_SECONDS * 1000
       : 0,
   );
-  const [remaining, setRemaining] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const remaining = Math.max(0, Math.ceil((resendAt - now) / 1000));
 
   useEffect(() => {
-    const tick = (): void => {
-      setRemaining(Math.max(0, Math.ceil((resendAt - Date.now()) / 1000)));
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
+    if (resendAt <= Date.now()) return;
+    const timer = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= resendAt) clearInterval(timer);
+    }, 1000);
     return () => {
       clearInterval(timer);
     };
@@ -67,7 +69,9 @@ export function EmailCodeVerification({
       setEmail(result.email ?? parsed.data.email);
       setChallenge(result.challenge);
       setCode('');
-      setResendAt(Date.now() + (result.resendAfterSeconds ?? EMAIL_RESEND_SECONDS) * 1000);
+      const sentAt = Date.now();
+      setNow(sentAt);
+      setResendAt(sentAt + (result.resendAfterSeconds ?? EMAIL_RESEND_SECONDS) * 1000);
       setStage('code');
       if (resend) setNotice(EMAIL_CODE_TEXT.resent);
     });
