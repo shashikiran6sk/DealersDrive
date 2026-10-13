@@ -1,0 +1,25 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "vitest",
+    "run",
+    "--project",
+    "integration",
+    "tests/stable-pagination.test.ts",
+    "tests/saved-vehicles.test.ts",
+    "tests/enquiries.test.ts",
+    "tests/dealer-enquiries.test.ts",
+    "tests/dealer-enquiry-counts.test.ts",
+    "tests/admin-enquiries.test.ts",
+    "tests/dealer-team.test.ts"
+  ],
+  "sha": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+  "start_utc": "2026-10-04T05:03:36.032781+00:00",
+  "end_utc": "2026-10-04T05:04:01.147792+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug003-lifecycle-green.log",
+  "cache": "TURBO_FORCE=true"
+}

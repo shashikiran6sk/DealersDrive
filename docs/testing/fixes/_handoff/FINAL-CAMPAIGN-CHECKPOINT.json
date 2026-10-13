@@ -1,0 +1,397 @@
+{
+  "branch": "fix/pre-production-08-admin-mobile",
+  "sha": "adc52647467e54994ee33460cac9e1142348d5b8",
+  "pr": "https://github.com/shashikiran6sk/DealersDrive/pull/238",
+  "base": "fix/pre-production-06-production-storage",
+  "stack": [
+    {
+      "bug": "BUG-007 / branded 404",
+      "pr": 209,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/209",
+      "branch": "claude/serene-thompson-yuft81",
+      "head": "107a46259f1e8ee13765e3a3559fe5b5bbc88c99",
+      "base": "main",
+      "baseSha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37047668976,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 507,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37047668976/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37047668976/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37047669005,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 358,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37047669005/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37047669005/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    },
+    {
+      "bug": "BUG-001",
+      "pr": 231,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/231",
+      "branch": "fix/pre-production-01-invitation-race",
+      "head": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+      "base": "claude/serene-thompson-yuft81",
+      "baseSha": "107a46259f1e8ee13765e3a3559fe5b5bbc88c99",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37097926498,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 361,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37097926498/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37097926498/logs",
+          "workflow_id": 349234330
+        },
+        {
+          "id": 37097926493,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 510,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37097926493/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37097926493/logs",
+          "workflow_id": 349239985
+        }
+      ]
+    },
+    {
+      "bug": "BUG-002",
+      "pr": 232,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/232",
+      "branch": "fix/pre-production-02-approval-gate",
+      "head": "3570dcf5dcffb85235315eaed8e69c54bab1f87a",
+      "base": "fix/pre-production-01-invitation-race",
+      "baseSha": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37116487815,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 512,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37116487815/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37116487815/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37116487799,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 363,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37116487799/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37116487799/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    },
+    {
+      "bug": "BUG-NEW-005",
+      "pr": 233,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/233",
+      "branch": "fix/pre-production-new-005-rejection-race",
+      "head": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+      "base": "fix/pre-production-02-approval-gate",
+      "baseSha": "3570dcf5dcffb85235315eaed8e69c54bab1f87a",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37133147876,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 366,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37133147876/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37133147876/logs",
+          "workflow_id": 349234330
+        },
+        {
+          "id": 37133147863,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 515,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37133147863/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37133147863/logs",
+          "workflow_id": 349239985
+        }
+      ]
+    },
+    {
+      "bug": "BUG-003",
+      "pr": 234,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/234",
+      "branch": "fix/pre-production-03-stable-pagination",
+      "head": "62b14915dec43118994b11f88f8a00191d2e55d8",
+      "base": "fix/pre-production-new-005-rejection-race",
+      "baseSha": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37180259359,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 517,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37180259359/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37180259359/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37180259396,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 368,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37180259396/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37180259396/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    },
+    {
+      "bug": "BUG-004",
+      "pr": 235,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/235",
+      "branch": "fix/pre-production-04-suspended-media",
+      "head": "adeb847c19a0740270929a014594d1ce6c73a567",
+      "base": "fix/pre-production-03-stable-pagination",
+      "baseSha": "62b14915dec43118994b11f88f8a00191d2e55d8",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37183233673,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 519,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233673/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233673/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37183233655,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 370,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233655/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233655/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    },
+    {
+      "bug": "BUG-005",
+      "pr": 236,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/236",
+      "branch": "fix/pre-production-05-membership-commit-guard",
+      "head": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
+      "base": "fix/pre-production-04-suspended-media",
+      "baseSha": "adeb847c19a0740270929a014594d1ce6c73a567",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37187022090,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 372,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37187022090/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37187022090/logs",
+          "workflow_id": 349234330
+        },
+        {
+          "id": 37187022033,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 521,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37187022033/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37187022033/logs",
+          "workflow_id": 349239985
+        }
+      ]
+    },
+    {
+      "bug": "BUG-006",
+      "pr": 237,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/237",
+      "branch": "fix/pre-production-06-production-storage",
+      "head": "c9dfc4d0f47c015059e10915029051f282fe499d",
+      "base": "fix/pre-production-05-membership-commit-guard",
+      "baseSha": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37196042576,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 523,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37196042576/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37196042576/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37196042611,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 374,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37196042611/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37196042611/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    },
+    {
+      "bug": "BUG-008",
+      "pr": 238,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/238",
+      "branch": "fix/pre-production-08-admin-mobile",
+      "head": "adc52647467e54994ee33460cac9e1142348d5b8",
+      "base": "fix/pre-production-06-production-storage",
+      "baseSha": "c9dfc4d0f47c015059e10915029051f282fe499d",
+      "ci": "PASS",
+      "workflows": [
+        {
+          "id": 37199833173,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 526,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37199833173/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37199833173/logs",
+          "workflow_id": 349239985
+        },
+        {
+          "id": 37199833185,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 377,
+          "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37199833185/jobs",
+          "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37199833185/logs",
+          "workflow_id": 349234330
+        }
+      ]
+    }
+  ],
+  "currentBug": "BUG-008 COMPLETE; requested session scope complete",
+  "reproduction": "Exact-parent Admin routes overflow to 425px at viewport 390/320; baseline red preserved.",
+  "rootCause": "Shared fixed nowrap Admin header, plus dealer status row wider than 320px content area.",
+  "productFiles": [
+    "apps/web/src/app/(admin)/admin/layout.tsx",
+    "apps/web/src/app/(admin)/admin/dealers/page.tsx"
+  ],
+  "tests": {
+    "fullSuite": 4516,
+    "api": 2750,
+    "web": 1346,
+    "contracts": 420,
+    "geometry": 30,
+    "functionalUat": 13,
+    "negativeEndpoints": 20,
+    "mobileGolden": 7,
+    "adminUnits": 138,
+    "adjacentApiIntegration": 107,
+    "db": "PASS",
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "build": "PASS",
+    "historyScan": "PASS",
+    "finalRemoteCi": "PASS"
+  },
+  "confirmedOpen": [
+    {
+      "id": "BUG-NEW-012",
+      "severity": "P1",
+      "issue": "Queued enquiry writes commit after membership removal",
+      "next": true
+    },
+    {
+      "id": "BUG-NEW-006",
+      "severity": "P2",
+      "issue": "Onboarding account overflows mobile viewport"
+    },
+    {
+      "id": "BUG-NEW-007",
+      "severity": "P2",
+      "issue": "Dealer inventory pagination loses tied timestamp rows"
+    },
+    {
+      "id": "BUG-NEW-008",
+      "severity": "P2",
+      "issue": "Local private PDF read returns image/jpeg"
+    },
+    {
+      "id": "BUG-NEW-009",
+      "severity": "P2",
+      "issue": "Suspended dealer yard photo remains public"
+    },
+    {
+      "id": "BUG-NEW-010",
+      "severity": "P2",
+      "issue": "Warmed car page retains suspended dealer listing"
+    },
+    {
+      "id": "BUG-NEW-013",
+      "severity": "P2",
+      "issue": "Production R2 accepts missing/loopback storage endpoint"
+    },
+    {
+      "id": "BUG-NEW-011",
+      "severity": "P3",
+      "issue": "Media width OpenAPI description mismatches accepted range"
+    }
+  ],
+  "remainingConfirmed": {
+    "P0": 0,
+    "P1": 1,
+    "P2": 6,
+    "P3": 1
+  },
+  "provisional": [
+    "BUG-NEW-001 upstream exception log privacy",
+    "BUG-009 dependency reachability and safe patch assessment"
+  ],
+  "originalBaseline": {
+    "total": 556,
+    "PASS": 244,
+    "FAIL": 7,
+    "BLOCKED": 305,
+    "preservedFiles": 162
+  },
+  "agentUat": "PASS for scoped fix and critical flows; full canonical certification not established",
+  "humanUat": "PENDING",
+  "liveProviderDeployment": "PENDING",
+  "productionDecision": "NO GO",
+  "mergedPrs": 0,
+  "remainingWork": "Eight additional confirmed defects, two provisional assessments, full canonical/provider/deployment/Human UAT gates",
+  "nextExactAction": "Verify healthy final #238 head adc5264, read and reproduce NEW012, then create a dedicated stacked enquiry authorization fix branch from fix/pre-production-08-admin-mobile. Do not merge any PR.",
+  "evidenceRoot": "/workspace/DealersDrive-fixes/docs/testing/fixes/BUG-008",
+  "finalCiProof": "/workspace/dd-fix-evidence/BUG-008-FINAL-CI.json",
+  "handoff": "/workspace/dd-fix-evidence/NEXT-SESSION-HANDOFF.md",
+  "layerDiff": "PASS: 96 remote/local filenames match; two production files",
+  "worktree": "CLEAN",
+  "baselineMain": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "sourceAndScreenshotHashes": "PASS: all manifest source files and 13 screenshots match",
+  "finalDiffProof": "/workspace/dd-fix-evidence/BUG-008-FINAL-DIFF.json",
+  "baselineProof": "/workspace/dd-fix-evidence/BUG-008-BASELINE-PRESERVATION.json"
+}

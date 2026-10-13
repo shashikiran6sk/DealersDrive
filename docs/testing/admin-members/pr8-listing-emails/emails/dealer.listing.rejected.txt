@@ -1,0 +1,17 @@
+Subject: About your listing — 2023 Hyundai Creta SX(O)
+
+We could not publish this listing
+
+Hi Lakshmi,
+
+We have reviewed 2023 Hyundai Creta SX(O) (KA 05 MR 8801) and cannot publish it. This is the reason our reviewer gave:
+
+  Add a photo of the odometer.
+
+If you think this is a mistake, reply to this email and tell us why.
+
+Open your inventory: http://localhost:3000/dealer/inventory
+
+—
+Dealers-Drive
+Questions? support@example.com

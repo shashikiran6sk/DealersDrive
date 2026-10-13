@@ -1,0 +1,22 @@
+{
+  "R232-valid-approve-suspend-reinstate": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approve 200 → suspend 200 → second suspend 422 → reinstate 200; approvedAt preserved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-232-adjacent",
+    "at": "2026-10-04T13:04:42.027Z"
+  },
+  "R232-unverified-pending-refused": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "PENDING with unverified uploads: approve → 422 DOCUMENTS_NOT_VERIFIED; state unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-232-adjacent",
+    "at": "2026-10-04T13:04:42.270Z"
+  }
+}

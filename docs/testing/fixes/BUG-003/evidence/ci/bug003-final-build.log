@@ -1,0 +1,102 @@
+
+> dealers-drive@0.0.0 build /workspace/DealersDrive-fixes
+> turbo run build --env-mode\=loose
+
+• turbo 2.10.12
+
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running build in 5 packages
+   • Remote caching disabled, using shared worktree cache
+
+@dealers-drive/contracts:build: cache bypass, force executing 3e0f7b10c8449c44
+@dealers-drive/contracts:build:
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /workspace/DealersDrive-fixes/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build:
+@dealers-drive/web:build: cache bypass, force executing efdfd689b13e3712
+@dealers-drive/api:build: cache bypass, force executing 621c7d542af630dc
+@dealers-drive/web:build:
+@dealers-drive/web:build: > @dealers-drive/web@0.0.0 build /workspace/DealersDrive-fixes/apps/web
+@dealers-drive/web:build: > next build
+@dealers-drive/web:build:
+@dealers-drive/api:build:
+@dealers-drive/api:build: > @dealers-drive/api@0.0.0 build /workspace/DealersDrive-fixes/apps/api
+@dealers-drive/api:build: > tsc -p tsconfig.build.json
+@dealers-drive/api:build:
+@dealers-drive/web:build:    ▲ Next.js 15.5.25
+@dealers-drive/web:build:
+@dealers-drive/web:build:    Creating an optimized production build ...
+@dealers-drive/web:build:  ✓ Compiled successfully in 8.2s
+@dealers-drive/web:build:    Skipping linting
+@dealers-drive/web:build:    Checking validity of types ...
+@dealers-drive/web:build:    Collecting page data ...
+@dealers-drive/web:build:    Generating static pages (0/17) ...
+@dealers-drive/web:build:    Generating static pages (4/17)
+@dealers-drive/web:build:    Generating static pages (8/17)
+@dealers-drive/web:build:    Generating static pages (12/17)
+@dealers-drive/web:build:  ✓ Generating static pages (17/17)
+@dealers-drive/web:build:    Finalizing page optimization ...
+@dealers-drive/web:build:    Collecting build traces ...
+@dealers-drive/web:build:
+@dealers-drive/web:build: Route (app)                                 Size  First Load JS  Revalidate  Expire
+@dealers-drive/web:build: ┌ ○ /                                    3.42 kB         160 kB          1m      1y
+@dealers-drive/web:build: ├ ○ /_not-found                            182 B         103 kB         10m      1y
+@dealers-drive/web:build: ├ ƒ /admin                                 175 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/config                        5.39 kB         120 kB
+@dealers-drive/web:build: ├ ƒ /admin/dealers                         175 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/dealers/[id]                  9.59 kB         124 kB
+@dealers-drive/web:build: ├ ƒ /admin/enquiries                       178 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/enquiries/[id]                  178 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/listings                        655 B         133 kB
+@dealers-drive/web:build: ├ ƒ /admin/listings/[id]                 3.48 kB         174 kB
+@dealers-drive/web:build: ├ ƒ /admin/login                           175 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/support                         178 B         106 kB
+@dealers-drive/web:build: ├ ƒ /admin/support/[id]                  3.08 kB         159 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/documents/[type]           182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/documents/[type]/commit    182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/documents/presign          182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/vehicles/suggestions       182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/yard-photo                 182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/yard-photo/commit          182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/dealer/yard-photo/presign         182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/health                            182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/search/dealers                    182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /api/search/vehicles                   182 B         103 kB
+@dealers-drive/web:build: ├ ○ /apple-icon.png                          0 B            0 B
+@dealers-drive/web:build: ├ ƒ /car/[slug]                          7.66 kB         136 kB
+@dealers-drive/web:build: ├ ƒ /cars                                  749 B         183 kB
+@dealers-drive/web:build: ├ ○ /contact                               178 B         106 kB         10m      1y
+@dealers-drive/web:build: ├ ƒ /dealer                              1.17 kB         115 kB
+@dealers-drive/web:build: ├ ƒ /dealer/enquiries                    1.59 kB         154 kB
+@dealers-drive/web:build: ├ ƒ /dealer/inventory                    1.13 kB         173 kB
+@dealers-drive/web:build: ├ ƒ /dealer/login                          182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /dealer/onboarding                   9.65 kB         169 kB
+@dealers-drive/web:build: ├ ƒ /dealer/profile                      7.58 kB         160 kB
+@dealers-drive/web:build: ├ ƒ /dealer/team                         5.34 kB         172 kB
+@dealers-drive/web:build: ├ ƒ /dealer/vehicles/[id]/edit             147 B         178 kB
+@dealers-drive/web:build: ├ ƒ /dealer/vehicles/new                   147 B         178 kB
+@dealers-drive/web:build: ├ ƒ /dealers                             4.81 kB         138 kB
+@dealers-drive/web:build: ├ ƒ /dealers/[slug]                      1.82 kB         176 kB
+@dealers-drive/web:build: ├ ƒ /enquiries                             178 B         106 kB
+@dealers-drive/web:build: ├ ○ /icon.png                                0 B            0 B
+@dealers-drive/web:build: ├ ƒ /invitations                         3.18 kB         117 kB
+@dealers-drive/web:build: ├ ƒ /login                               4.32 kB         164 kB
+@dealers-drive/web:build: ├ ƒ /robots.txt                            182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /saved                               1.06 kB         115 kB
+@dealers-drive/web:build: ├ ƒ /sitemap.xml                           182 B         103 kB
+@dealers-drive/web:build: ├ ƒ /support-requests                      208 B         157 kB
+@dealers-drive/web:build: ├ ƒ /support-requests/[id]                 208 B         157 kB
+@dealers-drive/web:build: └ ƒ /support-requests/new                  208 B         157 kB
+@dealers-drive/web:build: + First Load JS shared by all             102 kB
+@dealers-drive/web:build:   ├ chunks/59e6d32d-1c33d95f5a7d278c.js  54.2 kB
+@dealers-drive/web:build:   ├ chunks/8671-6c7c25978d89eba4.js      46.2 kB
+@dealers-drive/web:build:   └ other shared chunks (total)          1.93 kB
+@dealers-drive/web:build:
+@dealers-drive/web:build:
+@dealers-drive/web:build: ○  (Static)   prerendered as static content
+@dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
+@dealers-drive/web:build:
+
+ Tasks:    3 successful, 3 total
+Cached:    0 cached, 3 total
+  Time:    31.532s

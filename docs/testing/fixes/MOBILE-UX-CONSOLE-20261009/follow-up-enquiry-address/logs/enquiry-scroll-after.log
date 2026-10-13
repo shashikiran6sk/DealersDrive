@@ -1,0 +1,9 @@
+
+ RUN  v5.0.0 /workspace/DealersDrive/apps/web
+
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  11:17:11
+   Duration  3.87s (tests 38%, environment 30%, transform 17%, setup 11%, import 3%)
+

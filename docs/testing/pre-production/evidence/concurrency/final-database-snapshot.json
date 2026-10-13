@@ -1,0 +1,70 @@
+{
+  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "database": "dealersdrive_cert",
+  "capturedAt": "2026-10-02T16:14:40.100Z",
+  "counts": {
+    "users": 11,
+    "dealers": 3,
+    "dealer_members": 5,
+    "dealer_invitations": 2,
+    "vehicles": 9,
+    "listings": 9,
+    "enquiries": 8,
+    "saved_vehicles": 9,
+    "audit_logs": 136
+  },
+  "statuses": {
+    "dealers": [
+      {
+        "status": "ACTIVE",
+        "n": 3
+      }
+    ],
+    "dealer_members": [
+      {
+        "status": "ACTIVE",
+        "n": 5
+      }
+    ],
+    "listings": [
+      {
+        "status": "DRAFT",
+        "n": 3
+      },
+      {
+        "status": "PENDING_REVIEW",
+        "n": 1
+      },
+      {
+        "status": "ACTIVE",
+        "n": 4
+      },
+      {
+        "status": "RESERVED",
+        "n": 1
+      }
+    ],
+    "enquiries": [
+      {
+        "status": "NEW",
+        "n": 7
+      },
+      {
+        "status": "CLOSED",
+        "n": 1
+      }
+    ]
+  },
+  "unvalidatedForeignKeys": 0,
+  "orphanEnquiries": 0,
+  "orphanListings": 0,
+  "mobileGoldenEnquiry": [
+    {
+      "status": "CLOSED",
+      "hasContactTime": true,
+      "hasCloseTime": true,
+      "hasContactActor": true,
+      "hasCloseActor": true
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "provider": "controlled local identity providers; synthetic fixtures",
+  "checks": [
+    {
+      "check": "anonymous menu, hidden heading, accessible name, links, targets and layout 320",
+      "pass": true
+    },
+    {
+      "check": "Escape and focus return 320",
+      "pass": true
+    },
+    {
+      "check": "close button 320",
+      "pass": true
+    },
+    {
+      "check": "backdrop closes and releases scroll lock 320",
+      "pass": true
+    },
+    {
+      "check": "anonymous menu, hidden heading, accessible name, links, targets and layout 360",
+      "pass": true
+    },
+    {
+      "check": "Escape and focus return 360",
+      "pass": true
+    },
+    {
+      "check": "close button 360",
+      "pass": true
+    },
+    {
+      "check": "backdrop closes and releases scroll lock 360",
+      "pass": true
+    },
+    {
+      "check": "anonymous menu, hidden heading, accessible name, links, targets and layout 390",
+      "pass": true
+    },
+    {
+      "check": "Escape and focus return 390",
+      "pass": true
+    },
+    {
+      "check": "close button 390",
+      "pass": true
+    },
+    {
+      "check": "backdrop closes and releases scroll lock 390",
+      "pass": true
+    },
+    {
+      "check": "anonymous menu, hidden heading, accessible name, links, targets and layout 414",
+      "pass": true
+    },
+    {
+      "check": "Escape and focus return 414",
+      "pass": true
+    },
+    {
+      "check": "close button 414",
+      "pass": true
+    },
+    {
+      "check": "backdrop closes and releases scroll lock 414",
+      "pass": true
+    },
+    {
+      "check": "same-page navigation closes drawer",
+      "pass": true
+    },
+    {
+      "check": "Buy cars route and active link",
+      "pass": true
+    },
+    {
+      "check": "Dealers route",
+      "pass": true
+    },
+    {
+      "check": "support route",
+      "pass": true
+    },
+    {
+      "check": "dealer login route",
+      "pass": true
+    },
+    {
+      "check": "keyboard focus trap and desktop resize releases drawer",
+      "pass": true
+    },
+    {
+      "check": "tablet/desktop navigation 768",
+      "pass": true
+    },
+    {
+      "check": "tablet/desktop navigation 1280",
+      "pass": true
+    },
+    {
+      "check": "authenticated customer menu and account controls",
+      "pass": true
+    },
+    {
+      "check": "preserved mobile admin entry and Google redirect",
+      "pass": true
+    }
+  ],
+  "headSha": "cefed41177086685bb56423522bfd67d2ea9e7dc"
+}

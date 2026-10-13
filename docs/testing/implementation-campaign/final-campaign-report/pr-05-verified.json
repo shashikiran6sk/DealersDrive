@@ -1,0 +1,89 @@
+{
+  "prNumber": 292,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/292",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/dynamic-service-locations",
+  "headRefName": "feat/optional-dealer-tagline",
+  "headRefOid": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+  "files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/security.yml",
+    "apps/api/prisma/migrations/20261010093000_optional_tagline/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/modules/admin/admin.service.ts",
+    "apps/api/src/modules/dealers/dealers.docs.ts",
+    "apps/api/src/modules/dealers/dealers.public.service.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/tests/dealer-onboarding.test.ts",
+    "apps/api/tests/optional-tagline-migration.test.ts",
+    "apps/web/src/features/admin/dealer-profile-editor/dealer-detail-form.tsx",
+    "apps/web/src/features/admin/profile-change-review/profile-change-review.tsx",
+    "apps/web/src/features/auth/onboarding-wizard/business-step.tsx",
+    "apps/web/src/features/auth/onboarding-wizard/onboarding-wizard.constants.ts",
+    "apps/web/src/features/dealer/profile-actions.ts",
+    "apps/web/src/features/dealer/profile-form/profile-form.constants.ts",
+    "apps/web/src/features/dealer/profile-form/profile-form.tsx",
+    "apps/web/src/features/dealer/profile-form/review-panel.tsx",
+    "apps/web/src/features/sales/assisted-dealer-form/assisted-dealer-form.constants.ts",
+    "apps/web/src/features/sales/assisted-dealer-form/assisted-dealer-form.tsx",
+    "apps/web/src/features/sales/assisted-dealer-form/utils.ts",
+    "apps/web/tests/unit/features/admin/profile-change-review.test.tsx",
+    "apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx",
+    "apps/web/tests/unit/features/dealer/profile-actions.test.ts",
+    "apps/web/tests/unit/features/dealer/profile-form.test.tsx",
+    "apps/web/tests/unit/features/sales/assisted-dealer-form.test.tsx",
+    "apps/web/tests/unit/features/sales/sales-actions.test.ts",
+    "docs/project/optional-dealer-tagline.md",
+    "packages/contracts/src/admin.ts",
+    "packages/contracts/src/auth.ts",
+    "packages/contracts/src/dealer-tagline.ts",
+    "packages/contracts/src/dealer.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/tests/unit/dealer-messages.test.ts",
+    "packages/contracts/tests/unit/dealer-tagline.test.ts"
+  ],
+  "commits": [
+    "a894c1b308e5c5a75ab7cc7aa357a5a1aab8148c",
+    "465a5cd129de8b03be02cd551ca9e4bf238a39c6"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922/job/114033192444"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422840/job/114033192112"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922/job/114033192026"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422840/job/114033191932"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422840/job/114033191706"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "public-320": {
+    "accessibleName": "Main",
+    "visibleMainHeading": 0,
+    "links": ["Home", "Buy cars", "Dealers", "Dealer login", "Help and support"],
+    "adminLinks": 0,
+    "closeButton": 1,
+    "closed": true
+  },
+  "public-390": {
+    "accessibleName": "Main",
+    "visibleMainHeading": 0,
+    "links": ["Home", "Buy cars", "Dealers", "Dealer login", "Help and support"],
+    "adminLinks": 0,
+    "closeButton": 1,
+    "closed": true
+  },
+  "dealerTabAdminLogin": 1,
+  "adminDrawerLinks": 9
+}

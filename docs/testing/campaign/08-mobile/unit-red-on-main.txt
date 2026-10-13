@@ -1,0 +1,57 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/web
+
+ ❯ tests/unit/features/admin/dealer-profile-editor.test.tsx (8 tests | 1 failed) 1386ms
+   ❯ the review screen’s detail list on a phone (1)
+     × lets a long unbroken value wrap instead of widening the page 12ms
+ ❯ tests/unit/features/auth/onboarding-wizard.test.tsx (68 tests | 1 failed) 3444ms
+   ❯ OnboardingWizard — the Account step (14)
+     × lets the Account step shrink below a long Google address (BUG-NEW-006) 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/features/admin/dealer-profile-editor.test.tsx > the review screen’s detail list on a phone > lets a long unbroken value wrap instead of widening the page
+Error: expect(element).toHaveClass("min-w-0 [overflow-wrap:anywhere]")
+
+Expected the element to have class:
+  min-w-0 [overflow-wrap:anywhere]
+Received:
+  text-right font-medium
+ ❯ tests/unit/features/admin/dealer-profile-editor.test.tsx:185:20
+    183|       const cell = screen.getByText(value);
+    184|       expect(cell.tagName).toBe('DD');
+    185|       expect(cell).toHaveClass('min-w-0', '[overflow-wrap:anywhere]');
+       |                    ^
+    186|     }
+    187|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/features/auth/onboarding-wizard.test.tsx > OnboardingWizard — the Account step > lets the Account step shrink below a long Google address (BUG-NEW-006)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/features/auth/onboarding-wizard.test.tsx:632:83
+    630|     const fieldsets = [...container.querySelectorAll('fieldset')];
+    631|     expect(fieldsets.length).toBeGreaterThan(0);
+    632|     expect(fieldsets.every((fieldset) => fieldset.classList.contains('…
+       |                                                                                   ^
+    633|     expect(
+    634|       screen.getByText('a.very.long.dealer.mailbox.name@example-dealer…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 74 passed (76)
+   Start at  17:52:38
+   Duration  5.59s (tests 60%, environment 18%, transform 15%, setup 4%, import 4%)
+
+     × lets the decision controls wrap under the label 57ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed (1)

@@ -1,0 +1,2 @@
+Verified prior actual UI approval persisted while resuming corrected dialog selector
+Actual post-creation mobile campaign passed 40 explicit checks.

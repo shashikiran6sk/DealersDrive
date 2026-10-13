@@ -1,0 +1,12 @@
+{
+  "BUG-NEW-012-queued-enquiry-close-after-removal": {
+    "status": "FAIL",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "owner removed the manager (204, member REMOVED) while the manager's close was queued; the queued close then committed 200 → enquiry CLOSED; the manager's next request → 401. Reproduced.",
+    "evidence": [],
+    "bug": "BUG-NEW-012",
+    "auth": null,
+    "area": "retest-new012",
+    "at": "2026-10-04T13:57:00.688Z"
+  }
+}

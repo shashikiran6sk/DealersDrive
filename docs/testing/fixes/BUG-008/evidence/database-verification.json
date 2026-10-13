@@ -1,0 +1,88 @@
+{
+  "sha": "1030a4a8d005ca4ab2979360e47ec672fe070073",
+  "result": "PASS",
+  "enquiry": {
+    "id": "4429bef9-ba9a-4242-8310-f31dd0f65f14",
+    "dealerId": "617f34c3-c2f2-45c7-a711-1f48dd217074",
+    "customerId": "2c58ff79-84d8-411b-bdce-8a2dbf1da097",
+    "listingId": "f196cfd9-5dfc-476b-ad04-ce87fa985a89",
+    "status": "NEW",
+    "createdAt": "2026-10-04T10:49:18.487Z",
+    "updatedAt": "2026-10-04T10:49:18.487Z",
+    "contactedAt": null,
+    "closedAt": null,
+    "contactedById": null,
+    "closedById": null
+  },
+  "listing": {
+    "id": "f196cfd9-5dfc-476b-ad04-ce87fa985a89",
+    "vehicleId": "9f73e188-cfb2-49a9-abda-66dc2d565abb",
+    "dealerId": "617f34c3-c2f2-45c7-a711-1f48dd217074",
+    "status": "ACTIVE",
+    "publishedAt": "2026-10-04T10:49:18.427Z",
+    "decidedBy": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70"
+  },
+  "savedCount": 1,
+  "operator": {
+    "id": "da43b0f7-3c6a-4df1-b0c6-b7ad45ce9330",
+    "isPlatformAdmin": false,
+    "adminRole": null
+  },
+  "adminSeats": 0,
+  "sessions": [
+    {
+      "label": "revokedGrantedAdmin",
+      "scope": "ADMIN",
+      "userId": "da43b0f7-3c6a-4df1-b0c6-b7ad45ce9330",
+      "expiresAt": "2026-10-04T23:04:12.528Z",
+      "revokedAt": "2026-10-04T11:04:45.755Z"
+    },
+    {
+      "label": "loggedOutAdmin",
+      "scope": "ADMIN",
+      "userId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "expiresAt": "2026-10-04T23:04:12.657Z",
+      "revokedAt": "2026-10-04T11:04:46.613Z"
+    },
+    {
+      "label": "expiredAdmin",
+      "scope": "ADMIN",
+      "userId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "expiresAt": "2026-10-04T11:04:11.670Z",
+      "revokedAt": null
+    }
+  ],
+  "audits": [
+    {
+      "action": "admin.access.granted",
+      "actorType": "ADMIN",
+      "actorId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "createdAt": "2026-10-04T10:57:28.680Z"
+    },
+    {
+      "action": "admin.access.revoked",
+      "actorType": "ADMIN",
+      "actorId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "createdAt": "2026-10-04T10:59:26.066Z"
+    },
+    {
+      "action": "admin.access.granted",
+      "actorType": "ADMIN",
+      "actorId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "createdAt": "2026-10-04T11:04:12.435Z"
+    },
+    {
+      "action": "admin.access.revoked",
+      "actorType": "ADMIN",
+      "actorId": "cf3d5646-22f8-4085-85c8-cc5cb0f77e70",
+      "createdAt": "2026-10-04T11:04:45.755Z"
+    }
+  ],
+  "foreignKeys": [
+    {
+      "total": 33,
+      "unvalidated": 0
+    }
+  ],
+  "scope": "Read-only resource preservation after Admin layout UAT; expected test grant/revoke/logout mutations verified with actors and timestamps; no credentials/PII"
+}

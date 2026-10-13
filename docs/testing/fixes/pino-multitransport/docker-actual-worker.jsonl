@@ -1,0 +1,4 @@
+{"level":30,"time":1791569002949,"service":"dealers-drive-api","env":"test","environment":"local","mail":"console","jobs":true,"msg":"background workers started"}
+{"level":30,"time":1791569002949,"service":"dealers-drive-api","env":"test","environment":"local","nodeEnv":"test","appEnv":"local","mail":"console","msg":"dealers-drive worker started"}
+{"level":30,"time":1791569008601,"service":"dealers-drive-api","env":"test","environment":"local","signal":"SIGTERM","timeoutMs":15000,"msg":"worker draining"}
+{"level":30,"time":1791569008618,"service":"dealers-drive-api","env":"test","environment":"local","msg":"worker shutdown complete"}

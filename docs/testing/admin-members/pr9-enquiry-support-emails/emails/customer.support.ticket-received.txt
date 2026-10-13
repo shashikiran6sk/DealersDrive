@@ -1,0 +1,17 @@
+Subject: We have your request DD-1001 — Dealers-Drive
+
+We have your support request
+
+Hi Asha Menon,
+
+Thank you for getting in touch. Your request DD-1001 is with our support team:
+
+  Dealer has not confirmed my visit
+
+We reply inside the request, and we will email you whenever its status changes. Quote the reference if you write to us about it.
+
+View your request: http://localhost:3000/support-requests/d93e1421-8974-4be9-bc3e-d0cd7b283ff0
+
+—
+Dealers-Drive
+Questions? support@example.com

@@ -1,0 +1,84 @@
+{
+  "product_pr": "https://github.com/shashikiran6sk/DealersDrive/pull/290",
+  "product_head": "96e799020855ea53ee48cdb4510b46734b68e9ac",
+  "verified_at_utc": "2026-10-09 18:07:32 UTC",
+  "workflows": [
+    {
+      "id": 37969983777,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983777"
+    },
+    {
+      "id": 37969983818,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983818"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 113953842770,
+      "name": "dependency audit",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983818/job/113953842770"
+    },
+    {
+      "id": 113953842772,
+      "name": "lint · typecheck · test · build",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983818/job/113953842772"
+    },
+    {
+      "id": 113953842846,
+      "name": "terraform fmt / validate",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983818/job/113953842846"
+    },
+    {
+      "id": 113953841551,
+      "name": "semgrep",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983777/job/113953841551"
+    },
+    {
+      "id": 113953841927,
+      "name": "gitleaks",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37969983777/job/113953841927"
+    }
+  ],
+  "additional_status": {
+    "context": "Vercel",
+    "state": "success"
+  },
+  "ci_verification_summary": [
+    "2026-10-09T17:59:54.0026326Z  Tasks:    6 successful, 6 total",
+    "2026-10-09T18:00:16.1667421Z  Tasks:    6 successful, 6 total",
+    "2026-10-09T18:00:23.0291841Z  Test Files  15 passed (15)",
+    "2026-10-09T18:00:23.0293118Z       Tests  427 passed (427)",
+    "2026-10-09T18:00:23.0306101Z =============================== Coverage summary ===============================",
+    "2026-10-09T18:00:23.0307163Z Statements   : 98.21% ( 661/673 )",
+    "2026-10-09T18:00:23.0308001Z Branches     : 95.21% ( 239/251 )",
+    "2026-10-09T18:00:23.0308810Z Functions    : 96.66% ( 87/90 )",
+    "2026-10-09T18:00:23.0309824Z Lines        : 98.73% ( 626/634 )",
+    "2026-10-09T18:02:21.6742367Z  Test Files  125 passed (125)",
+    "2026-10-09T18:02:21.6742908Z       Tests  1488 passed (1488)",
+    "2026-10-09T18:05:14.3259581Z  Test Files  152 passed (152)",
+    "2026-10-09T18:05:14.3260104Z       Tests  3030 passed (3030)",
+    "2026-10-09T18:05:14.3262252Z =============================== Coverage summary ===============================",
+    "2026-10-09T18:05:14.3262622Z Statements   : 95.97% ( 6341/6607 )",
+    "2026-10-09T18:05:14.3262912Z Branches     : 90.44% ( 4182/4624 )",
+    "2026-10-09T18:05:14.3263186Z Functions    : 97.84% ( 1772/1811 )",
+    "2026-10-09T18:05:14.3263469Z Lines        : 97% ( 5790/5969 )",
+    "2026-10-09T18:05:14.3264583Z  Tasks:    4 successful, 4 total",
+    "2026-10-09T18:06:03.4891816Z  Tasks:    3 successful, 3 total"
+  ]
+}

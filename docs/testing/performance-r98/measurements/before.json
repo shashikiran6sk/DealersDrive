@@ -1,0 +1,378 @@
+{
+  "refresh /": {
+    "timeline": [
+      {
+        "s": "login",
+        "at": 136
+      },
+      {
+        "s": "avatar",
+        "at": 506
+      }
+    ],
+    "loginFlashed": true,
+    "vitals": {
+      "ttfb": 12,
+      "fcp": 200,
+      "load": 268
+    },
+    "serverActions": [190, 169],
+    "requests": [
+      {
+        "method": "GET",
+        "url": "/",
+        "action": false,
+        "rsc": false,
+        "ms": 39
+      },
+      {
+        "method": "POST",
+        "url": "/",
+        "action": true,
+        "rsc": false,
+        "ms": 190
+      },
+      {
+        "method": "GET",
+        "url": "/cars?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/dealers?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/login?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2022-tata-altroz-xz-anekal-cf74b84f?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2019-hyundai-i20-sportz-thrissur-106eab96?_rsc=c9BZJ8X-vYiReVMz",
+        "action": false,
+        "rsc": true,
+        "ms": 20
+      },
+      {
+        "method": "POST",
+        "url": "/",
+        "action": true,
+        "rsc": false,
+        "ms": 169
+      }
+    ]
+  },
+  "refresh /cars": {
+    "timeline": [
+      {
+        "s": "login",
+        "at": 166
+      },
+      {
+        "s": "avatar",
+        "at": 599
+      }
+    ],
+    "loginFlashed": true,
+    "vitals": {
+      "ttfb": 67,
+      "fcp": 248,
+      "load": 347
+    },
+    "serverActions": [180, null],
+    "requests": [
+      {
+        "method": "GET",
+        "url": "/cars",
+        "action": false,
+        "rsc": false,
+        "ms": 200
+      },
+      {
+        "method": "POST",
+        "url": "/cars",
+        "action": true,
+        "rsc": false,
+        "ms": 180
+      },
+      {
+        "method": "GET",
+        "url": "/?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true,
+        "ms": 35
+      },
+      {
+        "method": "GET",
+        "url": "/dealers?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/login?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2022-tata-altroz-xz-anekal-cf74b84f?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2019-hyundai-i20-sportz-thrissur-106eab96?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2021-maruti-suzuki-ertiga-vxi-gudiyatham-0ea755c1?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/car/2022-maruti-suzuki-wagon-r-vxi-ranipet-d4aae7e4?_rsc=tliFquuP4LxYzy29",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "POST",
+        "url": "/cars",
+        "action": true,
+        "rsc": false
+      }
+    ]
+  },
+  "refresh /dealers": {
+    "timeline": [
+      {
+        "s": "login",
+        "at": 145
+      },
+      {
+        "s": "avatar",
+        "at": 466
+      }
+    ],
+    "loginFlashed": true,
+    "vitals": {
+      "ttfb": 59,
+      "fcp": 208,
+      "load": 227
+    },
+    "serverActions": [null, 167],
+    "requests": [
+      {
+        "method": "GET",
+        "url": "/dealers",
+        "action": false,
+        "rsc": false,
+        "ms": 156
+      },
+      {
+        "method": "POST",
+        "url": "/dealers",
+        "action": true,
+        "rsc": false
+      },
+      {
+        "method": "GET",
+        "url": "/?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true,
+        "ms": 30
+      },
+      {
+        "method": "GET",
+        "url": "/cars?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/login?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/adoni-cotton-belt-autos-pvt-ltd-adoni-kurnool-andhra-pradesh?_rsc=zseeIMovOTtZV2J",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/adoni-motor-traders-llp-adoni-kurnool-andhra-pradesh?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/adoni-star-motors-enterprises-adoni-kurnool-andhra-pradesh?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/air-force-road-autos-llp-yelahanka-bengaluru-urban-karnataka?_rsc=zseeIMovOTtZV2J",
+        "action": false,
+        "rsc": true,
+        "ms": 57
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/aluva-junction-autos-llp-aluva-ernakulam-kerala?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true,
+        "ms": 57
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/ambur-motor-house-pvt-ltd-ambur-tirupattur-tamil-nadu?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true,
+        "ms": 56
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/ambur-star-autos-llp-ambur-tirupattur-tamil-nadu?_rsc=zseeIMovOTtZV2Jj",
+        "action": false,
+        "rsc": true,
+        "ms": 54
+      },
+      {
+        "method": "GET",
+        "url": "/dealers/anakapalle-road-autos-llp-gajuwaka-visakhapatnam-andhra-pradesh?_rsc=zseeIMovOTtZ",
+        "action": false,
+        "rsc": true
+      },
+      {
+        "method": "POST",
+        "url": "/dealers",
+        "action": true,
+        "rsc": false,
+        "ms": 167
+      }
+    ]
+  },
+  "console tab switching (150ms/API call)": [
+    {
+      "label": "Inventory",
+      "feedbackMs": 268,
+      "urlMs": 268,
+      "contentMs": 268,
+      "rsc": 2
+    },
+    {
+      "label": "Enquiries",
+      "feedbackMs": 246,
+      "urlMs": 246,
+      "contentMs": 246,
+      "rsc": 1
+    },
+    {
+      "label": "Dealer profile",
+      "feedbackMs": 281,
+      "urlMs": 281,
+      "contentMs": 281,
+      "rsc": 1
+    },
+    {
+      "label": "Team",
+      "feedbackMs": 404,
+      "urlMs": 404,
+      "contentMs": 404,
+      "rsc": 1
+    },
+    {
+      "label": "Dashboard",
+      "feedbackMs": 228,
+      "urlMs": 228,
+      "contentMs": 228,
+      "rsc": 1
+    },
+    {
+      "label": "Inventory",
+      "feedbackMs": 237,
+      "urlMs": 237,
+      "contentMs": 237,
+      "rsc": 1
+    }
+  ],
+  "slow create (12s) then click Inventory": {
+    "navigatedAfterMs": 7244,
+    "finalPath": "/dealer/inventory",
+    "submittedAt": 1791219275561
+  },
+  "logout then navigate": {
+    "loggedOutMs": 251,
+    "heartsStillPressedAfterLogout": 1,
+    "dealersNavMs": 73
+  },
+  "home → car card click (800ms per API call)": [
+    {
+      "href": "/car/2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+      "feedbackMs": 924,
+      "urlMs": 924,
+      "contentMs": 924
+    },
+    {
+      "href": "/car/2022-tata-altroz-xz-anekal-cf74b84f",
+      "feedbackMs": 900,
+      "urlMs": 900,
+      "contentMs": 900
+    },
+    {
+      "href": "/car/2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+      "feedbackMs": 907,
+      "urlMs": 907,
+      "contentMs": 907
+    }
+  ],
+  "API calls for full load of /dealer/profile": [
+    "GET /v1/auth/me 153ms",
+    "GET /v1/dealer 154ms",
+    "GET /v1/dealer/completeness 155ms",
+    "GET /v1/auth/me 152ms",
+    "GET /v1/auth/providers 152ms",
+    "GET /v1/auth/sign-in/phone/widget 153ms",
+    "GET /v1/vehicles/2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2/similar 835ms"
+  ]
+}

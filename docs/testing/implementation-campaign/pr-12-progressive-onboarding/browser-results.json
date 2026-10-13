@@ -1,0 +1,149 @@
+{
+  "adapter": "Controlled local Google and OTP; real UI/API/database/uploads, synthetic identities only",
+  "checks": [
+    {
+      "name": "anonymous registration requires sign-in",
+      "result": "PASS"
+    },
+    {
+      "name": "Google sign-in and basic registration discovery",
+      "result": "PASS"
+    },
+    {
+      "name": "basic-registration responsive at 320",
+      "result": "PASS"
+    },
+    {
+      "name": "basic-registration responsive at 390",
+      "result": "PASS"
+    },
+    {
+      "name": "basic-registration responsive at 768",
+      "result": "PASS"
+    },
+    {
+      "name": "basic-registration responsive at 1280",
+      "result": "PASS"
+    },
+    {
+      "name": "real mobile proof inside staged registration",
+      "result": "PASS"
+    },
+    {
+      "name": "essential registration persists and resumes verification workspace",
+      "result": "PASS"
+    },
+    {
+      "name": "registration does not activate or expose business",
+      "result": "PASS"
+    },
+    {
+      "name": "partial progress survives save and browser reload",
+      "result": "PASS"
+    },
+    {
+      "name": "verification-workspace responsive at 320",
+      "result": "PASS"
+    },
+    {
+      "name": "verification-workspace responsive at 390",
+      "result": "PASS"
+    },
+    {
+      "name": "verification-workspace responsive at 768",
+      "result": "PASS"
+    },
+    {
+      "name": "verification-workspace responsive at 1280",
+      "result": "PASS"
+    },
+    {
+      "name": "admin-applicable-review responsive at 320",
+      "result": "PASS"
+    },
+    {
+      "name": "admin-applicable-review responsive at 390",
+      "result": "PASS"
+    },
+    {
+      "name": "admin-applicable-review responsive at 768",
+      "result": "PASS"
+    },
+    {
+      "name": "admin-applicable-review responsive at 1280",
+      "result": "PASS"
+    },
+    {
+      "name": "actual admin applicability review persists",
+      "result": "PASS"
+    },
+    {
+      "name": "only individually applicable evidence requested",
+      "result": "PASS"
+    },
+    {
+      "name": "uploaded-evidence responsive at 320",
+      "result": "PASS"
+    },
+    {
+      "name": "uploaded-evidence responsive at 390",
+      "result": "PASS"
+    },
+    {
+      "name": "uploaded-evidence responsive at 768",
+      "result": "PASS"
+    },
+    {
+      "name": "uploaded-evidence responsive at 1280",
+      "result": "PASS"
+    },
+    {
+      "name": "private evidence upload and controlled submission",
+      "result": "PASS"
+    },
+    {
+      "name": "reviewed no-yard no-GST application activates through real backend",
+      "result": "PASS"
+    },
+    {
+      "name": "approved evidence remains read-only",
+      "result": "PASS"
+    },
+    {
+      "name": "sales-assisted-registration responsive at 320",
+      "result": "PASS"
+    },
+    {
+      "name": "sales-assisted-registration responsive at 390",
+      "result": "PASS"
+    },
+    {
+      "name": "sales-assisted-registration responsive at 768",
+      "result": "PASS"
+    },
+    {
+      "name": "sales-assisted-registration responsive at 1280",
+      "result": "PASS"
+    },
+    {
+      "name": "sales staged entry preserves representative phone and consent gate",
+      "result": "PASS"
+    },
+    {
+      "name": "actual sales-assisted consent, mobile proof and essential registration",
+      "result": "PASS"
+    },
+    {
+      "name": "assisted staged draft saves and resumes partial details",
+      "result": "PASS"
+    },
+    {
+      "name": "unauthorized support reviewer sees no mutation form or private evidence links",
+      "result": "PASS"
+    },
+    {
+      "name": "unauthorized review endpoint rejected",
+      "result": "PASS"
+    }
+  ]
+}

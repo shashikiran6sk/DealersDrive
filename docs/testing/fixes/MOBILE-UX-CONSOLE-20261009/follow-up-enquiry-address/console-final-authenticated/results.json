@@ -1,0 +1,21 @@
+{
+  "base": "http://localhost:3006",
+  "head": "14ae77630586c7cb5ab5e4442d69800d3681876d",
+  "checks": [
+    "Real isolated customer sign-in opens six-digit OTP",
+    "Existing verified fixture account signs in without registration",
+    "Public marketplace account menu remains available",
+    "Existing public workspace action enters dealer console without reauthentication",
+    "Authenticated dealer header has no avatar",
+    "Drawer status, logout, credit removal and fit at 320",
+    "Drawer status, logout, credit removal and fit at 360",
+    "Drawer status, logout, credit removal and fit at 375",
+    "Drawer status, logout, credit removal and fit at 390",
+    "Drawer status, logout, credit removal and fit at 430",
+    "Drawer status, logout, credit removal and fit at 440",
+    "Desktop dealer avatar stays removed",
+    "Desktop sidebar hosts logout",
+    "Logout removes browser session cookie and returns home",
+    "Protected dealer route redirects after logout"
+  ]
+}

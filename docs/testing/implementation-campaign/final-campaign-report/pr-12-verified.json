@@ -1,0 +1,106 @@
+{
+  "prNumber": 299,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/299",
+  "state": "OPEN",
+  "isDraft": true,
+  "mergedAt": null,
+  "baseRefName": "main",
+  "headRefName": "feat/progressive-dealer-verification",
+  "headRefOid": "f563188894c4073e350bcd249292a15575595ae3",
+  "files": [
+    "AGENTS.md",
+    "apps/api/prisma/migrations/20261011020000_progressive_onboarding/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/docs/schemas.ts",
+    "apps/api/src/modules/admin/admin.docs.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/admin/admin.service.ts",
+    "apps/api/src/modules/admin/progressive-review.service.ts",
+    "apps/api/src/modules/admin/routes/post-progressive-plan.ts",
+    "apps/api/src/modules/auth/auth.docs.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/auth/auth.service.ts",
+    "apps/api/src/modules/auth/routes/post-progressive-registration.ts",
+    "apps/api/src/modules/dealers/dealers.docs.ts",
+    "apps/api/src/modules/dealers/dealers.facade.ts",
+    "apps/api/src/modules/dealers/dealers.routes.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/src/modules/dealers/progressive-policy.ts",
+    "apps/api/src/modules/dealers/routes/get-progressive.ts",
+    "apps/api/src/modules/sales/routes/post-progressive-dealer.ts",
+    "apps/api/src/modules/sales/sales.docs.ts",
+    "apps/api/src/modules/sales/sales.routes.ts",
+    "apps/api/src/modules/sales/sales.service.ts",
+    "apps/api/tests/progressive-migration.test.ts",
+    "apps/api/tests/progressive-onboarding.test.ts",
+    "apps/api/tests/unit/modules/admin/admin.routes.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.routes.test.ts",
+    "apps/web/src/app/(admin)/admin/dealers/[id]/page.tsx",
+    "apps/web/src/app/(auth)/dealer/onboarding/page.tsx",
+    "apps/web/src/app/(auth)/dealer/register/page.tsx",
+    "apps/web/src/app/(sales)/sales/dealers/[id]/page.tsx",
+    "apps/web/src/app/(sales)/sales/dealers/new/page.tsx",
+    "apps/web/src/app/(sales)/sales/dealers/register/page.tsx",
+    "apps/web/src/components/dealers/dealer-card/dealer-card-cover.tsx",
+    "apps/web/src/components/dealers/dealer-card/dealer-card.constants.ts",
+    "apps/web/src/features/auth/document-uploader/document-uploader.tsx",
+    "apps/web/src/features/progressive/actions.ts",
+    "apps/web/src/features/progressive/admin-review.tsx",
+    "apps/web/src/features/progressive/assisted-progress.tsx",
+    "apps/web/src/features/progressive/registration.tsx",
+    "apps/web/src/features/progressive/workspace.tsx",
+    "apps/web/src/features/sales/assisted-dealer-start/assisted-dealer-start.tsx",
+    "apps/web/tests/unit/components/dealers/directory.test.tsx",
+    "apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx",
+    "apps/web/tests/unit/features/progressive/actions.test.ts",
+    "apps/web/tests/unit/features/progressive/workspace.test.tsx",
+    "docs/project/progressive-dealer-onboarding.md",
+    "packages/contracts/src/admin.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/src/progressive-onboarding.ts",
+    "packages/contracts/src/sales.ts",
+    "packages/contracts/tests/unit/progressive-onboarding.test.ts"
+  ],
+  "commits": [
+    "16370ca2ee6b8b9c8fde25d86870c33f0defa888",
+    "f563188894c4073e350bcd249292a15575595ae3"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154790/job/114415986400"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154790/job/114415986389"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154764/job/114415986316"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154790/job/114415986276"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154764/job/114415986149"
+    }
+  ]
+}

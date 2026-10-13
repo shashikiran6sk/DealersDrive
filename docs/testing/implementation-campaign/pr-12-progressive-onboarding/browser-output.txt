@@ -1,0 +1,37 @@
+PASS anonymous registration requires sign-in
+PASS Google sign-in and basic registration discovery
+PASS basic-registration responsive at 320
+PASS basic-registration responsive at 390
+PASS basic-registration responsive at 768
+PASS basic-registration responsive at 1280
+PASS real mobile proof inside staged registration
+PASS essential registration persists and resumes verification workspace
+PASS registration does not activate or expose business
+PASS partial progress survives save and browser reload
+PASS verification-workspace responsive at 320
+PASS verification-workspace responsive at 390
+PASS verification-workspace responsive at 768
+PASS verification-workspace responsive at 1280
+PASS admin-applicable-review responsive at 320
+PASS admin-applicable-review responsive at 390
+PASS admin-applicable-review responsive at 768
+PASS admin-applicable-review responsive at 1280
+PASS actual admin applicability review persists
+PASS only individually applicable evidence requested
+PASS uploaded-evidence responsive at 320
+PASS uploaded-evidence responsive at 390
+PASS uploaded-evidence responsive at 768
+PASS uploaded-evidence responsive at 1280
+PASS private evidence upload and controlled submission
+PASS reviewed no-yard no-GST application activates through real backend
+PASS approved evidence remains read-only
+PASS sales-assisted-registration responsive at 320
+PASS sales-assisted-registration responsive at 390
+PASS sales-assisted-registration responsive at 768
+PASS sales-assisted-registration responsive at 1280
+PASS sales staged entry preserves representative phone and consent gate
+PASS actual sales-assisted consent, mobile proof and essential registration
+PASS assisted staged draft saves and resumes partial details
+PASS unauthorized support reviewer sees no mutation form or private evidence links
+PASS unauthorized review endpoint rejected
+Actual progressive browser campaign passed 36 checks.

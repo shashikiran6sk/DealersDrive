@@ -1,0 +1,51 @@
+{
+  "prNumber": 299,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/299",
+  "branch": "feat/progressive-dealer-verification",
+  "baseBranch": "main",
+  "baseSha": "d423db1caf9212dab51ee938187234a4660e4f5b",
+  "headSha": "f563188894c4073e350bcd249292a15575595ae3",
+  "implementationCompleted": true,
+  "incrementalFiles": 52,
+  "migrations": ["20261011020000_progressive_onboarding"],
+  "testsPassed": {
+    "api": 3067,
+    "web": 1497,
+    "contracts": 441,
+    "total": 5005,
+    "browserChecks": 36
+  },
+  "testsFailedFinal": 0,
+  "coverage": {
+    "apiBranches": 90.49,
+    "apiLines": 96.92
+  },
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154790",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38121154764",
+  "ciHeadSha": "f563188894c4073e350bcd249292a15575595ae3",
+  "ciFinalStatus": "SUCCESS",
+  "prState": "OPEN",
+  "draft": true,
+  "merged": false,
+  "independentFromStack": true,
+  "productionDeployment": false,
+  "notRun": [
+    "live SMS delivery",
+    "real Google provider/account",
+    "government registry verification",
+    "physical-device or native Safari UAT",
+    "production migrations/encryption verification"
+  ],
+  "knownLimitations": [
+    "product/legal review pending",
+    "main free-text locations and Google/session model retained; unmerged stack integration pending",
+    "production retention and protected case policy require owner approval"
+  ],
+  "resolvedValidationIssues": [
+    "initial Docker unavailable restored isolated container",
+    "branch coverage below 90 expanded actual authorization/assisted/recovery cases",
+    "post-creation document controls corrected to read-only for submitted/active state",
+    "existing moderation setup timeout: isolated 7-case rerun and final complete suite passed unchanged",
+    "browser sales accessible hint selector corrected, full actual campaign repeated"
+  ]
+}

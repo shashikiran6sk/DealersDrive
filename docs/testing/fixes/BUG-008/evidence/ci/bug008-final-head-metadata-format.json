@@ -1,0 +1,20 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "prettier",
+    "--check",
+    "docs/testing/fixes/BUG-008/README.md",
+    "docs/testing/fixes/BUG-008/canonical-retests.json",
+    "docs/testing/pre-production/BUG-REPORT.md",
+    "docs/testing/pre-production/RETEST-REPORT.md",
+    "docs/testing/pre-production/STACK-MAP.md",
+    "docs/testing/pre-production/NEXT-SESSION-HANDOFF.md"
+  ],
+  "sha": "a52a107e942d55b5137a42a157bc2f1b1fb09e19",
+  "start_utc": "2026-10-04T11:30:51.989076+00:00",
+  "end_utc": "2026-10-04T11:30:52.605687+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug008-final-head-metadata-format.log",
+  "cache": "TURBO_FORCE=true"
+}

@@ -1,0 +1,15 @@
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck /home/user/wt-makes/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/api:typecheck: 
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck /home/user/wt-makes/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck: 
+
+ Tasks:    6 successful, 6 total
+Cached:    1 cached, 6 total
+  Time:    22.215s 
+
+ WARNING  no output files found for task @dealers-drive/config#typecheck. Please check your `outputs` key in `turbo.json`

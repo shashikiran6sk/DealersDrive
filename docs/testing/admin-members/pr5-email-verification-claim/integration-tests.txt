@@ -1,0 +1,15 @@
+ ✓ |integration| tests/dealer-claims.test.ts > the verification email > is sent on creation, to the typed address, with a link only the email holds 146ms
+ ✓ |integration| tests/dealer-claims.test.ts > the verification email > does not send status emails to an unverified address 93ms
+ ✓ |integration| tests/dealer-claims.test.ts > the verification email > is superseded by a resend, and the resend is rate-limited 119ms
+ ✓ |integration| tests/dealer-claims.test.ts > the verification email > follows a change of address, and the old link stops working 130ms
+ ✓ |integration| tests/dealer-claims.test.ts > confirming the email > needs a POST: reading the link changes nothing 74ms
+ ✓ |integration| tests/dealer-claims.test.ts > confirming the email > verifies the dealership’s email, idempotently, and audits it 75ms
+ ✓ |integration| tests/dealer-claims.test.ts > confirming the email > refuses an unknown, malformed or expired link 65ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > needs the email confirmed first 49ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > refuses another number, and a wrong code 66ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > makes the phone holder the OWNER, signs them in, and locks Sales out 158ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > attaches an existing customer account that holds the number 88ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > refuses a team account, and an account that already manages a dealership 142ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > owns the dealership once, whatever the race 93ms
+ ✓ |integration| tests/dealer-claims.test.ts > claiming > refuses unknown fields, and never accepts a dealerId 59ms
+      Tests  14 passed (14)

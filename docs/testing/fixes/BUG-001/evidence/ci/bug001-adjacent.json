@@ -1,0 +1,23 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "vitest",
+    "run",
+    "--project",
+    "integration",
+    "tests/dealer-invitation-locking.test.ts",
+    "tests/dealer-tenancy-hardening.test.ts",
+    "tests/dealer-team.test.ts",
+    "tests/dealer-roles.test.ts",
+    "--reporter=verbose"
+  ],
+  "sha": "107a46259f1e8ee13765e3a3559fe5b5bbc88c99",
+  "start_utc": "2026-10-02T18:40:17.790861+00:00",
+  "end_utc": "2026-10-02T18:40:29.660378+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug001-adjacent.log",
+  "cache": "TURBO_FORCE=true"
+}

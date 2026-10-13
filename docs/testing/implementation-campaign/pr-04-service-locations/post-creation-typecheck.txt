@@ -1,0 +1,45 @@
+
+> dealers-drive@0.0.0 typecheck <workspace>
+> turbo run typecheck
+
+
+   • turbo 2.11.7
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running typecheck in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/config:typecheck: cache hit, replaying logs 6c8de72253d5c3e1
+@dealers-drive/contracts:build: cache hit, replaying logs 60f80f6d6b9eb56a
+@dealers-drive/contracts:typecheck: cache hit, replaying logs cec048050cb5c05e
+@dealers-drive/contracts:build:
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build <workspace>/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build:
+@dealers-drive/config:typecheck:
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck <workspace>/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck:
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/contracts:typecheck:
+@dealers-drive/contracts:typecheck: > @dealers-drive/contracts@0.0.0 typecheck <workspace>/packages/contracts
+@dealers-drive/contracts:typecheck: > tsc -p tsconfig.json
+@dealers-drive/contracts:typecheck:
+@dealers-drive/web:typecheck: cache hit, replaying logs 1a20d9aac8d3f48d
+@dealers-drive/api:typecheck: cache hit, replaying logs c2e0bc43be7bcc51
+@dealers-drive/sandbox:typecheck: cache hit, replaying logs 9eceae7d56a5d8b6
+@dealers-drive/web:typecheck:
+@dealers-drive/web:typecheck: > @dealers-drive/web@0.0.0 typecheck <workspace>/apps/web
+@dealers-drive/web:typecheck: > tsc --noEmit
+@dealers-drive/web:typecheck:
+@dealers-drive/api:typecheck:
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck <workspace>/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck:
+@dealers-drive/sandbox:typecheck:
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck <workspace>/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck:
+
+ Tasks:    6 successful, 6 total
+Cached:    6 cached, 6 total
+  Time:    23ms >>> FULL TURBO

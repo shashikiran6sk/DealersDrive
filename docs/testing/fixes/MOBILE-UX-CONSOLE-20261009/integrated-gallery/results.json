@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Twenty-photo mobile gallery keeps thumbnails below the image",
+    "Fullscreen gallery advances with the existing keyboard control",
+    "Native thumbnail selection reaches the last photo",
+    "Short gallery viewport has no document overflow",
+    "Short viewport keeps the thumbnail rail accessible",
+    "Gallery Escape returns focus to its opener"
+  ],
+  "source": "Existing twenty-photo story renders real production VehicleGallery"
+}

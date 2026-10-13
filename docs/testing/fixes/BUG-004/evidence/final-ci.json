@@ -1,0 +1,75 @@
+{
+  "pr": 235,
+  "head": "adeb847c19a0740270929a014594d1ce6c73a567",
+  "base": "fix/pre-production-03-stable-pagination",
+  "baseSha": "62b14915dec43118994b11f88f8a00191d2e55d8",
+  "result": "PASS",
+  "workflows": [
+    {
+      "id": 37183233673,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 519,
+      "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233673/jobs",
+      "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233673/logs",
+      "workflow_id": 349239985
+    },
+    {
+      "id": 37183233655,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 370,
+      "jobs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233655/jobs",
+      "logs_url": "https://api.github.com/repos/shashikiran6sk/DealersDrive/actions/runs/37183233655/logs",
+      "workflow_id": 349234330
+    }
+  ],
+  "jobs": [
+    {
+      "id": 111379828846,
+      "name": "lint · typecheck · test · build",
+      "conclusion": "success"
+    },
+    {
+      "id": 111379828831,
+      "name": "dependency audit",
+      "conclusion": "success"
+    },
+    {
+      "id": 111379828683,
+      "name": "terraform fmt / validate",
+      "conclusion": "success"
+    },
+    {
+      "id": 111379828607,
+      "name": "gitleaks",
+      "conclusion": "success"
+    },
+    {
+      "id": 111379828745,
+      "name": "semgrep",
+      "conclusion": "success"
+    }
+  ],
+  "verificationLogSummary": [
+    "2026-10-04T06:36:13.3966039Z All matched files use Prettier code style!",
+    "2026-10-04T06:36:45.4962184Z All matched files use Prettier code style!",
+    "2026-10-04T06:37:20.8911167Z no stale references",
+    "2026-10-04T06:37:21.3911421Z no stale references",
+    "2026-10-04T06:37:47.2222073Z  Test Files  14 passed (14)",
+    "2026-10-04T06:37:47.2223495Z       Tests  420 passed (420)",
+    "2026-10-04T06:39:35.5372806Z  Test Files  99 passed (99)",
+    "2026-10-04T06:39:35.5373389Z       Tests  1346 passed (1346)",
+    "2026-10-04T06:41:22.4010427Z  Test Files  130 passed (130)",
+    "2026-10-04T06:41:22.4011100Z       Tests  2674 passed (2674)",
+    "2026-10-04T06:42:09.9606438Z  ✓ Compiled successfully in 21.2s"
+  ],
+  "fullTests": 4440,
+  "sourceTestByteUnchangedFrom": "3aa48c47ee6992169f2d2e56e543fbf9c5d2767e",
+  "remoteLocalLayerFiles": 85,
+  "firstAttempt": "CI369 formatting failure corrected on same branch; Security518 passed",
+  "humanUat": "PENDING",
+  "merged": false
+}

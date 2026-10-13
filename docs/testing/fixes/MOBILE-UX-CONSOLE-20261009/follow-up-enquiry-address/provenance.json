@@ -1,0 +1,8 @@
+{
+  "mobileHead": "6ccf12a0699b86e49149cbeb68a940159b8eecd7",
+  "originalMobileBefore": "fb48fa656ab5146bb638a870e9e74a686b34d775",
+  "matchingPublicSourceBeforeBuild": "6a825fc0e95e438854193bfb3c5a570c099bd6ea",
+  "beforeBuildExplanation": "The before-final production build is the previously verified local combination. Its enquiry-panel and portfolio page source files are byte-identical to the original mobile head, verified by empty git diff. It was not pushed.",
+  "fixtures": "Existing local fake OTP; no production SMS or external messages. Browser sessions are deliberately local and unrecorded.",
+  "scope": "Mounted enquiry scroll and mobile-only full-width portfolio address. Desktop source layout classes are unchanged."
+}

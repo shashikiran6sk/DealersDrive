@@ -1,0 +1,20 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "vitest",
+    "run",
+    "--project",
+    "integration",
+    "tests/dealer-invitation-locking.test.ts",
+    "tests/dealer-tenancy-hardening.test.ts"
+  ],
+  "sha": "107a46259f1e8ee13765e3a3559fe5b5bbc88c99",
+  "start_utc": "2026-10-02T18:36:20.547093+00:00",
+  "end_utc": "2026-10-02T18:36:30.447370+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug001-red.log",
+  "cache": "TURBO_FORCE=true"
+}

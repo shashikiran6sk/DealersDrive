@@ -1,0 +1,14 @@
+Head: 0e8a6badf6328c9879e8bf7ff6534840b44e29c6 (feat/progressive-dealer-verification), base main 5a89a9f
+API        vitest run            173 files, 3395 tests passed
+Web        vitest run            142 files, 1633 tests passed
+Contracts  vitest run             23 files,  570 tests passed
+Lint + typecheck  turbo run lint typecheck   11/11 tasks successful
+Format     prettier --check apps packages docs/code docs/project   clean
+Build      turbo run build        3/3 tasks successful (contracts, api, web)
+
+Observed and handled during the campaign:
+- dealer-rejection-atomicity.test.ts failed once under full-suite load (outbox retried
+  twice within one drain: no retry backoff + shared test outbox). Pre-existing on main;
+  passes in isolation (3/3) and in the final full run. Not changed by this PR.
+- dealer-verification.test.ts collided once on the unique PAN index (fixture drew from
+  10,000 PANs; the test DB persists). Fixed in 0e8a6ba by widening the random space.

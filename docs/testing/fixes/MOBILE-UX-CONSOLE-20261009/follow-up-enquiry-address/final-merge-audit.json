@@ -1,0 +1,47 @@
+{
+  "mobile": {
+    "number": 285,
+    "state": "closed",
+    "head": "6ccf12a0699b86e49149cbeb68a940159b8eecd7",
+    "merged_at": "2026-10-09T11:34:58Z",
+    "merge_commit": "25796c07b42b91fa586c63cb9cb28e9ecec75498",
+    "auto_merge": null
+  },
+  "console": {
+    "number": 286,
+    "state": "closed",
+    "head": "14ae77630586c7cb5ab5e4442d69800d3681876d",
+    "merged_at": "2026-10-09T12:33:47Z",
+    "merge_commit": "5ce6df503a33df0c199ac90e7a2941ead8c70bcb",
+    "auto_merge": null
+  },
+  "main": "5ce6df503a33df0c199ac90e7a2941ead8c70bcb",
+  "verifiedLocalTree": "ed5d43398ce863e36ae8a7904375dadeb332ceee",
+  "sourceTreeMatchesVerifiedReference": true,
+  "workspaceBranch": "main",
+  "workspaceClean": true,
+  "protectedSourceChanges": [],
+  "localIntegrationPushed": false,
+  "tests": {
+    "mobile": {
+      "web": 1479,
+      "contracts": 427,
+      "api": 3014,
+      "total": 4920
+    },
+    "console": {
+      "web": 1488,
+      "contracts": 427,
+      "api": 3014,
+      "total": 4929
+    }
+  },
+  "followupBrowserAssertions": 55,
+  "desktopPortfolioPixelIdenticalPairs": 8,
+  "mergeTransport": "Connected GitHub merge tool after both session-only gh --squash --admin commands were blocked by the CLI network endpoint; no repository setting or persistent admin configuration changed.",
+  "postMergeMainChecks": {
+    "build and push": "success",
+    "semgrep": "success",
+    "gitleaks": "success"
+  }
+}

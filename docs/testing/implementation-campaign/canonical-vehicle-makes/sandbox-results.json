@@ -1,0 +1,37 @@
+{
+  "empty": {
+    "value": "",
+    "disabled": false,
+    "errors": [],
+    "firstOptions": ["Maruti Suzuki", "Hyundai", "Tata"]
+  },
+  "selected": {
+    "value": "Maruti Suzuki",
+    "disabled": false,
+    "errors": [],
+    "firstOptions": ["Maruti Suzuki", "Hyundai", "Tata"]
+  },
+  "alias-resolves-to-brand": {
+    "value": "Maruti Suzuki",
+    "disabled": false,
+    "errors": [],
+    "firstOptions": ["Maruti Suzuki", "Hyundai", "Tata"]
+  },
+  "saved-outside-list": {
+    "value": "Hindustan Ambassador Co",
+    "disabled": false,
+    "errors": [],
+    "firstOptions": ["Hindustan Ambassador Co (as saved)", "Maruti Suzuki", "Hyundai"]
+  },
+  "invalid": {
+    "value": "",
+    "disabled": false,
+    "errors": [],
+    "firstOptions": ["Maruti Suzuki", "Hyundai", "Tata"]
+  },
+  "disabled": {
+    "value": "Hyundai",
+    "disabled": true,
+    "errors": []
+  }
+}
