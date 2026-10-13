@@ -754,7 +754,9 @@ true.
 No `geo` and no `telephone` — see
 [the portfolio page](<app/(public)/dealers/[slug].md>). `taxID` is the GSTIN
 the details card prints; `hasMap` is the dealer's own Maps link the location
-card opens.
+card opens. `image` is every approved portfolio photograph, in order — the
+photographs the page's hero shows — or `[coverUrl]` when there is no
+portfolio, and absent when there is neither.
 
 ### `schemas/site.ts` — `export function organizationSchema(...)`
 

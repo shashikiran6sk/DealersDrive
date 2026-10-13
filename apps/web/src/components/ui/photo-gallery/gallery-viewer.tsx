@@ -1,6 +1,5 @@
 'use client';
 
-import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useEffect } from 'react';
 
 import { BrandLogo } from '@/components/brand-logo';
@@ -8,23 +7,25 @@ import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 import { GalleryArrow } from './gallery-arrow';
 import { GalleryRail } from './gallery-rail';
-import { VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
-import { arrowStep } from './utils';
+import { PHOTO_GALLERY_TEXT } from './photo-gallery.constants';
+import type { GalleryPhoto, GalleryStep } from './photo-gallery.types';
+import { useSwipe } from './use-swipe';
+import { arrowStep, captionOf } from './utils';
 
 export interface GalleryViewerProps {
   title: string;
-  images: PublicVehicleImage[];
+  photos: readonly GalleryPhoto[];
   index: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (index: number) => void;
-  onStep: (delta: -1 | 1) => void;
+  onStep: (delta: GalleryStep) => void;
   onCloseAutoFocus: (event: Event) => void;
 }
 
 export function GalleryViewer({
   title,
-  images,
+  photos,
   index,
   open,
   onOpenChange,
@@ -32,8 +33,9 @@ export function GalleryViewer({
   onStep,
   onCloseAutoFocus,
 }: GalleryViewerProps) {
-  const current = images[index];
-  const several = images.length > 1;
+  const current = photos[index];
+  const several = photos.length > 1;
+  const swipe = useSwipe(onStep, several);
 
   useEffect(() => {
     if (!open || !several) return;
@@ -55,25 +57,28 @@ export function GalleryViewer({
       onCloseAutoFocus={onCloseAutoFocus}
       contentClassName="max-md:flex-col"
       title={title}
-      closeLabel={VEHICLE_GALLERY_TEXT.close}
+      closeLabel={PHOTO_GALLERY_TEXT.close}
       header={
         <div className="flex min-w-0 items-center gap-3 max-md:gap-2 max-md:[&>img]:hidden">
           <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
           <DialogTitle className="truncate text-[15px] text-white">{title}</DialogTitle>
           <DialogDescription tone="inverse" className="mt-0 flex-none text-[12px] tnum">
-            {VEHICLE_GALLERY_TEXT.count(index, images.length)}
+            {PHOTO_GALLERY_TEXT.count(index, photos.length)}
           </DialogDescription>
         </div>
       }
     >
-      <GalleryRail images={images} index={index} onSelect={onSelect} />
+      <GalleryRail photos={photos} index={index} onSelect={onSelect} />
 
-      <div className="relative flex min-w-0 flex-1 items-center justify-center p-3 max-md:min-h-0 md:p-5">
+      <div
+        {...swipe}
+        className="relative flex min-w-0 flex-1 touch-pan-y items-center justify-center p-3 max-md:min-h-0 md:p-5"
+      >
         {several ? (
           <GalleryArrow
             direction="previous"
             placement="stage"
-            label={VEHICLE_GALLERY_TEXT.previous}
+            label={PHOTO_GALLERY_TEXT.previous}
             onClick={() => onStep(-1)}
           />
         ) : null}
@@ -89,16 +94,16 @@ export function GalleryViewer({
           <GalleryArrow
             direction="next"
             placement="stage"
-            label={VEHICLE_GALLERY_TEXT.next}
+            label={PHOTO_GALLERY_TEXT.next}
             onClick={() => onStep(1)}
           />
         ) : null}
 
         <p
           aria-live="polite"
-          className="absolute inset-x-0 bottom-[14px] px-12 text-center text-[12px] text-white/70"
+          className="absolute inset-x-0 bottom-[14px] px-12 text-center text-[12px] text-white/70 [overflow-wrap:anywhere]"
         >
-          {current?.alt}
+          {current ? captionOf(current) : null}
         </p>
       </div>
     </Dialog>

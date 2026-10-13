@@ -44,9 +44,8 @@ export function documentPaths(base: string) {
 }
 
 export const CATEGORY_NOTES: Record<SelectableDocCategory, string> = {
-  PERSONAL_IDENTITY:
-    'One document that identifies the person who manages the dealership. Aadhaar is voluntary — any listed proof works instead.',
-  BUSINESS_IDENTITY: 'One government-issued document that identifies the dealership itself.',
+  PERSONAL_IDENTITY: 'For the person who runs the dealership. Aadhaar is optional.',
+  BUSINESS_IDENTITY: 'A government document for the dealership.',
 };
 
 export const CATEGORY_GLYPHS: Record<SelectableDocCategory, string> = {
@@ -70,8 +69,7 @@ export const DOCUMENT_UPLOADER_TEXT = {
   descriptionLabel: 'Describe the certificate',
   descriptionPlaceholder: 'Name of the certificate and the authority that issued it',
   noFile: 'No file yet — PDF, JPEG or PNG, up to 5 MB',
-  gstinCleared:
-    'Your GSTIN is on file with your GST Registration Certificate. Choosing a different business proof removes the GSTIN.',
+  gstinCleared: 'Choosing another business proof removes your GSTIN.',
   gstinLabel: 'GSTIN',
   gstinHint: 'optional — as printed on the certificate',
   gstinPlaceholder: '33ABCDE1234F1Z5',

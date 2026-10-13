@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-import { NEXT_GLYPH, PREVIOUS_GLYPH } from './vehicle-gallery.constants';
+import { NEXT_GLYPH, PREVIOUS_GLYPH } from './photo-gallery.constants';
 
 export type GalleryArrowPlacement = 'strip' | 'stage';
 

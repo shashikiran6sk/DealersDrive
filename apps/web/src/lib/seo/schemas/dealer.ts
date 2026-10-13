@@ -25,6 +25,12 @@ function postalAddressOf(address: DealerPublicProfile['address']): JsonLdNode {
   };
 }
 
+function imagesOf(dealer: DealerPublicProfile): string[] | undefined {
+  const photos = dealer.portfolio.map((photo) => photo.url);
+  if (photos.length > 0) return photos;
+  return dealer.coverUrl ? [dealer.coverUrl] : undefined;
+}
+
 export function dealerSchema(dealer: DealerPublicProfile): JsonLdNode {
   return {
     '@type': 'AutoDealer',
@@ -33,7 +39,7 @@ export function dealerSchema(dealer: DealerPublicProfile): JsonLdNode {
     legalName: dealer.legalName,
     url: absoluteUrl(dealerPath(dealer.slug)),
     description: dealer.tagline ?? undefined,
-    image: dealer.coverUrl ?? undefined,
+    image: imagesOf(dealer),
     address: postalAddressOf(dealer.address),
     hasMap: dealer.address.mapsUrl ?? undefined,
     taxID: dealer.contact.find((row) => row.key === TAX_ID_ROW)?.value,

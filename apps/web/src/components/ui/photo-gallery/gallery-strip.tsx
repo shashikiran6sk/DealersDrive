@@ -1,21 +1,21 @@
 'use client';
 
-import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 
 import { GalleryArrow } from './gallery-arrow';
-import { STRIP_SCROLL_PX, VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
+import { PHOTO_GALLERY_TEXT, STRIP_SCROLL_PX } from './photo-gallery.constants';
+import type { GalleryPhoto } from './photo-gallery.types';
 import { revealOffset, stripEdges } from './utils';
 
 export interface GalleryStripProps {
-  images: PublicVehicleImage[];
+  photos: readonly GalleryPhoto[];
   index: number;
   onOpen: (index: number, opener: HTMLElement) => void;
 }
 
-export function GalleryStrip({ images, index, onOpen }: GalleryStripProps) {
+export function GalleryStrip({ photos, index, onOpen }: GalleryStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const shownRef = useRef(index);
@@ -52,19 +52,19 @@ export function GalleryStrip({ images, index, onOpen }: GalleryStripProps) {
       <GalleryArrow
         direction="previous"
         placement="strip"
-        label={VEHICLE_GALLERY_TEXT.scrollLeft}
+        label={PHOTO_GALLERY_TEXT.scrollLeft}
         onClick={() => scroll(-1)}
         disabled={edges.atStart}
       />
 
       <div ref={trackRef} className="dd-strip" onScroll={measure}>
-        {images.map((image, cell) => (
+        {photos.map((photo, cell) => (
           <button
-            key={image.url}
+            key={photo.url}
             ref={cell === index ? activeRef : undefined}
             type="button"
             onClick={(event) => onOpen(cell, event.currentTarget)}
-            aria-label={VEHICLE_GALLERY_TEXT.openThumb(cell, images.length)}
+            aria-label={PHOTO_GALLERY_TEXT.openThumb(cell, photos.length)}
             aria-current={cell === index || undefined}
             className={cn(
               'relative aspect-[4/3] flex-[0_0_108px] cursor-zoom-in overflow-hidden rounded-[10px] border bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) max-sm:flex-[0_0_88px]',
@@ -74,7 +74,7 @@ export function GalleryStrip({ images, index, onOpen }: GalleryStripProps) {
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img src={photo.url} alt="" loading="lazy" className="h-full w-full object-cover" />
           </button>
         ))}
       </div>
@@ -82,7 +82,7 @@ export function GalleryStrip({ images, index, onOpen }: GalleryStripProps) {
       <GalleryArrow
         direction="next"
         placement="strip"
-        label={VEHICLE_GALLERY_TEXT.scrollRight}
+        label={PHOTO_GALLERY_TEXT.scrollRight}
         onClick={() => scroll(1)}
         disabled={edges.atEnd}
       />
