@@ -14,3 +14,12 @@ at desktop widths, where the existing navigation remains in use.
 link selection still closes the drawer. This lets shared console utilities reach
 both locations without duplicating routes or permissions. Dealer callers omit
 credits and use this drawer as their only mobile console navigation.
+
+`brand` (R118) puts a mark in the drawer's header, on the left, with the close
+button on the right. The customer header passes `HeaderBrand` — the same DD
+logo and wordmark as the header bar — because below `sm` the header bar hides
+its wordmark and the drawer is where a phone user sees the name. The drawer's
+accessible name stays the `label`, as a visually hidden title beside the brand,
+and a link in the brand closes the drawer like any other destination
+(`closeOnLink`, the one handler all three link areas share). The consoles pass
+no brand and keep their visible title.

@@ -83,6 +83,14 @@ nothing in it is a page a search engine should not send anybody to.
 
 ── 1. Header block ───────────────────────────────────────────────
 
+### `max-md:self-center` on the name row
+
+**R118.** On a phone the header is a two-column grid with the 60px logo tile
+beside the name. The grid aligns to the top (`items-start`) so the address and
+tagline rows below line up with each other, which left a one-line name stuck
+to the top edge of the tile. The name row alone is centred on the tile, and a
+name that wraps still centres as a block.
+
 ### `{dealer.tagline ?`
 
 The dealership in its own words, directly under its name (**R25**).
@@ -135,9 +143,10 @@ The portfolio, each photograph named by `DEALER_PAGE_TEXT.photoAlt` — the
 dealer's caption after the dealership's name, or the dealership and its
 position when there is no caption — and carrying the caption for the viewer.
 A dealership with a `coverUrl` and no portfolio gets that one photograph,
-described by `coverAlt`; with neither, the gallery draws its empty frame with
-the `Dealership photograph` slot, exactly as the cover band did. A pending
-photograph never reaches `portfolio`, so there is no status to check.
+described by `coverAlt`; with neither, the gallery draws the shared yard
+illustration (below). A pending or rejected photograph never reaches
+`portfolio` — the API selects `status: 'APPROVED'` only — so there is no
+status to check here, and none of them can be shown by mistake.
 
 **Directory cards do not change.** The directory keeps the one standard image
 for every dealer (#289) — a grid of dealers is compared at a glance, and one
@@ -259,6 +268,32 @@ names the place from the three address parts, without repeating a town that is
 also its district. The social images are the hero's photographs — every
 approved portfolio photograph, else the cover — with the same alt text; with
 none, `pageMetadata` falls back to the brand card.
+
+### `fallback={{ src: STANDARD_DEALER_COVER_PATH, alt: DEALER_PAGE_TEXT.heroFallbackAlt(…) }}`
+
+**R118.** A dealership with no approved photograph used to show a grey frame
+with the words "Dealership photograph" in it, which read as a broken page. It
+now shows `STANDARD_DEALER_COVER_PATH` (`/brand/dealer-directory-cover.svg`): an
+original, neutral Dealers-Drive illustration of a showroom and forecourt — the
+same single asset every directory card shows (#289), so a dealership without
+photographs looks the same on its card and on its page — in the frame the photographs would
+fill, tagged `Dealership photographs coming soon`. The same illustration
+appears when every approved photograph fails to load. The moment a photograph
+is approved the API returns it and the page shows it instead — nothing here
+has to be switched over.
+
+It is an illustration, not the dealership's yard, so it is never passed off as
+one: the alt text says it is an illustration shown until the dealership
+publishes photographs, the tag says they are coming, it does not open the
+viewer, and it is not in `heroPhotos` — so the JSON-LD `image` and the social
+images stay empty rather than sharing a picture of somebody else's showroom
+as this dealership's.
+
+It is an SVG with the wordmark already converted to outlines, so it renders
+the same with or without Manrope, scales to any width without a second
+asset, and weighs 14 KB. Its key content sits in the centre so that the
+440px banner (cropped top and bottom) and the 16:9 phone frame (cropped at the
+sides) both keep the building, the sign and the cars.
 
 ### `coverAlt` · `photoAlt`
 

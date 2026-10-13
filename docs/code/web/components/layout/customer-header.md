@@ -65,3 +65,13 @@ by colour alone (DESIGN-SPEC §4.15).
 The button's own footprint, so the header does not reflow when the real one
 arrives. It reads "Select district" because that is what the button says for
 every visitor who has not chosen one (**R23**).
+
+## `apps/web/src/components/layout/customer-header/header-brand.tsx`
+
+### `export function HeaderBrand({ className, labelClassName }: HeaderBrandProps)`
+
+The DD logo and the `Dealers-Drive` wordmark, linked home — one definition for
+the two places it appears (R118). The header bar passes
+`labelClassName="max-sm:sr-only"`, as before, to keep the bar's single row on a
+phone; the mobile drawer passes `truncate` with `min-w-0` so the name stays
+visible but can never push the close button off the header at 320px.

@@ -7,6 +7,11 @@ import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155', '475569', '111827'];
 const DEALER = 'Sri Lakshmi Motors';
 const DEALER_HERO_STAGE = 'h-[440px] max-lg:h-[340px] max-md:h-auto max-md:aspect-video';
+const YARD_FALLBACK = {
+  src: '/brand/dealer-directory-cover.svg',
+  alt: `Dealers-Drive illustration of a dealership yard, shown until ${DEALER} publishes photographs`,
+};
+const BROKEN_URL = 'https://media.invalid/by-media/missing/1600.webp';
 
 function images(count: number, size = '1200x900'): GalleryPhoto[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -43,6 +48,7 @@ const meta = {
     strip: { control: 'boolean' },
     stageClassName: { control: 'text' },
     emptyLabel: { control: 'text' },
+    fallback: { control: 'object' },
   },
   args: { title: '2023 Hyundai Creta SX(O)', photos: images(8), startIndex: 0, strip: true },
 } satisfies Meta<typeof PhotoGallery>;
@@ -84,8 +90,44 @@ export const EmptyWideHero: Story = {
     photos: [],
     strip: false,
     stageClassName: DEALER_HERO_STAGE,
-    emptyLabel: 'Dealership photograph',
+    emptyLabel: 'Dealership photographs coming soon',
+    fallback: YARD_FALLBACK,
   },
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 1280, margin: '24px auto' }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+export const EmptyWideHeroPhone: Story = {
+  ...EmptyWideHero,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 375, margin: '0 auto' }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+export const BrokenPhotoFallsBack: Story = {
+  args: {
+    ...EmptyWideHero.args,
+    photos: [{ url: BROKEN_URL, alt: `${DEALER} dealership, photo 1` }],
+  },
+  decorators: EmptyWideHero.decorators,
+};
+
+export const FallbackImageFails: Story = {
+  args: {
+    ...EmptyWideHero.args,
+    fallback: { ...YARD_FALLBACK, src: '/brand/missing-fallback.svg' },
+  },
+  decorators: EmptyWideHero.decorators,
 };
 
 export const Twenty: Story = { args: { photos: images(20) } };

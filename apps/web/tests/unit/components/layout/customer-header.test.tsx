@@ -145,3 +145,110 @@ describe('the login door', () => {
     expect(screen.queryByRole('link', { name: /list (your )?cars/i })).not.toBeInTheDocument();
   });
 });
+
+/**
+ * The drawer carries the brand: the DD mark and the wordmark on the left of its
+ * header, the close button on the right, at every width — the header's own
+ * wordmark is hidden below `sm`, so on a phone this is where the name is.
+ */
+describe('the mobile drawer brand', () => {
+  async function openDrawer() {
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Open Main menu' }));
+    return { user, drawer: await screen.findByRole('dialog', { name: 'Main' }) };
+  }
+
+  it('shows the logo and the name, linked home, left of the close button', async () => {
+    setLocation('/dealers/aishwarya-cars-vellore-tamil-nadu');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const { drawer } = await openDrawer();
+
+    const header = drawer.querySelector('.dd-dialog-header');
+    if (!(header instanceof HTMLElement)) throw new Error('no drawer header');
+    const brand = within(header).getByRole('link', { name: /Dealers-Drive/ });
+    expect(brand).toHaveAttribute('href', '/');
+    expect(within(brand).getByRole('img', { name: 'Dealers Drive' })).toHaveAttribute(
+      'src',
+      '/brand/dealers-drive-dark.png',
+    );
+    const name = within(brand).getByText('Dealers-Drive');
+    expect(name).toBeVisible();
+    expect(name).not.toHaveClass('max-sm:sr-only');
+    expect(name).toHaveClass('truncate');
+    expect(brand).toHaveClass('min-w-0');
+
+    const close = within(header).getByRole('button', { name: 'Close navigation' });
+    expect(brand.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(close).toHaveClass('flex-none');
+  });
+
+  it('keeps every destination and the active page under the brand', async () => {
+    setLocation('/dealers/aishwarya-cars-vellore-tamil-nadu');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const { drawer } = await openDrawer();
+
+    const nav = within(drawer).getByRole('navigation', { name: 'Main' });
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Home', 'Buy cars', 'Dealers']);
+    expect(within(nav).getByRole('link', { name: 'Dealers' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('closes on Escape and on the close button, returning focus to the menu button', async () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const trigger = screen.getByRole('button', { name: 'Open Main menu' });
+
+    const first = await openDrawer();
+    await first.user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(trigger).toHaveFocus();
+
+    const second = await openDrawer();
+    await second.user.click(
+      within(second.drawer).getByRole('button', { name: 'Close navigation' }),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(trigger).toHaveFocus();
+  });
+
+  it('closes when the brand is chosen on the home page itself', async () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const { user, drawer } = await openDrawer();
+
+    await user.click(within(drawer).getByRole('link', { name: /Dealers-Drive/ }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('keeps focus inside the drawer, starting with the brand', async () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const { user, drawer } = await openDrawer();
+
+    const focusables = [...drawer.querySelectorAll<HTMLElement>('a[href], button')];
+    expect(focusables[0]).toHaveAccessibleName(/Dealers-Drive/);
+    for (let press = 0; press < focusables.length + 2; press += 1) {
+      await user.tab();
+      expect(drawer).toContainElement(
+        document.activeElement instanceof HTMLElement ? document.activeElement : null,
+      );
+    }
+  });
+
+  it('keeps the header wordmark for wider screens', () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    const header = screen.getByRole('banner');
+    const brand = within(header).getByRole('link', { name: /Dealers-Drive/ });
+    expect(brand).toHaveAttribute('href', '/');
+    expect(within(brand).getByText('Dealers-Drive')).toHaveClass('max-sm:sr-only');
+  });
+});

@@ -7,6 +7,7 @@ export interface MobileNavProps {
   label: string;
   showTitle?: boolean;
   rootHref: string;
+  brand?: ReactNode;
   heading?: ReactNode;
   navigation?: ReactNode;
   children?: ReactNode;

@@ -5,7 +5,7 @@ import type {
 } from '@dealers-drive/contracts';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
 import userEvent from '@testing-library/user-event';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
@@ -125,6 +125,12 @@ function serve(dealer: DealerPublicProfile | ApiError): void {
   );
 }
 
+function detailsCard(): HTMLElement {
+  const card = screen.getByRole('heading', { name: 'Dealership details' }).closest('section');
+  if (!card) throw new Error('no details card');
+  return card;
+}
+
 const notListed = () =>
   new ApiError({
     type: 'about:blank',
@@ -142,6 +148,15 @@ describe('the dealership it shows', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sri Lakshmi Motors');
     expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
     expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
+  });
+
+  /** R118 — on a phone the name sits beside the 60px logo tile, centred on it. */
+  it('centres the name on the logo tile on mobile', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const row = screen.getByRole('heading', { level: 1 }).parentElement;
+    expect(row).toHaveClass('max-md:col-start-2', 'max-md:row-start-1', 'max-md:self-center');
   });
 
   /**
@@ -295,9 +310,9 @@ describe('the dealership card', () => {
 
   it('renders every service the dealership listed', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
-    expect([...container.querySelectorAll('.tag')].map((tag) => tag.textContent)).toEqual([
+    expect([...detailsCard().querySelectorAll('.tag')].map((tag) => tag.textContent)).toEqual([
       'Hatchbacks',
       'RC transfer',
     ]);
@@ -309,9 +324,9 @@ describe('the dealership card', () => {
    */
   it('renders no services strip for a dealership that named none', async () => {
     serve({ ...DEALER, services: [] });
-    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
-    expect(container.querySelectorAll('.tag')).toHaveLength(0);
+    expect(detailsCard().querySelectorAll('.tag')).toHaveLength(0);
     // The facts are still there — only the chips are gone.
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
   });
@@ -757,15 +772,52 @@ describe('the photo gallery in the hero', () => {
     expect(screen.queryByRole('button', { name: /Previous image|Next image/ })).toBeNull();
   });
 
-  it('keeps the placeholder for a dealership with no photograph at all', async () => {
+  /**
+   * The shared Dealers-Drive yard illustration stands in until a photograph is
+   * approved. Pending and rejected photographs never reach this page — the API
+   * sends approved ones only (`dealer-portfolio.test.ts` in the API) — so a
+   * dealership whose photographs are all waiting looks exactly like one with
+   * none. The illustration is not the dealership's, so it is said to be an
+   * illustration, it does not open the viewer, and it is not shared as the
+   * dealership's image in structured data or social previews (below).
+   */
+  it('shows the shared yard illustration for a dealership with no approved photograph', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params, searchParams }));
 
-    const slot = screen.getByRole('img', { name: 'Dealership photograph' });
-    expect(slot).toHaveClass('image-slot');
-    expect(slot.parentElement).toHaveClass('blueprint', 'h-[440px]', 'bg-(--color-surface)');
+    const image = screen.getByRole('img', {
+      name: 'Dealers-Drive illustration of a dealership yard, shown until Sri Lakshmi Motors publishes photographs',
+    });
+    expect(image).toHaveAttribute('src', '/brand/dealer-directory-cover.svg');
+    expect(image.parentElement).toHaveClass('blueprint', 'h-[440px]', 'max-md:aspect-video');
+    expect(screen.getByText('Dealership photographs coming soon')).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'Dealership photograph' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
     expect(screen.queryByRole('button', { name: /^View/ })).toBeNull();
+  });
+
+  it('shows the real photographs instead, once one is approved', async () => {
+    serve(DEALER);
+    const before = render(await DealerPortfolioPage({ params, searchParams }));
+    expect(screen.getByText('Dealership photographs coming soon')).toBeInTheDocument();
+    before.unmount();
+
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS.slice(0, 1) });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(within(heroButton()).getByRole('img')).toHaveAttribute('src', PHOTOS[0]?.url);
+    expect(screen.queryByText('Dealership photographs coming soon')).toBeNull();
+    expect(document.querySelector('img[src="/brand/dealer-directory-cover.svg"]')).toBeNull();
+  });
+
+  it('falls back to the illustration when the approved photograph cannot be loaded', async () => {
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS.slice(0, 1) });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    fireEvent.error(within(heroButton()).getByRole('img'));
+
+    expect(document.querySelector('img[src="/brand/dealer-directory-cover.svg"]')).not.toBeNull();
+    expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
   });
 
   it('lists every approved photograph in the structured data and the social images', async () => {

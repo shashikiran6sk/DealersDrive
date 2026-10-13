@@ -1,4 +1,8 @@
-import { PublicVehiclesResponse, type DealerPublicProfile } from '@dealers-drive/contracts';
+import {
+  PublicVehiclesResponse,
+  STANDARD_DEALER_COVER_PATH,
+  type DealerPublicProfile,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -176,7 +180,7 @@ export default async function DealerPortfolioPage({
           />
 
           <div className="min-w-[260px] flex-1 max-md:contents max-md:[overflow-wrap:anywhere]">
-            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2">
+            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2 max-md:self-center">
               <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
                 {dealer.brandName}
               </h1>
@@ -202,6 +206,10 @@ export default async function DealerPortfolioPage({
             strip={false}
             stageClassName={DEALER_HERO_STAGE_CLASS}
             emptyLabel={DEALER_PAGE_TEXT.heroPlaceholder}
+            fallback={{
+              src: STANDARD_DEALER_COVER_PATH,
+              alt: DEALER_PAGE_TEXT.heroFallbackAlt(dealer.brandName),
+            }}
           />
         </div>
       </div>
