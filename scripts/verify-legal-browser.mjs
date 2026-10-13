@@ -19,7 +19,12 @@ for (const value of [preview, production, sandbox]) {
 const output = resolve('docs/testing/legal-consent/2026-10-13');
 await mkdir(output, { recursive: true });
 const results = [];
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  ...(process.env.LEGAL_CHROMIUM_EXECUTABLE
+    ? { executablePath: process.env.LEGAL_CHROMIUM_EXECUTABLE }
+    : {}),
+});
 const context = await browser.newContext({
   viewport: { width: 1280, height: 900 },
   bypassCSP: true,
@@ -190,14 +195,18 @@ try {
     await noOverflow();
   });
   await check('owner review: exactly one dealership-binding control', async () => {
+    await page.setViewportSize({ width: 375, height: 900 });
     await page.goto(
-      `${sandbox}/iframe.html?id=auth-onboardingwizard--owner-legal-review&viewMode=story`,
+      `${sandbox}/iframe.html?id=forms-onboardingwizard--owner-legal-review&viewMode=story`,
       { waitUntil: 'networkidle' },
     );
     await page.getByRole('checkbox', { name: /authorized to represent/ }).waitFor();
     assert.equal(await page.locator('input[name="termsAccepted"]').count(), 1);
     assert.equal(await page.getByRole('checkbox').isChecked(), false);
+    assert.equal(await page.locator('form').evaluate((form) => form.checkValidity()), false);
     await noOverflow();
+    await accessibility('#storybook-root');
+    await page.screenshot({ path: resolve(output, 'owner-review-mobile.png'), fullPage: true });
   });
   for (const width of [375, 1280]) {
     await check(
@@ -219,6 +228,79 @@ try {
         await accessibility('#storybook-root');
         if (width === 375)
           await page.screenshot({ path: resolve(output, 'directions-mobile.png') });
+      },
+    );
+  }
+  if (process.env.LEGAL_BROWSER_FIXTURE) {
+    const fixture = JSON.parse(await readFile(process.env.LEGAL_BROWSER_FIXTURE, 'utf8'));
+    await context.addCookies(fixture.cookies);
+    const openEnquiry = async (slug) => {
+      await page.goto(`${preview}/car/${slug}?enquire=1`, { waitUntil: 'networkidle' });
+      await page.getByRole('button', { name: 'Send enquiry' }).waitFor();
+    };
+    await check(
+      'full stack: first enquiry requires explicit named dealership permission',
+      async () => {
+        await page.setViewportSize({ width: 375, height: 900 });
+        await openEnquiry(fixture.cars.first);
+        const box = page.getByRole('checkbox', { name: new RegExp(fixture.x.name) });
+        assert.equal(await box.isChecked(), false);
+        await page.getByRole('button', { name: 'Send enquiry' }).click();
+        await page.getByRole('alert').filter({ hasText: 'Choose whether' }).waitFor();
+        await box.check();
+        await page.getByRole('button', { name: 'Send enquiry' }).click();
+        await page.getByText('Enquiry sent', { exact: true }).waitFor();
+      },
+    );
+    await check(
+      'full stack: another car reuses permission only after fresh submission',
+      async () => {
+        await openEnquiry(fixture.cars.second);
+        assert.equal(await page.getByRole('checkbox').count(), 0);
+        await page.getByRole('button', { name: 'Send enquiry' }).click();
+        await page.getByText('Enquiry sent', { exact: true }).waitFor();
+      },
+    );
+    await check('full stack: unrelated dealership requires separate permission', async () => {
+      await openEnquiry(fixture.cars.unrelated);
+      const box = page.getByRole('checkbox', { name: new RegExp(fixture.y.name) });
+      assert.equal(await box.isChecked(), false);
+      await box.check();
+      await page.getByRole('button', { name: 'Send enquiry' }).click();
+      await page.getByText('Enquiry sent', { exact: true }).waitFor();
+    });
+    await check(
+      'full stack: dealership withdrawal reaches the backend and fresh enquiry requires re-grant',
+      async () => {
+        await page.goto(`${preview}/data-rights`, { waitUntil: 'networkidle' });
+        const block = page
+          .getByRole('heading', { name: fixture.x.name, exact: true })
+          .locator('..');
+        const completed = page.waitForResponse(
+          (response) =>
+            response.request().method() === 'POST' &&
+            new URL(response.url()).pathname === '/data-rights' &&
+            response.status() === 200,
+        );
+        await block.getByRole('button', { name: 'Withdraw future sharing' }).click();
+        await completed;
+        const status = await context.request.get(
+          `http://127.0.0.1:43999/v1/enquiries/sharing-status?listingSlug=${encodeURIComponent(fixture.cars.afterWithdrawal)}`,
+        );
+        assert.equal(status.status(), 200);
+        assert.equal((await status.json()).required, true);
+        await openEnquiry(fixture.cars.afterWithdrawal);
+        assert.equal(
+          await page.getByRole('checkbox', { name: new RegExp(fixture.x.name) }).isChecked(),
+          false,
+        );
+        await page.screenshot({
+          path: resolve(output, 'full-stack-regrant-mobile.png'),
+          fullPage: true,
+        });
+        await page.getByRole('checkbox', { name: new RegExp(fixture.x.name) }).check();
+        await page.getByRole('button', { name: 'Send enquiry' }).click();
+        await page.getByText('Enquiry sent', { exact: true }).waitFor();
       },
     );
   }
