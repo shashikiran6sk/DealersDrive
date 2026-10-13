@@ -1894,3 +1894,21 @@ image), `PortfolioManager`, the admin portfolio queue. **Tests**
 `components/dealers/portfolio-page.test.tsx`. **Sandbox** `Primitives/PhotoGallery`
 (`WideHero`, `WithCaptions`, `OnePhoto`, `NoPhotos`, `EmptyWideHero`, `Twenty`,
 `Portrait`, `Phone`).
+
+## Mobile drawer brand and dealer yard fallback (R118)
+
+| Component         | Source                                                            | Props / states                                                                                                                                                                    | Consumers                                                      |
+| ----------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `MobileNav`       | `apps/web/src/components/layout/mobile-nav/mobile-nav.tsx`        | + `brand?` — a node in the drawer header, left of the close button; the `label` stays the dialog's (visually hidden) name; a link in it closes the drawer · + customer with brand | `CustomerHeader` (with brand); dealer, admin, sales (no brand) |
+| `HeaderBrand`     | `apps/web/src/components/layout/customer-header/header-brand.tsx` | `className?`, `labelClassName?` — DD logo + `Dealers-Drive`, linked home; the header hides the name below `sm`, the drawer truncates it                                           | `CustomerHeader` bar and drawer                                |
+| `PhotoGallery`    | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`      | + `fallback?` (`{ src, alt }`) · a stage photo whose URL fails is dropped once, by URL · nothing left → `GalleryFallback` · + broken photo · + fallback fails                     | `/dealers/[slug]` hero passes the yard fallback; `/car/[slug]` |
+| `GalleryFallback` | `apps/web/src/components/ui/photo-gallery/gallery-fallback.tsx`   | `label`, `stageClassName`, `fallback?`: the fallback image (`next/image` fill, priority) with a `label` tag, or the `ImageSlot` when there is none or it fails; never retried     | `PhotoGallery`                                                 |
+
+**Asset.** `apps/web/public/brand/dealer-yard-fallback.svg` (1600 × 640, 14 KB,
+wordmark outlined from Manrope 800), named once as `DEALER_YARD_FALLBACK_SRC` in
+`apps/web/src/lib/dealer-yard.ts`. **Unchanged:** `DirectoryCard` (#289 standard
+image), the API and contracts, approval and verification. **Tests**
+`components/layout/mobile-nav.test.tsx`, `components/layout/customer-header.test.tsx`,
+`components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
+**Sandbox** `Layout/MobileNav` (`CustomerWithBrand`), `Primitives/PhotoGallery`
+(`EmptyWideHero`, `EmptyWideHeroPhone`, `BrokenPhotoFallsBack`, `FallbackImageFails`).

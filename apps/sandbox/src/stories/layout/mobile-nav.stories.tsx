@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { MobileNav } from '@/components/layout/mobile-nav';
+import { HeaderBrand } from '@/components/layout/customer-header';
 import { ConsoleNav } from '@/components/dealer/console-nav';
 import { StatusTag } from '@/components/ui/primitives';
 import { adminNavFor } from '@/components/admin/admin-nav';
@@ -51,4 +52,20 @@ export const RestrictedAdmin: Story = {
 };
 export const Sales: Story = {
   args: { items: SALES_NAV, label: 'Sales workspace', rootHref: '/sales' },
+};
+export const CustomerWithBrand: Story = {
+  args: {
+    items: [
+      { href: '/', label: 'Home' },
+      { href: '/cars', label: 'Buy cars' },
+      { href: '/dealers', label: 'Dealers' },
+    ],
+    label: 'Main',
+    rootHref: '/',
+    showTitle: false,
+    brand: <HeaderBrand className="min-w-0" labelClassName="truncate" />,
+  },
+  parameters: {
+    nextjs: { appDirectory: true, navigation: { pathname: '/dealers/sri-lakshmi-motors' } },
+  },
 };

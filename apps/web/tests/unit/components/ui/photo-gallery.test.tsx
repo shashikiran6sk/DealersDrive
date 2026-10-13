@@ -661,3 +661,102 @@ describe('the helpers', () => {
     expect(railNumber(10)).toBe('11');
   });
 });
+
+/**
+ * The shared yard illustration. A gallery given a `fallback` shows it, in the
+ * same frame and proportions, whenever it has nothing it can actually show:
+ * no photographs, or only photographs whose URLs fail. Each failure is
+ * remembered by URL and never retried, and if the illustration itself fails
+ * the labelled slot is the end of the line — there is no image left to swap
+ * in, so there is no loop.
+ */
+describe('the fallback image', () => {
+  const FALLBACK = {
+    src: '/brand/dealer-yard-fallback.svg',
+    alt: 'Dealers-Drive illustration of a dealership yard',
+  };
+  const STAGE = 'h-[440px] max-md:aspect-video';
+
+  function fallbackImage(): HTMLElement | null {
+    return screen.queryByRole('img', { name: FALLBACK.alt });
+  }
+
+  it('shows the shared illustration, tagged, in the frame the photographs would fill', () => {
+    render(<PhotoGallery title={TITLE} photos={[]} stageClassName={STAGE} fallback={FALLBACK} />);
+
+    const image = fallbackImage();
+    expect(image).toHaveAttribute('src', FALLBACK.src);
+    expect(image?.parentElement).toHaveClass('blueprint', 'h-[440px]', 'max-md:aspect-video');
+    expect(screen.getByText('Photographs coming soon')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^View/ })).toBeNull();
+  });
+
+  it('keeps the labelled slot when no fallback is given', () => {
+    render(<PhotoGallery title={TITLE} photos={[]} />);
+
+    expect(screen.getByRole('img', { name: 'Photographs coming soon' })).toHaveClass('image-slot');
+    expect(document.querySelector('img')).toBeNull();
+  });
+
+  it('drops to the labelled slot, once and for good, when the illustration itself fails', () => {
+    render(<PhotoGallery title={TITLE} photos={[]} stageClassName={STAGE} fallback={FALLBACK} />);
+
+    const image = fallbackImage();
+    if (!image) throw new Error('no fallback image');
+    fireEvent.error(image);
+
+    expect(fallbackImage()).toBeNull();
+    const slot = screen.getByRole('img', { name: 'Photographs coming soon' });
+    expect(slot).toHaveClass('image-slot');
+    expect(slot.parentElement).toHaveClass('blueprint', 'h-[440px]');
+    expect(document.querySelector('img')).toBeNull();
+  });
+
+  it('skips a photograph whose URL is broken and shows the next one', () => {
+    render(<PhotoGallery title={TITLE} photos={images(3)} strip={false} fallback={FALLBACK} />);
+
+    fireEvent.error(within(hero()).getByRole('img'));
+
+    expect(heroSrc()).toBe(src(1));
+    expect(hero()).toHaveAccessibleName(`View all 2 photos of ${TITLE}`);
+    expect(within(hero()).getByText('1 / 2 · view all')).toBeInTheDocument();
+    expect(fallbackImage()).toBeNull();
+  });
+
+  it('shows the fallback when every photograph is broken, and never asks for one again', () => {
+    render(<PhotoGallery title={TITLE} photos={images(2)} strip={false} fallback={FALLBACK} />);
+
+    fireEvent.error(within(hero()).getByRole('img'));
+    expect(hero()).toHaveAccessibleName(`View the photo of ${TITLE}`);
+    fireEvent.error(within(hero()).getByRole('img'));
+
+    expect(fallbackImage()).toHaveAttribute('src', FALLBACK.src);
+    expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
+    expect(document.querySelector('img[src^="https://media.test"]')).toBeNull();
+  });
+
+  it('notices a photograph that had already failed before the page hydrated', () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    try {
+      render(<PhotoGallery title={TITLE} photos={images(1)} strip={false} fallback={FALLBACK} />);
+
+      expect(fallbackImage()).toBeInTheDocument();
+    } finally {
+      complete.mockRestore();
+    }
+  });
+
+  it('gives way to real photographs as soon as there are some', () => {
+    const { rerender } = render(
+      <PhotoGallery title={TITLE} photos={[]} strip={false} fallback={FALLBACK} />,
+    );
+    expect(fallbackImage()).toBeInTheDocument();
+
+    rerender(<PhotoGallery title={TITLE} photos={images(2)} strip={false} fallback={FALLBACK} />);
+
+    expect(fallbackImage()).toBeNull();
+    expect(heroSrc()).toBe(src(0));
+    expect(screen.queryByText('Photographs coming soon')).toBeNull();
+  });
+});

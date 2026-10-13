@@ -13,6 +13,7 @@ import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
+import { DEALER_YARD_FALLBACK_SRC } from '@/lib/dealer-yard';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
 import { isMissingResource, isServerFailure } from '@/lib/errors';
 import { logger } from '@/lib/logger';
@@ -202,6 +203,10 @@ export default async function DealerPortfolioPage({
             strip={false}
             stageClassName={DEALER_HERO_STAGE_CLASS}
             emptyLabel={DEALER_PAGE_TEXT.heroPlaceholder}
+            fallback={{
+              src: DEALER_YARD_FALLBACK_SRC,
+              alt: DEALER_PAGE_TEXT.heroFallbackAlt(dealer.brandName),
+            }}
           />
         </div>
       </div>

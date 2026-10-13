@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 
 import { Dialog, DialogTitle } from '@/components/ui/dialog';
 import { LinkPendingIndicator } from '@/components/ui/link-pending';
@@ -15,6 +15,7 @@ export function MobileNav({
   items,
   label,
   rootHref,
+  brand,
   heading,
   navigation,
   children,
@@ -23,6 +24,9 @@ export function MobileNav({
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
+  const closeOnLink = (event: MouseEvent<HTMLElement>) => {
+    if (event.target instanceof Element && event.target.closest('a[href]')) setOpenPath(null);
+  };
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;
@@ -40,7 +44,7 @@ export function MobileNav({
       open={open}
       onOpenChange={(next) => setOpenPath(next ? pathname : null)}
       title={label}
-      header={showTitle ? undefined : <DialogTitle className="sr-only">{label}</DialogTitle>}
+      header={drawerHeader({ label, brand, showTitle, onClickCapture: closeOnLink })}
       closeLabel={MOBILE_NAV_TEXT.close}
       trigger={
         <button
@@ -62,15 +66,7 @@ export function MobileNav({
     >
       {heading ? <div className="mb-4 flex flex-col items-start gap-2">{heading}</div> : null}
       {navigation ? (
-        <div
-          onClickCapture={(event) => {
-            if (event.target instanceof Element && event.target.closest('a[href]')) {
-              setOpenPath(null);
-            }
-          }}
-        >
-          {navigation}
-        </div>
+        <div onClickCapture={closeOnLink}>{navigation}</div>
       ) : (
         <nav aria-label={label} className="flex flex-col gap-1">
           {items.map((item) => (
@@ -88,16 +84,30 @@ export function MobileNav({
         </nav>
       )}
       {children ? (
-        <div
-          className="mt-5 border-t border-(--color-divider) pt-4"
-          onClickCapture={(event) => {
-            if (event.target instanceof Element && event.target.closest('a[href]'))
-              setOpenPath(null);
-          }}
-        >
+        <div className="mt-5 border-t border-(--color-divider) pt-4" onClickCapture={closeOnLink}>
           {children}
         </div>
       ) : null}
     </Dialog>
   );
+}
+
+interface DrawerHeaderInput {
+  label: string;
+  brand: ReactNode;
+  showTitle: boolean;
+  onClickCapture: (event: MouseEvent<HTMLElement>) => void;
+}
+
+function drawerHeader({ label, brand, showTitle, onClickCapture }: DrawerHeaderInput) {
+  const hiddenTitle = <DialogTitle className="sr-only">{label}</DialogTitle>;
+  if (brand) {
+    return (
+      <div className="flex min-w-0 items-center" onClickCapture={onClickCapture}>
+        {hiddenTitle}
+        {brand}
+      </div>
+    );
+  }
+  return showTitle ? undefined : hiddenTitle;
 }

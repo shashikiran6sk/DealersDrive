@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import Link from 'next/link';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MobileNav } from '@/components/layout/mobile-nav';
@@ -101,5 +102,46 @@ describe('MobileNav', () => {
       listeners.forEach((listener) => listener());
     });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  /**
+   * `brand` puts a mark in the drawer's header, left of the close button. The
+   * drawer keeps its accessible name (the label, now visually hidden), and a
+   * link in the brand closes the drawer like any other destination.
+   */
+  it('puts a supplied brand before the close button and keeps the drawer named', async () => {
+    const user = userEvent.setup();
+    setLocation('/');
+    render(
+      <MobileNav
+        items={items}
+        label="Main"
+        rootHref="/"
+        showTitle={false}
+        brand={<Link href="/">Dealers-Drive</Link>}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Open Main menu' });
+    await user.click(trigger);
+
+    const dialog = screen.getByRole('dialog', { name: 'Main' });
+    const brand = within(dialog).getByRole('link', { name: 'Dealers-Drive' });
+    const close = within(dialog).getByRole('button', { name: 'Close navigation' });
+    expect(brand.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(brand.closest('.dd-dialog-header')).toContainElement(close);
+
+    await user.click(brand);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+  });
+
+  it('shows no brand, and the visible title, when none is supplied', async () => {
+    const user = userEvent.setup();
+    render(<Nav />);
+    await user.click(screen.getByRole('button', { name: 'Open Dealer console menu' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Dealer console' });
+    expect(within(dialog).getByText('Dealer console')).not.toHaveClass('sr-only');
+    expect(within(dialog).queryByRole('link', { name: 'Dealers-Drive' })).toBeNull();
   });
 });

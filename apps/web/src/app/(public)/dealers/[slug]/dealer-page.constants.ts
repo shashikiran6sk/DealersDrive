@@ -12,7 +12,9 @@ export const DEALER_PAGE_TEXT = {
   coverAlt: (brandName: string) => `${brandName} dealership yard`,
   photoAlt: (brandName: string, position: number, caption: string | null) =>
     caption ? `${brandName} — ${caption}` : `${brandName} dealership, photo ${position}`,
-  heroPlaceholder: 'Dealership photograph',
+  heroPlaceholder: 'Dealership photographs coming soon',
+  heroFallbackAlt: (brandName: string) =>
+    `Dealers-Drive illustration of a dealership yard, shown until ${brandName} publishes photographs`,
   metaDescription: ({ brandName, tagline, place, isVerified }: DealerDescriptionInput) =>
     [
       tagline,
