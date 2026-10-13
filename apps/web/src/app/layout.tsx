@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
+import { Analytics } from '@vercel/analytics/next';
+
 import { AUTH_HINT_SCRIPT } from '@/lib/auth-hint';
 import { serverConfig } from '@/lib/config';
 import { manrope } from '@/lib/fonts';
@@ -30,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         ) : null}
         {children}
+        <Analytics />
       </body>
     </html>
   );
