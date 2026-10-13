@@ -1,3 +1,4 @@
+import { LEGAL_DOCUMENTS, legalReleaseReady } from '@dealers-drive/contracts';
 import type {
   PublicLocations,
   PublicSitemapResponse,
@@ -39,6 +40,11 @@ export function buildSitemap(
 ): MetadataRoute.Sitemap {
   return [
     ...STATIC_SITEMAP_PATHS.map((path) => entry(path)),
+    ...(legalReleaseReady()
+      ? Object.values(LEGAL_DOCUMENTS).map((document) =>
+          entry(document.route, document.effectiveDate),
+        )
+      : []),
     ...districtRows(locations),
     ...entityRows(pages.dealers, dealerPath),
     ...entityRows(pages.vehicles, vehiclePath),

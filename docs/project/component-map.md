@@ -641,22 +641,13 @@ opening the panel or asking again.
 
 ### C068 — `LocationCard`
 
-`components/dealers/location-card.tsx:47`. Props:
-`address: DealerPublicProfile['address']`, `brandName: string`. States: place
-card, pin only, directions only, map only, neither. One consumer (the
-portfolio), where it was inline until **R10**.
+`components/dealers/location-card/location-card.tsx`. Props: `address: DealerPublicProfile['address']`, `brandName: string`. Server component consumed by the public portfolio. Shows the public business address and a single Get Directions link. No iframe, map-loading state or automatic Google request. States: validated pin, complete public address fallback, existing validated share link, incomplete location with no directions. Directions are composed and encoded by the API. Stored location/address management and geocoding remain. Sandbox stories and web/API tests cover nullable destinations. **P2** ✅
 
-The states are the component's whole reason for existing as one: the map is
-`address.embedUrl` and the button is `address.mapsUrl`, and the two are
-independently nullable because a share link carries neither a pin nor a place
-until it is followed and following it is best-effort. Neither is ever composed
-from the address. A server component — a Google embed in an `<iframe>` needs no
-JavaScript of ours. **P2** ✅
+### LegalCheck and LegalDocument
 
-Which map is in the frame is **not this component's decision**. `embedUrl` is
-composed by the API (**R14**), so the card renders one `<iframe>` and cannot
-tell a place card from a bare pin — which is what let the map gain the yard's
-name, rating and an in-frame directions control without the card changing shape.
+`features/legal/legal-check` exposes `kind`, `dealerName`, `onCompleteChange`; consumers are customer registration, final dealer Review & Submit, account checkpoints, enquiry submission and vehicle declaration. One unticked sentence per decision, independent policy links outside checkbox labels, keyboard choice and natural wrapping. Account/dealer choice records contractual acceptance and a distinct privacy acknowledgement; optional sharing remains a separate control. No duplicate control appears in draft creation or document collection. `LegalProvider` supplies the server release flag; it does not establish backend authority. Existing props remain compatible; policy versions are hidden form values, not routine labels.
+
+`features/legal/legal-document` renders immutable snapshot content, version/effective/review metadata, contents anchors and archives. Current related policies are exactly Terms and Privacy. Historical document identifiers resolve by recorded version. Sandbox states: draft, archive, account, dealer, enquiry, certification, disabled and mobile. Tests cover anchors, one-line sentences, accessible names, keyboard action, links without checkbox toggling, signup/enquiry refusals and reused permissions.
 
 ### C071 — `DistrictPicker`
 

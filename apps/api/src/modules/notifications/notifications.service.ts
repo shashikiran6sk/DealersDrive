@@ -1,3 +1,5 @@
+import { hasDealerAgreement } from '../legal/legal.facade.js';
+import { mayDiscloseEnquiry, SHARING_GRANT_SELECT } from '../legal/legal.facade.js';
 import {
   ADMIN_PERMISSIONS,
   DOCUMENT_GAP_LABELS,
@@ -100,6 +102,9 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       return;
     }
 
+    if (job.enquiryId && job.audience === 'dealer' && !(await hasDealerAgreement(prisma, dealerId)))
+      return;
+
     if (job.template === 'dealer.application.rejected') {
       const snapshot = await rejectedApplicationSnapshot(dealerId);
       if (snapshot) {
@@ -158,7 +163,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       return;
     }
 
-    const enquiry = job.enquiryId ? await enquiryContext(job.enquiryId) : null;
+    const enquiry = job.enquiryId ? await enquiryContext(job.enquiryId, job.dealerId) : null;
     if (job.enquiryId && !enquiry) {
       logger.warn(
         { template: job.template, enquiryId: job.enquiryId },
@@ -197,12 +202,22 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     );
   }
 
-  async function enquiryContext(enquiryId: string): Promise<EnquiryContext | null> {
+  async function enquiryContext(
+    enquiryId: string,
+    dealerId: string | null | undefined,
+  ): Promise<EnquiryContext | null> {
     const enquiry = await prisma.enquiry.findUnique({
       where: { id: enquiryId },
-      select: { message: true, customer: { select: { fullName: true } } },
+      select: {
+        message: true,
+        customerId: true,
+        dealerId: true,
+        sharingGrant: { select: SHARING_GRANT_SELECT },
+        sharingWithdrawnAt: true,
+        customer: { select: { fullName: true } },
+      },
     });
-    if (!enquiry) return null;
+    if (!enquiry || enquiry.dealerId !== dealerId || !mayDiscloseEnquiry(enquiry)) return null;
     return { buyerName: firstNameOf(enquiry.customer.fullName), message: enquiry.message };
   }
 
@@ -319,6 +334,19 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     }
 
     try {
+      if (
+        job.enquiryId &&
+        (!(await enquiryContext(job.enquiryId, job.dealerId)) ||
+          (job.audience === 'dealer' &&
+            job.dealerId &&
+            !(await hasDealerAgreement(prisma, job.dealerId))))
+      ) {
+        await prisma.notificationDelivery.update({
+          where: { dedupeKey },
+          data: { status: 'FAILED', lastError: 'Disclosure permission unavailable.' },
+        });
+        return;
+      }
       const result = await mailer.send({
         to: recipient.email,
         subject: message.subject,

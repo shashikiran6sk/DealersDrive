@@ -6,6 +6,7 @@ export interface FooterLink {
 }
 
 export interface CustomerFooterProps {
+  legalVisible?: boolean;
   social: PublicConfig['social'];
   supportEmail: string;
   supportPhone: string;

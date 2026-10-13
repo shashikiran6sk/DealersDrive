@@ -23,6 +23,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { navigationState } from '../../../setup';
 
 import type * as ApiModule from '@/lib/api';
+import { LegalProvider } from '@/features/legal/legal-provider';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
 
 /**
@@ -1550,5 +1551,49 @@ describe('OnboardingWizard — the Review step', () => {
       'PAN',
       'Business Identity Proof',
     ]);
+  });
+});
+
+describe('owner contractual acceptance appears only at final review', () => {
+  it.each([0, 1, 2] as const)('has no contractual control during step %s', (step) => {
+    const { container } = render(
+      <LegalProvider enabled>
+        <OnboardingWizard
+          step={step}
+          session={session()}
+          documents={[]}
+          dealer={null}
+          completeness={completeness()}
+          phoneWidget={FAKE_WIDGET}
+        />
+      </LegalProvider>,
+    );
+    expect(container.querySelector('input[name="termsAccepted"]')).toBeNull();
+  });
+  it('renders exactly one affirmative owner acceptance control on Review & Submit', () => {
+    const owner = { ...session(), role: 'OWNER' as const };
+    const { container } = render(
+      <LegalProvider enabled>
+        <OnboardingWizard
+          step={3}
+          session={owner}
+          documents={[]}
+          dealer={null}
+          completeness={completeness()}
+          phoneWidget={FAKE_WIDGET}
+        />
+      </LegalProvider>,
+    );
+    const checkboxes = container.querySelectorAll('input[name="termsAccepted"]');
+    expect(checkboxes).toHaveLength(1);
+    expect(checkboxes[0]).not.toBeChecked();
+    expect(screen.getByRole('link', { name: 'Terms & Conditions' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
   });
 });

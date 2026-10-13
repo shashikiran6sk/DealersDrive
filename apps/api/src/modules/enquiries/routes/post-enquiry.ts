@@ -1,3 +1,4 @@
+import { requireLegalOrigin } from '../../legal/legal.facade.js';
 import { CreateEnquiryInput } from '@dealers-drive/contracts';
 
 import { customerPrincipal } from '../../../middleware/auth.js';
@@ -10,6 +11,7 @@ import { byCustomer } from './by-customer.js';
 export const postEnquiry: EnquiriesRoute = (router, { service, rateLimit }) => {
   router.post(
     '/',
+    requireLegalOrigin,
     rateLimit('enquiries.create.customer', {
       limit: 10,
       windowSeconds: 3600,

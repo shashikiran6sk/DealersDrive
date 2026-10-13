@@ -1,5 +1,6 @@
 'use client';
 
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { formatPhone } from '@dealers-drive/contracts';
 import { useEffect, useId, useRef, useState } from 'react';
 
@@ -37,6 +38,7 @@ export function PhoneVerification({
   continueLabel,
 }: PhoneVerificationProps) {
   const captchaId = useId();
+  const legal = useLegalEnabled();
   const [stage, setStage] = useState<PhoneStage>(initialStage);
   const [code, setCode] = useState('');
   const [failure, setFailure] = useState<string | null>(
@@ -156,6 +158,16 @@ export function PhoneVerification({
   if (stage === 'idle') {
     return (
       <>
+        {legal ? (
+          <p className="mb-3 text-[12px] leading-[1.7]">
+            Your mobile number and verification details are used to verify access through our phone
+            verification service. OTP verification does not permit marketing.{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+              Privacy Policy (opens in a new tab)
+            </a>
+            .
+          </p>
+        ) : null}
         <Captcha id={captchaId} />
         {failure ? (
           <p role="alert" className="mb-[10px] text-[12px] text-(--color-err)">

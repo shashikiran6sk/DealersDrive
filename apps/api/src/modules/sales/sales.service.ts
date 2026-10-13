@@ -1,3 +1,4 @@
+import { hasDealerAgreement } from '../legal/legal.facade.js';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
   DEALER_STATUS_LABELS,
@@ -355,7 +356,7 @@ export function createSalesService({
       completeness,
       documents: documents.data,
       canEdit: editable,
-      canSubmit: editable && completeness.canSubmit,
+      canSubmit: editable && completeness.canSubmit && (await hasDealerAgreement(prisma, dealerId)),
       canVerify: summary.members.length === 0 && VERIFIABLE.includes(summary.status),
     };
   }

@@ -142,3 +142,7 @@ An OTP is an SMS, so this is a spend control as much as an abuse one.
 (`requireAssisted`, a 404 otherwise), and the vehicles are the ones this member
 created. Writes go through `vehicles.assisted*`, which re-checks the dealership
 under its row lock.
+
+### Owner contractual checkpoint
+
+When legal enforcement is enabled, the verified owner must review and submit through the authenticated dealer flow. Sales submit accepts only an empty body and cannot carry owner agreement choices. Assisted drafts remain drafts until successful owner submission; representative document commits keep SALES attribution. The existing service-location allowlist and representative-owned scope remain. See [two-policy and sharing architecture](../../../legal/CONSOLIDATION_AND_CONSENT.md).

@@ -3,6 +3,14 @@ import { invalidateDealerVerification } from './dealer-verification.js';
 import { DEALER_VERIFICATION_LABELS, isDealerVerified } from '@dealers-drive/contracts';
 import { resolveOnboardingLocation } from '../service-locations/service-locations.facade.js';
 import {
+  acceptDealer,
+  hasDealerAgreement,
+  requireDealerAgreement,
+  legalEnabled,
+} from '../legal/legal.facade.js';
+import { authorizeDealerWrite } from '../auth/auth.facade.js';
+import type { DealerSubmitInput } from '@dealers-drive/contracts';
+import {
   dealerSessionNext,
   documentRequirement,
   isSubmittedDocument,
@@ -42,7 +50,12 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
@@ -687,7 +700,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async submitForVerification(
       dealerId: string,
       actor: SubmissionActor = { type: 'DEALER', id: null },
+      input: DealerSubmitInput = {},
     ): Promise<DealerSubmitResponse> {
+      if (actor.type !== 'DEALER' && input.agreement)
+        throw new ForbiddenError('Only the authenticated dealership owner may accept its Terms.');
       const dealer = await requireDealer(dealerId);
       assertSubmittable(dealer.status);
 
@@ -708,6 +724,11 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
+        if (legalEnabled() && actor.type === 'DEALER' && actor.id) {
+          await authorizeDealerWrite(tx, { userId: actor.id, dealerId }, 'dealer:update');
+          if (input.agreement) await acceptDealer(tx, actor.id, dealerId, input.agreement);
+        }
+        await requireDealerAgreement(tx, dealerId);
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,
@@ -915,7 +936,9 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         repo.viewRollups(dealerId, weekStart),
         repo.previousWeekViews(dealerId, weekStart),
         repo.enquiryCounts(dealerId, weekStart),
-        repo.recentEnquiries(dealerId, 4),
+        (await hasDealerAgreement(prisma, dealerId))
+          ? repo.recentEnquiries(dealerId, 4)
+          : Promise.resolve([]),
         repo.expiringListingCount(dealerId, new Date(Date.now() + 7 * 86_400_000)),
         repo.weeklyActivity(dealerId, weekStart, startOfMonthUtc()),
         repo.listingCounts(dealerId),
