@@ -1,12 +1,10 @@
 import { countLabel } from '@/lib/plural';
 
-export const VEHICLE_GALLERY_TEXT = {
+export const PHOTO_GALLERY_TEXT = {
   label: 'Photographs',
   noPhotos: 'Photographs coming soon',
-  viewAll: (total: number) =>
-    total === 1
-      ? `${countLabel(total, 'photo')} · view`
-      : `${countLabel(total, 'photo')} · view all`,
+  viewOne: `${countLabel(1, 'photo')} · view`,
+  viewAll: (index: number, total: number) => `${index + 1} / ${total} · view all`,
   openAll: (title: string, total: number) =>
     total === 1
       ? `View the photo of ${title}`
@@ -29,3 +27,8 @@ export const NEXT_GLYPH = '›';
 
 export const STRIP_SCROLL_PX = 240;
 export const RAIL_NUMBER_DIGITS = 2;
+
+export const SWIPE_THRESHOLD_PX = 40;
+export const SWIPE_CLICK_GUARD_MS = 500;
+
+export const DEFAULT_STAGE_CLASS = 'aspect-[4/3]';

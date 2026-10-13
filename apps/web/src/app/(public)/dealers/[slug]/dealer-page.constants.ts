@@ -10,6 +10,9 @@ export const DEALER_PAGE_TEXT = {
   inventoryUnavailableTitle: 'We couldn’t load this dealership’s cars right now',
   inventoryUnavailableMessage: 'The dealership’s details are above. Please try again for its cars.',
   coverAlt: (brandName: string) => `${brandName} dealership yard`,
+  photoAlt: (brandName: string, position: number, caption: string | null) =>
+    caption ? `${brandName} — ${caption}` : `${brandName} dealership, photo ${position}`,
+  heroPlaceholder: 'Dealership photograph',
   metaDescription: ({ brandName, tagline, place, isVerified }: DealerDescriptionInput) =>
     [
       tagline,
@@ -19,3 +22,6 @@ export const DEALER_PAGE_TEXT = {
       .filter(Boolean)
       .join(' '),
 } as const;
+
+export const DEALER_HERO_STAGE_CLASS =
+  'h-[440px] max-lg:h-[340px] max-md:h-auto max-md:aspect-video';

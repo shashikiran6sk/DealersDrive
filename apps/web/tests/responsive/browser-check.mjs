@@ -74,9 +74,10 @@ const availableStories = [
   'dealer-enquiryinbox--new',
   'dealer-dealerprofileform--populated',
   'dealer-team--owner-with-team',
-  'vehicle-vehiclegallery--twenty',
-  'vehicle-vehiclegallery--portrait',
-  'vehicle-vehiclegallery--one-photo',
+  'primitives-photogallery--twenty',
+  'primitives-photogallery--portrait',
+  'primitives-photogallery--one-photo',
+  'primitives-photogallery--wide-hero',
   'vehicle-vehiclecard--long-title',
   'vehicle-vehiclecard--reserved',
   'vehicle-vehiclecard--sold',
@@ -146,7 +147,7 @@ for (const story of stories) {
     continue;
   }
   const dialogStory =
-    story.startsWith('vehicle-vehiclegallery') ||
+    story.startsWith('primitives-photogallery') ||
     story.startsWith('layout-mobilenav') ||
     story.startsWith('primitives-dialog') ||
     story.startsWith('search-mobilefilter');
@@ -203,7 +204,7 @@ for (const story of stories) {
     });
     await fs.writeFile(`${output}/${story}-${width}.png`, Buffer.from(shot.data, 'base64'));
   }
-  if (story.startsWith('vehicle-vehiclegallery')) {
+  if (story.startsWith('primitives-photogallery')) {
     for (const width of [320, 375]) {
       const height = 360;
       await send('Emulation.setDeviceMetricsOverride', {

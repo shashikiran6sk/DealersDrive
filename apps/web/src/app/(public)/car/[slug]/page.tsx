@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { cache, Suspense } from 'react';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
+import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
@@ -13,7 +14,6 @@ import { SimilarVehicles } from '@/components/vehicle/similar-vehicles';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import { AvailabilityBadge, availabilityLabel } from '@/components/vehicle/vehicle-card';
-import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
@@ -131,10 +131,10 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">
         <div className="flex min-w-0 flex-col gap-[26px] max-lg:contents">
           <div className="min-w-0 max-lg:order-1 lg:contents">
-            <VehicleGallery
+            <PhotoGallery
               title={vehicle.title}
-              images={vehicle.images}
-              primaryIndex={vehicle.primaryIndex}
+              photos={vehicle.images}
+              startIndex={vehicle.primaryIndex}
             />
           </div>
 

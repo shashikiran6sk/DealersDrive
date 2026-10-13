@@ -114,15 +114,36 @@ both margins — the one element on the page that did not line up. It
 is inset now, and taller by the 80px the stats grid above it used to
 occupy, so nothing was traded for the alignment.
 
-### `<img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />`
+### `<PhotoGallery title={dealer.brandName} photos={heroPhotos(dealer)} strip={false} … />`
 
-The 1600px rendition of the first approved portfolio photograph (#299) —
-the one place a dealership photograph is looked at rather than glanced past. See `dealer-card.tsx`
-for why it is a plain `<img>` and why the alt is empty.
+The yard is every approved portfolio photograph (#299), in the dealership's
+order, in the hero itself — the shared
+[`PhotoGallery`](../../../components/ui/photo-gallery.md) the car page uses,
+with its arrows, swipe, `1 / 5` position and fullscreen viewer. The hero used
+to show only `coverUrl` (the first approved photograph) and a separate
+"Photos of the dealership" grid below the details repeated all of them,
+the first one twice. One gallery says the same thing once, where a buyer
+looks for the yard.
 
-### `<ImageSlot label="Dealership photograph" />`
+Two settings keep it a banner rather than a car gallery: `strip={false}`
+(no thumbnail row under the hero) and `DEALER_HERO_STAGE_CLASS` — the same
+440px / 340px / 16:9 proportions the cover band had.
 
-A dealership with no approved photograph yet. A pending one never shows here.
+### `function heroPhotos(dealer: DealerPublicProfile): GalleryPhoto[]`
+
+The portfolio, each photograph named by `DEALER_PAGE_TEXT.photoAlt` — the
+dealer's caption after the dealership's name, or the dealership and its
+position when there is no caption — and carrying the caption for the viewer.
+A dealership with a `coverUrl` and no portfolio gets that one photograph,
+described by `coverAlt`; with neither, the gallery draws its empty frame with
+the `Dealership photograph` slot, exactly as the cover band did. A pending
+photograph never reaches `portfolio`, so there is no status to check.
+
+**Directory cards do not change.** The directory keeps the one standard image
+for every dealer (#289) — a grid of dealers is compared at a glance, and one
+dealer with a professional photographer and one without should not read as a
+difference in the dealerships. A portfolio photograph appears only on the
+dealership's own page.
 
 ### `<div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">`
 
@@ -204,6 +225,9 @@ a tagline containing `</script>` ended the element. It is built by
 and `@id` come from the web app's own origin rather than the API's
 `seo.canonical`, so one environment variable decides every URL on the page.
 
+`image` lists every approved portfolio photograph, in order, and falls back
+to `[coverUrl]` — the same photographs the hero shows.
+
 `AutoDealer` + `BreadcrumbList` (ARCHITECTURE §17.3), phone deliberately
 absent — structured data is the easiest place in a page to leak a field
 nobody meant to publish, and rule 7 applies to it exactly as it does to the
@@ -232,9 +256,11 @@ portfolio. A filtered or sorted inventory is `noindex, follow`, canonical to
 the portfolio; a later page of it is its own canonical, so the cars on it stay
 reachable by links. The description leads with the dealer's own tagline and
 names the place from the three address parts, without repeating a town that is
-also its district. The yard photograph is the social image when there is one.
+also its district. The social images are the hero's photographs — every
+approved portfolio photograph, else the cover — with the same alt text; with
+none, `pageMetadata` falls back to the brand card.
 
-### `alt={DEALER_PAGE_TEXT.coverAlt(dealer.brandName)}`
+### `coverAlt` · `photoAlt`
 
 Was `alt=""`. On the directory card the photograph is decoration beside a link
 that names the dealership; here it is the page's own picture of the yard, and

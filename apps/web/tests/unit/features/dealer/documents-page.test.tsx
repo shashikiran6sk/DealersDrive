@@ -128,9 +128,8 @@ describe('the Documents page', () => {
     render(await DealerDocumentsPage());
 
     expect(screen.getByText('Your documents are verified.')).toBeInTheDocument();
-    expect(screen.queryByText('Documents still to be verified')).toBeNull();
-    expect(screen.queryByText(/activation withdrawn/)).toBeNull();
-    expect(screen.getByText(/Dealer Verified is a separate review/)).toBeInTheDocument();
+    expect(screen.queryByText(/^Still needed/)).toBeNull();
+    expect(screen.queryByText(/Your dealership is live/)).toBeNull();
   });
 
   it('offers no Replace or Delete on a document the API has locked', async () => {
@@ -145,13 +144,15 @@ describe('the Documents page', () => {
 });
 
 describe('DocumentsOverview', () => {
-  it('names both outstanding categories and explains an activation ahead of verification', () => {
+  it('names both outstanding categories in one line, and says the dealership is live', () => {
     render(<DocumentsOverview documents={[]} gstin={null} dealerStatus="ACTIVE" />);
 
-    expect(screen.getByText('Documents still to be verified')).toBeInTheDocument();
-    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
-    expect(items).toEqual(['Personal Identity Proof', 'Business Identity Proof']);
-    expect(screen.getByText(/activation withdrawn if they cannot be produced/)).toBeInTheDocument();
+    expect(
+      screen.getByText('Still needed: Personal Identity Proof and Business Identity Proof'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Your dealership is live. Upload these so we can verify it.'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Your documents are verified.')).toBeNull();
     expect(screen.getAllByRole('button', { name: 'Upload' })).toHaveLength(2);
     expect(screen.getAllByText('Not uploaded yet')).toHaveLength(2);
@@ -167,8 +168,7 @@ describe('DocumentsOverview', () => {
       />,
     );
 
-    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
-    expect(items).toEqual(['Business Identity Proof']);
+    expect(screen.getByText('Still needed: Business Identity Proof')).toBeInTheDocument();
     const business = screen.getByRole('region', { name: 'Business Identity Proof' });
     expect(within(business).getByRole('button', { name: 'Replace' })).toBeInTheDocument();
     expect(within(business).getByText(/too blurry/)).toBeInTheDocument();
@@ -186,15 +186,15 @@ describe('DocumentsOverview', () => {
       />,
     );
 
-    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      'Business Identity Proof',
-    ]);
+    expect(screen.getByText('Still needed: Business Identity Proof')).toBeInTheDocument();
   });
 
-  it('keeps the activation sentence to a live dealership', () => {
+  it('keeps the live sentence to a live dealership', () => {
     render(<DocumentsOverview documents={[]} gstin={null} dealerStatus="SUSPENDED" />);
 
-    expect(screen.getByText('Documents still to be verified')).toBeInTheDocument();
-    expect(screen.queryByText(/activation withdrawn/)).toBeNull();
+    expect(
+      screen.getByText('Still needed: Personal Identity Proof and Business Identity Proof'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Your dealership is live/)).toBeNull();
   });
 });

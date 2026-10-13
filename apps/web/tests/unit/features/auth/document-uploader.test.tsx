@@ -130,10 +130,10 @@ describe('DocumentUploader — the type picker', () => {
     render(<DocumentUploader category="BUSINESS_IDENTITY" document={null} gstin={GSTIN} />);
 
     expect(screen.getByLabelText('Document type')).toHaveValue('GST_CERTIFICATE');
-    expect(screen.queryByText(/different business proof removes the GSTIN/)).toBeNull();
+    expect(screen.queryByText(/another business proof removes your GSTIN/)).toBeNull();
 
     await user.selectOptions(screen.getByLabelText('Document type'), 'UDYAM');
-    expect(screen.getByText(/different business proof removes the GSTIN/)).toBeInTheDocument();
+    expect(screen.getByText(/another business proof removes your GSTIN/)).toBeInTheDocument();
   });
 });
 

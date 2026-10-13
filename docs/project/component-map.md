@@ -921,6 +921,12 @@ props. Both **P2**.
 > (numbered cells, active one accented and scrolled into view), `GalleryArrow`
 > (`placement`: `strip` | `stage`). The main image is a `.blueprint` with a
 > "N photos · view all" tag. Focus returns to the exact opener.
+>
+> **As generalised (dealer hero).** `VehicleGallery` is now the shared
+> `PhotoGallery` in `components/ui/photo-gallery/` — see
+> [Photo gallery](#photo-gallery-dealer-hero) below. The car page renders it
+> directly (`photos`, `startIndex={primaryIndex}`, strip on, 4:3); there is no
+> `components/vehicle/vehicle-gallery/` any more.
 
 ### C036 — `VdpCtaStack` · C037 — `RevealContactButton`
 
@@ -1780,20 +1786,20 @@ count). They are not identity evidence and never affect Dealer Verified.
 | `PortfolioModerationCard`  | `apps/web/src/features/admin/portfolio-moderation/portfolio-moderation-card.tsx`  | `photo`; new photo · replacement (side by side) · replaced photo gone · rejected · decision refused   | `PortfolioModerationQueue`                               |
 | `PortfolioModerationTabs`  | `apps/web/src/features/admin/portfolio-moderation/portfolio-moderation-tabs.tsx`  | `active`                                                                                              | `PortfolioModerationQueue`                               |
 | `PortfolioPreview`         | `apps/web/src/features/admin/portfolio-moderation/portfolio-preview.tsx`          | `url`, `alt`, `label`, `fallback`                                                                     | `PortfolioModerationCard`                                |
-| `DealerGallery`            | `apps/web/src/components/dealers/dealer-gallery/dealer-gallery.tsx`               | `photos`, `brandName`, `className?`; photos · one photo · without captions · empty (renders nothing)  | `/dealers/[slug]`                                        |
 
 **Changed:** `consoleNavFor` adds Photos (`/dealer/photos`) for `dealer:update`;
 `ADMIN_NAV` adds Dealer photos (`/admin/portfolio`) for
-`admin:portfolio:moderate`; `/dealers/[slug]` renders `DealerGallery` below the
-details and map. `DirectoryCard` is **unchanged** — directory cards keep the one
+`admin:portfolio:moderate`; `/dealers/[slug]` shows the approved photographs in
+its hero with `PhotoGallery` (it rendered a `DealerGallery` grid below the
+details and map until the [photo gallery](#photo-gallery-dealer-hero) change
+removed it). `DirectoryCard` is **unchanged** — directory cards keep the one
 standard image (#289). **Reuses** `Dialog`, `Field`, `Input`, `Button`,
 `Banner`, `StatusTag`, `Tag`, `ImageSlot`, `EmptyState` and `@/lib/upload`.
 **Tests** `apps/web/tests/unit/features/dealer/portfolio-manager.test.tsx`,
 `features/admin/portfolio-moderation.test.tsx`,
-`components/dealers/dealer-gallery.test.tsx`,
 `components/dealers/portfolio-page.test.tsx`,
 `app/api/dealer-portfolio-routes.test.ts`. **Sandbox** `Dealer/PortfolioManager`,
-`Admin/PortfolioModerationQueue`, `Dealers/DealerGallery`; fixtures in
+`Admin/PortfolioModerationQueue`, `Primitives/PhotoGallery`; fixtures in
 `apps/sandbox/src/mocks/portfolio.ts`, and the Server Actions are stubbed by
 `apps/sandbox/src/mocks/portfolio-actions.ts`.
 
@@ -1854,3 +1860,37 @@ Sales unchanged); `consoleNavFor` adds Documents (`/dealer/documents`) for
 `features/dealer/dashboard-page.test.tsx`. **Sandbox** `Dealer/DocumentsOverview`,
 `Dealer/DocumentsReminder`, `Forms/DocumentUploader` (verified, locked); fixtures
 in `apps/sandbox/src/mocks/dealer-documents.ts`.
+
+## Photo gallery (dealer hero)
+
+The dealer page's hero shows every approved portfolio photograph, with arrows,
+swipe and the fullscreen viewer — the same component as the car page. The
+generic parts of `VehicleGallery` moved (with `git mv`) into one shared
+component; the separate "Photos of the dealership" grid is gone.
+
+| Component      | Source                                                       | Props / states                                                                                                                                                                                                                                                                                      | Consumers                                                                                  |
+| -------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `PhotoGallery` | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx` | `title`, `photos` (`{ url, alt, caption? }`), `startIndex?` (0), `strip?` (`true`), `stageClassName?` (`aspect-[4/3]`), `emptyLabel?`; several photos with / without strip · wide hero · with captions · one photo · empty · 20 photos · portrait · phone · viewer open · stepped by arrow or swipe | `/car/[slug]` (strip, 4:3, primary first), `/dealers/[slug]` hero (no strip, 440px banner) |
+
+Internal parts, all in the same folder: `GalleryArrow`, `GalleryStrip`,
+`GalleryViewer`, `GalleryRail` (unchanged apart from the photo type and the
+viewer's caption and swipe), `useSwipe`, `utils.ts`.
+
+**Behaviour.** The stage tag reads `2 / 5 · view all` with several photos and
+`1 photo · view` with one, on both pages (the car page read `5 photos · view
+all`). A horizontal touch swipe of 40px steps the stage and the viewer;
+`touch-action: pan-y` keeps vertical scrolling; a swipe never opens the viewer.
+The viewer shows the photo's caption, else its alt text. Only the first stage
+photo is `fetchPriority="high"`; thumbnails are lazy. Labels, focus return,
+keyboard and the focus trap are unchanged.
+
+**Removed:** `VehicleGallery` (`components/vehicle/vehicle-gallery/`) and
+`DealerGallery` (`components/dealers/dealer-gallery/`), with their test files,
+stories and registry entries. **Changed:** `/dealers/[slug]` — hero is
+`PhotoGallery`; JSON-LD `image` and the social images list every approved
+photograph (else the cover). **Unchanged:** `DirectoryCard` (#289 standard
+image), `PortfolioManager`, the admin portfolio queue. **Tests**
+`apps/web/tests/unit/components/ui/photo-gallery.test.tsx`,
+`components/dealers/portfolio-page.test.tsx`. **Sandbox** `Primitives/PhotoGallery`
+(`WideHero`, `WithCaptions`, `OnePhoto`, `NoPhotos`, `EmptyWideHero`, `Twenty`,
+`Portrait`, `Phone`).

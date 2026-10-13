@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
-import { DealerGallery } from '@/components/dealers/dealer-gallery';
 import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
 import { SectionError } from '@/components/errors/section-error';
 import { JsonLd } from '@/components/seo/json-ld';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
-import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
+import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
+import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
@@ -30,7 +30,7 @@ import {
 import type { SearchParamsInput } from '@/lib/url';
 import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-search';
 
-import { DEALER_PAGE_TEXT } from './dealer-page.constants';
+import { DEALER_HERO_STAGE_CLASS, DEALER_PAGE_TEXT } from './dealer-page.constants';
 
 export const revalidate = 600;
 
@@ -80,6 +80,19 @@ function liveCars(dealer: DealerPublicProfile): number | undefined {
   return Number.isInteger(value) ? value : undefined;
 }
 
+function heroPhotos(dealer: DealerPublicProfile): GalleryPhoto[] {
+  if (dealer.portfolio.length > 0) {
+    return dealer.portfolio.map((photo, index) => ({
+      url: photo.url,
+      alt: DEALER_PAGE_TEXT.photoAlt(dealer.brandName, index + 1, photo.caption),
+      caption: photo.caption,
+    }));
+  }
+  return dealer.coverUrl
+    ? [{ url: dealer.coverUrl, alt: DEALER_PAGE_TEXT.coverAlt(dealer.brandName) }]
+    : [];
+}
+
 function placeNameOf(dealer: DealerPublicProfile): string | null {
   return placeOf([dealer.address.city, dealer.address.district, dealer.address.state]);
 }
@@ -119,9 +132,7 @@ export async function generateMetadata({
       isVerified: dealer.isVerified,
     }),
     route: { kind: 'resolved', ...canonicalOf(dealer, readVehicleSearch(query, 'dealer')) },
-    ...(dealer.coverUrl
-      ? { images: [{ url: dealer.coverUrl, alt: DEALER_PAGE_TEXT.coverAlt(dealer.brandName) }] }
-      : {}),
+    images: heroPhotos(dealer).map(({ url, alt }) => ({ url, alt })),
   });
 }
 
@@ -185,18 +196,13 @@ export default async function DealerPortfolioPage({
         </div>
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pb-[20px]">
-          <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-auto max-md:aspect-video">
-            {dealer.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={dealer.coverUrl}
-                alt={DEALER_PAGE_TEXT.coverAlt(dealer.brandName)}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <ImageSlot label="Dealership photograph" />
-            )}
-          </Blueprint>
+          <PhotoGallery
+            title={dealer.brandName}
+            photos={heroPhotos(dealer)}
+            strip={false}
+            stageClassName={DEALER_HERO_STAGE_CLASS}
+            emptyLabel={DEALER_PAGE_TEXT.heroPlaceholder}
+          />
         </div>
       </div>
 
@@ -229,8 +235,6 @@ export default async function DealerPortfolioPage({
 
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
-
-      <DealerGallery photos={dealer.portfolio} brandName={dealer.brandName} />
 
       {inventory.status === 'ready' ? (
         <DealerInventory

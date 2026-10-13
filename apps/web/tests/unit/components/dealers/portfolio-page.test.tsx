@@ -677,32 +677,130 @@ describe('structured data', () => {
 /**
  * #299 — the approved portfolio photographs, on the dealership's own page and
  * nowhere else. The API sends approved photographs only, so the page has no
- * status to check; what it must not do is draw an empty section around none.
+ * status to check. They are the hero itself: one gallery, with arrows and the
+ * fullscreen viewer the car page uses, and no second grid of the same photos.
  */
-describe('the photo gallery', () => {
+describe('the photo gallery in the hero', () => {
   const PHOTOS = [
     { url: 'https://media.test/portfolio/1.webp', caption: 'The yard on Katpadi Road' },
     { url: 'https://media.test/portfolio/2.webp', caption: null },
+    { url: 'https://media.test/portfolio/3.webp', caption: 'The service bay' },
   ];
 
-  it('shows every approved photograph, with its caption', async () => {
+  function heroButton(): HTMLElement {
+    return within(screen.getByRole('region', { name: 'Photographs' })).getByRole('button', {
+      name: /^View (all|the photo)/,
+    });
+  }
+
+  it('shows every approved photograph in the hero, in order, with arrows and no strip', async () => {
+    const user = userEvent.setup();
     serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS });
     render(await DealerPortfolioPage({ params, searchParams }));
 
-    const gallery = screen.getByRole('list', { name: 'Photos of Sri Lakshmi Motors' });
-    expect(within(gallery).getAllByRole('img')).toHaveLength(2);
-    expect(within(gallery).getByText('The yard on Katpadi Road')).toBeInTheDocument();
-    expect(within(gallery).getByAltText('Sri Lakshmi Motors dealership, photo 2')).toHaveAttribute(
+    const stage = heroButton();
+    expect(stage).toHaveAccessibleName('View all 3 photos of Sri Lakshmi Motors');
+    expect(stage).toHaveClass('h-[440px]', 'max-md:aspect-video');
+    expect(within(stage).getByRole('img')).toHaveAttribute(
+      'alt',
+      'Sri Lakshmi Motors — The yard on Katpadi Road',
+    );
+    expect(within(stage).getByText('1 / 3 · view all')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Open photo/ })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(within(heroButton()).getByRole('img')).toHaveAttribute(
       'src',
       'https://media.test/portfolio/2.webp',
     );
+    expect(within(heroButton()).getByRole('img')).toHaveAttribute(
+      'alt',
+      'Sri Lakshmi Motors dealership, photo 2',
+    );
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(within(heroButton()).getByRole('img')).toHaveAttribute(
+      'src',
+      'https://media.test/portfolio/3.webp',
+    );
   });
 
-  it('draws no gallery for a dealership with no approved photographs', async () => {
-    serve(DEALER);
+  it('opens the fullscreen viewer on the photograph in the hero, with its caption', async () => {
+    const user = userEvent.setup();
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    await user.click(heroButton());
+    const dialog = await screen.findByRole('dialog', { name: 'Sri Lakshmi Motors' });
+    expect(within(dialog).getByText('3 / 3')).toBeInTheDocument();
+    expect(within(dialog).getByText('The service bay', { selector: 'p' })).toBeVisible();
+    expect(
+      within(within(dialog).getByRole('navigation', { name: 'All photos' })).getAllByRole('button'),
+    ).toHaveLength(3);
+  });
+
+  it('draws no separate photos section below the details', async () => {
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS });
     render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.queryByText('Photos of the dealership')).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Photos of Sri Lakshmi Motors' })).toBeNull();
+    expect(screen.getAllByRole('region', { name: 'Photographs' })).toHaveLength(1);
+  });
+
+  it('shows the cover alone when there is a cover and no portfolio', async () => {
+    serve({ ...DEALER, coverUrl: 'https://media.test/yard/1600.webp' });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(heroButton()).toHaveAccessibleName('View the photo of Sri Lakshmi Motors');
+    expect(screen.queryByRole('button', { name: /Previous image|Next image/ })).toBeNull();
+  });
+
+  it('keeps the placeholder for a dealership with no photograph at all', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const slot = screen.getByRole('img', { name: 'Dealership photograph' });
+    expect(slot).toHaveClass('image-slot');
+    expect(slot.parentElement).toHaveClass('blueprint', 'h-[440px]', 'bg-(--color-surface)');
+    expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^View/ })).toBeNull();
+  });
+
+  it('lists every approved photograph in the structured data and the social images', async () => {
+    serve({ ...DEALER, coverUrl: PHOTOS[0]?.url ?? null, portfolio: PHOTOS });
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const graph = (
+      JSON.parse(script?.textContent ?? '{}') as { '@graph': Record<string, unknown>[] }
+    )['@graph'];
+
+    expect(graph.find((node) => node['@type'] === 'AutoDealer')?.image).toEqual(
+      PHOTOS.map((photo) => photo.url),
+    );
+    expect((await generateMetadata({ params })).openGraph?.images).toEqual([
+      {
+        url: 'https://media.test/portfolio/1.webp',
+        alt: 'Sri Lakshmi Motors — The yard on Katpadi Road',
+      },
+      { url: 'https://media.test/portfolio/2.webp', alt: 'Sri Lakshmi Motors dealership, photo 2' },
+      { url: 'https://media.test/portfolio/3.webp', alt: 'Sri Lakshmi Motors — The service bay' },
+    ]);
+  });
+
+  it('falls back to the cover in the structured data, and to nothing without one', async () => {
+    serve({ ...DEALER, coverUrl: 'https://media.test/yard/1600.webp' });
+    const withCover = render(await DealerPortfolioPage({ params, searchParams }));
+    const coverScript = withCover.container.querySelector('script[type="application/ld+json"]');
+    expect(coverScript?.textContent).toContain('"image":["https://media.test/yard/1600.webp"]');
+    withCover.unmount();
+
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    expect(
+      container.querySelector('script[type="application/ld+json"]')?.textContent,
+    ).not.toContain('"image"');
   });
 });
 

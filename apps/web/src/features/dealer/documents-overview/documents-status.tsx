@@ -14,14 +14,8 @@ export function DocumentsStatus({ gaps, active }: DocumentsStatusProps) {
   }
 
   return (
-    <Banner tone="warn" title={DOCUMENTS_TEXT.outstandingTitle}>
-      <p>{DOCUMENTS_TEXT.outstandingLead}</p>
-      <ul className="mt-[4px] list-disc pl-[18px]">
-        {gapLabels(gaps).map((label) => (
-          <li key={label}>{label}</li>
-        ))}
-      </ul>
-      {active ? <p className="mt-[8px]">{DOCUMENTS_TEXT.activeExplanation}</p> : null}
+    <Banner tone="warn" title={DOCUMENTS_TEXT.outstandingTitle(gapLabels(gaps))}>
+      {active ? <p>{DOCUMENTS_TEXT.activeExplanation}</p> : null}
     </Banner>
   );
 }

@@ -34,8 +34,6 @@ export function DocumentsOverview({ documents, gstin, dealerStatus }: DocumentsO
           );
         })}
       </div>
-
-      <p className="max-w-[64ch] text-[13px] ink-muted">{DOCUMENTS_TEXT.dealerVerifiedNote}</p>
     </div>
   );
 }

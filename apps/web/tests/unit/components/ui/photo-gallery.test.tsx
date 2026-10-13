@@ -1,21 +1,22 @@
-import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
+import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 import {
   arrowStep,
+  captionOf,
+  initialIndex,
   railNumber,
   revealOffset,
-  startIndex,
   stripEdges,
+  swipeStep,
   wrapIndex,
-} from '@/components/vehicle/vehicle-gallery/utils';
+} from '@/components/ui/photo-gallery/utils';
 
 const TITLE = '2021 Toyota Fortuner 2.8 4x2 AT';
 
-function images(count: number): PublicVehicleImage[] {
+function images(count: number): GalleryPhoto[] {
   return Array.from({ length: count }, (_, index) => ({
     url: `https://media.test/by-media/m${index}/1024.webp`,
     alt: `${TITLE}, photograph ${index + 1} of ${count}`,
@@ -32,8 +33,8 @@ async function openViewer(user: ReturnType<typeof userEvent.setup>, name: string
 }
 
 describe('the gallery on the page', () => {
-  it('shows the primary photograph in a blueprint frame with a view-all tag', () => {
-    render(<VehicleGallery title={TITLE} images={images(11)} primaryIndex={1} />);
+  it('shows the starting photograph in a blueprint frame with a position and view-all tag', () => {
+    render(<PhotoGallery title={TITLE} photos={images(11)} startIndex={1} />);
 
     const main = gallery().getByRole('button', { name: `View all 11 photos of ${TITLE}` });
     expect(main).toHaveClass('blueprint');
@@ -42,11 +43,11 @@ describe('the gallery on the page', () => {
       'src',
       'https://media.test/by-media/m1/1024.webp',
     );
-    expect(within(main).getByText('11 photos · view all')).toBeInTheDocument();
+    expect(within(main).getByText('2 / 11 · view all')).toBeInTheDocument();
   });
 
   it('lays every photograph out as a thumbnail in the strip, in order', () => {
-    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />);
 
     const thumbs = gallery().getAllByRole('button', { name: /^Open photo/ });
     expect(thumbs.map((thumb) => thumb.getAttribute('aria-label'))).toEqual([
@@ -61,7 +62,7 @@ describe('the gallery on the page', () => {
   });
 
   it('scrolls the strip 240px with its arrows without opening the viewer', () => {
-    render(<VehicleGallery title={TITLE} images={images(12)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(12)} startIndex={0} />);
     const track = document.querySelector('.dd-strip');
     if (!(track instanceof HTMLElement)) throw new Error('no strip');
     const scrollBy = vi.fn();
@@ -89,7 +90,7 @@ describe('the gallery on the page', () => {
 
   it('reaches the image, the strip arrows and every thumbnail by keyboard', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(2)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(2)} startIndex={0} />);
     const track = document.querySelector('.dd-strip');
     if (!(track instanceof HTMLElement)) throw new Error('no strip');
     Object.defineProperty(track, 'scrollWidth', { value: 900, configurable: true });
@@ -111,16 +112,16 @@ describe('the gallery on the page', () => {
   });
 
   it('shows no strip for a single photograph', () => {
-    render(<VehicleGallery title={TITLE} images={images(1)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(1)} startIndex={0} />);
     expect(screen.queryByRole('button', { name: /Scroll photos|Open photo/ })).toBeNull();
     expect(screen.getByText('1 photo · view')).toBeInTheDocument();
   });
 
   it('holds the frame with a labelled slot when there are none, and survives a bad index', () => {
-    const { rerender } = render(<VehicleGallery title={TITLE} images={[]} primaryIndex={0} />);
+    const { rerender } = render(<PhotoGallery title={TITLE} photos={[]} startIndex={0} />);
     expect(screen.getByRole('img', { name: 'Photographs coming soon' })).toBeInTheDocument();
 
-    rerender(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={9} />);
+    rerender(<PhotoGallery title={TITLE} photos={images(3)} startIndex={9} />);
     expect(gallery().getAllByRole('img')[0]).toHaveAttribute(
       'src',
       'https://media.test/by-media/m0/1024.webp',
@@ -150,7 +151,7 @@ function selectedThumb(): string | null {
 
 describe('the hero arrows — one image state for hero, strip and viewer', () => {
   it('shows Previous image and Next image over the hero when there are several photos', () => {
-    render(<VehicleGallery title={TITLE} images={images(5)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(5)} startIndex={0} />);
     const previous = gallery().getByRole('button', { name: 'Previous image' });
     const next = gallery().getByRole('button', { name: 'Next image' });
     expect(previous.tagName).toBe('BUTTON');
@@ -163,14 +164,14 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
   });
 
   it('shows no arrows over the hero for a single photograph', () => {
-    render(<VehicleGallery title={TITLE} images={images(1)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(1)} startIndex={0} />);
     expect(screen.queryByRole('button', { name: /Previous image|Next image/ })).toBeNull();
     expect(heroSrc()).toBe(src(0));
   });
 
   it('advances and goes back through the photographs from the hero', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(5)} primaryIndex={2} />);
+    render(<PhotoGallery title={TITLE} photos={images(5)} startIndex={2} />);
     expect(heroSrc()).toBe(src(2));
 
     await user.click(screen.getByRole('button', { name: 'Next image' }));
@@ -184,7 +185,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('wraps at both ends, as the viewer does', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />);
 
     await user.click(screen.getByRole('button', { name: 'Previous image' }));
     expect(heroSrc()).toBe(src(2));
@@ -194,7 +195,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('moves the selected thumbnail with the hero', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(4)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(4)} startIndex={0} />);
     expect(selectedThumb()).toBe('Open photo 1 of 4');
 
     await user.click(screen.getByRole('button', { name: 'Next image' }));
@@ -206,7 +207,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('can be driven from the keyboard', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(4)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(4)} startIndex={0} />);
     screen.getByRole('button', { name: 'Next image' }).focus();
     await user.keyboard('{Enter}');
     await user.keyboard(' ');
@@ -216,7 +217,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('opens the viewer on the photograph the hero is showing', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(9)} startIndex={0} />);
     for (let press = 0; press < 4; press += 1) {
       await user.click(screen.getByRole('button', { name: 'Next image' }));
     }
@@ -228,7 +229,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('shows on the hero the photograph a thumbnail opened, once the viewer closes', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(9)} startIndex={0} />);
 
     const dialog = await openViewer(user, 'Open photo 7 of 9');
     expect(within(dialog).getByText('7 / 9')).toBeInTheDocument();
@@ -243,7 +244,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('keeps the hero where the viewer was left', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(9)} startIndex={0} />);
     await user.click(screen.getByRole('button', { name: 'Next image' }));
 
     const dialog = await openViewer(user, /^View all/);
@@ -265,7 +266,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 
   it('scrolls the strip to keep the selected thumbnail in view, and only when it is not', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(12)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(12)} startIndex={0} />);
     const track = document.querySelector('.dd-strip');
     if (!(track instanceof HTMLElement)) throw new Error('no strip');
     const scrollBy = vi.fn();
@@ -289,7 +290,7 @@ describe('the hero arrows — one image state for hero, strip and viewer', () =>
 describe('the fullscreen viewer', () => {
   it('opens from the main image on the primary, with the brand, title, counter and Close', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(11)} primaryIndex={1} />);
+    render(<PhotoGallery title={TITLE} photos={images(11)} startIndex={1} />);
 
     const dialog = await openViewer(user, /^View all/);
     expect(within(dialog).getByRole('img', { name: 'Dealers Drive' })).toHaveAttribute(
@@ -310,7 +311,7 @@ describe('the fullscreen viewer', () => {
 
   it('opens from a thumbnail on that thumbnail', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(18)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(18)} startIndex={0} />);
 
     const dialog = await openViewer(user, 'Open photo 3 of 18');
     expect(within(dialog).getByText('3 / 18')).toBeInTheDocument();
@@ -319,7 +320,7 @@ describe('the fullscreen viewer', () => {
   it('lists every photograph in a numbered rail, marks the current one and jumps on click', async () => {
     const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(11)} primaryIndex={1} />);
+    render(<PhotoGallery title={TITLE} photos={images(11)} startIndex={1} />);
     const dialog = await openViewer(user, /^View all/);
 
     const rail = within(within(dialog).getByRole('navigation', { name: 'All photos' }));
@@ -342,7 +343,7 @@ describe('the fullscreen viewer', () => {
 
   it('pages with its arrows and the arrow keys, wrapping at both ends, without closing', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />);
     const dialog = await openViewer(user, /^View all/);
 
     await user.click(within(dialog).getByRole('button', { name: 'Previous photo' }));
@@ -358,7 +359,7 @@ describe('the fullscreen viewer', () => {
 
   it('locks the page behind it while open, and releases it on close', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />);
 
     await openViewer(user, /^View all/);
     expect(document.body).toHaveAttribute('data-scroll-locked');
@@ -369,7 +370,7 @@ describe('the fullscreen viewer', () => {
 
   it('closes on Escape and returns focus to the thumbnail that opened it', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(4)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(4)} startIndex={0} />);
 
     await openViewer(user, 'Open photo 3 of 4');
     await user.keyboard('{ArrowRight}');
@@ -381,7 +382,7 @@ describe('the fullscreen viewer', () => {
 
   it('closes with its button and returns focus to the main image', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />);
 
     const dialog = await openViewer(user, /^View all/);
     await user.click(within(dialog).getByRole('button', { name: 'Close' }));
@@ -395,7 +396,7 @@ describe('the fullscreen viewer', () => {
     render(
       <>
         <a href="/elsewhere">Elsewhere</a>
-        <VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />
+        <PhotoGallery title={TITLE} photos={images(3)} startIndex={0} />
       </>,
     );
     const dialog = await openViewer(user, /^View all/);
@@ -410,11 +411,190 @@ describe('the fullscreen viewer', () => {
 
   it('shows no arrows for a single photograph and ignores the arrow keys', async () => {
     const user = userEvent.setup();
-    render(<VehicleGallery title={TITLE} images={images(1)} primaryIndex={0} />);
+    render(<PhotoGallery title={TITLE} photos={images(1)} startIndex={0} />);
     const dialog = await openViewer(user, `View the photo of ${TITLE}`);
     expect(within(dialog).queryByRole('button', { name: /Previous|Next/ })).toBeNull();
     await user.keyboard('{ArrowRight}');
     expect(within(dialog).getByText('1 / 1')).toBeInTheDocument();
+  });
+});
+
+function swipe(
+  target: Element,
+  fromX: number,
+  toX: number,
+  { pointerType = 'touch', deltaY = 0 }: { pointerType?: string; deltaY?: number } = {},
+) {
+  fireEvent.pointerDown(target, { pointerId: 7, pointerType, clientX: fromX, clientY: 200 });
+  fireEvent.pointerUp(target, { pointerId: 7, pointerType, clientX: toX, clientY: 200 + deltaY });
+}
+
+function tag(): HTMLElement {
+  const element = hero().querySelector('.tag');
+  if (!(element instanceof HTMLElement)) throw new Error('no tag');
+  return element;
+}
+
+describe('the position, the options and the loading', () => {
+  it('says where it is, and moves with the arrows, wrapping', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title={TITLE} photos={images(5)} />);
+    expect(tag()).toHaveTextContent('1 / 5 · view all');
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(tag()).toHaveTextContent('2 / 5 · view all');
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(tag()).toHaveTextContent('5 / 5 · view all');
+  });
+
+  it('draws no strip when asked not to, and keeps the arrows and the viewer', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title={TITLE} photos={images(4)} strip={false} />);
+
+    expect(screen.queryByRole('button', { name: /Scroll photos|Open photo/ })).toBeNull();
+    expect(document.querySelector('.dd-strip')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(heroSrc()).toBe(src(1));
+    const dialog = await openViewer(user, /^View all/);
+    expect(within(dialog).getByText('2 / 4')).toBeInTheDocument();
+  });
+
+  it('takes the stage proportions it is given, and is 4:3 by default', () => {
+    const { rerender } = render(<PhotoGallery title={TITLE} photos={images(2)} />);
+    expect(hero()).toHaveClass('blueprint', 'aspect-[4/3]');
+
+    rerender(<PhotoGallery title={TITLE} photos={images(2)} stageClassName="h-[440px]" />);
+    expect(hero()).toHaveClass('blueprint', 'h-[440px]');
+    expect(hero()).not.toHaveClass('aspect-[4/3]');
+  });
+
+  it('holds the empty frame in the same proportions, with the label it is given', () => {
+    const { container } = render(
+      <PhotoGallery
+        title={TITLE}
+        photos={[]}
+        stageClassName="h-[440px]"
+        emptyLabel="Dealership photograph"
+      />,
+    );
+
+    const frame = container.firstElementChild;
+    expect(frame).toHaveClass('blueprint', 'h-[440px]');
+    expect(frame?.querySelectorAll('.corner')).toHaveLength(4);
+    expect(screen.getByRole('img', { name: 'Dealership photograph' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
+  });
+
+  it('asks for the first photograph first, and lazily for every thumbnail', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title={TITLE} photos={images(3)} startIndex={1} />);
+    const stage = within(hero()).getByRole('img');
+    expect(stage).toHaveAttribute('fetchpriority', 'high');
+    expect(stage).not.toHaveAttribute('loading', 'lazy');
+    for (const thumb of gallery().getAllByRole('button', { name: /^Open photo/ })) {
+      expect(thumb.querySelector('img')).toHaveAttribute('loading', 'lazy');
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(within(hero()).getByRole('img')).not.toHaveAttribute('fetchpriority');
+  });
+});
+
+describe('captions', () => {
+  const CAPTIONED: GalleryPhoto[] = [
+    { url: src(0), alt: 'Sri Lakshmi Motors — The yard at dusk', caption: 'The yard at dusk' },
+    { url: src(1), alt: 'Sri Lakshmi Motors dealership, photo 2', caption: null },
+  ];
+
+  it('shows the caption of the photograph the viewer is on, and the alt text without one', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title="Sri Lakshmi Motors" photos={CAPTIONED} strip={false} />);
+
+    await user.click(screen.getByRole('button', { name: /^View all/ }));
+    const dialog = await screen.findByRole('dialog', { name: 'Sri Lakshmi Motors' });
+    expect(within(dialog).getByText('The yard at dusk', { selector: 'p' })).toBeVisible();
+    expect(
+      within(dialog).getByRole('img', { name: 'Sri Lakshmi Motors — The yard at dusk' }),
+    ).toBeInTheDocument();
+
+    await user.keyboard('{ArrowRight}');
+    expect(
+      within(dialog).getByText('Sri Lakshmi Motors dealership, photo 2', { selector: 'p' }),
+    ).toBeVisible();
+  });
+});
+
+describe('swiping', () => {
+  it('steps forward on a swipe left and back on a swipe right, wrapping', () => {
+    render(<PhotoGallery title={TITLE} photos={images(3)} />);
+
+    swipe(within(hero()).getByRole('img'), 300, 200);
+    expect(heroSrc()).toBe(src(1));
+    expect(tag()).toHaveTextContent('2 / 3 · view all');
+    swipe(within(hero()).getByRole('img'), 200, 300);
+    swipe(within(hero()).getByRole('img'), 200, 300);
+    expect(heroSrc()).toBe(src(2));
+    expect(selectedThumb()).toBe('Open photo 3 of 3');
+  });
+
+  it('does not open the viewer with the click a swipe ends in, but the next tap does', async () => {
+    render(<PhotoGallery title={TITLE} photos={images(3)} />);
+
+    swipe(hero(), 300, 180);
+    fireEvent.click(hero());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(heroSrc()).toBe(src(1));
+
+    swipe(hero(), 300, 296);
+    fireEvent.click(hero());
+    const dialog = await screen.findByRole('dialog', { name: TITLE });
+    expect(within(dialog).getByText('2 / 3')).toBeInTheDocument();
+  });
+
+  it('ignores a short drag, a vertical scroll, a cancelled touch and a mouse drag', () => {
+    render(<PhotoGallery title={TITLE} photos={images(3)} />);
+    const stage = within(hero()).getByRole('img');
+
+    swipe(stage, 300, 265);
+    swipe(stage, 300, 240, { deltaY: 120 });
+    swipe(stage, 300, 100, { pointerType: 'mouse' });
+    fireEvent.pointerDown(stage, { pointerId: 7, pointerType: 'touch', clientX: 300 });
+    fireEvent.pointerCancel(stage, { pointerId: 7, pointerType: 'touch' });
+    fireEvent.pointerUp(stage, { pointerId: 7, pointerType: 'touch', clientX: 100 });
+    expect(heroSrc()).toBe(src(0));
+  });
+
+  it('lets vertical scrolling through, so the page still scrolls over the photograph', () => {
+    render(<PhotoGallery title={TITLE} photos={images(3)} />);
+    expect(hero().parentElement).toHaveClass('touch-pan-y');
+  });
+
+  it('does nothing to a single photograph, which still opens on a tap', async () => {
+    render(<PhotoGallery title={TITLE} photos={images(1)} />);
+
+    swipe(hero(), 300, 100);
+    fireEvent.click(hero());
+    expect(await screen.findByRole('dialog', { name: TITLE })).toBeInTheDocument();
+  });
+
+  it('steps the viewer too, without closing it, and the page follows', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title={TITLE} photos={images(4)} />);
+    const dialog = await openViewer(user, /^View all/);
+    const photo = () => within(dialog).getByRole('img', { name: /photograph \d of 4/ });
+
+    swipe(photo(), 400, 300);
+    expect(within(dialog).getByText('2 / 4')).toBeInTheDocument();
+    swipe(photo(), 300, 400);
+    swipe(photo(), 300, 400);
+    expect(within(dialog).getByText('4 / 4')).toBeInTheDocument();
+    expect(photo().parentElement?.parentElement).toHaveClass('touch-pan-y');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(heroSrc()).toBe(src(3));
   });
 });
 
@@ -426,10 +606,26 @@ describe('the helpers', () => {
     expect(wrapIndex(5, 0)).toBe(0);
   });
 
-  it('starts on the primary when it is in range', () => {
-    expect(startIndex(2, 3)).toBe(2);
-    expect(startIndex(3, 3)).toBe(0);
-    expect(startIndex(-1, 3)).toBe(0);
+  it('starts on the requested photograph when it is in range', () => {
+    expect(initialIndex(2, 3)).toBe(2);
+    expect(initialIndex(3, 3)).toBe(0);
+    expect(initialIndex(-1, 3)).toBe(0);
+    expect(initialIndex(1.5, 3)).toBe(0);
+  });
+
+  it('reads a horizontal drag of 40px or more as a step, and anything else as nothing', () => {
+    expect(swipeStep(-40, 0)).toBe(1);
+    expect(swipeStep(60, 10)).toBe(-1);
+    expect(swipeStep(-39, 0)).toBeNull();
+    expect(swipeStep(-50, 80)).toBeNull();
+    expect(swipeStep(50, -50)).toBeNull();
+  });
+
+  it('captions a photograph by its caption, and by its alt text when it has none', () => {
+    expect(captionOf({ url: 'a', alt: 'Alt', caption: 'The yard' })).toBe('The yard');
+    expect(captionOf({ url: 'a', alt: 'Alt', caption: null })).toBe('Alt');
+    expect(captionOf({ url: 'a', alt: 'Alt', caption: '  ' })).toBe('Alt');
+    expect(captionOf({ url: 'a', alt: 'Alt' })).toBe('Alt');
   });
 
   it('reads only the two arrow keys', () => {
