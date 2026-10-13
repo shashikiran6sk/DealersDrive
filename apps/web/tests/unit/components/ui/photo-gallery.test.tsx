@@ -672,7 +672,7 @@ describe('the helpers', () => {
  */
 describe('the fallback image', () => {
   const FALLBACK = {
-    src: '/brand/dealer-yard-fallback.svg',
+    src: '/brand/dealer-directory-cover.svg',
     alt: 'Dealers-Drive illustration of a dealership yard',
   };
   const STAGE = 'h-[440px] max-md:aspect-video';

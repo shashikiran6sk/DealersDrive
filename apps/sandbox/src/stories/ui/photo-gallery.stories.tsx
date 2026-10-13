@@ -8,7 +8,7 @@ const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155', '475
 const DEALER = 'Sri Lakshmi Motors';
 const DEALER_HERO_STAGE = 'h-[440px] max-lg:h-[340px] max-md:h-auto max-md:aspect-video';
 const YARD_FALLBACK = {
-  src: '/brand/dealer-yard-fallback.svg',
+  src: '/brand/dealer-directory-cover.svg',
   alt: `Dealers-Drive illustration of a dealership yard, shown until ${DEALER} publishes photographs`,
 };
 const BROKEN_URL = 'https://media.invalid/by-media/missing/1600.webp';

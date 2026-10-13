@@ -1,4 +1,8 @@
-import { PublicVehiclesResponse, type DealerPublicProfile } from '@dealers-drive/contracts';
+import {
+  PublicVehiclesResponse,
+  STANDARD_DEALER_COVER_PATH,
+  type DealerPublicProfile,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -13,7 +17,6 @@ import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
-import { DEALER_YARD_FALLBACK_SRC } from '@/lib/dealer-yard';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
 import { isMissingResource, isServerFailure } from '@/lib/errors';
 import { logger } from '@/lib/logger';
@@ -177,7 +180,7 @@ export default async function DealerPortfolioPage({
           />
 
           <div className="min-w-[260px] flex-1 max-md:contents max-md:[overflow-wrap:anywhere]">
-            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2">
+            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2 max-md:self-center">
               <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
                 {dealer.brandName}
               </h1>
@@ -204,7 +207,7 @@ export default async function DealerPortfolioPage({
             stageClassName={DEALER_HERO_STAGE_CLASS}
             emptyLabel={DEALER_PAGE_TEXT.heroPlaceholder}
             fallback={{
-              src: DEALER_YARD_FALLBACK_SRC,
+              src: STANDARD_DEALER_COVER_PATH,
               alt: DEALER_PAGE_TEXT.heroFallbackAlt(dealer.brandName),
             }}
           />

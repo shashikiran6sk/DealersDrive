@@ -1264,17 +1264,6 @@ with the submit button that was pressed (`intent=back|draft|continue`) and keeps
 the returned state. Pending comes back as a value, not from `useFormStatus`,
 because there is no form action for `useFormStatus` to observe.
 
-## `apps/web/src/lib/dealer-yard.ts`
-
-### `export const DEALER_YARD_FALLBACK_SRC = '/brand/dealer-yard-fallback.svg'`
-
-The one fallback image for a dealership's yard (R118), named once so every
-place that expects a yard photograph and has none uses the same asset. It is
-not `STANDARD_DEALER_COVER_PATH`: that is the directory card's standard image
-(#289), shown for every dealer whether or not they have photographs, and it
-lives in contracts because the API sends it; this one is only ever a stand-in,
-and only the web app needs to know it.
-
 ## Integration with current main
 
 The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.

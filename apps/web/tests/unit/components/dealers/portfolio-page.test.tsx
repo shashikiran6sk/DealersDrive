@@ -150,6 +150,15 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
   });
 
+  /** R118 — on a phone the name sits beside the 60px logo tile, centred on it. */
+  it('centres the name on the logo tile on mobile', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const row = screen.getByRole('heading', { level: 1 }).parentElement;
+    expect(row).toHaveClass('max-md:col-start-2', 'max-md:row-start-1', 'max-md:self-center');
+  });
+
   /**
    * R16 — the registered name is not in the rendered page any more. It was a
    * third line under the trading name saying, on every dealership on the
@@ -779,7 +788,7 @@ describe('the photo gallery in the hero', () => {
     const image = screen.getByRole('img', {
       name: 'Dealers-Drive illustration of a dealership yard, shown until Sri Lakshmi Motors publishes photographs',
     });
-    expect(image).toHaveAttribute('src', '/brand/dealer-yard-fallback.svg');
+    expect(image).toHaveAttribute('src', '/brand/dealer-directory-cover.svg');
     expect(image.parentElement).toHaveClass('blueprint', 'h-[440px]', 'max-md:aspect-video');
     expect(screen.getByText('Dealership photographs coming soon')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: 'Dealership photograph' })).toBeNull();
@@ -798,7 +807,7 @@ describe('the photo gallery in the hero', () => {
 
     expect(within(heroButton()).getByRole('img')).toHaveAttribute('src', PHOTOS[0]?.url);
     expect(screen.queryByText('Dealership photographs coming soon')).toBeNull();
-    expect(document.querySelector('img[src="/brand/dealer-yard-fallback.svg"]')).toBeNull();
+    expect(document.querySelector('img[src="/brand/dealer-directory-cover.svg"]')).toBeNull();
   });
 
   it('falls back to the illustration when the approved photograph cannot be loaded', async () => {
@@ -807,7 +816,7 @@ describe('the photo gallery in the hero', () => {
 
     fireEvent.error(within(heroButton()).getByRole('img'));
 
-    expect(document.querySelector('img[src="/brand/dealer-yard-fallback.svg"]')).not.toBeNull();
+    expect(document.querySelector('img[src="/brand/dealer-directory-cover.svg"]')).not.toBeNull();
     expect(screen.queryByRole('region', { name: 'Photographs' })).toBeNull();
   });
 

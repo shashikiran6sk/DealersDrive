@@ -83,6 +83,14 @@ nothing in it is a page a search engine should not send anybody to.
 
 ── 1. Header block ───────────────────────────────────────────────
 
+### `max-md:self-center` on the name row
+
+**R118.** On a phone the header is a two-column grid with the 60px logo tile
+beside the name. The grid aligns to the top (`items-start`) so the address and
+tagline rows below line up with each other, which left a one-line name stuck
+to the top edge of the tile. The name row alone is centred on the tile, and a
+name that wraps still centres as a block.
+
 ### `{dealer.tagline ?`
 
 The dealership in its own words, directly under its name (**R25**).
@@ -261,12 +269,14 @@ also its district. The social images are the hero's photographs — every
 approved portfolio photograph, else the cover — with the same alt text; with
 none, `pageMetadata` falls back to the brand card.
 
-### `fallback={{ src: DEALER_YARD_FALLBACK_SRC, alt: DEALER_PAGE_TEXT.heroFallbackAlt(…) }}`
+### `fallback={{ src: STANDARD_DEALER_COVER_PATH, alt: DEALER_PAGE_TEXT.heroFallbackAlt(…) }}`
 
 **R118.** A dealership with no approved photograph used to show a grey frame
 with the words "Dealership photograph" in it, which read as a broken page. It
-now shows `/brand/dealer-yard-fallback.svg`: an original, neutral Dealers-Drive
-illustration of a showroom and forecourt, in the frame the photographs would
+now shows `STANDARD_DEALER_COVER_PATH` (`/brand/dealer-directory-cover.svg`): an
+original, neutral Dealers-Drive illustration of a showroom and forecourt — the
+same single asset every directory card shows (#289), so a dealership without
+photographs looks the same on its card and on its page — in the frame the photographs would
 fill, tagged `Dealership photographs coming soon`. The same illustration
 appears when every approved photograph fails to load. The moment a photograph
 is approved the API returns it and the page shows it instead — nothing here

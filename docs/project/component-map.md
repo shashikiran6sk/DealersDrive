@@ -1904,10 +1904,12 @@ image), `PortfolioManager`, the admin portfolio queue. **Tests**
 | `PhotoGallery`    | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`      | + `fallback?` (`{ src, alt }`) · a stage photo whose URL fails is dropped once, by URL · nothing left → `GalleryFallback` · + broken photo · + fallback fails                     | `/dealers/[slug]` hero passes the yard fallback; `/car/[slug]` |
 | `GalleryFallback` | `apps/web/src/components/ui/photo-gallery/gallery-fallback.tsx`   | `label`, `stageClassName`, `fallback?`: the fallback image (`next/image` fill, priority) with a `label` tag, or the `ImageSlot` when there is none or it fails; never retried     | `PhotoGallery`                                                 |
 
-**Asset.** `apps/web/public/brand/dealer-yard-fallback.svg` (1600 × 640, 14 KB,
-wordmark outlined from Manrope 800), named once as `DEALER_YARD_FALLBACK_SRC` in
-`apps/web/src/lib/dealer-yard.ts`. **Unchanged:** `DirectoryCard` (#289 standard
-image), the API and contracts, approval and verification. **Tests**
+**Asset.** One illustration, `apps/web/public/brand/dealer-directory-cover.svg`
+(1600 × 640, 14 KB, wordmark outlined from Manrope 800), replacing the #289
+drawing at the same path, so `STANDARD_DEALER_COVER_PATH` and the API's directory
+`coverUrl` are unchanged. `DirectoryCard` shows it on every card (intrinsic size
+now 1600 × 640) and the dealer page passes the same constant as its hero
+`fallback`. **Unchanged:** the API and contracts, approval and verification. **Tests**
 `components/layout/mobile-nav.test.tsx`, `components/layout/customer-header.test.tsx`,
 `components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
 **Sandbox** `Layout/MobileNav` (`CustomerWithBrand`), `Primitives/PhotoGallery`

@@ -19,8 +19,8 @@ export function DealerCardCover(_props: { dealer: DealerCardDto }) {
       <Image
         src={STANDARD_DEALER_COVER_PATH}
         alt={DEALER_CARD_TEXT.coverAlt}
-        width={960}
-        height={420}
+        width={1600}
+        height={640}
         className="h-full w-full object-cover"
       />
     </div>
