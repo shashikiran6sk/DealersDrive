@@ -79,3 +79,4 @@ All eleven stacked PRs and #300 (canonical vehicle makes, `5a89a9f`) are merged;
 ## #304 — dealer photos in the hero gallery; shared PhotoGallery; briefer documents page
 
 - Opened 2026-10-13 at `a481a03`; evidence in `pr-304-dealer-hero-gallery/`.
+- CI on `a481a03` all success; squash-merged into `main` as `638a618` on 2026-10-13.
