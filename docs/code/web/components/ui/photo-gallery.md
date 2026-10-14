@@ -62,6 +62,25 @@ the page opens on is `fetchPriority="high"`: it is the largest thing above the
 fold on both pages. After a step the stage asks at normal priority, and every
 thumbnail in the strip and the rail is `loading="lazy"`.
 
+**A broken photograph is skipped, once (R118).** The stage `<img>` reports
+`onError`, and the gallery remembers the URL in a set that only grows; every
+part of it — stage, strip, viewer, counts — works from the photographs that
+have not failed. An image that had already failed before React hydrated fires
+no `onError`, so an effect also checks `complete && naturalWidth === 0` on the
+stage photograph. With nothing left, the gallery draws `GalleryFallback`.
+
+### `fallback?: GalleryFallbackImage`
+
+When the gallery has nothing it can show, `GalleryFallback` draws the empty
+frame (same `stageClassName`, so nothing shifts). Given a `fallback`, it shows
+that image there with `emptyLabel` as a tag; without one, or once the fallback
+image has failed too, it shows the `ImageSlot` labelled `emptyLabel`. That is
+the end of the chain: the slot is not an image and cannot fail, so there is no
+fallback loop. The fallback is a `next/image` with `fill`, `priority` (it is
+the largest thing above the fold when it shows) and `unoptimized`, as an SVG
+has nothing for the optimiser to do. The car page passes no fallback and keeps
+its slot.
+
 ## `apps/web/src/components/ui/photo-gallery/use-swipe.ts`
 
 ### `export function useSwipe(onStep, enabled): SwipeHandlers`

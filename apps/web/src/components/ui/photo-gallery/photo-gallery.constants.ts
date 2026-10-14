@@ -32,3 +32,5 @@ export const SWIPE_THRESHOLD_PX = 40;
 export const SWIPE_CLICK_GUARD_MS = 500;
 
 export const DEFAULT_STAGE_CLASS = 'aspect-[4/3]';
+
+export const FALLBACK_SIZES = '(min-width: 1280px) 1232px, 100vw';

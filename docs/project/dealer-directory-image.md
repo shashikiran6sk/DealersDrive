@@ -1,9 +1,13 @@
 # Shared dealer directory illustration
 
 Every public directory card uses `/brand/dealer-directory-cover.svg`, the same
-local, brand-neutral conceptual illustration. It depicts a generic building and
-unbranded cars; it is explicitly described as a shared illustration rather than
-a photograph of the named dealer. The fixed card cover height and intrinsic
+local conceptual illustration. Since **R118** it is the Dealers-Drive showroom
+illustration (1600 × 640): a generic building carrying the platform's own DD
+sign, and unbranded cars — never a dealer's name or any real dealership's
+likeness. It is explicitly described as a shared illustration rather than a
+photograph of the named dealer. The same asset is the dealer page's hero
+fallback when a dealership has no approved photograph, so one dealership looks
+the same on its card and its page until it publishes photographs. The fixed card cover height and intrinsic
 image dimensions preserve layout while loading. One cacheable asset is shared
 by all cards; no per-dealer upload or storage copy is created.
 
