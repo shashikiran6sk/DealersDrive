@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="flex min-h-dvh bg-(--color-neutral-100) max-md:flex-col">
       <aside className="hidden w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white md:flex">
         <Link href="/admin" className="flex items-center gap-[9px] no-underline">
-          <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
+          <BrandLogo variant="dark" size={18} className="h-[18px] w-[24px]" />
           <span className="font-heading text-[15px] font-extrabold text-white">Admin console</span>
         </Link>
 

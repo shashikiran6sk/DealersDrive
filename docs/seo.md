@@ -62,7 +62,7 @@ environment's values (it does on Vercel — one build per environment, D7).
 
 - `rootMetadata()` — the root layout. `metadataBase`, `applicationName`, the
   title template `%s | Dealers-Drive`, the default description, Open Graph and
-  Twitter defaults (the 1200×630 brand card at `/og/dealers-drive.png`). It sets
+  Twitter defaults (the 1200×630 brand card at `/og/dealersdrive-v2.png`). It sets
   robots **only** outside production; in production each page states its own,
   so the not-found page carries Next's `noindex` alone.
 - `pageMetadata({ title, description, route, images? })` — every public page.
@@ -92,14 +92,22 @@ client. Each `generateMetadata` awaits the same memoised fetch as its page, so
 this costs nothing measurable.
 
 **Icons.** `app/favicon.ico` (16/32/48), `app/icon.png` (512) and
-`app/apple-icon.png` (180, full-bleed) use a tighter crop of the reference's
-joined DD symbol, white on black with 32% rounded transparent corners.
-The maskable icon stays opaque so the launcher can apply its own shape. Next writes their `<link>` tags. The root
-metadata has no `icons` key. `app/manifest.ts` declares matching 192/512 PNGs
-and a 512 maskable icon with the reference's safe internal padding. The
-Organization logo uses the public 2048 px `/brand/dealers-drive-light.png`
-asset through the existing absolute-URL helper. The shared 1200 × 630 social
-preview retains its copy and layout, with the dark logo replacing the old tile.
+`app/apple-icon.png` (180) use only the approved white DD symbol on black.
+The browser favicon and `icon.png` use a smaller symbol (68% of tile width) on a
+rounded black tile with transparent outer corners. Apple and PWA icons retain
+their platform-appropriate full-bleed backgrounds.
+Next generates their link tags; root metadata declares no duplicate icons.
+`app/manifest.ts` references versioned 192/512 PNGs and a separate maskable
+512 PNG whose artwork fits inside the central safe circle.
+The Organization logo uses `/brand/dealersdrive-organization-v2.png` (1024 square),
+composed from the independent black icon and path wordmark on white.
+The 1200×630 social card uses the separate white icon and wordmark on black,
+retaining the existing marketplace copy. Car and dealership photo overrides,
+canonicals, indexing rules and SEO text remain unchanged.
+Legacy public brand and social paths serve updated artwork for compatibility.
+Regenerate derivatives with `node scripts/generate-favicon.mjs`.
+Conventional browser icon URLs retain normal browser favicon caching; no global
+cache settings or arbitrary query parameters are introduced.
 
 ## 4. Faceted navigation — `/cars` and `/dealers`
 

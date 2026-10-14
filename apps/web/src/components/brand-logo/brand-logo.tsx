@@ -8,17 +8,23 @@ export interface BrandLogoProps {
   variant?: 'light' | 'dark';
   size?: number;
   className?: string;
+  ariaLabel?: string;
 }
 
-export function BrandLogo({ variant = 'light', size = 30, className }: BrandLogoProps) {
+export function BrandLogo({
+  variant = 'light',
+  size = 24,
+  className,
+  ariaLabel = BRAND_LOGO.alt,
+}: BrandLogoProps) {
   return (
     <Image
       src={BRAND_LOGO[variant]}
-      alt={BRAND_LOGO.alt}
-      width={size}
+      alt={ariaLabel}
+      width={Math.round((size * 651) / 424)}
       height={size}
       unoptimized
-      className={cn('inline-block flex-none rounded-[32%] object-contain align-middle', className)}
+      className={cn('inline-block flex-none object-contain align-middle', className)}
     />
   );
 }

@@ -1,23 +1,46 @@
 import { createRequire } from 'node:module';
 import { readFile, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 
 const require = createRequire(new URL('../apps/api/package.json', import.meta.url));
 const sharp = require('sharp');
 const root = new URL('../', import.meta.url);
-const brand = await readFile(new URL('apps/web/public/brand/dealers-drive-dark.svg', root), 'utf8');
-const glyph = brand.match(/<path\b[^>]*\/>/)?.[0];
-if (!glyph) throw new Error('The existing DD vector contour is missing.');
+const brand = new URL('apps/web/public/brand/', root);
+const icon = await readFile(new URL('dd-icon-white.svg', brand));
 
-// The old browser glyph occupied about 76% of the tile. A 25% reduction
-// leaves the unchanged contour at 57%, centered independently of its source crop.
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="163.84" fill="#000000"/><g transform="translate(256 256) scale(0.444) translate(-736 -752)">${glyph}</g></svg>`;
-const source = Buffer.from(svg);
-const raster = (size) => sharp(source).resize(size, size).png().toBuffer();
-await writeFile(new URL('apps/web/src/app/icon.png', root), await raster(512));
+// The approved symbol is wide. Preserve its aspect ratio and center it on black.
+// Maskable artwork fits wholly inside the central 80% diameter safe circle.
+const tile = async (size, maskable = false, rounded = false) => {
+  const width = Math.round(size * (rounded ? 0.68 : maskable ? 0.64 : 0.86));
+  const glyph = await sharp(icon).resize({ width }).png().toBuffer();
+  const background = rounded
+    ? sharp(
+        Buffer.from(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" rx="112.64" fill="#000000"/></svg>',
+        ),
+      ).resize(size, size)
+    : sharp({ create: { width: size, height: size, channels: 4, background: '#000000' } });
+  return background
+    .composite([{ input: glyph, gravity: 'center' }])
+    .png()
+    .toBuffer();
+};
+
+for (const [path, size, maskable, rounded] of [
+  ['apps/web/src/app/icon.png', 512, false, true],
+  ['apps/web/src/app/apple-icon.png', 180, false],
+  ['apps/web/public/brand/dd-icon-v2-192.png', 192, false],
+  ['apps/web/public/brand/dd-icon-v2-512.png', 512, false],
+  ['apps/web/public/brand/dd-icon-v2-maskable-512.png', 512, true],
+  // Compatibility paths can be cached or referenced by installed clients.
+  ['apps/web/public/brand/icon-192.png', 192, false],
+  ['apps/web/public/brand/icon-512.png', 512, false],
+  ['apps/web/public/brand/icon-maskable-512.png', 512, true],
+]) {
+  await writeFile(new URL(path, root), await tile(size, maskable, rounded));
+}
 
 const sizes = [16, 32, 48];
-const frames = await Promise.all(sizes.map(raster));
+const frames = await Promise.all(sizes.map((size) => tile(size, false, true)));
 const header = Buffer.alloc(6 + 16 * sizes.length);
 header.writeUInt16LE(1, 2);
 header.writeUInt16LE(sizes.length, 4);
@@ -34,6 +57,55 @@ for (const [index, size] of sizes.entries()) {
   offset += frame.length;
 }
 await writeFile(new URL('apps/web/src/app/favicon.ico', root), Buffer.concat([header, ...frames]));
+
+for (const color of ['black', 'white']) {
+  for (const name of ['dd-icon', 'dealersdrive-wordmark']) {
+    await sharp(await readFile(new URL(`${name}-${color}.svg`, brand)))
+      .png()
+      .toFile(new URL(`${name}-${color}.png`, brand).pathname);
+  }
+  const legacy = color === 'black' ? 'light' : 'dark';
+  await writeFile(
+    new URL(`dealers-drive-${legacy}.svg`, brand),
+    await readFile(new URL(`dd-icon-${color}.svg`, brand)),
+  );
+  await sharp(await readFile(new URL(`dd-icon-${color}.svg`, brand)))
+    .resize({ width: 1024 })
+    .png()
+    .toFile(new URL(`dealers-drive-${legacy}.png`, brand).pathname);
+}
+
+const rendered = async (name, color, width) =>
+  sharp(await readFile(new URL(`${name}-${color}.svg`, brand)))
+    .resize({ width })
+    .png()
+    .toBuffer();
+
+const organization = await sharp({
+  create: { width: 1024, height: 1024, channels: 4, background: '#ffffff' },
+})
+  .composite([
+    { input: await rendered('dd-icon', 'black', 530), left: 247, top: 220 },
+    { input: await rendered('dealersdrive-wordmark', 'black', 880), left: 72, top: 610 },
+  ])
+  .png()
+  .toBuffer();
+await writeFile(new URL('dealersdrive-organization-v2.png', brand), organization);
+
+// Retain the existing useful social copy; brand lettering comes only from paths.
+const copy = Buffer.from(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#000000"/><g font-family="Arial, sans-serif" fill="#ffffff"><text x="80" y="398" font-size="76" font-weight="700">Used cars from verified</text><text x="80" y="478" font-size="76" font-weight="700">independent dealers</text><text x="80" y="542" font-size="30">Browse cars and dealerships near you. Enquire directly with the dealer.</text></g></svg>`,
+);
+const social = await sharp(copy)
+  .composite([
+    { input: await rendered('dd-icon', 'white', 96), left: 80, top: 96 },
+    { input: await rendered('dealersdrive-wordmark', 'white', 330), left: 200, top: 106 },
+  ])
+  .png()
+  .toBuffer();
+for (const name of ['dealersdrive-v2.png', 'dealers-drive.png']) {
+  await writeFile(new URL(`apps/web/public/og/${name}`, root), social);
+}
 process.stdout.write(
-  `Generated browser icons from the existing contour in ${fileURLToPath(root)}\n`,
+  'Generated browser, installation, email, compatibility and SEO assets from approved SVG masters.\n',
 );
