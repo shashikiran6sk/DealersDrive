@@ -390,3 +390,7 @@ F100 descends from PR #312 head ba2f30c5 and preserves the exact immediate-paren
 ## F101 native UI implementation checkpoint
 
 F101 starts from the verified F100 head 8ec6b2da / draft PR #313; all reported F100 CI/security checks passed. Native phone/OTP/name, secure session lifecycle and policy/profile entry use F100's unchanged API and approved branding. In-memory pending intents bind to an authenticated owner and are never persisted/replayed after process death. No save/enquiry mutation is introduced before F104/F105. See [F101 validation](f101-validation.md) and [session/UX design](../code/mobile/auth.md). The ten immediate-parent bases and separate merge/deployment/release approval gates remain unchanged.
+
+## F102 discovery implementation checkpoint
+
+F102 uses the actual Available/Reserved public contract and 404 for sold/withdrawn detail. Counts distinguish available from pagination totals. Native list/filter/gallery/detail reuse the existing public APIs and updated mobile web geometry. Pure search/title helpers are shared with compatibility re-exports and their original behavior tests. F101 CI repairs are carried forward through normal immediate-parent merges; no history rewrite. See [F102 validation](f102-validation.md) and [discovery design](../code/mobile/cars.md).

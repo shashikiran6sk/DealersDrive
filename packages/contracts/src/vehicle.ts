@@ -247,12 +247,7 @@ export function vehicleTitle(vehicle: {
  * unchanged. The full title stays what every other reader uses — the page
  * title, image alt text, structured data, the dealer console.
  */
-export function titleWithoutYear(vehicle: { title: string; year: number | null }): string {
-  if (vehicle.year === null) return vehicle.title;
-  const prefix = `${String(vehicle.year)} `;
-  const rest = vehicle.title.startsWith(prefix) ? vehicle.title.slice(prefix.length).trim() : '';
-  return rest || vehicle.title;
-}
+export { titleWithoutYear } from './vehicle-name.js';
 
 /**
  * `Petrol · Automatic · 22,400 km` — the meta line under a vehicle's title, in

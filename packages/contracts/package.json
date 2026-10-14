@@ -26,6 +26,11 @@
       "types": "./dist/native-auth.d.ts",
       "import": "./dist/native-auth.js",
       "default": "./dist/native-auth.js"
+    },
+    "./vehicle-search": {
+      "types": "./dist/vehicle-search.d.ts",
+      "import": "./dist/vehicle-search.js",
+      "default": "./dist/vehicle-search.js"
     }
   },
   "files": [
