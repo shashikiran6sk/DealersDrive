@@ -13,3 +13,5 @@ See [implementation details](../code/mobile/auth.md). Local checks do not imply 
 ## CI follow-up
 
 The first shared-runner CI failed the first form fixture at its 10-second timeout while other workspaces tested concurrently; security/secret checks passed. The focused follow-up removes unused countdown updates from phone/name phases and uses deterministic fake clock control in form tests. All 47 mobile tests, native lint and types pass locally in an isolated F101 worktree. The timeout assertion remains unchanged; no history or base is rewritten. Remote revalidation is pending the normal follow-up push.
+
+The first follow-up still timed out under concurrent API/web load. Native form tests now stub the SVG native host (geometry is independently tested), and CI runs the same native suite after the API/web/contracts suites rather than oversubscribing the shared runner. No tests or thresholds are removed or widened. Cold-cache native validation is recorded before normal push; remote proof remains required.
