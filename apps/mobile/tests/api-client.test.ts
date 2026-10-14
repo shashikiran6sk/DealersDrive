@@ -145,3 +145,43 @@ describe('native public API client', () => {
     await expect(request).rejects.toMatchObject({ code: 'REQUEST_CANCELLED' });
   });
 });
+
+it('sends opaque credentials only on customer routes and never on privileged/workspace endpoints', async () => {
+  const fetcher = jest
+    .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+    .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+  const client = createApiClient({ baseUrl: 'https://api.example.com', fetcher });
+  const token = 'T'.repeat(43);
+  await client.customer('/v1/auth/native/customer/me', z.object({ ok: z.boolean() }), token);
+  expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.example.com/v1/auth/native/customer/me');
+  const init = fetcher.mock.calls[0]?.[1];
+  expect(init?.credentials).toBe('omit');
+  expect(init?.redirect).toBe('error');
+  expect(new Headers(init?.headers).get('Authorization')).toBe(`Bearer ${token}`);
+  expect(() => client.customer('/v1/admin/dealers', z.object({}), token)).toThrow();
+  expect(() => client.customer('/v1/auth/workspaces', z.object({}), token)).toThrow();
+  expect(() => client.customer('/v1/invitations', z.object({}), token)).toThrow();
+  expect(() => client.postAuth('/v1/auth/admin/logout', {}, z.object({}))).toThrow();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it('validates empty logout responses and refuses redirected auth responses', async () => {
+  const fetcher = jest
+    .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  const client = createApiClient({ baseUrl: 'https://api.example.com', fetcher });
+  expect(
+    await client.customer('/v1/auth/native/customer/logout', z.undefined(), 'T'.repeat(43), {
+      method: 'POST',
+    }),
+  ).toBeUndefined();
+  const response = new Response(JSON.stringify({ ok: true }));
+  Object.defineProperty(response, 'redirected', { value: true });
+  fetcher.mockResolvedValueOnce(response);
+  await expect(
+    client.postAuth(
+      '/v1/auth/native/customer/otp',
+      { phone: '9845599999' },
+      z.object({ ok: z.boolean() }),
+    ),
+  ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+});
