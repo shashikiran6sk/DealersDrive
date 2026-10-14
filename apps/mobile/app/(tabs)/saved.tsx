@@ -1,2 +1,2 @@
-import { SavedAccessScreen } from '../../src/features/auth/saved-access-screen';
-export default SavedAccessScreen;
+import { SavedScreen } from '../../src/features/saved/saved-screen';
+export default SavedScreen;

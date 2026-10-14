@@ -398,3 +398,7 @@ F102 uses the actual Available/Reserved public contract and 404 for sold/withdra
 ## F103 Home/dealer implementation checkpoint
 
 F103 starts from F102 #315 head dab6e7ab. The repaired F101 and F102 now report all GitHub checks successful. Home/discovery and dealer directory/profile/yard/gallery/inventory/directions reuse the actual website sources and public API; conceptual cover is identified explicitly, Maps is user-tapped and no dealer phone/privileged interface is exposed. See [F103 validation](f103-validation.md) and [Home/dealer design](../code/mobile/dealers-home.md).
+
+## F104 implementation checkpoint
+
+F104 starts at the verified F103 head b4357a32 / draft PR #316, whose reported CI checks pass. Native saved controls/list and account agreements reuse existing server records and policy evidence. Optional slug pagination preserves the legacy response and completes native hydration beyond 500 records; no migration or parallel data model. See [saved/account internals](../code/mobile/saved-account.md) and [validation](f104-validation.md). All ten immediate-parent bases, legal publication gates and owner merge/release approvals remain unchanged.

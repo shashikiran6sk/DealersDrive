@@ -31,6 +31,16 @@
       "types": "./dist/vehicle-search.d.ts",
       "import": "./dist/vehicle-search.js",
       "default": "./dist/vehicle-search.js"
+    },
+    "./saved": {
+      "types": "./dist/saved.d.ts",
+      "import": "./dist/saved.js",
+      "default": "./dist/saved.js"
+    },
+    "./legal-client": {
+      "types": "./dist/legal-client.d.ts",
+      "import": "./dist/legal-client.js",
+      "default": "./dist/legal-client.js"
     }
   },
   "files": [
