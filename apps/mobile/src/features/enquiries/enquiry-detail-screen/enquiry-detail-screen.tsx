@@ -15,6 +15,7 @@ import { enquiriesApi } from '../enquiries-api';
 import { enquiryCarSlug } from '../enquiry-input';
 import { ENQUIRY_TEXT } from '../enquiries.constants';
 import { WithdrawButton } from '../withdraw-button';
+import { SUPPORT_TEXT } from '../../support/support.constants';
 
 export function EnquiryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,6 +59,16 @@ export function EnquiryDetailScreen() {
             <Text style={styles.text}>
               {enquiry.statusLabel} · {enquiry.createdLabel}
             </Text>
+            <ActionButton
+              variant="secondary"
+              label={SUPPORT_TEXT.create}
+              onPress={() =>
+                router.navigate({
+                  pathname: '/support-requests/new',
+                  params: { category: 'ENQUIRY_ISSUE', enquiryId: enquiry.id },
+                })
+              }
+            />
             {enquiry.message ? <Text style={styles.text}>{enquiry.message}</Text> : null}
             {slug ? (
               <ActionButton

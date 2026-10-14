@@ -16,7 +16,12 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
@@ -30,8 +35,11 @@ import {
   TICKET_CLOSED,
   TICKET_NOT_FOUND,
   TICKET_RESOLVED,
+  SUPPORT_REQUEST_RETRY_CONFLICT,
+  CUSTOMER_ACCOUNT_UNAVAILABLE,
 } from './support.messages.js';
 import { isPersistedRetry } from './message-retry.js';
+import { createHash } from 'node:crypto';
 
 export interface SupportDeps {
   prisma: PrismaClient;
@@ -96,6 +104,41 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
       input: CreateSupportTicketInput,
     ): Promise<CustomerSupportTicket> {
       const ticket = await withTransaction(prisma, async (tx) => {
+        const account = await tx.$queryRaw<
+          { id: string }[]
+        >`SELECT "id" FROM "users" WHERE "id" = ${customer.userId}::uuid AND "status" = 'ACTIVE' FOR SHARE`;
+        if (account.length === 0)
+          throw new ForbiddenError(CUSTOMER_ACCOUNT_UNAVAILABLE, { code: 'ACCOUNT_UNAVAILABLE' });
+        const digest = createHash('sha256')
+          .update(
+            JSON.stringify([
+              input.category,
+              input.subject,
+              input.description,
+              input.enquiryId ?? null,
+            ]),
+          )
+          .digest('hex');
+        if (input.clientRequestId) {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`support-create:${customer.userId}:${input.clientRequestId}`}))`;
+          const existing = await tx.supportTicket.findUnique({
+            where: {
+              customerId_clientRequestId: {
+                customerId: customer.userId,
+                clientRequestId: input.clientRequestId,
+              },
+            },
+            select: { id: true, number: true, requestDigest: true },
+          });
+          if (existing) {
+            if (existing.requestDigest !== digest)
+              throw new ConflictError(
+                'SUPPORT_REQUEST_RETRY_CONFLICT',
+                SUPPORT_REQUEST_RETRY_CONFLICT,
+              );
+            return { ...existing, replayed: true };
+          }
+        }
         if (input.enquiryId) {
           const own = await tx.enquiry.findFirst({
             where: { id: input.enquiryId, customerId: customer.userId },
@@ -111,6 +154,8 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
             subject: input.subject,
             description: input.description,
             enquiryId: input.enquiryId ?? null,
+            clientRequestId: input.clientRequestId ?? null,
+            requestDigest: input.clientRequestId ? digest : null,
           },
           select: { id: true, number: true },
         });
@@ -136,13 +181,14 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
           traceId: getContext()?.traceId ?? 'support-ticket-created',
           payload: { ticketId: created.id, customerId: customer.userId },
         });
-        return created;
+        return { ...created, replayed: false };
       });
 
-      logger.info(
-        { event: 'support_ticket.created', ticketId: ticket.id, via: customer.via },
-        'support ticket created',
-      );
+      if (!ticket.replayed)
+        logger.info(
+          { event: 'support_ticket.created', ticketId: ticket.id, via: customer.via },
+          'support ticket created',
+        );
       return read(customer.userId, ticket.id);
     },
 
