@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   PublicVehicleQuery,
+  DealerVehicleQuery,
+  type PublicVehiclesResponse,
   VEHICLE_SORT_LABELS,
   VehicleSort,
   type VehicleFacets,
@@ -61,12 +63,21 @@ export function FilterDialog({
   locations,
   onApply,
   onClose,
+  scope = 'marketplace',
+  cacheScope = 'marketplace',
+  previewList,
 }: {
   params: VehicleSearchParams;
   facets: VehicleFacets;
   locations: PublicLocations | undefined;
   onApply: (next: VehicleSearchParams) => void;
   onClose: () => void;
+  scope?: 'marketplace' | 'dealer';
+  cacheScope?: string;
+  previewList?: (
+    params: VehicleSearchParams,
+    signal: AbortSignal,
+  ) => Promise<PublicVehiclesResponse>;
 }) {
   const [draft, setDraft] = useState(params);
   const [debounced, setDebounced] = useState(params);
@@ -78,9 +89,11 @@ export function FilterDialog({
     return () => clearTimeout(timer);
   }, [draft]);
   const preview = useQuery({
-    queryKey: ['public', 'cars', 'filter-preview', debounced],
-    queryFn: ({ signal }) => carsApi.list(debounced, 1, signal),
-    enabled: PublicVehicleQuery.safeParse(debounced).success,
+    queryKey: ['public', 'cars', 'filter-preview', cacheScope, debounced],
+    queryFn: ({ signal }) =>
+      previewList ? previewList(debounced, signal) : carsApi.list(debounced, 1, signal),
+    enabled: (scope === 'dealer' ? DealerVehicleQuery : PublicVehicleQuery).safeParse(debounced)
+      .success,
   });
   const choices = preview.data?.facets ?? facets;
   const choose = (key: CsvParamKey, value: string) => {
@@ -164,48 +177,52 @@ export function FilterDialog({
             {CARS_TEXT.filters}
           </Text>
           <ActionButton variant="ghost" label={CARS_TEXT.close} onPress={onClose} />
-          <Text accessibilityRole="header" style={styles.heading}>
-            {CARS_TEXT.district}
-          </Text>
-          <ConsentChoice
-            label={CARS_TEXT.allDistricts}
-            checked={!draft.district}
-            onChange={() => {
-              const next = { ...draft };
-              delete next.district;
-              delete next.city;
-              delete next.dealer;
-              delete next.page;
-              setDraft(next);
-            }}
-          />
-          <AuthField
-            label={CARS_TEXT.district}
-            value={districtSearch}
-            onChangeText={setDistrictSearch}
-            placeholder={CARS_TEXT.districtSearch}
-          />
-          {locations?.districts
-            .filter((district) =>
-              `${district.name} ${district.state ?? ''}`
-                .toLowerCase()
-                .includes(districtSearch.toLowerCase()),
-            )
-            .slice(0, 60)
-            .map((district) => (
+          {scope === 'marketplace' ? (
+            <>
+              <Text accessibilityRole="header" style={styles.heading}>
+                {CARS_TEXT.district}
+              </Text>
               <ConsentChoice
-                key={district.slug}
-                label={`${district.name}${district.state ? `, ${district.state}` : ''}`}
-                checked={draft.district === district.slug}
+                label={CARS_TEXT.allDistricts}
+                checked={!draft.district}
                 onChange={() => {
-                  const next = { ...draft, district: district.slug };
+                  const next = { ...draft };
+                  delete next.district;
                   delete next.city;
                   delete next.dealer;
                   delete next.page;
                   setDraft(next);
                 }}
               />
-            ))}
+              <AuthField
+                label={CARS_TEXT.district}
+                value={districtSearch}
+                onChangeText={setDistrictSearch}
+                placeholder={CARS_TEXT.districtSearch}
+              />
+              {locations?.districts
+                .filter((district) =>
+                  `${district.name} ${district.state ?? ''}`
+                    .toLowerCase()
+                    .includes(districtSearch.toLowerCase()),
+                )
+                .slice(0, 60)
+                .map((district) => (
+                  <ConsentChoice
+                    key={district.slug}
+                    label={`${district.name}${district.state ? `, ${district.state}` : ''}`}
+                    checked={draft.district === district.slug}
+                    onChange={() => {
+                      const next = { ...draft, district: district.slug };
+                      delete next.city;
+                      delete next.dealer;
+                      delete next.page;
+                      setDraft(next);
+                    }}
+                  />
+                ))}
+            </>
+          ) : null}
           <Text accessibilityRole="header" style={styles.heading}>
             {CARS_TEXT.sort}
           </Text>
@@ -217,7 +234,9 @@ export function FilterDialog({
               onChange={() => setDraft(setParam(draft, 'sort', sort))}
             />
           ))}
-          {GROUPS.map((group) => (
+          {GROUPS.filter(
+            (group) => scope === 'marketplace' || (group.key !== 'city' && group.key !== 'dealer'),
+          ).map((group) => (
             <View key={group.key} style={styles.group}>
               <Text accessibilityRole="header" style={styles.heading}>
                 {FILTER_LABELS[group.key]}
@@ -310,7 +329,10 @@ export function FilterDialog({
                 : CARS_TEXT.apply
             }
             onPress={() => {
-              if (!PublicVehicleQuery.safeParse(draft).success) {
+              if (
+                !(scope === 'dealer' ? DealerVehicleQuery : PublicVehicleQuery).safeParse(draft)
+                  .success
+              ) {
                 setError(CARS_TEXT.invalidFilter);
                 return;
               }

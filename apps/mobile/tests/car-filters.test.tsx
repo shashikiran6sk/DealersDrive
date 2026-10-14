@@ -32,7 +32,10 @@ const clients: QueryClient[] = [];
 afterEach(() => {
   for (const client of clients.splice(0)) client.clear();
 });
-async function dialog(params: Parameters<typeof FilterDialog>[0]['params']) {
+async function dialog(
+  params: Parameters<typeof FilterDialog>[0]['params'],
+  scope: 'marketplace' | 'dealer' = 'marketplace',
+) {
   const apply = jest.fn();
   const close = jest.fn();
   const client = new QueryClient({
@@ -43,6 +46,7 @@ async function dialog(params: Parameters<typeof FilterDialog>[0]['params']) {
     <QueryClientProvider client={client}>
       <FilterDialog
         params={params}
+        scope={scope}
         facets={facets}
         locations={undefined}
         onApply={apply}
@@ -81,4 +85,11 @@ it('refuses inverted ranges instead of applying silently empty search', async ()
   await fireEvent.press(screen.getByRole('button', { name: CARS_TEXT.apply }));
   expect(h.apply).not.toHaveBeenCalled();
   expect(screen.getByText(CARS_TEXT.invalidFilter)).toBeOnTheScreen();
+});
+
+it('keeps dealership inventory filters scoped and omits district/town/dealer controls', async () => {
+  await dialog({ brand: 'hyundai' }, 'dealer');
+  expect(screen.queryByLabelText(CARS_TEXT.district)).toBeNull();
+  expect(screen.queryByText('City / Town')).toBeNull();
+  expect(screen.queryByText('Dealer')).toBeNull();
 });

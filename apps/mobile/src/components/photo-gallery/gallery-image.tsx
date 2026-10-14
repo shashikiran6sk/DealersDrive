@@ -27,6 +27,7 @@ export function GalleryImage({
         </Text>
       ) : (
         <Image
+          accessible
           source={{ uri: image.url }}
           style={styles.image}
           contentFit="contain"

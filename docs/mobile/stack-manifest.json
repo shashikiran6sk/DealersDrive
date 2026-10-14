@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F102_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-14 18:08:37 UTC",
+  "status": "F103_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-14 18:27:28 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -299,8 +299,8 @@
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_2"],
       "incremental_diff": "8ec6b2da319166bd5dde01917daec541158dc454...7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
-      "ci_status": "IN_PROGRESS_OR_FAILED",
-      "tested_sha": null,
+      "ci_status": "SUCCESS",
+      "tested_sha": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
       "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": ["docs/mobile/f101-validation.md", "docs/code/mobile/auth.md"],
       "known_blockers": [
@@ -312,12 +312,12 @@
       "checks": [
         {
           "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-10-14T18:13:32Z",
+          "conclusion": "SUCCESS",
           "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612135137/job/116017902044",
           "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
           "startedAt": "2026-10-14T18:05:06Z",
-          "status": "IN_PROGRESS",
+          "status": "COMPLETED",
           "workflowName": "CI"
         },
         {
@@ -384,20 +384,20 @@
       "feature_id": "F102",
       "title": "Cars/search/gallery",
       "planned_head_branch": "feat/f102-mobile-cars-search-gallery",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
-      "is_draft": null,
+      "head_sha": "dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+      "pr_number": 315,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/315",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f101-mobile-auth-ui",
       "base_sha_at_creation": "405b80d098d23e0fd6f287aaa3ebd8f6d964d69a",
       "base_sha_verified_now": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_3"],
-      "incremental_diff": null,
-      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
-      "tested_sha": null,
-      "review_state": "NOT_CREATED",
+      "incremental_diff": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f...dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+      "ci_status": "SUCCESS",
+      "tested_sha": "dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": ["docs/mobile/f102-validation.md", "docs/code/mobile/cars.md"],
       "known_blockers": [
         "Installed native/device/performance/gallery/back validation unavailable locally",
@@ -420,7 +420,76 @@
           "reason": "Focused native CI scheduling repair; no test/threshold removal"
         }
       ],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:21:32Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612919370/job/116020575858",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T18:10:41Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:12:17Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612919471/job/116020570789",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T18:10:40Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:10:54Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612919370/job/116020576569",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T18:10:40Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:11:43Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612919471/job/116020570067",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T18:10:40Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:11:34Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612919370/job/116020576390",
+          "name": "dependency audit",
+          "startedAt": "2026-10-14T18:10:40Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-14T18:12:38Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/5w93bf3onUZ7P9f3MHpUHTnnnGRq"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:12:39Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-14T18:12:39Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ]
     },
     {
       "sequence": 5,
@@ -430,19 +499,22 @@
       "head_sha": null,
       "pr_number": null,
       "pr_url": null,
-      "state": "NOT_CREATED",
+      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
       "is_draft": null,
       "base_branch": "feat/f102-mobile-cars-search-gallery",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": null,
+      "base_sha_at_creation": "dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+      "base_sha_verified_now": "dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_4"],
       "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
+      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
-      "evidence": [],
-      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "evidence": ["docs/mobile/f103-validation.md", "docs/code/mobile/dealers-home.md"],
+      "known_blockers": [
+        "Native installed-device/performance/screenshots unavailable locally",
+        "Live provider/legal/production release gates remain separate"
+      ],
       "restack_history": [],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
