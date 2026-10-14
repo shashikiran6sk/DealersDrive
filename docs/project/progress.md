@@ -304,3 +304,18 @@ Tracked here too, because they gate UI features rather than following them.
 - [ ] S5 — `@storybook/addon-vitest` wired
 - [ ] S6 — the five missing primitives
 - [ ] S7 — feature components
+
+## Android customer stack
+
+Foundation: unmerged Draft PR #279; each mobile PR targets its predecessor.
+
+- [~] F099 — Mobile foundation
+- [ ] F100 — Native authentication backend
+- [ ] F101 — Native authentication UI
+- [ ] F102 — Cars, search and gallery
+- [ ] F103 — Home and dealers
+- [ ] F104 — Saved cars and account
+- [ ] F105 — Consent and enquiries
+- [ ] F106 — Customer support
+- [ ] F107 — Account deletion
+- [ ] F108 — Release hardening

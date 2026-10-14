@@ -46,3 +46,10 @@ apps/api/.storage-test/
 
 # Sandbox build output — never deployed
 apps/sandbox/storybook-static/
+
+# Expo development state and local native projects
+.expo/
+apps/mobile/android/
+apps/mobile/ios/
+*.jks
+*.keystore
