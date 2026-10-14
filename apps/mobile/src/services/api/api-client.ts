@@ -1,0 +1,100 @@
+import { ProblemDetails } from '@dealers-drive/contracts/common';
+import type { ZodType } from 'zod';
+
+import { ApiError } from './api-error';
+import { API_MESSAGES, API_TIMEOUT_MS } from './api.constants';
+
+export interface ApiClientOptions {
+  baseUrl: string;
+  fetcher?: typeof fetch;
+  timeoutMs?: number;
+}
+
+function requestUrl(baseUrl: string, path: string): string {
+  if (!path.startsWith('/v1/') || path.startsWith('//') || path.includes('\\')) {
+    throw new Error('API paths must be relative v1 routes.');
+  }
+  const base = new URL(baseUrl);
+  const url = new URL(path, base);
+  if (url.origin !== base.origin || !url.pathname.startsWith('/v1/')) {
+    throw new Error('The API request cannot leave the configured service.');
+  }
+  return url.href;
+}
+
+function decodeBody(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new ApiError('INVALID_RESPONSE', API_MESSAGES.invalidResponse);
+  }
+}
+
+function retryAfter(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds);
+  const until = Date.parse(value);
+  return Number.isFinite(until) ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : undefined;
+}
+
+export function createApiClient({
+  baseUrl,
+  fetcher = fetch,
+  timeoutMs = API_TIMEOUT_MS,
+}: ApiClientOptions) {
+  return {
+    async get<T>(path: string, schema: ZodType<T>, signal?: AbortSignal): Promise<T> {
+      const url = requestUrl(baseUrl, path);
+      const controller = new AbortController();
+      let timedOut = false;
+      const cancel = () => controller.abort();
+      if (signal?.aborted) cancel();
+      else signal?.addEventListener('abort', cancel, { once: true });
+      const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, timeoutMs);
+
+      try {
+        const response = await fetcher(url, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          credentials: 'omit',
+          signal: controller.signal,
+        });
+        const text = await response.text();
+        if (!response.ok) {
+          let payload: unknown;
+          try {
+            payload = JSON.parse(text);
+          } catch {
+            payload = null;
+          }
+          const parsed = ProblemDetails.safeParse(payload);
+          const problem = parsed.success ? { ...parsed.data, status: response.status } : undefined;
+          throw new ApiError(
+            problem?.code ?? 'REQUEST_FAILED',
+            response.status >= 500
+              ? API_MESSAGES.server
+              : (problem?.detail ?? API_MESSAGES.request),
+            response.status,
+            problem,
+            retryAfter(response.headers.get('Retry-After')),
+          );
+        }
+        const parsed = schema.safeParse(decodeBody(text));
+        if (!parsed.success) throw new ApiError('INVALID_RESPONSE', API_MESSAGES.invalidResponse);
+        return parsed.data;
+      } catch (error) {
+        if (error instanceof ApiError) throw error;
+        if (timedOut) throw new ApiError('REQUEST_TIMEOUT', API_MESSAGES.timeout);
+        if (signal?.aborted) throw new ApiError('REQUEST_CANCELLED', API_MESSAGES.cancelled);
+        throw new ApiError('NETWORK_UNAVAILABLE', API_MESSAGES.network);
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', cancel);
+      }
+    },
+  };
+}

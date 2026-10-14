@@ -7,6 +7,16 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./common": {
+      "types": "./dist/common.d.ts",
+      "import": "./dist/common.js",
+      "default": "./dist/common.js"
+    },
+    "./public": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js",
+      "default": "./dist/public.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

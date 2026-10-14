@@ -15,6 +15,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "sandbox": "pnpm --filter @dealers-drive/sandbox sandbox",
+    "dev:mobile": "pnpm --filter @dealers-drive/mobile start",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "docs:check": "node scripts/check-docs.mjs",
