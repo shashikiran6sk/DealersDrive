@@ -41,6 +41,11 @@
       "types": "./dist/legal-client.d.ts",
       "import": "./dist/legal-client.js",
       "default": "./dist/legal-client.js"
+    },
+    "./enquiry-client": {
+      "types": "./dist/enquiry-client.d.ts",
+      "import": "./dist/enquiry-client.js",
+      "default": "./dist/enquiry-client.js"
     }
   },
   "files": [

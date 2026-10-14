@@ -1909,3 +1909,14 @@ now 1600 × 640) and the dealer page passes the same constant as its hero
 `components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
 **Sandbox** `Layout/MobileNav` (`CustomerWithBrand`), `Primitives/PhotoGallery`
 (`EmptyWideHero`, `EmptyWideHeroPhone`, `BrokenPhotoFallsBack`, `FallbackImageFails`).
+
+## Native enquiry components (F105)
+
+Native components use React Native fixtures rather than the DOM sandbox. Existing ActionButton, ConsentChoice, Page, StatusPanel, Brand and car APIs are reused.
+
+| Component                                   | Source folder under apps/mobile/src/features/enquiries | Props/states and consumers                                                                                  | Evidence                                                              |
+| ------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| EnquiryScreen / EnquiryFormScreen           | enquiry-screen / enquiry-form-screen                   | Account/car keyed form; guest/restore/error/unticked/reused/changed/submitting/confirmed; car detail action | enquiry-screen.test.tsx                                               |
+| EnquiriesScreen / EnquiryDetailScreen       | enquiries-screen / enquiry-detail-screen               | Owned cursor history, old/missing car and linked/legacy withdrawal; Profile                                 | API legal tests and native form fixtures; installed-screen QA pending |
+| WithdrawButton                              | withdraw-button                                        | id, grant, dealershipScope; confirm/cancel/in-flight/failure/success; rights/detail                         | withdraw-button.test.tsx                                              |
+| PrivacyControlsScreen / SharingNoticeScreen | privacy-controls-screen / sharing-notice-screen        | Owned effective permissions; authoritative full notice/draft/unavailable; Profile/form                      | Shared contracts/API integration; installed-screen QA pending         |

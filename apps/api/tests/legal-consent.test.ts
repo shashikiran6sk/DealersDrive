@@ -18,6 +18,7 @@ import { COMPLETE_VEHICLE } from './marketplace-fixtures.js';
 import { env } from '../src/config/env.js';
 import type * as envModule from '../src/config/env.js';
 import { documentDigest } from '../src/modules/legal/legal.evidence.js';
+import { createSessionService } from '../src/modules/auth/session.service.js';
 
 const legalSetting = vi.hoisted(() => ({ enabled: true }));
 
@@ -477,6 +478,82 @@ describe('assisted sales and reviewer gates', () => {
 });
 
 describe('dealership-scoped permission and immutable disclosure evidence', () => {
+  it('shares the same grants, enquiries and withdrawal across customer bearer and browser sessions', async () => {
+    const owner = await dealer();
+    const buyer = await customer();
+    const other = await customer();
+    const cars = [
+      await publicListing(owner.id),
+      await publicListing(owner.id),
+      await publicListing(owner.id),
+    ];
+    const session = await createSessionService(h.prisma).issue({
+      userId: buyer.id,
+      scope: 'CUSTOMER',
+    });
+    const authorization = `Bearer ${session.token}`;
+    const previous = env.NATIVE_CUSTOMER_AUTH_ENABLED;
+    env.NATIVE_CUSTOMER_AUTH_ENABLED = true;
+    try {
+      const first = await h
+        .agent()
+        .post('/v1/enquiries')
+        .set('Authorization', authorization)
+        .send({ listingSlug: cars[0]!.slug, recipientId: owner.id, sharing })
+        .expect(201);
+      const status = await buyer.agent
+        .get(`/v1/enquiries/sharing-status?listingSlug=${cars[1]!.slug}`)
+        .expect(200);
+      expect(status.body.required).toBe(false);
+      await buyer.agent
+        .post('/v1/enquiries')
+        .send({ listingSlug: cars[1]!.slug, recipientId: owner.id })
+        .expect(201);
+      const history = await h
+        .agent()
+        .get('/v1/enquiries')
+        .set('Authorization', authorization)
+        .expect(200);
+      expect(history.body.data).toHaveLength(2);
+      await other.agent.get(`/v1/enquiries/${first.body.id}`).expect(404);
+      const permissions = await h
+        .agent()
+        .get('/v1/enquiries/sharing-permissions')
+        .set('Authorization', authorization)
+        .expect(200);
+      const grant = permissions.body.data[0].id as string;
+      await other.agent.post(`/v1/enquiries/sharing-permissions/${grant}/withdraw`).expect(404);
+      await h
+        .agent()
+        .post(`/v1/enquiries/sharing-permissions/${grant}/withdraw`)
+        .set('Authorization', authorization)
+        .expect(200);
+      expect(
+        (
+          await buyer.agent
+            .get(`/v1/enquiries/sharing-status?listingSlug=${cars[2]!.slug}`)
+            .expect(200)
+        ).body.required,
+      ).toBe(true);
+      await h
+        .agent()
+        .post('/v1/enquiries')
+        .set('Authorization', authorization)
+        .send({ listingSlug: cars[2]!.slug, recipientId: owner.id })
+        .expect(422);
+      await buyer.agent
+        .post('/v1/enquiries')
+        .send({ listingSlug: cars[2]!.slug, recipientId: owner.id, sharing })
+        .expect(201);
+      expect(
+        await h.prisma.contactSharingEvent.count({
+          where: { customerId: buyer.id, action: 'GRANT' },
+        }),
+      ).toBe(2);
+    } finally {
+      env.NATIVE_CUSTOMER_AUTH_ENABLED = previous;
+    }
+  });
   it('reuses same-dealership permission only after a fresh enquiry action and never for another dealer', async () => {
     const owner = await dealer();
     const otherDealer = await dealer();

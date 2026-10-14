@@ -49,13 +49,7 @@ export type SubmitVehicleInput = z.infer<typeof SubmitVehicleInput>;
 export const DealerSubmitInput = z.object({ agreement: DealerAcceptanceInput.optional() }).strict();
 export type DealerSubmitInput = z.infer<typeof DealerSubmitInput>;
 
-export const EnquirySharingPermission = z
-  .object({
-    version: z.string().min(1).max(40),
-    granted: z.literal(true),
-  })
-  .strict();
-export type EnquirySharingPermission = z.infer<typeof EnquirySharingPermission>;
+export { EnquirySharingPermission } from './legal-inputs.js';
 
 export { LegalReceipt, LegalStatus, LegalHistory } from './legal-client.js';
 
@@ -101,25 +95,12 @@ export function legalReleaseReady(): boolean {
   );
 }
 
-export const SharingStatusQuery = z
-  .object({ listingSlug: z.string().trim().min(1).max(200) })
-  .strict();
-export const SharingStatus = z.object({
-  required: z.boolean(),
-  recipientId: Uuid,
-  dealerName: z.string(),
-});
-export const SharingGrantParam = z.object({ id: Uuid }).strict();
-export const SharingPermissions = z.object({
-  data: z.array(
-    z.object({
-      id: Uuid,
-      dealerName: z.string(),
-      grantedAt: z.string(),
-      noticeVersion: z.string(),
-    }),
-  ),
-});
+export {
+  SharingStatusQuery,
+  SharingStatus,
+  SharingGrantParam,
+  SharingPermissions,
+} from './legal-client.js';
 
 export function currentLegalDocument(id: LegalDocumentId) {
   return id === 'terms' || id === 'privacy' ? LEGAL_DOCUMENTS[id] : undefined;
