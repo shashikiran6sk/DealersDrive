@@ -309,7 +309,7 @@ Tracked here too, because they gate UI features rather than following them.
 
 Foundation: unmerged Draft PR #279; each mobile PR targets its predecessor.
 
-- [~] F099 — Mobile foundation
+- [~] F099 — Mobile foundation — draft [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), local checks pass; native compilation/device evidence and release gates remain
 - [ ] F100 — Native authentication backend
 - [ ] F101 — Native authentication UI
 - [ ] F102 — Cars, search and gallery

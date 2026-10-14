@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F099_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-14 13:26:41 UTC",
+  "status": "F099_DRAFT_PR_OPEN",
+  "verified_at": "2026-10-14 13:28:59 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -77,20 +77,20 @@
       "feature_id": "F099",
       "title": "Foundation",
       "planned_head_branch": "feat/f099-mobile-foundation",
-      "head_sha": "fb02d063fa2d50c0d99505d7adfe15e456f9f826",
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
-      "is_draft": null,
+      "head_sha": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "pr_number": 312,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/312",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feature/legal-compliance-and-consent-v1",
       "base_sha_at_creation": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
       "base_sha_verified_now": "6180a4b52522493b884550448d0a84e7d95432df",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["PR279"],
-      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...feat/f099-mobile-foundation",
-      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
-      "tested_sha": null,
-      "review_state": "NOT_OPENED",
+      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "ci_status": "CHECKS_REQUESTED",
+      "tested_sha": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": [
         "docs/mobile/f099-validation.md",
         "docs/screens/mobile/f099/asset-review.png",
@@ -114,7 +114,77 @@
       ],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "restack_required": false,
-      "descends_from_required_foundation": true
+      "descends_from_required_foundation": true,
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879351637",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T13:28:01Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006106/job/115879350754",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T13:28:01Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006106/job/115879351253",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T13:28:01Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T13:28:17Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879351065",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T13:28:01Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879352712",
+          "name": "dependency audit",
+          "startedAt": "2026-10-14T13:28:02Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-14T13:27:59Z",
+          "state": "PENDING",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/H1QkikvfP3Sw2xxNWUzjo6kE4ND8"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T13:28:00Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-14T13:28:00Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ],
+      "local_validation": "PASS; see validation report for initial timezone failure and UTC rerun"
     },
     {
       "sequence": 2,
@@ -128,7 +198,7 @@
       "is_draft": null,
       "base_branch": "feat/f099-mobile-foundation",
       "base_sha_at_creation": null,
-      "base_sha_verified_now": "bcb1bee7e4db4f999a2081665512471b0266507d",
+      "base_sha_verified_now": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
       "foundation_sha": null,
       "dependencies": ["MOBILE_1"],
       "incremental_diff": null,
@@ -338,7 +408,8 @@
     "Approved restack retains original F099 and updated legal parent; no protected history rewritten.",
     "All ten immediate-parent base relationships remain unchanged; future PRs/SHAs stay null.",
     "Local test/build evidence is separate from GitHub CI and native/device release acceptance.",
-    "Legal drafts and production release remain unapproved."
+    "Legal drafts and production release remain unapproved.",
+    "PR #312 verified OPEN/DRAFT against the immediate legal parent. Manifest fields are this timestamped checkpoint, not its subsequent documentation-only commit."
   ],
   "start_received": "2026-10-14",
   "restack_authorized": true,

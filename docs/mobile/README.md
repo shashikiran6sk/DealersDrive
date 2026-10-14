@@ -200,7 +200,7 @@ Multi-role ownership and append-only legal/sharing evidence require counsel-appr
 
 ## 7. Final ordered stack and exact PR relationships
 
-F099 exists locally at `bcb1bee7e4db4f999a2081665512471b0266507d`, with no GitHub PR/upstream. F100–F108 remain planned. Record future base/head SHAs when each predecessor is pinned; do not fabricate them or recreate occupied F099.
+F099 is open/draft as [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), targeting the legal foundation branch. Original bcb1bee7 is preserved and the updated parent is an ancestor. F100–F108 remain planned. Record future base/head SHAs when each predecessor is pinned; do not fabricate them or recreate occupied F099.
 
 | PR                             | Proposed head branch                      | GitHub base branch                        |
 | ------------------------------ | ----------------------------------------- | ----------------------------------------- |
@@ -218,7 +218,7 @@ F099 exists locally at `bcb1bee7e4db4f999a2081665512471b0266507d`, with no GitHu
 
 The required foundation is now `6180a4b52522493b884550448d0a84e7d95432df`. Existing F099 started at `22c98419119f0418ba9d7cbcb7ec398052216bbf`; approved normal merge `fb02d063fa2d50c0d99505d7adfe15e456f9f826` integrates the new parent and preserves original F099 ancestry. Later branches start from their immediate parent's reviewed head. No main-based branch or empty PR.
 
-Maintain `docs/mobile/stack-manifest.json` in Mobile 1 after START, and a current stack-wide review snapshot as work progresses. Fields: sequence/feature/name, PR URL/number/state/draft, head branch/SHA, base branch and base SHA at creation/current verification, foundation SHA, predecessor/dependencies, incremental diff range, checks and their tested SHA, review state, evidence/known blockers, verification timestamp, restack history. A planning-only manifest accompanies this README with future fields null/NOT_CREATED.
+Maintain `docs/mobile/stack-manifest.json` in Mobile 1 after START, and a current stack-wide review snapshot as work progresses. Fields: sequence/feature/name, PR URL/number/state/draft, head branch/SHA, base branch and base SHA at creation/current verification, foundation SHA, predecessor/dependencies, incremental diff range, checks and their tested SHA, review state, evidence/known blockers, verification timestamp, restack history. The manifest records the open F099 draft and retains future fields null/NOT_CREATED.
 
 ## 8. PR-by-PR scope, dependencies and acceptance
 
@@ -380,3 +380,5 @@ Expected completed engineering state: #279 open/unmerged; every Android PR open/
 ## Resumed F099 implementation record
 
 Explicit START after the branding amendment authorizes the documented parent-into-child merge. Merge fb02d063 preserves bcb1bee7 and incorporates PR #279 head 6180a4b. F099 adopts exact PR #311 native geometry with no extra branding library and retains the ten immediate-parent branch bases. Next configuration explicitly selects the web React JSX type namespace to keep native/web versions isolated. The stack manifest records verified checkpoints rather than impossible self-referential commit SHAs; current GitHub heads/checks must be refreshed before each child is pinned.
+
+F099 draft [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312) is based on feature/legal-compliance-and-consent-v1 at 6180a4b. [Validation](f099-validation.md) records successful local checks and actual release limitations. GitHub CI is separate; refresh its exact tested head before creating F100. No PR has been merged.
