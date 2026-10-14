@@ -93,6 +93,9 @@ this costs nothing measurable.
 
 **Icons.** `app/favicon.ico` (16/32/48), `app/icon.png` (512) and
 `app/apple-icon.png` (180) use only the approved white DD symbol on black.
+The browser favicon and `icon.png` use a smaller symbol (68% of tile width) on a
+rounded black tile with transparent outer corners. Apple and PWA icons retain
+their platform-appropriate full-bleed backgrounds.
 Next generates their link tags; root metadata declares no duplicate icons.
 `app/manifest.ts` references versioned 192/512 PNGs and a separate maskable
 512 PNG whose artwork fits inside the central safe circle.

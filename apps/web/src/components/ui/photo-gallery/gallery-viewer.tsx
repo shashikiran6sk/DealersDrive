@@ -60,7 +60,7 @@ export function GalleryViewer({
       closeLabel={PHOTO_GALLERY_TEXT.close}
       header={
         <div className="flex min-w-0 items-center gap-3 max-md:gap-2 max-md:[&>img]:hidden">
-          <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
+          <BrandLogo variant="dark" size={18} className="h-[18px] w-[24px]" />
           <DialogTitle className="truncate text-[15px] text-white">{title}</DialogTitle>
           <DialogDescription tone="inverse" className="mt-0 flex-none text-[12px] tnum">
             {PHOTO_GALLERY_TEXT.count(index, photos.length)}

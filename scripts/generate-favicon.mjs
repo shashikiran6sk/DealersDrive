@@ -9,17 +9,24 @@ const icon = await readFile(new URL('dd-icon-white.svg', brand));
 
 // The approved symbol is wide. Preserve its aspect ratio and center it on black.
 // Maskable artwork fits wholly inside the central 80% diameter safe circle.
-const tile = async (size, maskable = false) => {
-  const width = Math.round(size * (maskable ? 0.64 : 0.86));
+const tile = async (size, maskable = false, rounded = false) => {
+  const width = Math.round(size * (rounded ? 0.68 : maskable ? 0.64 : 0.86));
   const glyph = await sharp(icon).resize({ width }).png().toBuffer();
-  return sharp({ create: { width: size, height: size, channels: 4, background: '#000000' } })
+  const background = rounded
+    ? sharp(
+        Buffer.from(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" rx="112.64" fill="#000000"/></svg>',
+        ),
+      ).resize(size, size)
+    : sharp({ create: { width: size, height: size, channels: 4, background: '#000000' } });
+  return background
     .composite([{ input: glyph, gravity: 'center' }])
     .png()
     .toBuffer();
 };
 
-for (const [path, size, maskable] of [
-  ['apps/web/src/app/icon.png', 512, false],
+for (const [path, size, maskable, rounded] of [
+  ['apps/web/src/app/icon.png', 512, false, true],
   ['apps/web/src/app/apple-icon.png', 180, false],
   ['apps/web/public/brand/dd-icon-v2-192.png', 192, false],
   ['apps/web/public/brand/dd-icon-v2-512.png', 512, false],
@@ -29,11 +36,11 @@ for (const [path, size, maskable] of [
   ['apps/web/public/brand/icon-512.png', 512, false],
   ['apps/web/public/brand/icon-maskable-512.png', 512, true],
 ]) {
-  await writeFile(new URL(path, root), await tile(size, maskable));
+  await writeFile(new URL(path, root), await tile(size, maskable, rounded));
 }
 
 const sizes = [16, 32, 48];
-const frames = await Promise.all(sizes.map((size) => tile(size)));
+const frames = await Promise.all(sizes.map((size) => tile(size, false, true)));
 const header = Buffer.alloc(6 + 16 * sizes.length);
 header.writeUInt16LE(1, 2);
 header.writeUInt16LE(sizes.length, 4);

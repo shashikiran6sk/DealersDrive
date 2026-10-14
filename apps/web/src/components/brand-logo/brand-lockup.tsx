@@ -10,7 +10,7 @@ interface BrandLockupProps extends Pick<BrandLogoProps, 'variant' | 'size' | 'cl
 
 export function BrandLockup({
   variant = 'light',
-  size = 30,
+  size = 24,
   className,
   wordmarkClassName,
 }: BrandLockupProps) {

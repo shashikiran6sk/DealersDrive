@@ -53,20 +53,20 @@ production tree. SVG masters contain paths, no raster embedding or background.
 
 All paths below are under `apps/web/` unless otherwise stated.
 
-| Asset                                                                                                        | Format / size                         | Purpose                                                           |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------------------------- |
-| `public/brand/dd-icon-black.svg`, `dd-icon-white.svg`                                                        | 651 × 424 viewBox, transparent paths  | Standalone symbol, identical geometry                             |
-| `public/brand/dealersdrive-wordmark-black.svg`, `dealersdrive-wordmark-white.svg`                            | 1092 × 145 viewBox, transparent paths | Approved lettering, no font dependency                            |
-| `public/brand/dd-icon-{black,white}.png`                                                                     | 651 × 424, RGBA                       | Transparent raster symbol variants; black used by email           |
-| `public/brand/dealersdrive-wordmark-{black,white}.png`                                                       | 1092 × 145, RGBA                      | Transparent lettering variants; black used by email               |
-| `src/app/favicon.ico`                                                                                        | 16, 32, 48 square PNG frames          | White DD only on solid black, centered, no wordmark               |
-| `src/app/icon.png`                                                                                           | 512 square                            | Next file-based browser icon                                      |
-| `src/app/apple-icon.png`                                                                                     | 180 square                            | Apple touch icon                                                  |
-| `public/brand/dd-icon-v2-192.png`, `dd-icon-v2-512.png`                                                      | 192 / 512 square                      | Manifest installation icons                                       |
-| `public/brand/dd-icon-v2-maskable-512.png`                                                                   | 512 square, opaque                    | Android/PWA maskable safe area                                    |
-| `public/brand/dealersdrive-organization-v2.png`                                                              | 1024 square, white background         | Organization ImageObject; separate masters composed at generation |
-| `public/og/dealersdrive-v2.png`                                                                              | 1200 × 630, black background          | Default Open Graph and Twitter card                               |
-| `public/brand/dealers-drive-{light,dark}.{svg,png}`, `public/brand/icon*.png`, `public/og/dealers-drive.png` | Compatibility outputs                 | Updated artwork at existing public URLs                           |
+| Asset                                                                                                        | Format / size                         | Purpose                                                             |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------- |
+| `public/brand/dd-icon-black.svg`, `dd-icon-white.svg`                                                        | 651 × 424 viewBox, transparent paths  | Standalone symbol, identical geometry                               |
+| `public/brand/dealersdrive-wordmark-black.svg`, `dealersdrive-wordmark-white.svg`                            | 1092 × 145 viewBox, transparent paths | Approved lettering, no font dependency                              |
+| `public/brand/dd-icon-{black,white}.png`                                                                     | 651 × 424, RGBA                       | Transparent raster symbol variants; black used by email             |
+| `public/brand/dealersdrive-wordmark-{black,white}.png`                                                       | 1092 × 145, RGBA                      | Transparent lettering variants; black used by email                 |
+| `src/app/favicon.ico`                                                                                        | 16, 32, 48 square PNG frames          | Smaller white DD on rounded black, transparent corners, no wordmark |
+| `src/app/icon.png`                                                                                           | 512 square                            | Next file-based browser icon                                        |
+| `src/app/apple-icon.png`                                                                                     | 180 square                            | Apple touch icon                                                    |
+| `public/brand/dd-icon-v2-192.png`, `dd-icon-v2-512.png`                                                      | 192 / 512 square                      | Manifest installation icons                                         |
+| `public/brand/dd-icon-v2-maskable-512.png`                                                                   | 512 square, opaque                    | Android/PWA maskable safe area                                      |
+| `public/brand/dealersdrive-organization-v2.png`                                                              | 1024 square, white background         | Organization ImageObject; separate masters composed at generation   |
+| `public/og/dealersdrive-v2.png`                                                                              | 1200 × 630, black background          | Default Open Graph and Twitter card                                 |
+| `public/brand/dealers-drive-{light,dark}.{svg,png}`, `public/brand/icon*.png`, `public/og/dealers-drive.png` | Compatibility outputs                 | Updated artwork at existing public URLs                             |
 
 `BrandLogo` retains the existing `light` (black artwork) / `dark` (white artwork)
 interface. It renders only the DD symbol without the obsolete rounded tile.
@@ -159,6 +159,23 @@ as passes. The explicit API run proves all affected and unaffected API tests pas
 with the suite's expected local/UTC environment. CI runs without this machine's
 untracked dev `.env` and must be checked independently before release.
 
+## Requested size refinement
+
+The user requested a smaller DD symbol across the home page and other pages,
+plus a smaller favicon symbol and rounded black background. Shared page symbols
+now default to 24 px high (previously 30 px), while the wordmark stays 136 px wide.
+Compact admin/sidebar and photo-viewer symbols are 18 px high (previously 23 px).
+The icon and wordmark master geometry is unchanged.
+
+Browser favicon/icon tiles now use the symbol at 68% of tile width (previously
+86%) and a rounded black rectangle with a 22% corner radius and transparent
+outer corners. Apple touch and PWA/maskable icons retain full-bleed backgrounds.
+The ICO test verifies transparent corners, opaque black edges, centering, smaller
+symbol bounds and decodable 16/32/48 frames. Screenshots and browser metadata
+fingerprint evidence were refreshed after this refinement. The full 1,697-test
+web suite, lint, type checking, production build, asset verification and browser
+checks all passed again. The preceding revision also passed every GitHub CI check.
+
 ## Exact file changes
 
 No files were removed. Compatibility URLs and historical documentation assets are retained.
@@ -227,10 +244,12 @@ No files were removed. Compatibility URLs and historical documentation assets ar
 - `apps/web/src/app/favicon.ico`
 - `apps/web/src/app/icon.png`
 - `apps/web/src/app/manifest.ts`
+- `apps/web/src/app/(admin)/admin/layout.tsx`
 - `apps/web/src/components/auth/auth-shell/auth-shell.tsx`
 - `apps/web/src/components/brand-logo/brand-logo.constants.ts`
 - `apps/web/src/components/brand-logo/brand-logo.tsx`
 - `apps/web/src/components/brand-logo/index.ts`
+- `apps/web/src/components/ui/photo-gallery/gallery-viewer.tsx`
 - `apps/web/src/components/errors/status-shell/status-shell.tsx`
 - `apps/web/src/components/layout/customer-footer/customer-footer.tsx`
 - `apps/web/src/components/layout/customer-header/header-brand.tsx`

@@ -96,7 +96,9 @@ for (let index = 0; index < 3; index++) {
     .raw()
     .toBuffer({ resolveWithObject: true });
   assert.equal(info.width, size);
-  assert.deepEqual([...data.subarray(0, 4)], [0, 0, 0, 255]);
+  assert.equal(data[3], 0, 'rounded favicon corners must be transparent');
+  const topCenter = Math.floor(size / 2) * 4;
+  assert.deepEqual([...data.subarray(topCenter, topCenter + 4)], [0, 0, 0, 255]);
   let left = size,
     right = 0,
     top = size,
@@ -112,6 +114,10 @@ for (let index = 0; index < 3; index++) {
   assert(left > 0 && top > 0 && right < size - 1 && bottom < size - 1, 'favicon must not clip');
   assert(Math.abs(left - (size - right - 1)) <= 1, 'favicon must be horizontally centered');
   assert(Math.abs(top - (size - bottom - 1)) <= 1, 'favicon must be vertically centered');
+  assert(
+    right - left + 1 <= Math.ceil(size * 0.7),
+    'favicon symbol must retain the requested padding',
+  );
 }
 
 const active = async (directory) => {

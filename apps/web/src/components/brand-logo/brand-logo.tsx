@@ -13,7 +13,7 @@ export interface BrandLogoProps {
 
 export function BrandLogo({
   variant = 'light',
-  size = 30,
+  size = 24,
   className,
   ariaLabel = BRAND_LOGO.alt,
 }: BrandLogoProps) {

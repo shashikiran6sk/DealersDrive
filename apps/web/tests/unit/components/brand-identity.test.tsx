@@ -13,11 +13,11 @@ const root = resolve(process.cwd(), '../..');
 
 describe('approved identity', () => {
   it('uses the black icon on light surfaces and preserves its aspect ratio', () => {
-    render(<BrandLogo size={30} />);
+    render(<BrandLogo />);
     const icon = screen.getByRole('img', { name: 'Dealers Drive' });
     expect(icon).toHaveAttribute('src', '/brand/dd-icon-black.svg');
-    expect(icon).toHaveAttribute('width', '46');
-    expect(icon).toHaveAttribute('height', '30');
+    expect(icon).toHaveAttribute('width', '37');
+    expect(icon).toHaveAttribute('height', '24');
     expect(icon).not.toHaveClass('rounded-[32%]');
   });
 
