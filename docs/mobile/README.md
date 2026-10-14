@@ -1,10 +1,10 @@
 # Dealers-Drive Android — revised audit and stacked implementation plan
 
-**Status: approved implementation plan; START received on 14 October 2026. Mobile PR 1 is in progress.**
+**Status: fresh START received after the PR #311 amendment; F099 implementation and the documented no-rewrite restack are authorized. PR merges and production release remain separately gated.**
 
 Re-audited 14 October 2026 against **PR #279**, not main. This revision supersedes the earlier main-based findings about missing policies/consent and the original standalone policy PR. Other customer discovery, native security, accessibility, performance, testing and Play requirements remain in scope.
 
-The original review copy was prepared outside the protected foundation checkout. After explicit START, this approved plan is included on the child Mobile PR 1 branch. PR #279 remains unchanged. Earlier planning statements and evidence dates below describe the audit; live implementation status is maintained in the stack manifest and PR reports.
+The original plan was included on local F099 after the earlier START. The branding amendment was documentation-only. The subsequent explicit START authorizes resuming this amended plan and the proposed parent-into-child merge. Preserve existing F099 commits and protected refs. Current/previous baseline evidence and actual ancestry are distinguished in the manifest.
 
 ## 1. Executive recommendation
 
@@ -16,30 +16,33 @@ Do not duplicate policy tables, consent records, notices, hashes, acceptance log
 
 **Implemented legal infrastructure is not approved legal publication.** Current Terms/Privacy/notices remain drafts, production release is blocked, and implementation approval will not authorize publication or enforcement activation.
 
-## 2. Verified Git foundation
+## 2. Verified Git foundation — branding amendment
 
-GitHub metadata was checked twice after fetching origin. Final metadata check: **2026-10-14 07:55:29 UTC**.
+Latest origin refs were fetched on 14 October 2026. GitHub metadata was rechecked at **2026-10-14 12:51:40 UTC**.
 
-| Field                           | Verified value                                                  |
-| ------------------------------- | --------------------------------------------------------------- |
-| Repository                      | `shashikiran6sk/DealersDrive`                                   |
-| PR                              | [#279](https://github.com/shashikiran6sk/DealersDrive/pull/279) |
-| Title                           | `feat: consolidate legal policies and dealership consent UX`    |
-| State                           | OPEN, DRAFT, unmerged                                           |
-| Review state                    | REVIEW_REQUIRED                                                 |
-| Base branch                     | `main`                                                          |
-| Base SHA                        | `69bf798b8cbfb62263d05244d15d0bf41861398e`                      |
-| Source branch                   | `feature/legal-compliance-and-consent-v1`                       |
-| Head SHA                        | `22c98419119f0418ba9d7cbcb7ec398052216bbf`                      |
-| Local HEAD / fetched source ref | Both match that head                                            |
-| Merge base with main            | Matches the verified main SHA                                   |
-| Working tree                    | Clean                                                           |
+| Field                         | Verified value                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| Current origin/main           | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
+| Branding PR                   | [#311](https://github.com/shashikiran6sk/DealersDrive/pull/311), MERGED              |
+| Branding merge commit         | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
+| Branding merge time           | 2026-10-14T12:26:44Z                                                                 |
+| Legal foundation PR           | [#279](https://github.com/shashikiran6sk/DealersDrive/pull/279), OPEN/DRAFT/unmerged |
+| Legal source branch           | `feature/legal-compliance-and-consent-v1`                                            |
+| Updated foundation head       | `6180a4b52522493b884550448d0a84e7d95432df`                                           |
+| Legal PR base                 | main at `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                   |
+| Previous audited foundation   | `22c98419119f0418ba9d7cbcb7ec398052216bbf` — historical only                         |
+| Existing local mobile branch  | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
+| Existing mobile GitHub PRs    | No F099 PR; no other mobile stack PR in open-PR inventory                            |
+| Required restack              | Existing F099 does not descend from updated foundation; not performed                |
+| Working tree before amendment | Clean                                                                                |
 
-GitHub reported SUCCESS for lint/typecheck/test/build, Terraform validation, dependency audit, Semgrep, Gitleaks, Vercel, and Vercel Preview Comments at this head. These are observed remote results, not tests freshly executed by this re-audit. They are neither legal sign-off nor Android evidence.
+The owner-created foundation merge has parents `22c98419119f0418ba9d7cbcb7ec398052216bbf` and `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`. Both original legal work and PR #311 are ancestors. All four approved SVG masters are present and byte-identical to main. Inspection uses Git refs, not the older F099 checkout.
 
-The repository feature map currently ends at F098. Local refs and a live remote branch-name check found no proposed F099–F108 mobile names. Names remain provisional until checked again immediately before use; none were created or reserved during planning.
+GitHub reports SUCCESS for all reported #279 checks at the new head, including lint/typecheck/test/build and security. These are observed remote results; no application suite was rerun for this amendment. No legal approval or Android validation is inferred.
 
-The foundation history, including its existing merge commits, must remain intact. Never modify its source branch, change its base, force-push it, merge it into main, or delete predecessor branches without the owner's specific authorization.
+The ten feature IDs/parent relationships remain unchanged. F099 exists locally with no upstream or GitHub PR; do not recreate it, replace its existing commit, or pretend it already includes branding. Future children remain uncreated. Protected main/#279 and existing F099 histories are preserved.
+
+Source compatibility: no changes to Prisma/migrations, shared contracts, legal/identity/enquiry/saved/support services, policy pages/content or legal/enquiry UI logic compared with the previous foundation. No conflict markers in 34 inspected legal/consent files. Changes touch shared branding shells, approved SEO/image references and email-header artwork. Footer legal links remain intact. Changed-file overlap with F099 is empty, but runtime regressions/native rendering still require tests after an approved restack.
 
 ## 3. PR #279 feature audit
 
@@ -79,7 +82,7 @@ Key evidence:
 - `apps/web/src/lib/legal-release.ts:4–32`, `apps/api/src/config/env.ts:260–265`: production gates.
 - `apps/web/src/features/legal/rights-controls.tsx:27–55`: support-backed rights/deletion request path.
 
-These files can be inspected at the [pinned foundation tree](https://github.com/shashikiran6sk/DealersDrive/tree/22c98419119f0418ba9d7cbcb7ec398052216bbf).
+These files can be inspected at the [pinned foundation tree](https://github.com/shashikiran6sk/DealersDrive/tree/6180a4b52522493b884550448d0a84e7d95432df).
 
 Important limitations: database triggers are not cryptographic protection against an administrator; already delivered/in-flight external messages cannot be recalled. Account merge does not silently expand sharing: canonical customer identity must grant separately, while verified merged identities may withdraw historical grants. Re-grant does not bypass the existing duplicate-open enquiry rule for the same car.
 
@@ -106,9 +109,38 @@ Additional foundation-visible routes to reproduce appropriately:
 - `/legal/[document]/[version]` and `/legal/notices/[notice]/[version]`: retained immutable references; native reader or approved system browser, subject to the same publication gates.
 - `/dealer-terms`, `/listing-policy`, `/grievance`: permanent anchored Terms redirects, not separate newly invented mobile policies.
 
-Use Home/Explore/Saved/Profile tabs. Preserve cards, neutral colors, Manrope, existing logos/hero/dealer illustration, gallery order, responsive screen hierarchy, loading/empty/error states, Android Back, keyboard/insets, 48dp touch targets and TalkBack. Dealer/admin/sales/invitation/workspace interfaces remain web-only.
+Use Home/Explore/Saved/Profile tabs. Preserve cards, neutral colors, Manrope for body text, hero/dealer illustration, hierarchy, states, Android Back, keyboard/insets, 48dp targets and TalkBack. Branding now comes exclusively from PR #311's standalone DD and separate outlined wordmark; never substitute ordinary text or old screenshots. Dealer/admin/sales/invitation/workspace interfaces remain web-only.
 
 Inspected foundation screenshots include `docs/testing/legal-consent/2026-10-13/account-acceptance-mobile.png` and `full-stack-regrant-mobile.png`. They show local/synthetic browser evidence, not native screenshots or live OTP success. Checked state in a capture is not the initial state: source initializes the relevant choices unticked. The browser report records 32 checks, zero failures/skips; it was reviewed, not rerun here.
+
+### 4.1 Approved brand identity and native preparation
+
+PR #311 already implements the new identity on the website. Reuse exact masters from the updated foundation, with no new branding PR/redesign.
+
+| Asset                                      | Source viewBox | Usage                         |
+| ------------------------------------------ | -------------- | ----------------------------- |
+| Standalone DD black/white                  | 0 0 651 424    | Black on light; white on dark |
+| Separate DealersDrive wordmark black/white | 0 0 1092 145   | Black on light; white on dark |
+
+Variant pairs have identical path geometry and alpha coverage. Masters have transparent exteriors, no embedded rasters, no text elements, and one SVG path each. The [branding inventory](branding-assets.md) records exact hashes, references, planned outputs and acceptance criteria. Manrope remains body typography; it is not wordmark artwork.
+
+Updated web source uses the black symbol 24px high/about 37px wide in the customer header and visually hides the wordmark below 640px. Full lockup/drawer/auth presentation uses the separate wordmark around 136px wide/18px high with 10px gap. Match actual updated components at 360/393/412dp; preserve native tabs/safe areas instead of copying web-only navigation. Reviewed post-#311 browser captures are references, not native/device proof.
+
+Native primitives will expose independent symbol, wordmark and composed lockup, with correct surface variant and one accessible lockup label. No baked rounded tile, border-radius clipping, recreated lettering, stretching or arbitrary recoloring. Existing native SVG/image capabilities suffice; no branding dependency is required.
+
+Planned preparation after a fresh START approving the amended plan/restack:
+
+- Copy four SVG masters verbatim with provenance hashes; derive PNG only where Expo/Android requires it, using existing tooling and uniform scaling.
+- Keep native display resources transparent; symbol aspect ratio is 651:424 and wordmark 1092:145.
+- Launcher/Play icon contains DD only. Use an already approved flat light/black surface treatment with the matching black/white symbol; never a wordmark or obsolete tile.
+- Adaptive foreground is transparent, centered on a 108×108dp-equivalent canvas; fit the artwork inside the official central 66×66dp safe area. Background is separate. Validate alpha bounds and circle/squircle/OEM masks before choosing final scale; do not copy browser favicon or PWA maskable PNG blindly.
+- Splash uses standalone DD only, contain mode and correct proportions; black on light/white on dark. Validate Android system splash in a release build.
+- Feature graphics may compose the two independent assets; launcher/store icon artwork must not include the wordmark.
+- Retain app display-name/package decisions and all legal/customer text; artwork spelling does not rewrite policy content or evidence hashes.
+
+Existing F099 logo/icon/splash resources and its old tile-plus-Text Brand component are not compliant with this amendment. Replacing them is required in F099 after authorization. No application asset/component/config was modified here.
+
+References: [Android adaptive icons](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive), [Expo splash/icon guidance](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/). Native resources/screenshots/device validation remain pending.
 
 ## 5. Existing APIs to reuse for native legal integration
 
@@ -168,7 +200,7 @@ Multi-role ownership and append-only legal/sharing evidence require counsel-appr
 
 ## 7. Final ordered stack and exact PR relationships
 
-No mobile branch, SHA, PR number, or test result exists yet. Future base SHA is recorded when its predecessor is pinned; do not fabricate it. Proposed names were checked unoccupied and must be rechecked at START.
+F099 exists locally at `bcb1bee7e4db4f999a2081665512471b0266507d`, with no GitHub PR/upstream. F100–F108 remain planned. Record future base/head SHAs when each predecessor is pinned; do not fabricate them or recreate occupied F099.
 
 | PR                             | Proposed head branch                      | GitHub base branch                        |
 | ------------------------------ | ----------------------------------------- | ----------------------------------------- |
@@ -184,7 +216,7 @@ No mobile branch, SHA, PR number, or test result exists yet. Future base SHA is 
 | Mobile 9 — Deletion            | `feat/f107-mobile-account-deletion`       | `feat/f106-mobile-support`                |
 | Mobile 10 — Hardening          | `feat/f108-mobile-release-hardening`      | `feat/f107-mobile-account-deletion`       |
 
-Mobile 1 starts at the reviewed foundation SHA `22c98419119f0418ba9d7cbcb7ec398052216bbf`, contingent on START preflight. All later branches start from the immediate parent's reviewed head. No independent main-based mobile branch or empty placeholder PR.
+The required foundation is now `6180a4b52522493b884550448d0a84e7d95432df`. Existing F099 started at `22c98419119f0418ba9d7cbcb7ec398052216bbf` and needs the reviewed restack below; documentation does not change its ancestry. Later branches start from their immediate parent's reviewed head. No main-based branch or empty PR.
 
 Maintain `docs/mobile/stack-manifest.json` in Mobile 1 after START, and a current stack-wide review snapshot as work progresses. Fields: sequence/feature/name, PR URL/number/state/draft, head branch/SHA, base branch and base SHA at creation/current verification, foundation SHA, predecessor/dependencies, incremental diff range, checks and their tested SHA, review state, evidence/known blockers, verification timestamp, restack history. A planning-only manifest accompanies this README with future fields null/NOT_CREATED.
 
@@ -192,18 +224,18 @@ Maintain `docs/mobile/stack-manifest.json` in Mobile 1 after START, and a curren
 
 Every PR is cumulative in branch history but incremental against its immediate base. Each carries its own bounded diff, tests, docs, exact SHAs, CI/test evidence and risks. Shared foundation regressions remain acceptance checks. Keep all PRs open/unmerged.
 
-| PR  | Scope/file areas                                                                                                                                  | Backend/DB dependencies                                                                           | Required evidence/acceptance                                                                                                                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `apps/mobile` Expo/TS/theme/assets/navigation/API error client/test setup; lean contracts exports; `docs/mobile`; feature allocations; stacked CI | Existing public contracts; no DB                                                                  | Type/lint/unit/bundle; correct native React resolution; no server imports/secrets; parent ancestry; CI runs on feature-base PR                                                                                      |
-| 2   | Native OTP/session transport under API auth; customer bearer guard; legal publication adapter/shared response schemas/OpenAPI                     | Existing legal models/snapshots; shared cache challenge; existing Sessions; no duplicate policies | Provider contracts/cache failure/rate limits/expiry/identity; bearer denial on dealer/admin/sales; publication draft/stale/hash/effective gates; existing cookie/legal origin regressions                           |
-| 3   | Native phone/OTP/name/session restoration/logout/pending reducer; policy reader and account choice; current-version errors                        | PR2 and foundation signup/evidence services                                                       | Unticked explicit choice; separate ACCEPT/ACKNOWLEDGE; existing identity; no private flashes/leakage; cancel/background/process death; auth-resume exactly-once save effect and no auto enquiry; emulator captures  |
-| 4   | Cars/search/district/filters/sort/cards/detail/similar/gallery/share                                                                              | Existing public APIs/lifecycle                                                                    | Query semantics/loading/empty/error/removed-reserved; native paging/back/keyboard/accessibility; measured request cancellation; screenshots                                                                         |
-| 5   | Home discovery/hero; dealer directory/profile/gallery/inventory/directions                                                                        | Existing config/dealer APIs including #279 directions                                             | Visual reference; partial section failures; image fallback; preserved dealer context; no automatic map request; screenshots                                                                                         |
-| 6   | Saved synchronization/Profile/settings/Agreements/history/privacy control entry; slug hydration adaptation if needed                              | Existing Saved/User/LegalHistory; no new save table                                               | Cross-platform PUT/DELETE; >500 correctness; lifecycle/ownership/rollback; read-only identity; historical/current document labels; safe account change/logout                                                       |
-| 7   | Native enquiry/history/sharing controls/withdrawal and existing state rules; optional create retry ID                                             | Existing ContactSharingEvent/LegalEvent/Enquiry; nullable retry field only if required            | Same/different dealership; recipient transfer; notice/expiry/withdrawal/regrant; concurrent create/withdraw; no old-row restoration; lost-response retry has no duplicate event/email; existing web flows unchanged |
-| 8   | Support list/new/conversation/reopen/quota/privacy-request prefill; create retry protection                                                       | Existing SupportTicket/Message; existing quota migration; optional create-ID uniqueness           | Five-unanswered limit/reset; explicit reopen; closed refusal; foreign ticket/enquiry 404; stable clientMessageId retries; support/privacy accessible without new Terms; screenshots                                 |
-| 9   | Native and public-web deletion entry/status; verified backend/operational fulfillment linked to existing support                                  | Approved retention/multi-role procedure; minimal deletion-state persistence if justified          | Ordinary/multi-role requests; fresh proof; idempotent intake; revoked sessions; verified data disposition; preserved authorized evidence; no false completion; manual operator acceptance                           |
-| 10  | Android E2E/security/performance/accessibility; CI/native build/EAS config/signing/app links/crash redaction; store assets/go-no-go               | All prior PRs; owner provider/device/Play access; approved legal publication external gate        | Release AAB, dependency/manifest/16KB checks; real-device/live OTP/manual gates; publication unavailable if drafts; exact final CI/SHA evidence; no upload/deploy                                                   |
+| PR  | Scope/file areas                                                                                                                                                                 | Backend/DB dependencies                                                                           | Required evidence/acceptance                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/mobile` Expo/TS/theme/navigation/API/tests; PR #311 separate black/white symbol/wordmark primitives and launcher/adaptive/splash; lean exports/docs/allocations/stacked CI | Existing public contracts; no DB                                                                  | Type/lint/unit/bundle; source hashes/variant geometry/transparency/proportions/spacing/safe-zone tests; no obsolete art; correct React/boundaries/ancestry; feature-base CI                                         |
+| 2   | Native OTP/session transport under API auth; customer bearer guard; legal publication adapter/shared response schemas/OpenAPI                                                    | Existing legal models/snapshots; shared cache challenge; existing Sessions; no duplicate policies | Provider contracts/cache failure/rate limits/expiry/identity; bearer denial on dealer/admin/sales; publication draft/stale/hash/effective gates; existing cookie/legal origin regressions                           |
+| 3   | Native phone/OTP/name/session/pending; PR #311 auth/loading/error branding; policy reader/account choice/current-version errors                                                  | PR2 and foundation signup/evidence services                                                       | Unticked explicit choice; separate ACCEPT/ACKNOWLEDGE; existing identity; no private flashes/leakage; cancel/background/process death; auth-resume exactly-once save effect and no auto enquiry; emulator captures  |
+| 4   | Cars/search/district/filters/sort/cards/detail/similar/gallery/share                                                                                                             | Existing public APIs/lifecycle                                                                    | Query semantics/loading/empty/error/removed-reserved; native paging/back/keyboard/accessibility; measured request cancellation; screenshots                                                                         |
+| 5   | Home discovery/hero; dealer directory/profile/gallery/inventory/directions                                                                                                       | Existing config/dealer APIs including #279 directions                                             | Post-#311 mobile headers/variants; partial failures/fallback/context; no auto map request; screenshots                                                                                                              |
+| 6   | Saved synchronization/Profile/settings/Agreements/history/privacy control entry; slug hydration adaptation if needed                                                             | Existing Saved/User/LegalHistory; no new save table                                               | Cross-platform PUT/DELETE; >500 correctness; lifecycle/ownership/rollback; read-only identity; historical/current document labels; safe account change/logout                                                       |
+| 7   | Native enquiry/history/sharing controls/withdrawal and existing state rules; optional create retry ID                                                                            | Existing ContactSharingEvent/LegalEvent/Enquiry; nullable retry field only if required            | Same/different dealership; recipient transfer; notice/expiry/withdrawal/regrant; concurrent create/withdraw; no old-row restoration; lost-response retry has no duplicate event/email; existing web flows unchanged |
+| 8   | Support list/new/conversation/reopen/quota/privacy-request prefill; create retry protection                                                                                      | Existing SupportTicket/Message; existing quota migration; optional create-ID uniqueness           | Five-unanswered limit/reset; explicit reopen; closed refusal; foreign ticket/enquiry 404; stable clientMessageId retries; support/privacy accessible without new Terms; screenshots                                 |
+| 9   | Native and public-web deletion entry/status; verified backend/operational fulfillment linked to existing support                                                                 | Approved retention/multi-role procedure; minimal deletion-state persistence if justified          | Ordinary/multi-role requests; fresh proof; idempotent intake; revoked sessions; verified data disposition; preserved authorized evidence; no false completion; manual operator acceptance                           |
+| 10  | Android E2E/security/performance/accessibility; CI/native build/EAS config/signing/app links/crash redaction; store assets/go-no-go                                              | All prior PRs; owner provider/device/Play access; approved legal publication external gate        | Release AAB; launcher/adaptive/splash/display-name/Play graphics/release screenshots/densities/contrast; manifest/16KB/live gates/draft holds; exact CI/SHA; no upload/deploy                                       |
 
 Legal publication approval is not an extra mobile coding PR merely to preserve the old count. If re-audit or implementation reveals an independent required legal adaptation, document the gap and seek approval before adding an eleventh PR; never force an empty ten-PR sequence or duplicate foundation work.
 
@@ -250,13 +282,13 @@ Testing retains guest/auth/signup/expiry/save/enquiry/back/deep-link/gallery/fil
 
 ## 12. Safe implementation and restacking workflow
 
-### Before the first implementation branch, after START
+### Resume after this documentation-only amendment
 
-1. Fetch origin and read #279 metadata again; require OPEN, expected source/base, no unauthorized history rewrite.
+1. Obtain a fresh START approving this amended plan and its concrete no-rewrite restack proposal before code/history changes. Fetch #279/main/branding again and assess intervening changes.
 2. Compare current head to pinned audit head; audit differences and update plan/manifest. Material changes need owner approval; do not silently substitute an incompatible foundation.
 3. Confirm clean checkout and unoccupied feature numbers/branches.
-4. Create Mobile 1 from the verified #279 head; do not branch from main or write to #279.
-5. Implement focused scope, run checks, normal-push the child branch, open PR with explicit immediate-parent base, and verify GitHub metadata.
+4. Preserve F099. With owner approval, merge the verified updated parent into this child through a normal reviewable merge commit, retaining bcb1bee7. Verify new foundation ancestry. Do not rebase, force-push, recreate F099 or write to #279/main.
+5. Replace old Android branding in F099, run brand/native and affected web/legal checks, normal-push only the child and open a draft against feature/legal-compliance-and-consent-v1. Verify GitHub base/head.
 6. Record exact heads/checks; continue sequentially from each immediate predecessor after its acceptance checks. Leave all PRs open, unmerged.
 
 No routine rebase/merge of completed PRs to main. Cumulative history does not justify cumulative review diff; use the parent/head comparison and PR three-dot diff to verify bounded scope.
@@ -309,7 +341,7 @@ Tentative engineering estimates after consent reuse:
 
 Roughly 7–11 working weeks for one experienced engineer; not a guaranteed delivery date. Legal approvals, provider/device/operator access, Google testing/review and owner PR review are separate critical-path dependencies. Reuse removes duplicate work, not mandatory acceptance gates.
 
-Prepare Android-only development/preview APK and production AAB profiles, public environment allowlists, no secrets in bundles/cloud context, owner-controlled signing, approved package (proposed `com.dealersdrive.customer`), existing-brand icons/splash, real screenshots/store assets, Data safety/privacy/deletion URLs, app access/content rating/ads/permissions declarations, internal/closed testing and staged rollout/incident documentation.
+Prepare Android-only development/preview APK and production AAB profiles, public environment allowlists, no secrets in bundles/cloud context, owner-controlled signing, approved package (proposed `com.dealersdrive.customer`), PR #311 SVG-derived symbol-only launcher/adaptive/splash/Play icon and independent wordmark on screens/graphics, real release screenshots/store assets, Data safety/privacy/deletion URLs, app access/content rating/ads/permissions declarations, internal/closed testing and staged rollout/incident documentation.
 
 Current SDK/Play policy facts in the original audit must be rechecked before submission. Minimum/target API, 16KB/native library support, organization/personal verification/testing rules, and owner Play account details remain release checks. No production secret/cloud resource creation, backend deployment, legal activation, Google Play upload or publication follows from START.
 
@@ -325,22 +357,22 @@ Current SDK/Play policy facts in the original audit must be rechecked before sub
 | Native public current-policy/notice adapter      | Proposed minimal missing capability in Mobile 2                            |
 | Support-backed deletion request                  | Confirmed partial coverage; do not claim fulfilled erasure                 |
 | Verified deletion fulfillment/retention          | Requires approved operational/legal scope                                  |
-| Feature IDs/branch names                         | Checked unoccupied; recheck/reserve only after START                       |
+| Feature IDs/branch names                         | F099 already exists; F100–F108 planned, recheck before creation            |
 | CI on feature bases                              | Confirmed workflow gap; address in Mobile 1                                |
 | Restacking                                       | Explicit compatibility assessment/review; no automatic rewrite             |
 | Native session/library/package/vendor choices    | Original recommended defaults; pinned/validated in approved implementation |
 | Production merges/publication/deployment         | Separate explicit owner authorization                                      |
 
-The companion `stack-manifest.json` records current #279 metadata and ten NOT_CREATED children. Its null future SHAs/URLs are deliberate. No implementation PR or test result is fabricated.
+The companion `stack-manifest.json` records the new #279 and #311 baseline, the existing paused local F099 with its actual older ancestry, and nine uncreated children. Future null SHAs/URLs are deliberate; no PR or test result is fabricated.
 
 ## 16. Approval gate and expected end state
 
-This revised plan replaces obsolete main-only legal findings and the standalone policy PR with #279 reuse and the mandatory ten-PR stack. It preserves the original customer-only feature scope and native/security/test/release acceptance requirements.
+This amendment retains #279 legal reuse and the ten-PR stack, updates the foundation and mandatory PR #311 branding, and preserves customer/native/security/release scope. Fresh START authorizes the amended implementation and the stated no-rewrite restack; merge, deployment, legal publication and Play submission still require separate authorization.
 
 Before implementation, the owner reviews/approves this plan and explicitly replies **START**. Discussion, receipt of stacked-workflow instructions, green CI, or draft legal text is not approval to implement or publish.
 
 Expected completed engineering state: #279 open/unmerged; every Android PR open/unmerged against its immediate predecessor; all Android commits descend from the verified foundation; reviewed bounded diffs and complete test/evidence manifests; main untouched by Android work; no production deployment, legal publication or Play upload.
 
-**START RECEIVED — IMPLEMENTATION IN PROGRESS ON THE APPROVED STACK**
+**BRANDING AMENDMENT APPROVED — F099 IMPLEMENTATION RESUMED**
 
-**Merging and production release remain separately authorized.**
+**The amendment itself performed no implementation or restack. The subsequent START authorizes implementation and the documented restack. Merging and production release remain separately gated.**

@@ -1,0 +1,98 @@
+# Android branding asset inventory — PR #311
+
+Status: verified source inventory and implementation specification only. No Android assets/configuration were prepared or changed by this amendment.
+
+## Verified source and provenance
+
+- Website branding is already implemented by merged PR #311; no new branding PR or redesign is needed.
+- Main/branding merge: `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`.
+- Legal foundation: `6180a4b52522493b884550448d0a84e7d95432df`, containing the original legal head and the branding merge.
+- Current local F099: `bcb1bee7e4db4f999a2081665512471b0266507d`, still based on the older foundation and awaiting approved restack.
+- Inventory timestamp: 2026-10-14 12:51:40 UTC.
+
+| Master                                                                                                                                                                                | Dimensions / aspect ratio | Fill    | SHA-256                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------- | ------------------------------------------------------------------ |
+| [dd-icon-black.svg](https://github.com/shashikiran6sk/DealersDrive/blob/6180a4b52522493b884550448d0a84e7d95432df/apps/web/public/brand/dd-icon-black.svg)                             | 651 × 424 / 1.535377      | #000000 | `a13e463d5e03a0e43e7701bcc50e9ac32ac32e14271019efadbb15ff9f8af677` |
+| [dd-icon-white.svg](https://github.com/shashikiran6sk/DealersDrive/blob/6180a4b52522493b884550448d0a84e7d95432df/apps/web/public/brand/dd-icon-white.svg)                             | 651 × 424 / 1.535377      | #ffffff | `73fe7172368307e6395e798671a64f47d28464282d8eb9b6d096f08f763aca21` |
+| [dealersdrive-wordmark-black.svg](https://github.com/shashikiran6sk/DealersDrive/blob/6180a4b52522493b884550448d0a84e7d95432df/apps/web/public/brand/dealersdrive-wordmark-black.svg) | 1092 × 145 / 7.531034     | #000000 | `06da86d1e1fbb1bc26394aca2c3906274115cb0546d53e9bd0d4e666ec2b459c` |
+| [dealersdrive-wordmark-white.svg](https://github.com/shashikiran6sk/DealersDrive/blob/6180a4b52522493b884550448d0a84e7d95432df/apps/web/public/brand/dealersdrive-wordmark-white.svg) | 1092 × 145 / 7.531034     | #ffffff | `6e88752dec4aee0dac09cabcfa18da2678d2cc4be3b984ceb1ba45158cf7ffe3` |
+
+All four masters match main byte-for-byte. Both color pairs have identical SVG path data and raster alpha coverage; each has one path, no text/image/rect/foreignObject embedding, and transparent exterior. The DD artwork consists of the standalone symbol; the wordmark is separate lettering. Do not treat font text as an equivalent wordmark.
+
+Matching source PNGs are present at the same stems. Inspected sizes: symbols 651×424, wordmarks 1092×145, all RGBA with transparent exteriors. These provide web/email raster references; SVG geometry remains authoritative for native preparation.
+
+## Reference assets and components
+
+- Approved primary stems: dd-icon-black/white and dealersdrive-wordmark-black/white under apps/web/public/brand.
+- Browser/PWA references: dd-icon-v2-192.png, dd-icon-v2-512.png, dd-icon-v2-maskable-512.png. Use only as appearance references; their canvas/mask/background is not automatically an Android foreground.
+- Combined organization/social images and compatibility dealers-drive-light/dark paths are not independent Android logo masters.
+- Web primitives: BrandLogo, BrandWordmark, BrandLockup; consumers include HeaderBrand, AuthShell, customer footer, error shell and dark gallery.
+- BrandLogo height defaults to 24px with proportional width around 37px. BrandWordmark defaults to 136px width/about 18px height; full lockup uses 10px gap.
+- Narrow customer header visually hides wordmark below 640px; drawer/auth/footer use the full lockup. Match source/captures at native 360/393/412dp and suitable tablet widths.
+- Brand variant mapping is light surface → black artwork; dark surface → white artwork. Do not reuse obsolete variant naming assumptions.
+- Post-branding references: docs/screens/branding/v2/asset-review.png, home-mobile.png, login-mobile.png, customer-mobile-drawer.png and validation.json from the new foundation. These are local synthetic browser evidence, not Android release screenshots.
+
+## Planned Android usage
+
+| Location                           | Required presentation                                                                        |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| Home header                        | Updated compact web-mobile symbol behavior; full lockup only where source/space calls for it |
+| Login / OTP / signup / auth errors | Independent DD and wordmark on appropriate light/dark surfaces                               |
+| Profile / About                    | Approved identity, correct proportions and accessible label                                  |
+| Legal screens                      | Approved brand shell; document text/version/hash/acceptance unchanged                        |
+| Launcher / adaptive / Play icon    | DD symbol only; wordmark prohibited                                                          |
+| Splash                             | DD symbol only; no stretching/cropping                                                       |
+| Dark gallery                       | White symbol, no baked light tile                                                            |
+| Store screenshots / graphics       | Actual release screens and separately composed approved assets                               |
+
+## Native asset preparation specification
+
+After fresh START approving the amended plan/restack:
+
+1. Copy the four SVG masters without path/letterform/viewBox modifications and record source hashes in a native asset provenance manifest.
+2. Reuse existing react-native-svg/Expo image capability; do not add a branding library or require a font to reconstruct lettering.
+3. Where PNG is required, rasterize with existing build tooling at explicit sizes, uniform scale and centered placement. Preserve transparent exteriors for UI, adaptive foreground and splash symbol resources.
+4. Use separate foreground/background for adaptive icons. Plan a 108×108dp-equivalent square canvas (for example 1080×1080px source), with actual symbol pixels inside the central 66×66dp safe area. Choose scale through alpha-bounds and OEM-mask checks, without stretching the 651:424 geometry.
+5. Use only approved flat light/dark surface treatment. The foreground must not contain an opaque rounded square, baked mask, shadow, wordmark or obsolete tile. Android applies launcher masks.
+6. Generate launcher artwork and Play 512×512 icon from the same standalone geometry; use high-resolution source (for example 1024×1024) for sharp scaling. These are planned sizes, not existing Android assets.
+7. Configure Expo icon/adaptive foreground/background/optional monochrome and splash plugin only after generation/inspection. Splash uses contain mode and symbol-only source with a matching surface; verify actual Android system splash in release builds.
+8. Do not use favicon.ico or its 16/32/48px frames as Android master assets. Do not blindly copy PWA maskable PNG into native foreground.
+9. Keep display name/package decisions distinct from path wordmark spelling. Existing display name is Dealers-Drive; legal text, SEO canonicals and customer/dealer names are unchanged.
+
+Platform references: [Android adaptive icon design](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive), [Expo splash and app icon](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/).
+
+## Current F099 mismatch
+
+Existing app assets logo.png, icon.png and icon-maskable.png came from pre-#311 web assets. The native Brand component renders an old rounded bitmap plus ordinary Text; app.json points at those legacy resources. This amendment leaves them untouched as required. They are not approved branding and must be replaced during the resumed F099 scope. Native branding acceptance is therefore PENDING, not PASS.
+
+## F099 acceptance criteria
+
+- Updated #279 foundation is an ancestor after an owner-approved no-rewrite restack, retaining the existing F099 commit.
+- All four native master bytes/path data match the pinned website SVGs and provenance hashes.
+- Symbol and wordmark are separate; all icon/splash references resolve to symbol-only resources.
+- Light/dark component fixtures select black/white variants correctly; lockup provides one accessible brand label without duplicate announcements.
+- Aspect ratios, source viewBoxes, transparency, uniform scale, spacing and centering are verified; no border-radius clipping or font substitution.
+- Generated PNG dimensions/alpha bounds, safe-zone containment and mask previews pass; no geometry/letterform change, baked foreground background or wordmark.
+- Updated mobile header/auth/Profile/About/legal primitives use current identity; old asset references are absent from runtime/config.
+- Native lint/types/tests/SDK/bundle checks and affected web/legal compatibility checks pass; actual screenshot/device gaps are explicitly recorded.
+- No extra branding dependency, website reimplementation, policy alteration or API behavior change.
+
+## F108 acceptance criteria
+
+- Validate final launcher/adaptive/monochrome/splash on installed release builds across multiple densities, circular/squircle/themed launchers and supported Android versions.
+- Capture release-build Home, authentication, Profile/About, gallery and legal surfaces with correct variants/proportions; no old artwork.
+- Validate final app display name, Play icon, feature graphic and store screenshots against approved symbol/wordmark sources.
+- Check splash crop/centering/system transition, adaptive safe zones and icon quality on actual devices; emulator/web screenshots are not physical-device proof.
+- Inspect release bundle/resources/merged manifest for obsolete references; verify no wordmark in icon foregrounds.
+- Preserve authentication, Terms acceptance, Privacy acknowledgment, dealer-scoped consent/withdrawal, enquiries, saves, support, role authorization and website SEO canonical behavior.
+- Provide exact build/device/OS/version evidence and disclose any unresolved failure; no GO verdict while critical branding/native/security gates remain blocked.
+
+## Compatibility evidence and limitations
+
+The new foundation delta from 22c9841 contains branding/UI/metadata/image references and the notification email-header artwork. Core legal/consent/identity/enquiry/saved/support code, policy content, shared contracts and migrations are unchanged. Footer legal links remain. No legal conflict markers were found in the 34 inspected files; changed-file overlap with existing F099 is empty. This does not prove a future merge or all runtime regressions pass.
+
+Observed new-foundation GitHub checks are successful. Existing post-#311 web validation/captures were reviewed; no application test suite, production mutation, native resource generation, native screenshot or device test was performed in this documentation-only amendment. Existing branches/commits/protected refs were not restacked or rewritten.
+
+## Proposed restack — not performed
+
+On owner approval through a fresh START approving this amended plan and restack, merge the verified new #279 parent into existing F099 with a normal reviewable merge commit, retain bcb1bee7, apply branding replacements in F099, validate, then normal-push/open the child draft against #279. No rebase/force-push, protected-branch edit, main-based branch, PR merge, deployment or store upload. Re-audit if either ref changes before approval.

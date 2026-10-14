@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "IMPLEMENTATION_IN_PROGRESS",
-  "verified_at": "2026-10-14T07:55:29Z",
+  "status": "IMPLEMENTATION_RESUMED_F099_RESTACK_PENDING",
+  "verified_at": "2026-10-14 13:07:34 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -13,89 +13,94 @@
     "state": "OPEN",
     "is_draft": true,
     "head_branch": "feature/legal-compliance-and-consent-v1",
-    "head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+    "head_sha": "6180a4b52522493b884550448d0a84e7d95432df",
     "base_branch": "main",
-    "base_sha": "69bf798b8cbfb62263d05244d15d0bf41861398e",
+    "base_sha": "a969dc2c5223ddb04c23d720ded6a4daccfe33ab",
     "review_state": "REVIEW_REQUIRED",
     "checks": [
       {
         "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
-        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38517794197/job/115700407862",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38565424579/job/115856751666",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "semgrep",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
-        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38517794198/job/115700407619",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38565424659/job/115856750733",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "terraform fmt / validate",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
-        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38517794197/job/115700407751",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38565424579/job/115856751764",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "gitleaks",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
-        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38517794198/job/115700407460",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38565424659/job/115856750383",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "dependency audit",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
-        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38517794197/job/115700407994",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38565424579/job/115856751479",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "Vercel",
         "status": "SUCCESS",
         "conclusion": "SUCCESS",
-        "url": "https://vercel.com/dealers-drive/dealersdrive-prod-web/CDUaMgRVEUJiUNLSQ66AG8UrJJHm",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "url": "https://vercel.com/dealers-drive/dealersdrive-prod-web/5sMGQqQLuL1PqgVomUeyhBfteW2k",
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       },
       {
         "name": "Vercel Preview Comments",
         "status": "COMPLETED",
         "conclusion": "SUCCESS",
         "url": "https://vercel.com/github",
-        "tested_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
+        "tested_head_sha": "6180a4b52522493b884550448d0a84e7d95432df"
       }
     ],
-    "legal_publication": "REVIEW_REQUIRED_DRAFT_NOT_APPROVED"
+    "legal_publication": "REVIEW_REQUIRED_DRAFT_NOT_APPROVED",
+    "previous_verified_head_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf"
   },
   "children": [
     {
       "sequence": 1,
-      "feature_id": "F99",
+      "feature_id": "F099",
       "title": "Foundation",
       "planned_head_branch": "feat/f099-mobile-foundation",
-      "head_sha": null,
+      "head_sha": "bcb1bee7e4db4f999a2081665512471b0266507d",
       "pr_number": null,
       "pr_url": null,
-      "state": "IMPLEMENTING",
+      "state": "LOCAL_BRANCH_RESTACK_PENDING_NO_PR",
       "is_draft": null,
       "base_branch": "feature/legal-compliance-and-consent-v1",
       "base_sha_at_creation": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
-      "base_sha_verified_now": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "base_sha_verified_now": "6180a4b52522493b884550448d0a84e7d95432df",
       "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
       "dependencies": ["PR279"],
-      "incremental_diff": null,
-      "ci_status": "NOT_RUN",
+      "incremental_diff": "22c98419119f0418ba9d7cbcb7ec398052216bbf..bcb1bee7e4db4f999a2081665512471b0266507d",
+      "ci_status": "NO_GITHUB_PR",
       "tested_sha": null,
       "review_state": "NOT_OPENED",
       "evidence": [],
       "known_blockers": [
-        "Android SDK/emulator and physical-device validation unavailable locally",
-        "Production legal publication and release remain separately gated"
+        "Production legal publication and release remain separately gated",
+        "Existing F099 does not contain the new foundation; no-rewrite restack is proposed only",
+        "Native logo/icon/splash resources still use old branding; implementation edits prohibited in this amendment"
       ],
-      "restack_history": []
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "restack_required": true,
+      "descends_from_required_foundation": false
     },
     {
       "sequence": 2,
@@ -109,19 +114,17 @@
       "is_draft": null,
       "base_branch": "feat/f099-mobile-foundation",
       "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "base_sha_verified_now": "bcb1bee7e4db4f999a2081665512471b0266507d",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_1"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 3,
@@ -136,18 +139,16 @@
       "base_branch": "feat/f100-mobile-auth-backend",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_2"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 4,
@@ -162,18 +163,16 @@
       "base_branch": "feat/f101-mobile-auth-ui",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_3"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 5,
@@ -188,18 +187,16 @@
       "base_branch": "feat/f102-mobile-cars-search-gallery",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_4"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 6,
@@ -214,18 +211,16 @@
       "base_branch": "feat/f103-mobile-home-dealers",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_5"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 7,
@@ -240,18 +235,16 @@
       "base_branch": "feat/f104-mobile-saved-account",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_6"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 8,
@@ -266,18 +259,16 @@
       "base_branch": "feat/f105-mobile-consent-enquiries",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_7"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 9,
@@ -292,18 +283,16 @@
       "base_branch": "feat/f106-mobile-support",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_8"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {
       "sequence": 10,
@@ -318,24 +307,106 @@
       "base_branch": "feat/f107-mobile-account-deletion",
       "base_sha_at_creation": null,
       "base_sha_verified_now": null,
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": null,
       "dependencies": ["MOBILE_9"],
       "incremental_diff": null,
       "ci_status": "NOT_CREATED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
       "evidence": [],
-      "known_blockers": [
-        "Explicit START required; branch/feature allocation must be rechecked",
-        "Legal publication and production release remain separately gated"
-      ],
-      "restack_history": []
+      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "restack_history": [],
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     }
   ],
   "restack_policy": "No automatic restack or shared-history rewrite. Assess predecessor changes; obtain approval; prefer reviewable parent-into-child merge commits with normal pushes.",
   "notes": [
-    "Tracked heads/checks are dated snapshots. Resolve live PR heads after creation; never fabricate self-referential commit SHAs.",
-    "No production deployment, merge or legal publication authorized."
+    "Branding amendment was docs-only; subsequent START authorizes implementation and reviewable child restack.",
+    "Foundation branding and legal/contract compatibility verified read-only; no new application suite or Android validation.",
+    "Future head SHAs/PR URLs remain null. Existing F099 has no upstream or GitHub PR at verification.",
+    "Ten immediate-parent base relationships unchanged.",
+    "Remote CI/source/hash checks do not approve legal drafts or deployment."
   ],
-  "start_received": "2026-10-14"
+  "start_received": "2026-10-14",
+  "restack_authorized": true,
+  "authorization_history": [
+    {
+      "instruction": "START",
+      "date": "2026-10-14",
+      "scope": "Previous approved implementation; existing local F099 preserved"
+    },
+    {
+      "instruction": "PR #311 branding baseline amendment",
+      "date": "2026-10-14",
+      "scope": "Plan/manifest/inventory only; fresh START required; no history changes"
+    },
+    {
+      "instruction": "START after PR #311 amendment",
+      "date": "2026-10-14",
+      "scope": "Resume amended ten-PR implementation; normal parent-into-child F099 merge; no PR merge or release"
+    }
+  ],
+  "main_sha": "a969dc2c5223ddb04c23d720ded6a4daccfe33ab",
+  "branding": {
+    "pr_number": 311,
+    "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/311",
+    "state": "MERGED",
+    "merge_sha": "a969dc2c5223ddb04c23d720ded6a4daccfe33ab",
+    "merged_at": "2026-10-14T12:26:44Z",
+    "foundation_includes_merge": true,
+    "website_implemented": true,
+    "native_adoption": "PENDING_APPROVED_RESTACK_AND_FRESH_START",
+    "masters": [
+      {
+        "source_path": "apps/web/public/brand/dd-icon-black.svg",
+        "variant": "black",
+        "asset_kind": "symbol",
+        "width": 651,
+        "height": 424,
+        "view_box": "0 0 651 424",
+        "sha256": "a13e463d5e03a0e43e7701bcc50e9ac32ac32e14271019efadbb15ff9f8af677",
+        "git_blob_oid": "b0344f660a85989c0053d47e410a833db5f3a068",
+        "matches_main": true,
+        "transparent_master": true
+      },
+      {
+        "source_path": "apps/web/public/brand/dd-icon-white.svg",
+        "variant": "white",
+        "asset_kind": "symbol",
+        "width": 651,
+        "height": 424,
+        "view_box": "0 0 651 424",
+        "sha256": "73fe7172368307e6395e798671a64f47d28464282d8eb9b6d096f08f763aca21",
+        "git_blob_oid": "72a391fe99e8f25969330599d0662b544cec6d96",
+        "matches_main": true,
+        "transparent_master": true
+      },
+      {
+        "source_path": "apps/web/public/brand/dealersdrive-wordmark-black.svg",
+        "variant": "black",
+        "asset_kind": "wordmark",
+        "width": 1092,
+        "height": 145,
+        "view_box": "0 0 1092 145",
+        "sha256": "06da86d1e1fbb1bc26394aca2c3906274115cb0546d53e9bd0d4e666ec2b459c",
+        "git_blob_oid": "b10ecd1fa4bb2da8c11f48ae8219944a1793271b",
+        "matches_main": true,
+        "transparent_master": true
+      },
+      {
+        "source_path": "apps/web/public/brand/dealersdrive-wordmark-white.svg",
+        "variant": "white",
+        "asset_kind": "wordmark",
+        "width": 1092,
+        "height": 145,
+        "view_box": "0 0 1092 145",
+        "sha256": "6e88752dec4aee0dac09cabcfa18da2678d2cc4be3b984ceb1ba45158cf7ffe3",
+        "git_blob_oid": "1604b1de47cc5e04ef4d156144bc20d9aee8c492",
+        "matches_main": true,
+        "transparent_master": true
+      }
+    ],
+    "additional_native_branding_dependency_required": false,
+    "inventory": "docs/mobile/branding-assets.md"
+  }
 }
