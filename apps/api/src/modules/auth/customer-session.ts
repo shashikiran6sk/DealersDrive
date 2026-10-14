@@ -1,3 +1,5 @@
+import { env } from '../../config/env.js';
+import { allowsCustomerBearer, readCustomerBearer } from './native-customer-token.js';
 import type { Request } from 'express';
 
 import { isSeatSuspended } from './roles.js';
@@ -9,7 +11,16 @@ export type CustomerResolver = (req: Request) => Promise<CustomerPrincipal | nul
 
 export function createCustomerResolver(sessions: SessionService): CustomerResolver {
   return async function resolveCustomer(req) {
-    const session = await sessions.resolvePerson(readSessionToken(req));
+    const authorization = req.get('authorization');
+    if (
+      authorization !== undefined &&
+      (!env.NATIVE_CUSTOMER_AUTH_ENABLED || !allowsCustomerBearer(req))
+    )
+      return null;
+    const session =
+      authorization === undefined
+        ? await sessions.resolvePerson(readSessionToken(req))
+        : await sessions.resolve(readCustomerBearer(req), 'CUSTOMER');
     const user = session?.user;
 
     if (!session || user?.status !== 'ACTIVE') return null;

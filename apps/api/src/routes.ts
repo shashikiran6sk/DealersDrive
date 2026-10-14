@@ -1,3 +1,6 @@
+import { createNativeAuthRouter } from './modules/auth/native-auth.routes.js';
+import { createLegalPublication } from './modules/legal/legal-publication.js';
+import { getPublication } from './modules/legal/routes/get-publication.js';
 import {
   createPublicServiceLocationsRouter,
   createAdminServiceLocationsRouter,
@@ -61,6 +64,18 @@ export function createRoutes(container: Container): Router {
 
   const v1 = Router();
   const legal = createLegalService(container.prisma);
+  getPublication(v1, createLegalPublication(container.prisma));
+  v1.use(
+    '/auth/native/customer',
+    createNativeAuthRouter(
+      {
+        service: container.nativeAuth,
+        sessions: container.sessionStore,
+        customers: container.customers,
+      },
+      container.guards.requireCustomer,
+    ),
+  );
   v1.use('/legal/account', container.guards.requireSignedIn, createLegalRouter(legal));
   v1.use('/legal/customer', container.guards.requireCustomer, createLegalRouter(legal));
   v1.use('/legal/dealer', container.guards.requireDealer, createLegalRouter(legal, true));

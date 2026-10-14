@@ -1,3 +1,4 @@
+import { AgreementAcceptance } from './legal-inputs.js';
 import { z } from 'zod';
 
 import { Uuid } from './common.js';
@@ -26,16 +27,7 @@ export const CERTIFICATION_NOTICE_VERSION = LEGAL_NOTICES_V2.certification.versi
 export const ENQUIRY_NOTICE = LEGAL_NOTICES_V2.enquiry.text;
 export const LISTING_CERTIFICATION = LEGAL_NOTICES_V2.certification.text;
 
-export const AgreementAcceptance = z
-  .object({
-    version: z.string().min(1).max(40),
-    accepted: z.literal(true),
-    privacyAcknowledged: z.literal(true),
-    privacyVersion: z.string().min(1).max(40).optional(),
-  })
-  .strict();
-export type AgreementAcceptance = z.infer<typeof AgreementAcceptance>;
-
+export { AgreementAcceptance } from './legal-inputs.js';
 export const DealerAcceptanceInput = AgreementAcceptance.extend({
   authorityConfirmed: z.literal(true),
 }).strict();
