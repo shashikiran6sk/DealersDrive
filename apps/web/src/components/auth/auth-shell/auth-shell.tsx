@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { BrandLogo } from '@/components/brand-logo';
+import { BrandLockup } from '@/components/brand-logo';
 import { cn } from '@/lib/cn';
 
 import { AUTH_SHELL_TEXT } from './auth-shell.constants';
@@ -22,10 +22,12 @@ export function AuthShell({
       className={cn('mx-auto w-full max-w-[560px] px-5 pb-[70px] pt-[40px] sm:px-8', className)}
     >
       <div className="mb-[30px] flex flex-wrap items-center gap-x-[10px] gap-y-2">
-        <BrandLogo />
-        <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
-          {eyebrow}
-        </span>
+        <BrandLockup />
+        {eyebrow.replace(/^Dealers-Drive\s*/, '') ? (
+          <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+            {eyebrow.replace(/^Dealers-Drive\s*/, '')}
+          </span>
+        ) : null}
         <Link href="/" className="ml-auto text-[13px] font-bold text-(--color-ink) hover:underline">
           {AUTH_SHELL_TEXT.backToMarketplace}
         </Link>

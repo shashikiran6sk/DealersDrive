@@ -604,7 +604,7 @@ function shell(title: string, body: string): string {
       'style="width:100%;max-width:600px;background:#ffffff;border:1px solid #e3e6ea;">',
     '<tr><td style="padding:26px 28px 8px;font-family:-apple-system,BlinkMacSystemFont,' +
       "'Segoe UI',Roboto,Helvetica,Arial,sans-serif;\">",
-    '<div style="font-size:15px;font-weight:700;color:#0d1017;margin:0 0 20px;">Dealers-Drive</div>',
+    `<div style="margin:0 0 20px;"><img src="${escape(env.WEB_BASE_URL)}/brand/dd-icon-black.png" width="37" height="24" alt="" style="display:inline-block;vertical-align:middle;margin-right:10px;"><img src="${escape(env.WEB_BASE_URL)}/brand/dealersdrive-wordmark-black.png" width="136" height="18" alt="DealersDrive" style="display:inline-block;vertical-align:middle;"></div>`,
     body,
     '</td></tr>',
     '<tr><td style="padding:18px 28px 26px;border-top:1px solid #e3e6ea;' +

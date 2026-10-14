@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { BrandLogo } from '@/components/brand-logo';
+import { BrandLockup, BrandLogo, BrandWordmark } from '@/components/brand-logo';
 
 const meta = {
   title: 'Primitives/BrandLogo',
@@ -33,6 +33,24 @@ export const Surfaces: Story = {
       {['#ffffff', '#fbfbfa', '#f7f7f5', '#0c0c0b', '#000000'].map((background, index) => (
         <div key={background} style={{ background, padding: 24 }}>
           <BrandLogo variant={index < 3 ? 'light' : 'dark'} size={96} />
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+export const Identity: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-4">
+      {(['light', 'dark'] as const).map((variant) => (
+        <div
+          key={variant}
+          className="flex flex-col items-start gap-8 p-8"
+          style={{ background: variant === 'light' ? '#ffffff' : '#000000' }}
+        >
+          <BrandLogo variant={variant} size={96} />
+          <BrandWordmark variant={variant} className="w-[300px]" />
+          <BrandLockup variant={variant} />
         </div>
       ))}
     </div>
