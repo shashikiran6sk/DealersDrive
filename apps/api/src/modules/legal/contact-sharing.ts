@@ -83,6 +83,17 @@ export async function grantForEnquiry(
         'LEGAL_NOT_ACTIVE',
         'Sharing collection has changed. Refresh before continuing.',
       );
+    await lockSharing(tx, customerId, dealerId);
+    const current = await effectiveGrant(tx, customerId, dealerId);
+    if (current) return current;
+    const history = await tx.contactSharingEvent.count({
+      where: { customerId: { in: await accountIds(tx, customerId) }, dealerId },
+    });
+    if (history > 0)
+      throw new DomainError(
+        'ENQUIRY_PERMISSION_REQUIRED',
+        'A fresh sharing permission is required. Permission collection is unavailable for this deployment.',
+      );
     return null;
   }
   if (recipientId !== dealerId)

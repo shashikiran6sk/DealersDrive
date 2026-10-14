@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 
-import { LEGAL_VERSION, UpdateVehicleInput } from '@dealers-drive/contracts';
+import { LEGAL_VERSION, PRIVACY_VERSION, UpdateVehicleInput } from '@dealers-drive/contracts';
 
 import { createAuthHarness, createFakeGoogle } from './auth-harness.js';
 import { COMPLETE_VEHICLE } from './marketplace-fixtures.js';
@@ -19,7 +19,12 @@ if (
 const h = await createAuthHarness(createFakeGoogle());
 const server = h.app.listen(43999, '127.0.0.1');
 let sequence = Date.now() % 8000;
-const agreement = { version: LEGAL_VERSION, accepted: true, privacyAcknowledged: true };
+const agreement = {
+  version: LEGAL_VERSION,
+  accepted: true,
+  privacyAcknowledged: true,
+  privacyVersion: PRIVACY_VERSION,
+};
 const phone = () => `98776${String(10000 + ++sequence)}`;
 async function dealer(name: string) {
   const stamp = randomUUID();

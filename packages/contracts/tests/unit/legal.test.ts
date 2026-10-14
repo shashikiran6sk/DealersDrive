@@ -37,7 +37,7 @@ describe('immutable legal snapshots', () => {
       expect(document.reviewed).toBe(false);
       const currentFingerprints = {
         terms: '5b515afb339c5ad0cad63b9d1a007eb71521c3b721f51e12ac628d6d1e3d637d',
-        privacy: '36a5e8533b44470bf0248c56e3eef678b682e553d57fb10bc4905e1486838335',
+        privacy: 'c091a3e4d02e14acad8338dfaa0fa65c774344636755b0dc2ac30785d96dc914',
       };
       expect(createHash('sha256').update(JSON.stringify(document)).digest('hex')).toBe(
         currentFingerprints[document.id],

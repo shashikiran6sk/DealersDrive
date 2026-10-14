@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { LegalProvider } from '@/features/legal/legal-provider';
 import { legalEnforcementEnabled } from '@/lib/legal-release';
-import { Analytics } from '@vercel/analytics/next';
+import { PublicAnalytics } from '@/features/analytics/public-analytics';
 
 import { AUTH_HINT_SCRIPT } from '@/lib/auth-hint';
 import { serverConfig } from '@/lib/config';
@@ -34,8 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         ) : null}
         <LegalProvider enabled={legalEnforcementEnabled()}>{children}</LegalProvider>
-        {children}
-        <Analytics />
+        <PublicAnalytics />
       </body>
     </html>
   );

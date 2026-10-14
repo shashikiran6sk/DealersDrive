@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import { LEGAL_VERSION, LEGAL_DOCUMENTS } from '@dealers-drive/contracts';
+import { LEGAL_VERSION, PRIVACY_VERSION, LEGAL_DOCUMENTS } from '@dealers-drive/contracts';
 import { describe, expect, it, vi } from 'vitest';
 import type * as envModule from '../../../../src/config/env.js';
 import {
@@ -31,7 +31,12 @@ vi.mock('../../../../src/config/env.js', async (original) => {
     },
   };
 });
-const input = { version: LEGAL_VERSION, accepted: true, privacyAcknowledged: true } as const;
+const input = {
+  version: LEGAL_VERSION,
+  accepted: true,
+  privacyAcknowledged: true,
+  privacyVersion: PRIVACY_VERSION,
+} as const;
 function database(role = 'OWNER', status = 'ACTIVE', count = 0) {
   const createMany = vi.fn().mockResolvedValue({ count: 1 });
   const counts = vi.fn().mockResolvedValue(count);
@@ -53,6 +58,9 @@ describe('legal evidence', () => {
     expect(() => requireCurrentAcceptance(undefined)).toThrow(/Read and accept/);
     expect(() => requireCurrentAcceptance({ ...input, version: 'old' })).toThrow(/changed/);
     expect(() => requireCurrentVersion(undefined)).toThrow(/changed/);
+    expect(() => requireCurrentAcceptance({ ...input, privacyVersion: 'old' })).toThrow(
+      /Privacy Policy has changed/,
+    );
     expect(() => requireCurrentAcceptance(input)).not.toThrow();
   });
   it('does not fabricate acceptance while disabled and refuses contradictory rollout payloads', async () => {

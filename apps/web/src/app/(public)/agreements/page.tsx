@@ -46,17 +46,17 @@ export default async function AgreementsPage({
         </p>
       ) : (
         <>
-          {account.status.termsRequired &&
+          {(account.status.termsRequired || account.status.privacyRequired) &&
           !(account.status.mayBindDealer && account.status.dealerRequired) ? (
             <section className="mt-7">
               <h2 className="mb-4 text-[20px] font-bold">Your account</h2>
               <AgreementForm kind="account" />
             </section>
-          ) : (
+          ) : !account.status.termsRequired && !account.status.privacyRequired ? (
             <p className="mt-6">
               You have accepted the current Terms and acknowledged the Privacy Policy.
             </p>
-          )}
+          ) : null}
           {account.base.endsWith('/dealer') && account.status.dealerRequired ? (
             <section className="mt-7">
               <h2 className="mb-4 text-[20px] font-bold">Your active dealership</h2>

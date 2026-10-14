@@ -1,6 +1,6 @@
 'use client';
 
-import { LEGAL_VERSION } from '@dealers-drive/contracts';
+import { LEGAL_VERSION, PRIVACY_VERSION } from '@dealers-drive/contracts';
 import { LegalCheck } from '@/features/legal/legal-check';
 import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useState } from 'react';
@@ -41,6 +41,7 @@ export function CustomerNameStep({ phoneDisplay, onCreated, onRestart }: Custome
           const result = legal
             ? await customerSignUpAction(name, {
                 version: LEGAL_VERSION,
+                privacyVersion: PRIVACY_VERSION,
                 accepted: true,
                 privacyAcknowledged: true,
               })

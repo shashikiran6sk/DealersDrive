@@ -17,6 +17,7 @@ import {
   accountIds,
   hasDealerAgreement,
   hasTerms,
+  hasPrivacyAcknowledgment,
   legalEnabled,
 } from './legal.evidence.js';
 
@@ -51,6 +52,7 @@ export function createLegalService(prisma: PrismaClient) {
         enabled: legalEnabled(),
         version: LEGAL_VERSION,
         termsRequired: !(await hasTerms(prisma, principal.userId)),
+        privacyRequired: !(await hasPrivacyAcknowledgment(prisma, principal.userId)),
         dealerRequired: dealer ? !(await hasDealerAgreement(prisma, dealer.dealerId)) : false,
         mayBindDealer: dealer?.role === 'OWNER',
         dealerSubmissionRequired: workspace?.status === 'DRAFT',

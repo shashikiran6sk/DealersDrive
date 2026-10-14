@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto';
 
 import {
+  CERTIFICATION_NOTICE_VERSION,
   ENQUIRY_NOTICE,
   ENQUIRY_NOTICE_VERSION,
   LEGAL_VERSION,
   LEGAL_DOCUMENTS,
+  PRIVACY_VERSION,
+  currentLegalDocument,
   LISTING_CERTIFICATION,
   legalDocumentSnapshot,
   type AgreementAcceptance,
@@ -31,9 +34,8 @@ export function documentDigest(documentId: LegalDocumentId | 'enquiry' | 'certif
     documentId === 'enquiry'
       ? { version: ENQUIRY_NOTICE_VERSION, text: ENQUIRY_NOTICE }
       : documentId === 'certification'
-        ? { version: LEGAL_VERSION, text: LISTING_CERTIFICATION }
-        : (legalDocumentSnapshot(documentId, LEGAL_VERSION) ??
-          legalDocumentSnapshot(documentId, '1.0-draft.1'));
+        ? { version: CERTIFICATION_NOTICE_VERSION, text: LISTING_CERTIFICATION }
+        : (currentLegalDocument(documentId) ?? legalDocumentSnapshot(documentId, '1.0-draft.1'));
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
 }
 
@@ -53,9 +55,17 @@ export function requireCurrentAcceptance(input: AgreementAcceptance | undefined)
     );
   }
   requireCurrentVersion(input.version);
+  if (input.privacyVersion !== PRIVACY_VERSION)
+    throw new DomainError(
+      'PRIVACY_VERSION_CHANGED',
+      'The Privacy Policy has changed. Review the current notice before acknowledging it.',
+    );
 }
 
-export function requireCurrentVersion(version: string | undefined): void {
+export function requireCurrentVersion(
+  version: string | undefined,
+  expectedVersion: string = LEGAL_VERSION,
+): void {
   if (!legalEnabled()) {
     if (version !== undefined)
       throw new DomainError(
@@ -64,7 +74,7 @@ export function requireCurrentVersion(version: string | undefined): void {
       );
     return;
   }
-  if (version !== LEGAL_VERSION) {
+  if (version !== expectedVersion) {
     throw new DomainError(
       'AGREEMENT_VERSION_CHANGED',
       'The document has changed. Open the current version and make your choice again.',
@@ -147,7 +157,14 @@ export interface EvidenceInput {
 export async function recordEvidence(db: LegalDb, input: EvidenceInput): Promise<void> {
   if (!legalEnabled() && input.action !== 'WITHDRAW') return;
   const digest = documentDigest(input.documentId);
-  const version = input.documentId === 'enquiry' ? ENQUIRY_NOTICE_VERSION : LEGAL_VERSION;
+  const version =
+    input.documentId === 'privacy'
+      ? PRIVACY_VERSION
+      : input.documentId === 'enquiry'
+        ? ENQUIRY_NOTICE_VERSION
+        : input.documentId === 'certification'
+          ? CERTIFICATION_NOTICE_VERSION
+          : LEGAL_VERSION;
   const eventKey = createHash('sha256')
     .update(
       JSON.stringify([
@@ -210,7 +227,10 @@ export async function acceptDealer(
   dealerId: string,
   input: DealerAcceptanceInput | undefined,
 ): Promise<void> {
-  if (!legalEnabled()) return;
+  if (!legalEnabled()) {
+    requireCurrentAcceptance(input);
+    return;
+  }
   requireCurrentAcceptance(input);
   if (!input?.authorityConfirmed)
     throw new DomainError('AUTHORITY_REQUIRED', 'Confirm your authority to bind this dealership.');
@@ -259,7 +279,7 @@ export async function requireListingCertification(
       subjectType: 'LISTING',
       subjectId: listing.id,
       documentId: 'certification',
-      version: LEGAL_VERSION,
+      version: CERTIFICATION_NOTICE_VERSION,
       digest: documentDigest('certification'),
       action: 'CERTIFY',
       context: {
@@ -298,4 +318,20 @@ async function requirePublishedPolicies(db: LegalDb): Promise<void> {
       );
     }
   }
+}
+
+export async function hasPrivacyAcknowledgment(db: LegalDb, userId: string): Promise<boolean> {
+  if (!legalEnabled()) return true;
+  return (
+    (await db.legalEvent.count({
+      where: {
+        subjectType: 'USER',
+        subjectId: { in: await accountIds(db, userId) },
+        documentId: 'privacy',
+        version: PRIVACY_VERSION,
+        digest: documentDigest('privacy'),
+        action: 'ACKNOWLEDGE',
+      },
+    })) > 0
+  );
 }

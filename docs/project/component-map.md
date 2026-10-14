@@ -1885,3 +1885,7 @@ image), `PortfolioManager`, the admin portfolio queue. **Tests**
 `components/dealers/portfolio-page.test.tsx`. **Sandbox** `Primitives/PhotoGallery`
 (`WideHero`, `WithCaptions`, `OnePhoto`, `NoPhotos`, `EmptyWideHero`, `Twenty`,
 `Portrait`, `Phone`).
+
+### PublicAnalytics privacy adapter
+
+`features/analytics/public-analytics/public-analytics.tsx`, consumed only by RootLayout, wraps the existing #309 SDK. It has no visible UI or props; public/privileged path states live in `lib/public-analytics.ts` and its privacy boundary tests. A sandbox infrastructure story records its invisible behavior with public/private mocked paths. It strips URL query/fragment fields and suppresses custom/private events. It does not add a provider or represent legal approval of analytics processing.

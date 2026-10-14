@@ -1,6 +1,6 @@
 import {
   LEGAL_DOCUMENTS,
-  LEGAL_VERSION,
+  currentLegalDocument,
   legalDocumentSnapshot,
   type LegalDocumentId,
 } from '@dealers-drive/contracts';
@@ -11,7 +11,7 @@ function effectiveDateLabel(date: string | null): string {
 export function LegalDocument({
   documentId,
   archived = false,
-  version = LEGAL_VERSION,
+  version,
   controls,
 }: {
   documentId: LegalDocumentId;
@@ -19,7 +19,9 @@ export function LegalDocument({
   version?: string;
   controls?: React.ReactNode;
 }) {
-  const document = legalDocumentSnapshot(documentId, version);
+  const document = version
+    ? legalDocumentSnapshot(documentId, version)
+    : currentLegalDocument(documentId);
   if (!document) throw new Error('The requested document snapshot is unavailable.');
   return (
     <article className="mx-auto max-w-[1120px] px-4 pt-8 pb-16 sm:px-6">

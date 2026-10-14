@@ -1,7 +1,9 @@
 import { randomUUID, createHash } from 'node:crypto';
 
 import {
+  ENQUIRY_NOTICE_VERSION,
   LEGAL_VERSION,
+  PRIVACY_VERSION,
   LegalDocumentId,
   legalDocumentSnapshot,
   MANUAL_ACTIVATION_DISCLAIMER_VERSION,
@@ -17,17 +19,32 @@ import { env } from '../src/config/env.js';
 import type * as envModule from '../src/config/env.js';
 import { documentDigest } from '../src/modules/legal/legal.evidence.js';
 
+const legalSetting = vi.hoisted(() => ({ enabled: true }));
+
 vi.mock('../src/config/env.js', async (original) => {
   const actual = await original<typeof envModule>();
-  return { ...actual, env: { ...actual.env, LEGAL_ENFORCEMENT_ENABLED: true } };
+  return {
+    ...actual,
+    env: {
+      ...actual.env,
+      get LEGAL_ENFORCEMENT_ENABLED() {
+        return legalSetting.enabled;
+      },
+    },
+  };
 });
 
 let h: AuthHarness;
 let sequence = 0;
-const accountAgreement = { version: LEGAL_VERSION, accepted: true, privacyAcknowledged: true };
+const accountAgreement = {
+  version: LEGAL_VERSION,
+  accepted: true,
+  privacyAcknowledged: true,
+  privacyVersion: PRIVACY_VERSION,
+};
 const agreement = { ...accountAgreement, authorityConfirmed: true };
 const certification = { version: LEGAL_VERSION, certified: true };
-const sharing = { version: LEGAL_VERSION, granted: true };
+const sharing = { version: ENQUIRY_NOTICE_VERSION, granted: true };
 
 beforeAll(async () => {
   h = await createAuthHarness(createFakeGoogle());
@@ -147,7 +164,11 @@ describe('explicit choices, distinct receipts and login', () => {
       ['terms', 'ACCEPT'],
     ]);
     expect(
-      receipts.every((event) => event.version === LEGAL_VERSION && event.digest.length === 64),
+      receipts.every(
+        (event) =>
+          event.version === (event.documentId === 'privacy' ? PRIVACY_VERSION : LEGAL_VERSION) &&
+          event.digest.length === 64,
+      ),
     ).toBe(true);
     expect(Object.keys(receipts[0] ?? {})).not.toEqual(
       expect.arrayContaining(['ip', 'userAgent', 'phone', 'email', 'token']),
@@ -511,6 +532,13 @@ describe('dealership-scoped permission and immutable disclosure evidence', () =>
     const permissions = await buyer.agent.get('/v1/enquiries/sharing-permissions').expect(200);
     expect(permissions.headers['cache-control']).toBe('no-store');
     expect(permissions.body.data).toHaveLength(2);
+    expect(ENQUIRY_NOTICE_VERSION).not.toBe(PRIVACY_VERSION);
+    expect(
+      permissions.body.data.every(
+        (permission: { noticeVersion: string }) =>
+          permission.noticeVersion === ENQUIRY_NOTICE_VERSION,
+      ),
+    ).toBe(true);
     expect(
       await h.prisma.legalEvent.count({
         where: { subjectId: next.body.id, context: `sharing-grant:${grant.id}` },
@@ -782,7 +810,7 @@ describe('final owner acceptance and activation gates', () => {
 describe('reviewed publication metadata', () => {
   it('registers exact draft snapshots and never backfills consolidated acceptance', async () => {
     const versions = await h.prisma.legalPolicyVersion.findMany();
-    expect(versions).toHaveLength(8);
+    expect(versions).toHaveLength(9);
     for (const row of versions) {
       const id = LegalDocumentId.parse(row.documentId);
       const snapshot = legalDocumentSnapshot(id, row.version);
@@ -893,5 +921,66 @@ describe('verified owner account in assisted onboarding', () => {
     expect(acceptance.actorId).toBe(identity.userId);
     await admin.post(`/v1/admin/dealers/${id}/activation-override`).send(override).expect(200);
     expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id } })).status).toBe('ACTIVE');
+  });
+});
+
+describe('independent privacy notice version', () => {
+  it('preserves an earlier acknowledgment and requires an explicit current notice acknowledgment', async () => {
+    const draft = await pending();
+    const created = await draft.agent.post('/v1/auth/onboarding').send(draft.body).expect(201);
+    const dealerId = created.body.dealer.id as string;
+    const member = await h.prisma.dealerMember.findFirstOrThrow({ where: { dealerId } });
+    const oldSnapshot = legalDocumentSnapshot('privacy', '2.0-draft.1');
+    const historical = await h.prisma.legalEvent.create({
+      data: {
+        actorId: member.userId,
+        subjectType: 'USER',
+        subjectId: member.userId,
+        documentId: 'privacy',
+        version: '2.0-draft.1',
+        digest: createHash('sha256').update(JSON.stringify(oldSnapshot)).digest('hex'),
+        action: 'ACKNOWLEDGE',
+        context: 'historical-privacy-fixture',
+        eventKey: randomUUID(),
+      },
+    });
+    expect(
+      (await draft.agent.get('/v1/legal/dealer/status').expect(200)).body.privacyRequired,
+    ).toBe(true);
+    await draft.agent
+      .post('/v1/legal/dealer/terms')
+      .send({ ...accountAgreement, privacyVersion: '2.0-draft.1' })
+      .expect(422);
+    await draft.agent.post('/v1/legal/dealer/terms').send(accountAgreement).expect(200);
+    expect(
+      (await draft.agent.get('/v1/legal/dealer/status').expect(200)).body.privacyRequired,
+    ).toBe(false);
+    expect(await h.prisma.legalEvent.findUnique({ where: { id: historical.id } })).toEqual(
+      historical,
+    );
+  });
+});
+
+describe('enforcement rollback keeps known permission boundaries', () => {
+  it('does not let a disabled collection flag bypass an earlier withdrawal', async () => {
+    const owner = await dealer();
+    const buyer = await customer();
+    const first = await publicListing(owner.id);
+    const another = await publicListing(owner.id);
+    await buyer.agent
+      .post('/v1/enquiries')
+      .send({ listingSlug: first.slug, recipientId: owner.id, sharing })
+      .expect(201);
+    const grant = await h.prisma.contactSharingEvent.findFirstOrThrow({
+      where: { customerId: buyer.id, action: 'GRANT' },
+    });
+    await buyer.agent.post(`/v1/enquiries/sharing-permissions/${grant.id}/withdraw`).expect(200);
+    legalSetting.enabled = false;
+    try {
+      await buyer.agent.post('/v1/enquiries').send({ listingSlug: another.slug }).expect(422);
+      expect(await h.prisma.enquiry.count({ where: { listingId: another.id } })).toBe(0);
+    } finally {
+      legalSetting.enabled = true;
+    }
   });
 });

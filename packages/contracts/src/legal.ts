@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { Uuid } from './common.js';
 import { LEGAL_NOTICES_V1, LEGAL_DOCUMENTS_V1 } from './legal-documents/v1.js';
+import { LEGAL_PRIVACY_V3 } from './legal-documents/v3.js';
 import { LEGAL_DOCUMENTS_V2, LEGAL_NOTICES_V2 } from './legal-documents/v2.js';
 
 export { LEGAL_DOCUMENTS_V1 } from './legal-documents/v1.js';
@@ -17,9 +18,11 @@ export const LegalDocumentId = z.enum([
 ]);
 export type LegalDocumentId = z.infer<typeof LegalDocumentId>;
 
-export const LEGAL_DOCUMENTS = LEGAL_DOCUMENTS_V2;
-export const LEGAL_VERSION = '2.0-draft.1';
-export const ENQUIRY_NOTICE_VERSION = '2.0-draft.1';
+export const LEGAL_DOCUMENTS = { terms: LEGAL_DOCUMENTS_V2.terms, privacy: LEGAL_PRIVACY_V3 };
+export const PRIVACY_VERSION = LEGAL_DOCUMENTS.privacy.version;
+export const LEGAL_VERSION = LEGAL_DOCUMENTS.terms.version;
+export const ENQUIRY_NOTICE_VERSION = LEGAL_NOTICES_V2.enquiry.version;
+export const CERTIFICATION_NOTICE_VERSION = LEGAL_NOTICES_V2.certification.version;
 export const ENQUIRY_NOTICE = LEGAL_NOTICES_V2.enquiry.text;
 export const LISTING_CERTIFICATION = LEGAL_NOTICES_V2.certification.text;
 
@@ -28,6 +31,7 @@ export const AgreementAcceptance = z
     version: z.string().min(1).max(40),
     accepted: z.literal(true),
     privacyAcknowledged: z.literal(true),
+    privacyVersion: z.string().min(1).max(40).optional(),
   })
   .strict();
 export type AgreementAcceptance = z.infer<typeof AgreementAcceptance>;
@@ -76,6 +80,7 @@ export const LegalStatus = z.object({
   enabled: z.boolean(),
   version: z.string(),
   termsRequired: z.boolean(),
+  privacyRequired: z.boolean(),
   dealerRequired: z.boolean(),
   mayBindDealer: z.boolean(),
   dealerSubmissionRequired: z.boolean(),
@@ -91,9 +96,17 @@ export const LegalEvidenceQuery = z
   .strict();
 export type LegalEvidenceQuery = z.infer<typeof LegalEvidenceQuery>;
 
-export const LEGAL_DOCUMENT_ARCHIVE = [LEGAL_DOCUMENTS_V1, LEGAL_DOCUMENTS_V2] as const;
+export const LEGAL_DOCUMENT_ARCHIVE = [
+  LEGAL_DOCUMENTS_V1,
+  LEGAL_DOCUMENTS_V2,
+  { privacy: LEGAL_PRIVACY_V3 },
+] as const;
 export function legalDocumentSnapshot(id: LegalDocumentId, version: string) {
-  const snapshots = [...Object.values(LEGAL_DOCUMENTS_V1), ...Object.values(LEGAL_DOCUMENTS_V2)];
+  const snapshots = [
+    ...Object.values(LEGAL_DOCUMENTS_V1),
+    ...Object.values(LEGAL_DOCUMENTS_V2),
+    LEGAL_PRIVACY_V3,
+  ];
   return snapshots.find((document) => document.id === id && document.version === version);
 }
 
@@ -105,6 +118,8 @@ export function legalNoticeSnapshot(id: 'enquiry' | 'certification', version: st
 export function legalReleaseReady(): boolean {
   return (
     LEGAL_RELEASE_APPROVED &&
+    !ENQUIRY_NOTICE_VERSION.includes('draft') &&
+    !CERTIFICATION_NOTICE_VERSION.includes('draft') &&
     Object.values(LEGAL_DOCUMENTS).every(
       (document) =>
         document.reviewed &&
@@ -135,3 +150,7 @@ export const SharingPermissions = z.object({
     }),
   ),
 });
+
+export function currentLegalDocument(id: LegalDocumentId) {
+  return id === 'terms' || id === 'privacy' ? LEGAL_DOCUMENTS[id] : undefined;
+}

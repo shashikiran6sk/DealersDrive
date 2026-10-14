@@ -702,6 +702,11 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       actor: SubmissionActor = { type: 'DEALER', id: null },
       input: DealerSubmitInput = {},
     ): Promise<DealerSubmitResponse> {
+      if (!legalEnabled() && input.agreement)
+        throw new DomainError(
+          'LEGAL_NOT_ACTIVE',
+          'Agreement collection is not active. Refresh before continuing.',
+        );
       if (actor.type !== 'DEALER' && input.agreement)
         throw new ForbiddenError('Only the authenticated dealership owner may accept its Terms.');
       const dealer = await requireDealer(dealerId);

@@ -21,6 +21,21 @@ export interface RegistryEntry {
 
 export const registry: RegistryEntry[] = [
   {
+    id: 'public-analytics',
+    name: 'PublicAnalytics',
+    source: 'apps/web/src/features/analytics/public-analytics/public-analytics.tsx',
+    category: 'Layout',
+    ownership: 'Shared',
+    purpose:
+      'Invisible adapter for the existing SDK; suppresses private routes and redacts URL query/fragment.',
+    aliases: ['AnalyticsPrivacyBoundary'],
+    features: ['Legal consolidation', '#309'],
+    props: [],
+    states: ['public route', 'private route'],
+    reusable: false,
+    storyId: 'infrastructure-publicanalytics',
+  },
+  {
     id: 'mobile-nav',
     name: 'MobileNav',
     source: 'apps/web/src/components/layout/mobile-nav/mobile-nav.tsx',

@@ -9,7 +9,7 @@ import {
 } from '../legal/legal.facade.js';
 import type { SubmitVehicleInput } from '@dealers-drive/contracts';
 import {
-  LEGAL_VERSION,
+  CERTIFICATION_NOTICE_VERSION,
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
@@ -409,7 +409,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
               'CERTIFICATION_REQUIRED',
               'Certify your authority and the listing information before submission.',
             );
-          requireCurrentVersion(input.certification?.version);
+          requireCurrentVersion(input.certification?.version, CERTIFICATION_NOTICE_VERSION);
           const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
           assertTransition(listing.status, event, 'DEALER');
 
@@ -596,7 +596,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
             'CERTIFICATION_REQUIRED',
             'Confirm the listing declaration before continuing.',
           );
-        requireCurrentVersion(input.certification.version);
+        requireCurrentVersion(input.certification.version, CERTIFICATION_NOTICE_VERSION);
         const refusal = incomplete(vehicle);
         if (refusal) throw refusal;
         const context = certificationContext(vehicle, listing.submissionCount + 1, true);
@@ -628,7 +628,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
                 subjectType: 'LISTING',
                 subjectId: listing.id,
                 documentId: 'certification',
-                version: LEGAL_VERSION,
+                version: CERTIFICATION_NOTICE_VERSION,
                 digest: documentDigest('certification'),
                 action: 'CERTIFY',
                 context: certificationContext(vehicle, listing.submissionCount + 1, true),

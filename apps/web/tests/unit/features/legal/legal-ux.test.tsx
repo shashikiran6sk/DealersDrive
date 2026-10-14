@@ -1,4 +1,4 @@
-import { LEGAL_DOCUMENTS, LEGAL_VERSION } from '@dealers-drive/contracts';
+import { LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_VERSION } from '@dealers-drive/contracts';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -120,6 +120,7 @@ describe('explicit accessible choices', () => {
     await waitFor(() => expect(created).toHaveBeenCalledOnce());
     expect(customerSignUpAction).toHaveBeenCalledWith('Fixture Buyer', {
       version: LEGAL_VERSION,
+      privacyVersion: PRIVACY_VERSION,
       accepted: true,
       privacyAcknowledged: true,
     });
@@ -202,5 +203,24 @@ describe('permission reuse UX', () => {
       </LegalProvider>,
     );
     expect(screen.getByRole('checkbox', { name: /Another dealership/ })).not.toBeChecked();
+  });
+});
+
+describe('listing notice version', () => {
+  it('renders the separate vehicle declaration with its retrievable notice version', () => {
+    const { container } = render(
+      <LegalProvider enabled>
+        <LegalCheck kind="certification" />
+      </LegalProvider>,
+    );
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    expect(container.querySelector('input[name="legalVersion"]')).toHaveAttribute(
+      'value',
+      LEGAL_VERSION,
+    );
+    expect(screen.getByRole('link', { name: 'Terms & Conditions' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
   });
 });

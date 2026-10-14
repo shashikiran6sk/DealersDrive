@@ -1,6 +1,11 @@
 'use client';
 
-import { ENQUIRY_NOTICE_VERSION, LEGAL_VERSION } from '@dealers-drive/contracts';
+import {
+  CERTIFICATION_NOTICE_VERSION,
+  ENQUIRY_NOTICE_VERSION,
+  LEGAL_VERSION,
+  PRIVACY_VERSION,
+} from '@dealers-drive/contracts';
 import { useId, useState } from 'react';
 
 import { useLegalEnabled } from '../legal-provider';
@@ -28,8 +33,15 @@ export function LegalCheck({ kind, dealerName, onCompleteChange }: LegalCheckPro
       <input
         type="hidden"
         name="legalVersion"
-        value={kind === 'enquiry' ? ENQUIRY_NOTICE_VERSION : LEGAL_VERSION}
+        value={
+          kind === 'enquiry'
+            ? ENQUIRY_NOTICE_VERSION
+            : kind === 'certification'
+              ? CERTIFICATION_NOTICE_VERSION
+              : LEGAL_VERSION
+        }
       />
+      <input type="hidden" name="privacyVersion" value={PRIVACY_VERSION} />
       <input
         id={id}
         aria-labelledby={`${id}-label`}
