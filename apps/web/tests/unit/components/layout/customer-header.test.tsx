@@ -167,11 +167,11 @@ describe('the mobile drawer brand', () => {
     if (!(header instanceof HTMLElement)) throw new Error('no drawer header');
     const brand = within(header).getByRole('link', { name: /Dealers-Drive/ });
     expect(brand).toHaveAttribute('href', '/');
-    expect(within(brand).getByRole('img', { name: 'Dealers Drive' })).toHaveAttribute(
+    expect(brand.querySelector('img[src="/brand/dd-icon-black.svg"]')).toHaveAttribute(
       'src',
-      '/brand/dealers-drive-dark.png',
+      '/brand/dd-icon-black.svg',
     );
-    const name = within(brand).getByText('Dealers-Drive');
+    const name = brand.querySelector('img[src="/brand/dealersdrive-wordmark-black.svg"]');
     expect(name).toBeVisible();
     expect(name).not.toHaveClass('max-sm:sr-only');
     expect(name).toHaveClass('truncate');
@@ -249,6 +249,8 @@ describe('the mobile drawer brand', () => {
     const header = screen.getByRole('banner');
     const brand = within(header).getByRole('link', { name: /Dealers-Drive/ });
     expect(brand).toHaveAttribute('href', '/');
-    expect(within(brand).getByText('Dealers-Drive')).toHaveClass('max-sm:sr-only');
+    expect(brand.querySelector('img[src="/brand/dealersdrive-wordmark-black.svg"]')).toHaveClass(
+      'max-sm:sr-only',
+    );
   });
 });

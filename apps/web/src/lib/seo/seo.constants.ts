@@ -12,15 +12,15 @@ export const SITE_DESCRIPTION =
   'Browse used cars from independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership advertising the car.';
 
 export const DEFAULT_SOCIAL_IMAGE = {
-  path: '/og/dealers-drive.png',
+  path: '/og/dealersdrive-v2.png',
   width: 1200,
   height: 630,
   alt: 'Dealers-Drive — used cars from independent dealers',
 } as const;
 
-export const LOGO_PATH = '/brand/dealers-drive-light.png';
+export const LOGO_PATH = '/brand/dealersdrive-organization-v2.png';
 
-export const LOGO_SIZE = 2048;
+export const LOGO_SIZE = 1024;
 
 export const DEFAULT_ORIGIN = 'http://localhost:3000';
 
