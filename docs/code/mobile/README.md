@@ -27,3 +27,7 @@ Native and web retain their compatible runtime/type versions. Next JSX remains p
 ## Saved cars and account agreements
 
 See [saved/account](saved-account.md) for full hydration, confirmed mutations, interruption handling and authoritative policy history.
+
+## Enquiries and dealership sharing
+
+See [enquiries](enquiries.md) for authoritative receiver checks, separate explicit consent, uncertain submission handling, history and withdrawal.

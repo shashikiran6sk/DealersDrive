@@ -9,3 +9,11 @@ export const AgreementAcceptance = z
   })
   .strict();
 export type AgreementAcceptance = z.infer<typeof AgreementAcceptance>;
+
+export const EnquirySharingPermission = z
+  .object({
+    version: z.string().min(1).max(40),
+    granted: z.literal(true),
+  })
+  .strict();
+export type EnquirySharingPermission = z.infer<typeof EnquirySharingPermission>;

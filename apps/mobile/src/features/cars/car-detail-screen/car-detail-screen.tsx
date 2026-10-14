@@ -1,4 +1,5 @@
 import { SaveButton } from '../../../components/save-button';
+import { ENQUIRY_TEXT } from '../../enquiries/enquiries.constants';
 import { useQuery } from '@tanstack/react-query';
 import { titleWithoutYear, VehicleSlugParam } from '@dealers-drive/contracts/public';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -79,6 +80,12 @@ export function CarDetailScreen() {
           ) : null}
         </View>
         <SaveButton slug={car.slug} title={car.title} labelled />
+        {car.availability === 'AVAILABLE' ? (
+          <ActionButton
+            label={ENQUIRY_TEXT.enquire}
+            onPress={() => router.navigate(`/enquire/${encodeURIComponent(car.slug)}`)}
+          />
+        ) : null}
         {car.availability === 'RESERVED' ? (
           <View style={styles.box}>
             <Text accessibilityRole="header" style={styles.heading}>
