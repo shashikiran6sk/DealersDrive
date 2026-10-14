@@ -7,6 +7,7 @@ export interface ActionButtonProps {
   onPress: () => void;
   disabled?: boolean;
   pending?: boolean;
+  variant?: 'primary' | 'secondary' | 'ghost';
 }
 
 export function ActionButton({
@@ -14,6 +15,7 @@ export function ActionButton({
   onPress,
   disabled = false,
   pending = false,
+  variant = 'primary',
 }: ActionButtonProps) {
   const unavailable = disabled || pending;
   return (
@@ -23,10 +25,17 @@ export function ActionButton({
       accessibilityState={{ disabled: unavailable, busy: pending }}
       disabled={unavailable}
       onPress={onPress}
-      style={[styles.button, unavailable && styles.disabled]}
+      style={[
+        styles.button,
+        variant === 'secondary' && styles.secondary,
+        variant === 'ghost' && styles.ghost,
+        unavailable && styles.disabled,
+      ]}
     >
-      {pending ? <ActivityIndicator color={colors.page} /> : null}
-      <Text style={styles.label}>{label}</Text>
+      {pending ? (
+        <ActivityIndicator color={variant === 'primary' ? colors.page : colors.ink} />
+      ) : null}
+      <Text style={[styles.label, variant !== 'primary' && styles.darkLabel]}>{label}</Text>
     </Pressable>
   );
 }
@@ -43,6 +52,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
+  secondary: { backgroundColor: colors.page, borderWidth: 1, borderColor: colors.divider },
+  ghost: { backgroundColor: 'transparent' },
+  darkLabel: { color: colors.ink },
   disabled: { opacity: 0.6 },
   label: {
     color: colors.page,

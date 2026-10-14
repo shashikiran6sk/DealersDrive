@@ -1063,3 +1063,5 @@ export const PublicSitemapResponse = z.object({
   dealers: z.array(SitemapEntry).max(SITEMAP_ENTRY_LIMIT),
 });
 export type PublicSitemapResponse = z.infer<typeof PublicSitemapResponse>;
+
+export { titleWithoutYear } from './vehicle-name.js';
