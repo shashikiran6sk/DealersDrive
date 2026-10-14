@@ -46,6 +46,11 @@
       "types": "./dist/enquiry-client.d.ts",
       "import": "./dist/enquiry-client.js",
       "default": "./dist/enquiry-client.js"
+    },
+    "./support-client": {
+      "types": "./dist/support-client.d.ts",
+      "import": "./dist/support-client.js",
+      "default": "./dist/support-client.js"
     }
   },
   "files": [

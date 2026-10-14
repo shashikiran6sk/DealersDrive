@@ -159,6 +159,30 @@ describe('same customer identity and restricted native bearer', () => {
       .get(`/v1/support/tickets/${CustomerSupportTicket.parse(ticket.body).id}`)
       .set('Authorization', `Bearer ${second.credential.token}`)
       .expect(404);
+    const ownTicketId = CustomerSupportTicket.parse(ticket.body).id;
+    await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Cookie', `dd_session=${first.credential.token}`)
+      .expect(200);
+    await h
+      .agent()
+      .post(`/v1/support/tickets/${ownTicketId}/messages`)
+      .set('Cookie', `dd_session=${first.credential.token}`)
+      .send({ message: 'A reply sent through the website session.' })
+      .expect(201);
+    const nativeConversation = await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Authorization', `Bearer ${first.credential.token}`)
+      .expect(200);
+    expect(CustomerSupportTicket.parse(nativeConversation.body).messages).toHaveLength(1);
+    await h
+      .agent()
+      .post(`/v1/support/tickets/${ownTicketId}/messages`)
+      .set('Authorization', `Bearer ${second.credential.token}`)
+      .send({ message: 'A foreign native reply must be denied.' })
+      .expect(404);
     await h
       .agent()
       .get('/v1/support/tickets/00000000-0000-4000-8000-000000000001')

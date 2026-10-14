@@ -246,6 +246,19 @@ async function moveCustomerHistory(
   });
   await tx.enquiry.updateMany({ where: { contactedById: from }, data: { contactedById: to } });
   await tx.enquiry.updateMany({ where: { closedById: from }, data: { closedById: to } });
+  const requestIds = await tx.supportTicket.findMany({
+    where: { customerId: to, clientRequestId: { not: null } },
+    select: { clientRequestId: true },
+  });
+  await tx.supportTicket.updateMany({
+    where: {
+      customerId: from,
+      clientRequestId: {
+        in: requestIds.flatMap((row) => (row.clientRequestId ? [row.clientRequestId] : [])),
+      },
+    },
+    data: { clientRequestId: null, requestDigest: null },
+  });
   const tickets = await tx.supportTicket.updateMany({
     where: { customerId: from },
     data: { customerId: to },

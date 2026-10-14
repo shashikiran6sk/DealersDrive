@@ -31,3 +31,7 @@ See [saved/account](saved-account.md) for full hydration, confirmed mutations, i
 ## Enquiries and dealership sharing
 
 See [enquiries](enquiries.md) for authoritative receiver checks, separate explicit consent, uncertain submission handling, history and withdrawal.
+
+## Customer support
+
+See [support](support.md) for private conversations, quota/reopen, native UUID retries and the optional compatible create migration.

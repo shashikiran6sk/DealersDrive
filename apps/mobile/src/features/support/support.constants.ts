@@ -1,0 +1,43 @@
+export const SUPPORT_TEXT = Object.freeze({
+  title: 'Contact & support',
+  requests: 'My support requests',
+  create: 'Create support request',
+  intro: 'Help with browsing, saved cars, enquiries, and your customer account.',
+  disclosure:
+    'We use your account details and this complaint to investigate and respond. Relevant details may need to be shared with the dealer concerned. Avoid passwords, OTPs, full payment card numbers or unnecessary identity documents. No new Terms acceptance is required to submit a complaint.',
+  subject: 'Subject',
+  description: 'Tell us what happened',
+  category: 'Category',
+  related: 'Related enquiry (optional)',
+  recentEnquiries:
+    'Your 20 most recent enquiries are offered here. Open an older enquiry to create a request linked to it.',
+  none: 'No related enquiry',
+  reply: 'Your reply',
+  send: 'Send reply',
+  reopen: 'Reopen request',
+  reopened: 'Request reopened',
+  closed: 'This request is closed. Create a new request if you need more help.',
+  resolved: 'This request is resolved. Reopen it before replying.',
+  limited:
+    'You have sent five messages. Please wait for our support team to reply before sending more.',
+  remaining: (count: number) => `${count} messages remaining before support replies.`,
+  empty: 'You have no support requests yet.',
+  loading: 'Loading your support requests…',
+  refresh: 'Refresh conversation',
+  retry: 'Try again',
+  failed: 'The support request could not be completed.',
+  missing: 'This support request is unavailable for your account.',
+  replyUncertain:
+    'Delivery could not be confirmed. Refresh the conversation, or retry the same reply safely.',
+  createUncertain:
+    'Delivery could not be confirmed. Check your requests, or retry this unchanged request safely.',
+  email: 'Email customer support',
+  phone: 'Call customer support',
+  whatsapp: 'Chat in WhatsApp',
+  contactFailed: 'The contact link could not be opened.',
+  back: 'Back',
+  more: 'Load more',
+  privacyRequest: 'Privacy request',
+  open: (reference: string, subject: string) => `Open ${reference}: ${subject}`,
+  enquiry: 'View related enquiry',
+});

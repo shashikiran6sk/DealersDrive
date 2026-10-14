@@ -7106,7 +7106,7 @@ Dependency: F105. Existing ticket/message/quota/reopen services; native screens/
 
 ### F107 — Account deletion
 
-Dependency: F106. Existing support request channel plus approved verified fulfillment/status/retention/multi-role process. No blind User deletion.
+Dependency: F106. Owner-approved amendment: separate OTP-confirmed customer-only deactivation/reactivation and deletion-request controls on native/web; customer session revocation and immutable sharing withdrawal; dealer/admin roles unaffected. Existing support request channel plus approved verified fulfillment/status/retention/multi-role process. No blind User deletion. See docs/mobile/account-controls-amendment.md.
 
 ### F108 — Release hardening
 
