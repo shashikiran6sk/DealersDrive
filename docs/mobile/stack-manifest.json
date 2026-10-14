@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "IMPLEMENTATION_RESUMED_F099_RESTACK_PENDING",
-  "verified_at": "2026-10-14 13:07:34 UTC",
+  "status": "F099_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-14 13:26:41 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -77,30 +77,44 @@
       "feature_id": "F099",
       "title": "Foundation",
       "planned_head_branch": "feat/f099-mobile-foundation",
-      "head_sha": "bcb1bee7e4db4f999a2081665512471b0266507d",
+      "head_sha": "fb02d063fa2d50c0d99505d7adfe15e456f9f826",
       "pr_number": null,
       "pr_url": null,
-      "state": "LOCAL_BRANCH_RESTACK_PENDING_NO_PR",
+      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
       "is_draft": null,
       "base_branch": "feature/legal-compliance-and-consent-v1",
       "base_sha_at_creation": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
       "base_sha_verified_now": "6180a4b52522493b884550448d0a84e7d95432df",
-      "foundation_sha": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["PR279"],
-      "incremental_diff": "22c98419119f0418ba9d7cbcb7ec398052216bbf..bcb1bee7e4db4f999a2081665512471b0266507d",
-      "ci_status": "NO_GITHUB_PR",
+      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...feat/f099-mobile-foundation",
+      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
       "tested_sha": null,
       "review_state": "NOT_OPENED",
-      "evidence": [],
-      "known_blockers": [
-        "Production legal publication and release remain separately gated",
-        "Existing F099 does not contain the new foundation; no-rewrite restack is proposed only",
-        "Native logo/icon/splash resources still use old branding; implementation edits prohibited in this amendment"
+      "evidence": [
+        "docs/mobile/f099-validation.md",
+        "docs/screens/mobile/f099/asset-review.png",
+        "apps/mobile/src/assets/brand/provenance.json"
       ],
-      "restack_history": [],
+      "known_blockers": [
+        "No JDK/Android SDK/emulator/device; native compile and screenshots not verified",
+        "Dependency audit: 7 high / 9 moderate; launch remediation/reachability review required",
+        "Production legal publication, package/signing, provider validation and release remain gated"
+      ],
+      "restack_history": [
+        {
+          "from_foundation": "22c98419119f0418ba9d7cbcb7ec398052216bbf",
+          "to_foundation": "6180a4b52522493b884550448d0a84e7d95432df",
+          "method": "NORMAL_PARENT_INTO_CHILD_MERGE",
+          "commit": "fb02d063fa2d50c0d99505d7adfe15e456f9f826",
+          "preserved_original_head": "bcb1bee7e4db4f999a2081665512471b0266507d",
+          "conflicts": false,
+          "authorization": "Explicit START after PR #311 amendment"
+        }
+      ],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
-      "restack_required": true,
-      "descends_from_required_foundation": false
+      "restack_required": false,
+      "descends_from_required_foundation": true
     },
     {
       "sequence": 2,
@@ -321,11 +335,10 @@
   ],
   "restack_policy": "No automatic restack or shared-history rewrite. Assess predecessor changes; obtain approval; prefer reviewable parent-into-child merge commits with normal pushes.",
   "notes": [
-    "Branding amendment was docs-only; subsequent START authorizes implementation and reviewable child restack.",
-    "Foundation branding and legal/contract compatibility verified read-only; no new application suite or Android validation.",
-    "Future head SHAs/PR URLs remain null. Existing F099 has no upstream or GitHub PR at verification.",
-    "Ten immediate-parent base relationships unchanged.",
-    "Remote CI/source/hash checks do not approve legal drafts or deployment."
+    "Approved restack retains original F099 and updated legal parent; no protected history rewritten.",
+    "All ten immediate-parent base relationships remain unchanged; future PRs/SHAs stay null.",
+    "Local test/build evidence is separate from GitHub CI and native/device release acceptance.",
+    "Legal drafts and production release remain unapproved."
   ],
   "start_received": "2026-10-14",
   "restack_authorized": true,
@@ -355,7 +368,7 @@
     "merged_at": "2026-10-14T12:26:44Z",
     "foundation_includes_merge": true,
     "website_implemented": true,
-    "native_adoption": "PENDING_APPROVED_RESTACK_AND_FRESH_START",
+    "native_adoption": "F099_ASSETS_COMPONENTS_PREBUILD_VERIFIED_DEVICE_PENDING",
     "masters": [
       {
         "source_path": "apps/web/public/brand/dd-icon-black.svg",
@@ -408,5 +421,6 @@
     ],
     "additional_native_branding_dependency_required": false,
     "inventory": "docs/mobile/branding-assets.md"
-  }
+  },
+  "head_sha_semantics": "Last verified Git checkpoint; the manifest commit itself is excluded to avoid a self-referential SHA. Refresh GitHub before pinning child branches."
 }

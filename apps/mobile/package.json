@@ -9,8 +9,10 @@
     "build": "expo export --platform android",
     "lint": "eslint . && node scripts/check-boundaries.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "jest --runInBand",
-    "check:expo": "expo install --check"
+    "test": "jest --runInBand && node scripts/brand-assets.mjs --check",
+    "check:expo": "expo install --check",
+    "brand:generate": "node scripts/brand-assets.mjs",
+    "brand:check": "node scripts/brand-assets.mjs --check"
   },
   "dependencies": {
     "@dealers-drive/contracts": "workspace:*",
@@ -27,6 +29,7 @@
     "expo-secure-store": "57.0.4",
     "expo-splash-screen": "57.0.10",
     "expo-status-bar": "57.0.1",
+    "expo-system-ui": "57.0.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",

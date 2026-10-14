@@ -28,8 +28,12 @@ No policy drafts are rendered or acceptance collected by this foundation. Existi
 
 ## Branding and verification
 
-Logo/icon assets are copies of the existing web brand assets. Manrope is bundled from the official Google Fonts repository under the accompanying SIL OFL. Tokens follow web globals.css. Native component fixtures run in RN Testing Library because the existing web sandbox renders DOM primitives; its components were searched and remain unchanged. Page and ActionButton fixtures cover headings, text and pending/disabled controls.
+The four independent symbol/wordmark SVG masters are byte-for-byte copies of approved PR #311 assets. BrandSymbol/BrandWordmark select black on light and white on dark; Brand composes a single accessible lockup. Narrow headers show the symbol, matching the updated mobile web. Launcher/adaptive/splash contain the symbol only. `brand:generate` derives PNGs with the existing API workspace Sharp build tool; `brand:check` verifies source hashes, exact generated pixels, configuration, centering and mask safety. No server code is imported at runtime. See the native provenance manifest and docs/mobile/branding-assets.md. Manrope is bundled from the official Google Fonts repository under the accompanying SIL OFL. Tokens follow web globals.css. Native component fixtures run in RN Testing Library because the existing web sandbox renders DOM primitives; its components were searched and remain unchanged. Page and ActionButton fixtures cover headings, text and pending/disabled controls.
 
-This environment currently has no Android SDK/emulator or attached physical device. Android bundle validation is separate from native compilation and screenshots; those results must be recorded when available. Do not report web or test-renderer output as physical Android evidence.
+Expo system UI applies the native light theme. Android backup, overlay, vibration and sensitive runtime permissions are disabled; the generated main manifest declares Internet and removal directives. Verify the final merged release manifest again in F108.
+
+This environment currently has no Android SDK/emulator, JDK or attached physical device. Temporary Android prebuild/resource inspection succeeds; it is not native compilation. Android bundle validation is separate from native compilation and screenshots; those results must be recorded when available. Do not report web or test-renderer output as physical Android evidence.
 
 See [the approved stack plan](../../docs/mobile/README.md) and [the stack manifest](../../docs/mobile/stack-manifest.json). No merge, deployment, legal activation or Play submission is authorized.
+
+Repository API migration fixtures interpret timestamp values using the process timezone. Run API regressions with TZ=UTC, matching CI, to avoid the existing R92 fixture timezone failure.

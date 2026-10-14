@@ -33,7 +33,7 @@ Latest origin refs were fetched on 14 October 2026. GitHub metadata was rechecke
 | Previous audited foundation   | `22c98419119f0418ba9d7cbcb7ec398052216bbf` — historical only                         |
 | Existing local mobile branch  | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
 | Existing mobile GitHub PRs    | No F099 PR; no other mobile stack PR in open-PR inventory                            |
-| Required restack              | Existing F099 does not descend from updated foundation; not performed                |
+| Required restack              | Approved START: parent merged into F099 as fb02d063; original F099 preserved         |
 | Working tree before amendment | Clean                                                                                |
 
 The owner-created foundation merge has parents `22c98419119f0418ba9d7cbcb7ec398052216bbf` and `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`. Both original legal work and PR #311 are ancestors. All four approved SVG masters are present and byte-identical to main. Inspection uses Git refs, not the older F099 checkout.
@@ -138,7 +138,7 @@ Planned preparation after a fresh START approving the amended plan/restack:
 - Feature graphics may compose the two independent assets; launcher/store icon artwork must not include the wordmark.
 - Retain app display-name/package decisions and all legal/customer text; artwork spelling does not rewrite policy content or evidence hashes.
 
-Existing F099 logo/icon/splash resources and its old tile-plus-Text Brand component are not compliant with this amendment. Replacing them is required in F099 after authorization. No application asset/component/config was modified here.
+Resumed F099 replaces the old tile-plus-Text logo and raster resources with the approved independent SVG masters and generated symbol-only launcher/adaptive/splash resources. The light native theme uses the SDK-matched Expo system UI module. No web UI or legal content is changed by native adoption.
 
 References: [Android adaptive icons](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive), [Expo splash/icon guidance](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/). Native resources/screenshots/device validation remain pending.
 
@@ -216,7 +216,7 @@ F099 exists locally at `bcb1bee7e4db4f999a2081665512471b0266507d`, with no GitHu
 | Mobile 9 — Deletion            | `feat/f107-mobile-account-deletion`       | `feat/f106-mobile-support`                |
 | Mobile 10 — Hardening          | `feat/f108-mobile-release-hardening`      | `feat/f107-mobile-account-deletion`       |
 
-The required foundation is now `6180a4b52522493b884550448d0a84e7d95432df`. Existing F099 started at `22c98419119f0418ba9d7cbcb7ec398052216bbf` and needs the reviewed restack below; documentation does not change its ancestry. Later branches start from their immediate parent's reviewed head. No main-based branch or empty PR.
+The required foundation is now `6180a4b52522493b884550448d0a84e7d95432df`. Existing F099 started at `22c98419119f0418ba9d7cbcb7ec398052216bbf`; approved normal merge `fb02d063fa2d50c0d99505d7adfe15e456f9f826` integrates the new parent and preserves original F099 ancestry. Later branches start from their immediate parent's reviewed head. No main-based branch or empty PR.
 
 Maintain `docs/mobile/stack-manifest.json` in Mobile 1 after START, and a current stack-wide review snapshot as work progresses. Fields: sequence/feature/name, PR URL/number/state/draft, head branch/SHA, base branch and base SHA at creation/current verification, foundation SHA, predecessor/dependencies, incremental diff range, checks and their tested SHA, review state, evidence/known blockers, verification timestamp, restack history. A planning-only manifest accompanies this README with future fields null/NOT_CREATED.
 
@@ -363,7 +363,7 @@ Current SDK/Play policy facts in the original audit must be rechecked before sub
 | Native session/library/package/vendor choices    | Original recommended defaults; pinned/validated in approved implementation |
 | Production merges/publication/deployment         | Separate explicit owner authorization                                      |
 
-The companion `stack-manifest.json` records the new #279 and #311 baseline, the existing paused local F099 with its actual older ancestry, and nine uncreated children. Future null SHAs/URLs are deliberate; no PR or test result is fabricated.
+The companion `stack-manifest.json` records the new #279 and #311 baseline, the existing F099 with its original and updated foundation ancestry, and nine uncreated children. Future null SHAs/URLs are deliberate; no PR or test result is fabricated.
 
 ## 16. Approval gate and expected end state
 
@@ -376,3 +376,7 @@ Expected completed engineering state: #279 open/unmerged; every Android PR open/
 **BRANDING AMENDMENT APPROVED — F099 IMPLEMENTATION RESUMED**
 
 **The amendment itself performed no implementation or restack. The subsequent START authorizes implementation and the documented restack. Merging and production release remain separately gated.**
+
+## Resumed F099 implementation record
+
+Explicit START after the branding amendment authorizes the documented parent-into-child merge. Merge fb02d063 preserves bcb1bee7 and incorporates PR #279 head 6180a4b. F099 adopts exact PR #311 native geometry with no extra branding library and retains the ten immediate-parent branch bases. Next configuration explicitly selects the web React JSX type namespace to keep native/web versions isolated. The stack manifest records verified checkpoints rather than impossible self-referential commit SHAs; current GitHub heads/checks must be refreshed before each child is pinned.

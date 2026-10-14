@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 
-import { Brand } from '../../src/components/brand';
+import { BrandSymbol } from '../../src/components/brand';
 import { TAB_TEXT } from '../../src/features/navigation/navigation.constants';
 import { TabIcon } from '../../src/features/navigation/tab-icon';
 import { colors, typography } from '../../src/theme/tokens';
@@ -9,7 +9,7 @@ export default function CustomerTabs() {
   return (
     <Tabs
       screenOptions={{
-        headerTitle: () => <Brand />,
+        headerTitle: () => <BrandSymbol />,
         headerStyle: { backgroundColor: colors.page },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.muted,

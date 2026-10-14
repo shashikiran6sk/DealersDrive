@@ -178,12 +178,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Blocking at `critical` and reporting at `high` is a deliberate split,
-      # not laziness. Every current high advisory is transitive through `next`
-      # or `prisma` and has no fix this repository can apply — a gate that is
-      # red for reasons nobody can act on gets ignored, and then the critical
-      # one is ignored too. Dependabot (.github/dependabot.yml) is what
-      # actually closes these, by raising the upstream bump as a PR.
+      # Preserve the repository gate: critical advisories block and high findings
+      # are reported. Web/API and the native toolchain have transitive advisories;
+      # mobile release acceptance separately requires remediation or a reviewed
+      # reachability assessment. This gate does not declare an app launch-ready.
       - name: Block on critical advisories
         run: pnpm audit --audit-level=critical
 

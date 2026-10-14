@@ -1,19 +1,24 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import logo from '../../assets/logo.png';
-import { colors, typography } from '../../theme/tokens';
+import { BrandSymbol } from './brand-symbol';
+import { BrandWordmark } from './brand-wordmark';
+import { BRAND_DIMENSIONS, BRAND_TEXT } from './brand.constants';
+import type { BrandAssetProps } from './brand.types';
 
-export function Brand() {
+export function Brand({ surface = 'light' }: Pick<BrandAssetProps, 'surface'>) {
   return (
-    <View style={styles.brand}>
-      <Image source={logo} style={styles.logo} accessibilityIgnoresInvertColors />
-      <Text style={styles.name}>Dealers-Drive</Text>
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={BRAND_TEXT.label}
+      style={styles.brand}
+    >
+      <BrandSymbol surface={surface} decorative />
+      <BrandWordmark surface={surface} decorative />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logo: { width: 30, height: 30, borderRadius: 10 },
-  name: { color: colors.ink, fontFamily: typography.family, fontSize: 17, fontWeight: '800' },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: BRAND_DIMENSIONS.gap },
 });

@@ -1,13 +1,13 @@
 # Android branding asset inventory — PR #311
 
-Status: verified source inventory and implementation specification only. No Android assets/configuration were prepared or changed by this amendment.
+Status: approved masters adopted in resumed F099 after fresh START. Source/raster/component checks pass; Android prebuild/resource inspection passes. Native compilation and installed-device validation remain pending.
 
 ## Verified source and provenance
 
 - Website branding is already implemented by merged PR #311; no new branding PR or redesign is needed.
 - Main/branding merge: `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`.
 - Legal foundation: `6180a4b52522493b884550448d0a84e7d95432df`, containing the original legal head and the branding merge.
-- Current local F099: `bcb1bee7e4db4f999a2081665512471b0266507d`, still based on the older foundation and awaiting approved restack.
+- Original F099 commit `bcb1bee7e4db4f999a2081665512471b0266507d` retained. Approved parent-into-child merge `fb02d063fa2d50c0d99505d7adfe15e456f9f826` includes the new foundation without history rewriting.
 - Inventory timestamp: 2026-10-14 12:51:40 UTC.
 
 | Master                                                                                                                                                                                | Dimensions / aspect ratio | Fill    | SHA-256                                                            |
@@ -61,9 +61,9 @@ After fresh START approving the amended plan/restack:
 
 Platform references: [Android adaptive icon design](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive), [Expo splash and app icon](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/).
 
-## Current F099 mismatch
+## Resumed F099 adoption
 
-Existing app assets logo.png, icon.png and icon-maskable.png came from pre-#311 web assets. The native Brand component renders an old rounded bitmap plus ordinary Text; app.json points at those legacy resources. This amendment leaves them untouched as required. They are not approved branding and must be replaced during the resumed F099 scope. Native branding acceptance is therefore PENDING, not PASS.
+The original logo.png, icon.png and icon-maskable.png were removed. Runtime UI uses exact approved XML generated from the four SVG masters, with independent symbol/wordmark and one accessible lockup label. Native raster resources and source hashes are in apps/mobile/src/assets/brand/provenance.json. Launcher is 1024×1024, adaptive foreground/monochrome 1080×1080 with transparent exterior and 600px-wide symbol, and splash 651×424 with transparency. app.json uses only these symbol resources, a flat white launcher background and a light native theme. No wordmark/font substitute is embedded in icon or splash.
 
 ## F099 acceptance criteria
 
@@ -93,6 +93,10 @@ The new foundation delta from 22c9841 contains branding/UI/metadata/image refere
 
 Observed new-foundation GitHub checks are successful. Existing post-#311 web validation/captures were reviewed; no application test suite, production mutation, native resource generation, native screenshot or device test was performed in this documentation-only amendment. Existing branches/commits/protected refs were not restacked or rewritten.
 
-## Proposed restack — not performed
+## Approved restack — performed
 
-On owner approval through a fresh START approving this amended plan and restack, merge the verified new #279 parent into existing F099 with a normal reviewable merge commit, retain bcb1bee7, apply branding replacements in F099, validate, then normal-push/open the child draft against #279. No rebase/force-push, protected-branch edit, main-based branch, PR merge, deployment or store upload. Re-audit if either ref changes before approval.
+Fresh START authorized the stated normal merge into the existing child. Merge fb02d063 retained bcb1bee7 and the protected parent, with no conflicts. The ten immediate-parent bases are unchanged. No rebase/force-push, protected-branch edit, main-based branch, GitHub PR merge, production deployment or store upload occurred.
+
+## F099 resource evidence
+
+[Asset proof](../screens/mobile/f099/asset-review.png) shows light/dark masters, generated launcher, transparent adaptive foreground and a circular mask preview. It is a raster proof, not an Android screenshot. Component fixtures mock the native SVG host; exact vector bytes and raster geometry are independently checked by the asset verifier. Android prebuild was generated outside the repository and includes foreground/background/monochrome resources, contain splash mode, the light theme and permission-removal directives. Actual device/system rendering is not yet verified. See the F099 validation report for broader checks and limitations.
