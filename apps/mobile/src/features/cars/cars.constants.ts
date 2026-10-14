@@ -27,6 +27,8 @@ export const CARS_TEXT = Object.freeze({
   priceRequest: 'Price on request',
   verified: 'Dealer Verified',
   reserved: 'Reserved',
+  sold: 'Sold',
+  unavailableBadge: 'No longer available',
   reservedNote: 'Reserved for another buyer',
   openCar: (title: string, price?: string, meta?: string, reserved = false) =>
     [`View ${title}`, price, meta, reserved ? 'Reserved for another buyer' : undefined]

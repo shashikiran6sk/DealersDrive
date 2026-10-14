@@ -1,3 +1,4 @@
+import { SAVED_TEXT } from '../../saved/saved.constants';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
@@ -64,6 +65,11 @@ export function ProfileScreen() {
           {notice}
         </Text>
       ) : null}
+      <ActionButton
+        variant="secondary"
+        label={SAVED_TEXT.agreements}
+        onPress={() => router.navigate('/agreements')}
+      />
       <ActionButton label={AUTH_TEXT.terms} onPress={() => router.push('/policy/terms')} />
       <ActionButton label={AUTH_TEXT.privacy} onPress={() => router.push('/policy/privacy')} />
     </Page>

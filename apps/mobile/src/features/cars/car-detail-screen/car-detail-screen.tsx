@@ -1,3 +1,4 @@
+import { SaveButton } from '../../../components/save-button';
 import { useQuery } from '@tanstack/react-query';
 import { titleWithoutYear, VehicleSlugParam } from '@dealers-drive/contracts/public';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -77,6 +78,7 @@ export function CarDetailScreen() {
             <Text style={styles.muted}>{car.negotiabilityLabel}</Text>
           ) : null}
         </View>
+        <SaveButton slug={car.slug} title={car.title} labelled />
         {car.availability === 'RESERVED' ? (
           <View style={styles.box}>
             <Text accessibilityRole="header" style={styles.heading}>

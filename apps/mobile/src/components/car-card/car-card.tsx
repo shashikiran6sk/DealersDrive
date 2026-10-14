@@ -1,3 +1,4 @@
+import { SaveButton } from '../save-button';
 import { titleWithoutYear, type VehicleCardDto } from '@dealers-drive/contracts/public';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -13,15 +14,24 @@ export interface CarCardProps {
 export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
   const [failed, setFailed] = useState(false);
   const reserved = car.availability !== 'AVAILABLE';
+  const availabilityLabel =
+    car.availability === 'SOLD'
+      ? CARS_TEXT.sold
+      : car.availability === 'UNAVAILABLE'
+        ? CARS_TEXT.unavailableBadge
+        : CARS_TEXT.reserved;
   return (
     <View style={styles.card}>
+      <View style={styles.save}>
+        <SaveButton slug={car.slug} title={car.title} />
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={CARS_TEXT.openCar(
           car.title,
           car.priceLabel ?? CARS_TEXT.priceRequest,
           car.metaLabel,
-          reserved,
+          car.availability === 'RESERVED',
         )}
         accessibilityState={{ disabled: reserved }}
         disabled={reserved}
@@ -44,7 +54,7 @@ export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
             </Text>
           )}
           {car.year ? <Text style={styles.year}>{car.year}</Text> : null}
-          {reserved ? <Text style={styles.badge}>{CARS_TEXT.reserved}</Text> : null}
+          {reserved ? <Text style={styles.badge}>{availabilityLabel}</Text> : null}
         </View>
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={2}>
@@ -68,6 +78,7 @@ export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
   );
 }
 const styles = StyleSheet.create({
+  save: { position: 'absolute', top: 10, right: 10, zIndex: 3 },
   card: {
     backgroundColor: colors.page,
     borderWidth: 1,
