@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F100_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-14 14:06:36 UTC",
+  "status": "F101_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-14 17:19:01 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -191,20 +191,20 @@
       "feature_id": "F100",
       "title": "Native authentication backend",
       "planned_head_branch": "feat/f100-mobile-auth-backend",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
-      "is_draft": null,
+      "head_sha": "8ec6b2da319166bd5dde01917daec541158dc454",
+      "pr_number": 313,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/313",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f099-mobile-foundation",
       "base_sha_at_creation": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
       "base_sha_verified_now": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_1"],
-      "incremental_diff": null,
-      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
-      "tested_sha": null,
-      "review_state": "NOT_OPENED",
+      "incremental_diff": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d...8ec6b2da319166bd5dde01917daec541158dc454",
+      "ci_status": "SUCCESS",
+      "tested_sha": "8ec6b2da319166bd5dde01917daec541158dc454",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": ["docs/mobile/f100-validation.md", "docs/code/api/modules/auth/native-auth.md"],
       "known_blockers": [
         "Native capability remains disabled pending owner/provider/legal activation review",
@@ -212,7 +212,76 @@
         "Production legal publication/release remains gated"
       ],
       "restack_history": [],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:16:32Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38577851444/job/115899574666",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T14:08:25Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:09:50Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38577851398/job/115899574504",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T14:08:26Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:08:41Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38577851444/job/115899574196",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T14:08:26Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:09:24Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38577851398/job/115899575022",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T14:08:25Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:09:21Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38577851444/job/115899574651",
+          "name": "dependency audit",
+          "startedAt": "2026-10-14T14:08:26Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-14T14:10:33Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/HBYMhKG79BVGoWJuckir97A5EssU"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T14:10:34Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-14T14:10:34Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ]
     },
     {
       "sequence": 3,
@@ -222,19 +291,22 @@
       "head_sha": null,
       "pr_number": null,
       "pr_url": null,
-      "state": "NOT_CREATED",
+      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
       "is_draft": null,
       "base_branch": "feat/f100-mobile-auth-backend",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": null,
+      "base_sha_at_creation": "8ec6b2da319166bd5dde01917daec541158dc454",
+      "base_sha_verified_now": "8ec6b2da319166bd5dde01917daec541158dc454",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_2"],
       "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
+      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
-      "evidence": [],
-      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "evidence": ["docs/mobile/f101-validation.md", "docs/code/mobile/auth.md"],
+      "known_blockers": [
+        "Installed Android build/real-device/back/keyboard/autofill validation unavailable locally",
+        "Live provider/legal activation and production release remain gated"
+      ],
       "restack_history": [],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
