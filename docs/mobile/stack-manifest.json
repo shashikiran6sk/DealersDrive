@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F099_DRAFT_PR_OPEN",
-  "verified_at": "2026-10-14 13:32:04 UTC",
+  "status": "F100_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-14 14:06:36 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -77,7 +77,7 @@
       "feature_id": "F099",
       "title": "Foundation",
       "planned_head_branch": "feat/f099-mobile-foundation",
-      "head_sha": "99bf3afc40624f8cfc4685913b8168bf6c764aa3",
+      "head_sha": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
       "pr_number": 312,
       "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/312",
       "state": "OPEN",
@@ -87,9 +87,9 @@
       "base_sha_verified_now": "6180a4b52522493b884550448d0a84e7d95432df",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["PR279"],
-      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...99bf3afc40624f8cfc4685913b8168bf6c764aa3",
-      "ci_status": "IN_PROGRESS",
-      "tested_sha": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
+      "ci_status": "SUCCESS",
+      "tested_sha": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
       "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": [
         "docs/mobile/f099-validation.md",
@@ -99,8 +99,7 @@
       "known_blockers": [
         "No JDK/Android SDK/emulator/device; native compile and screenshots not verified",
         "Dependency audit: 7 high / 9 moderate; launch remediation/reachability review required",
-        "Production legal publication, package/signing, provider validation and release remain gated",
-        "Final GitHub lint/type/test/build and preview checks are still running at this snapshot"
+        "Production legal publication, package/signing, provider validation and release remain gated"
       ],
       "restack_history": [
         {
@@ -119,68 +118,68 @@
       "checks": [
         {
           "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
-          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879351637",
-          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
-          "startedAt": "2026-10-14T13:28:01Z",
-          "status": "IN_PROGRESS",
-          "workflowName": "CI"
-        },
-        {
-          "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
-          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006106/job/115879350754",
-          "name": "semgrep",
-          "startedAt": "2026-10-14T13:28:01Z",
-          "status": "IN_PROGRESS",
-          "workflowName": "Security"
-        },
-        {
-          "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
-          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006106/job/115879351253",
-          "name": "gitleaks",
-          "startedAt": "2026-10-14T13:28:01Z",
-          "status": "IN_PROGRESS",
-          "workflowName": "Security"
-        },
-        {
-          "__typename": "CheckRun",
-          "completedAt": "2026-10-14T13:28:17Z",
+          "completedAt": "2026-10-14T13:40:00Z",
           "conclusion": "SUCCESS",
-          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879351065",
-          "name": "terraform fmt / validate",
-          "startedAt": "2026-10-14T13:28:01Z",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572594186/job/115881684620",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T13:32:52Z",
           "status": "COMPLETED",
           "workflowName": "CI"
         },
         {
           "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
-          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572006143/job/115879352712",
+          "completedAt": "2026-10-14T13:33:34Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572594137/job/115881381237",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T13:32:15Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T13:33:07Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572594186/job/115881685501",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T13:32:52Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T13:32:59Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572594137/job/115881380799",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T13:32:14Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T13:33:42Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38572594186/job/115881685246",
           "name": "dependency audit",
-          "startedAt": "2026-10-14T13:28:02Z",
-          "status": "IN_PROGRESS",
+          "startedAt": "2026-10-14T13:32:53Z",
+          "status": "COMPLETED",
           "workflowName": "CI"
         },
         {
           "__typename": "StatusContext",
           "context": "Vercel",
-          "startedAt": "2026-10-14T13:27:59Z",
-          "state": "PENDING",
-          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/H1QkikvfP3Sw2xxNWUzjo6kE4ND8"
+          "startedAt": "2026-10-14T13:32:29Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/GvByzgwXxyUrQrF53pXQPvZZARXP"
         },
         {
           "__typename": "CheckRun",
-          "completedAt": "2026-10-14T13:28:00Z",
+          "completedAt": "2026-10-14T13:32:30Z",
           "conclusion": "SUCCESS",
           "detailsUrl": "https://vercel.com/github",
           "name": "Vercel Preview Comments",
-          "startedAt": "2026-10-14T13:28:00Z",
+          "startedAt": "2026-10-14T13:32:30Z",
           "status": "COMPLETED",
           "workflowName": ""
         }
@@ -195,19 +194,23 @@
       "head_sha": null,
       "pr_number": null,
       "pr_url": null,
-      "state": "NOT_CREATED",
+      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
       "is_draft": null,
       "base_branch": "feat/f099-mobile-foundation",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": "99bf3afc40624f8cfc4685913b8168bf6c764aa3",
-      "foundation_sha": null,
+      "base_sha_at_creation": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
+      "base_sha_verified_now": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_1"],
       "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
+      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
       "tested_sha": null,
-      "review_state": "NOT_CREATED",
-      "evidence": [],
-      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "review_state": "NOT_OPENED",
+      "evidence": ["docs/mobile/f100-validation.md", "docs/code/api/modules/auth/native-auth.md"],
+      "known_blockers": [
+        "Native capability remains disabled pending owner/provider/legal activation review",
+        "Live MSG91/DLT/captcha compatibility not verified",
+        "Production legal publication/release remains gated"
+      ],
       "restack_history": [],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
@@ -410,7 +413,8 @@
     "All ten immediate-parent base relationships remain unchanged; future PRs/SHAs stay null.",
     "Local test/build evidence is separate from GitHub CI and native/device release acceptance.",
     "Legal drafts and production release remain unapproved.",
-    "PR #312 verified OPEN/DRAFT against the immediate legal parent. Manifest fields are this timestamped checkpoint, not its subsequent documentation-only commit."
+    "PR #312 verified OPEN/DRAFT against the immediate legal parent. Manifest fields are this timestamped checkpoint, not its subsequent documentation-only commit.",
+    "Continue the next immediate-parent PR while CI runs; check after about ten minutes and return for fixes without rewriting completed histories, per owner instruction."
   ],
   "start_received": "2026-10-14",
   "restack_authorized": true,
