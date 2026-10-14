@@ -1,3 +1,4 @@
+import type * as ReactNativeModule from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { LegalPublication, NativeOtpChallenge } from '@dealers-drive/contracts/native-auth';
@@ -156,4 +157,9 @@ it('shows a failed signup without completing authentication or reporting success
   await waitFor(() => expect(screen.getByText('Server unavailable')).toBeOnTheScreen());
   expect(mockManager.accept).not.toHaveBeenCalled();
   expect(mockRouter.back).not.toHaveBeenCalled();
+});
+
+jest.mock('react-native-svg', () => {
+  const { View } = jest.requireActual<typeof ReactNativeModule>('react-native');
+  return { __esModule: true, default: View, Path: View, SvgXml: View };
 });
