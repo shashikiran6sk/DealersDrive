@@ -78,6 +78,9 @@ describe('every template', () => {
 
     expect(email.subject).not.toBe('');
     expect(email.html).toContain('<!doctype html>');
+    expect(email.html).toContain('/brand/dd-icon-black.png');
+    expect(email.html).toContain('/brand/dealersdrive-wordmark-black.png');
+    expect(email.html).toContain('alt="DealersDrive"');
     expect(email.text.length).toBeGreaterThan(40);
     // The failure this catches: a context field renamed on one side only.
     expect(`${email.subject} ${email.html} ${email.text}`).not.toMatch(

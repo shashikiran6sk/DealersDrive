@@ -295,7 +295,7 @@ describe('the fullscreen viewer', () => {
     const dialog = await openViewer(user, /^View all/);
     expect(within(dialog).getByRole('img', { name: 'Dealers Drive' })).toHaveAttribute(
       'src',
-      '/brand/dealers-drive-dark.png',
+      '/brand/dd-icon-white.svg',
     );
     expect(within(dialog).getByRole('heading', { name: TITLE })).toBeInTheDocument();
     const counter = within(dialog).getByText('2 / 11');

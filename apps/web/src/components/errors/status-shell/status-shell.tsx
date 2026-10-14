@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { BrandLogo } from '@/components/brand-logo';
-import { SITE_NAME } from '@/lib/seo/seo.constants';
+import { BrandLockup } from '@/components/brand-logo';
 
 export function StatusShell({ children }: { children: ReactNode }) {
   return (
@@ -10,10 +9,7 @@ export function StatusShell({ children }: { children: ReactNode }) {
       <header className="border-b border-(--color-divider) bg-white">
         <div className="mx-auto flex h-(--header-height) max-w-[1440px] items-center px-4 sm:px-6 lg:px-10">
           <Link href="/" className="flex items-center gap-[10px]">
-            <BrandLogo />
-            <span className="font-heading text-[17px] font-extrabold tracking-[-0.02em]">
-              {SITE_NAME}
-            </span>
+            <BrandLockup />
           </Link>
         </div>
       </header>

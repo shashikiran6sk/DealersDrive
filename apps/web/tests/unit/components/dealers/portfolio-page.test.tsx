@@ -598,7 +598,7 @@ describe('metadata', () => {
 
     serve(DEALER);
     const without = await generateMetadata({ params });
-    expect(JSON.stringify(without.openGraph?.images)).toContain('/og/dealers-drive.png');
+    expect(JSON.stringify(without.openGraph?.images)).toContain('/og/dealersdrive-v2.png');
   });
 
   it('titles a missing dealership rather than throwing', async () => {
