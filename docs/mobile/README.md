@@ -31,8 +31,8 @@ Latest origin refs were fetched on 14 October 2026. GitHub metadata was rechecke
 | Updated foundation head       | `6180a4b52522493b884550448d0a84e7d95432df`                                           |
 | Legal PR base                 | main at `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                   |
 | Previous audited foundation   | `22c98419119f0418ba9d7cbcb7ec398052216bbf` — historical only                         |
-| Existing local mobile branch  | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
-| Existing mobile GitHub PRs    | No F099 PR; no other mobile stack PR in open-PR inventory                            |
+| Local branch before amendment | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
+| Current mobile GitHub PRs     | #312 OPEN/DRAFT; F100–F108 not created                                               |
 | Required restack              | Approved START: parent merged into F099 as fb02d063; original F099 preserved         |
 | Working tree before amendment | Clean                                                                                |
 

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
   "status": "F099_DRAFT_PR_OPEN",
-  "verified_at": "2026-10-14 13:28:59 UTC",
+  "verified_at": "2026-10-14 13:32:04 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -77,7 +77,7 @@
       "feature_id": "F099",
       "title": "Foundation",
       "planned_head_branch": "feat/f099-mobile-foundation",
-      "head_sha": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "head_sha": "99bf3afc40624f8cfc4685913b8168bf6c764aa3",
       "pr_number": 312,
       "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/312",
       "state": "OPEN",
@@ -87,8 +87,8 @@
       "base_sha_verified_now": "6180a4b52522493b884550448d0a84e7d95432df",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["PR279"],
-      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
-      "ci_status": "CHECKS_REQUESTED",
+      "incremental_diff": "6180a4b52522493b884550448d0a84e7d95432df...99bf3afc40624f8cfc4685913b8168bf6c764aa3",
+      "ci_status": "IN_PROGRESS",
       "tested_sha": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
       "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": [
@@ -99,7 +99,8 @@
       "known_blockers": [
         "No JDK/Android SDK/emulator/device; native compile and screenshots not verified",
         "Dependency audit: 7 high / 9 moderate; launch remediation/reachability review required",
-        "Production legal publication, package/signing, provider validation and release remain gated"
+        "Production legal publication, package/signing, provider validation and release remain gated",
+        "Final GitHub lint/type/test/build and preview checks are still running at this snapshot"
       ],
       "restack_history": [
         {
@@ -198,7 +199,7 @@
       "is_draft": null,
       "base_branch": "feat/f099-mobile-foundation",
       "base_sha_at_creation": null,
-      "base_sha_verified_now": "c2a53e7c9c84d27b7ac46ff9585893b762536fb5",
+      "base_sha_verified_now": "99bf3afc40624f8cfc4685913b8168bf6c764aa3",
       "foundation_sha": null,
       "dependencies": ["MOBILE_1"],
       "incremental_diff": null,
