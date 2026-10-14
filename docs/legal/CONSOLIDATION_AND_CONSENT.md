@@ -20,6 +20,8 @@ Privacy controls and support requests remain available without new Terms accepta
 
 Directions use validated business coordinates first, then a complete public business address encoded through URLSearchParams. An incomplete address uses an existing validated Google share link if available; otherwise the control is absent with an explanation. The public iframe is removed and `embedUrl` stays null for response compatibility. Stored map links, geocoding, address verification and internal location management remain.
 
+Disabling new collection does not bypass known sharing history: a withdrawn, expired or insufficient grant still blocks a new disclosure until fresh permission can be collected. Submitted collection payloads are rejected while collection is disabled. Existing valid grants remain enforced.
+
 ## Compatibility and rollback
 
 Apply additive migrations before deploying matching API/web/contracts, keeping LEGAL_ENFORCEMENT_ENABLED=false in both production applications. Nullable enquiry columns do not backfill acceptance or sharing. New table indexes and concurrent enquiry grant index avoid a production-wide data rewrite; nullable foreign key validation is separated. Constraints and immutability changes require short DDL locks: rehearse on a production-shaped sandbox, use a deployment lock/statement timeout and observe blocked transactions. Prisma migrations are forward-only; do not drop evidence tables or reverse hashes.
