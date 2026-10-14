@@ -76,6 +76,7 @@ jest.mock('../src/features/auth/auth-provider', () => ({
 const clients: QueryClient[] = [];
 afterEach(() => {
   for (const client of clients.splice(0)) client.clear();
+  jest.useRealTimers();
 });
 async function form() {
   const client = new QueryClient({
@@ -98,6 +99,7 @@ async function prove() {
   await waitFor(() => expect(screen.getByLabelText(AUTH_TEXT.name)).toBeOnTheScreen());
 }
 beforeEach(() => {
+  jest.useFakeTimers();
   jest.clearAllMocks();
 });
 it('validates phone input, exposes country code and makes no invalid OTP request', async () => {

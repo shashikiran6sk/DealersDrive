@@ -9,3 +9,7 @@ Executed mobile checks: seven suites / 47 tests pass with clean process exit; AP
 Root lint/types and documentation checks pass. Saved inventory/save effects arrive in F104 and enquiry consent/submission in F105; this milestone does not invent saved records or submit enquiries. Live MSG91/DLT, installed Android build/screenshots/back/keyboard/autofill/network behavior remain unverified because no SDK/JDK/emulator/physical device is available locally. No fake Android screenshots are provided. Later native build CI/device acceptance remains a release gate.
 
 See [implementation details](../code/mobile/auth.md). Local checks do not imply remote CI or launch readiness. New native server capability remains off by default until independently approved provider/legal activation. No PR merge/deployment/Play upload is authorized.
+
+## CI follow-up
+
+The first shared-runner CI failed the first form fixture at its 10-second timeout while other workspaces tested concurrently; security/secret checks passed. The focused follow-up removes unused countdown updates from phone/name phases and uses deterministic fake clock control in form tests. All 47 mobile tests, native lint and types pass locally in an isolated F101 worktree. The timeout assertion remains unchanged; no history or base is rewritten. Remote revalidation is pending the normal follow-up push.

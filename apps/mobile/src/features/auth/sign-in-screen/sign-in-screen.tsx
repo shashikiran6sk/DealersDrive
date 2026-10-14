@@ -47,14 +47,18 @@ export function SignInScreen() {
   useEffect(() => {
     generation.current = manager.beginAuthentication();
     controller.current = new AbortController();
-    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => {
-      clearInterval(timer);
       controller.current.abort();
       if (!completed.current && generation.current !== null)
         manager.cancelAuthentication(generation.current);
     };
   }, [manager]);
+  useEffect(() => {
+    if (phase !== 'otp') return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [phase]);
   const policyVersion = publication.data
     ? `${String(publication.data.collectionEnabled)}|${publication.data.documents.map((document) => `${document.version}:${document.digest}`).join('|')}`
     : undefined;
