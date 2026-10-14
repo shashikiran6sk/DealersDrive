@@ -1035,6 +1035,9 @@ enum ListingCheckKey {
 /// `dealerId` is the listing's, copied on write and never accepted from a
 /// request — it is the tenant key every dealer read filters on (rule 1).
 model Enquiry {
+  sharingGrantId String? @db.Uuid
+  sharingGrant ContactSharingEvent? @relation(fields: [sharingGrantId], references: [id], onDelete: Restrict)
+  sharingWithdrawnAt DateTime?
   id            String        @id @default(uuid()) @db.Uuid
   customerId    String        @db.Uuid
   dealerId      String        @db.Uuid
@@ -1068,6 +1071,7 @@ model Enquiry {
   /// Admin oversight (R89): every enquiry newest first, and one status tab.
   @@index([createdAt])
   @@index([status, createdAt])
+  @@index([sharingGrantId])
   @@map("enquiries")
 }
 
@@ -1672,4 +1676,60 @@ model AdminOtpRedemption {
   challenge AdminOtpChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
 
   @@map("admin_otp_redemptions")
+}
+
+model LegalEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String   @db.Uuid
+  subjectType String
+  subjectId   String   @db.Uuid
+  documentId  String
+  version     String
+  digest      String
+  action      String
+  context     String
+  eventKey    String   @unique
+  createdAt   DateTime @default(now())
+
+  @@index([subjectType, subjectId, documentId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("legal_events")
+}
+
+model ContactSharingEvent {
+  id               String   @id @default(uuid()) @db.Uuid
+  customerId       String   @db.Uuid
+  dealerId         String   @db.Uuid
+  actorId          String   @db.Uuid
+  action           String
+  purpose          String
+  dataCategories   String[]
+  noticeVersion    String
+  noticeDigest     String
+  scopeDigest      String
+  withdrawnGrantId String?  @unique @db.Uuid
+  eventKey         String   @unique
+  expiresAt        DateTime?
+  createdAt        DateTime @default(now())
+
+  withdrawnGrant ContactSharingEvent?  @relation("SharingWithdrawal", fields: [withdrawnGrantId], references: [id], onDelete: Restrict)
+  withdrawal     ContactSharingEvent?  @relation("SharingWithdrawal")
+  enquiries      Enquiry[]
+
+  @@index([customerId, dealerId, scopeDigest, createdAt])
+  @@map("contact_sharing_events")
+}
+
+model LegalPolicyVersion {
+  id                String    @id @default(uuid()) @db.Uuid
+  documentId        String
+  version           String
+  digest            String
+  publicationState  String
+  effectiveAt       DateTime?
+  approvalReference String?
+  createdAt         DateTime  @default(now())
+
+  @@unique([documentId, version])
+  @@map("legal_policy_versions")
 }

@@ -1,12 +1,25 @@
+import { getSharingStatus } from './routes/get-sharing-status.js';
+import { getSharingPermissions } from './routes/get-sharing-permissions.js';
+import { postWithdrawPermission } from './routes/post-withdraw-permission.js';
 import { Router } from 'express';
 
 import type { RateLimiter } from '../../middleware/rate-limit.js';
 import type { EnquiriesService } from './enquiries.service.js';
+import { getMyEnquiry } from './routes/get-my-enquiry.js';
 import { getMyEnquiries } from './routes/get-my-enquiries.js';
+import { postWithdrawSharing } from './routes/post-withdraw-sharing.js';
 import { postEnquiry } from './routes/post-enquiry.js';
 import type { EnquiriesRoute } from './routes/route.js';
 
-const ROUTES: EnquiriesRoute[] = [getMyEnquiries, postEnquiry];
+const ROUTES: EnquiriesRoute[] = [
+  getSharingStatus,
+  getSharingPermissions,
+  postWithdrawPermission,
+  getMyEnquiries,
+  getMyEnquiry,
+  postEnquiry,
+  postWithdrawSharing,
+];
 
 export function createEnquiriesRouter(service: EnquiriesService, rateLimit: RateLimiter): Router {
   const router = Router();

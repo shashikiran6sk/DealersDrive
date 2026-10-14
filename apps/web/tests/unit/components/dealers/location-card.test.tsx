@@ -33,75 +33,35 @@ const ADDRESS = {
 };
 
 describe('LocationCard', () => {
-  it('points the frame at the URL the API composed, and nothing else', () => {
+  it('shows the public business address and one safe directions link without an iframe or Load Map', () => {
     const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
-
-    const frame = container.querySelector('iframe');
-    // Verbatim. The card does not build, rewrite or second-guess this URL —
-    // which is what lets the API change the shape of the map (R14) without the
-    // card knowing there is more than one.
-    expect(frame?.getAttribute('src')).toBe(ADDRESS.embedUrl);
-    expect(frame?.getAttribute('loading')).toBe('lazy');
-  });
-
-  it('names the frame, because a screen reader otherwise announces "iframe"', () => {
-    const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
-
-    expect(container.querySelector('iframe')?.getAttribute('title')).toBe(
-      'Map showing Sri Lakshmi Motors in Vellore',
+    expect(container.querySelector('iframe')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByText(ADDRESS.full)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Get Directions' })).toHaveAttribute(
+      'href',
+      ADDRESS.mapsUrl,
     );
+    expect(screen.getByRole('link')).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
-
-  it('opens the dealer’s own link in a new tab, safely', () => {
-    render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
-
-    const link = screen.getByRole('link', { name: /get directions/i });
-    expect(link).toHaveAttribute('href', ADDRESS.mapsUrl);
-    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
-  });
-
-  /**
-   * The state a phone-shared link lands in when it could not be followed. The
-   * button is what a buyer presses, and it must not wait on the map.
-   */
-  it('keeps the directions button when there is no map', () => {
-    const { container } = render(
+  it('renders address and directions with no map coordinates', () => {
+    render(
       <LocationCard
         address={{ ...ADDRESS, geo: null, embedUrl: null }}
         brandName="Sri Lakshmi Motors"
       />,
     );
-
-    expect(container.querySelector('iframe')).toBeNull();
-    expect(screen.getByText(/Map — dealership location/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /get directions/i })).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAttribute('href', ADDRESS.mapsUrl);
   });
-
-  /** And the reverse: a map outlives a link that was cleared. */
-  it('keeps the map when there is no link', () => {
-    const { container } = render(
-      <LocationCard address={{ ...ADDRESS, mapsUrl: null }} brandName="Sri Lakshmi Motors" />,
-    );
-
-    expect(container.querySelector('iframe')).not.toBeNull();
-    expect(screen.queryByRole('link', { name: /get directions/i })).toBeNull();
-  });
-
-  /**
-   * The rule the whole card exists to keep. An address is several gates in one
-   * district; a map centred on the wrong one is worse than no map, because it
-   * looks authoritative.
-   */
-  it('never falls back to the address for either half', () => {
-    const { container } = render(
+  it('handles incomplete destinations without a misleading link', () => {
+    render(
       <LocationCard
-        address={{ ...ADDRESS, mapsUrl: null, geo: null, embedUrl: null }}
+        address={{ ...ADDRESS, full: '', mapsUrl: null, geo: null, embedUrl: null }}
         brandName="Sri Lakshmi Motors"
       />,
     );
-
-    expect(container.innerHTML).not.toContain('google.com');
-    expect(container.innerHTML).not.toContain('Katpadi');
-    expect(screen.getByText(/Map — dealership location/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.getByText('Address unavailable')).toBeInTheDocument();
+    expect(screen.getByText(/Directions are unavailable/)).toBeInTheDocument();
   });
 });

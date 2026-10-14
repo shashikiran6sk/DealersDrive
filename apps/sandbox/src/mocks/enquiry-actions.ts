@@ -48,3 +48,11 @@ export function enquiryCustomerAction(): Promise<EnquiryCustomer | null> {
 export function sendEnquiryAction(): Promise<SendEnquiryState> {
   return settle(enquiryActionStub.result);
 }
+
+export function enquirySharingStatusAction() {
+  return Promise.resolve({
+    required: true,
+    recipientId: '00000000-0000-4000-8000-000000000001',
+    dealerName: 'Fixture Motors',
+  });
+}

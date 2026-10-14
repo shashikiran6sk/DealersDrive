@@ -1,3 +1,4 @@
+import { requireTerms } from '../legal/legal.facade.js';
 import {
   SAVED_SLUGS_MAX,
   type SavedState,
@@ -81,6 +82,7 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
 
       return withTransaction(prisma, async (tx) => {
         await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
+        await requireTerms(tx, customer.userId);
         const pair = { customerId: customer.userId, listingId: listing.id };
 
         const already = await tx.savedVehicle.findUnique({

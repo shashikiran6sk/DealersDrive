@@ -3,6 +3,7 @@ import { userEvent, within } from 'storybook/test';
 
 import { enquiryActionStub } from '../../mocks/enquiry-actions';
 
+import { LegalProvider } from '@/features/legal/legal-provider';
 import { PriceBlock } from '@/components/vehicle/price-block';
 import { EnquiryForm, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 
@@ -115,5 +116,22 @@ export const FormRateLimited: Story = {
       }
       onCancel={() => undefined}
     />
+  ),
+};
+
+export const ReusedDealershipPermission: Story = {
+  render: (args) => (
+    <LegalProvider enabled>
+      <EnquiryForm
+        customer={CUSTOMER}
+        dealerName={args.dealerName}
+        sharingRequired={false}
+        recipientId="00000000-0000-4000-8000-000000000001"
+        onSend={() =>
+          Promise.resolve({ status: 'invalid', message: 'Fixture submission recorded.' })
+        }
+        onCancel={() => undefined}
+      />
+    </LegalProvider>
   ),
 };
