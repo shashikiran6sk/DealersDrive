@@ -1,5 +1,7 @@
 # Dealers-Drive Android customer app
 
+For Android Studio setup, local Docker/API testing, an AWS-connected release-mode build, physical devices and troubleshooting, see the [macOS Android environment runbook](../../docs/mobile/running-android/README.md).
+
 Mobile PR 1 introduces the Expo SDK 57 customer navigation shell, native theme/branding, environment validation, public REST client and native tests. Inventory, authentication and private account screens arrive in the subsequent approved stack. This development foundation is not a release candidate.
 
 ## Workspace commands
