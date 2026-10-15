@@ -58,7 +58,7 @@ export function HomeScreen() {
         <View style={styles.overlay} />
         <View style={styles.heroContent}>
           <Text style={styles.eyebrow}>{HOME_TEXT.eyebrow}</Text>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text testID="home-title" accessibilityRole="header" style={styles.title}>
             {HOME_TEXT.title}
           </Text>
           <Text style={styles.lede}>{HOME_TEXT.lede}</Text>

@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 set -uo pipefail
 mkdir -p artifacts
+if ! timeout 60 adb shell cmd activity wait-for-broadcast-idle > artifacts/boot-ready.txt; then
+  adb shell dumpsys activity lastanr > artifacts/android-last-anr.txt || true
+  exit 1
+fi
 if ! adb install apps/mobile/android/app/build/outputs/apk/release/app-release.apk; then
+  exit 1
+fi
+if ! timeout 60 adb shell cmd activity wait-for-broadcast-idle > artifacts/install-ready.txt; then
+  adb shell dumpsys activity lastanr > artifacts/android-last-anr.txt || true
   exit 1
 fi
 smokeResult=0

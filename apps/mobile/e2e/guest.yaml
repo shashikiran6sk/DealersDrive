@@ -2,7 +2,8 @@ appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- assertVisible: Find your next car
+- assertVisible:
+    id: home-title
 - takeScreenshot: artifacts/home-approved-brand
 - tapOn: Profile
 - assertVisible: Your account
@@ -25,4 +26,5 @@ appId: ${APP_ID}
 - assertVisible: Your account
 - stopApp
 - launchApp
-- assertVisible: Find your next car
+- assertVisible:
+    id: home-title

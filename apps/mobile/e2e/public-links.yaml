@@ -4,10 +4,12 @@ appId: ${APP_ID}
     clearState: true
 - openLink: dealersdrive://car/missing-release-validation-car
 - takeScreenshot: artifacts/car-link-received
-- assertVisible: Back
+- assertVisible:
+    id: car-details-back
 - back
 - openLink: dealersdrive://admin
-- assertVisible: Find your next car
+- assertVisible:
+    id: home-title
 - openLink: dealersdrive://saved
 - assertVisible: Sign in to see your saved cars.
 - takeScreenshot: artifacts/guest-saved-auth-gate
