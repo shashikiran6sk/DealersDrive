@@ -47,7 +47,7 @@ export function incomingLink(path: string, webOrigin: string): string {
     if (route === '/cars' || route === '/dealers') {
       const schema = route === '/cars' ? PublicVehicleQuery : DealerDirectoryQuery;
       if (!schema.safeParse(Object.fromEntries(entries)).success) return FALLBACK;
-      const normalizedQuery = new URLSearchParams(entries).toString();
+      const normalizedQuery = new URLSearchParams(Object.fromEntries(entries)).toString();
       return `${route}${normalizedQuery ? `?${normalizedQuery}` : ''}`;
     }
     if (url.search) return FALLBACK;

@@ -1943,3 +1943,12 @@ Existing ActionButton, Page, Brand and StatusPanel are reused. Native fixtures s
 | DeletionScreen / DeletionRequest      | mobile features/account                 | guest external resource, owner-scoped UUID retry, unticked intake/receipt; account               | account-controls.test.tsx; installed visual review pending |
 
 Existing Button/ConsentChoice/Page/StatusPanel/Brand components are reused. Web Storybook static build passes; visual review was blocked by automatic browser approval review, so no visual acceptance is claimed.
+
+## Native release components (F108)
+
+| Component        | Folder under apps/mobile/src/features/reliability | Props/states/consumers                                                                       | Evidence                                                           |
+| ---------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| AppErrorBoundary | app-error-boundary                                | Expo Router retry; generic render failure with no raw exception/credential text; root layout | reliability.test.tsx; installed injection pending                  |
+| AboutScreen      | about-screen                                      | Public version/build, brand, terms/privacy/support/home; Profile                             | Approved asset/bundle/type checks; installed visual review pending |
+
+Existing native Brand/Page/ActionButton are reused; native fixtures supplement the DOM sandbox. System launcher/splash visuals and E2E screenshots remain device acceptance gates.

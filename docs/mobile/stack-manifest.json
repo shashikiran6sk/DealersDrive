@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F107_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-15 03:37:20 UTC",
+  "status": "TEN_DRAFT_PRS_OPEN_F108_VALIDATION_IN_PROGRESS_NO_GO",
+  "verified_at": "2026-10-15 03:58:33 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -871,56 +871,216 @@
       "feature_id": "F107",
       "title": "Account deletion",
       "planned_head_branch": "feat/f107-mobile-account-deletion",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_VALIDATED_DRAFT_PR_PENDING",
-      "is_draft": null,
+      "head_sha": "9a774251f950f00c4d5204523650c1328158400e",
+      "pr_number": 320,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/320",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f106-mobile-support",
       "base_sha_at_creation": "18245c5c77032d85babd69feb15371abc35ea998",
       "base_sha_verified_now": "18245c5c77032d85babd69feb15371abc35ea998",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_8"],
-      "incremental_diff": null,
-      "ci_status": "NOT_STARTED",
-      "tested_sha": null,
-      "review_state": "DRAFT_PENDING",
+      "incremental_diff": "18245c5c77032d85babd69feb15371abc35ea998...9a774251f950f00c4d5204523650c1328158400e",
+      "ci_status": "SUCCESS",
+      "tested_sha": "9a774251f950f00c4d5204523650c1328158400e",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": [
         "docs/mobile/f107-validation.md",
         "docs/code/mobile/account-controls.md",
         "docs/mobile/deletion-fulfilment-runbook.md"
       ],
       "known_blockers": [
-        "Deletion intake is implemented; erasure fulfilment, retention and operator procedure are unapproved and launch blocking",
-        "Installed Android and web visual review pending; browser inspection rejected by automatic approval review"
+        "Actual erasure fulfilment/retention procedure and production legal review remain unresolved",
+        "Installed native/web visual review remains pending; local Chrome inspection was automatically rejected"
       ],
       "restack_history": [],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
-      "descends_from_required_foundation": true
+      "descends_from_required_foundation": true,
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:49:26Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677299668/job/116233714415",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-15T03:38:22Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:39:44Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677299790/job/116233715010",
+          "name": "semgrep",
+          "startedAt": "2026-10-15T03:38:22Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:38:37Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677299668/job/116233714297",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-15T03:38:22Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:39:12Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677299790/job/116233715394",
+          "name": "gitleaks",
+          "startedAt": "2026-10-15T03:38:22Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:39:21Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677299668/job/116233714491",
+          "name": "dependency audit",
+          "startedAt": "2026-10-15T03:38:22Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-15T03:39:55Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/7ShV6vbGnqfRzyBnGXEGpEzBosk3"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:39:56Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-15T03:39:56Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ]
     },
     {
       "sequence": 10,
       "feature_id": "F108",
       "title": "Release hardening",
       "planned_head_branch": "feat/f108-mobile-release-hardening",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "NOT_CREATED",
-      "is_draft": null,
+      "head_sha": "d321b8901c21f7a5e6e3acfb6b66b7408f12e7dc",
+      "pr_number": 321,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/321",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f107-mobile-account-deletion",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": null,
+      "base_sha_at_creation": "9a774251f950f00c4d5204523650c1328158400e",
+      "base_sha_verified_now": "9a774251f950f00c4d5204523650c1328158400e",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_9"],
-      "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
-      "tested_sha": null,
-      "review_state": "NOT_CREATED",
-      "evidence": [],
-      "known_blockers": ["Production legal publication and release remain separately gated"],
+      "incremental_diff": "9a774251f950f00c4d5204523650c1328158400e...d321b8901c21f7a5e6e3acfb6b66b7408f12e7dc",
+      "ci_status": "IN_PROGRESS_OR_FAILED",
+      "tested_sha": "d321b8901c21f7a5e6e3acfb6b66b7408f12e7dc",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
+      "evidence": [
+        "docs/mobile/f108-validation.md",
+        "docs/mobile/production-acceptance.md",
+        "docs/mobile/acceptance-tests.md",
+        "docs/mobile/security-review.md",
+        "docs/mobile/release-operations.md",
+        "docs/mobile/play-checklist.md"
+      ],
+      "known_blockers": [
+        "Initial native APK/AAB compiled; permission inspection failed and is corrected in successor checkpoint; final-head CI pending",
+        "3 high / 3 moderate advisories require review/remediation",
+        "Deletion fulfilment/retention, approved legal publication, live providers, real devices and performance, final signing/App Links/Console approval remain release blockers"
+      ],
       "restack_history": [],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:44:57Z",
+          "conclusion": "FAILURE",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741519/job/116235080639",
+          "name": "semgrep",
+          "startedAt": "2026-10-15T03:43:30Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741452/job/116235080799",
+          "name": "Android release-variant compile (validation key)",
+          "startedAt": "2026-10-15T03:43:30Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "Android native validation"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741397/job/116235080122",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-15T03:43:29Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:43:49Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741397/job/116235080595",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-15T03:43:30Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:44:25Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741519/job/116235080722",
+          "name": "gitleaks",
+          "startedAt": "2026-10-15T03:43:30Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:44:20Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38677741397/job/116235080320",
+          "name": "dependency audit",
+          "startedAt": "2026-10-15T03:43:29Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-15T03:43:24Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/DoMYrqfsCTekfXVyzHQNiph3672W"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-15T03:43:30Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-15T03:43:30Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ],
+      "descends_from_required_foundation": true
     }
   ],
   "restack_policy": "No automatic restack or shared-history rewrite. Assess predecessor changes; obtain approval; prefer reviewable parent-into-child merge commits with normal pushes.",
@@ -966,7 +1126,7 @@
     "merged_at": "2026-10-14T12:26:44Z",
     "foundation_includes_merge": true,
     "website_implemented": true,
-    "native_adoption": "F099_ASSETS_COMPONENTS_PREBUILD_VERIFIED_DEVICE_PENDING",
+    "native_adoption": "F108_STORE_ASSETS_VERIFIED_NATIVE_COMPILE_INITIAL_SUCCEEDED_DEVICE_PENDING",
     "masters": [
       {
         "source_path": "apps/web/public/brand/dd-icon-black.svg",
@@ -1018,7 +1178,9 @@
       }
     ],
     "additional_native_branding_dependency_required": false,
-    "inventory": "docs/mobile/branding-assets.md"
+    "inventory": "docs/mobile/branding-assets.md",
+    "store_icon": "apps/mobile/src/assets/brand/play-store-icon.png",
+    "feature_graphic": "apps/mobile/src/assets/brand/play-feature-graphic.png"
   },
   "head_sha_semantics": "Last verified Git checkpoint; the manifest commit itself is excluded to avoid a self-referential SHA. Refresh GitHub before pinning child branches."
 }

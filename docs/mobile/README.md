@@ -1,6 +1,6 @@
 # Dealers-Drive Android — revised audit and stacked implementation plan
 
-**Status: fresh START received after the PR #311 amendment; F099 implementation and the documented no-rewrite restack are authorized. PR merges and production release remain separately gated.**
+**Status: START authorized the ten-PR implementation. F099–F108 are open/draft (#312–#321), each targeting its predecessor above #279. F108 validation is in progress; production verdict remains NO-GO. PR merges and production release remain separately gated.**
 
 Re-audited 14 October 2026 against **PR #279**, not main. This revision supersedes the earlier main-based findings about missing policies/consent and the original standalone policy PR. Other customer discovery, native security, accessibility, performance, testing and Play requirements remain in scope.
 
@@ -363,7 +363,7 @@ Current SDK/Play policy facts in the original audit must be rechecked before sub
 | Native session/library/package/vendor choices    | Original recommended defaults; pinned/validated in approved implementation |
 | Production merges/publication/deployment         | Separate explicit owner authorization                                      |
 
-The companion `stack-manifest.json` records the new #279 and #311 baseline, the existing F099 with its original and updated foundation ancestry, and nine uncreated children. Future null SHAs/URLs are deliberate; no PR or test result is fabricated.
+The companion `stack-manifest.json` records the #279/#311 baseline and all ten actual open draft PRs, with each immediate-parent dependency, verified head, checks and evidence. Checkpoint SHAs exclude their later documentation-only commit; refresh GitHub before pinning/restacking.
 
 ## 16. Approval gate and expected end state
 
@@ -414,3 +414,9 @@ F106 starts from F105 head 1b310ecc / draft PR #318, whose GitHub checks pass. N
 ## F107 account controls checkpoint
 
 F107 descends from F106 draft #319 at 18245c5c; its GitHub checks pass. The owner-approved amendment adds separate native/web fresh-OTP customer-only deactivation/reactivation and support-backed deletion requests, plus a public external request resource. Existing legal withdrawal/evidence and identity services remain authoritative; dealer/admin roles are preserved. One additive migration supplies customer-only state and authentication recency. See [validation](f107-validation.md), [internals](../code/mobile/account-controls.md) and the [unapproved fulfilment runbook](deletion-fulfilment-runbook.md). Deletion intake is not erasure; release remains blocked on verified fulfilment/retention and external acceptance gates. All ten immediate-parent PR bases and production approval boundaries remain unchanged.
+
+## F108 release-hardening checkpoint
+
+F108 draft [#321](https://github.com/shashikiran6sk/DealersDrive/pull/321) targets F107 #320 at 9a774251; F107 checks pass. The ten branches remain unmerged above #279. Native CI compiled initial arm64 APK/AAB at d321b890 (target/compile SDK 36, minimum 24), then correctly rejected unused biometric permissions and an app-owned AndroidX receiver permission. The corrected successor removes unused biometrics and admits only that package's signature-protected receiver; exact final-head checks remain required. SDK-57 patches pass Expo Doctor 21/21; customer-link canonicalization, safe error recovery/About, approved store graphics and security-patch overrides are included.
+
+See [validation](f108-validation.md), [acceptance matrix](acceptance-tests.md), [security findings](security-review.md), [build/incident operations](release-operations.md), [Play checklist](play-checklist.md) and [production acceptance](production-acceptance.md). Real-device/installed E2E, live OTP, deletion fulfilment, approved policies, residual security findings, performance and production signing/Console approval remain blockers. No merge, deployment, legal activation or Play upload is authorized or performed.
