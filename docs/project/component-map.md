@@ -1931,3 +1931,15 @@ Existing ActionButton, Page, Brand and StatusPanel are reused. Native fixtures s
 | SupportCreateScreen / SupportCreateForm   | support-create-screen / support-create-form   | Account-keyed category/subject/body/owned enquiry; privacy prefill; uncertain/safe retry | support-create.test.tsx                    |
 | SupportDetailScreen / SupportConversation | support-detail-screen / support-conversation  | Account/ticket-keyed messages, active polling, quota, explicit reopen/closed/new-request | support-conversation.test.tsx              |
 | SupportMessageBubble                      | support-message                               | Public author/body/date; customer/support variants; virtualized conversation             | Conversation fixtures                      |
+
+## Account controls (F107)
+
+| Component                             | Source                                  | Props/states/consumers                                                                           | Evidence                                                   |
+| ------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| AccountControlsHost / AccountControls | web features/account/account-controls   | customerId, canDeactivate; guest, fresh/stale OTP, unticked, pending, refused, receipt; /account | Forms/CustomerAccountControls; web action/UI tests         |
+| DeletionRequest                       | web features/account/deletion-request   | customerId; explicit choice, optional details, retry/error, intake receipt; /account-deletion    | Forms/CustomerDeletionRequest; action/UI tests             |
+| CustomerReactivation                  | web features/auth/customer-reactivation | flow identity/name/phone, explicit confirm, expiry/restart; CustomerLogin                        | Forms/CustomerReactivation; cookie isolation/UI tests      |
+| AccountScreen / AccountControls       | mobile features/account                 | owner/session keyed; fresh/stale OTP, explicit confirm, error/logout receipt; Profile            | account-controls.test.tsx; installed visual review pending |
+| DeletionScreen / DeletionRequest      | mobile features/account                 | guest external resource, owner-scoped UUID retry, unticked intake/receipt; account               | account-controls.test.tsx; installed visual review pending |
+
+Existing Button/ConsentChoice/Page/StatusPanel/Brand components are reused. Web Storybook static build passes; visual review was blocked by automatic browser approval review, so no visual acceptance is claimed.

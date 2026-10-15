@@ -75,6 +75,8 @@ const INPUT_SCHEMA_NAMES = [
   'VerifyPhoneInput',
   'PhoneSignInInput',
   'CustomerSignInInput',
+  'CustomerDeactivationInput',
+  'CustomerReactivationInput',
   'CustomerSignUpInput',
   'CreateEnquiryInput',
   'CustomerEnquiryQuery',

@@ -45,7 +45,7 @@ export const nativeAuthOperations: OperationSpec[] = [
     tag: DOC_TAGS.auth,
     summary: 'Verify an OTP and reuse the existing customer identity',
     description:
-      'Five attempts per signed challenge; expiry/future/tamper/replay checks and fail-closed cache. Server verifies the provider access token and matching phone through the existing customer service. Signed-in results carry a revocable opaque CUSTOMER credential; first-time customers receive the existing single-use name/signup ticket. No dealer/admin privilege, cookie, refresh token or automatic mutation retry. No-store.',
+      'Five attempts per signed challenge; expiry/future/tamper/replay checks and fail-closed cache. Server verifies the provider access token and matching phone through the existing customer service. Signed-in results carry a revocable opaque CUSTOMER credential; first-time customers receive the existing single-use name/signup ticket. Deactivated customers receive REACTIVATION_REQUIRED with a single-use purpose-bound confirmation ticket and no session. No dealer/admin privilege, cookie, refresh token or automatic mutation retry. No-store.',
     audience: 'public',
     requestBody: { schema: 'NativeOtpVerifyInput', required: true },
     responses: [

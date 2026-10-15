@@ -2,6 +2,7 @@ import type { Request } from 'express';
 
 const CUSTOMER_BEARER_ROUTES = [
   /^\/v1\/auth\/customer\/me\/?$/,
+  /^\/v1\/auth\/customer\/account(?:\/deactivate)?\/?$/,
   /^\/v1\/auth\/native\/customer\/(?:me|logout)\/?$/,
   /^\/v1\/legal\/customer\/(?:status|history|terms)\/?$/,
   /^\/v1\/enquiries(?:\/|$)/,

@@ -316,6 +316,6 @@ Foundation: unmerged Draft PR #279; each mobile PR targets its predecessor.
 - [~] F103 — Home and dealers — draft [PR #316](https://github.com/shashikiran6sk/DealersDrive/pull/316), GitHub checks pass
 - [~] F104 — Saved cars and account — draft [PR #317](https://github.com/shashikiran6sk/DealersDrive/pull/317), GitHub checks pass
 - [~] F105 — Consent and enquiries — draft [PR #318](https://github.com/shashikiran6sk/DealersDrive/pull/318), GitHub checks pass
-- [~] F106 — Customer support — local checks pass; draft PR pending
-- [ ] F107 — Account deletion
+- [~] F106 — Customer support — draft [PR #319](https://github.com/shashikiran6sk/DealersDrive/pull/319), GitHub checks pass
+- [~] F107 — Account controls/deletion requests — local checks pass; draft PR pending; actual erasure fulfilment/retention remains blocked
 - [ ] F108 — Release hardening

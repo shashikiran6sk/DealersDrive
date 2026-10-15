@@ -21,6 +21,7 @@ export {
   grantForEnquiry,
   sharingDisclosureWhere,
   withdrawGrant,
+  withdrawCustomerSharing,
   mayDiscloseEnquiry,
   SHARING_GRANT_SELECT,
 } from './contact-sharing.js';

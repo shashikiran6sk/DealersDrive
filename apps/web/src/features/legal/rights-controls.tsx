@@ -40,7 +40,15 @@ export async function RightsControls({ enquiryId }: { enquiryId?: string } = {})
           href="/support-requests/new?category=ACCOUNT_ISSUE&subject=Privacy%20request"
           className="underline"
         >
-          Request access, correction or account deletion
+          Request access or correction
+        </Link>
+        .{' '}
+        <Link href="/account-deletion" className="underline">
+          Request account deletion
+        </Link>{' '}
+        or{' '}
+        <Link href="/account" className="underline">
+          manage temporary customer deactivation
         </Link>
         . Explain your request in a support ticket. We may verify your identity and need to preserve
         records required by law or a dispute. Declining new Terms does not block this channel. For

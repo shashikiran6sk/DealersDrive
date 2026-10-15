@@ -57,3 +57,5 @@ export * from './dealer-yard-visits.js';
 export * from './legal.js';
 
 export * from './native-auth.js';
+
+export * from './customer-account.js';

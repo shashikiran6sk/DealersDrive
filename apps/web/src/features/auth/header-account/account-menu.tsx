@@ -103,6 +103,14 @@ export function AccountMenu({
             >
               {HEADER_ACCOUNT_TEXT.supportRequests}
             </Link>
+            <Link
+              role="menuitem"
+              href={HEADER_ACCOUNT_TEXT.controlsHref}
+              className={MENU_ITEM}
+              onClick={() => setOpen(false)}
+            >
+              {HEADER_ACCOUNT_TEXT.controls}
+            </Link>
             <div role="separator" className={MENU_SEPARATOR} />
             <WorkspaceItems
               workspaces={account.workspaces ?? []}

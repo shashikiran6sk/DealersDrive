@@ -1,7 +1,11 @@
 import type * as ReactNativeModule from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import type { LegalPublication, NativeOtpChallenge } from '@dealers-drive/contracts/native-auth';
+import type {
+  LegalPublication,
+  NativeOtpChallenge,
+  NativeCustomerSignIn,
+} from '@dealers-drive/contracts/native-auth';
 
 import { SignInScreen } from '../src/features/auth/sign-in-screen';
 import { AUTH_TEXT } from '../src/features/auth/auth.constants';
@@ -47,12 +51,23 @@ const mockApi = {
   publication: jest.fn(() => Promise.resolve(policies)),
   request: jest.fn(() => Promise.resolve(challenge)),
   resend: jest.fn(() => Promise.resolve(challenge)),
-  verify: jest.fn(() =>
+  verify: jest.fn<Promise<NativeCustomerSignIn>, [string, string, AbortSignal?]>(() =>
     Promise.resolve({
       status: 'NAME_REQUIRED',
       signUpToken: 'private-signup-ticket',
       expiresAt: '2030-01-01T00:00:00.000Z',
       phoneDisplay: challenge.phoneDisplay,
+    }),
+  ),
+  reactivate: jest.fn(() =>
+    Promise.resolve({
+      customer: {
+        id: '11111111-1111-4111-8111-111111111111',
+        fullName: 'New Customer',
+        phone: '+919845599999',
+        phoneDisplay: challenge.phoneDisplay,
+      },
+      credential: { token: 'T'.repeat(43), expiresAt: '2030-01-01T00:00:00.000Z' },
     }),
   ),
   signUp: jest.fn(() =>
@@ -91,13 +106,19 @@ async function form() {
   );
   await waitFor(() => expect(mockApi.publication).toHaveBeenCalled());
 }
-async function prove() {
+async function prove(reactivation = false) {
   await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.mobile), '9845599999');
   await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.send }));
   await waitFor(() => expect(screen.getByLabelText(AUTH_TEXT.code)).toBeOnTheScreen());
   await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.code), '123456');
   await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.verify }));
-  await waitFor(() => expect(screen.getByLabelText(AUTH_TEXT.name)).toBeOnTheScreen());
+  await waitFor(() =>
+    expect(
+      reactivation
+        ? screen.getByRole('button', { name: AUTH_TEXT.reactivate })
+        : screen.getByLabelText(AUTH_TEXT.name),
+    ).toBeOnTheScreen(),
+  );
 }
 beforeEach(() => {
   jest.useFakeTimers();
@@ -162,4 +183,21 @@ it('shows a failed signup without completing authentication or reporting success
 jest.mock('react-native-svg', () => {
   const { View } = jest.requireActual<typeof ReactNativeModule>('react-native');
   return { __esModule: true, default: View, Path: View, SvgXml: View };
+});
+
+it('requires explicit reactivation after verified OTP and never treats it as new signup', async () => {
+  mockApi.verify.mockResolvedValueOnce({
+    status: 'REACTIVATION_REQUIRED',
+    reactivationToken: 'single-use-test-proof',
+    expiresAt: '2030-01-01T00:00:00.000Z',
+    phoneDisplay: challenge.phoneDisplay,
+    fullName: 'New Customer',
+  });
+  await form();
+  await prove(true);
+  expect(mockManager.accept).not.toHaveBeenCalled();
+  expect(mockApi.signUp).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.reactivate }));
+  await waitFor(() => expect(mockManager.accept).toHaveBeenCalledTimes(1));
+  expect(mockApi.reactivate).toHaveBeenCalledWith('single-use-test-proof', expect.anything());
 });

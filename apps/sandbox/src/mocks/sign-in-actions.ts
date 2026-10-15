@@ -4,7 +4,8 @@ export interface DealerSignInState {
 }
 
 export interface CustomerSignInState {
-  status?: 'SIGNED_IN' | 'NAME_REQUIRED';
+  status?: 'SIGNED_IN' | 'NAME_REQUIRED' | 'REACTIVATION_REQUIRED';
+  reactivationId?: string;
   fullName?: string;
   phoneDisplay?: string;
   error?: string;
@@ -41,5 +42,9 @@ export function customerPhoneSignInAction(): Promise<CustomerSignInState> {
 }
 
 export function customerSignUpAction(): Promise<CustomerSignUpState> {
+  return settle(signInActionStub.signUp);
+}
+
+export function customerReactivateAction(): Promise<CustomerSignUpState> {
   return settle(signInActionStub.signUp);
 }
