@@ -13,6 +13,14 @@
     "incremental": true,
     "types": ["jest", "node", "react"]
   },
-  "include": ["app/**/*.tsx", "src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
+  "include": [
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "config/**/*.d.cts",
+    "app.config.ts"
+  ],
   "exclude": ["node_modules", "dist", ".expo", "coverage"]
 }

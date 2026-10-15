@@ -1,0 +1,72 @@
+name: Android native validation
+
+on:
+  pull_request:
+    branches: [main, feature/legal-compliance-and-consent-v1, 'feat/f*-mobile-*']
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/contracts/**'
+      - 'packages/config/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.nvmrc'
+      - '.github/workflows/android.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    name: Android release-variant compile (validation key)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_APP_ENV: preview
+      EXPO_PUBLIC_API_BASE_URL: https://api.validation.invalid
+      EXPO_PUBLIC_WEB_BASE_URL: https://web.validation.invalid
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Locked dependencies and shared contracts
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @dealers-drive/contracts build
+      - name: Approved branding and native configuration
+        run: |
+          pnpm --filter @dealers-drive/mobile brand:check
+          pnpm --filter @dealers-drive/mobile exec expo prebuild --platform android --no-install
+      - name: Compile APK and AAB with generated validation key only
+        working-directory: apps/mobile/android
+        run: ./gradlew :app:assembleRelease :app:bundleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2 --console=plain
+      - name: Inspect merged release manifest and 16 KB ZIP alignment
+        run: |
+          python3 apps/mobile/scripts/check-android.py
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+      - name: Validation artifacts (not for Play submission)
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-validation-${{ github.event.pull_request.head.sha }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            apps/mobile/android/app/build/outputs/apk/release/*.apk
+            apps/mobile/android/app/build/outputs/bundle/release/*.aab
+            apps/mobile/android/app/build/outputs/logs/manifest-merger-release-report.txt
