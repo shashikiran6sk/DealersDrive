@@ -56,3 +56,6 @@ apps/mobile/ios/
 
 # Local signing metadata; never bundle or commit credentials
 credentials.json
+
+# Local Python build-check cache
+__pycache__/

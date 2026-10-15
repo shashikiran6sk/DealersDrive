@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { CustomerSignUpInput, type NativeOtpChallenge } from '@dealers-drive/contracts/native-auth';
-import { IndianMobile } from '@dealers-drive/contracts/common';
+import { IndianMobile, normaliseIndianMobile } from '@dealers-drive/contracts/common';
 import { useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -238,7 +238,9 @@ export function SignInScreen() {
               ? AUTH_TEXT.title
               : phase === 'otp'
                 ? AUTH_TEXT.codeTitle
-                : AUTH_TEXT.nameTitle
+                : phase === 'reactivate'
+                  ? AUTH_TEXT.reactivate
+                  : AUTH_TEXT.nameTitle
           }
           description={
             phase === 'phone'
@@ -257,8 +259,13 @@ export function SignInScreen() {
                 keyboardType="phone-pad"
                 autoComplete="tel-national"
                 value={phone}
-                onChangeText={(value) => setPhone(value.replace(/\D/g, '').slice(0, 10))}
-                maxLength={10}
+                onChangeText={(value) => {
+                  const normalized = normaliseIndianMobile(value);
+                  setPhone(
+                    normalized ? normalized.slice(3) : value.replace(/\D/g, '').slice(0, 10),
+                  );
+                }}
+                maxLength={18}
                 editable={!busy}
               />
               <ActionButton label={AUTH_TEXT.send} pending={busy} onPress={() => void send()} />

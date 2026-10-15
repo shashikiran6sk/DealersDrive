@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible: Home
+- tapOn: Profile
+- assertVisible: Your account
+- assertVisible: Sign in or create account
+- tapOn: Saved
+- assertVisible: Sign in to see your saved cars.
+- tapOn: Profile
+- tapOn: About Dealers-Drive
+- assertVisible: About Dealers-Drive
+- takeScreenshot: about-approved-brand
+- back
+- assertVisible: Your account
+- stopApp
+- launchApp
+- assertVisible: Home

@@ -201,3 +201,12 @@ it('requires explicit reactivation after verified OTP and never treats it as new
   await waitFor(() => expect(mockManager.accept).toHaveBeenCalledTimes(1));
   expect(mockApi.reactivate).toHaveBeenCalledWith('single-use-test-proof', expect.anything());
 });
+
+it('normalises pasted country codes without truncating the subscriber number', async () => {
+  await form();
+  await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.mobile), '+91 98455 99999');
+  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.send }));
+  await waitFor(() =>
+    expect(mockApi.request).toHaveBeenLastCalledWith('9845599999', expect.any(AbortSignal)),
+  );
+});

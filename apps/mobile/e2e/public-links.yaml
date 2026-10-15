@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- openLink: dealersdrive://car/missing-release-validation-car
+- assertVisible: Back
+- back
+- openLink: dealersdrive://admin
+- assertVisible: Home
+- openLink: dealersdrive://saved
+- assertVisible: Sign in to see your saved cars.
+- takeScreenshot: guest-saved-auth-gate
+- stopApp

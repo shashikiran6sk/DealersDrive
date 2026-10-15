@@ -51,6 +51,7 @@ jobs:
           pnpm --filter @dealers-drive/contracts build
       - name: Approved branding and native configuration
         run: |
+          python3 apps/mobile/scripts/test_android_validation.py
           pnpm --filter @dealers-drive/mobile brand:check
           pnpm --filter @dealers-drive/mobile exec expo prebuild --platform android --no-install
       - name: Compile APK and AAB with generated validation key only
@@ -61,6 +62,7 @@ jobs:
           python3 apps/mobile/scripts/check-android.py
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 apps/mobile/android/app/build/outputs/apk/release/app-release.apk
       - name: Validation artifacts (not for Play submission)
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
           name: android-validation-${{ github.event.pull_request.head.sha }}
