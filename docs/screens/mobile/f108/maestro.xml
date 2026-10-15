@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="2" failures="0" time="30.88" timestamp="2026-10-15T08:11:10">
+    <testcase id="guest" name="guest" classname="guest" file="apps/mobile/e2e/guest.yaml" time="18.356" timestamp="2026-10-15T08:11:10" status="SUCCESS"/>
+    <testcase id="public-links" name="public-links" classname="public-links" file="apps/mobile/e2e/public-links.yaml" time="12.505" timestamp="2026-10-15T08:11:28" status="SUCCESS"/>
+  </testsuite>
+</testsuites>
