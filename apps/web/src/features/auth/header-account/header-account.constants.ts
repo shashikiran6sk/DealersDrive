@@ -7,6 +7,8 @@ export const HEADER_ACCOUNT_TEXT = {
   myEnquiriesHref: '/enquiries',
   savedCars: 'Saved cars',
   savedCarsHref: '/saved',
+  controls: 'Account controls',
+  controlsHref: '/account',
   supportRequests: 'Support requests',
   supportRequestsHref: '/support-requests',
   dealerLogin: 'Dealer Login',

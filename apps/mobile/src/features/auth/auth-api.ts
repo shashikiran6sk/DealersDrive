@@ -36,6 +36,13 @@ export function createAuthApi(
       ),
     signUp: (body: NativeCustomerSignUpInput, signal?: AbortSignal) =>
       authClient.postAuth('/v1/auth/native/customer/sign-up', body, NativeCustomerSignUp, signal),
+    reactivate: (reactivationToken: string, signal?: AbortSignal) =>
+      authClient.postAuth(
+        '/v1/auth/native/customer/reactivate',
+        { reactivationToken, confirmed: true },
+        NativeCustomerSignUp,
+        signal,
+      ),
     me: (token: string, signal?: AbortSignal) =>
       client.customer('/v1/auth/native/customer/me', NativeCustomerSession, token, {}, signal),
     logout: (token: string) =>

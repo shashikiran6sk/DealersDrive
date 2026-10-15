@@ -4,6 +4,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError } from '../../platform/errors.js';
 import { withDealerEmailConflict } from '../dealers/dealers.facade.js';
+import { withdrawCustomerSharing } from '../legal/legal.facade.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
   MERGE_REFUSED_CONFLICTING,
@@ -149,9 +150,17 @@ async function mergeAccountsChecked(
         ? { email: absorbed.email, emailVerifiedAt: absorbed.emailVerifiedAt ?? now }
         : {}),
       fullName: survivor.fullName ?? absorbed.fullName,
+      customerDeactivatedAt: survivor.customerDeactivatedAt ?? absorbed.customerDeactivatedAt,
       lastLoginAt: now,
     },
   });
+  if (survivor.customerDeactivatedAt || absorbed.customerDeactivatedAt) {
+    await withdrawCustomerSharing(tx, survivorId);
+    await tx.session.updateMany({
+      where: { userId: survivorId, scope: 'CUSTOMER', revokedAt: null },
+      data: { revokedAt: now },
+    });
+  }
 
   await tx.session.updateMany({
     where: { userId: absorbedId, revokedAt: null },

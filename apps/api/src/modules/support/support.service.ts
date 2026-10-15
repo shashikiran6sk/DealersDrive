@@ -1,3 +1,4 @@
+import { requireCustomerAccess } from '../auth/auth.facade.js';
 import {
   canCustomerReopen,
   statusAfterCustomerReply,
@@ -16,12 +17,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import {
-  ConflictError,
-  DomainError,
-  ForbiddenError,
-  NotFoundError,
-} from '../../platform/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
@@ -36,7 +32,6 @@ import {
   TICKET_NOT_FOUND,
   TICKET_RESOLVED,
   SUPPORT_REQUEST_RETRY_CONFLICT,
-  CUSTOMER_ACCOUNT_UNAVAILABLE,
 } from './support.messages.js';
 import { isPersistedRetry } from './message-retry.js';
 import { createHash } from 'node:crypto';
@@ -104,11 +99,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
       input: CreateSupportTicketInput,
     ): Promise<CustomerSupportTicket> {
       const ticket = await withTransaction(prisma, async (tx) => {
-        const account = await tx.$queryRaw<
-          { id: string }[]
-        >`SELECT "id" FROM "users" WHERE "id" = ${customer.userId}::uuid AND "status" = 'ACTIVE' FOR SHARE`;
-        if (account.length === 0)
-          throw new ForbiddenError(CUSTOMER_ACCOUNT_UNAVAILABLE, { code: 'ACCOUNT_UNAVAILABLE' });
+        await requireCustomerAccess(tx, customer.userId);
         const digest = createHash('sha256')
           .update(
             JSON.stringify([
@@ -198,6 +189,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
       input: SupportMessageInput,
     ): Promise<CustomerSupportTicket> {
       await withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         const locked = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id" FROM "support_tickets"
           WHERE "id" = ${ticketId}::uuid AND "customerId" = ${customer.userId}::uuid
@@ -269,6 +261,7 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
 
     async reopen(customer: CustomerPrincipal, ticketId: string): Promise<CustomerSupportTicket> {
       await withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         const locked = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id" FROM "support_tickets"
           WHERE "id" = ${ticketId}::uuid AND "customerId" = ${customer.userId}::uuid

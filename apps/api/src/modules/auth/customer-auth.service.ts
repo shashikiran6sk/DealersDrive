@@ -6,6 +6,7 @@ import {
   type CustomerSignInInput,
   type CustomerSignInResponse,
   type CustomerSignUpInput,
+  type CustomerReactivationInput,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
@@ -14,7 +15,16 @@ import type { CachePort } from '../../platform/cache/cache.port.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import { CUSTOMER_SUSPENDED } from './auth.messages.js';
+import {
+  CUSTOMER_SUSPENDED,
+  CUSTOMER_DEACTIVATED,
+  CUSTOMER_PHONE_CHANGED,
+} from './auth.messages.js';
+import { createCustomerAccountService } from './customer-account.service.js';
+import {
+  issueCustomerReactivation,
+  redeemCustomerReactivation,
+} from './customer-reactivation-ticket.js';
 import { createIdentityService } from './identity.service.js';
 import { createPhoneProofService } from './phone-proof.service.js';
 import { ensureSeat, isSeatSuspended, type RoleSeat } from './roles.js';
@@ -49,6 +59,7 @@ interface SignableUser {
   phone: string | null;
   status: string;
   roles: readonly RoleSeat[];
+  customerDeactivatedAt?: Date | null;
 }
 
 export function createCustomerAuthService({
@@ -60,26 +71,48 @@ export function createCustomerAuthService({
 }: CustomerAuthDeps) {
   const proof = createPhoneProofService({ otp, cache });
   const identities = createIdentityService({ prisma, audit });
+  const accounts = createCustomerAccountService({ prisma, sessions, audit });
 
   function assertMaySignIn(user: SignableUser): void {
     if (user.status !== 'ACTIVE' || isSeatSuspended(user.roles, 'CUSTOMER')) {
       throw new ForbiddenError(CUSTOMER_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
     }
+    if (user.customerDeactivatedAt)
+      throw new ForbiddenError(CUSTOMER_DEACTIVATED, { code: 'CUSTOMER_DEACTIVATED' });
   }
 
   async function open(
     user: SignableUser & { fullName: string; phone: string },
     context: SignInContext,
     action: 'auth.login.customer' | 'auth.identity.created',
+    authenticatedAt: Date,
   ): Promise<{ customer: CustomerProfile; session: IssuedCustomerSession }> {
-    await ensureSeat(prisma, { userId: user.id, role: 'CUSTOMER' });
-    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-
-    const session = await sessions.issue({
-      userId: user.id,
-      scope: 'CUSTOMER',
-      ip: context.ip,
-      userAgent: context.userAgent,
+    const session = await withTransaction(prisma, async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${user.id}::uuid FOR UPDATE`;
+      const current = await tx.user.findUniqueOrThrow({
+        where: { id: user.id },
+        include: { roles: true },
+      });
+      assertMaySignIn(current);
+      if (
+        current.phone !== user.phone ||
+        !current.phoneVerifiedAt ||
+        current.phoneVerifiedAt > authenticatedAt
+      )
+        throw new ForbiddenError(CUSTOMER_PHONE_CHANGED, { code: 'CUSTOMER_PHONE_CHANGED' });
+      await ensureSeat(tx, { userId: user.id, role: 'CUSTOMER' });
+      await tx.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      return sessions.issue(
+        {
+          userId: user.id,
+          scope: 'CUSTOMER',
+          authenticationMethod: 'PHONE_OTP',
+          authenticatedAt,
+          ip: context.ip,
+          userAgent: context.userAgent,
+        },
+        tx,
+      );
     });
 
     logger.info(
@@ -99,6 +132,8 @@ export function createCustomerAuthService({
   }
 
   return {
+    accountStatus: accounts.status,
+    deactivate: accounts.deactivate,
     widget: () => proof.widget(),
 
     async signIn(
@@ -113,6 +148,23 @@ export function createCustomerAuthService({
       });
 
       const user = await identities.findByVerifiedPhone(proven.phone);
+      if (
+        user?.customerDeactivatedAt &&
+        user.status === 'ACTIVE' &&
+        !isSeatSuspended(user.roles, 'CUSTOMER')
+      ) {
+        const ticket = issueCustomerReactivation(user.id, proven.phone);
+        return {
+          status: 'REACTIVATION_REQUIRED',
+          customer: null,
+          signUpToken: null,
+          reactivationToken: ticket.token,
+          reactivationName: user.fullName ?? '',
+          expiresAt: ticket.expiresAt.toISOString(),
+          phoneDisplay: formatPhone(proven.phone),
+          session: null,
+        };
+      }
 
       if (user?.fullName && user.phone) {
         assertMaySignIn(user);
@@ -120,6 +172,7 @@ export function createCustomerAuthService({
           { ...user, fullName: user.fullName, phone: user.phone },
           context,
           'auth.login.customer',
+          proven.provenAt,
         );
         return {
           status: 'SIGNED_IN',
@@ -178,6 +231,7 @@ export function createCustomerAuthService({
         { ...named, fullName: named.fullName ?? input.fullName, phone: ticket.phone },
         context,
         account.created ? 'auth.identity.created' : 'auth.login.customer',
+        new Date(ticket.issuedAt),
       );
     },
 
@@ -190,6 +244,46 @@ export function createCustomerAuthService({
           phone: user.phone ?? '',
         }),
       };
+    },
+    async reactivate(input: CustomerReactivationInput, context: SignInContext = {}) {
+      const ticket = await redeemCustomerReactivation(cache, input.reactivationToken);
+      const user = await withTransaction(prisma, async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${ticket.userId}::uuid FOR UPDATE`;
+        const current = await tx.user.findUniqueOrThrow({
+          where: { id: ticket.userId },
+          include: { roles: true },
+        });
+        if (current.status !== 'ACTIVE' || isSeatSuspended(current.roles, 'CUSTOMER'))
+          throw new ForbiddenError(CUSTOMER_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
+        if (
+          current.phone !== ticket.phone ||
+          !current.phoneVerifiedAt ||
+          current.phoneVerifiedAt.getTime() > ticket.issuedAt ||
+          !current.fullName
+        )
+          throw new ForbiddenError(CUSTOMER_PHONE_CHANGED, { code: 'CUSTOMER_PHONE_CHANGED' });
+        if (current.customerDeactivatedAt) {
+          await tx.user.update({
+            where: { id: current.id },
+            data: { customerDeactivatedAt: null },
+          });
+          await audit.record(tx, {
+            actorType: 'CUSTOMER',
+            actorId: current.id,
+            action: 'auth.customer.reactivated',
+            entityType: 'User',
+            entityId: current.id,
+            after: { customerDeactivated: false },
+          });
+        }
+        return {
+          ...current,
+          customerDeactivatedAt: null,
+          phone: ticket.phone,
+          fullName: current.fullName,
+        };
+      });
+      return open(user, context, 'auth.login.customer', new Date(ticket.issuedAt));
     },
 
     async logout(token: string | undefined): Promise<void> {

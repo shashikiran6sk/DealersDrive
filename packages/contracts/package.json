@@ -51,6 +51,11 @@
       "types": "./dist/support-client.d.ts",
       "import": "./dist/support-client.js",
       "default": "./dist/support-client.js"
+    },
+    "./customer-account": {
+      "types": "./dist/customer-account.d.ts",
+      "import": "./dist/customer-account.js",
+      "default": "./dist/customer-account.js"
     }
   },
   "files": [

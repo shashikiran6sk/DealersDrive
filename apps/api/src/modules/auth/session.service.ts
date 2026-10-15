@@ -23,6 +23,7 @@ export function createSessionService(prisma: PrismaClient) {
         userId: string;
         scope: SessionScope;
         authenticationMethod?: 'GOOGLE' | 'PHONE_OTP';
+        authenticatedAt?: Date;
         ip?: string | undefined;
         userAgent?: string | undefined;
       },
@@ -36,6 +37,7 @@ export function createSessionService(prisma: PrismaClient) {
           userId: input.userId,
           scope: input.scope,
           authenticationMethod: input.authenticationMethod ?? null,
+          authenticatedAt: input.authenticatedAt ?? null,
           tokenHash: hashToken(token),
           expiresAt,
           ip: input.ip ?? null,

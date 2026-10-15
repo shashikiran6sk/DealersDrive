@@ -35,3 +35,7 @@ See [enquiries](enquiries.md) for authoritative receiver checks, separate explic
 ## Customer support
 
 See [support](support.md) for private conversations, quota/reopen, native UUID retries and the optional compatible create migration.
+
+## Customer account controls
+
+See [account controls](account-controls.md) for OTP recency, customer-only deactivation, explicit reactivation, shared-role isolation and the separate deletion-intake release gate.

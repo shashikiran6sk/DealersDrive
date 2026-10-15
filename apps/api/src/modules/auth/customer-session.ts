@@ -24,6 +24,14 @@ export function createCustomerResolver(sessions: SessionService): CustomerResolv
     const user = session?.user;
 
     if (!session || user?.status !== 'ACTIVE') return null;
+    if (
+      user.customerDeactivatedAt &&
+      !(
+        session.scope === 'DEALER' &&
+        /^\/v1\/(?:auth\/workspaces|invitations)(?:\/|$)/.test(req.originalUrl.split('?')[0] ?? '')
+      )
+    )
+      return null;
     if (isSeatSuspended(user.roles, 'CUSTOMER')) return null;
     if (session.scope === 'DEALER' && isSeatSuspended(user.roles, 'DEALER')) return null;
     if (!user.phone || !user.phoneVerifiedAt || !user.fullName) return null;
