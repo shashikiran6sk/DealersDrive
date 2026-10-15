@@ -9,5 +9,5 @@ appId: ${APP_ID}
 - assertVisible: Home
 - openLink: dealersdrive://saved
 - assertVisible: Sign in to see your saved cars.
-- takeScreenshot: guest-saved-auth-gate
+- takeScreenshot: artifacts/guest-saved-auth-gate
 - stopApp

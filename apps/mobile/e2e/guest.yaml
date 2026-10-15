@@ -3,16 +3,25 @@ appId: ${APP_ID}
 - launchApp:
     clearState: true
 - assertVisible: Home
+- takeScreenshot: artifacts/home-approved-brand
 - tapOn: Profile
 - assertVisible: Your account
 - assertVisible: Sign in or create account
 - tapOn: Saved
 - assertVisible: Sign in to see your saved cars.
 - tapOn: Profile
+- scrollUntilVisible:
+    element:
+      text: About Dealers-Drive
+    direction: DOWN
 - tapOn: About Dealers-Drive
 - assertVisible: About Dealers-Drive
-- takeScreenshot: about-approved-brand
+- takeScreenshot: artifacts/about-approved-brand
 - back
+- scrollUntilVisible:
+    element:
+      text: Your account
+    direction: UP
 - assertVisible: Your account
 - stopApp
 - launchApp
