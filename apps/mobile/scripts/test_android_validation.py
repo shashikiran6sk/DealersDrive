@@ -3,6 +3,7 @@ from pathlib import Path
 import struct
 import tempfile
 import unittest
+from defusedxml.common import DTDForbidden
 
 spec = importlib.util.spec_from_file_location('validation', Path(__file__).with_name('check-android.py'))
 validation = importlib.util.module_from_spec(spec)
@@ -34,6 +35,13 @@ class AndroidValidationTests(unittest.TestCase):
         for protection in ['normal', 'dangerous']:
             with self.assertRaises(AssertionError):
                 self.manifest(permission=f'<permission android:name="{name}" android:protectionLevel="{protection}"/><uses-permission android:name="{name}"/>')
+
+    def test_forbids_document_types_and_external_entities(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'AndroidManifest.xml'
+            path.write_text('<!DOCTYPE manifest [<!ENTITY source SYSTEM "file:///unavailable-test-file">]><manifest>&source;</manifest>')
+            with self.assertRaises(DTDForbidden):
+                validation.inspect_manifest(path)
 
     def test_refuses_unaligned_or_unsupported_native_library(self):
         data = bytearray(128)

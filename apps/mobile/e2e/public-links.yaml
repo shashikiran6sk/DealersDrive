@@ -3,6 +3,7 @@ appId: ${APP_ID}
 - launchApp:
     clearState: true
 - openLink: dealersdrive://car/missing-release-validation-car
+- takeScreenshot: artifacts/car-link-received
 - assertVisible: Back
 - back
 - openLink: dealersdrive://admin

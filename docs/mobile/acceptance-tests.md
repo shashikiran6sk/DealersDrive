@@ -1,6 +1,6 @@
 # Android acceptance matrix and execution procedure
 
-Status: automation covers contracts/services/components; installed Android E2E, accessibility, performance and live-provider scenarios are NOT EXECUTED. This is a launch gate, not evidence that those tests passed. Each execution must record app Git SHA/version/package/signing fingerprint, API revision/legal publication, OS/device/RAM, network, operator, date, result, screenshots and sanitized request IDs.
+Status: automation covers contracts/services/components. Android 16 emulator guest smoke has executed and passed; the first public-link smoke failed and has a local native-parser regression fix pending emulator confirmation. Full installed E2E, accessibility, performance and live-provider scenarios remain incomplete. This is a launch gate, not evidence that those tests passed. Each execution must record app Git SHA/version/package/signing fingerprint, API revision/legal publication, OS/device/RAM, network, operator, date, result, screenshots and sanitized request IDs.
 
 ## Required device and network matrix
 

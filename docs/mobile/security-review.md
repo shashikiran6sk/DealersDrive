@@ -30,3 +30,7 @@ Do not lower the existing CI critical gate or mark residual high findings accept
 ## Remaining manual security gates
 
 Inspect the exact signed AAB/APK for secrets, debug/cleartext/exported components and unnecessary permissions; verify SecureStore/backup/reinstall behavior on devices, intent parsing/callback isolation and no credentials in logs/analytics. Test actual Android requests against HTTPS/staging, replay/rate limits and expired/revoked sessions. Execute multi-customer/multi-role installed acceptance. Review screenshots/recent-app exposure of support/private data and approved privacy requirements. No arbitrary FLAG_SECURE restriction or new device permission is introduced without a product/privacy decision. Account deletion fulfilment and processor/retention approval remain independently blocking.
+
+## Build-tool scanner follow-up
+
+The XML validator now uses hash-pinned defusedxml with explicit DTD/entity/external-reference refusal and an adversarial rejection test. Local Semgrep has zero findings at the existing CI blocking severities; advisory findings remain visible. Full-history gitleaks reports no leaks after an exact-value exception for independently verified English documentation prose (see F108 validation). No file/commit exclusion, history rewrite or real credential suppression was used. Native outputs, local signing files and Python caches are also excluded from the API Docker build context.

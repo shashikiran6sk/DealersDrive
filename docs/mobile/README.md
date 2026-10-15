@@ -20,27 +20,27 @@ Do not duplicate policy tables, consent records, notices, hashes, acceptance log
 
 Latest origin refs were fetched on 14 October 2026. GitHub metadata was rechecked at **2026-10-14 12:51:40 UTC**.
 
-| Field                         | Verified value                                                                       |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| Current origin/main           | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
-| Branding PR                   | [#311](https://github.com/shashikiran6sk/DealersDrive/pull/311), MERGED              |
-| Branding merge commit         | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
-| Branding merge time           | 2026-10-14T12:26:44Z                                                                 |
-| Legal foundation PR           | [#279](https://github.com/shashikiran6sk/DealersDrive/pull/279), OPEN/DRAFT/unmerged |
-| Legal source branch           | `feature/legal-compliance-and-consent-v1`                                            |
-| Updated foundation head       | `6180a4b52522493b884550448d0a84e7d95432df`                                           |
-| Legal PR base                 | main at `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                   |
-| Previous audited foundation   | `22c98419119f0418ba9d7cbcb7ec398052216bbf` — historical only                         |
-| Local branch before amendment | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
-| Current mobile GitHub PRs     | #312 OPEN/DRAFT; F100–F108 not created                                               |
-| Required restack              | Approved START: parent merged into F099 as fb02d063; original F099 preserved         |
-| Working tree before amendment | Clean                                                                                |
+| Field                            | Verified value                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| Current origin/main              | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
+| Branding PR                      | [#311](https://github.com/shashikiran6sk/DealersDrive/pull/311), MERGED              |
+| Branding merge commit            | `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                           |
+| Branding merge time              | 2026-10-14T12:26:44Z                                                                 |
+| Legal foundation PR              | [#279](https://github.com/shashikiran6sk/DealersDrive/pull/279), OPEN/DRAFT/unmerged |
+| Legal source branch              | `feature/legal-compliance-and-consent-v1`                                            |
+| Updated foundation head          | `6180a4b52522493b884550448d0a84e7d95432df`                                           |
+| Legal PR base                    | main at `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`                                   |
+| Previous audited foundation      | `22c98419119f0418ba9d7cbcb7ec398052216bbf` — historical only                         |
+| Local branch before amendment    | feat/f099-mobile-foundation at `bcb1bee7e4db4f999a2081665512471b0266507d`            |
+| Mobile PRs at amendment snapshot | #312 OPEN/DRAFT; F100–F108 not created                                               |
+| Required restack                 | Approved START: parent merged into F099 as fb02d063; original F099 preserved         |
+| Working tree before amendment    | Clean                                                                                |
 
 The owner-created foundation merge has parents `22c98419119f0418ba9d7cbcb7ec398052216bbf` and `a969dc2c5223ddb04c23d720ded6a4daccfe33ab`. Both original legal work and PR #311 are ancestors. All four approved SVG masters are present and byte-identical to main. Inspection uses Git refs, not the older F099 checkout.
 
 GitHub reports SUCCESS for all reported #279 checks at the new head, including lint/typecheck/test/build and security. These are observed remote results; no application suite was rerun for this amendment. No legal approval or Android validation is inferred.
 
-The ten feature IDs/parent relationships remain unchanged. F099 exists locally with no upstream or GitHub PR; do not recreate it, replace its existing commit, or pretend it already includes branding. Future children remain uncreated. Protected main/#279 and existing F099 histories are preserved.
+The ten feature IDs/parent relationships remain unchanged. The initial amendment preserved the existing F099 commit and held uncreated children behind START. Current state: all ten mobile drafts #312–#321 exist against their immediate predecessors; use the manifest and implementation checkpoints below for verified heads/checks. Protected main/#279 and existing histories remain preserved.
 
 Source compatibility: no changes to Prisma/migrations, shared contracts, legal/identity/enquiry/saved/support services, policy pages/content or legal/enquiry UI logic compared with the previous foundation. No conflict markers in 34 inspected legal/consent files. Changes touch shared branding shells, approved SEO/image references and email-header artwork. Footer legal links remain intact. Changed-file overlap with F099 is empty, but runtime regressions/native rendering still require tests after an approved restack.
 
@@ -200,7 +200,7 @@ Multi-role ownership and append-only legal/sharing evidence require counsel-appr
 
 ## 7. Final ordered stack and exact PR relationships
 
-F099 is open/draft as [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), targeting the legal foundation branch. Original bcb1bee7 is preserved and the updated parent is an ancestor. F100–F108 remain planned. Record future base/head SHAs when each predecessor is pinned; do not fabricate them or recreate occupied F099.
+F099 is open/draft as [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), targeting the legal foundation branch. Original bcb1bee7 is preserved and the updated parent is an ancestor. F100–F108 were planned at that checkpoint and are now open drafts #313–#321. Their actual pinned base/head SHAs and checks are recorded in the manifest; do not recreate occupied branches.
 
 | PR                             | Proposed head branch                      | GitHub base branch                        |
 | ------------------------------ | ----------------------------------------- | ----------------------------------------- |
@@ -357,7 +357,7 @@ Current SDK/Play policy facts in the original audit must be rechecked before sub
 | Native public current-policy/notice adapter      | Proposed minimal missing capability in Mobile 2                            |
 | Support-backed deletion request                  | Confirmed partial coverage; do not claim fulfilled erasure                 |
 | Verified deletion fulfillment/retention          | Requires approved operational/legal scope                                  |
-| Feature IDs/branch names                         | F099 already exists; F100–F108 planned, recheck before creation            |
+| Feature IDs/branch names                         | F099–F108 allocated and open; exact branches/PRs recorded in manifest      |
 | CI on feature bases                              | Confirmed workflow gap; address in Mobile 1                                |
 | Restacking                                       | Explicit compatibility assessment/review; no automatic rewrite             |
 | Native session/library/package/vendor choices    | Original recommended defaults; pinned/validated in approved implementation |
@@ -369,7 +369,7 @@ The companion `stack-manifest.json` records the #279/#311 baseline and all ten a
 
 This amendment retains #279 legal reuse and the ten-PR stack, updates the foundation and mandatory PR #311 branding, and preserves customer/native/security/release scope. Fresh START authorizes the amended implementation and the stated no-rewrite restack; merge, deployment, legal publication and Play submission still require separate authorization.
 
-Before implementation, the owner reviews/approves this plan and explicitly replies **START**. Discussion, receipt of stacked-workflow instructions, green CI, or draft legal text is not approval to implement or publish.
+The owner supplied explicit **START**, authorizing this amended implementation. Green CI and draft legal text do not authorize merges, legal publication, deployment or Play submission; those remain separate gates.
 
 Expected completed engineering state: #279 open/unmerged; every Android PR open/unmerged against its immediate predecessor; all Android commits descend from the verified foundation; reviewed bounded diffs and complete test/evidence manifests; main untouched by Android work; no production deployment, legal publication or Play upload.
 

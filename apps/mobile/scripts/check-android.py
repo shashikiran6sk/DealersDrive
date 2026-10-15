@@ -1,14 +1,14 @@
 """Inspect release outputs; signing and device readiness are separate gates."""
 from pathlib import Path
 import struct
-import xml.etree.ElementTree as ET
+from defusedxml import ElementTree as ET
 import zipfile
 
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 
 
 def inspect_manifest(path):
-    manifest = ET.parse(path).getroot()
+    manifest = ET.parse(path, forbid_dtd=True, forbid_entities=True, forbid_external=True).getroot()
     application = manifest.find('application')
     assert application is not None
     assert application.get(ANDROID + 'debuggable', 'false') == 'false'

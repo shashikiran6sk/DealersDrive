@@ -26,16 +26,17 @@ export function incomingLink(path: string, webOrigin: string): string {
       [...path].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)
     )
       return FALLBACK;
-    const relative = path.startsWith('/') && !path.startsWith('//');
-    const url = new URL(path, 'dealersdrive:///');
+    const custom = path.startsWith('dealersdrive://');
+    const source = custom ? path.slice('dealersdrive://'.length) : path;
+    if (source.startsWith('//')) return FALLBACK;
+    const internal = custom || source.startsWith('/') || !source.includes(':');
+    const url = internal
+      ? new URL(source.startsWith('/') ? source : `/${source}`, webOrigin)
+      : new URL(source);
     if (url.username || url.password || url.hash) return FALLBACK;
-    let route: string;
-    if (relative) route = url.pathname;
-    else if (url.protocol === 'dealersdrive:' && !url.port)
-      route = `${url.hostname ? `/${url.hostname}` : ''}${url.pathname}`;
-    else if (url.protocol === 'https:' && url.origin === new URL(webOrigin).origin)
-      route = url.pathname;
-    else return FALLBACK;
+    if (!internal && (url.protocol !== 'https:' || url.origin !== new URL(webOrigin).origin))
+      return FALLBACK;
+    let route = url.pathname;
     route = route.replace(/\/$/, '') || '/';
     if (route.includes('%') || route.includes('//') || /\/\.{1,2}(?:\/|$)/.test(path))
       return FALLBACK;

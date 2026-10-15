@@ -32,6 +32,7 @@ jobs:
       EXPO_PUBLIC_API_BASE_URL: https://api.validation.invalid
       EXPO_PUBLIC_WEB_BASE_URL: https://web.validation.invalid
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+      PYTHONPATH: ${{ runner.temp }}/android-validation-python
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -49,6 +50,8 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm --filter @dealers-drive/contracts build
+      - name: Hash-pinned build-only XML parser
+        run: python3 -m pip install --no-cache-dir --no-deps --require-hashes --target "$RUNNER_TEMP/android-validation-python" -r apps/mobile/scripts/requirements.txt
       - name: Approved branding and native configuration
         run: |
           python3 apps/mobile/scripts/test_android_validation.py
@@ -86,10 +89,15 @@ jobs:
           arch: x86_64
           profile: pixel_5
           disable-animations: true
-          script: |
-            mkdir -p artifacts
-            adb install apps/mobile/android/app/build/outputs/apk/release/app-release.apk
-            maestro test --format junit --output artifacts/maestro.xml --debug-output artifacts/debug -e APP_ID=com.dealersdrive.customer.preview apps/mobile/e2e
+          script: bash apps/mobile/scripts/android-smoke.sh
+      - name: Native UI evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-ui-${{ github.event.pull_request.head.sha }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: artifacts/**
       - name: Validation artifacts (not for Play submission)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
@@ -101,4 +109,4 @@ jobs:
             apps/mobile/android/app/build/outputs/apk/release/*.apk
             apps/mobile/android/app/build/outputs/bundle/release/*.aab
             apps/mobile/android/app/build/outputs/logs/manifest-merger-release-report.txt
-            artifacts/**
+            apps/mobile/android/app/build/intermediates/merged_manifests/release/**/AndroidManifest.xml
