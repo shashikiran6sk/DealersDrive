@@ -32,7 +32,6 @@ jobs:
       EXPO_PUBLIC_API_BASE_URL: https://api.validation.invalid
       EXPO_PUBLIC_WEB_BASE_URL: https://web.validation.invalid
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
-      PYTHONPATH: ${{ runner.temp }}/android-validation-python
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -51,7 +50,9 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --filter @dealers-drive/contracts build
       - name: Hash-pinned build-only XML parser
-        run: python3 -m pip install --no-cache-dir --no-deps --require-hashes --target "$RUNNER_TEMP/android-validation-python" -r apps/mobile/scripts/requirements.txt
+        run: |
+          python3 -m pip install --no-cache-dir --no-deps --require-hashes --target "$RUNNER_TEMP/android-validation-python" -r apps/mobile/scripts/requirements.txt
+          printf 'PYTHONPATH=%s\n' "$RUNNER_TEMP/android-validation-python" >> "$GITHUB_ENV"
       - name: Approved branding and native configuration
         run: |
           python3 apps/mobile/scripts/test_android_validation.py
