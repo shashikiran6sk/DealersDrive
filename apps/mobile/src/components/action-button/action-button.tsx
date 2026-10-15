@@ -4,6 +4,7 @@ import { colors, radii, spacing, typography } from '../../theme/tokens';
 
 export interface ActionButtonProps {
   label: string;
+  testID?: string;
   onPress: () => void;
   disabled?: boolean;
   pending?: boolean;
@@ -12,6 +13,7 @@ export interface ActionButtonProps {
 
 export function ActionButton({
   label,
+  testID,
   onPress,
   disabled = false,
   pending = false,
@@ -20,6 +22,7 @@ export function ActionButton({
   const unavailable = disabled || pending;
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: unavailable, busy: pending }}

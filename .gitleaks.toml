@@ -82,3 +82,8 @@ regexes = [
   '''^fixed\-refreshed\-access\-390\.png": "d9bdf8750fbc08860432e8b1712207766e0175975198fa987896b15267a62e4f"$''',
   '''^fixed\-refreshed\-access\-768\.png": "c3d6af9712ed04dc6213902be6a2670632f0a55aca3ec428083bd7c31bfd01c5"$''',
 ]
+
+[[rules.allowlists]]
+description = "Exact noncredential prose from F108 link-validation documentation; preserve history without excluding files or commits"
+regexTarget = "secret"
+regexes = ['''^duplicate/unknown$''']

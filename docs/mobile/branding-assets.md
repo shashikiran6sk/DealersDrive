@@ -100,3 +100,7 @@ Fresh START authorized the stated normal merge into the existing child. Merge fb
 ## F099 resource evidence
 
 [Asset proof](../screens/mobile/f099/asset-review.png) shows light/dark masters, generated launcher, transparent adaptive foreground and a circular mask preview. It is a raster proof, not an Android screenshot. Component fixtures mock the native SVG host; exact vector bytes and raster geometry are independently checked by the asset verifier. Android prebuild was generated outside the repository and includes foreground/background/monochrome resources, contain splash mode, the light theme and permission-removal directives. Actual device/system rendering is not yet verified. See the F099 validation report for broader checks and limitations.
+
+## F108 store-artwork checkpoint
+
+The unchanged approved masters now also generate `apps/mobile/src/assets/brand/play-store-icon.png` (512 × 512 symbol only) and `play-feature-graphic.png` (1024 × 500 opaque RGB with separate symbol and wordmark). Their deterministic hashes join existing provenance; no runtime branding dependency is added. The feature graphic was visually inspected from its actual PNG: correct black geometry, uncropped proportions and white background. This is artwork review, not an installed Android screenshot. All densities/system masks/splash transitions, actual Home/auth/Profile/About/legal screens and final Play display name still require release-build visual evidence. Neither old favicon frames nor recreated lettering were used.

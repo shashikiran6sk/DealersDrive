@@ -39,3 +39,7 @@ See [support](support.md) for private conversations, quota/reopen, native UUID r
 ## Customer account controls
 
 See [account controls](account-controls.md) for OTP recency, customer-only deactivation, explicit reactivation, shared-role isolation and the separate deletion-intake release gate.
+
+## Release hardening
+
+See [release boundaries](release-hardening.md) for build profiles, customer intent validation, generic recovery, artifact inspection and the separate production acceptance gate.
