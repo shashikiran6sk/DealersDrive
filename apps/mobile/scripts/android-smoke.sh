@@ -9,4 +9,6 @@ maestro test --format junit --output artifacts/maestro.xml \
   --test-output-dir artifacts/maestro-run --debug-output artifacts/debug \
   -e APP_ID=com.dealersdrive.customer.preview apps/mobile/e2e || smokeResult=$?
 adb logcat -d -s ReactNativeJS:V '*:S' > artifacts/android-logcat.txt || true
+adb shell dumpsys activity lastanr > artifacts/android-last-anr.txt || true
+adb logcat -b crash -d > artifacts/android-crash-log.txt || true
 exit "$smokeResult"

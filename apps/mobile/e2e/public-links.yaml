@@ -7,7 +7,7 @@ appId: ${APP_ID}
 - assertVisible: Back
 - back
 - openLink: dealersdrive://admin
-- assertVisible: Home
+- assertVisible: Find your next car
 - openLink: dealersdrive://saved
 - assertVisible: Sign in to see your saved cars.
 - takeScreenshot: artifacts/guest-saved-auth-gate

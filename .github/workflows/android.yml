@@ -86,7 +86,7 @@ jobs:
           MAESTRO_CLI_NO_ANALYTICS: 'true'
         with:
           api-level: 36
-          target: google_apis
+          target: default
           arch: x86_64
           profile: pixel_5
           disable-animations: true
