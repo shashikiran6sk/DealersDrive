@@ -262,7 +262,7 @@ export function SignInScreen() {
                 onChangeText={(value) => {
                   const normalized = normaliseIndianMobile(value);
                   setPhone(
-                    normalized ? normalized.slice(3) : value.replace(/\D/g, '').slice(0, 10),
+                    normalized ? normalized.slice(3) : value.replace(/\D/g, '').slice(0, 15),
                   );
                 }}
                 maxLength={18}

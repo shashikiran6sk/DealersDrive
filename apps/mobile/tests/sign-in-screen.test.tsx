@@ -210,3 +210,14 @@ it('normalises pasted country codes without truncating the subscriber number', a
     expect(mockApi.request).toHaveBeenLastCalledWith('9845599999', expect.any(AbortSignal)),
   );
 });
+
+it.each(['+97798455999999', '98455999999'])(
+  'refuses an overlong or foreign number without sending OTP: %s',
+  async (number) => {
+    await form();
+    await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.mobile), number);
+    await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.send }));
+    expect(mockApi.request).not.toHaveBeenCalled();
+    expect(screen.getByText(AUTH_TEXT.invalidPhone)).toBeOnTheScreen();
+  },
+);
