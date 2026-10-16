@@ -107,7 +107,7 @@ export class SessionManager {
     if (this.authenticationGeneration !== null) return Promise.resolve();
     if (this.restoring) return this.restoring;
     const generation = ++this.epoch;
-    this.publish({ status: 'restoring', customer: null, error: null });
+    if (!this.token()) this.publish({ status: 'restoring', customer: null, error: null });
     this.restoring = this.load(generation).finally(() => {
       this.restoring = null;
     });

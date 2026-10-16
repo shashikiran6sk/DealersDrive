@@ -1,6 +1,7 @@
 export const TAB_TEXT = Object.freeze({
   home: 'Home',
-  explore: 'Explore',
+  cars: 'Cars',
+  dealers: 'Dealers',
   saved: 'Saved',
   profile: 'Profile',
 });
@@ -17,3 +18,11 @@ export const SHELL_TEXT = Object.freeze({
   profileDescription: 'Your saved cars, enquiries and support requests.',
   browse: 'Explore cars and dealers',
 });
+
+export const CUSTOMER_TABS = [
+  { route: 'index', label: TAB_TEXT.home, icon: 'home' },
+  { route: 'cars', label: TAB_TEXT.cars, icon: 'cars' },
+  { route: 'dealers', label: TAB_TEXT.dealers, icon: 'dealers' },
+  { route: 'saved', label: TAB_TEXT.saved, icon: 'saved' },
+  { route: 'profile', label: TAB_TEXT.profile, icon: 'profile' },
+] as const;
