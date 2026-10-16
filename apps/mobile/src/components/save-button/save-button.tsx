@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { useSaved } from '../../features/saved/saved-provider';
 import { SAVED_TEXT } from '../../features/saved/saved.constants';
 import { colors, typography } from '../../theme/tokens';
+import { Icon } from '../icon';
 
 export function SaveButton({
   slug,
@@ -32,12 +33,10 @@ export function SaveButton({
       onPress={() => (failed ? saved.retry() : saved.toggle(slug))}
       style={[styles.button, labelled && styles.full]}
     >
-      {unavailable ? (
+      {unavailable && !busy ? (
         <ActivityIndicator color={colors.ink} />
       ) : (
-        <Text style={styles.heart}>
-          {failed ? SAVED_TEXT.retry : active ? SAVED_TEXT.heartFull : SAVED_TEXT.heartEmpty}
-        </Text>
+        failed ? <Text style={styles.label}>{SAVED_TEXT.retry}</Text> : <Icon name="heart" size={24} color={colors.ink} filled={active} />
       )}
       {labelled ? (
         <Text style={styles.label}>{active ? SAVED_TEXT.saved : SAVED_TEXT.save}</Text>
@@ -60,6 +59,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   full: { width: '100%' },
-  heart: { fontSize: 23, color: colors.ink },
   label: { fontFamily: typography.family, fontSize: 15, fontWeight: '700', color: colors.ink },
 });

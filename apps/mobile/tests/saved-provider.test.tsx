@@ -73,14 +73,14 @@ async function provider() {
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   clients.push(client);
-  const tree = (
+  const tree = () => (
     <QueryClientProvider client={client}>
       <SavedProvider>
         <Probe />
       </SavedProvider>
     </QueryClientProvider>
   );
-  const view = await render(tree);
+  const view = await render(tree());
   await waitFor(() => expect(screen.getByText('ready')).toBeOnTheScreen());
   return { view, client, tree };
 }
@@ -91,7 +91,7 @@ it('resumes the authenticated save intent once using a positive server save', as
   await waitFor(() => expect(mockSet).toHaveBeenCalledTimes(1));
   expect(mockSet).toHaveBeenCalledWith('A'.repeat(43), 'car-one', true);
   await waitFor(() => expect(screen.getByText('saved')).toBeOnTheScreen());
-  await h.view.rerender(h.tree);
+  await h.view.rerender(h.tree());
   expect(mockSet).toHaveBeenCalledTimes(1);
   expect(mockManager.pending.consume(action.id, 'customer-one')).toBeNull();
 });
@@ -123,7 +123,7 @@ it('does not let a late old-account unauthorized response invalidate the new cus
   await fireEvent.press(screen.getByRole('button', { name: 'Toggle saved car' }));
   mockSession = { ...mockSession, customer: { ...mockSession.customer, id: 'customer-two' } };
   mockToken = 'B'.repeat(43);
-  await h.view.rerender(h.tree);
+  await h.view.rerender(h.tree());
   reject(new ApiError('AUTH_REQUIRED', 'Expired', 401));
   await waitFor(() => expect(mockHydrate).toHaveBeenCalled());
   expect(mockManager.invalidate).not.toHaveBeenCalled();

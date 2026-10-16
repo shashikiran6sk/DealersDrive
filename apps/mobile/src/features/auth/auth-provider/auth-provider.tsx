@@ -21,6 +21,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const manager = new SessionManager(credentialStorage, api, () => {
       void queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === 'customer' });
       queryClient.removeQueries({ predicate: (query) => query.queryKey[0] === 'customer' });
+      const mutations = queryClient.getMutationCache();
+      for (const mutation of mutations.getAll())
+        if (mutation.options.mutationKey?.[0] === 'customer') mutations.remove(mutation);
     });
     return { api, manager };
   });

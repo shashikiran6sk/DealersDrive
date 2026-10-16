@@ -1,7 +1,7 @@
 import { SaveButton } from '../save-button';
 import { titleWithoutYear, type VehicleCardDto } from '@dealers-drive/contracts/public';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../../theme/tokens';
 import { CARS_TEXT } from '../../features/cars/cars.constants';
@@ -13,6 +13,7 @@ export interface CarCardProps {
 }
 export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
   const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [car.slug, car.image?.url]);
   const reserved = car.availability !== 'AVAILABLE';
   const availabilityLabel =
     car.availability === 'SOLD'
@@ -57,7 +58,7 @@ export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
           {reserved ? <Text style={styles.badge}>{availabilityLabel}</Text> : null}
         </View>
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={styles.title}>
             {titleWithoutYear(car)}
           </Text>
           <Text style={styles.price}>{car.priceLabel ?? CARS_TEXT.priceRequest}</Text>
