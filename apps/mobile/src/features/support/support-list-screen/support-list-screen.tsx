@@ -1,3 +1,4 @@
+import { EmptyState } from '../../../components/empty-state';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { SupportTicketRow } from '@dealers-drive/contracts/support-client';
 import { useRouter } from 'expo-router';
@@ -39,7 +40,7 @@ export function SupportListScreen() {
       void manager.invalidate();
   }, [query.error, manager, owner]);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList<SupportTicketRow>
         data={
           session.status === 'authenticated'
@@ -60,18 +61,12 @@ export function SupportListScreen() {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.heading}>
-              {SUPPORT_TEXT.requests}
-            </Text>
-            <ActionButton
-              variant="ghost"
-              label={SUPPORT_TEXT.back}
-              onPress={() => (router.canGoBack() ? router.back() : router.replace('/support'))}
-            />
-            <ActionButton
-              label={SUPPORT_TEXT.create}
-              onPress={() => router.navigate('/support-requests/new')}
-            />
+            {query.data?.pages.some((page) => page.data.length > 0) ? (
+              <ActionButton
+                label={SUPPORT_TEXT.create}
+                onPress={() => router.navigate('/support-requests/new')}
+              />
+            ) : null}
             {session.status === 'guest' ? (
               <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
             ) : null}
@@ -99,10 +94,16 @@ export function SupportListScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           session.status === 'authenticated' && !query.isError ? (
-            <StatusPanel
-              message={query.isPending ? SUPPORT_TEXT.loading : SUPPORT_TEXT.empty}
-              pending={query.isPending}
-            />
+            query.isPending ? (
+              <StatusPanel message={SUPPORT_TEXT.loading} pending />
+            ) : (
+              <EmptyState
+                title="No support requests yet"
+                description="Your requests and replies will appear here."
+                action="New support request"
+                onAction={() => router.navigate('/support-requests/new')}
+              />
+            )
           ) : session.status === 'restoring' || session.status === 'unavailable' ? (
             <StatusPanel
               message={session.error ?? AUTH_TEXT.restoring}

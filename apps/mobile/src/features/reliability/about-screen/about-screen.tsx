@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionButton } from '../../../components/action-button';
-import { Brand } from '../../../components/brand';
 import { Page } from '../../../components/page';
 import { colors, typography } from '../../../theme/tokens';
 import { AUTH_TEXT } from '../../auth/auth.constants';
@@ -13,8 +12,8 @@ import { RELIABILITY_TEXT } from '../reliability.constants';
 export function AboutScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <Page header={<Brand />} title={RELIABILITY_TEXT.about}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
+      <Page showTitle={false} title={RELIABILITY_TEXT.about}>
         <Text style={styles.text}>
           {RELIABILITY_TEXT.version(
             Constants.expoConfig?.version ?? RELIABILITY_TEXT.unavailable,

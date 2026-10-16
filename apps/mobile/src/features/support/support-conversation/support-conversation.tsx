@@ -1,3 +1,4 @@
+import { useDiscardChanges } from '../../navigation/use-discard-changes';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   SupportMessageInput,
@@ -42,6 +43,7 @@ export function SupportConversation() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const lock = useRef(false);
+  useDiscardChanges(Boolean(message.trim()), busy);
   const retry = useRef(new RetryIdentity());
   const valid = Uuid.safeParse(id).success;
   const query = useQuery({
@@ -121,7 +123,7 @@ export function SupportConversation() {
     }
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView style={styles.root} behavior="height">
         <FlatList<SupportMessage>
           data={ticket?.messages ?? []}
@@ -139,13 +141,6 @@ export function SupportConversation() {
               <Text accessibilityRole="header" style={styles.heading}>
                 {ticket ? `${ticket.reference} · ${ticket.subject}` : SUPPORT_TEXT.requests}
               </Text>
-              <ActionButton
-                variant="ghost"
-                label={SUPPORT_TEXT.back}
-                onPress={() =>
-                  router.canGoBack() ? router.back() : router.replace('/support-requests')
-                }
-              />
               {session.status === 'guest' ? (
                 <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
               ) : ticket ? (

@@ -5,6 +5,7 @@ const paths = {
   close: 'm6 6 12 12M6 18 18 6',
   back: 'm15 5-7 7 7 7M8 12h13',
   chevron: 'm6 9 6 6 6-6',
+  forward: 'm9 6 6 6-6 6',
   location: 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   search: 'm21 21-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z',
   sort: 'M4 6h16M7 12h10M10 18h4',
@@ -27,6 +28,7 @@ export function Icon({
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}>
       <Path
+        testID={`icon-${name}`}
         d={paths[name]}
         stroke={color}
         strokeWidth={1.8}

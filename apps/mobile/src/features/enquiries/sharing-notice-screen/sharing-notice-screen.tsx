@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Brand } from '../../../components/brand';
 import { ActionButton } from '../../../components/action-button';
 import { Page } from '../../../components/page';
 import { StatusPanel } from '../../../components/status-panel';
@@ -19,13 +18,8 @@ export function SharingNoticeScreen() {
     queryFn: ({ signal }) => api.publication(signal),
   });
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <Page header={<Brand />} title={ENQUIRY_TEXT.notice}>
-        <ActionButton
-          variant="ghost"
-          label={ENQUIRY_TEXT.back}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/privacy-controls'))}
-        />
+    <SafeAreaView style={styles.root} edges={['bottom']}>
+      <Page showTitle={false} title={ENQUIRY_TEXT.notice}>
         {query.data?.sharing ? (
           <>
             {query.data.state === 'DRAFT' ? (

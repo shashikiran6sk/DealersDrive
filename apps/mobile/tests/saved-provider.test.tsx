@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Pressable, Text } from 'react-native';
+import { Alert, Pressable, Text } from 'react-native';
 import { SavedProvider, useSaved } from '../src/features/saved/saved-provider';
 import { PendingActions } from '../src/features/auth/pending-action';
 import { ApiError } from '../src/services/api';
@@ -73,14 +73,14 @@ async function provider() {
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   clients.push(client);
-  const tree = (
+  const tree = () => (
     <QueryClientProvider client={client}>
       <SavedProvider>
         <Probe />
       </SavedProvider>
     </QueryClientProvider>
   );
-  const view = await render(tree);
+  const view = await render(tree());
   await waitFor(() => expect(screen.getByText('ready')).toBeOnTheScreen());
   return { view, client, tree };
 }
@@ -91,7 +91,7 @@ it('resumes the authenticated save intent once using a positive server save', as
   await waitFor(() => expect(mockSet).toHaveBeenCalledTimes(1));
   expect(mockSet).toHaveBeenCalledWith('A'.repeat(43), 'car-one', true);
   await waitFor(() => expect(screen.getByText('saved')).toBeOnTheScreen());
-  await h.view.rerender(h.tree);
+  await h.view.rerender(h.tree());
   expect(mockSet).toHaveBeenCalledTimes(1);
   expect(mockManager.pending.consume(action.id, 'customer-one')).toBeNull();
 });
@@ -123,9 +123,51 @@ it('does not let a late old-account unauthorized response invalidate the new cus
   await fireEvent.press(screen.getByRole('button', { name: 'Toggle saved car' }));
   mockSession = { ...mockSession, customer: { ...mockSession.customer, id: 'customer-two' } };
   mockToken = 'B'.repeat(43);
-  await h.view.rerender(h.tree);
+  await h.view.rerender(h.tree());
   reject(new ApiError('AUTH_REQUIRED', 'Expired', 401));
   await waitFor(() => expect(mockHydrate).toHaveBeenCalled());
   expect(mockManager.invalidate).not.toHaveBeenCalled();
   expect(mockRouter.navigate).not.toHaveBeenCalled();
+});
+
+it('shows an optimistic save in every consumer and rolls back on API failure', async () => {
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  let fail!: (error: Error) => void;
+  mockSet.mockImplementationOnce(
+    () =>
+      new Promise((_resolve, reject) => {
+        fail = reject;
+      }),
+  );
+  const h = await provider();
+  await fireEvent.press(screen.getByRole('button', { name: 'Toggle saved car' }));
+  await waitFor(() => expect(mockSet).toHaveBeenCalledTimes(1));
+  expect(screen.getByText('saved')).toBeOnTheScreen();
+  expect(h.client.getQueryData(['customer', 'customer-one', 'saved-slugs'])).toEqual(['car-one']);
+  fail(new Error('Offline'));
+  await waitFor(() => expect(screen.getByText('unsaved')).toBeOnTheScreen());
+  await waitFor(() => expect(h.client.isMutating()).toBe(0));
+  expect(alert).toHaveBeenCalledWith(expect.any(String), 'Offline');
+  alert.mockRestore();
+});
+
+it('does not expose old saved membership while a different account hydrates', async () => {
+  mockState = ['car-one'];
+  const h = await provider();
+  expect(screen.getByText('saved')).toBeOnTheScreen();
+  let hydrate!: (value: string[]) => void;
+  mockHydrate.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        hydrate = resolve;
+      }),
+  );
+  mockSession = { ...mockSession, customer: { ...mockSession.customer, id: 'customer-two' } };
+  mockToken = 'B'.repeat(43);
+  await h.view.rerender(h.tree());
+  expect(screen.getByText('unsaved')).toBeOnTheScreen();
+  expect(screen.getByText('loading')).toBeOnTheScreen();
+  hydrate([]);
+  await waitFor(() => expect(screen.getByText('ready')).toBeOnTheScreen());
+  expect(screen.getByText('unsaved')).toBeOnTheScreen();
 });

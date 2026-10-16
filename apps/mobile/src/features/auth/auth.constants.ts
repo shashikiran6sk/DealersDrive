@@ -1,5 +1,5 @@
 export const AUTH_TEXT = Object.freeze({
-  title: 'Sign in to Dealers-Drive',
+  title: 'Sign in',
   reactivate: 'Reactivate customer account and sign in',
   deactivated:
     'Your customer account is deactivated. Reactivation restores customer access and retained records. Withdrawn dealership sharing permissions remain withdrawn.',

@@ -8,9 +8,10 @@ export interface PageProps {
   description?: string;
   children?: ReactNode;
   header?: ReactNode;
+  showTitle?: boolean;
 }
 
-export function Page({ title, description, children, header }: PageProps) {
+export function Page({ title, description, children, header, showTitle = true }: PageProps) {
   return (
     <ScrollView
       style={styles.page}
@@ -18,11 +19,13 @@ export function Page({ title, description, children, header }: PageProps) {
       keyboardShouldPersistTaps="handled"
     >
       {header ? <View style={styles.header}>{header}</View> : null}
-      <Text accessibilityRole="header" style={styles.title}>
-        {title}
-      </Text>
+      {showTitle ? (
+        <Text accessibilityRole="header" style={styles.title}>
+          {title}
+        </Text>
+      ) : null}
       {description ? <Text style={styles.description}>{description}</Text> : null}
-      <View style={styles.children}>{children}</View>
+      <View style={[styles.children, !showTitle && styles.compact]}>{children}</View>
     </ScrollView>
   );
 }
@@ -45,4 +48,5 @@ const styles = StyleSheet.create({
   },
   header: { marginBottom: spacing.lg },
   children: { marginTop: spacing.lg, gap: spacing.md },
+  compact: { marginTop: 0 },
 });

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionButton } from '../../../components/action-button';
-import { ConsentChoice } from '../../../components/consent-choice';
+import { PolicyChoice } from '../../../components/policy-choice';
 import { Page } from '../../../components/page';
 import { StatusPanel } from '../../../components/status-panel';
 import { ApiError } from '../../../services/api';
@@ -118,13 +118,8 @@ export function AgreementsScreen() {
     }
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <Page title={SAVED_TEXT.agreements}>
-        <ActionButton
-          variant="ghost"
-          label={SAVED_TEXT.decline}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'))}
-        />
+    <SafeAreaView style={styles.root} edges={['bottom']}>
+      <Page showTitle={false} title={SAVED_TEXT.agreements}>
         {session.status !== 'authenticated' ? (
           <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
         ) : (
@@ -139,24 +134,14 @@ export function AgreementsScreen() {
               <Text style={styles.text}>{SAVED_TEXT.current}</Text>
             ) : (
               <>
-                <ActionButton
-                  variant="secondary"
-                  label={AUTH_TEXT.terms}
-                  onPress={() => router.navigate('/policy/terms')}
-                />
-                <ActionButton
-                  variant="secondary"
-                  label={AUTH_TEXT.privacy}
-                  onPress={() => router.navigate('/policy/privacy')}
-                />
-                <ConsentChoice
-                  label={AUTH_TEXT.acceptTerms}
+                <PolicyChoice
+                  kind="terms"
                   checked={terms}
                   onChange={() => setTerms(!terms)}
                   disabled={busy}
                 />
-                <ConsentChoice
-                  label={AUTH_TEXT.acknowledgePrivacy}
+                <PolicyChoice
+                  kind="privacy"
                   checked={privacy}
                   onChange={() => setPrivacy(!privacy)}
                   disabled={busy}

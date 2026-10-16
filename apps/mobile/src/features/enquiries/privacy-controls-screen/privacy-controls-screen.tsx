@@ -37,7 +37,7 @@ export function PrivacyControlsScreen() {
       void manager.invalidate();
   }, [query.error, manager, owner]);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList<SharingPermissions['data'][number]>
         data={session.status === 'authenticated' ? (query.data?.data ?? []) : []}
         keyExtractor={(item) => item.id}
@@ -53,13 +53,6 @@ export function PrivacyControlsScreen() {
             <Text accessibilityRole="header" style={styles.heading}>
               {ENQUIRY_TEXT.privacyControls}
             </Text>
-            <ActionButton
-              variant="ghost"
-              label={ENQUIRY_TEXT.back}
-              onPress={() =>
-                router.canGoBack() ? router.back() : router.replace('/(tabs)/profile')
-              }
-            />
             <Text style={styles.text}>{ENQUIRY_TEXT.withdrawBody}</Text>
             <ActionButton
               variant="secondary"
