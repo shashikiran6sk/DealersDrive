@@ -1,3 +1,4 @@
+import { useDiscardChanges } from '../../navigation/use-discard-changes';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { VehicleSlugParam } from '@dealers-drive/contracts/public';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -31,6 +32,7 @@ export function EnquiryFormScreen() {
   const [error, setError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
   const lock = useRef(false);
+  useDiscardChanges(Boolean(message.trim()) && !receipt, busy, () => Boolean(receipt));
   const valid = VehicleSlugParam.safeParse({ slug }).success;
   const car = useQuery({
     queryKey: ['public', 'car', slug],
@@ -154,16 +156,17 @@ export function EnquiryFormScreen() {
       setBusy(false);
     }
   };
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/cars'));
   const missing =
     !valid ||
     (sharing.error instanceof ApiError && sharing.error.status === 404) ||
     (car.error instanceof ApiError && car.error.status === 404);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView style={styles.root} behavior="height">
-        <Page title={receipt ? ENQUIRY_TEXT.sent : ENQUIRY_TEXT.heading}>
-          <ActionButton variant="ghost" label={ENQUIRY_TEXT.back} onPress={back} />
+        <Page
+          title={receipt ? ENQUIRY_TEXT.sent : ENQUIRY_TEXT.heading}
+          showTitle={Boolean(receipt)}
+        >
           {receipt ? (
             <Text accessibilityLiveRegion="polite" style={styles.text}>
               {ENQUIRY_TEXT.received(receipt)}
@@ -229,16 +232,6 @@ export function EnquiryFormScreen() {
                 onPress={() => router.navigate('/sharing-notice')}
               />
               <ActionButton
-                variant="ghost"
-                label={AUTH_TEXT.terms}
-                onPress={() => router.navigate('/policy/terms')}
-              />
-              <ActionButton
-                variant="ghost"
-                label={AUTH_TEXT.privacy}
-                onPress={() => router.navigate('/policy/privacy')}
-              />
-              <ActionButton
                 label={ENQUIRY_TEXT.send}
                 pending={busy}
                 disabled={
@@ -246,11 +239,6 @@ export function EnquiryFormScreen() {
                   (publication.data.collectionEnabled && sharing.data.required && !granted)
                 }
                 onPress={() => void send()}
-              />
-              <ActionButton
-                variant="ghost"
-                label={ENQUIRY_TEXT.agreements}
-                onPress={() => router.navigate('/agreements')}
               />
             </>
           )}

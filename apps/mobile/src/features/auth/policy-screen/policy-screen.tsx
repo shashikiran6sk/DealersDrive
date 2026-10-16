@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionButton } from '../../../components/action-button';
-import { Brand } from '../../../components/brand';
 import { Page } from '../../../components/page';
 import { colors, spacing, typography } from '../../../theme/tokens';
 import { useAuth } from '../auth-provider';
@@ -14,16 +13,15 @@ import { publicEnvironment } from '../../../services/environment';
 export function PolicyScreen() {
   const { documentId } = useLocalSearchParams<{ documentId: string }>();
   const { api } = useAuth();
-  const router = useRouter();
   const publication = useQuery({
     queryKey: ['legal-publication'],
     queryFn: ({ signal }) => api.publication(signal),
   });
   const document = publication.data?.documents.find((entry) => entry.id === documentId);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <Page
-        header={<Brand />}
+        showTitle={false}
         title={documentId === 'privacy' ? AUTH_TEXT.privacy : AUTH_TEXT.terms}
       >
         {publication.isPending ? (
@@ -64,16 +62,17 @@ export function PolicyScreen() {
                 onPress={() =>
                   void Linking.openURL(
                     new URL(`/${documentId}`, publicEnvironment().webBaseUrl).href,
+                  ).catch(() =>
+                    Alert.alert(
+                      'Unable to open policy',
+                      'Please try again or read the policy here when the connection returns.',
+                    ),
                   )
                 }
               />
             ) : null}
           </>
         ) : null}
-        <ActionButton
-          label={AUTH_TEXT.cancel}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-        />
       </Page>
     </SafeAreaView>
   );

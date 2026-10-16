@@ -12,15 +12,19 @@ import { ApiError } from '../../../services/api';
 import { colors, spacing, typography } from '../../../theme/tokens';
 import { savedApi } from '../saved-api';
 import { SAVED_TEXT } from '../saved.constants';
+import { useSaved } from '../saved-provider';
+import { EmptyState } from '../../../components/empty-state';
 
 export function SavedScreen() {
   const { manager } = useAuth();
   const session = useSession();
   const router = useRouter();
   const owner = session.customer?.id;
+  const saved = useSaved();
   const query = useInfiniteQuery({
     queryKey: ['customer', owner, 'saved-list'],
     enabled: session.status === 'authenticated',
+    refetchOnWindowFocus: () => !saved.updating,
     initialPageParam: '',
     queryFn: ({ pageParam, signal }) => {
       const token = manager.token();
@@ -55,7 +59,9 @@ export function SavedScreen() {
         windowSize={7}
         removeClippedSubviews
         refreshing={query.isRefetching && !query.isFetchingNextPage}
-        onRefresh={() => void query.refetch()}
+        onRefresh={() => {
+          if (!saved.updating) void query.refetch();
+        }}
         onEndReached={() => {
           if (query.hasNextPage && !query.isFetchingNextPage)
             void query.fetchNextPage({ cancelRefetch: false });
@@ -84,10 +90,17 @@ export function SavedScreen() {
         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         ListEmptyComponent={
           !query.isError ? (
-            <StatusPanel
-              pending={query.isPending}
-              message={query.isPending ? SAVED_TEXT.loading : SAVED_TEXT.empty}
-            />
+            query.isPending || saved.updating ? (
+              <StatusPanel pending message={SAVED_TEXT.loading} />
+            ) : (
+              <EmptyState
+                icon="heart"
+                title="Build your shortlist"
+                description="Tap the heart on a car to keep it here and compare your options."
+                action="Explore cars"
+                onAction={() => router.navigate('/cars')}
+              />
+            )
           ) : null
         }
         ListFooterComponent={

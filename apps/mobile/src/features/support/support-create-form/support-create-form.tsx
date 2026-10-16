@@ -1,3 +1,4 @@
+import { useDiscardChanges } from '../../navigation/use-discard-changes';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CreateSupportTicketInput,
@@ -23,6 +24,8 @@ import { enquiriesApi } from '../../enquiries/enquiries-api';
 import { SUPPORT_TEXT } from '../support.constants';
 import { supportApi } from '../support-api';
 import { RetryIdentity } from '../retry-identity';
+import { SelectionField } from '../../../components/selection-field';
+import { SelectionSheet } from '../../../components/selection-sheet';
 
 export function SupportCreateForm() {
   const params = useLocalSearchParams<{
@@ -47,9 +50,17 @@ export function SupportCreateForm() {
     Uuid.safeParse(params.enquiryId).success ? params.enquiryId : '',
   );
   const [busy, setBusy] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
   const retry = useRef(new RetryIdentity());
+  const completed = useRef(false);
+  useDiscardChanges(
+    Boolean(description.trim()) || subject !== (params.subject ?? '').slice(0, SUPPORT_SUBJECT_MAX),
+    busy,
+    () => completed.current,
+  );
   const asks = category !== '' && ENQUIRY_RELATED_CATEGORIES.includes(category);
   const enquiries = useQuery({
     queryKey: ['customer', owner, 'support-enquiry-options'],
@@ -84,6 +95,10 @@ export function SupportCreateForm() {
       router.navigate('/sign-in');
       return;
     }
+    if (!SupportTicketCategory.safeParse(category).success) {
+      setError('Choose an issue category.');
+      return;
+    }
     const parsed = CreateSupportTicketInput.safeParse({
       category,
       subject,
@@ -104,6 +119,7 @@ export function SupportCreateForm() {
       retry.current.clear();
       void cache.invalidateQueries({ queryKey: ['customer', customer, 'support-tickets'] });
       cache.setQueryData(['customer', customer, 'support-ticket', result.id], result);
+      completed.current = true;
       router.replace(`/support-requests/${result.id}`);
     } catch (failure) {
       if (manager.getSnapshot().customer?.id !== customer || manager.token() !== token) return;
@@ -122,14 +138,9 @@ export function SupportCreateForm() {
     }
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView style={styles.root} behavior="height">
-        <Page title={SUPPORT_TEXT.create}>
-          <ActionButton
-            variant="ghost"
-            label={SUPPORT_TEXT.back}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/support'))}
-          />
+        <Page title={SUPPORT_TEXT.create} showTitle={false}>
           {session.status === 'guest' ? (
             <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
           ) : session.status !== 'authenticated' ? (
@@ -140,28 +151,14 @@ export function SupportCreateForm() {
             />
           ) : (
             <>
-              <Text style={styles.text}>{SUPPORT_TEXT.disclosure}</Text>
-              <ActionButton
-                variant="ghost"
-                label={AUTH_TEXT.privacy}
-                onPress={() => router.navigate('/policy/privacy')}
+              <SelectionField
+                label={SUPPORT_TEXT.category}
+                value={category ? SUPPORT_CATEGORY_LABELS[category] : undefined}
+                placeholder="Choose an issue category"
+                disabled={busy}
+                expanded={categoryOpen}
+                onPress={() => setCategoryOpen(true)}
               />
-              <Text accessibilityRole="header" style={styles.heading}>
-                {SUPPORT_TEXT.category}
-              </Text>
-              {SupportTicketCategory.options.map((value) => (
-                <Pressable
-                  key={value}
-                  accessibilityRole="radio"
-                  accessibilityLabel={SUPPORT_CATEGORY_LABELS[value]}
-                  accessibilityState={{ checked: category === value, disabled: busy }}
-                  disabled={busy}
-                  onPress={() => setCategory(value)}
-                  style={[styles.option, category === value && styles.selected]}
-                >
-                  <Text style={styles.text}>{SUPPORT_CATEGORY_LABELS[value]}</Text>
-                </Pressable>
-              ))}
               <Text style={styles.text}>{SUPPORT_TEXT.subject}</Text>
               <TextInput
                 accessibilityLabel={SUPPORT_TEXT.subject}
@@ -224,6 +221,23 @@ export function SupportCreateForm() {
                   ) : null}
                 </>
               ) : null}
+              <Text style={styles.text}>
+                Tell us what happened. Avoid passwords, OTPs and payment details.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: disclosureOpen }}
+                onPress={() => setDisclosureOpen((value) => !value)}
+                style={{ minHeight: 48, justifyContent: 'center' }}
+              >
+                <Text style={styles.text}>How we use your request</Text>
+              </Pressable>
+              {disclosureOpen ? <Text style={styles.text}>{SUPPORT_TEXT.disclosure}</Text> : null}
+              <ActionButton
+                variant="ghost"
+                label={AUTH_TEXT.privacy}
+                onPress={() => router.navigate('/policy/privacy')}
+              />
               {error ? (
                 <Text accessibilityRole="alert" style={styles.error}>
                   {error}
@@ -242,6 +256,25 @@ export function SupportCreateForm() {
             </>
           )}
         </Page>
+        {categoryOpen ? (
+          <SelectionSheet
+            title="Issue category"
+            value={category || undefined}
+            options={SupportTicketCategory.options.map((value) => ({
+              value,
+              label: SUPPORT_CATEGORY_LABELS[value],
+            }))}
+            onClose={() => setCategoryOpen(false)}
+            onSelect={(value) => {
+              const parsed = SupportTicketCategory.safeParse(value);
+              if (parsed.success) {
+                setCategory(parsed.data);
+                setError(null);
+                setCategoryOpen(false);
+              }
+            }}
+          />
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

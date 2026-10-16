@@ -44,13 +44,8 @@ export function EnquiryDetailScreen() {
   const enquiry = session.status === 'authenticated' ? query.data : undefined;
   const slug = enquiryCarSlug(enquiry?.vehicle.href ?? null);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <Page title={enquiry?.vehicle.title ?? ENQUIRY_TEXT.history}>
-        <ActionButton
-          variant="ghost"
-          label={ENQUIRY_TEXT.back}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/enquiries'))}
-        />
         {session.status === 'guest' ? (
           <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
         ) : enquiry ? (

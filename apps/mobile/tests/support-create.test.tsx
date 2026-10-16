@@ -6,6 +6,10 @@ import type {
 } from '@dealers-drive/contracts/support-client';
 import { SupportCreateScreen } from '../src/features/support/support-create-screen';
 import { SUPPORT_TEXT } from '../src/features/support/support.constants';
+import {
+  SUPPORT_CATEGORY_LABELS,
+  SupportTicketCategory,
+} from '@dealers-drive/contracts/support-client';
 import { ApiError } from '../src/services/api';
 import { supportTicket } from './support-fixtures';
 
@@ -24,13 +28,18 @@ const mockManager = {
 const mockCreate = jest.fn<Promise<CustomerSupportTicket>, [string, CreateSupportTicketInput]>(() =>
   Promise.resolve(supportTicket),
 );
+let mockParams: { category?: string; subject?: string; enquiryId?: string } = {
+  category: 'ACCOUNT_ISSUE',
+  subject: 'Privacy request',
+};
 let mockUuid = 0;
 jest.mock('expo-crypto', () => ({
   randomUUID: () => `00000000-0000-4000-8000-${String(++mockUuid).padStart(12, '0')}`,
 }));
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ dispatch: jest.fn() }),
   useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({ category: 'ACCOUNT_ISSUE', subject: 'Privacy request' }),
+  useLocalSearchParams: () => mockParams,
 }));
 jest.mock('../src/features/auth/auth-provider', () => ({
   useAuth: () => ({ manager: mockManager }),
@@ -44,6 +53,7 @@ jest.mock('../src/features/support/support-api', () => ({
 const clients: QueryClient[] = [];
 beforeEach(() => {
   jest.clearAllMocks();
+  mockParams = { category: 'ACCOUNT_ISSUE', subject: 'Privacy request' };
   mockSession = { ...mockSession, customer: { id: 'customer-one' } };
 });
 afterEach(() => {
@@ -111,4 +121,22 @@ it('clears private drafts on account switch and refuses invalid descriptions bef
   expect(screen.getByLabelText(SUPPORT_TEXT.description)).toHaveProp('value', '');
   await fireEvent.press(screen.getByRole('button', { name: SUPPORT_TEXT.create }));
   expect(mockCreate).not.toHaveBeenCalled();
+});
+
+it('requires an API-supported category and applies the native selector choice', async () => {
+  mockParams = {};
+  await form();
+  await fireEvent.press(screen.getByRole('button', { name: SUPPORT_TEXT.create }));
+  expect(screen.getByText('Choose an issue category.')).toBeOnTheScreen();
+  expect(mockCreate).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByRole('button', { name: 'Category: Choose an issue category' }));
+  for (const category of SupportTicketCategory.options)
+    expect(
+      screen.getByRole('radio', { name: SUPPORT_CATEGORY_LABELS[category] }),
+    ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('radio', { name: SUPPORT_CATEGORY_LABELS.ACCOUNT_ISSUE }));
+  expect(screen.queryByTestId('selection-sheet')).not.toBeOnTheScreen();
+  expect(
+    screen.getByRole('button', { name: `Category: ${SUPPORT_CATEGORY_LABELS.ACCOUNT_ISSUE}` }),
+  ).toBeOnTheScreen();
 });

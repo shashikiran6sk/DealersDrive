@@ -40,21 +40,11 @@ export function CarDetailScreen() {
     if (pending && pending.intent.kind !== 'saved' && pending.intent.slug === slug)
       manager.pending.clear();
   }, [missing, manager, slug]);
-  const back = () => {
-    if (router.canGoBack()) router.back();
-    else router.replace('/cars');
-  };
   const car = query.data;
   if (missing || !car)
     return (
-      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <Page title={missing ? CARS_TEXT.unavailable : CARS_TEXT.loading}>
-          <ActionButton
-            variant="ghost"
-            label={CARS_TEXT.back}
-            testID="car-details-back"
-            onPress={back}
-          />
           <StatusPanel
             pending={query.isPending && !missing}
             message={missing ? CARS_TEXT.unavailable : (query.error?.message ?? CARS_TEXT.loading)}
@@ -64,18 +54,12 @@ export function CarDetailScreen() {
       </SafeAreaView>
     );
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <Page
         title={titleWithoutYear(car)}
         description={car.summary}
         header={
           <View style={{ gap: spacing.md }}>
-            <ActionButton
-              variant="ghost"
-              label={CARS_TEXT.back}
-              testID="car-details-back"
-              onPress={back}
-            />
             <PhotoGallery images={car.images} primaryIndex={car.primaryIndex} title={car.title} />
             {car.year ? <Text style={styles.plate}>{car.year}</Text> : null}
           </View>

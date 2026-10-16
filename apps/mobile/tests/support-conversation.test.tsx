@@ -31,6 +31,7 @@ const mockReopen = jest.fn(() => {
 });
 jest.mock('expo-crypto', () => ({ randomUUID: () => '11111111-1111-4111-8111-111111111111' }));
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ dispatch: jest.fn() }),
   useRouter: () => mockRouter,
   useLocalSearchParams: () => ({ id: '11111111-1111-4111-8111-111111111111' }),
 }));

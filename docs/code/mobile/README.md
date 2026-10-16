@@ -43,3 +43,7 @@ See [account controls](account-controls.md) for OTP recency, customer-only deact
 ## Release hardening
 
 See [release boundaries](release-hardening.md) for build profiles, customer intent validation, generic recovery, artifact inspection and the separate production acceptance gate.
+
+## Remediated navigation and journeys
+
+See [native customer navigation](customer-navigation.md) for shared stack headers, form-discard protection, separate policy controls and font provenance. Current campaign evidence and remaining acceptance gates are in [the remediation report](../../mobile/remediation/README.md).

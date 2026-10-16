@@ -1,7 +1,7 @@
 import type { PublicVehicleImage } from '@dealers-drive/contracts/public';
 import { Image } from 'expo-image';
-import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { CARS_TEXT } from '../../features/cars/cars.constants';
 import { typography } from '../../theme/tokens';
 
@@ -19,6 +19,11 @@ export function GalleryImage({
   height: number;
 }) {
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setFailed(false);
+    setLoading(true);
+  }, [image.url]);
   return (
     <View style={{ width, height, justifyContent: 'center', alignItems: 'center' }}>
       {failed ? (
@@ -34,9 +39,21 @@ export function GalleryImage({
           cachePolicy="memory-disk"
           recyclingKey={image.url}
           accessibilityLabel={`${image.alt}. ${CARS_TEXT.photos(index, total)}`}
-          onError={() => setFailed(true)}
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
+          onError={() => {
+            setFailed(true);
+            setLoading(false);
+          }}
         />
       )}
+      {loading && !failed ? (
+        <ActivityIndicator
+          accessibilityLabel="Loading car photo"
+          color="#ffffff"
+          style={{ position: 'absolute' }}
+        />
+      ) : null}
     </View>
   );
 }

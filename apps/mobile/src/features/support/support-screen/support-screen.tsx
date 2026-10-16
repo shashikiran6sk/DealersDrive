@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Linking, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionButton } from '../../../components/action-button';
-import { Brand } from '../../../components/brand';
 import { Page } from '../../../components/page';
 import { StatusPanel } from '../../../components/status-panel';
 import { colors, typography } from '../../../theme/tokens';
@@ -26,13 +25,8 @@ export function SupportScreen() {
       ? contact.whatsappHref
       : null;
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <Page header={<Brand />} title={SUPPORT_TEXT.title} description={SUPPORT_TEXT.intro}>
-        <ActionButton
-          variant="ghost"
-          label={SUPPORT_TEXT.back}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'))}
-        />
+    <SafeAreaView style={styles.root} edges={['bottom']}>
+      <Page showTitle={false} title={SUPPORT_TEXT.title} description={SUPPORT_TEXT.intro}>
         <ActionButton
           label={SUPPORT_TEXT.create}
           onPress={() => router.navigate('/support-requests/new')}

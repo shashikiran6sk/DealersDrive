@@ -35,8 +35,10 @@ export function SaveButton({
     >
       {unavailable && !busy ? (
         <ActivityIndicator color={colors.ink} />
+      ) : failed ? (
+        <Text style={styles.label}>{SAVED_TEXT.retry}</Text>
       ) : (
-        failed ? <Text style={styles.label}>{SAVED_TEXT.retry}</Text> : <Icon name="heart" size={24} color={colors.ink} filled={active} />
+        <Icon name="heart" size={24} color={colors.ink} filled={active} />
       )}
       {labelled ? (
         <Text style={styles.label}>{active ? SAVED_TEXT.saved : SAVED_TEXT.save}</Text>

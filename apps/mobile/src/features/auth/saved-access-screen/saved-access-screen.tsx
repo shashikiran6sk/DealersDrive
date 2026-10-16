@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 import { ActionButton } from '../../../components/action-button';
+import { EmptyState } from '../../../components/empty-state';
 import { Page } from '../../../components/page';
 import { SHELL_TEXT } from '../../navigation/navigation.constants';
 import { colors, typography } from '../../../theme/tokens';
@@ -22,16 +23,16 @@ export function SavedAccessScreen() {
         </Text>
       ) : null}
       {session.status === 'guest' ? (
-        <>
-          <Text style={styles.text}>{AUTH_TEXT.savedGuest}</Text>
-          <ActionButton
-            label={AUTH_TEXT.login}
-            onPress={() => {
-              manager.pending.request({ kind: 'saved' });
-              router.push('/sign-in');
-            }}
-          />
-        </>
+        <EmptyState
+          icon="heart"
+          title="Keep your shortlist together"
+          description={AUTH_TEXT.savedGuest}
+          action={AUTH_TEXT.login}
+          onAction={() => {
+            manager.pending.request({ kind: 'saved' });
+            router.push('/sign-in');
+          }}
+        />
       ) : null}
       {session.status === 'unavailable' ? (
         <>
