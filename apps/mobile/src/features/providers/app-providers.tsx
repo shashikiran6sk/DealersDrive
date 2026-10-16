@@ -1,3 +1,4 @@
+import { OverlayHost } from '../../components/overlay-host';
 import { AppState } from 'react-native';
 import { locationStore } from '../location/location';
 import { SavedProvider } from '../saved/saved-provider';
@@ -38,7 +39,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SavedProvider>{children}</SavedProvider>
+          <SavedProvider>
+            <OverlayHost>{children}</OverlayHost>
+          </SavedProvider>
         </AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

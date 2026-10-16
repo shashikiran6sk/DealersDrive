@@ -1,5 +1,5 @@
 export const CARS_TEXT = Object.freeze({
-  title: 'Explore cars',
+  title: 'Cars',
   dealerDirectory: 'Dealer directory',
   searchLabel: 'Search cars by make, model or variant',
   searchPlaceholder: 'Search make, model or variant',
@@ -13,7 +13,7 @@ export const CARS_TEXT = Object.freeze({
   districtSearch: 'Search district or state',
   showAll: (count: number) => `Show all ${count}`,
   showFewer: 'Show fewer',
-  suggestionsUnavailable: 'Suggestions are unavailable. You can still search.',
+  suggestionsUnavailable: 'Suggestions could not load. Try again.',
   district: 'District',
   empty: 'No cars match your search.',
   emptyHint: 'Try changing your search or filters.',

@@ -1964,3 +1964,19 @@ The approved remediation extends the existing native Brand and directory screens
 | Icon              | apps/mobile/src/components/icon               | Existing SVG runtime, decorative named paths, size/color/fill; shared native controls                            | consumer fixtures and native screenshots                                 |
 
 Zustand contains public district preference only. SessionManager and TanStack Query retain identity and remote-state ownership. No legal source or API contract changes are introduced by this foundation.
+
+### F110 — native discovery and search
+
+Existing native CarCard, ActionButton, SelectionSheet and filtering contracts remain the shared foundations. New native fixtures supplement the DOM sandbox, whose HTML controls are not imported into Android.
+
+| Component                        | Native source                                         | Props/states and consumers                                                                                                                  | Validation                                                           |
+| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| AutocompleteField / MatchedLabel | components/autocomplete-field                         | Search/clear, query-derived options, loading/empty/error/retry, measured anchored panel, keyboard/Back/outside dismissal; Home/Cars/Dealers | query interaction fixtures and actual keyboard-open native selection |
+| OverlayHost                      | components/overlay-host                               | One owner-scoped transient overlay above navigation/list clipping; no persisted UI or remote data                                           | native anchored dropdown screenshots                                 |
+| DiscoveryTools / SortDialog      | components/discovery-tools; features/cars/sort-dialog | Separate sort/filter actions; contract-derived radio options and auto-close; Cars/dealer inventory                                          | discovery-controls.test.tsx                                          |
+| AppliedFilters                   | features/cars/applied-filters                         | Removable CSV/range/q chips with dependent model/page reset; Cars/dealer inventory                                                          | discovery-controls.test.tsx                                          |
+| TownPills                        | components/town-pills                                 | API options, multiple selected towns, zero-count removal and reset; dealer directory                                                        | discovery-controls and dealer-directory-state fixtures               |
+| EmptyState                       | components/empty-state                                | title/description/action/icon, semantic heading rather than alert; Cars/dealer inventory/directory                                          | consumer fixtures and native empty district/inventory screenshots    |
+| InventoryRow                     | features/home/inventory-row                           | Actual nonempty card data only, horizontal layout, canonical browse action                                                                  | home-discovery.test.tsx; native Home screenshot                      |
+
+No backend records, counts or photographs are injected to populate runtime screens. Test fixtures are isolated to native tests.
