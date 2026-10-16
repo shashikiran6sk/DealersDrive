@@ -1,3 +1,9 @@
+import { EmptyState } from '../../../components/empty-state';
+import { locationStore } from '../../location/location';
+import { DiscoveryTools } from '../../../components/discovery-tools';
+import { SortDialog } from '../sort-dialog';
+import { AppliedFilters } from '../applied-filters';
+import { suggestionParams } from '../suggestion-params';
 import { useDirectoryLocation } from '../../location/use-directory-location';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { NO_VEHICLE_FACETS, type VehicleCardDto } from '@dealers-drive/contracts/public';
@@ -29,6 +35,7 @@ export function CarsScreen() {
   const locationReady = useDirectoryLocation(params.district);
   const [search, setSearch] = useState(params.q ?? '');
   const [filters, setFilters] = useState(false);
+  const [sort, setSort] = useState(false);
   const list = useRef<FlatList<VehicleCardDto>>(null);
   const signature = JSON.stringify(initial);
   useEffect(() => {
@@ -61,7 +68,6 @@ export function CarsScreen() {
     list.current?.scrollToOffset({ offset: 0, animated: false });
     Keyboard.dismiss();
   };
-  const submit = () => apply(setParam(params, 'q', search.trim() || undefined));
   return (
     <View style={styles.root}>
       <FlatList<VehicleCardDto>
@@ -73,6 +79,8 @@ export function CarsScreen() {
         windowSize={7}
         removeClippedSubviews
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        onScrollBeginDrag={Keyboard.dismiss}
         contentContainerStyle={styles.content}
         refreshing={query.isRefetching && !query.isFetchingNextPage}
         onRefresh={() => void query.refetch()}
@@ -81,48 +89,31 @@ export function CarsScreen() {
           if (query.hasNextPage && !query.isFetchingNextPage)
             void query.fetchNextPage({ cancelRefetch: false });
         }}
+        ListHeaderComponentStyle={{ zIndex: 2 }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text accessibilityRole="header" testID="cars-title" style={styles.title}>
               {CARS_TEXT.title}
             </Text>
             <CarSearchInput
               params={params}
               value={search}
               onChange={setSearch}
-              onSubmit={submit}
-              onSelect={(suggestion) => {
-                let next = setParam(params, 'brand', suggestion.brand);
-                next = setParam(next, 'model', suggestion.model ?? undefined);
-                apply(setParam(next, 'q', suggestion.variant ?? undefined));
-              }}
+              onSelect={(suggestion) => apply(suggestionParams(params, suggestion))}
             />
-            <View style={styles.tools}>
-              <View style={styles.half}>
-                <ActionButton label={CARS_TEXT.search} onPress={submit} />
-              </View>
-              <View style={styles.half}>
-                <ActionButton
-                  variant="secondary"
-                  label={`${CARS_TEXT.filters}${activeFilterCount(params) ? ` (${activeFilterCount(params)})` : ''}`}
-                  onPress={() => setFilters(true)}
-                />
-              </View>
-            </View>
-            <ActionButton
-              variant="ghost"
-              label={CARS_TEXT.dealerDirectory}
-              onPress={() => router.navigate('/dealers')}
+            <DiscoveryTools
+              count={activeFilterCount(params)}
+              onSort={() => setSort(true)}
+              onFilters={() => setFilters(true)}
+            />
+            <AppliedFilters
+              params={params}
+              facets={first?.facets ?? NO_VEHICLE_FACETS}
+              onChange={apply}
             />
             {first ? (
               <Text accessibilityLiveRegion="polite" style={styles.text}>
                 {CARS_TEXT.resultCount(first.available)}
-              </Text>
-            ) : null}
-            {params.district ? (
-              <Text style={styles.muted}>
-                {locations.data?.districts.find((district) => district.slug === params.district)
-                  ?.name ?? params.district}
               </Text>
             ) : null}
             {query.isError ? (
@@ -138,11 +129,35 @@ export function CarsScreen() {
               <CarCardSkeleton />
             </View>
           ) : !query.isError ? (
-            <View style={styles.header}>
-              <Text style={styles.text}>{CARS_TEXT.empty}</Text>
-              <Text style={styles.muted}>{CARS_TEXT.emptyHint}</Text>
-              <ActionButton label={CARS_TEXT.reset} onPress={() => apply(clearFilters(params))} />
-            </View>
+            <EmptyState
+              title={
+                activeFilterCount(params) || params.q
+                  ? 'No cars match these filters'
+                  : params.district
+                    ? 'No cars available in this district'
+                    : 'No cars available yet'
+              }
+              description={
+                activeFilterCount(params) || params.q
+                  ? 'Remove a filter or choose another district to see more cars.'
+                  : 'Explore dealerships or browse another district.'
+              }
+              action={
+                activeFilterCount(params) || params.q
+                  ? 'Clear search and filters'
+                  : params.district
+                    ? 'Browse all districts'
+                    : 'Browse dealers'
+              }
+              onAction={() => {
+                if (activeFilterCount(params) || params.q)
+                  apply(setParam(clearFilters(params), 'q', undefined));
+                else if (params.district) {
+                  locationStore.choose(undefined);
+                  apply({ sort: params.sort });
+                } else router.navigate('/dealers');
+              }}
+            />
           ) : null
         }
         renderItem={({ item }) => (
@@ -163,6 +178,13 @@ export function CarsScreen() {
           ) : null
         }
       />
+      {sort ? (
+        <SortDialog
+          value={params.sort}
+          onSelect={(value) => apply(setParam(params, 'sort', value))}
+          onClose={() => setSort(false)}
+        />
+      ) : null}
       {filters ? (
         <FilterDialog
           params={params}

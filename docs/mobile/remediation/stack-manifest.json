@@ -1,0 +1,41 @@
+{
+  "foundation": {
+    "branch": "feat/f108-mobile-release-hardening",
+    "sha": "945856fd385710cbdd6867a345c8e8fd543a676a"
+  },
+  "original_stack_snapshot": "github-stack.json",
+  "remediation": [
+    {
+      "feature": "F109",
+      "pr": 322,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/322",
+      "branch": "feat/f109-mobile-ux-foundation",
+      "base": "feat/f108-mobile-release-hardening",
+      "base_sha": "945856fd385710cbdd6867a345c8e8fd543a676a",
+      "head_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "tested_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "state": "OPEN",
+      "draft": true
+    },
+    {
+      "feature": "F110",
+      "branch": "feat/f110-mobile-discovery-search",
+      "base": "feat/f109-mobile-ux-foundation",
+      "base_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "state": "IMPLEMENTING"
+    },
+    {
+      "feature": "F111",
+      "branch": "feat/f111-mobile-customer-journeys",
+      "base": "feat/f110-mobile-discovery-search",
+      "state": "PLANNED"
+    },
+    {
+      "feature": "F112",
+      "branch": "feat/f112-mobile-ux-hardening",
+      "base": "feat/f111-mobile-customer-journeys",
+      "state": "PLANNED"
+    }
+  ],
+  "merge_deploy_publish_authorized": false
+}
