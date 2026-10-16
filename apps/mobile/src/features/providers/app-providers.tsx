@@ -1,7 +1,9 @@
+import { AppState } from 'react-native';
+import { locationStore } from '../location/location';
 import { SavedProvider } from '../saved/saved-provider';
 import { AuthProvider } from '../auth/auth-provider';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState, type ReactNode } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ApiError } from '../../services/api';
@@ -24,6 +26,14 @@ export function AppProviders({ children }: { children: ReactNode }) {
         },
       }),
   );
+  useEffect(() => {
+    void locationStore.hydrate();
+    focusManager.setFocused(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (state) =>
+      focusManager.setFocused(state === 'active'),
+    );
+    return () => subscription.remove();
+  }, []);
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

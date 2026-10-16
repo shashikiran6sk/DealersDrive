@@ -1952,3 +1952,15 @@ Existing Button/ConsentChoice/Page/StatusPanel/Brand components are reused. Web 
 | AboutScreen      | about-screen                                      | Public version/build, brand, terms/privacy/support/home; Profile                             | Approved asset/bundle/type checks; installed visual review pending |
 
 Existing native Brand/Page/ActionButton are reused; native fixtures supplement the DOM sandbox. System launcher/splash visuals and E2E screenshots remain device acceptance gates.
+
+### F109 — Android remediation foundation
+
+The approved remediation extends the existing native Brand and directory screens. DOM sandbox components were searched; native primitives use Testing Library fixtures and installed Android evidence instead.
+
+| Component         | Native source                                 | Props/states and consumers                                                                                       | Validation                                                               |
+| ----------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| MarketplaceHeader | apps/mobile/src/components/marketplace-header | Approved lockup, responsive district pill, API loading/error, all districts; five-tab shell                      | navigation-location fixtures; native screenshots in remediation evidence |
+| SelectionSheet    | apps/mobile/src/components/selection-sheet    | title/options/value/select/close, search/loading/error/retry, radio semantics and system Back; district selector | selection-sheet.test.tsx                                                 |
+| Icon              | apps/mobile/src/components/icon               | Existing SVG runtime, decorative named paths, size/color/fill; shared native controls                            | consumer fixtures and native screenshots                                 |
+
+Zustand contains public district preference only. SessionManager and TanStack Query retain identity and remote-state ownership. No legal source or API contract changes are introduced by this foundation.

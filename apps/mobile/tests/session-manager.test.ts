@@ -164,6 +164,28 @@ it('keeps an OTP flow alive across foreground session restoration, then binds it
   });
   expect(h.manager.pending.consume(action.id, CUSTOMER.id)).toBeNull();
 });
+
+it('preserves verified identity and private cache through successful same-account foreground refresh', async () => {
+  const h = harness(JSON.stringify(CREDENTIAL));
+  await h.manager.restore();
+  h.clear.mockClear();
+  const snapshots: unknown[] = [];
+  h.manager.subscribe(() => snapshots.push(h.manager.getSnapshot()));
+  await h.manager.restore();
+  expect(snapshots).not.toContainEqual({ status: 'restoring', customer: null, error: null });
+  expect(h.clear).not.toHaveBeenCalled();
+  expect(h.manager.getSnapshot().customer?.id).toBe(CUSTOMER.id);
+});
+
+it('clears a previously verified account immediately when foreground refresh detects revocation', async () => {
+  const h = harness(JSON.stringify(CREDENTIAL));
+  await h.manager.restore();
+  h.api.me.mockRejectedValueOnce(new ApiError('AUTH_REQUIRED', 'Revoked', 401));
+  await h.manager.restore();
+  expect(h.manager.getSnapshot()).toMatchObject({ status: 'guest', customer: null });
+  expect(h.clear).toHaveBeenCalled();
+  expect(h.manager.token()).toBeNull();
+});
 it('never confirms secure persistence or server logout after a failed operation', async () => {
   const h = harness();
   h.storage.write.mockRejectedValueOnce(new Error('keystore unavailable'));
