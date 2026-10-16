@@ -2,7 +2,7 @@ export const CARS_TEXT = Object.freeze({
   title: 'Cars',
   dealerDirectory: 'Dealer directory',
   searchLabel: 'Search cars by make, model or variant',
-  searchPlaceholder: 'Search make, model or variant',
+  searchPlaceholder: 'Make, model or variant',
   search: 'Search',
   filters: 'Filters',
   sort: 'Sort',

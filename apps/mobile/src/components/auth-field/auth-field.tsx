@@ -13,6 +13,8 @@ export function AuthField({ label, error, prefix, ...props }: AuthFieldProps) {
       <View style={styles.inputRow}>
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
         <TextInput
+          multiline={false}
+          numberOfLines={1}
           accessibilityLabel={label}
           placeholderTextColor={colors.muted}
           style={styles.input}

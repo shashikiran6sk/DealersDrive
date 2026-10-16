@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type {
   CustomerSupportTicket,
   SupportMessageInput,
@@ -9,6 +9,8 @@ import { SUPPORT_TEXT } from '../src/features/support/support.constants';
 import { ApiError } from '../src/services/api';
 import { supportTicket } from './support-fixtures';
 
+let mockFocused = true;
+const mockOne = jest.fn(() => Promise.resolve(mockTicket));
 let mockTicket = { ...supportTicket };
 const mockSession = { status: 'authenticated', customer: { id: 'customer-one' }, error: null };
 const mockManager = {
@@ -31,6 +33,7 @@ const mockReopen = jest.fn(() => {
 });
 jest.mock('expo-crypto', () => ({ randomUUID: () => '11111111-1111-4111-8111-111111111111' }));
 jest.mock('expo-router', () => ({
+  useIsFocused: () => mockFocused,
   useNavigation: () => ({ dispatch: jest.fn() }),
   useRouter: () => mockRouter,
   useLocalSearchParams: () => ({ id: '11111111-1111-4111-8111-111111111111' }),
@@ -41,7 +44,7 @@ jest.mock('../src/features/auth/auth-provider', () => ({
 }));
 jest.mock('../src/features/support/support-api', () => ({
   supportApi: {
-    one: () => Promise.resolve(mockTicket),
+    one: () => mockOne(),
     reply: (token: string, id: string, input: SupportMessageInput) => mockReply(token, id, input),
     reopen: () => mockReopen(),
   },
@@ -49,29 +52,34 @@ jest.mock('../src/features/support/support-api', () => ({
 const clients: QueryClient[] = [];
 beforeEach(() => {
   mockTicket = { ...supportTicket };
+  mockFocused = true;
   jest.clearAllMocks();
 });
 afterEach(() => {
   for (const client of clients.splice(0)) client.clear();
+  jest.useRealTimers();
 });
 async function conversation() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   clients.push(client);
-  await render(
+  const tree = () => (
     <QueryClientProvider client={client}>
       <SupportDetailScreen />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
+  const view = await render(tree());
   await waitFor(() => expect(screen.getByText(mockTicket.description)).toBeOnTheScreen());
+  return { view, tree };
 }
-it('does not offer replies when the server quota is exhausted', async () => {
+it('keeps a quota-limited conversation focused instead of creating another request', async () => {
   mockTicket = { ...supportTicket, canReply: false, remainingMessages: 0 };
   await conversation();
   expect(screen.getByText(SUPPORT_TEXT.limited)).toBeOnTheScreen();
   expect(screen.queryByLabelText(SUPPORT_TEXT.reply)).toBeNull();
   expect(mockReply).not.toHaveBeenCalled();
+  expect(screen.queryByRole('button', { name: SUPPORT_TEXT.create })).toBeNull();
 });
 it('requires explicit reopen for resolved requests and never reopens closed history', async () => {
   mockTicket = { ...supportTicket, status: 'RESOLVED', canReply: false, canReopen: true };
@@ -99,6 +107,20 @@ it('shows closed history with a new-request action and no reply/reopen controls'
   mockTicket = { ...supportTicket, status: 'CLOSED', canReply: false };
   await conversation();
   expect(screen.getByText(SUPPORT_TEXT.closed)).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: SUPPORT_TEXT.create })).toBeOnTheScreen();
   expect(screen.queryByRole('button', { name: SUPPORT_TEXT.reopen })).toBeNull();
   expect(screen.queryByLabelText(SUPPORT_TEXT.reply)).toBeNull();
+});
+
+it('polls only a focused foreground conversation', async () => {
+  jest.useFakeTimers();
+  mockFocused = false;
+  const h = await conversation();
+  expect(mockOne).toHaveBeenCalledTimes(1);
+  await act(() => jest.advanceTimersByTimeAsync(16000));
+  expect(mockOne).toHaveBeenCalledTimes(1);
+  mockFocused = true;
+  await h.view.rerender(h.tree());
+  await act(() => jest.advanceTimersByTimeAsync(16000));
+  expect(mockOne).toHaveBeenCalledTimes(2);
 });

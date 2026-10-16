@@ -13,6 +13,12 @@ if ! timeout 60 adb shell cmd activity wait-for-broadcast-idle > artifacts/insta
   exit 1
 fi
 smokeResult=0
+if ! adb shell am force-stop com.dealersdrive.customer.preview; then exit 1; fi
+if ! adb shell am start -n com.dealersdrive.customer.preview/.MainActivity; then exit 1; fi
+if ! adb shell am start -n com.dealersdrive.customer.preview/.MainActivity -a android.intent.action.VIEW -d dealersdrive://car/missing-release-validation-car; then exit 1; fi
+maestro test --format junit --output artifacts/maestro-startup-window.xml \
+  --test-output-dir artifacts/maestro-startup-run --debug-output artifacts/startup-debug \
+  -e APP_ID=com.dealersdrive.customer.preview apps/mobile/e2e-startup-window.yaml || smokeResult=$?
 maestro test --format junit --output artifacts/maestro.xml \
   --test-output-dir artifacts/maestro-run --debug-output artifacts/debug \
   -e APP_ID=com.dealersdrive.customer.preview apps/mobile/e2e || smokeResult=$?

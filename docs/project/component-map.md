@@ -1993,3 +1993,9 @@ Native components extend the existing shared Card, ConsentChoice, Page, Icon, Se
 | CarCard / SaveButton           | components/car-card; components/save-button           | One system for all placements, solid/outlined black heart, image recovery, availability and missing data | cars-components snapshots and saved rollback/cache tests |
 
 Full source-level behavior and the pinned navigation adapter are described in [customer navigation](../code/mobile/customer-navigation.md).
+
+### F112 — native acceptance and hardening
+
+The existing Brand adds a compact geometry-preserving lockup for narrow headers. AuthField/AutocompleteField explicitly keep single-line native input semantics and concise placeholders at 150% system text. Brand and field consumer tests plus 360/393/412dp and large-text release screenshots verify the variants. The native theme plugin sets the dialog accent to the same neutral token; no raster branding or UI dependency is added.
+
+Saved private-cache cancellation/removal and focused support polling have direct regression tests. The retained-intent prebuild adapter has template/idempotence tests and a native startup-window Maestro flow. Source details are in [customer navigation](../code/mobile/customer-navigation.md); evidence and remaining physical/accessibility gates are in [acceptance results](../mobile/remediation/acceptance-results.md).

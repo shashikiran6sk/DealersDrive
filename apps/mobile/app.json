@@ -43,7 +43,10 @@
           "imageWidth": 96,
           "backgroundColor": "#ffffff"
         }
-      ]
-    ]
+      ],
+      "./config/with-native-theme.cjs",
+      "./config/with-retained-intent.cjs"
+    ],
+    "primaryColor": "#171716"
   }
 }

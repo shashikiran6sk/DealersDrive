@@ -5,6 +5,26 @@ appId: ${APP_ID}
 - assertVisible:
     id: home-title
 - takeScreenshot: artifacts/home-approved-brand
+- tapOn: Cars
+- assertVisible:
+    id: cars-title
+- tapOn: Sort
+- assertVisible: Sort cars
+- assertVisible: Newest first
+- assertVisible: Price — Low to High
+- takeScreenshot: artifacts/sort-native
+- back
+- assertVisible:
+    id: cars-title
+- tapOn: Filters
+- assertVisible: Filters
+- takeScreenshot: artifacts/filters-native
+- back
+- assertVisible:
+    id: cars-title
+- tapOn: Dealers
+- assertVisible: Dealer directory
+- takeScreenshot: artifacts/dealers-tab
 - tapOn: Profile
 - assertVisible: Your account
 - assertVisible: Sign in or create account
