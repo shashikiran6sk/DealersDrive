@@ -36,3 +36,14 @@ it('keeps symbol and wordmark independent with one accessible lockup label', asy
   ]);
   expect(screen.queryByText('Dealers-Drive')).toBeNull();
 });
+
+it('retains approved independent geometry and a single label in the narrow-header lockup', async () => {
+  await render(<Brand compact />);
+  const calls = jest.mocked(SvgXml).mock.calls.map(([props]) => props);
+  expect(calls).toHaveLength(2);
+  expect(calls[0]?.xml).toBe(vectors['dd-icon-black']);
+  expect(calls[1]?.xml).toBe(vectors['dealersdrive-wordmark-black']);
+  expect(Number(calls[0]?.width) / Number(calls[0]?.height)).toBeCloseTo(651 / 424);
+  expect(Number(calls[1]?.width) / Number(calls[1]?.height)).toBeCloseTo(1092 / 145);
+  expect(screen.getAllByRole('image', { name: 'Dealers-Drive' })).toHaveLength(1);
+});

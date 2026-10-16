@@ -6,7 +6,7 @@ import {
   type SupportMessage,
 } from '@dealers-drive/contracts/support-client';
 import { Uuid } from '@dealers-drive/contracts/common';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useIsFocused, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   AppState,
@@ -36,6 +36,7 @@ export function SupportConversation() {
   const owner = session.customer?.id;
   const router = useRouter();
   const cache = useQueryClient();
+  const focused = useIsFocused();
   const [active, setActive] = useState(
     AppState.currentState !== 'background' && AppState.currentState !== 'inactive',
   );
@@ -54,7 +55,7 @@ export function SupportConversation() {
       if (!token) throw new ApiError('AUTH_REQUIRED', AUTH_TEXT.login, 401);
       return supportApi.one(token, id, signal);
     },
-    refetchInterval: active ? 15000 : false,
+    refetchInterval: active && focused ? 15000 : false,
   });
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => setActive(state === 'active'));
@@ -237,11 +238,13 @@ export function SupportConversation() {
                     {notice}
                   </Text>
                 ) : null}
-                <ActionButton
-                  variant="secondary"
-                  label={SUPPORT_TEXT.create}
-                  onPress={() => router.navigate('/support-requests/new')}
-                />
+                {ticket.status === 'CLOSED' ? (
+                  <ActionButton
+                    variant="secondary"
+                    label={SUPPORT_TEXT.create}
+                    onPress={() => router.navigate('/support-requests/new')}
+                  />
+                ) : null}
               </View>
             ) : null
           }

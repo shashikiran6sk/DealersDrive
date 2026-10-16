@@ -5,7 +5,7 @@ export const AUTH_TEXT = Object.freeze({
     'Your customer account is deactivated. Reactivation restores customer access and retained records. Withdrawn dealership sharing permissions remain withdrawn.',
   description: 'Sign in or create an account with your mobile number.',
   mobile: 'Mobile number',
-  mobilePlaceholder: '10-digit Indian mobile number',
+  mobilePlaceholder: '10-digit number',
   countryCode: '+91',
   send: 'Continue',
   codeTitle: 'Verify your mobile number',

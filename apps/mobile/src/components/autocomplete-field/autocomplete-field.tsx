@@ -214,6 +214,8 @@ export function AutocompleteField({
         style={styles.input}
         value={value}
         maxLength={120}
+        multiline={false}
+        numberOfLines={1}
         autoCorrect={false}
         autoCapitalize="none"
         returnKeyType={onSubmit ? 'search' : 'done'}

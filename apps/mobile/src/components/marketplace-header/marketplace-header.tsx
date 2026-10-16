@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { usePathname } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { carsApi } from '../../features/cars/cars-api';
 import { locationStore, useDistrict } from '../../features/location/location';
@@ -12,6 +12,7 @@ import { SelectionSheet } from '../selection-sheet';
 
 export function MarketplaceHeader() {
   const path = usePathname();
+  const { width } = useWindowDimensions();
   const discovery = path === '/' || path === '/cars' || path === '/dealers' || path === '/explore';
   const district = useDistrict();
   const [open, setOpen] = useState(false);
@@ -27,7 +28,7 @@ export function MarketplaceHeader() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.header}>
-        <Brand />
+        <Brand compact={width < 390} />
         {discovery ? (
           <Pressable
             accessibilityRole="button"
