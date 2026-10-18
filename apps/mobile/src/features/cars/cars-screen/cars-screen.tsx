@@ -10,9 +10,9 @@ import {
 } from '@dealers-drive/contracts/vehicle-search';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Keyboard, StyleSheet, Text, View } from 'react-native';
 import { ActionButton } from '../../../components/action-button';
-import { AuthField } from '../../../components/auth-field';
+import { CarSearchInput } from '../../../components/car-search-input';
 import { CarCard, CarCardSkeleton } from '../../../components/car-card';
 import { StatusPanel } from '../../../components/status-panel';
 import { colors, spacing, typography } from '../../../theme/tokens';
@@ -25,9 +25,7 @@ export function CarsScreen() {
   const router = useRouter();
   const [params, setParams] = useState(() => readVehicleSearch(initial));
   const [search, setSearch] = useState(params.q ?? '');
-  const [debounced, setDebounced] = useState(search);
   const [filters, setFilters] = useState(false);
-  const [focus, setFocus] = useState(false);
   const list = useRef<FlatList<VehicleCardDto>>(null);
   const signature = JSON.stringify(initial);
   useEffect(() => {
@@ -35,10 +33,7 @@ export function CarsScreen() {
     setParams(next);
     setSearch(next.q ?? '');
   }, [signature]);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(search.trim()), 350);
-    return () => clearTimeout(timer);
-  }, [search]);
+
   const query = useInfiniteQuery({
     queryKey: ['public', 'cars', params],
     initialPageParam: pageOf(params),
@@ -51,11 +46,7 @@ export function CarsScreen() {
     queryFn: ({ signal }) => carsApi.locations(signal),
     staleTime: 600_000,
   });
-  const suggestions = useQuery({
-    queryKey: ['public', 'car-suggestions', params.district, params.city, params.dealer, debounced],
-    queryFn: ({ signal }) => carsApi.suggest(params, debounced, signal),
-    enabled: focus && debounced.length >= 2 && debounced.length <= 80,
-  });
+
   const first = query.data?.pages[0];
   const cards = query.data?.pages.flatMap((page) => page.data) ?? [];
   const unique = [...new Map(cards.map((car) => [car.slug, car])).values()];
@@ -63,7 +54,6 @@ export function CarsScreen() {
     setParams(next);
     setSearch(next.q ?? '');
     setFilters(false);
-    setFocus(false);
     list.current?.scrollToOffset({ offset: 0, animated: false });
     Keyboard.dismiss();
   };
@@ -92,36 +82,17 @@ export function CarsScreen() {
             <Text accessibilityRole="header" style={styles.title}>
               {CARS_TEXT.title}
             </Text>
-            <AuthField
-              label={CARS_TEXT.searchLabel}
-              placeholder={CARS_TEXT.searchPlaceholder}
+            <CarSearchInput
+              params={params}
               value={search}
-              onChangeText={setSearch}
-              onFocus={() => setFocus(true)}
-              returnKeyType="search"
-              maxLength={120}
-              onSubmitEditing={submit}
+              onChange={setSearch}
+              onSubmit={submit}
+              onSelect={(suggestion) => {
+                let next = setParam(params, 'brand', suggestion.brand);
+                next = setParam(next, 'model', suggestion.model ?? undefined);
+                apply(setParam(next, 'q', suggestion.variant ?? undefined));
+              }}
             />
-            {focus && suggestions.data?.search === debounced
-              ? suggestions.data.data.map((suggestion) => (
-                  <Pressable
-                    key={`${suggestion.kind}:${suggestion.brand}:${suggestion.model}:${suggestion.variant}`}
-                    accessibilityRole="button"
-                    onPress={() => {
-                      let next = setParam(params, 'brand', suggestion.brand);
-                      next = setParam(next, 'model', suggestion.model ?? undefined);
-                      apply(setParam(next, 'q', suggestion.variant ?? undefined));
-                    }}
-                    style={styles.suggestion}
-                  >
-                    <Text style={styles.text}>{suggestion.label}</Text>
-                    <Text style={styles.muted}>{suggestion.metaLabel}</Text>
-                  </Pressable>
-                ))
-              : null}
-            {focus && suggestions.isError ? (
-              <Text style={styles.muted}>{CARS_TEXT.suggestionsUnavailable}</Text>
-            ) : null}
             <View style={styles.tools}>
               <View style={styles.half}>
                 <ActionButton label={CARS_TEXT.search} onPress={submit} />
@@ -134,6 +105,11 @@ export function CarsScreen() {
                 />
               </View>
             </View>
+            <ActionButton
+              variant="ghost"
+              label={CARS_TEXT.dealerDirectory}
+              onPress={() => router.navigate('/dealers')}
+            />
             {first ? (
               <Text accessibilityLiveRegion="polite" style={styles.text}>
                 {CARS_TEXT.resultCount(first.available)}

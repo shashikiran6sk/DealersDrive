@@ -394,3 +394,7 @@ F101 starts from the verified F100 head 8ec6b2da / draft PR #313; all reported F
 ## F102 discovery implementation checkpoint
 
 F102 uses the actual Available/Reserved public contract and 404 for sold/withdrawn detail. Counts distinguish available from pagination totals. Native list/filter/gallery/detail reuse the existing public APIs and updated mobile web geometry. Pure search/title helpers are shared with compatibility re-exports and their original behavior tests. F101 CI repairs are carried forward through normal immediate-parent merges; no history rewrite. See [F102 validation](f102-validation.md) and [discovery design](../code/mobile/cars.md).
+
+## F103 Home/dealer implementation checkpoint
+
+F103 starts from F102 #315 head dab6e7ab. The repaired F101 and F102 now report all GitHub checks successful. Home/discovery and dealer directory/profile/yard/gallery/inventory/directions reuse the actual website sources and public API; conceptual cover is identified explicitly, Maps is user-tapped and no dealer phone/privileged interface is exposed. See [F103 validation](f103-validation.md) and [Home/dealer design](../code/mobile/dealers-home.md).
