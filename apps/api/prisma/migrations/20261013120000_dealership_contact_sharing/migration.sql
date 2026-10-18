@@ -31,8 +31,6 @@ CREATE TRIGGER "contact_sharing_events_no_truncate"
 BEFORE TRUNCATE ON "contact_sharing_events"
 FOR EACH STATEMENT EXECUTE FUNCTION prevent_legal_evidence_change();
 
-CREATE INDEX CONCURRENTLY "enquiries_sharingGrantId_idx" ON "enquiries"("sharingGrantId");
-
 ALTER TABLE "legal_events" DROP CONSTRAINT "legal_event_action";
 ALTER TABLE "legal_events" ADD CONSTRAINT "legal_event_action" CHECK ("action" IN ('ACCEPT','ACKNOWLEDGE','GRANT','WITHDRAW','CERTIFY','DISCLOSE')) NOT VALID;
 ALTER TABLE "legal_events" VALIDATE CONSTRAINT "legal_event_action";

@@ -1036,24 +1036,24 @@ enum ListingCheckKey {
 /// `dealerId` is the listing's, copied on write and never accepted from a
 /// request — it is the tenant key every dealer read filters on (rule 1).
 model Enquiry {
-  sharingGrantId String? @db.Uuid
-  sharingGrant ContactSharingEvent? @relation(fields: [sharingGrantId], references: [id], onDelete: Restrict)
+  sharingGrantId     String?              @db.Uuid
+  sharingGrant       ContactSharingEvent? @relation(fields: [sharingGrantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   sharingWithdrawnAt DateTime?
-  id            String        @id @default(uuid()) @db.Uuid
-  customerId    String        @db.Uuid
-  dealerId      String        @db.Uuid
-  listingId     String        @db.Uuid
+  id                 String               @id @default(uuid()) @db.Uuid
+  customerId         String               @db.Uuid
+  dealerId           String               @db.Uuid
+  listingId          String               @db.Uuid
   /// Optional. A customer who only wants a call back sends no text at all.
-  message       String?
-  status        EnquiryStatus @default(NEW)
-  contactedAt   DateTime?
-  closedAt      DateTime?
+  message            String?
+  status             EnquiryStatus        @default(NEW)
+  contactedAt        DateTime?
+  closedAt           DateTime?
   /// The member who marked it CONTACTED, and who closed it (**R92**). NULL on
   /// rows from before R92, and when that person's account is deleted.
-  contactedById String?       @db.Uuid
-  closedById    String?       @db.Uuid
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  contactedById      String?              @db.Uuid
+  closedById         String?              @db.Uuid
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   customer    User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   contactedBy User?   @relation("EnquiryContactedBy", fields: [contactedById], references: [id], onDelete: SetNull)
@@ -1698,26 +1698,26 @@ model LegalEvent {
 }
 
 model ContactSharingEvent {
-  id               String   @id @default(uuid()) @db.Uuid
-  customerId       String   @db.Uuid
-  dealerId         String   @db.Uuid
-  actorId          String   @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
+  customerId       String    @db.Uuid
+  dealerId         String    @db.Uuid
+  actorId          String    @db.Uuid
   action           String
   purpose          String
   dataCategories   String[]
   noticeVersion    String
   noticeDigest     String
   scopeDigest      String
-  withdrawnGrantId String?  @unique @db.Uuid
-  eventKey         String   @unique
+  withdrawnGrantId String?   @unique @db.Uuid
+  eventKey         String    @unique
   expiresAt        DateTime?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime  @default(now())
 
-  withdrawnGrant ContactSharingEvent?  @relation("SharingWithdrawal", fields: [withdrawnGrantId], references: [id], onDelete: Restrict)
-  withdrawal     ContactSharingEvent?  @relation("SharingWithdrawal")
+  withdrawnGrant ContactSharingEvent? @relation("SharingWithdrawal", fields: [withdrawnGrantId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "sharing_withdrawal_fkey")
+  withdrawal     ContactSharingEvent? @relation("SharingWithdrawal")
   enquiries      Enquiry[]
 
-  @@index([customerId, dealerId, scopeDigest, createdAt])
+  @@index([customerId, dealerId, scopeDigest, createdAt], map: "contact_sharing_events_customerId_dealerId_scopeDigest_createdA")
   @@map("contact_sharing_events")
 }
 
