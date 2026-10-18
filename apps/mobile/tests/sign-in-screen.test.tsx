@@ -9,6 +9,7 @@ import type {
 
 import { SignInScreen } from '../src/features/auth/sign-in-screen';
 import { AUTH_TEXT } from '../src/features/auth/auth.constants';
+import { ApiError } from '../src/services/api';
 
 const mockBeforeRemove = jest.fn<void, [string, () => void]>();
 const mockRouter = { back: jest.fn(), replace: jest.fn(), push: jest.fn(), canGoBack: () => true };
@@ -191,6 +192,44 @@ jest.mock('react-native-svg', () => {
   const { View } = jest.requireActual<typeof ReactNativeModule>('react-native');
   return { __esModule: true, default: View, Path: View, SvgXml: View };
 });
+it.each([
+  [
+    'native sign-in switched off',
+    new ApiError('NATIVE_AUTH_UNAVAILABLE', 'Something went wrong on our side.', 503),
+  ],
+  [
+    'policies awaiting publication',
+    new ApiError('LEGAL_PUBLICATION_NOT_READY', 'Something went wrong on our side.', 503),
+  ],
+  [
+    'an older server without native sign-in',
+    new ApiError('AUTH_REQUIRED', 'You must be signed in to do that.', 401),
+  ],
+  ['a server without the route', new ApiError('NOT_FOUND', 'Not found.', 404)],
+])('explains that mobile sign-in is unavailable for %s', async (_case, failure) => {
+  mockApi.request.mockRejectedValueOnce(failure);
+  await form();
+  await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.mobile), '9845599999');
+  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.send }));
+  expect(await screen.findByText(AUTH_TEXT.signInUnavailable)).toBeOnTheScreen();
+  expect(screen.queryByText('You must be signed in to do that.')).toBeNull();
+});
+it('shows the server wait and blocks the action after a rate limit', async () => {
+  mockApi.request.mockRejectedValueOnce(
+    new ApiError('RATE_LIMITED', 'Too many attempts.', 429, undefined, 30),
+  );
+  await form();
+  await fireEvent.changeText(screen.getByLabelText(AUTH_TEXT.mobile), '9845599999');
+  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.send }));
+  expect(await screen.findByText(AUTH_TEXT.retryWait(30))).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: AUTH_TEXT.tryAgainIn(30) })).toBeDisabled();
+});
+it('leaves challenge expiry to the server so a skewed device clock cannot block sign-in', async () => {
+  mockApi.request.mockResolvedValueOnce({ ...challenge, expiresAt: '2000-01-01T00:00:00.000Z' });
+  await form();
+  await prove();
+  expect(mockApi.verify).toHaveBeenCalledTimes(1);
+});
 
 it('requires explicit reactivation after verified OTP and never treats it as new signup', async () => {
   mockApi.verify.mockResolvedValueOnce({
@@ -228,3 +267,16 @@ it.each(['+97798455999999', '98455999999'])(
     expect(screen.getByText(AUTH_TEXT.invalidPhone)).toBeOnTheScreen();
   },
 );
+it('leaves reactivation expiry to the server so a skewed device clock cannot block it', async () => {
+  mockApi.verify.mockResolvedValueOnce({
+    status: 'REACTIVATION_REQUIRED',
+    reactivationToken: 'single-use-test-proof',
+    expiresAt: '2000-01-01T00:00:00.000Z',
+    phoneDisplay: challenge.phoneDisplay,
+    fullName: 'New Customer',
+  });
+  await form();
+  await prove(true);
+  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.reactivate }));
+  await waitFor(() => expect(mockApi.reactivate).toHaveBeenCalledTimes(1));
+});

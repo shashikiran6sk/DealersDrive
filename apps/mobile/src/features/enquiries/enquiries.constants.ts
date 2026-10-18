@@ -38,6 +38,10 @@ export const ENQUIRY_TEXT = Object.freeze({
   permissionVersion: (version: string) => `Sharing notice ${version}`,
   agreements: 'Review your account agreements',
   failed: 'The request could not be completed. Please try again.',
+  updateRequired:
+    'The dealership sharing notice has been updated. Update the Dealers-Drive app to review it before sending an enquiry.',
   viewCar: 'View car',
   open: (title: string, dealer: string) => `Open enquiry for ${title} with ${dealer}`,
 });
+
+export const SHARING_COPY_NOTICE_VERSION = '2.0-draft.1';

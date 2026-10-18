@@ -1,4 +1,6 @@
 import type { LegalPublication } from '@dealers-drive/contracts/native-auth';
+import { ENQUIRY_NOTICE_VERSION } from '@dealers-drive/contracts';
+import { SHARING_COPY_NOTICE_VERSION } from '../src/features/enquiries/enquiries.constants';
 import {
   enquiryInput,
   sharingSignature,
@@ -9,7 +11,7 @@ const publication: LegalPublication = {
   state: 'DRAFT',
   collectionEnabled: true,
   documents: [],
-  sharing: { version: 'test-v1', digest: 'hash', text: 'Notice' },
+  sharing: { version: SHARING_COPY_NOTICE_VERSION, digest: 'hash', text: 'Notice' },
 };
 const dealer = {
   required: true,
@@ -22,7 +24,7 @@ it('requires affirmative permission for a new dealership and reuses server-confi
     listingSlug: 'car-one',
     message: 'hello',
     recipientId: dealer.recipientId,
-    sharing: { version: 'test-v1', granted: true },
+    sharing: { version: SHARING_COPY_NOTICE_VERSION, granted: true },
   });
   expect(enquiryInput('car-two', '', false, publication, { ...dealer, required: false })).toEqual({
     listingSlug: 'car-two',
@@ -55,7 +57,10 @@ it('invalidates a choice for changed receiver, requirement, publication or notic
   expect(sharingSignature(publication, { ...dealer, required: false })).not.toBe(signature);
   expect(
     sharingSignature(
-      { ...publication, sharing: { version: 'test-v1', text: 'Notice', digest: 'changed' } },
+      {
+        ...publication,
+        sharing: { version: SHARING_COPY_NOTICE_VERSION, text: 'Notice', digest: 'changed' },
+      },
       dealer,
     ),
   ).not.toBe(signature);
@@ -71,4 +76,22 @@ it('only follows canonical car paths from enquiry responses', () => {
     '/car/car-one?token=x',
   ])
     expect(enquiryCarSlug(href)).toBeNull();
+});
+
+it('pins the in-app consent copy to the sharing notice version it was written for', () => {
+  expect(SHARING_COPY_NOTICE_VERSION).toBe(ENQUIRY_NOTICE_VERSION);
+});
+it('refuses to record consent to a notice version this build has not shown', () => {
+  const newer = {
+    ...publication,
+    sharing: { version: '3.0', digest: 'hash', text: 'Notice v3' },
+  };
+  expect(() => enquiryInput('car-one', '', true, newer, dealer)).toThrow(
+    'Update the Dealers-Drive app',
+  );
+  expect(enquiryInput('car-two', '', false, newer, { ...dealer, required: false })).toEqual({
+    listingSlug: 'car-two',
+    message: undefined,
+    recipientId: dealer.recipientId,
+  });
 });

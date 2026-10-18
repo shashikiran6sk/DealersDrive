@@ -18,6 +18,7 @@ export function createLocationStore(storage: PreferenceStorage) {
     choose(district: string | undefined) {
       if (district !== undefined && !validDistrict(district)) return;
       const previous = store.getState();
+      if (previous.hydrated && previous.district === district) return;
       store.setState({ district, revision: previous.revision + 1, hydrated: true });
       writes = writes
         .catch(() => undefined)

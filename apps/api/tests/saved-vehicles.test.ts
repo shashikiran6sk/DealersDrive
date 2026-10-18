@@ -284,8 +284,16 @@ describe('backward-compatible saved state pagination', () => {
     const own = await agent.get('/v1/auth/customer/me').expect(200);
     const foreign = await other.get('/v1/auth/customer/me').expect(200);
     const sessions = createSessionService(h.prisma);
-    const native = await sessions.issue({ userId: own.body.customer.id, scope: 'CUSTOMER' });
-    const second = await sessions.issue({ userId: foreign.body.customer.id, scope: 'CUSTOMER' });
+    const native = await sessions.issue({
+      userId: own.body.customer.id,
+      scope: 'CUSTOMER',
+      native: true,
+    });
+    const second = await sessions.issue({
+      userId: foreign.body.customer.id,
+      scope: 'CUSTOMER',
+      native: true,
+    });
     const vehicle = await car();
     const previous = env.NATIVE_CUSTOMER_AUTH_ENABLED;
     env.NATIVE_CUSTOMER_AUTH_ENABLED = true;

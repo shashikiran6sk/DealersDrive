@@ -6,7 +6,8 @@ export function redirectSystemPath({ path }: { path: string; initial: boolean })
   const origin = publicEnvironment().webBaseUrl.replace(/\/$/, '');
   const destination = incomingLink(path, origin);
   const url = new URL(destination, origin);
-  if (url.pathname === '/cars' || url.pathname === '/dealers')
-    locationStore.choose(url.searchParams.get('district') ?? undefined);
+  const district = url.searchParams.get('district');
+  if ((url.pathname === '/cars' || url.pathname === '/dealers') && district !== null)
+    locationStore.choose(district);
   return `${origin}${destination}`;
 }
