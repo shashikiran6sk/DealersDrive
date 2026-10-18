@@ -34,3 +34,15 @@ An authenticated customer can submit a distinct Account deletion request through
 Google Play's [official account-deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en) require an in-app path and an accessible external resource; temporary deactivation does not substitute for deletion. Completing the intake UI alone is insufficient evidence of compliance. Review the authoritative [final DPDP Rules Gazette](https://www.meity.gov.in/static/uploads/2025/11/53450e6e5dc0bfa85ebd78686cadad39.pdf) with qualified counsel, including phased commencement and other applicable retention duties. Do not use draft explanatory notes as final law or invent retention periods.
 
 Production release remains blocked until this procedure, disclosures and a tested fulfilment implementation are approved. START and the two-control amendment do not authorize production erasure, policy publication, deployment or new cloud resources.
+
+## Integration review dispositions (2026-10)
+
+These were found in the integration review. They are recorded here rather than fixed in F107 because each one changes the API or the support model. Each is a release blocker for deletion intake, not a merge blocker.
+
+- **Intake is an ordinary support ticket (medium).** The request is category `ACCOUNT_ISSUE` with a client-chosen subject. There is no server-set kind, status or audit event, so staff cannot filter for deletion requests and an ordinary ticket can carry the same subject. Before release, add a server-owned endpoint (`POST /v1/auth/customer/account/deletion-request`). It should set a server-owned kind, record `auth.customer.deletion_requested`, and be idempotent per open request.
+- **Follow-up after deactivation (medium).** The support routes refuse a deactivated customer, so My support requests is unavailable until reactivation. The deactivation and deletion copy now says so, and points to contacting support without signing in. Whether a deactivated customer may read and reply to their own tickets is a product decision.
+- **Reactivation ticket binding (low).** The ticket is single-use and lasts ten minutes, but it is not tied to a particular deactivation. Bind it to `customerDeactivatedAt`.
+- **Route group allowance (low).** A deactivated person's dealer session reaching `/v1/auth/workspaces` and `/v1/invitations` is decided by a URL pattern, not an explicit guard option at the mount.
+- **Error codes (low).** `ACCOUNT_UNAVAILABLE` and `ACCOUNT_SUSPENDED` describe the same condition in different routes.
+- **Migration lock (low, operational).** `20261015110000_customer_deactivation` alters `sessions`. Apply it with a session-level `lock_timeout` set by the operator, so its brief exclusive lock cannot queue behind a long transaction. It is not set inside the migration, because a session setting would carry over to the later migrations of the same run.
+- **Web sign-in side effect (low).** A web `REACTIVATION_REQUIRED` result clears the browser session cookie. That also signs out a dealer session open in the same browser. Confirm this is intended.
