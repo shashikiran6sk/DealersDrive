@@ -7,15 +7,17 @@ export interface PageProps {
   title: string;
   description?: string;
   children?: ReactNode;
+  header?: ReactNode;
 }
 
-export function Page({ title, description, children }: PageProps) {
+export function Page({ title, description, children, header }: PageProps) {
   return (
     <ScrollView
       style={styles.page}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {header ? <View style={styles.header}>{header}</View> : null}
       <Text accessibilityRole="header" style={styles.title}>
         {title}
       </Text>
@@ -41,5 +43,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginTop: spacing.sm,
   },
+  header: { marginBottom: spacing.lg },
   children: { marginTop: spacing.lg, gap: spacing.md },
 });

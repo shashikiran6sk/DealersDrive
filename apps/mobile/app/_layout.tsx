@@ -19,9 +19,10 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <StatusBar style="dark" />
-      <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.page } }}
-      />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.page } }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
+      </Stack>
     </AppProviders>
   );
 }
