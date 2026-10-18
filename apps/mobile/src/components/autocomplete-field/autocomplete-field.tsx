@@ -15,6 +15,7 @@ import { colors, spacing, typography } from '../../theme/tokens';
 import { Icon } from '../icon';
 import { useOverlay } from '../overlay-host';
 import { MatchedLabel } from './matched-label';
+import { AUTOCOMPLETE_TEXT } from './autocomplete-field.constants';
 
 export interface AutocompleteOption {
   key: string;
@@ -111,7 +112,7 @@ export function AutocompleteField({
       <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Dismiss suggestions"
+          accessibilityLabel={AUTOCOMPLETE_TEXT.dismiss}
           onPress={close}
           style={[styles.backdrop, { height: anchor.y }]}
         />
@@ -143,7 +144,7 @@ export function AutocompleteField({
           {pending ? (
             <View style={styles.state}>
               <ActivityIndicator color={colors.ink} />
-              <Text style={styles.secondary}>Finding matches…</Text>
+              <Text style={styles.secondary}>{AUTOCOMPLETE_TEXT.searching}</Text>
             </View>
           ) : error ? (
             <View style={styles.state}>
@@ -151,7 +152,7 @@ export function AutocompleteField({
                 {error}
               </Text>
               <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}>
-                <Text style={styles.primary}>Try again</Text>
+                <Text style={styles.primary}>{AUTOCOMPLETE_TEXT.retry}</Text>
               </Pressable>
             </View>
           ) : (
@@ -207,7 +208,7 @@ export function AutocompleteField({
       <TextInput
         ref={input}
         accessibilityLabel={label}
-        accessibilityHint="Choose a suggestion to continue."
+        accessibilityHint={AUTOCOMPLETE_TEXT.hint}
         accessibilityState={{ expanded: open }}
         placeholder={placeholder}
         placeholderTextColor={colors.muted}
@@ -236,7 +237,7 @@ export function AutocompleteField({
       {value ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={AUTOCOMPLETE_TEXT.clear}
           onPress={() => {
             onChange('');
             input.current?.focus();
