@@ -11,16 +11,12 @@ export type CustomerResolver = (req: Request) => Promise<CustomerPrincipal | nul
 
 export function createCustomerResolver(sessions: SessionService): CustomerResolver {
   return async function resolveCustomer(req) {
-    const authorization = req.get('authorization');
-    if (
-      authorization !== undefined &&
-      (!env.NATIVE_CUSTOMER_AUTH_ENABLED || !allowsCustomerBearer(req))
-    )
-      return null;
-    const session =
-      authorization === undefined
-        ? await sessions.resolvePerson(readSessionToken(req))
-        : await sessions.resolve(readCustomerBearer(req), 'CUSTOMER');
+    const bearer =
+      env.NATIVE_CUSTOMER_AUTH_ENABLED && /^bearer\s/i.test(req.get('authorization') ?? '');
+    if (bearer && !allowsCustomerBearer(req)) return null;
+    const session = bearer
+      ? await sessions.resolveNative(readCustomerBearer(req))
+      : await sessions.resolvePerson(readSessionToken(req));
     const user = session?.user;
 
     if (!session || user?.status !== 'ACTIVE') return null;

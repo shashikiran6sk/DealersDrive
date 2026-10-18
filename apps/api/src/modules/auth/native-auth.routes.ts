@@ -15,8 +15,16 @@ export function createNativeAuthRouter(
   requireCustomer: RequestHandler,
 ): Router {
   const router = Router();
-  router.use((_req, res, next) => {
+  router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
+    if (req.method === 'POST') requireLegalOrigin(req, res, next);
+    else next();
+  });
+  router.use((req, _res, next) =>
+    req.path === '/logout' && !readCustomerBearer(req) ? next(new UnauthorizedError()) : next(),
+  );
+  postNativeLogout(router, deps);
+  router.use((_req, _res, next) => {
     try {
       deps.service.assertEnabled();
       next();
@@ -24,15 +32,12 @@ export function createNativeAuthRouter(
       next(error);
     }
   });
-  router.use((req, res, next) =>
-    req.method === 'POST' ? requireLegalOrigin(req, res, next) : next(),
-  );
   for (const register of [postNativeOtp, postNativeResend, postNativeVerify, postNativeSignUp])
     register(router, deps);
   router.use((req, _res, next) =>
     readCustomerBearer(req) ? next() : next(new UnauthorizedError()),
   );
   router.use(requireCustomer);
-  for (const register of [getNativeMe, postNativeLogout]) register(router, deps);
+  getNativeMe(router, deps);
   return router;
 }
