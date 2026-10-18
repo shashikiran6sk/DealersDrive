@@ -30,12 +30,13 @@ appears in a feature PR's diff.
 **Conclusion:** a squash merge to `main` builds throwaway images and nothing
 else. No production deploy, migration, or store submission is triggered.
 
-### CI coverage gap in the stack
+### CI coverage in the stack
 
-`ci.yml` and `security.yml` run only on `pull_request` into `main`. #312–#325
-target their parent branches, so **none of them has ever had the main CI
-suite**. Each one gets it only after being retargeted to `main` and receiving a
-push (base changes alone do not fire `pull_request`).
+On `main`, `ci.yml` and `security.yml` run only on `pull_request` into `main`.
+F099 (#312) widens that list to `feature/legal-compliance-and-consent-v1` and
+`'feat/f*-mobile-*'`, so each stacked PR has had CI **against its parent
+branch**. CI against `main` itself only happens after retargeting plus a push.
+(Base changes alone do not fire `pull_request`.)
 
 ## B. Stack inventory (conventional dependent chain, not a native GitHub stack)
 
@@ -73,4 +74,35 @@ rebased. After PR N squash-merges as commit `S`:
 
 ## D. Per-PR log
 
-(filled as each PR is processed)
+### #279 — legal policies and dealership consent
+
+- **Original head:** `6180a4b` on base `a969dc2`. Remote CI was green at that head: verify, terraform, audit, semgrep, gitleaks.
+- **Local CI equivalent on the original head:** Node 24.22, Postgres 16. Format, lint, docs, typecheck, test and build all pass. API 3465/3465, web 1727/1727, contracts 578/578.
+- **Migration rehearsal.** I applied `main`'s migrations, seeded 125 dealers, 321 listings and 200 synthetic enquiries, then ran `prisma migrate deploy` with #279 on top. Results:
+  - It applies in about 2 s, including the out-of-order `20261008120000`.
+  - Existing rows are untouched, and the new columns are null.
+  - 9 `DRAFT` rows land in `legal_policy_versions`.
+
+#### Production activation (Gate E)
+
+- `LEGAL_ENFORCEMENT_ENABLED` defaults to false in both the API and the web app.
+- The hard release lock `LEGAL_RELEASE_APPROVED = false`, and every version string contains `draft`. Together they stop the API booting, and make the web root layout throw, if anyone enables enforcement in production.
+- With the flag off, sign-up, enquiries, saves, dealer and vehicle submit, moderation and notifications behave exactly as on `main`.
+- Legal pages 404 in production. `main` has no legal pages, so this is the status quo.
+
+#### Findings and dispositions
+
+| ID | Sev | Finding | Disposition |
+| --- | --- | --- | --- |
+| F1 | High | `/data-rights` was not behind the release gate, and the API withdraw routes were reachable in production. A customer could irreversibly suppress a pre-existing lead under draft, unreviewed text. That is unapproved behaviour arriving silently in production. | **Fixed.** The page calls `notFound()` unless `legalPagesVisible()`. A new `requireLegalRelease` middleware on `POST /v1/enquiries/:id/withdraw-sharing` and `POST /v1/enquiries/sharing-permissions/:id/withdraw` returns `422 LEGAL_NOT_ACTIVE` in production until the release is approved, and the OpenAPI is updated. Unchanged outside production. Tests: `apps/api/tests/unit/modules/legal/legal-release.test.ts`, `apps/web/tests/unit/app/data-rights-page.test.tsx`. |
+| F7 | Med | `CREATE INDEX CONCURRENTLY` shared a migration with about 12 other statements. That only works because Prisma sends statements one at a time, and a mid-way failure leaves a partial schema. | **Fixed.** The index moved to its own `20261013120100_enquiries_sharing_grant_index` with `IF NOT EXISTS`, following `main`'s `20261010090100` convention. None of these migrations had reached `main`. |
+| F8 | Low/Med | `schema.prisma` disagreed with the SQL on two FK `ON UPDATE` actions, one FK name and a 63-character truncated index name. The next `migrate dev` would generate a stray migration. | **Fixed** in `schema.prisma` only (`onUpdate: NoAction`, `map:`). `prisma migrate diff` now matches `main`'s pre-existing drift exactly. |
+| F2 | High\* | Turning enforcement on would mask every legacy enquiry's contact details, and lead emails sent before the owner accepts would be marked FAILED. | \*Only applies once enforcement is on. **Blocks enabling enforcement**, not this merge. Needs a product decision on grandfathering. |
+| F3 | Med\* | After an account merge, `mayDiscloseEnquiry` compares the grant's customer with the surviving id, so shared enquiries get masked. | Blocks enabling enforcement. |
+| F4 | Med | The web and API flags are separate variables, so they can disagree in preview and dev. | Accepted; production is safe because both sides refuse to start enabled. Fix before enforcement: the web should read the flag from the API. |
+| F5 | Med | A wrong web env var (flag true in production) gives a 500 on every page. | Accepted as a deliberate fail-closed guard. It needs a deliberate production env change to trigger. Record it in the release runbook. |
+| F6 | Med\* | Customer sign-up and Terms acceptance run in separate transactions. | Blocks enabling enforcement. |
+| F9 | Low | Get Directions now prefers coordinates over the dealer's named-place link, and builds address URLs. | Accepted product change; noted for the owner. |
+| F10 | Low | The new legal POSTs are not rate-limited (they are idempotent), and the withdraw body is not `.strict()`. | Deferred. |
+
+**Product note (§7.6 maps):** #279 deliberately removes the public map iframe, so the site makes no automatic third-party Google request. The Android Get-Directions-only design matches this. An embedded map is a separate product and privacy decision.
