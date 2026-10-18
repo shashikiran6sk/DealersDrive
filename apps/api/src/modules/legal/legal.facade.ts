@@ -14,6 +14,7 @@ export {
 } from './legal.evidence.js';
 
 export { requireLegalOrigin } from './legal-origin.js';
+export { requireLegalRelease } from './legal-release.js';
 
 export {
   effectiveGrant,

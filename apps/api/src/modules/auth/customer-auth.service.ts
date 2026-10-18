@@ -32,6 +32,7 @@ export interface CustomerAuthDeps {
 export interface SignInContext {
   ip?: string | undefined;
   userAgent?: string | undefined;
+  native?: boolean;
 }
 
 export interface IssuedCustomerSession {
@@ -78,6 +79,7 @@ export function createCustomerAuthService({
     const session = await sessions.issue({
       userId: user.id,
       scope: 'CUSTOMER',
+      native: context.native === true,
       ip: context.ip,
       userAgent: context.userAgent,
     });

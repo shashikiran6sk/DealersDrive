@@ -98,10 +98,10 @@ export const nativeAuthOperations: OperationSpec[] = [
     tag: DOC_TAGS.auth,
     summary: 'Revoke the current native customer session',
     description:
-      'CUSTOMER bearer only. Revokes only the presented database session. No browser cookie clearing, privileged session revocation or all-device promise. Expired/revoked credentials receive 401; clients should still clear local credentials.',
+      'Native CUSTOMER bearer only. Revokes only the presented native session; web cookie sessions are never revoked here. Idempotent: an expired or already-revoked credential also receives 204. A missing or malformed bearer receives 401. Available even while native sign-in is switched off, so an installed app can always revoke its credential. No browser cookie clearing, privileged session revocation or all-device promise.',
     audience: 'customer',
     nativeBearer: true,
-    responses: [{ status: 204, description: 'Session revoked.' }],
-    errors: [401, 503],
+    responses: [{ status: 204, description: 'Session revoked, or already inactive.' }],
+    errors: [401],
   },
 ];
