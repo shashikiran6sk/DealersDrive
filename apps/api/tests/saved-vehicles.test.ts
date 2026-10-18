@@ -4,7 +4,9 @@ import {
   type SavedVehicle,
 } from '@dealers-drive/contracts';
 import type request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import type * as EnvModule from '../src/config/env.js';
+import { createSessionService } from '../src/modules/auth/session.service.js';
 
 import { env } from '../src/config/env.js';
 import { createApprovalKit, type Published } from './approval-kit.js';
@@ -273,4 +275,94 @@ describe('the list', () => {
     const agent = await customer();
     await agent.get('/v1/saved-vehicles?status=SOLD').expect(400);
   });
+});
+
+describe('backward-compatible saved state pagination', () => {
+  it('synchronizes cookie and bearer sessions for the same User and isolates another native customer', async () => {
+    const agent = await customer();
+    const other = await customer();
+    const own = await agent.get('/v1/auth/customer/me').expect(200);
+    const foreign = await other.get('/v1/auth/customer/me').expect(200);
+    const sessions = createSessionService(h.prisma);
+    const native = await sessions.issue({
+      userId: own.body.customer.id,
+      scope: 'CUSTOMER',
+      native: true,
+    });
+    const second = await sessions.issue({
+      userId: foreign.body.customer.id,
+      scope: 'CUSTOMER',
+      native: true,
+    });
+    const vehicle = await car();
+    const previous = env.NATIVE_CUSTOMER_AUTH_ENABLED;
+    env.NATIVE_CUSTOMER_AUTH_ENABLED = true;
+    try {
+      await h
+        .agent()
+        .put(`/v1/saved-vehicles/${vehicle.slug}`)
+        .set('Authorization', `Bearer ${native.token}`)
+        .expect(200);
+      expect((await agent.get('/v1/saved-vehicles/slugs').expect(200)).body.slugs).toContain(
+        vehicle.slug,
+      );
+      expect(
+        (
+          await h
+            .agent()
+            .get('/v1/saved-vehicles/slugs?limit=2')
+            .set('Authorization', `Bearer ${second.token}`)
+            .expect(200)
+        ).body.slugs,
+      ).toEqual([]);
+      await agent.delete(`/v1/saved-vehicles/${vehicle.slug}`).expect(200);
+      expect(
+        (
+          await h
+            .agent()
+            .get('/v1/saved-vehicles/slugs?limit=2')
+            .set('Authorization', `Bearer ${native.token}`)
+            .expect(200)
+        ).body.slugs,
+      ).not.toContain(vehicle.slug);
+    } finally {
+      env.NATIVE_CUSTOMER_AUTH_ENABLED = previous;
+    }
+  });
+  it('keeps the legacy response shape and returns every cursor page for the same customer', async () => {
+    const agent = await customer();
+    const vehicles = [await car(), await car(), await car()];
+    for (const vehicle of vehicles)
+      await agent.put(`/v1/saved-vehicles/${vehicle.slug}`).expect(200);
+    const legacy = await agent.get('/v1/saved-vehicles/slugs').expect(200);
+    expect(Object.keys(legacy.body)).toEqual(['slugs']);
+    const first = await agent.get('/v1/saved-vehicles/slugs?limit=2').expect(200);
+    const page = SavedVehicleSlugs.parse(first.body);
+    expect(page.slugs).toHaveLength(2);
+    expect(page.page?.hasMore).toBe(true);
+    const second = await agent
+      .get(
+        `/v1/saved-vehicles/slugs?limit=2&cursor=${encodeURIComponent(page.page?.nextCursor ?? '')}`,
+      )
+      .expect(200);
+    const end = SavedVehicleSlugs.parse(second.body);
+    expect(end.page?.hasMore).toBe(false);
+    expect(new Set([...page.slugs, ...end.slugs])).toEqual(
+      new Set(vehicles.map((vehicle) => vehicle.slug)),
+    );
+    const other = await customer();
+    const foreign = await other.get('/v1/saved-vehicles/slugs?limit=2').expect(200);
+    expect(SavedVehicleSlugs.parse(foreign.body).slugs).toEqual([]);
+  });
+  it('rejects malformed or cross-customer query controls without weakening existing ownership', async () => {
+    const agent = await customer();
+    await agent.get('/v1/saved-vehicles/slugs?customerId=someone').expect(400);
+    await agent.get('/v1/saved-vehicles/slugs?limit=501').expect(400);
+    await agent.get('/v1/saved-vehicles/slugs?limit=2&cursor=invalid').expect(409);
+  });
+});
+
+vi.mock('../src/config/env.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof EnvModule>();
+  return { ...actual, env: { ...actual.env } };
 });

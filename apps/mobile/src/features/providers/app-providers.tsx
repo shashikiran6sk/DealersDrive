@@ -1,3 +1,4 @@
+import { SavedProvider } from '../saved/saved-provider';
 import { AuthProvider } from '../auth/auth-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
@@ -26,7 +27,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SavedProvider>{children}</SavedProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );

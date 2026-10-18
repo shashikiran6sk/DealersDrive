@@ -69,3 +69,13 @@ it('handles empty galleries and clamps primary indexes before paging', async () 
   await fireEvent.press(screen.getByRole('button', { name: CARS_TEXT.previous }));
   expect(screen.getByText(CARS_TEXT.photos(0, 2))).toBeOnTheScreen();
 });
+
+const mockSaved = {
+  isSaved: () => false,
+  isPending: () => false,
+  ready: true,
+  toggle: jest.fn(),
+  error: null,
+  retry: jest.fn(),
+};
+jest.mock('../src/features/saved/saved-provider', () => ({ useSaved: () => mockSaved }));
