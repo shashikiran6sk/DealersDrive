@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F101_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-14 17:19:01 UTC",
+  "status": "F102_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-14 18:08:37 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -288,27 +288,96 @@
       "feature_id": "F101",
       "title": "Native authentication UI",
       "planned_head_branch": "feat/f101-mobile-auth-ui",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
-      "is_draft": null,
+      "head_sha": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
+      "pr_number": 314,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/314",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f100-mobile-auth-backend",
       "base_sha_at_creation": "8ec6b2da319166bd5dde01917daec541158dc454",
       "base_sha_verified_now": "8ec6b2da319166bd5dde01917daec541158dc454",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_2"],
-      "incremental_diff": null,
-      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
+      "incremental_diff": "8ec6b2da319166bd5dde01917daec541158dc454...7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
+      "ci_status": "IN_PROGRESS_OR_FAILED",
       "tested_sha": null,
-      "review_state": "NOT_CREATED",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": ["docs/mobile/f101-validation.md", "docs/code/mobile/auth.md"],
       "known_blockers": [
         "Installed Android build/real-device/back/keyboard/autofill validation unavailable locally",
         "Live provider/legal activation and production release remain gated"
       ],
       "restack_history": [],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612135137/job/116017902044",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T18:05:06Z",
+          "status": "IN_PROGRESS",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:06:27Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612134994/job/116017901600",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T18:05:06Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:05:22Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612135137/job/116017901321",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T18:05:06Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:05:48Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612134994/job/116017902027",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T18:05:06Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:05:52Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38612135137/job/116017901657",
+          "name": "dependency audit",
+          "startedAt": "2026-10-14T18:05:07Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-14T18:05:25Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/C5TxyRzhfETKK6QQH2KG2BRTKvbc"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T18:05:26Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-14T18:05:26Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ]
     },
     {
       "sequence": 4,
@@ -318,20 +387,39 @@
       "head_sha": null,
       "pr_number": null,
       "pr_url": null,
-      "state": "NOT_CREATED",
+      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
       "is_draft": null,
       "base_branch": "feat/f101-mobile-auth-ui",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": null,
+      "base_sha_at_creation": "405b80d098d23e0fd6f287aaa3ebd8f6d964d69a",
+      "base_sha_verified_now": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_3"],
       "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
+      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
       "tested_sha": null,
       "review_state": "NOT_CREATED",
-      "evidence": [],
-      "known_blockers": ["Production legal publication and release remain separately gated"],
-      "restack_history": [],
+      "evidence": ["docs/mobile/f102-validation.md", "docs/code/mobile/cars.md"],
+      "known_blockers": [
+        "Installed native/device/performance/gallery/back validation unavailable locally",
+        "Save/enquiry/dealer functionality belongs to following approved PRs",
+        "Parent CI follow-up remains separately tracked"
+      ],
+      "restack_history": [
+        {
+          "parent_from": "405b80d098d23e0fd6f287aaa3ebd8f6d964d69a",
+          "parent_to": "4e244c71ab1de49aca1c29caae08461b1833ae9a",
+          "merge_commit": "97838a10c5b5329dbeb5a318b2017d6e983c98e4",
+          "method": "NORMAL_PARENT_INTO_CHILD_MERGE",
+          "reason": "Owner authorized returning to predecessor for CI fixes; preserve child work/history"
+        },
+        {
+          "parent_from": "4e244c71ab1de49aca1c29caae08461b1833ae9a",
+          "parent_to": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
+          "merge_commit": "08e5a42c78b846bfe7c9e92f32b3933f947b2977",
+          "method": "NORMAL_PARENT_INTO_CHILD_MERGE",
+          "reason": "Focused native CI scheduling repair; no test/threshold removal"
+        }
+      ],
       "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
     },
     {

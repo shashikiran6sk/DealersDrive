@@ -311,8 +311,8 @@ Foundation: unmerged Draft PR #279; each mobile PR targets its predecessor.
 
 - [~] F099 — Mobile foundation — GitHub checks pass; draft [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), local checks pass; native compilation/device evidence and release gates remain
 - [~] F100 — Native authentication backend — draft [PR #313](https://github.com/shashikiran6sk/DealersDrive/pull/313), GitHub checks pass; provider/legal activation gated
-- [~] F101 — Native authentication UI — local type/lint/tests/export pass; draft PR pending
-- [ ] F102 — Cars, search and gallery
+- [~] F101 — Native authentication UI — draft [PR #314](https://github.com/shashikiran6sk/DealersDrive/pull/314); focused CI repair pending
+- [~] F102 — Cars, search and gallery — local checks pass; draft PR pending
 - [ ] F103 — Home and dealers
 - [ ] F104 — Saved cars and account
 - [ ] F105 — Consent and enquiries
