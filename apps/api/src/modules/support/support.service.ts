@@ -94,6 +94,14 @@ export function createSupportService({ prisma, audit }: SupportDeps) {
       return read(customer.userId, ticketId);
     },
 
+    async hasRetry(customer: CustomerPrincipal, clientRequestId: string): Promise<boolean> {
+      const existing = await prisma.supportTicket.findUnique({
+        where: { customerId_clientRequestId: { customerId: customer.userId, clientRequestId } },
+        select: { id: true },
+      });
+      return existing !== null;
+    },
+
     async create(
       customer: CustomerPrincipal,
       input: CreateSupportTicketInput,

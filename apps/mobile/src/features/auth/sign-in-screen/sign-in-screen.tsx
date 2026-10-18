@@ -14,7 +14,8 @@ import { Page } from '../../../components/page';
 import { ApiError } from '../../../services/api';
 import { colors, spacing, typography } from '../../../theme/tokens';
 import { useAuth } from '../auth-provider';
-import { AUTH_TEXT } from '../auth.constants';
+import { AUTH_TEXT, RESEND_COOLDOWN_SECONDS } from '../auth.constants';
+import { authFailureText } from './utils';
 
 export function SignInScreen() {
   const { api, manager } = useAuth();
@@ -36,6 +37,7 @@ export function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [retryAt, setRetryAt] = useState(0);
+  const [blockedUntil, setBlockedUntil] = useState(0);
   const locked = useRef(false);
   const generation = useRef<number | null>(null);
   const completed = useRef(false);
@@ -54,11 +56,11 @@ export function SignInScreen() {
     };
   }, [manager]);
   useEffect(() => {
-    if (phase !== 'otp') return;
+    if (phase !== 'otp' && blockedUntil <= Date.now()) return;
     setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [phase, blockedUntil]);
   const policyVersion = publication.data
     ? `${String(publication.data.collectionEnabled)}|${publication.data.documents.map((document) => `${document.version}:${document.digest}`).join('|')}`
     : undefined;
@@ -101,9 +103,10 @@ export function SignInScreen() {
       await work(controller.current.signal);
     } catch (failure) {
       if (controller.current.signal.aborted) return;
-      setError(failure instanceof Error ? failure.message : AUTH_TEXT.restoreError);
+      setError(authFailureText(failure));
       if (failure instanceof ApiError) {
-        if (failure.retryAfterSeconds) setRetryAt(Date.now() + failure.retryAfterSeconds * 1000);
+        if (failure.status === 429 && failure.retryAfterSeconds)
+          setBlockedUntil(Date.now() + failure.retryAfterSeconds * 1000);
         if (
           ['NATIVE_OTP_EXPIRED', 'SIGN_UP_EXPIRED', 'CUSTOMER_REACTIVATION_EXPIRED'].includes(
             failure.code,
@@ -134,7 +137,7 @@ export function SignInScreen() {
       const result = await api.request(phone, signal);
       if (signal.aborted) return;
       setChallenge(result);
-      setRetryAt(Date.parse(result.retryAt));
+      setRetryAt(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
       setOtp('');
       setPhase('otp');
     });
@@ -142,11 +145,6 @@ export function SignInScreen() {
     execute(async (signal) => {
       if (!challenge || !/^\d{4,8}$/.test(otp)) {
         setError(AUTH_TEXT.invalidCode);
-        return;
-      }
-      if (Date.parse(challenge.expiresAt) <= Date.now()) {
-        setError(AUTH_TEXT.expired);
-        setPhase('phone');
         return;
       }
       const result = await api.verify(challenge.challenge, otp, signal);
@@ -170,10 +168,9 @@ export function SignInScreen() {
     });
   const reactivate = () =>
     execute(async (signal) => {
-      if (!ticket || Date.parse(ticket.expiresAt) <= Date.now()) {
+      if (!ticket) {
         setError(AUTH_TEXT.expired);
         setPhase('phone');
-        setTicket(null);
         return;
       }
       const result = await api.reactivate(ticket.token, signal);
@@ -181,7 +178,7 @@ export function SignInScreen() {
     });
   const signUp = () =>
     execute(async (signal) => {
-      if (!ticket || Date.parse(ticket.expiresAt) <= Date.now()) {
+      if (!ticket) {
         setError(AUTH_TEXT.expired);
         setPhase('phone');
         return;
@@ -224,10 +221,12 @@ export function SignInScreen() {
       const result = await api.resend(challenge.challenge, signal);
       if (signal.aborted) return;
       setChallenge(result);
-      setRetryAt(Date.parse(result.retryAt));
+      setRetryAt(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
       setOtp('');
     });
   const remaining = Math.max(0, Math.ceil((retryAt - now) / 1000));
+  const blocked = Math.max(0, Math.ceil((blockedUntil - now) / 1000));
+  const primary = (label: string) => (blocked ? AUTH_TEXT.tryAgainIn(blocked) : label);
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <KeyboardAvoidingView behavior="height" style={styles.root}>
@@ -261,7 +260,12 @@ export function SignInScreen() {
                 maxLength={10}
                 editable={!busy}
               />
-              <ActionButton label={AUTH_TEXT.send} pending={busy} onPress={() => void send()} />
+              <ActionButton
+                label={primary(AUTH_TEXT.send)}
+                pending={busy}
+                disabled={blocked > 0}
+                onPress={() => void send()}
+              />
             </>
           ) : null}
           {phase === 'otp' ? (
@@ -277,10 +281,15 @@ export function SignInScreen() {
                 maxLength={8}
                 editable={!busy}
               />
-              <ActionButton label={AUTH_TEXT.verify} pending={busy} onPress={() => void verify()} />
+              <ActionButton
+                label={primary(AUTH_TEXT.verify)}
+                pending={busy}
+                disabled={blocked > 0}
+                onPress={() => void verify()}
+              />
               <ActionButton
                 label={remaining ? AUTH_TEXT.resendWait(remaining) : AUTH_TEXT.resend}
-                disabled={busy || remaining > 0}
+                disabled={busy || remaining > 0 || blocked > 0}
                 onPress={() => void resend()}
               />
               <ActionButton
@@ -335,9 +344,10 @@ export function SignInScreen() {
                 </View>
               ) : null}
               <ActionButton
-                label={AUTH_TEXT.create}
+                label={primary(AUTH_TEXT.create)}
                 pending={busy}
                 disabled={
+                  blocked > 0 ||
                   !publication.data ||
                   publication.data.state === 'UNAVAILABLE' ||
                   (publication.data.collectionEnabled && (!terms || !privacy))
