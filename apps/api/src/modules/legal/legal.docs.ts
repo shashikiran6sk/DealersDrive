@@ -49,6 +49,24 @@ export const legalDocs: ModuleDocs = {
   description:
     'Versioned draft snapshots, contract acceptance, privacy notice acknowledgment, enquiry sharing choices and listing certifications. Production activation is blocked until factual completion and approval. There is no document mutation or administrative acceptance endpoint.',
   operations: [
+    {
+      method: 'get',
+      path: '/v1/legal/publication',
+      operationId: 'getLegalPublication',
+      tag: DOC_TAGS.legal,
+      summary: 'Current authoritative customer policies and sharing notice',
+      description:
+        'Uses existing immutable snapshots, digests and publication metadata. Production never exposes unapproved/draft policies: UNAVAILABLE with no documents/notice. Nonproduction explicitly labels drafts. Collection status remains separate from publication; the server remains authoritative for submitted versions/evidence. No-store.',
+      audience: 'public',
+      responses: [
+        {
+          status: 200,
+          description: 'Published policies or explicitly unavailable/draft state.',
+          schema: 'LegalPublication',
+        },
+      ],
+      errors: [503],
+    },
     ...accountOperations,
     {
       method: 'get',

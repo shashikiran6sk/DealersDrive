@@ -21,6 +21,10 @@ const optional = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
 
 const envSchema = z.object({
+  NATIVE_CUSTOMER_AUTH_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   LEGAL_ENFORCEMENT_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

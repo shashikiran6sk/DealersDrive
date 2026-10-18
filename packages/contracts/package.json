@@ -21,6 +21,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./native-auth": {
+      "types": "./dist/native-auth.d.ts",
+      "import": "./dist/native-auth.js",
+      "default": "./dist/native-auth.js"
     }
   },
   "files": [

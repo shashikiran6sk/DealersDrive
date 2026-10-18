@@ -137,6 +137,7 @@ model Session {
   /// never satisfy `requireDealer` — even when one human holds both seats.
   scope                SessionScope @default(DEALER)
   authenticationMethod String?
+  native               Boolean      @default(false)
   expiresAt            DateTime
   revokedAt            DateTime?
   ip                   String?

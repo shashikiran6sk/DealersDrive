@@ -8,6 +8,9 @@ type ZodSchema = z.ZodType;
 const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 const INPUT_SCHEMA_NAMES = [
+  'NativeOtpRequestInput',
+  'NativeOtpChallengeInput',
+  'NativeOtpVerifyInput',
   'DealerVerificationDecisionInput',
   'AdminPhoneChallengeInput',
   'AdminPhoneVerifyInput',
@@ -134,7 +137,7 @@ function typeOf(schema: ZodSchema): string {
 
 function isComponentWorthy(schema: ZodSchema): boolean {
   const type = typeOf(schema);
-  return type === 'object' || type === 'enum';
+  return type === 'object' || type === 'enum' || type === 'union';
 }
 
 const JS_SAFE_INT = 9_007_199_254_740_991;

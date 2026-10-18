@@ -1,3 +1,4 @@
+import { customerBearerPath } from '../modules/auth/native-customer-token.js';
 import {
   CONTRACTS_VERSION,
   DEALER_PERMISSION_NAMES,
@@ -60,6 +61,7 @@ const RAW_BINARY = '__raw_binary__';
 const DEALER_SECURITY = 'dealerSession';
 const ADMIN_SECURITY = 'adminSession';
 const CUSTOMER_SECURITY = 'customerSession';
+const CUSTOMER_BEARER_SECURITY = 'customerBearer';
 
 interface Parameter {
   name: string;
@@ -238,7 +240,9 @@ function buildOperation(
     responses[String(status)] ??= { $ref: `#/components/responses/${name}` };
   }
 
-  const security = securityFor(operation.audience);
+  const security = operation.nativeBearer
+    ? { name: 'customer', scheme: CUSTOMER_BEARER_SECURITY }
+    : securityFor(operation.audience);
 
   const requestBody = operation.requestBody
     ? {
@@ -269,7 +273,13 @@ function buildOperation(
     parameters,
     ...(requestBody ? { requestBody } : {}),
     responses,
-    security: security ? [{ [security.scheme]: [] }] : [],
+    security: security
+      ? operation.audience === 'customer' &&
+        !operation.nativeBearer &&
+        customerBearerPath(operation.path)
+        ? [{ [security.scheme]: [] }, { [CUSTOMER_BEARER_SECURITY]: [] }]
+        : [{ [security.scheme]: [] }]
+      : [],
   };
 }
 
@@ -469,6 +479,12 @@ export function buildOpenApiDocument(options: OpenApiOptions = {}): Record<strin
             'The same session cookie, resolved as a platform admin. **Not required by this ' +
             'build** — the development resolver reads the first `ADMIN_ALLOWLIST` entry ' +
             'server-side.',
+        },
+        [CUSTOMER_BEARER_SECURITY]: {
+          type: 'http',
+          scheme: 'bearer',
+          description:
+            'Opaque CUSTOMER session on an explicit customer-only route allowlist; never dealer/admin/sales or workspace/invitation access.',
         },
         [CUSTOMER_SECURITY]: {
           type: 'apiKey',
