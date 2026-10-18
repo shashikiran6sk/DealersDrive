@@ -140,3 +140,11 @@ it('requires an API-supported category and applies the native selector choice', 
     screen.getByRole('button', { name: `Category: ${SUPPORT_CATEGORY_LABELS.ACCOUNT_ISSUE}` }),
   ).toBeOnTheScreen();
 });
+it('shows how the request is used before the customer submits it', async () => {
+  await form();
+  expect(screen.getByText(SUPPORT_TEXT.disclosure)).toBeOnTheScreen();
+  const toggle = screen.getByRole('button', { name: SUPPORT_TEXT.disclosureToggle });
+  expect(toggle).toBeExpanded();
+  await fireEvent.press(toggle);
+  expect(screen.queryByText(SUPPORT_TEXT.disclosure)).toBeNull();
+});

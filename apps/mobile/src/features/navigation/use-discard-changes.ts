@@ -1,6 +1,7 @@
 import { useNavigation } from 'expo-router';
-import { usePreventRemove } from 'expo-router/build/react-navigation/core/usePreventRemove';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { Alert } from 'react-native';
+import { DISCARD_TEXT } from './navigation.constants';
 
 export function useDiscardChanges(dirty: boolean, busy = false, completed?: () => boolean) {
   const navigation = useNavigation();
@@ -10,12 +11,16 @@ export function useDiscardChanges(dirty: boolean, busy = false, completed?: () =
       return;
     }
     if (busy) {
-      Alert.alert('Sending your request', 'Please wait for this request to finish.');
+      Alert.alert(DISCARD_TEXT.busyTitle, DISCARD_TEXT.busyBody);
       return;
     }
-    Alert.alert('Discard changes?', 'Your unsent changes will be lost.', [
-      { text: 'Keep editing', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: () => navigation.dispatch(data.action) },
+    Alert.alert(DISCARD_TEXT.title, DISCARD_TEXT.body, [
+      { text: DISCARD_TEXT.keep, style: 'cancel' },
+      {
+        text: DISCARD_TEXT.discard,
+        style: 'destructive',
+        onPress: () => navigation.dispatch(data.action),
+      },
     ]);
   });
 }

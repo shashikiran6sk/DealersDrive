@@ -95,9 +95,9 @@ export function SavedScreen() {
             ) : (
               <EmptyState
                 icon="heart"
-                title="Build your shortlist"
-                description="Tap the heart on a car to keep it here and compare your options."
-                action="Explore cars"
+                title={SAVED_TEXT.emptyTitle}
+                description={SAVED_TEXT.emptyBody}
+                action={SAVED_TEXT.emptyAction}
                 onAction={() => router.navigate('/cars')}
               />
             )

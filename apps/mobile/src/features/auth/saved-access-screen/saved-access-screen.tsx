@@ -25,7 +25,7 @@ export function SavedAccessScreen() {
       {session.status === 'guest' ? (
         <EmptyState
           icon="heart"
-          title="Keep your shortlist together"
+          title={AUTH_TEXT.savedGuestTitle}
           description={AUTH_TEXT.savedGuest}
           action={AUTH_TEXT.login}
           onAction={() => {

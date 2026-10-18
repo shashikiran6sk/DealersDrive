@@ -1,4 +1,5 @@
 export const AUTH_TEXT = Object.freeze({
+  savedGuestTitle: 'Keep your shortlist together',
   title: 'Sign in',
   reactivate: 'Reactivate customer account and sign in',
   deactivated:

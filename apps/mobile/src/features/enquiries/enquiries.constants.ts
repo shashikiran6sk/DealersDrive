@@ -1,4 +1,7 @@
 export const ENQUIRY_TEXT = Object.freeze({
+  emptyTitle: 'No enquiries yet',
+  emptyBody: 'Ask a dealership about a car to start a conversation.',
+  emptyAction: 'Explore cars',
   enquire: 'Enquire now',
   heading: 'Interested in this vehicle?',
   login: 'Sign in with your mobile number to enquire.',

@@ -1,4 +1,7 @@
 export const SAVED_TEXT = Object.freeze({
+  emptyTitle: 'Build your shortlist',
+  emptyBody: 'Tap the heart on a car to keep it here and compare your options.',
+  emptyAction: 'Explore cars',
   title: 'Saved cars',
   empty: 'Your shortlist is empty.',
   emptyHint: 'Save a car to find it here on any device you sign in on.',
