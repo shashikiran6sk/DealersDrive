@@ -2,8 +2,10 @@ import { useIsFocused, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { locationStore } from './location';
+import { validDistrict } from './location-store';
 
-export function useDirectoryLocation(district: string | undefined) {
+export function useDirectoryLocation(requested: string | undefined) {
+  const district = requested !== undefined && validDistrict(requested) ? requested : undefined;
   const router = useRouter();
   const focused = useIsFocused();
   const revision = useStore(locationStore, (state) => state.revision);
@@ -23,6 +25,8 @@ export function useDirectoryLocation(district: string | undefined) {
       } else if (district === undefined && current.district) {
         seen.current.district = current.district;
         router.setParams({ district: current.district });
+      } else if (requested !== district) {
+        router.setParams({ district: undefined });
       }
     } else if (current.revision !== seen.current.revision) {
       seen.current = { initialized: true, revision: current.revision, district: current.district };
@@ -36,6 +40,6 @@ export function useDirectoryLocation(district: string | undefined) {
       locationStore.choose(district);
       seen.current = { initialized: true, revision: locationStore.getState().revision, district };
     }
-  }, [district, focused, hydrated, revision, router]);
+  }, [district, requested, focused, hydrated, revision, router]);
   return hydrated && initialized && district === sharedDistrict;
 }

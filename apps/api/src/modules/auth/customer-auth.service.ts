@@ -42,6 +42,7 @@ export interface CustomerAuthDeps {
 export interface SignInContext {
   ip?: string | undefined;
   userAgent?: string | undefined;
+  native?: boolean;
 }
 
 export interface IssuedCustomerSession {
@@ -108,6 +109,7 @@ export function createCustomerAuthService({
           scope: 'CUSTOMER',
           authenticationMethod: 'PHONE_OTP',
           authenticatedAt,
+          native: context.native === true,
           ip: context.ip,
           userAgent: context.userAgent,
         },

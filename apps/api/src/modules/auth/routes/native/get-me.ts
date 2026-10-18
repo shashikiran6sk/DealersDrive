@@ -7,7 +7,7 @@ export const getNativeMe: NativeAuthRoute = (router, { sessions, customers }) =>
   router.get(
     '/me',
     nativeHandle(async (req, res) => {
-      const session = await sessions.resolve(readCustomerBearer(req), 'CUSTOMER');
+      const session = await sessions.resolveNative(readCustomerBearer(req));
       if (!session) throw new UnauthorizedError();
       const profile = await customers.me(customerPrincipal(req).userId);
       res.json({ ...profile, expiresAt: session.expiresAt.toISOString() });

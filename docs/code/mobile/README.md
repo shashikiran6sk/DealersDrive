@@ -24,6 +24,10 @@ The build task exports Android JavaScript/assets so ordinary monorepo checks nee
 
 Native and web retain their compatible runtime/type versions. Next JSX remains preserved for its compiler; explicit jsxImportSource binds JSX typing to React resolved from the consuming web workspace. Without it, introducing native React types causes the global React.JSX namespace from a hoisted Next declaration to disagree with web HTML props. Full web typecheck/build verifies this configuration change without changing web components or weakening type checks.
 
+## Shared district
+
+See [shared district](location.md) for the device preference store, deep-link district intent and invalid-link fallback.
+
 ## Saved cars and account agreements
 
 See [saved/account](saved-account.md) for full hydration, confirmed mutations, interruption handling and authoritative policy history.

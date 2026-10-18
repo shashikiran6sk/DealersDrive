@@ -134,11 +134,6 @@ export function DeletionRequest() {
               {error}
             </Text>
           ) : null}
-          {error && session.status !== 'authenticated' ? (
-            <Text accessibilityRole="alert" style={styles.text}>
-              {error}
-            </Text>
-          ) : null}
           <ActionButton
             variant="secondary"
             label={ACCOUNT_TEXT.requests}

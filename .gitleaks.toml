@@ -84,6 +84,13 @@ regexes = [
 ]
 
 [[rules.allowlists]]
-description = "Exact noncredential prose from F108 link-validation documentation; preserve history without excluding files or commits"
-regexTarget = "secret"
-regexes = ['''^duplicate/unknown$''']
+description = "One exact sentence fragment in the F108 App Links notes, not a credential"
+regexTarget = "match"
+# docs/mobile/release-operations.md (commit 4884735, F108) says the app rejects
+# "privileged routes, credentials, duplicate/unknown query keys". `generic-api-key`
+# reads the word `credentials` as a keyword and `duplicate/unknown` as its value,
+# with entropy 3.69. It is prose. The scan covers every fetched branch and its history,
+# and that commit cannot be rewritten (CLAUDE.md), so the exact captured text is
+# allowlisted. The pattern is anchored on both ends: any other value after
+# `credentials` is still caught.
+regexes = ['''^credentials, duplicate/unknown $''']

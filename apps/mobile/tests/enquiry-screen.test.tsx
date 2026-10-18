@@ -7,12 +7,13 @@ import { EnquiryScreen } from '../src/features/enquiries/enquiry-screen';
 import { PendingActions } from '../src/features/auth/pending-action';
 import { ENQUIRY_TEXT } from '../src/features/enquiries/enquiries.constants';
 import { ApiError } from '../src/services/api';
+import { SHARING_COPY_NOTICE_VERSION } from '../src/features/enquiries/enquiries.constants';
 
 const mockPublication: LegalPublication = {
   state: 'DRAFT',
   collectionEnabled: true,
   documents: [],
-  sharing: { version: 'test-sharing-v1', text: 'Sharing details', digest: 'hash' },
+  sharing: { version: SHARING_COPY_NOTICE_VERSION, text: 'Sharing details', digest: 'hash' },
 };
 let mockRequired = true;
 let mockSession = {
@@ -141,7 +142,7 @@ it('locks repeated submits and sends the current explicit new-dealer permission 
   await fireEvent.press(screen.getByRole('button', { name: ENQUIRY_TEXT.send }));
   expect(mockApi.create).toHaveBeenCalledTimes(1);
   expect(mockApi.create.mock.calls[0]?.[1]).toMatchObject({
-    sharing: { version: 'test-sharing-v1', granted: true },
+    sharing: { version: SHARING_COPY_NOTICE_VERSION, granted: true },
   });
   await act(async () => {
     finish({
