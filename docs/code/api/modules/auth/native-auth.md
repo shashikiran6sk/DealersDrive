@@ -38,7 +38,6 @@ The public legal adapter uses existing immutable documents, digests, registry ap
 
 Customer DTOs and AgreementAcceptance were moved unchanged into lean modules and re-exported under existing names. The native-auth subpath imports pure schemas and contains no legal document archives, Next, Prisma, Node secrets or privileged screen code. The OpenAPI catalogue now includes Zod unions so the discriminated native login response is generated from the same contract. Customer-only bearer alternatives are generated for the allowlist; privileged/workspace/invitation schemes remain cookie-only. New endpoints are covered by route/document parity tests.
 
-
 ## Abuse and spend limits
 
 Sends: a 60 s cooldown per number, 20 per IP per 10 minutes, 30 per IP per hour (the web widget's cap), 5 per number per hour, and 1,000 per day globally. Verification: 5 attempts per challenge, plus 10 per number and 20 per IP per 10 minutes, the web sign-in limits. A fresh challenge therefore no longer resets the guess budget for a number. Sign-up: 10 per IP per hour, as on the web. The global daily budget is the spend control of last resort: a few IPs can still exhaust it, so alert well before it is reached.
