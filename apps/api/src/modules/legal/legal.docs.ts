@@ -107,7 +107,7 @@ export const legalDocs: ModuleDocs = {
       audience: 'customer',
       summary: 'Withdraw dealership sharing permission',
       description:
-        'Verifies authenticated ownership and serializes with enquiry creation. Append-only withdrawal; suppresses all enquiries under that grant. Does not recall delivered disclosures. No-store.',
+        'Verifies authenticated ownership and serializes with enquiry creation. Append-only withdrawal; suppresses all enquiries under that grant. Does not recall delivered disclosures. In production it returns `422 LEGAL_NOT_ACTIVE` until the legal release is approved. No-store.',
       params: 'SharingGrantParam',
       responses: [
         {
@@ -116,7 +116,7 @@ export const legalDocs: ModuleDocs = {
           inlineSchema: { type: 'object', properties: { withdrawn: { type: 'boolean' } } },
         },
       ],
-      errors: [400, 401, 404],
+      errors: [400, 401, 404, 422],
     },
     {
       method: 'get',
@@ -165,7 +165,7 @@ export const legalDocs: ModuleDocs = {
       tag: DOC_TAGS.legal,
       summary: 'Withdraw future dealer disclosure',
       description:
-        'Customer owns the enquiry; another customer’s UUID is a 404. Idempotently records withdrawal and suppresses future dealer views, dashboard details and pending notification rendering. Does not recall delivered messages. Available even when new Terms are declined; never changes enquiry status. No-store.',
+        'Customer owns the enquiry; another customer’s UUID is a 404. Idempotently records withdrawal and suppresses future dealer views, dashboard details and pending notification rendering. Does not recall delivered messages. Available even when new Terms are declined; never changes enquiry status. In production it returns `422 LEGAL_NOT_ACTIVE` until the legal release is approved. No-store.',
       audience: 'customer',
       params: 'LegalEnquiryParam',
       responses: [
@@ -179,7 +179,7 @@ export const legalDocs: ModuleDocs = {
           },
         },
       ],
-      errors: [400, 401, 404],
+      errors: [400, 401, 404, 422],
     },
     {
       method: 'post',
