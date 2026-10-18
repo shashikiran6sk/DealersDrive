@@ -197,18 +197,24 @@ The owner instructed: "You can override the rule in this session. You can review
 - **Fix `c824c3c`:** bearer fixtures in `saved-vehicles.test.ts` now issue native sessions, as F100 requires. Test-only.
 - **Squash:** `d893fa8`. Its tree equals `56b7187`. Release run 258 was build-only.
 
-### #318 — F105 consent and enquiries (CI pending)
+### #318 — F105 consent and enquiries
 
 - **Fix `1263fb3` (medium):** an enquiry from a build whose bundled sharing notice differs from the published one is refused client-side with `APP_UPDATE_REQUIRED`. The notice version is pinned by test to the contracts constant.
 - **Fix `67bc63a`:** the legal-consent bearer fixture is native. Test-only.
 - **Local suite on `1263fb3`:** green. API 3510, web 1729, contracts 596, mobile 88.
+- **Remote CI on `1263fb3`:** all green.
+- **Squash:** `c99b4c0`. Its tree equals `1263fb3`.
 
-### #319 — F106 support (prepared, not pushed)
+### #319 — F106 support
 
 - **Fix `29bbcd9` (medium):** an identical create retry (a known `clientRequestId`) skips the creation rate limits, so a retry after a dropped response is not refused.
 - **Fix `c109ceb`:** F106's cross-transport test presented a native token as a cookie. The test now asserts that 401 and uses a real website session. Test-only.
+- **Reconciliation:** `b421d71` merged the final F105 head `1263fb3` (no file change). `41a0c7a` recorded `main` `c99b4c0` with `-s ours`.
+- **Gate:** equals F106's original diff (`1b310ec..18245c5`), except for the seven files from `29bbcd9` and `c109ceb`.
+- **Remote CI on `41a0c7a`:** all green.
+- **Squash:** `56ae0aa`. Its tree equals `41a0c7a`.
 
-### #320 — F107 account deactivation (prepared, not pushed)
+### #320 — F107 account deactivation
 
 - **Conflicts with F100/F101 fixes, resolved in `073c474`:**
   - The schema and session keep both `authenticatedAt` and `native`.
@@ -229,3 +235,38 @@ The owner instructed: "You can override the rule in this session. You can review
 It also raises `mysql2` 3.15.3 → 3.23.1, which is a Prisma CLI dependency and dev-only.
 
 These are patch and minor bumps for security advisories. The web build and the API suite are the evidence.
+
+#### F107 review dispositions (`1807dc3`)
+
+- **M2, fixed in copy:** deactivation and deletion text now says that My support requests is unavailable while deactivated, and that support can be reached without signing in.
+- **M1 and L1–L5:** recorded in `docs/mobile/deletion-fulfilment-runbook.md` as release blockers for deletion intake. Fixing them would widen the API: server-owned intake endpoint, ticket binding, explicit guard option, error codes, the operator's `lock_timeout` for the `sessions` alteration, and the web sign-in side effect.
+- **L6:** the duplicate alert was unreachable, because the screen remounts on a session status change; removed. The Play deletion page already falls back when public config fails (`getPublicConfig` returns `NO_PUBLIC_CONFIG`).
+
+#### Reconciliation and verification
+
+- **Gate:** F107's original diff (`18245c5..9a77425`), plus explained differences in the conflict-resolution files (`073c474`) and the `1807dc3` files.
+- **Local suite on `efaab8f`:** green. API 3525, web 1739, contracts 599, mobile 104.
+- **Pushed:** `de96739`.
+
+### F108–F112 prepared locally (not pushed until each parent merges)
+
+- **F108 (`e204fc5`):** takes `main`'s exact-match gitleaks allowlist, dropping F108's broader duplicate. A gitleaks scan of all refs is clean (501 commits).
+- **F109 (`1c96ce8`):**
+  - AsyncStorage is loaded lazily and guarded, so the district degrades to in-memory. The regression test fails on the old static import.
+  - `choose()` is a no-op when the district is unchanged.
+  - Native intent only chooses when a link names a district.
+  - An invalid district link falls back.
+  - `session-manager` keeps F101's silent restore.
+- **F110:** clean merge.
+- **F111 (`77b7769`):**
+  - The support disclosure is open by default.
+  - `usePreventRemove` comes from the public `expo-router/react-navigation`.
+  - UI strings are in constants.
+- **F112 (`5e26697`):** header and autocomplete strings are in constants.
+- **Open low (F109):** with `backBehavior="history"`, a cold deep link straight into a non-Home tab has no Home entry in tab history, so Back exits the app. It is documented, not changed.
+
+### Remediation PRs (owner §7–§8, Approach B)
+
+- **F113 (mobile):** swipe galleries, View Dealership placement, service pills, dealer inventory scroll preservation.
+- **F114 (web):** dealer inventory scroll preservation, district-selection parity, Maps investigation.
+- Both are on top of F112.
