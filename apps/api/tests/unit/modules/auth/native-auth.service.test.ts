@@ -65,7 +65,10 @@ describe('native challenge and login controls', () => {
     expect(retry.expiresAt).toBe(first.expiresAt);
     await h.service.verify(retry.challenge, '123456');
     expect(h.widget.verify).toHaveBeenCalledWith('new-request', '123456');
-    expect(h.signIn).toHaveBeenCalledWith({ phone: PHONE, accessToken: 'verified.jwt.token' }, {});
+    expect(h.signIn).toHaveBeenCalledWith(
+      { phone: PHONE, accessToken: 'verified.jwt.token' },
+      { native: true },
+    );
   });
   it('caps requests by IP and verified number even when the generic limiter is disabled', async () => {
     vi.useFakeTimers();
@@ -105,7 +108,9 @@ describe('native challenge and login controls', () => {
     expect(h.widget.send).not.toHaveBeenCalled();
     const result = await h.service.verify(challenge.challenge, env.PHONE_OTP_DEV_CODE);
     expect(result.status).toBe('NAME_REQUIRED');
-    expect(h.signIn).toHaveBeenCalledWith(expect.objectContaining({ phone: PHONE }), {});
+    expect(h.signIn).toHaveBeenCalledWith(expect.objectContaining({ phone: PHONE }), {
+      native: true,
+    });
     await expect(
       h.service.verify(challenge.challenge, env.PHONE_OTP_DEV_CODE),
     ).rejects.toMatchObject({ code: 'NATIVE_OTP_EXPIRED' });
@@ -138,6 +143,55 @@ describe('native challenge and login controls', () => {
       h.service.verify(challenge.challenge, env.PHONE_OTP_DEV_CODE),
     ).rejects.toMatchObject({ status: 429 });
     expect(h.signIn).not.toHaveBeenCalled();
+  });
+  it('limits guesses per number and per address across fresh challenges', async () => {
+    const h = harness();
+    for (let i = 0; i < 2; i++) {
+      const challenge = issueNativeChallenge(PHONE, `request-${String(i)}`);
+      for (let attempt = 0; attempt < 5; attempt++)
+        await expect(
+          h.service.verify(challenge, '000000', { ip: 'phone-ip' }),
+        ).rejects.toMatchObject({ code: 'NATIVE_OTP_INVALID' });
+    }
+    await expect(
+      h.service.verify(issueNativeChallenge(PHONE, 'request-3'), env.PHONE_OTP_DEV_CODE, {
+        ip: 'other-ip',
+      }),
+    ).rejects.toMatchObject({ status: 429 });
+    const other = harness();
+    for (let i = 0; i < 20; i++)
+      await expect(
+        other.service.verify(issueNativeChallenge(`+9198455${String(10000 + i)}`, 'r'), '000000', {
+          ip: 'shared-ip',
+        }),
+      ).rejects.toMatchObject({ code: 'NATIVE_OTP_INVALID' });
+    await expect(
+      other.service.verify(issueNativeChallenge(PHONE, 'r'), env.PHONE_OTP_DEV_CODE, {
+        ip: 'shared-ip',
+      }),
+    ).rejects.toMatchObject({ status: 429 });
+    expect(h.signIn).not.toHaveBeenCalled();
+    expect(other.signIn).not.toHaveBeenCalled();
+  });
+  it('limits native sign-up per address like the website', async () => {
+    const h = harness();
+    const signUp = vi.fn().mockResolvedValue({
+      customer: { id: 'customer' },
+      session: { token: 'token', expiresAt: new Date(NOW) },
+    });
+    const service = createNativeAuthService({
+      cache: h.cache,
+      customers: { signIn: h.signIn, signUp } as unknown as CustomerAuthService,
+      widget: h.widget,
+      productionReady: h.ready,
+    });
+    const input = { signUpToken: 'ticket', fullName: 'Native Customer' };
+    for (let i = 0; i < 10; i++) await service.signUp(input, { ip: 'sign-up-ip' });
+    await expect(service.signUp(input, { ip: 'sign-up-ip' })).rejects.toMatchObject({
+      status: 429,
+    });
+    expect(signUp).toHaveBeenCalledTimes(10);
+    expect(signUp).toHaveBeenLastCalledWith(input, { ip: 'sign-up-ip', native: true });
   });
   it('fails closed when shared counters cannot protect spending/replay', async () => {
     const h = harness();
