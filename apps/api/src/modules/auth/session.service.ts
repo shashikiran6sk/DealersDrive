@@ -23,6 +23,7 @@ export function createSessionService(prisma: PrismaClient) {
         userId: string;
         scope: SessionScope;
         authenticationMethod?: 'GOOGLE' | 'PHONE_OTP';
+        native?: boolean;
         ip?: string | undefined;
         userAgent?: string | undefined;
       },
@@ -36,6 +37,7 @@ export function createSessionService(prisma: PrismaClient) {
           userId: input.userId,
           scope: input.scope,
           authenticationMethod: input.authenticationMethod ?? null,
+          native: input.native === true,
           tokenHash: hashToken(token),
           expiresAt,
           ip: input.ip ?? null,
@@ -53,6 +55,7 @@ export function createSessionService(prisma: PrismaClient) {
         where: {
           tokenHash: hashToken(token),
           scope,
+          native: false,
           revokedAt: null,
           expiresAt: { gt: new Date() },
         },
@@ -67,10 +70,26 @@ export function createSessionService(prisma: PrismaClient) {
         where: {
           tokenHash: hashToken(token),
           scope: { in: [...PERSON_SCOPES] },
+          native: false,
           revokedAt: null,
           expiresAt: { gt: new Date() },
         },
         include: { user: { include: { roles: true } } },
+      });
+    },
+
+    async resolveNative(token: string | undefined) {
+      if (!token) return null;
+
+      return prisma.session.findFirst({
+        where: {
+          tokenHash: hashToken(token),
+          scope: 'CUSTOMER',
+          native: true,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        include: { user: { include: { roles: true, adminMember: true } } },
       });
     },
 
@@ -82,6 +101,14 @@ export function createSessionService(prisma: PrismaClient) {
       if (!token) return;
       await prisma.session.updateMany({
         where: { tokenHash: hashToken(token), revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    },
+
+    async revokeNative(token: string | undefined): Promise<void> {
+      if (!token) return;
+      await prisma.session.updateMany({
+        where: { tokenHash: hashToken(token), native: true, revokedAt: null },
         data: { revokedAt: new Date() },
       });
     },
