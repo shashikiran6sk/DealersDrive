@@ -141,3 +141,40 @@ Do not merge the squash commit directly into a child. Its merge base would be th
 | F107 | **Conflicts** in `schema.prisma`, `customer-auth.service.ts`, `native-auth.routes.ts` and `session.service.ts`, because it changes the same code as the F100 security fix. Needs a careful manual resolution. |
 | F108 | `.gitleaks.toml` conflict: F108 has its own allowlist for the same fragment. Keep one entry. |
 | F109 – F112 | Equivalent |
+
+## G. Resumed: owner override for this session (2026-10-18)
+
+The owner instructed: "You can override the rule in this session. You can review and merge it using the admin flag." The campaign resumed on that authority, with the same gates.
+
+### #312 — F099 mobile foundation
+
+- **Recovery ref:** `ba2f30c`.
+- **Reconciliation:** `bdb7d3a` merged the #279 head `bda0bce`. `d869d3d` merged `main` with `-s ours`, valid because `main`'s tree equals `bda0bce`.
+- **Patch-equivalence gate:** 69 files, +10,121/−414.
+- **CI fix `eb4d317`.** The first run on the reconciled head failed: `components.test.tsx` hit a 10 s Jest timeout while turbo ran the API and web suites in parallel. Fixed by porting F101's exact `ci.yml` split (native suite runs after web/API/contracts). Nothing is skipped.
+- **Remote CI on `eb4d317`:** all green. Local: API 3469, web 1729, contracts 578, mobile 26.
+- **Squash:** `d1cc78d`. Its tree equals `eb4d317`. The release run was build-only.
+
+### #313 — F100 native auth backend
+
+- **H1 (high), security fix `d3ba998` + `ce1ab1a`:** native sessions are marked (`sessions.native`, migration `20261014090000`, additive) and refused as cookies. Web cookies are refused as bearers.
+- **Mediums and lows:**
+  - M3: the transport switch applies only when the flag is on and the header is a Bearer credential.
+  - M1/M2/L1: verify, send and sign-up limits match the web flows.
+  - L3: logout is idempotent and sits ahead of the kill switch.
+- **Recovery ref:** `8ec6b2d`. Merged F099 `d869d3d` and `eb4d317`, then `main` `d1cc78d` with `-s ours`.
+- **Gate:** the original diff plus the fix, 53 files, +1,958/−128.
+- **Remote CI on `bc99ccd`:** all green. Local: API 3506, web 1729, contracts 581, mobile 26.
+- **Squash:** `0e40bee`. Its tree equals `bc99ccd`.
+
+### #314 — F101 native auth UI (in progress)
+
+- **Recovery ref:** `7046f54`. Merged F100 `bc99ccd`, then `main` `0e40bee`.
+- **Gate:** F101's original diff minus its `ci.yml` hunk, which is already on `main` through the F099 port. 36 files.
+- **Fixes in `7add579`:**
+  - F1 (blocking): the misleading sign-in error mapping. This is the OTP message in the owner's recording.
+  - F2: 429 waits.
+  - F3: a foreground restore wiped customer data.
+  - F4: no Sign out from the "unavailable" state.
+  - F5: device clock skew.
+  - 9 regression tests, all failing on the old code.
