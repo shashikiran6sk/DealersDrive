@@ -1,4 +1,5 @@
 import { SAVED_TEXT } from '../../saved/saved.constants';
+import { ENQUIRY_TEXT } from '../../enquiries/enquiries.constants';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
@@ -66,6 +67,16 @@ export function ProfileScreen() {
           {notice}
         </Text>
       ) : null}
+      <ActionButton
+        variant="secondary"
+        label={ENQUIRY_TEXT.history}
+        onPress={() => router.navigate('/enquiries')}
+      />
+      <ActionButton
+        variant="secondary"
+        label={ENQUIRY_TEXT.privacyControls}
+        onPress={() => router.navigate('/privacy-controls')}
+      />
       <ActionButton
         variant="secondary"
         label={SAVED_TEXT.agreements}

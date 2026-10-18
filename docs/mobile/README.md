@@ -402,3 +402,7 @@ F103 starts from F102 #315 head dab6e7ab. The repaired F101 and F102 now report 
 ## F104 implementation checkpoint
 
 F104 starts at the verified F103 head b4357a32 / draft PR #316, whose reported CI checks pass. Native saved controls/list and account agreements reuse existing server records and policy evidence. Optional slug pagination preserves the legacy response and completes native hydration beyond 500 records; no migration or parallel data model. See [saved/account internals](../code/mobile/saved-account.md) and [validation](f104-validation.md). All ten immediate-parent bases, legal publication gates and owner merge/release approvals remain unchanged.
+
+## F105 implementation checkpoint
+
+F105 starts from F104 head 1f0d258d / draft PR #317; its reported checks pass. Native enquiries/history/privacy controls reuse PR #279’s transaction, scoped grants and withdrawal evidence. No mobile policy model or new migration. See [validation](f105-validation.md) and [internals](../code/mobile/enquiries.md). Uncertain enquiry delivery has no automatic retry. The ten immediate-parent bases remain unchanged. Account-deletion fulfilment/retention needs an approved operational procedure; a support request alone is not completed erasure and remains a launch blocker.
