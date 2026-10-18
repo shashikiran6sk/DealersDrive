@@ -5,6 +5,7 @@ import { CustomerHeader } from '@/components/layout/customer-header';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { SavedVehiclesProvider } from '@/features/saved';
 import { getPublicLocations } from '@/lib/locations';
+import { legalPagesVisible } from '@/lib/legal-release';
 import { getPublicConfig } from '@/lib/public-config';
 
 export async function PublicShell({ children }: { children: ReactNode }) {
@@ -16,6 +17,7 @@ export async function PublicShell({ children }: { children: ReactNode }) {
         <CustomerHeader locations={locations} account={<HeaderAccount />} />
         <main className="flex-1">{children}</main>
         <CustomerFooter
+          legalVisible={legalPagesVisible()}
           social={config.social}
           supportEmail={config.supportEmail}
           supportPhone={config.supportPhone}

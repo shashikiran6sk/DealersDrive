@@ -3,6 +3,7 @@ import process from 'node:process';
 
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { legalReleaseReady } from '@dealers-drive/contracts';
 
 import { mailboxAddress } from '../platform/mail/deliverability.js';
 
@@ -20,6 +21,10 @@ const optional = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
 
 const envSchema = z.object({
+  LEGAL_ENFORCEMENT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
   GIT_SHA: z.string().min(1).default('unknown'),
@@ -250,6 +255,14 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.GRAFANA_CLOUD_LOKI_TOKEN) {
       require('GRAFANA_CLOUD_LOKI_TOKEN', 'is required when GRAFANA_CLOUD_LOGS_ENABLED=true.');
     }
+  }
+
+  if (
+    (value.APP_ENV === 'production' || (production && !process.env.APP_ENV)) &&
+    value.LEGAL_ENFORCEMENT_ENABLED &&
+    !legalReleaseReady()
+  ) {
+    require('LEGAL_ENFORCEMENT_ENABLED', 'Legal publication requires completed business facts and owner/counsel approval of exact document versions.');
   }
 
   if (!production) return;

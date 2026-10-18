@@ -93,9 +93,12 @@ describe('submitting', () => {
     expect(results.map((result) => result.status).sort()).toEqual([200, 409]);
   });
 
-  it('takes no body — a client cannot say what state to submit into', async () => {
+  it('rejects a client-selected state and accepts an empty submission', async () => {
     const id = await vehicle();
-    await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).send({ status: 'ACTIVE' }).expect(200);
+    await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).send({ status: 'ACTIVE' }).expect(400);
+    const unchanged = await h.prisma.listing.findUniqueOrThrow({ where: { vehicleId: id } });
+    expect(unchanged.status).toBe('DRAFT');
+    await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
     const stored = await h.prisma.listing.findUniqueOrThrow({ where: { vehicleId: id } });
     expect(stored.status).toBe('PENDING_REVIEW');
   });

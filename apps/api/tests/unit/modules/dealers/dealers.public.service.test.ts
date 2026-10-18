@@ -1028,67 +1028,38 @@ describe('profile', () => {
    * A typed street address is several pins in one district, and the buyer who
    * follows the wrong one has already driven there.
    */
-  it('passes the dealer’s own Maps link straight through', async () => {
-    const h = setup({ profile: publicDealer() });
-
-    expect((await h.service.profile('x')).address.mapsUrl).toBe(
-      'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
-    );
+  it('uses the validated dealership pin for encoded directions', async () => {
+    const h = setup({ profile: publicDealer({ lat: 12.9165, lng: 79.1325 }) });
+    const address = (await h.service.profile('x')).address;
+    const url = new URL(address.mapsUrl!);
+    expect(url.pathname).toBe('/maps/dir/');
+    expect(url.searchParams.get('api')).toBe('1');
+    expect(url.searchParams.get('destination')).toBe('12.9165,79.1325');
+    expect(address.embedUrl).toBeNull();
   });
-
-  it('offers no Maps link for a dealership that predates the question', async () => {
-    const h = setup({ profile: publicDealer({ mapsUrl: null }) });
-    const profile = await h.service.profile('x');
-
-    expect(profile.address.mapsUrl).toBeNull();
-    // And nothing was invented from the address to fill the gap.
-    expect(JSON.stringify(profile)).not.toContain('maps.google');
-    expect(JSON.stringify(profile)).not.toContain('/maps/dir/');
+  it('uses a complete public business address when coordinates are unavailable', async () => {
+    const h = setup({ profile: publicDealer({ mapsUrl: null, lat: null, lng: null }) });
+    const address = (await h.service.profile('x')).address;
+    expect(new URL(address.mapsUrl!).searchParams.get('destination')).toBe(address.full);
+    expect(address.embedUrl).toBeNull();
   });
-
-  /**
-   * The one exception, and it is narrow. An **embed** URL draws a fine map but
-   * opens, as a link, as a bare embedded map — no place card, no directions,
-   * no "open in the app". So when that is what was pasted, the button is built
-   * from the dealership's own pin, which is the pin that very URL contains.
-   *
-   * This is not the thing R6 forbids. R6 is about not composing a destination
-   * out of a *typed address*; these coordinates came from the dealer's link.
-   */
-  it('turns a pasted embed link into a directions link, using its own pin', async () => {
+  it('does not send an incomplete address or unusable embed to Google', async () => {
     const h = setup({
       profile: publicDealer({
-        mapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!2d79.1453092!3d12.9346947!5e0',
-        lat: 12.9346947,
-        lng: 79.1453092,
+        mapsUrl: 'https://www.google.com/maps/embed?pb=x',
+        lat: null,
+        lng: null,
+        addressLine: null,
       }),
     });
-
-    const address = (await h.service.profile('x')).address;
-
-    expect(address.mapsUrl).toBe(
-      'https://www.google.com/maps/dir/?api=1&destination=12.9346947,79.1453092',
-    );
-    // The map itself is unaffected — it draws from the pin either way.
-    expect(address.geo).toEqual({ lat: 12.9346947, lng: 79.1453092 });
+    expect((await h.service.profile('x')).address.mapsUrl).toBeNull();
   });
-
-  it('leaves an embed link alone when there is no pin to rebuild it from', async () => {
-    // Nothing is invented: a link that goes somewhere beats one that does not.
-    const embed = 'https://www.google.com/maps/embed?pb=!1m18!5e0';
-    const h = setup({ profile: publicDealer({ mapsUrl: embed, lat: null, lng: null }) });
-
-    expect((await h.service.profile('x')).address.mapsUrl).toBe(embed);
-  });
-
-  it('leaves an ordinary share link alone even when the pin is known', async () => {
-    const h = setup({ profile: publicDealer({ lat: 12.9165, lng: 79.1325 }) });
-
+  it('retains a validated share link when neither pin nor complete address is available', async () => {
+    const h = setup({ profile: publicDealer({ lat: null, lng: null, addressLine: null }) });
     expect((await h.service.profile('x')).address.mapsUrl).toBe(
       'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
     );
   });
-
   it('carries the district beside the city', async () => {
     const h = setup({ profile: publicDealer({ city: 'Katpadi', district: 'Vellore' }) });
 

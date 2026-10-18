@@ -1,3 +1,4 @@
+import { mayDiscloseEnquiry, SHARING_GRANT_SELECT } from '../legal/legal.facade.js';
 import {
   CUSTOMER_ENQUIRY_STATUS_LABELS,
   CUSTOMER_ENQUIRY_STATUS_TONES,
@@ -23,6 +24,10 @@ export const INBOX_SELECT = {
   id: true,
   status: true,
   message: true,
+  sharingWithdrawnAt: true,
+  customerId: true,
+  dealerId: true,
+  sharingGrant: { select: SHARING_GRANT_SELECT },
   createdAt: true,
   contactedAt: true,
   closedAt: true,
@@ -66,8 +71,9 @@ function movedBy(
 }
 
 export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEnquiry {
-  const name = row.customer.fullName?.trim() || UNNAMED_CUSTOMER;
-  const phone = row.customer.phone;
+  const withdrawn = !mayDiscloseEnquiry(row, now);
+  const name = withdrawn ? 'Sharing withdrawn' : row.customer.fullName?.trim() || UNNAMED_CUSTOMER;
+  const phone = withdrawn ? null : row.customer.phone;
   const vehicle = row.listing.vehicle;
   const registrationDisplay = formatRegistration(vehicle.registrationNumber);
 
@@ -76,7 +82,7 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
     status: row.status,
     statusLabel: ENQUIRY_STATUS_LABELS[row.status],
     statusTone: ENQUIRY_STATUS_TONES[row.status],
-    message: row.message,
+    message: withdrawn ? null : row.message,
     createdAt: row.createdAt.toISOString(),
     createdLabel: formatDate(row.createdAt),
     timeAgoLabel: timeAgo(row.createdAt, now),
@@ -103,6 +109,8 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
 
 export const CUSTOMER_SELECT = {
   id: true,
+  sharingGrantId: true,
+  sharingWithdrawnAt: true,
   status: true,
   message: true,
   createdAt: true,
@@ -132,6 +140,8 @@ export function toCustomerEnquiry(row: CustomerRow): CustomerEnquiry {
   const vehicle = row.listing.vehicle;
   return {
     id: row.id,
+    sharingGrantId: row.sharingGrantId,
+    sharingWithdrawn: row.sharingWithdrawnAt != null,
     status,
     statusLabel: CUSTOMER_ENQUIRY_STATUS_LABELS[status],
     statusTone: CUSTOMER_ENQUIRY_STATUS_TONES[status],

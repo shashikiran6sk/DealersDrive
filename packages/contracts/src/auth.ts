@@ -1,5 +1,6 @@
 import { DealerTaglineInput } from './dealer-tagline.js';
 import { z } from 'zod';
+import { AgreementAcceptance } from './legal.js';
 
 import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
 import { AdminRole, DealerRole, DealerStatus } from './enums.js';
@@ -484,6 +485,7 @@ export const CustomerSignUpInput = z
   .object({
     signUpToken: z.string().trim().min(1).max(2048),
     fullName: CustomerName,
+    agreement: AgreementAcceptance.optional(),
   })
   .strict();
 export type CustomerSignUpInput = z.infer<typeof CustomerSignUpInput>;
