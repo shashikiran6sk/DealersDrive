@@ -19,6 +19,7 @@ export class SessionManager {
   readonly pending = new PendingActions();
   private snapshot: SessionSnapshot = { status: 'restoring', customer: null, error: null };
   private credential: Credential | null = null;
+  private retained: Credential | null = null;
   private epoch = 0;
   private listeners = new Set<() => void>();
   private queue: Promise<void> = Promise.resolve();
@@ -76,7 +77,12 @@ export class SessionManager {
     this.queue = next;
     return next;
   }
-  async accept(generation: number, credential: Credential, customer: Customer): Promise<boolean> {
+  async accept(
+    generation: number,
+    credential: Credential,
+    customer: Customer,
+    previousCustomerId: string | null = this.snapshot.customer?.id ?? null,
+  ): Promise<boolean> {
     if (generation !== this.epoch) return false;
     if (Date.parse(credential.expiresAt) <= Date.now())
       throw new ApiError('SESSION_EXPIRED', AUTH_TEXT.expired, 401);
@@ -96,8 +102,9 @@ export class SessionManager {
       if (this.writingGeneration === generation) this.writingGeneration = null;
     }
     if (generation !== this.epoch) return false;
-    if (this.snapshot.customer?.id !== customer.id) this.clearPrivate();
+    if (previousCustomerId !== customer.id) this.clearPrivate();
     this.credential = credential;
+    this.retained = null;
     this.authenticationGeneration = null;
     this.pending.bind(customer.id);
     this.publish({ status: 'authenticated', customer, error: null });
@@ -107,13 +114,19 @@ export class SessionManager {
     if (this.authenticationGeneration !== null) return Promise.resolve();
     if (this.restoring) return this.restoring;
     const generation = ++this.epoch;
-    this.publish({ status: 'restoring', customer: null, error: null });
-    this.restoring = this.load(generation).finally(() => {
+    const previous = this.snapshot;
+    const silent = previous.status === 'authenticated';
+    if (!silent) this.publish({ status: 'restoring', customer: null, error: null });
+    this.restoring = this.load(generation, silent, previous.customer?.id ?? null).finally(() => {
       this.restoring = null;
     });
     return this.restoring;
   }
-  private async load(generation: number): Promise<void> {
+  private async load(
+    generation: number,
+    silent: boolean,
+    previousCustomerId: string | null,
+  ): Promise<void> {
     try {
       const raw = await this.storage.read();
       if (generation !== this.epoch) return;
@@ -128,12 +141,14 @@ export class SessionManager {
         await this.invalidate(generation);
         return;
       }
+      this.retained = parsed.data;
       const result = await this.api.me(parsed.data.token);
       if (generation !== this.epoch) return;
       await this.accept(
         generation,
         { token: parsed.data.token, expiresAt: result.expiresAt },
         result.customer,
+        previousCustomerId,
       );
     } catch (error) {
       if (generation !== this.epoch) return;
@@ -141,6 +156,7 @@ export class SessionManager {
         await this.invalidate(generation);
         return;
       }
+      if (silent) return;
       this.credential = null;
       this.clearPrivate();
       this.publish({ status: 'unavailable', customer: null, error: AUTH_TEXT.restoreError });
@@ -149,6 +165,7 @@ export class SessionManager {
   async invalidate(generation = ++this.epoch): Promise<void> {
     if (generation !== this.epoch) return;
     this.credential = null;
+    this.retained = null;
     this.authenticationGeneration = null;
     this.pending.clear();
     this.clearPrivate();
@@ -163,7 +180,7 @@ export class SessionManager {
     }
   }
   async logout(): Promise<boolean> {
-    const token = this.credential?.token;
+    const token = this.credential?.token ?? this.retained?.token;
     await this.invalidate();
     const locallyCleared = this.snapshot.status === 'guest';
     if (!token) return locallyCleared;
