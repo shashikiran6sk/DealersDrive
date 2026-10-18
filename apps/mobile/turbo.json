@@ -1,0 +1,17 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "env": [
+        "EXPO_PUBLIC_APP_ENV",
+        "EXPO_PUBLIC_API_BASE_URL",
+        "EXPO_PUBLIC_WEB_BASE_URL",
+        "EXPO_NO_TELEMETRY"
+      ],
+      "inputs": ["$TURBO_DEFAULT$", "!tests/**"]
+    },
+    "typecheck": { "inputs": ["$TURBO_DEFAULT$"] }
+  }
+}
