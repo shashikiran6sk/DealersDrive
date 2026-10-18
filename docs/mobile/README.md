@@ -406,3 +406,7 @@ F104 starts at the verified F103 head b4357a32 / draft PR #316, whose reported C
 ## F105 implementation checkpoint
 
 F105 starts from F104 head 1f0d258d / draft PR #317; its reported checks pass. Native enquiries/history/privacy controls reuse PR #279’s transaction, scoped grants and withdrawal evidence. No mobile policy model or new migration. See [validation](f105-validation.md) and [internals](../code/mobile/enquiries.md). Uncertain enquiry delivery has no automatic retry. The ten immediate-parent bases remain unchanged. Account-deletion fulfilment/retention needs an approved operational procedure; a support request alone is not completed erasure and remains a launch blocker.
+
+## F106 implementation and F107 approved amendment
+
+F106 starts from F105 head 1b310ecc / draft PR #318, whose GitHub checks pass. Native support uses existing conversations/quota/reopen contracts, with one additive nullable create-retry migration. See [validation](f106-validation.md) and [internals](../code/mobile/support.md). On 15 October the owner approved both separate customer deactivation/reactivation and deletion-request controls on Android and web in F107. The [amendment](account-controls-amendment.md) defines fresh OTP, customer-only state/session revocation, withdrawal preservation and multi-role protection. The ten-PR stack remains unchanged; no legal fulfilment/retention or production approval is inferred.

@@ -1098,6 +1098,8 @@ model SupportTicket {
   category                   SupportTicketCategory
   subject                    String
   description                String
+  clientRequestId            String?               @db.Uuid
+  requestDigest              String?
   unansweredCustomerMessages Int                   @default(0)
   status                     SupportTicketStatus   @default(OPEN)
   /// Support's own triage. A customer never sets it and is never shown it.
@@ -1123,6 +1125,7 @@ model SupportTicket {
   messages SupportTicketMessage[]
   notes    SupportTicketNote[]
 
+  @@unique([customerId, clientRequestId])
   /// The customer's own list, most recently active first.
   @@index([customerId, updatedAt])
   /// "Tickets about this enquiry" — and the FK's own lookup on SetNull.

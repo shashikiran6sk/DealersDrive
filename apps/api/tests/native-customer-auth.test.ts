@@ -234,6 +234,49 @@ describe('same customer identity and restricted native bearer', () => {
       .get(`/v1/support/tickets/${CustomerSupportTicket.parse(ticket.body).id}`)
       .set('Authorization', `Bearer ${second.credential.token}`)
       .expect(404);
+    const ownTicketId = CustomerSupportTicket.parse(ticket.body).id;
+    await cache.reset();
+    const webSignIn = await h
+      .agent()
+      .post('/v1/auth/sign-in/phone/customer')
+      .send({
+        phone: first.phone,
+        accessToken: `dev-otp:91${first.phone}:${env.PHONE_OTP_DEV_CODE}:web-support`,
+      })
+      .expect(200);
+    const webCookie = [webSignIn.headers['set-cookie']]
+      .flat()
+      .find((cookie) => cookie?.startsWith('dd_session='))
+      ?.split(';')[0];
+    expect(webCookie).toBeDefined();
+    await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Cookie', `dd_session=${first.credential.token}`)
+      .expect(401);
+    await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Cookie', webCookie ?? '')
+      .expect(200);
+    await h
+      .agent()
+      .post(`/v1/support/tickets/${ownTicketId}/messages`)
+      .set('Cookie', webCookie ?? '')
+      .send({ message: 'A reply sent through the website session.' })
+      .expect(201);
+    const nativeConversation = await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Authorization', `Bearer ${first.credential.token}`)
+      .expect(200);
+    expect(CustomerSupportTicket.parse(nativeConversation.body).messages).toHaveLength(1);
+    await h
+      .agent()
+      .post(`/v1/support/tickets/${ownTicketId}/messages`)
+      .set('Authorization', `Bearer ${second.credential.token}`)
+      .send({ message: 'A foreign native reply must be denied.' })
+      .expect(404);
     await h
       .agent()
       .get('/v1/support/tickets/00000000-0000-4000-8000-000000000001')

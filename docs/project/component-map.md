@@ -1920,3 +1920,14 @@ Native components use React Native fixtures rather than the DOM sandbox. Existin
 | EnquiriesScreen / EnquiryDetailScreen       | enquiries-screen / enquiry-detail-screen               | Owned cursor history, old/missing car and linked/legacy withdrawal; Profile                                 | API legal tests and native form fixtures; installed-screen QA pending |
 | WithdrawButton                              | withdraw-button                                        | id, grant, dealershipScope; confirm/cancel/in-flight/failure/success; rights/detail                         | withdraw-button.test.tsx                                              |
 | PrivacyControlsScreen / SharingNoticeScreen | privacy-controls-screen / sharing-notice-screen        | Owned effective permissions; authoritative full notice/draft/unavailable; Profile/form                      | Shared contracts/API integration; installed-screen QA pending         |
+
+## Native support components (F106)
+
+Existing ActionButton, Page, Brand and StatusPanel are reused. Native fixtures supplement the DOM sandbox; installed Android visual review remains pending.
+
+| Component                                 | Folder under apps/mobile/src/features/support | Props/states/consumers                                                                   | Evidence                                   |
+| ----------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| SupportScreen / SupportListScreen         | support-screen / support-list-screen          | Public configured contact actions; owned keyset requests/guest/error/empty; Profile      | Contracts/API tests; device review pending |
+| SupportCreateScreen / SupportCreateForm   | support-create-screen / support-create-form   | Account-keyed category/subject/body/owned enquiry; privacy prefill; uncertain/safe retry | support-create.test.tsx                    |
+| SupportDetailScreen / SupportConversation | support-detail-screen / support-conversation  | Account/ticket-keyed messages, active polling, quota, explicit reopen/closed/new-request | support-conversation.test.tsx              |
+| SupportMessageBubble                      | support-message                               | Public author/body/date; customer/support variants; virtualized conversation             | Conversation fixtures                      |
