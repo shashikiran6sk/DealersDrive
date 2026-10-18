@@ -125,8 +125,11 @@ jobs:
       # vitest configs enforce. The suite creates and migrates its own
       # `dealersdrive_test` database — that is `global-setup`'s job, not this
       # workflow's.
-      - name: Test
-        run: pnpm test
+      - name: Web, API and contract tests
+        run: pnpm exec turbo run test --filter='!@dealers-drive/mobile'
+
+      - name: Native tests
+        run: pnpm --filter @dealers-drive/mobile test
 
       - name: Build
         run: pnpm build
