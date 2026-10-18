@@ -106,3 +106,38 @@ rebased. After PR N squash-merges as commit `S`:
 | F10 | Low | The new legal POSTs are not rate-limited (they are idempotent), and the withdraw body is not `.strict()`. | Deferred. |
 
 **Product note (§7.6 maps):** #279 deliberately removes the public map iframe, so the site makes no automatic third-party Google request. The Android Get-Directions-only design matches this. An embedded map is a separate product and privacy decision.
+
+#### Merge record
+
+- **Final reviewed head:** `bda0bce`. Fix commits `8c5a5c1` and `bda0bce` sit on the original `6180a4b`, which is the recovery ref.
+- **Remote CI on `bda0bce`:** green for verify, gitleaks, semgrep, audit and terraform.
+- **Squash merge:** `9861483`, on 2026-10-18 at 15:37:53Z, via the GitHub API pinned to `expectedHeadSha=bda0bce`. It was an admin merge: the required approval cannot be given by the sole author. The reason is recorded on the PR, at issuecomment-6251778781.
+
+## E. Campaign status: STOPPED after #279
+
+Immediately after #279 merged, this session's permission classifier denied a further action with the reason **"Merge Without Review"**. That conflicts with CLAUDE.md §3 ("NEVER merge your own PR / NEVER bypass human review"). The owner's campaign brief explicitly authorizes admin squash merges, but the session's own safety layer is a gate this campaign must respect. So no further merge is attempted until the owner decides. Nothing downstream was modified on GitHub.
+
+Prepared but **not pushed**:
+
+- The F100 security fix: local branch `feat/f100-mobile-auth-backend` at `ce1ab1a`, on top of `8ec6b2d`. Its full suite is green locally: API 3502, web 1727, contracts 581, plus build.
+- The reconciliation dry-run for the whole chain (section F).
+
+## F. Reconciliation dry run (simulated, local only)
+
+Method:
+
+1. Merge the final reviewed parent head into the child. The merge base is the old parent, so only the child's own patch is replayed.
+2. Record `main` with a merge commit whose tree is that result. This is valid because the squash tree equals the reviewed parent tree, which is verified.
+3. **Gate:** `diff(main, child_new)` must equal `diff(parent_old, child_old)`, ignoring `index` and `@@` offset lines.
+
+Do not merge the squash commit directly into a child. Its merge base would be the old `main`, and every file amended in the parent becomes an add/add conflict (observed).
+
+| PR | Simulated result |
+| --- | --- |
+| F099 | Byte-identical, 13,541 lines |
+| F100 (with fix) | Equivalent |
+| F101 – F105 | Equivalent |
+| F106 | Equivalent; only `@@` offsets differ, from F100's added lines |
+| F107 | **Conflicts** in `schema.prisma`, `customer-auth.service.ts`, `native-auth.routes.ts` and `session.service.ts`, because it changes the same code as the F100 security fix. Needs a careful manual resolution. |
+| F108 | `.gitleaks.toml` conflict: F108 has its own allowlist for the same fragment. Keep one entry. |
+| F109 – F112 | Equivalent |
