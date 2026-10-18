@@ -5,6 +5,7 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import { withdrawCustomerSharing } from '../legal/legal.facade.js';
 import type { CustomerPrincipal } from './session.port.js';
+import type { PresentedCustomerCredential } from './customer-session.js';
 import type { SessionService } from './session.service.js';
 import { requireCustomerAccess } from './customer-access.js';
 import { CUSTOMER_REAUTH_REQUIRED } from './auth.messages.js';
@@ -19,8 +20,10 @@ export function createCustomerAccountService({
   sessions: SessionService;
   audit: AuditService;
 }) {
-  async function recent(customer: CustomerPrincipal, token: string | undefined) {
-    const session = await sessions.resolve(token, 'CUSTOMER');
+  async function recent(customer: CustomerPrincipal, credential: PresentedCustomerCredential) {
+    const session = credential.native
+      ? await sessions.resolveNative(credential.token)
+      : await sessions.resolve(credential.token, 'CUSTOMER');
     return session &&
       session.userId === customer.userId &&
       session.authenticationMethod === 'PHONE_OTP' &&
@@ -33,11 +36,17 @@ export function createCustomerAccountService({
       : null;
   }
   return {
-    async status(this: void, customer: CustomerPrincipal, token: string | undefined) {
-      return CustomerAccountStatus.parse({ canDeactivate: Boolean(await recent(customer, token)) });
+    async status(this: void, customer: CustomerPrincipal, credential: PresentedCustomerCredential) {
+      return CustomerAccountStatus.parse({
+        canDeactivate: Boolean(await recent(customer, credential)),
+      });
     },
-    async deactivate(this: void, customer: CustomerPrincipal, token: string | undefined) {
-      const session = await recent(customer, token);
+    async deactivate(
+      this: void,
+      customer: CustomerPrincipal,
+      credential: PresentedCustomerCredential,
+    ) {
+      const session = await recent(customer, credential);
       if (!session)
         throw new ForbiddenError(CUSTOMER_REAUTH_REQUIRED, { code: 'CUSTOMER_REAUTH_REQUIRED' });
       await withTransaction(prisma, async (tx) => {

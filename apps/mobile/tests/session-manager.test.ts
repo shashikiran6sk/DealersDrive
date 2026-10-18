@@ -199,3 +199,37 @@ it('never confirms secure persistence or server logout after a failed operation'
   expect(h.stored()).toBeNull();
   expect(h.manager.pending.peek()).toBeNull();
 });
+it('re-checks an authenticated session on foreground without wiping customer data or showing restoring', async () => {
+  const h = harness(JSON.stringify(CREDENTIAL));
+  await h.manager.restore();
+  expect(h.clear).toHaveBeenCalledTimes(1);
+  const statuses: string[] = [];
+  h.manager.subscribe(() => statuses.push(h.manager.getSnapshot().status));
+  await h.manager.restore();
+  expect(h.api.me).toHaveBeenCalledTimes(2);
+  expect(statuses).not.toContain('restoring');
+  expect(h.clear).toHaveBeenCalledTimes(1);
+  expect(h.manager.getSnapshot()).toMatchObject({ status: 'authenticated', customer: CUSTOMER });
+});
+it('keeps an authenticated session when a foreground re-check cannot reach the server', async () => {
+  const h = harness(JSON.stringify(CREDENTIAL));
+  await h.manager.restore();
+  h.api.me.mockRejectedValueOnce(new ApiError('NETWORK_UNAVAILABLE', 'Offline'));
+  await h.manager.restore();
+  expect(h.manager.getSnapshot()).toMatchObject({ status: 'authenticated', customer: CUSTOMER });
+  expect(h.manager.token()).toBe(CREDENTIAL.token);
+  h.api.me.mockRejectedValueOnce(new ApiError('AUTH_REQUIRED', 'Revoked', 401));
+  await h.manager.restore();
+  expect(h.manager.getSnapshot().status).toBe('guest');
+  expect(h.stored()).toBeNull();
+});
+it('can sign out from the unavailable state and revokes the stored credential', async () => {
+  const h = harness(JSON.stringify(CREDENTIAL));
+  h.api.me.mockRejectedValueOnce(new ApiError('NATIVE_AUTH_UNAVAILABLE', 'Unavailable', 503));
+  await h.manager.restore();
+  expect(h.manager.getSnapshot().status).toBe('unavailable');
+  await expect(h.manager.logout()).resolves.toBe(true);
+  expect(h.api.logout).toHaveBeenCalledWith(CREDENTIAL.token);
+  expect(h.stored()).toBeNull();
+  expect(h.manager.getSnapshot().status).toBe('guest');
+});

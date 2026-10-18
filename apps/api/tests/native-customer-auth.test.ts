@@ -11,6 +11,7 @@ import {
 import { createSessionService } from '../src/modules/auth/session.service.js';
 import { env } from '../src/config/env.js';
 import { createMemoryCache } from '../src/platform/cache/memory.adapter.js';
+import { createListingsTestKit } from './listings-kit.js';
 import { createAuthHarness, type AuthHarness } from './auth-harness.js';
 
 let h: AuthHarness;
@@ -56,12 +57,11 @@ describe('same customer identity and restricted native bearer', () => {
       .set('Authorization', bearer)
       .expect(200);
     expect(NativeCustomerSession.parse(me.body).customer.id).toBe(created.customer.id);
-    const web = await h
+    await h
       .agent()
       .get('/v1/auth/customer/me')
       .set('Cookie', `dd_session=${created.credential.token}`)
-      .expect(200);
-    expect(web.body.customer.id).toBe(created.customer.id);
+      .expect(401);
     const user = await h.prisma.user.findUniqueOrThrow({
       where: { id: created.customer.id },
       include: { roles: true },
@@ -141,6 +141,81 @@ describe('same customer identity and restricted native bearer', () => {
       expect([401, 403, 404]).toContain(res.status);
     }
   });
+  it('keeps native and cookie credentials apart, even for a person who is also a dealer member', async () => {
+    const customer = await nativeCustomer();
+    const { listing } = await createListingsTestKit(h.prisma).vehicleWithListing();
+    await h.prisma.dealerMember.create({
+      data: {
+        dealerId: listing.dealerId,
+        userId: customer.customer.id,
+        role: 'OWNER',
+        permissions: [],
+      },
+    });
+    const bearer = `Bearer ${customer.credential.token}`;
+    await h.agent().get('/v1/enquiries').set('Authorization', bearer).expect(200);
+    for (const path of [
+      '/v1/dealer/me',
+      '/v1/auth/workspaces',
+      '/v1/invitations',
+      '/v1/auth/me',
+      '/v1/auth/customer/me',
+      '/v1/enquiries',
+    ]) {
+      const res = await h
+        .agent()
+        .get(path)
+        .set('Cookie', `dd_session=${customer.credential.token}`);
+      expect(res.status, path).toBe(401);
+    }
+    const sessions = createSessionService(h.prisma);
+    const web = await sessions.issue({ userId: customer.customer.id, scope: 'CUSTOMER' });
+    await h
+      .agent()
+      .get('/v1/auth/native/customer/me')
+      .set('Authorization', `Bearer ${web.token}`)
+      .expect(401);
+    await h.agent().get('/v1/enquiries').set('Authorization', `Bearer ${web.token}`).expect(401);
+    await h
+      .agent()
+      .post('/v1/auth/native/customer/logout')
+      .set('Authorization', `Bearer ${web.token}`)
+      .expect(204);
+    await h.agent().get('/v1/enquiries').set('Cookie', `dd_session=${web.token}`).expect(200);
+  });
+  it('leaves web cookie sessions alone and still lets apps sign out while native sign-in is off', async () => {
+    const customer = await nativeCustomer();
+    const web = await createSessionService(h.prisma).issue({
+      userId: customer.customer.id,
+      scope: 'CUSTOMER',
+    });
+    env.NATIVE_CUSTOMER_AUTH_ENABLED = false;
+    try {
+      await h
+        .agent()
+        .get('/v1/auth/customer/me')
+        .set('Authorization', 'Basic c3RhZ2luZzpnYXRl')
+        .set('Cookie', `dd_session=${web.token}`)
+        .expect(200);
+      await h
+        .agent()
+        .get('/v1/enquiries')
+        .set('Authorization', `Bearer ${customer.credential.token}`)
+        .expect(401);
+      await h
+        .agent()
+        .post('/v1/auth/native/customer/logout')
+        .set('Authorization', `Bearer ${customer.credential.token}`)
+        .expect(204);
+    } finally {
+      env.NATIVE_CUSTOMER_AUTH_ENABLED = true;
+    }
+    await h
+      .agent()
+      .get('/v1/auth/native/customer/me')
+      .set('Authorization', `Bearer ${customer.credential.token}`)
+      .expect(401);
+  });
   it('rejects foreign/invalid/expired/revoked credentials and never falls back from a bad bearer to a cookie', async () => {
     const first = await nativeCustomer();
     const second = await nativeCustomer();
@@ -160,15 +235,34 @@ describe('same customer identity and restricted native bearer', () => {
       .set('Authorization', `Bearer ${second.credential.token}`)
       .expect(404);
     const ownTicketId = CustomerSupportTicket.parse(ticket.body).id;
+    await cache.reset();
+    const webSignIn = await h
+      .agent()
+      .post('/v1/auth/sign-in/phone/customer')
+      .send({
+        phone: first.phone,
+        accessToken: `dev-otp:91${first.phone}:${env.PHONE_OTP_DEV_CODE}:web-support`,
+      })
+      .expect(200);
+    const webCookie = [webSignIn.headers['set-cookie']]
+      .flat()
+      .find((cookie) => cookie?.startsWith('dd_session='))
+      ?.split(';')[0];
+    expect(webCookie).toBeDefined();
     await h
       .agent()
       .get(`/v1/support/tickets/${ownTicketId}`)
       .set('Cookie', `dd_session=${first.credential.token}`)
+      .expect(401);
+    await h
+      .agent()
+      .get(`/v1/support/tickets/${ownTicketId}`)
+      .set('Cookie', webCookie ?? '')
       .expect(200);
     await h
       .agent()
       .post(`/v1/support/tickets/${ownTicketId}/messages`)
-      .set('Cookie', `dd_session=${first.credential.token}`)
+      .set('Cookie', webCookie ?? '')
       .send({ message: 'A reply sent through the website session.' })
       .expect(201);
     const nativeConversation = await h

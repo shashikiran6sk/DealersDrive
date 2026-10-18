@@ -490,6 +490,7 @@ describe('dealership-scoped permission and immutable disclosure evidence', () =>
     const session = await createSessionService(h.prisma).issue({
       userId: buyer.id,
       scope: 'CUSTOMER',
+      native: true,
     });
     const authorization = `Bearer ${session.token}`;
     const previous = env.NATIVE_CUSTOMER_AUTH_ENABLED;

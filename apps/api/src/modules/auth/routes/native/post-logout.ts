@@ -5,7 +5,7 @@ export const postNativeLogout: NativeAuthRoute = (router, { sessions }) => {
   router.post(
     '/logout',
     nativeHandle(async (req, res) => {
-      await sessions.revoke(readCustomerBearer(req));
+      await sessions.revokeNative(readCustomerBearer(req));
       res.status(204).end();
     }),
   );

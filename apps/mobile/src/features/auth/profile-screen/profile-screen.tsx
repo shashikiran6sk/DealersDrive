@@ -46,6 +46,7 @@ export function ProfileScreen() {
             {session.error}
           </Text>
           <ActionButton label={AUTH_TEXT.retry} onPress={() => void manager.restore()} />
+          <ActionButton label={AUTH_TEXT.logout} pending={busy} onPress={() => void logout()} />
         </>
       ) : null}
       {session.status === 'authenticated' && session.customer ? (

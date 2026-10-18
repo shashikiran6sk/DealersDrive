@@ -2,7 +2,7 @@ import { CreateEnquiryInput } from '@dealers-drive/contracts/enquiry-client';
 import type { SharingStatus } from '@dealers-drive/contracts/legal-client';
 import type { LegalPublication } from '@dealers-drive/contracts/native-auth';
 import { ApiError } from '../../services/api';
-import { ENQUIRY_TEXT } from './enquiries.constants';
+import { ENQUIRY_TEXT, SHARING_COPY_NOTICE_VERSION } from './enquiries.constants';
 
 export function sharingSignature(
   publication: LegalPublication,
@@ -29,6 +29,12 @@ export function enquiryInput(
     (publication.collectionEnabled && !publication.sharing)
   )
     throw new ApiError('LEGAL_UNAVAILABLE', ENQUIRY_TEXT.failed);
+  if (
+    publication.collectionEnabled &&
+    status.required &&
+    publication.sharing?.version !== SHARING_COPY_NOTICE_VERSION
+  )
+    throw new ApiError('APP_UPDATE_REQUIRED', ENQUIRY_TEXT.updateRequired);
   if (publication.collectionEnabled && status.required && !granted)
     throw new ApiError('ENQUIRY_PERMISSION_REQUIRED', ENQUIRY_TEXT.choose);
   return CreateEnquiryInput.parse({

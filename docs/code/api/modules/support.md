@@ -144,3 +144,7 @@ One box: a reference in any spelling (`DD-1042`, `dd 1042`, `1042`), the
 subject, the customer's name or mobile (from three digits), and the dealership,
 make, model or plate of the enquiry the ticket is about — reached through the
 one `enquiryId`, never copied onto the ticket.
+
+### `routes/skip-for-known-retry.ts`
+
+A support request that the mobile client could not confirm is retried with the same `clientRequestId`. Such a retry cannot create a ticket: the service returns the existing one, or 409 on a changed payload. So it must not use up the 5-per-hour customer limit or the per-IP limit. Otherwise a customer pressing "retry safely" on a weak network gets 429 instead of their own ticket. `skipForKnownRetry` wraps each creation limiter and lets a request through without charging it only when it carries a well-formed id that already names one of this customer's tickets (one indexed `findUnique`). A new, missing or malformed id is charged as before.
