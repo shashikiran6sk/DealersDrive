@@ -35,7 +35,7 @@ export const CUSTOMER_ACCOUNT_TEXT = Object.freeze({
   title: 'Account controls',
   deactivate: 'Temporarily deactivate customer account',
   deactivateBody:
-    'Customer access will pause and all customer sessions will be signed out. Saved cars, enquiries, support and legal records are retained. Future dealership sharing will be withdrawn; information already received cannot be recalled. Dealer and staff roles remain unchanged.',
+    'Customer access will pause and all customer sessions will be signed out. Saved cars, enquiries, support and legal records are retained. Future dealership sharing will be withdrawn; information already received cannot be recalled. Dealer and staff roles remain unchanged. While deactivated, My support requests is unavailable until you reactivate; customer support can still be contacted without signing in.',
   confirmDeactivate: 'I understand and want to deactivate my customer account.',
   freshOtp: 'Verify your mobile number again',
   freshOtpBody:
@@ -53,7 +53,8 @@ export const CUSTOMER_ACCOUNT_TEXT = Object.freeze({
   deletionMessage: 'Additional details (optional)',
   deletionReceived: (reference: string) =>
     `Deletion request received: ${reference}. This is a request receipt, not confirmation that your account or data has been deleted.`,
-  deletionPending: 'Check My support requests for verification and follow-up.',
+  deletionPending:
+    'Check My support requests for verification and follow-up. While a customer account is deactivated, My support requests is unavailable: reactivate to read replies, or contact customer support without signing in.',
   external: 'Request deletion on the website',
   withoutAccount:
     'If you cannot sign in, the website also offers a contact path for deletion requests. You do not need the Android app to use it.',
