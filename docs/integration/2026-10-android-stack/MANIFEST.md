@@ -167,7 +167,7 @@ The owner instructed: "You can override the rule in this session. You can review
 - **Remote CI on `bc99ccd`:** all green. Local: API 3506, web 1729, contracts 581, mobile 26.
 - **Squash:** `0e40bee`. Its tree equals `bc99ccd`.
 
-### #314 — F101 native auth UI (in progress)
+### #314 — F101 native auth UI
 
 - **Recovery ref:** `7046f54`. Merged F100 `bc99ccd`, then `main` `0e40bee`.
 - **Gate:** F101's original diff minus its `ci.yml` hunk, which is already on `main` through the F099 port. 36 files.
@@ -178,3 +178,54 @@ The owner instructed: "You can override the rule in this session. You can review
   - F4: no Sign out from the "unavailable" state.
   - F5: device clock skew.
   - 9 regression tests, all failing on the old code.
+- **Squash:** `1e2aada`. Its tree equals `7add579`. Release run 255 was build-only.
+
+### #315 — F102 car discovery, filters, details, gallery
+
+- **Reconciliation:** the F101 final head was merged in, then `main` `1e2aada` was recorded with `-s ours`. The gate equals F102's original diff.
+- **Review:** no critical or high findings. The gallery's missing swipe and Prev/Next controls is the owner's reported defect and moves to the remediation PR.
+- **Squash:** `c1a46af`. Its tree equals `d2e744d`. Release run 256 was build-only.
+
+### #316 — F103 Home and dealer discovery
+
+- **Review:** no critical or high findings. Directions open only validated Google Maps links. The embedded map was removed in #279 for privacy, so whether to restore it is the owner's call.
+- **Remediation PR items:** the inventory filter jump (no `keepPreviousData` in `dealer-profile-screen.tsx`), service pills and View Dealership placement.
+- **Squash:** `a3010d9`. Its tree equals `0e52c24`. Release run 257 was build-only.
+
+### #317 — F104 saved cars and account agreements
+
+- **Fix `c824c3c`:** bearer fixtures in `saved-vehicles.test.ts` now issue native sessions, as F100 requires. Test-only.
+- **Squash:** `d893fa8`. Its tree equals `56b7187`. Release run 258 was build-only.
+
+### #318 — F105 consent and enquiries (CI pending)
+
+- **Fix `1263fb3` (medium):** an enquiry from a build whose bundled sharing notice differs from the published one is refused client-side with `APP_UPDATE_REQUIRED`. The notice version is pinned by test to the contracts constant.
+- **Fix `67bc63a`:** the legal-consent bearer fixture is native. Test-only.
+- **Local suite on `1263fb3`:** green. API 3510, web 1729, contracts 596, mobile 88.
+
+### #319 — F106 support (prepared, not pushed)
+
+- **Fix `29bbcd9` (medium):** an identical create retry (a known `clientRequestId`) skips the creation rate limits, so a retry after a dropped response is not refused.
+- **Fix `c109ceb`:** F106's cross-transport test presented a native token as a cookie. The test now asserts that 401 and uses a real website session. Test-only.
+
+### #320 — F107 account deactivation (prepared, not pushed)
+
+- **Conflicts with F100/F101 fixes, resolved in `073c474`:**
+  - The schema and session keep both `authenticatedAt` and `native`.
+  - Native reactivation issues a native session.
+  - The account routes resolve the presented credential through the resolver's own transport check (`presentedCustomerCredential`). Before, a native user's deactivation would authenticate but find no session.
+  - The reactivation screen leaves expiry to the server, as in F101.
+  - The bearer fixtures are native.
+
+### Dependency overrides in #321 (F108), production-relevant
+
+`pnpm.overrides` raises transitive packages used at runtime by the web and the API:
+
+- `postcss` 8.4.31/8.5.26 → 8.5.29 (Next.js);
+- `source-map-js` → 1.2.2;
+- `qs` 6.15.3 → 6.16.0 (Express);
+- `fast-uri` → 3.1.8.
+
+It also raises `mysql2` 3.15.3 → 3.23.1, which is a Prisma CLI dependency and dev-only.
+
+These are patch and minor bumps for security advisories. The web build and the API suite are the evidence.
