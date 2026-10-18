@@ -73,10 +73,11 @@ export function createNativeAuthService({
     return data;
   }
   async function spend(phone: string, ip: string): Promise<void> {
-    const hash = createHash('sha256').update(phone).digest('hex');
-    const ipHash = createHash('sha256').update(ip).digest('hex');
+    const hash = digest(phone);
+    const ipHash = digest(ip);
     await limit(`native-otp:cooldown:${hash}`, 1, 60);
     await limit(`native-otp:send:ip:${ipHash}`, 20, 600);
+    await limit(`native-otp:send:ip-hour:${ipHash}`, 30, 3600);
     await limit(`native-otp:send:phone:${hash}`, 5, 3600);
     await limit('native-otp:send:global', 1000, 86400);
   }
@@ -116,6 +117,8 @@ export function createNativeAuthService({
       context: SignInContext = {},
     ): Promise<NativeCustomerSignIn> {
       const data = await active(token);
+      await limit(`native-otp:attempt:ip:${digest(context.ip ?? 'unknown')}`, 20, 600);
+      await limit(`native-otp:attempt:phone:${digest(data.phone)}`, 10, 600);
       await limit(`native-otp:attempt:${data.nonce}`, 5, NATIVE_CHALLENGE_TTL_SECONDS);
       let accessToken: string;
       if (env.PHONE_OTP_DRIVER === 'fake') {
@@ -125,7 +128,10 @@ export function createNativeAuthService({
       } else accessToken = await widget.verify(data.reqId, otp);
       if ((await count(`native-otp:spent:${data.nonce}`, NATIVE_CHALLENGE_TTL_SECONDS)).count > 1)
         throw expired();
-      const result = await customers.signIn({ phone: data.phone, accessToken }, context);
+      const result = await customers.signIn(
+        { phone: data.phone, accessToken },
+        { ...context, native: true },
+      );
       if (result.status === 'SIGNED_IN' && result.session && result.customer)
         return {
           status: 'SIGNED_IN',
@@ -157,7 +163,8 @@ export function createNativeAuthService({
       context: SignInContext = {},
     ): Promise<NativeCustomerSignUp> {
       await enabled();
-      const result = await customers.signUp(input, context);
+      await limit(`native-sign-up:ip:${digest(context.ip ?? 'unknown')}`, 10, 3600);
+      const result = await customers.signUp(input, { ...context, native: true });
       return {
         customer: result.customer,
         credential: {
@@ -171,7 +178,7 @@ export function createNativeAuthService({
       context: SignInContext = {},
     ): Promise<NativeCustomerSignUp> {
       await enabled();
-      const result = await customers.reactivate(input, context);
+      const result = await customers.reactivate(input, { ...context, native: true });
       return {
         customer: result.customer,
         credential: {
@@ -183,6 +190,9 @@ export function createNativeAuthService({
   };
 }
 export type NativeAuthService = ReturnType<typeof createNativeAuthService>;
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
 function unavailable(): UpstreamUnavailableError {
   return new UpstreamUnavailableError(NATIVE_AUTH_MESSAGES.unavailable, {
     code: 'NATIVE_AUTH_UNAVAILABLE',

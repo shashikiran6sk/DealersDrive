@@ -43,3 +43,16 @@ it('supports all districts and rejects corrupt preference values without blockin
   store.choose(undefined);
   expect(store.getState()).toMatchObject({ district: undefined, hydrated: true });
 });
+it('treats re-choosing the current district as no change, so dependent filters survive', async () => {
+  const storage = {
+    getItem: jest.fn(() => Promise.resolve('vellore')),
+    setItem: jest.fn(() => Promise.resolve(undefined)),
+  };
+  const store = createLocationStore(storage);
+  await store.hydrate();
+  const { revision } = store.getState();
+  store.choose('vellore');
+  await Promise.resolve();
+  expect(store.getState().revision).toBe(revision);
+  expect(storage.setItem).not.toHaveBeenCalled();
+});

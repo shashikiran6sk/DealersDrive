@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Alert } from 'react-native';
-import { usePreventRemove } from 'expo-router/build/react-navigation/core/usePreventRemove';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { useDiscardChanges } from '../src/features/navigation/use-discard-changes';
 import { NavigationBack } from '../src/components/navigation-back';
 

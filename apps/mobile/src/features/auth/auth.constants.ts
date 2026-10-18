@@ -1,4 +1,5 @@
 export const AUTH_TEXT = Object.freeze({
+  savedGuestTitle: 'Keep your shortlist together',
   title: 'Sign in',
   reactivate: 'Reactivate customer account and sign in',
   deactivated:
@@ -43,4 +44,9 @@ export const AUTH_TEXT = Object.freeze({
   savedAuthed: 'Your saved cars will appear here.',
   nameValidation: 'Enter a name with at least two characters and a letter.',
   agreements: 'Read and make both choices to continue.',
+  signInUnavailable: "Mobile sign-in isn't available yet. You can keep browsing.",
+  retryWait: (seconds: number) => `Too many attempts. Try again in ${seconds}s.`,
+  tryAgainIn: (seconds: number) => `Try again in ${seconds}s`,
 });
+
+export const RESEND_COOLDOWN_SECONDS = 60;

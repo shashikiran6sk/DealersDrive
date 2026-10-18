@@ -4,7 +4,8 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   ),
 );
 
-jest.mock('expo-router/build/react-navigation/core/usePreventRemove', () => ({
+jest.mock('expo-router/react-navigation', () => ({
+  ...jest.requireActual<Record<string, unknown>>('expo-router/react-navigation'),
   usePreventRemove: jest.fn(),
 }));
 

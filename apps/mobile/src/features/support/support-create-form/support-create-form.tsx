@@ -51,7 +51,7 @@ export function SupportCreateForm() {
   );
   const [busy, setBusy] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [disclosureOpen, setDisclosureOpen] = useState(false);
+  const [disclosureOpen, setDisclosureOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
   const retry = useRef(new RetryIdentity());
@@ -154,7 +154,7 @@ export function SupportCreateForm() {
               <SelectionField
                 label={SUPPORT_TEXT.category}
                 value={category ? SUPPORT_CATEGORY_LABELS[category] : undefined}
-                placeholder="Choose an issue category"
+                placeholder={SUPPORT_TEXT.categoryPlaceholder}
                 disabled={busy}
                 expanded={categoryOpen}
                 onPress={() => setCategoryOpen(true)}
@@ -230,7 +230,7 @@ export function SupportCreateForm() {
                 onPress={() => setDisclosureOpen((value) => !value)}
                 style={{ minHeight: 48, justifyContent: 'center' }}
               >
-                <Text style={styles.text}>How we use your request</Text>
+                <Text style={styles.text}>{SUPPORT_TEXT.disclosureToggle}</Text>
               </Pressable>
               {disclosureOpen ? <Text style={styles.text}>{SUPPORT_TEXT.disclosure}</Text> : null}
               <ActionButton
@@ -258,7 +258,7 @@ export function SupportCreateForm() {
         </Page>
         {categoryOpen ? (
           <SelectionSheet
-            title="Issue category"
+            title={SUPPORT_TEXT.categoryTitle}
             value={category || undefined}
             options={SupportTicketCategory.options.map((value) => ({
               value,

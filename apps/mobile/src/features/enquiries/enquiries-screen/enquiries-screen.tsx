@@ -99,9 +99,9 @@ export function EnquiriesScreen() {
               <StatusPanel message={ENQUIRY_TEXT.loading} pending />
             ) : (
               <EmptyState
-                title="No enquiries yet"
-                description="Ask a dealership about a car to start a conversation."
-                action="Explore cars"
+                title={ENQUIRY_TEXT.emptyTitle}
+                description={ENQUIRY_TEXT.emptyBody}
+                action={ENQUIRY_TEXT.emptyAction}
                 onAction={() => router.navigate('/cars')}
               />
             )

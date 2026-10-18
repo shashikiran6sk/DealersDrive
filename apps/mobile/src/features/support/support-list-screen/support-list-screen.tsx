@@ -98,9 +98,9 @@ export function SupportListScreen() {
               <StatusPanel message={SUPPORT_TEXT.loading} pending />
             ) : (
               <EmptyState
-                title="No support requests yet"
-                description="Your requests and replies will appear here."
-                action="New support request"
+                title={SUPPORT_TEXT.emptyTitle}
+                description={SUPPORT_TEXT.emptyBody}
+                action={SUPPORT_TEXT.emptyAction}
                 onAction={() => router.navigate('/support-requests/new')}
               />
             )

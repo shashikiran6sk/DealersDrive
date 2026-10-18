@@ -73,7 +73,12 @@ describe('customer-only reversible account access', () => {
       { authenticationMethod: 'GOOGLE' as const, authenticatedAt: new Date() },
       { authenticationMethod: 'PHONE_OTP' as const, authenticatedAt: new Date(Date.now() + 60000) },
     ]) {
-      const issued = await sessions.issue({ userId: who.id, scope: 'CUSTOMER', ...input });
+      const issued = await sessions.issue({
+        userId: who.id,
+        scope: 'CUSTOMER',
+        native: true,
+        ...input,
+      });
       const reply = await h
         .agent()
         .get('/v1/auth/customer/account')
@@ -207,7 +212,13 @@ describe('customer-only reversible account access', () => {
       userId: who.id,
       scope: 'CUSTOMER',
       authenticationMethod: 'PHONE_OTP',
+      native: true,
     });
+    await h
+      .agent()
+      .get('/v1/saved-vehicles')
+      .set('Authorization', `Bearer ${native.token}`)
+      .expect(200);
     const dealerSession = await sessions.issue({ userId: who.id, scope: 'DEALER' });
     const adminSession = await sessions.issue({ userId: who.id, scope: 'ADMIN' });
     await deactivate(who);
@@ -322,6 +333,16 @@ describe('customer-only reversible account access', () => {
       .get('/v1/auth/customer/me')
       .set('Authorization', `Bearer ${restored.credential.token}`)
       .expect(200);
+    await h
+      .agent()
+      .get('/v1/auth/customer/me')
+      .set('Cookie', `dd_session=${restored.credential.token}`)
+      .expect(401);
+    const account = await h
+      .agent()
+      .get('/v1/auth/customer/account')
+      .set('Authorization', `Bearer ${restored.credential.token}`);
+    expect(account.status).toBe(200);
   });
   it('never lets a verified reactivation ticket clear an administrative suspension or changed phone', async () => {
     const who = await customer();

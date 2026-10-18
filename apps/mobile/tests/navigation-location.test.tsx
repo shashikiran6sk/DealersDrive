@@ -82,3 +82,13 @@ it('keeps local form state during unchanged same-owner directory renders', async
   await view.rerender(<Draft />);
   expect(screen.getByText('draft')).toBeOnTheScreen();
 });
+it('falls back from an invalid district link instead of waiting on it forever', async () => {
+  await render(<Probe district="Not A Slug" />);
+  expect(await screen.findByText('ready')).toBeOnTheScreen();
+  expect(mockRouter.setParams).toHaveBeenCalledWith({ district: undefined });
+});
+it('restores the saved district over an invalid district link', async () => {
+  locationStore.setState({ district: 'vellore', revision: 5, hydrated: true });
+  await render(<Probe district="Not A Slug" />);
+  expect(mockRouter.setParams).toHaveBeenCalledWith({ district: 'vellore' });
+});

@@ -1,4 +1,5 @@
 export const CARS_TEXT = Object.freeze({
+  loadingPhoto: 'Loading car photo',
   title: 'Cars',
   dealerDirectory: 'Dealer directory',
   searchLabel: 'Search cars by make, model or variant',

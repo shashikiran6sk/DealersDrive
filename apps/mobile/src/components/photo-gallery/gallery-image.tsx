@@ -49,7 +49,7 @@ export function GalleryImage({
       )}
       {loading && !failed ? (
         <ActivityIndicator
-          accessibilityLabel="Loading car photo"
+          accessibilityLabel={CARS_TEXT.loadingPhoto}
           color="#ffffff"
           style={{ position: 'absolute' }}
         />

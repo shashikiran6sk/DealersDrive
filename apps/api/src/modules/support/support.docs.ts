@@ -44,7 +44,7 @@ export const supportDocs: ModuleDocs = {
       summary: 'Create a support request',
       description:
         'A category, a subject (5–120 characters) and a description (20–5,000), and ' +
-        'optionally one of the customer’s own enquiries and a UUID clientRequestId. Identical validated payload retries under the same customer/id return the current existing ticket without repeating creation, audit or outbox. Reusing an id with a different payload returns 409 SUPPORT_REQUEST_RETRY_CONFLICT. Legacy requests without an id retain existing creation behavior. An `enquiryId` that is not theirs is ' +
+        'optionally one of the customer’s own enquiries and a UUID clientRequestId. Identical validated payload retries under the same customer/id return the current existing ticket without repeating creation, audit or outbox. Reusing an id with a different payload returns 409 SUPPORT_REQUEST_RETRY_CONFLICT. Requests without an id create a new ticket every time. A retry of a known id does not count against the hourly creation limits, because it cannot create a ticket. The account must be active (403 ACCOUNT_UNAVAILABLE). An `enquiryId` that is not theirs is ' +
         'refused exactly as one that does not exist (`422 SUPPORT_ENQUIRY_INVALID`). The ' +
         'request starts `OPEN` at `NORMAL` priority; neither can be sent. Its `DD-` number ' +
         'comes from a database sequence, so concurrent requests never share one.\n\n' +
