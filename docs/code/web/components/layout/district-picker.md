@@ -167,11 +167,28 @@ empty page: Katpadi is in Vellore. The page number goes with them.
 
 ### `const target = scopedPathOf(pathname)`
 
-Two pages read `?district=` — the directory and, since **R50**, `/cars` — so a
-choice goes to whichever of the two the buyer is on, and to the directory from
-anywhere else. Choosing a place from the home page is a person saying where
-they are, and the useful answer to that is the dealerships there, not the same
-home page with a query string on it.
+Three pages read `?district=`: the directory, `/cars` since **R50**, and the home
+page since **F114**. A choice stays on whichever of the three the buyer is on, and
+goes to the directory from anywhere else.
+
+**F114 changed the home page.** Until then, choosing a place on `/` sent the buyer
+to `/dealers?district=…`, deliberately: "the useful answer to that is the
+dealerships there, not the same home page with a query string on it." The owner's
+remediation brief (§8.2) reversed that. Selecting a district is a location
+preference, not a navigation, and the Android app keeps the user on Home. The web
+now matches:
+
+- `/` becomes `/?district=<slug>` and the header pill names the district.
+- The hero's _Browse all cars_ and _Browse dealers_ chips are `DistrictScopedLink`s,
+  so the next explicit step lands in that district. Going to the directory is now
+  something the buyer chooses, not a side effect of picking a place.
+
+The home page's discovery rows are **not** district-scoped. The page is
+ISR-cached (`revalidate = 60`) and reads no search parameters. Scoping the rows
+would make every district a separately rendered page and change the page's
+caching and canonical URL. That is a product and infrastructure decision for the
+owner, not a side effect of this fix. This is the one deliberate difference from
+the Android Home, whose rows follow the district.
 
 A buyer looking at one car (`/car/<slug>`) goes to `/cars`: they are shopping
 for a car, and the directory would be a change of subject.
@@ -179,7 +196,8 @@ for a car, and the directory would be a change of subject.
 The rule used to be `pathname.startsWith('/dealers')`, which also matched a
 **portfolio** (`/dealers/<slug>`) and wrote `?district=` onto a page that reads
 no such thing. A portfolio is one dealership; choosing a district is asking for
-the others, so it goes to the directory now.
+the others, so it goes to the directory. The same applies to any other page that
+reads no district (`/saved`, a policy, support).
 
 ### `new URLSearchParams(target === pathname ? searchParams.toString() : '')`
 
