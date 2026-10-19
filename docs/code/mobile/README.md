@@ -28,6 +28,10 @@ Native and web retain their compatible runtime/type versions. Next JSX remains p
 
 See [shared district](location.md) for the device preference store, deep-link district intent and invalid-link fallback.
 
+## Galleries and dealer profile
+
+See [galleries and dealer profile](gallery-dealer.md) for swipe galleries, TalkBack actions, service pills and dealer inventory scroll preservation.
+
 ## Saved cars and account agreements
 
 See [saved/account](saved-account.md) for full hydration, confirmed mutations, interruption handling and authoritative policy history.

@@ -123,14 +123,14 @@ export function CarDetailScreen() {
           </Text>
           {car.dealer.location ? <Text style={styles.muted}>{car.dealer.location}</Text> : null}
           {car.dealer.isVerified ? <Text style={styles.plate}>{CARS_TEXT.verified}</Text> : null}
-          <ActionButton
-            variant="ghost"
-            label={CARS_TEXT.viewDealer}
-            onPress={() => router.navigate(`/dealers/${encodeURIComponent(car.dealer.slug)}`)}
-          />
           <Text style={styles.muted}>
             {car.dealer.isVerified ? CARS_TEXT.trust : CARS_TEXT.dealerCheck}
           </Text>
+          <ActionButton
+            variant="secondary"
+            label={CARS_TEXT.viewDealer}
+            onPress={() => router.navigate(`/dealers/${encodeURIComponent(car.dealer.slug)}`)}
+          />
         </View>
         {similar.data?.data.length ? (
           <>

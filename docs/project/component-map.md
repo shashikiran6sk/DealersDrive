@@ -2016,3 +2016,14 @@ Full source-level behavior and the pinned navigation adapter are described in [c
 The existing Brand adds a compact geometry-preserving lockup for narrow headers. AuthField/AutocompleteField explicitly keep single-line native input semantics and concise placeholders at 150% system text. Brand and field consumer tests plus 360/393/412dp and large-text release screenshots verify the variants. The native theme plugin sets the dialog accent to the same neutral token; no raster branding or UI dependency is added.
 
 Saved private-cache cancellation/removal and focused support polling have direct regression tests. The retained-intent prebuild adapter has template/idempotence tests and a native startup-window Maestro flow. Source details are in [customer navigation](../code/mobile/customer-navigation.md); evidence and remaining physical/accessibility gates are in [acceptance results](../mobile/remediation/acceptance-results.md).
+
+## Native gallery and dealer components (F113)
+
+Native fixtures supplement the DOM sandbox. Installed Android review of swipe feel, TalkBack and narrow-width wrapping remains pending.
+
+| Component                       | Source folder under apps/mobile/src/components | Props/states/consumers                                                                                                                                                                           | Evidence                |
+| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| PhotoGallery                    | photo-gallery                                  | images, primaryIndex?, title; none/one/many/long (no dots past seven); swipe paging, dots and "n / total"; adjustable increment/decrement/activate; tap opens viewer; car detail, dealer profile | photo-gallery.test.tsx  |
+| PhotoViewer                     | photo-gallery (photo-viewer.tsx)               | images, title, initialIndex, onClose(index); full-screen swipe, counter, Close and system Back return the current index to the inline gallery                                                    | photo-gallery.test.tsx  |
+| GalleryIndicator / GallerySlide | photo-gallery                                  | index, total, tone; hidden from TalkBack because the region carries the value. Slide: per-photo load/failure                                                                                     | photo-gallery.test.tsx  |
+| ServicePills                    | service-pills                                  | services, label; trimmed, de-duplicated server services; wraps, two-line limit; renders nothing when empty; dealer profile                                                                       | dealer-profile.test.tsx |
