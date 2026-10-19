@@ -96,6 +96,27 @@ assert(Math.abs(left - (1080 - right - 1)) <= 2, 'horizontal centering');
 assert(Math.abs(top - (1080 - bottom - 1)) <= 2, 'vertical centering');
 await output('adaptive-foreground.png', adaptive);
 await output('launcher.png', await square(1024, 640, '#ffffff'));
+await output('play-store-icon.png', await square(512, 320, '#ffffff'));
+const graphicSymbol = await raster(240);
+const graphicWordmark = await sharp(Buffer.from(vectors['dealersdrive-wordmark-black']), {
+  density: 144,
+})
+  .resize({ width: 700 })
+  .png()
+  .toBuffer();
+await output(
+  'play-feature-graphic.png',
+  await sharp({
+    create: { width: 1024, height: 500, channels: 4, background: '#ffffff' },
+  })
+    .composite([
+      { input: graphicSymbol, left: 392, top: 105 },
+      { input: graphicWordmark, left: 162, top: 306 },
+    ])
+    .removeAlpha()
+    .png()
+    .toBuffer(),
+);
 await output('splash-symbol.png', await raster(651));
 await output(
   'provenance.json',

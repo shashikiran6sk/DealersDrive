@@ -30,6 +30,7 @@ export const LOGGER_OPTIONS: LoggerOptions = {
     paths: [
       'req.headers.authorization',
       'req.headers.cookie',
+      'req.body',
       'res.headers["set-cookie"]',
       '*.password',
       '*.passwordHash',
@@ -39,6 +40,7 @@ export const LOGGER_OPTIONS: LoggerOptions = {
       '*.browserToken',
       '*.challenge',
       '*.signUpToken',
+      '*.reactivationToken',
       '*.phone',
       '*.email',
       '*.recipient',
@@ -56,6 +58,7 @@ export const LOGGER_OPTIONS: LoggerOptions = {
       'browserToken',
       'challenge',
       'signUpToken',
+      'reactivationToken',
       'phone',
       'email',
       'recipient',

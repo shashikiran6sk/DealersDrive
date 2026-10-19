@@ -2,7 +2,7 @@ import { baseConfig } from '@dealers-drive/config/eslint/base';
 
 export default [
   ...baseConfig({ tsconfigRootDir: import.meta.dirname }),
-  { ignores: ['.expo/**', 'dist/**'] },
+  { ignores: ['.expo/**', 'dist/**', 'android/**'] },
   {
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {

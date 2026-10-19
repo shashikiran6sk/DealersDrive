@@ -1,3 +1,4 @@
+import { RELIABILITY_TEXT } from '../../reliability/reliability.constants';
 import { SAVED_TEXT } from '../../saved/saved.constants';
 import { ENQUIRY_TEXT } from '../../enquiries/enquiries.constants';
 import { SUPPORT_TEXT } from '../../support/support.constants';
@@ -93,6 +94,11 @@ export function ProfileScreen() {
         variant="secondary"
         label={SAVED_TEXT.agreements}
         onPress={() => router.navigate('/agreements')}
+      />
+      <ActionButton
+        variant="ghost"
+        label={RELIABILITY_TEXT.about}
+        onPress={() => router.navigate('/about')}
       />
       <ActionButton label={AUTH_TEXT.terms} onPress={() => router.push('/policy/terms')} />
       <ActionButton label={AUTH_TEXT.privacy} onPress={() => router.push('/policy/privacy')} />

@@ -8,6 +8,8 @@ import manrope from '../src/assets/Manrope.ttf';
 import { AppProviders } from '../src/features/providers/app-providers';
 import { colors } from '../src/theme/tokens';
 
+export { AppErrorBoundary as ErrorBoundary } from '../src/features/reliability/app-error-boundary';
+
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export default function RootLayout() {

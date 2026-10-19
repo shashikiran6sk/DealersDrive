@@ -49,7 +49,12 @@ export function CarDetailScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
         <Page title={missing ? CARS_TEXT.unavailable : CARS_TEXT.loading}>
-          <ActionButton variant="ghost" label={CARS_TEXT.back} onPress={back} />
+          <ActionButton
+            variant="ghost"
+            label={CARS_TEXT.back}
+            testID="car-details-back"
+            onPress={back}
+          />
           <StatusPanel
             pending={query.isPending && !missing}
             message={missing ? CARS_TEXT.unavailable : (query.error?.message ?? CARS_TEXT.loading)}
@@ -65,7 +70,12 @@ export function CarDetailScreen() {
         description={car.summary}
         header={
           <View style={{ gap: spacing.md }}>
-            <ActionButton variant="ghost" label={CARS_TEXT.back} onPress={back} />
+            <ActionButton
+              variant="ghost"
+              label={CARS_TEXT.back}
+              testID="car-details-back"
+              onPress={back}
+            />
             <PhotoGallery images={car.images} primaryIndex={car.primaryIndex} title={car.title} />
             {car.year ? <Text style={styles.plate}>{car.year}</Text> : null}
           </View>

@@ -148,3 +148,7 @@ label keys; OpenMetrics permits an independent trace_id label set.
 ### `export function resetApplicationMetrics(): void`
 
 Test-only reset seam. Production counters are never reset.
+
+## Customer reactivation proofs
+
+The shared logger redacts reactivationToken at the root and one nested level, alongside existing OTP/signup proofs. It also censors any accidentally attached req.body in full. The request-completion logger continues to emit normalized route/timing/status metadata without bodies. The actual Pino capture/transport tests verify proof/OTP values cannot escape while safe event/trace metadata remains usable.
