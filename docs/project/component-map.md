@@ -691,6 +691,21 @@ else — home, a portfolio — to `/dealers`. Leaving the district drops `city`,
 `dealer` and `page`, the three parameters that belonged to it. On `/cars` the
 dialog counts **cars** (`PublicLocations.cars`) instead of dealerships.
 
+**F114 — home keeps the buyer where they are.** Choosing a district on `/` now
+writes `/?district=<slug>` and stays on the home page, as the Android app does.
+The hero's browse chips carry the district onward through `DistrictScopedLink`
+(C137). `/car/<slug>` still goes to `/cars`, and a portfolio or any page that
+reads no district still goes to `/dealers`.
+
+### C137 — `DistrictScopedLink`
+
+`components/layout/district-scoped-link/`. Props: `href`, `className?`,
+`children`. States: no district, district chosen, invalid district ignored. One
+consumer (the home page's two hero browse chips). **NEW at F114.** **Reusable.**
+A client link that appends the page's own `?district=` to its `href`, inside its own
+`Suspense` boundary so a static page still prerenders. The fallback is the plain
+link. `scopedHref` is the pure part.
+
 ### C069 — `LocationSelector`
 
 `components/layout/location-selector.tsx`. Props: `locations: PublicLocations`.
@@ -1685,7 +1700,9 @@ under a centred spinner, so the button keeps its width. Consumers: `ButtonLink`
 **C136 `ConsolePageLoading`** and its siblings `VehiclePageLoading`,
 `DealerPageLoading`, `CustomerEnquiriesLoading`, `SavedListLoading` — the
 `loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`,
-`/enquiries` and `/saved`. No props; each is a `role="status"` on its page's own
+`/enquiries` and `/saved`. **F114:** `/dealers/[slug]/loading.tsx` is removed (its
+filters are URL state, and the boundary made Next.js drop `scroll: false`), so
+`DealerPageLoading` has no route consumer; it keeps its story. No props; each is a `role="status"` on its page's own
 grid, built from `.skeleton`, `SkeletonLines` and `VehicleCardSkeleton`.
 
 **Changed:** `ButtonLink` (adds `relative` + `LinkPendingLabel`), `ConsoleNav`

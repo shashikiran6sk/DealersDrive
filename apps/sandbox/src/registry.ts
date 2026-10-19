@@ -1559,6 +1559,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'layout-locationselector',
   },
   {
+    id: 'C137',
+    name: 'DistrictScopedLink',
+    source: 'apps/web/src/components/layout/district-scoped-link/district-scoped-link.tsx',
+    category: 'Layout',
+    ownership: 'Feature-shared',
+    purpose:
+      "A link that carries the page's chosen ?district= onward (F114). The home page keeps a district as a preference instead of redirecting, so its browse chips take the buyer to /cars or /dealers in that district. Renders a plain link until the search params are available.",
+    aliases: ['ScopedLink', 'DistrictLink', 'district-scoped-link', 'LocationLink', 'scopedHref'],
+    features: ['F114'],
+    props: ['href', 'className', 'children'],
+    states: ['no district', 'district chosen', 'invalid district ignored'],
+    reusable: true,
+    storyId: 'layout-districtscopedlink',
+  },
+  {
     id: 'C071',
     name: 'DistrictPicker',
     source: 'apps/web/src/components/layout/district-picker/district-picker.tsx',
