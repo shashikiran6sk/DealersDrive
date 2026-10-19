@@ -7,6 +7,7 @@ import { PhoneSignIn } from '@/features/auth/phone-sign-in';
 import { customerPhoneSignInAction } from '@/features/auth/sign-in-actions';
 
 import { CustomerNameStep } from './customer-name-step';
+import { CustomerReactivation } from '../customer-reactivation';
 import { LOGIN_TEXT } from './login.constants';
 import type { CustomerLoginProps } from './login.types';
 
@@ -14,6 +15,11 @@ export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
   const router = useRouter();
   const [phoneDisplay, setPhoneDisplay] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [reactivation, setReactivation] = useState<{
+    id: string;
+    phone: string;
+    name?: string;
+  } | null>(null);
 
   function finish(): void {
     router.replace(returnTo);
@@ -32,7 +38,18 @@ export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
         {LOGIN_TEXT.customerIntro}
       </p>
 
-      {phoneDisplay ? (
+      {reactivation ? (
+        <CustomerReactivation
+          flowId={reactivation.id}
+          phoneDisplay={reactivation.phone}
+          fullName={reactivation.name}
+          onDone={finish}
+          onRestart={() => {
+            setReactivation(null);
+            setAttempt((count) => count + 1);
+          }}
+        />
+      ) : phoneDisplay ? (
         <CustomerNameStep
           phoneDisplay={phoneDisplay}
           onCreated={finish}
@@ -49,6 +66,14 @@ export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
           onProved={async (phone, accessToken) => {
             const result = await customerPhoneSignInAction(phone, accessToken);
             if (result.error) return result.error;
+            if (result.status === 'REACTIVATION_REQUIRED' && result.reactivationId) {
+              setReactivation({
+                id: result.reactivationId,
+                phone: result.phoneDisplay ?? phone,
+                name: result.fullName,
+              });
+              return null;
+            }
             if (result.status === 'NAME_REQUIRED') {
               setPhoneDisplay(result.phoneDisplay ?? phone);
               return null;

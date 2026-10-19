@@ -40,13 +40,15 @@ function retryAfter(value: string | null): number | undefined {
 
 const CUSTOMER_PATHS = [
   /^\/v1\/auth\/customer\/me\/?$/,
+  /^\/v1\/auth\/customer\/account(?:\/deactivate)?\/?$/,
   /^\/v1\/auth\/native\/customer\/(?:me|logout)\/?$/,
   /^\/v1\/legal\/customer\/(?:status|history|terms)\/?$/,
   /^\/v1\/enquiries(?:\/|$)/,
   /^\/v1\/saved-vehicles(?:\/|$)/,
   /^\/v1\/support(?:\/|$)/,
 ];
-const PUBLIC_AUTH_PATH = /^\/v1\/auth\/native\/customer\/(?:otp|otp\/resend|otp\/verify|sign-up)$/;
+const PUBLIC_AUTH_PATH =
+  /^\/v1\/auth\/native\/customer\/(?:otp|otp\/resend|otp\/verify|sign-up|reactivate)$/;
 export interface CustomerRequest {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;

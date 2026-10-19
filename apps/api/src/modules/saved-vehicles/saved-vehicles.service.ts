@@ -1,3 +1,4 @@
+import { requireCustomerAccess } from '../auth/auth.facade.js';
 import { requireTerms } from '../legal/legal.facade.js';
 import {
   SAVED_SLUGS_MAX,
@@ -111,6 +112,7 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       const listing = await listingBySlug(slug);
 
       return withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
         await requireTerms(tx, customer.userId);
         const pair = { customerId: customer.userId, listingId: listing.id };
@@ -145,6 +147,7 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       const listing = await listingBySlug(slug);
 
       return withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         const removed = await tx.savedVehicle.deleteMany({
           where: { customerId: customer.userId, listingId: listing.id },
         });

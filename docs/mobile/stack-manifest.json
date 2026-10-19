@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "repository": "shashikiran6sk/DealersDrive",
-  "status": "F106_VALIDATED_DRAFT_PR_PENDING",
-  "verified_at": "2026-10-14 19:36:34 UTC",
+  "status": "F107_VALIDATED_DRAFT_PR_PENDING",
+  "verified_at": "2026-10-15 03:37:20 UTC",
   "implementation_authorized": true,
   "merge_authorized": false,
   "deployment_authorized": false,
@@ -778,24 +778,93 @@
       "feature_id": "F106",
       "title": "Support",
       "planned_head_branch": "feat/f106-mobile-support",
-      "head_sha": null,
-      "pr_number": null,
-      "pr_url": null,
-      "state": "LOCAL_BRANCH_VALIDATED_NO_PR",
-      "is_draft": null,
+      "head_sha": "18245c5c77032d85babd69feb15371abc35ea998",
+      "pr_number": 319,
+      "pr_url": "https://github.com/shashikiran6sk/DealersDrive/pull/319",
+      "state": "OPEN",
+      "is_draft": true,
       "base_branch": "feat/f105-mobile-consent-enquiries",
       "base_sha_at_creation": "1b310ecc1629604d8cd33163b1d3db2cb37b8fed",
       "base_sha_verified_now": "1b310ecc1629604d8cd33163b1d3db2cb37b8fed",
       "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_7"],
       "incremental_diff": null,
-      "ci_status": "LOCAL_CHECKS_PASS_GITHUB_NOT_OPENED",
-      "tested_sha": null,
-      "review_state": "NOT_CREATED",
+      "ci_status": "SUCCESS",
+      "tested_sha": "18245c5c77032d85babd69feb15371abc35ea998",
+      "review_state": "DRAFT_AWAITING_OWNER_REVIEW",
       "evidence": ["docs/mobile/f106-validation.md", "docs/code/mobile/support.md"],
       "known_blockers": ["Production legal publication and release remain separately gated"],
       "restack_history": [],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:54:39Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38626224078/job/116065950665",
+          "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+          "startedAt": "2026-10-14T19:44:41Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:46:03Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38626223910/job/116065949981",
+          "name": "semgrep",
+          "startedAt": "2026-10-14T19:44:40Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:44:56Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38626224078/job/116065950723",
+          "name": "terraform fmt / validate",
+          "startedAt": "2026-10-14T19:44:41Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:45:41Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38626223910/job/116065950364",
+          "name": "gitleaks",
+          "startedAt": "2026-10-14T19:44:40Z",
+          "status": "COMPLETED",
+          "workflowName": "Security"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:45:32Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38626224078/job/116065950669",
+          "name": "dependency audit",
+          "startedAt": "2026-10-14T19:44:41Z",
+          "status": "COMPLETED",
+          "workflowName": "CI"
+        },
+        {
+          "__typename": "StatusContext",
+          "context": "Vercel",
+          "startedAt": "2026-10-14T19:46:06Z",
+          "state": "SUCCESS",
+          "targetUrl": "https://vercel.com/dealers-drive/dealersdrive-prod-web/9JrBJAawq6m1kHAXB2bGrNXgM9PE"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-14T19:46:07Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://vercel.com/github",
+          "name": "Vercel Preview Comments",
+          "startedAt": "2026-10-14T19:46:07Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ]
     },
     {
       "sequence": 9,
@@ -805,23 +874,29 @@
       "head_sha": null,
       "pr_number": null,
       "pr_url": null,
-      "state": "NOT_CREATED",
+      "state": "LOCAL_VALIDATED_DRAFT_PR_PENDING",
       "is_draft": null,
       "base_branch": "feat/f106-mobile-support",
-      "base_sha_at_creation": null,
-      "base_sha_verified_now": null,
-      "foundation_sha": null,
+      "base_sha_at_creation": "18245c5c77032d85babd69feb15371abc35ea998",
+      "base_sha_verified_now": "18245c5c77032d85babd69feb15371abc35ea998",
+      "foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
       "dependencies": ["MOBILE_8"],
       "incremental_diff": null,
-      "ci_status": "NOT_CREATED",
+      "ci_status": "NOT_STARTED",
       "tested_sha": null,
-      "review_state": "NOT_CREATED",
-      "evidence": ["docs/mobile/account-controls-amendment.md"],
+      "review_state": "DRAFT_PENDING",
+      "evidence": [
+        "docs/mobile/f107-validation.md",
+        "docs/code/mobile/account-controls.md",
+        "docs/mobile/deletion-fulfilment-runbook.md"
+      ],
       "known_blockers": [
-        "Owner-approved deactivation/deletion request amendment recorded; actual deletion fulfilment/retention procedure and release legal review remain unresolved"
+        "Deletion intake is implemented; erasure fulfilment, retention and operator procedure are unapproved and launch blocking",
+        "Installed Android and web visual review pending; browser inspection rejected by automatic approval review"
       ],
       "restack_history": [],
-      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df"
+      "required_foundation_sha": "6180a4b52522493b884550448d0a84e7d95432df",
+      "descends_from_required_foundation": true
     },
     {
       "sequence": 10,

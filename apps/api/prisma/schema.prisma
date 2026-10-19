@@ -20,6 +20,7 @@ datasource db {
 
 // ─────────── IDENTITY (dealers and admins only — no buyer accounts) ──────
 model User {
+  customerDeactivatedAt DateTime?
   id              String     @id @default(uuid()) @db.Uuid
   fullName        String?
   email           String?    @unique
@@ -137,6 +138,7 @@ model Session {
   /// never satisfy `requireDealer` — even when one human holds both seats.
   scope                SessionScope @default(DEALER)
   authenticationMethod String?
+  authenticatedAt      DateTime?
   native               Boolean      @default(false)
   expiresAt            DateTime
   revokedAt            DateTime?

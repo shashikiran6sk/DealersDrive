@@ -28,11 +28,13 @@ export const CustomerProfile = z.object({
 export type CustomerProfile = z.infer<typeof CustomerProfile>;
 
 export const CustomerSignInResponse = z.object({
-  status: z.enum(['SIGNED_IN', 'NAME_REQUIRED']),
+  status: z.enum(['SIGNED_IN', 'NAME_REQUIRED', 'REACTIVATION_REQUIRED']),
   customer: CustomerProfile.nullable(),
   signUpToken: z.string().nullable(),
   expiresAt: z.string().nullable(),
   phoneDisplay: z.string(),
+  reactivationToken: z.string().optional(),
+  reactivationName: z.string().optional(),
 });
 export type CustomerSignInResponse = z.infer<typeof CustomerSignInResponse>;
 

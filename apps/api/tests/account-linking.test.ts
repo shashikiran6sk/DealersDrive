@@ -402,6 +402,38 @@ describe('races and repeats', () => {
     expect(second.merged).toBe(false);
     expect(self.merged).toBe(false);
   });
+  it('preserves customer deactivation and closes newly consolidated disclosure and customer sessions', async () => {
+    const customer = await newCustomer();
+    const dealer = await googleFirstDealer();
+    await h.prisma.user.update({
+      where: { id: dealer.userId },
+      data: { customerDeactivatedAt: new Date() },
+    });
+    const listing = await h.prisma.listing.findUniqueOrThrow({ where: { id: listingId } });
+    const legacy = await h.prisma.enquiry.create({
+      data: { customerId: dealer.userId, dealerId: listing.dealerId, listingId },
+    });
+    const previous = await h.prisma.session.findFirstOrThrow({
+      where: { userId: customer.userId, scope: 'CUSTOMER', revokedAt: null },
+    });
+    await h.prisma.$transaction((tx) =>
+      mergeAccounts(tx, createAuditService(h.prisma), {
+        survivorId: customer.userId,
+        absorbedId: dealer.userId,
+        proof: 'PHONE_OTP',
+      }),
+    );
+    expect(
+      (await h.prisma.user.findUniqueOrThrow({ where: { id: customer.userId } }))
+        .customerDeactivatedAt,
+    ).not.toBeNull();
+    const moved = await h.prisma.enquiry.findUniqueOrThrow({ where: { id: legacy.id } });
+    expect(moved.customerId).toBe(customer.userId);
+    expect(moved.sharingWithdrawnAt).not.toBeNull();
+    expect(
+      (await h.prisma.session.findUniqueOrThrow({ where: { id: previous.id } })).revokedAt,
+    ).not.toBeNull();
+  });
   it('preserves both support tickets when absorbed accounts used the same create retry id', async () => {
     const customer = await newCustomer();
     const dealer = await googleFirstDealer();

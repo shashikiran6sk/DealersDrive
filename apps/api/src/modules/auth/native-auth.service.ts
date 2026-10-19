@@ -14,6 +14,7 @@ import type { NativeWidgetPort } from '../../platform/phone-otp/native-widget.po
 import type { CustomerAuthService } from './customer-auth.service.js';
 import type { SignInContext } from './customer-auth.service.js';
 import type { NativeCustomerSignUpInput } from '@dealers-drive/contracts';
+import type { CustomerReactivationInput } from '@dealers-drive/contracts';
 import { NATIVE_AUTH_MESSAGES } from './native-auth.messages.js';
 import {
   expired,
@@ -147,6 +148,14 @@ export function createNativeAuthService({
           expiresAt: result.expiresAt,
           phoneDisplay: result.phoneDisplay,
         };
+      if (result.status === 'REACTIVATION_REQUIRED' && result.reactivationToken && result.expiresAt)
+        return {
+          status: 'REACTIVATION_REQUIRED',
+          reactivationToken: result.reactivationToken,
+          expiresAt: result.expiresAt,
+          phoneDisplay: result.phoneDisplay,
+          fullName: result.reactivationName ?? '',
+        };
       throw unavailable();
     },
     async signUp(
@@ -156,6 +165,20 @@ export function createNativeAuthService({
       await enabled();
       await limit(`native-sign-up:ip:${digest(context.ip ?? 'unknown')}`, 10, 3600);
       const result = await customers.signUp(input, { ...context, native: true });
+      return {
+        customer: result.customer,
+        credential: {
+          token: result.session.token,
+          expiresAt: result.session.expiresAt.toISOString(),
+        },
+      };
+    },
+    async reactivate(
+      input: CustomerReactivationInput,
+      context: SignInContext = {},
+    ): Promise<NativeCustomerSignUp> {
+      await enabled();
+      const result = await customers.reactivate(input, { ...context, native: true });
       return {
         customer: result.customer,
         credential: {

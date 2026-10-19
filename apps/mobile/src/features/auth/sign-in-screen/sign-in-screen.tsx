@@ -21,7 +21,7 @@ export function SignInScreen() {
   const { api, manager } = useAuth();
   const router = useRouter();
   const navigation = useNavigation();
-  const [phase, setPhase] = useState<'phone' | 'otp' | 'name'>('phone');
+  const [phase, setPhase] = useState<'phone' | 'otp' | 'name' | 'reactivate'>('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
@@ -107,7 +107,11 @@ export function SignInScreen() {
       if (failure instanceof ApiError) {
         if (failure.status === 429 && failure.retryAfterSeconds)
           setBlockedUntil(Date.now() + failure.retryAfterSeconds * 1000);
-        if (['NATIVE_OTP_EXPIRED', 'SIGN_UP_EXPIRED'].includes(failure.code)) {
+        if (
+          ['NATIVE_OTP_EXPIRED', 'SIGN_UP_EXPIRED', 'CUSTOMER_REACTIVATION_EXPIRED'].includes(
+            failure.code,
+          )
+        ) {
           setPhase('phone');
           setChallenge(null);
           setTicket(null);
@@ -146,14 +150,31 @@ export function SignInScreen() {
       const result = await api.verify(challenge.challenge, otp, signal);
       if (signal.aborted) return;
       if (result.status === 'SIGNED_IN') await finish(result.credential, result.customer);
-      else {
+      else if (result.status === 'NAME_REQUIRED') {
         setTicket({
           token: result.signUpToken,
           expiresAt: result.expiresAt,
           phoneDisplay: result.phoneDisplay,
         });
         setPhase('name');
+      } else {
+        setTicket({
+          token: result.reactivationToken,
+          expiresAt: result.expiresAt,
+          phoneDisplay: result.phoneDisplay,
+        });
+        setPhase('reactivate');
       }
+    });
+  const reactivate = () =>
+    execute(async (signal) => {
+      if (!ticket) {
+        setError(AUTH_TEXT.expired);
+        setPhase('phone');
+        return;
+      }
+      const result = await api.reactivate(ticket.token, signal);
+      if (!signal.aborted) await finish(result.credential, result.customer);
     });
   const signUp = () =>
     execute(async (signal) => {
@@ -282,6 +303,17 @@ export function SignInScreen() {
               />
             </>
           ) : null}
+          {phase === 'reactivate' ? (
+            <>
+              <Text style={styles.text}>{AUTH_TEXT.deactivated}</Text>
+              <Text style={styles.text}>{ticket?.phoneDisplay}</Text>
+              <ActionButton
+                label={AUTH_TEXT.reactivate}
+                pending={busy}
+                onPress={() => void reactivate()}
+              />
+            </>
+          ) : null}
           {phase === 'name' ? (
             <>
               <AuthField
@@ -362,6 +394,7 @@ export function SignInScreen() {
   );
 }
 const styles = StyleSheet.create({
+  text: { fontFamily: typography.family, color: colors.ink, fontSize: 15, lineHeight: 24 },
   root: { flex: 1, backgroundColor: colors.page },
   error: { fontFamily: typography.family, color: colors.ink, fontSize: typography.body },
   links: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },

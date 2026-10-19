@@ -1,3 +1,4 @@
+import { requireCustomerAccess } from '../auth/auth.facade.js';
 import {
   effectiveGrant,
   effectiveGrantWhere,
@@ -299,7 +300,10 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
     },
 
     async withdrawPermission(customer: CustomerPrincipal, grantId: string) {
-      await withTransaction(prisma, async (tx) => withdrawGrant(tx, customer.userId, grantId));
+      await withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
+        await withdrawGrant(tx, customer.userId, grantId);
+      });
       return { withdrawn: true };
     },
 
@@ -308,6 +312,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       enquiryId: string,
     ): Promise<{ withdrawn: true }> {
       return withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         const rows = await tx.$queryRaw<{ id: string; sharingGrantId: string | null }[]>`
           SELECT "id", "sharingGrantId" FROM "enquiries" WHERE "id" = ${enquiryId}::uuid
           AND "customerId" = ${customer.userId}::uuid`;
@@ -338,6 +343,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       if (!listing) throw new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
 
       return withTransaction(prisma, async (tx) => {
+        await requireCustomerAccess(tx, customer.userId);
         await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
         await tx.$queryRaw`SELECT "id" FROM "vehicles" WHERE "id" = ${listing.vehicleId}::uuid FOR SHARE`;
         const available = await tx.listing.findFirst({

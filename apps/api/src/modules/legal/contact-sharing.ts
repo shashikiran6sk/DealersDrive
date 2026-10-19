@@ -14,7 +14,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '../../platform/errors.js';
-import { accountIds, legalEnabled, type LegalDb } from './legal.evidence.js';
+import { accountIds, legalEnabled, recordEvidence, type LegalDb } from './legal.evidence.js';
 
 export const SHARING_PURPOSE = 'customer-initiated-dealership-enquiries';
 export const SHARING_CATEGORIES = ['name', 'verified-mobile', 'submitted-enquiry-message'];
@@ -173,6 +173,34 @@ export const SHARING_GRANT_SELECT = {
   expiresAt: true,
   withdrawal: { select: { id: true } },
 } satisfies Prisma.ContactSharingEventSelect;
+
+export async function withdrawCustomerSharing(tx: Tx, customerId: string) {
+  const ids = await accountIds(tx, customerId);
+  const grants = await tx.contactSharingEvent.findMany({
+    where: { customerId: { in: ids }, action: 'GRANT', withdrawal: null },
+    orderBy: [{ dealerId: 'asc' }, { id: 'asc' }],
+    select: { id: true },
+  });
+  for (const grant of grants) await withdrawGrant(tx, customerId, grant.id);
+  const legacy = await tx.enquiry.findMany({
+    where: { customerId: { in: ids }, sharingGrantId: null, sharingWithdrawnAt: null },
+    select: { id: true },
+  });
+  await tx.enquiry.updateMany({
+    where: { id: { in: legacy.map((row) => row.id) }, sharingWithdrawnAt: null },
+    data: { sharingWithdrawnAt: new Date() },
+  });
+  for (const enquiry of legacy)
+    await recordEvidence(tx, {
+      actorId: customerId,
+      subjectType: 'ENQUIRY',
+      subjectId: enquiry.id,
+      documentId: 'enquiry',
+      action: 'WITHDRAW',
+      context: 'customer-deactivation-future-disclosure-withdrawn',
+    });
+  return { grants: grants.length, legacyEnquiries: legacy.length };
+}
 
 type Disclosure = {
   sharingWithdrawnAt: Date | null;

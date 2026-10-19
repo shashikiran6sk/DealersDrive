@@ -24,6 +24,13 @@ export const NativeCustomerCredential = z.object({
 });
 export const NativeCustomerSignIn = z.discriminatedUnion('status', [
   z.object({
+    status: z.literal('REACTIVATION_REQUIRED'),
+    reactivationToken: z.string(),
+    expiresAt: z.iso.datetime(),
+    phoneDisplay: z.string(),
+    fullName: z.string(),
+  }),
+  z.object({
     status: z.literal('SIGNED_IN'),
     customer: CustomerProfile,
     credential: NativeCustomerCredential,

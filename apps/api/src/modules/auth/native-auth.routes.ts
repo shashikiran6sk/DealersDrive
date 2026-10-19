@@ -8,6 +8,7 @@ import { postNativeOtp } from './routes/native/post-otp.js';
 import { postNativeResend } from './routes/native/post-resend.js';
 import { postNativeVerify } from './routes/native/post-verify.js';
 import { postNativeSignUp } from './routes/native/post-sign-up.js';
+import { postNativeReactivate } from './routes/native/post-reactivate.js';
 import type { NativeAuthRouteDeps } from './routes/native/route.js';
 
 export function createNativeAuthRouter(
@@ -32,7 +33,13 @@ export function createNativeAuthRouter(
       next(error);
     }
   });
-  for (const register of [postNativeOtp, postNativeResend, postNativeVerify, postNativeSignUp])
+  for (const register of [
+    postNativeOtp,
+    postNativeResend,
+    postNativeVerify,
+    postNativeSignUp,
+    postNativeReactivate,
+  ])
     register(router, deps);
   router.use((req, _res, next) =>
     readCustomerBearer(req) ? next() : next(new UnauthorizedError()),

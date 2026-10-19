@@ -1,6 +1,7 @@
 import { SAVED_TEXT } from '../../saved/saved.constants';
 import { ENQUIRY_TEXT } from '../../enquiries/enquiries.constants';
 import { SUPPORT_TEXT } from '../../support/support.constants';
+import { ACCOUNT_TEXT } from '../../account/account.constants';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
@@ -72,6 +73,11 @@ export function ProfileScreen() {
         variant="secondary"
         label={ENQUIRY_TEXT.history}
         onPress={() => router.navigate('/enquiries')}
+      />
+      <ActionButton
+        variant="secondary"
+        label={ACCOUNT_TEXT.title}
+        onPress={() => router.navigate('/account')}
       />
       <ActionButton
         variant="secondary"
