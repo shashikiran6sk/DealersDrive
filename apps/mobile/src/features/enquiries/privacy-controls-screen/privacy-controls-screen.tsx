@@ -50,19 +50,13 @@ export function PrivacyControlsScreen() {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.heading}>
-              {ENQUIRY_TEXT.privacyControls}
+            <Text style={styles.text}>
+              Control future sharing of your details with dealerships.
             </Text>
-            <Text style={styles.text}>{ENQUIRY_TEXT.withdrawBody}</Text>
             <ActionButton
-              variant="secondary"
-              label={ENQUIRY_TEXT.agreements}
-              onPress={() => router.navigate('/agreements')}
-            />
-            <ActionButton
-              variant="secondary"
-              label={ENQUIRY_TEXT.history}
-              onPress={() => router.navigate('/enquiries')}
+              variant="ghost"
+              label={ENQUIRY_TEXT.notice}
+              onPress={() => router.navigate('/sharing-notice')}
             />
             {session.status === 'guest' ? (
               <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
@@ -82,10 +76,13 @@ export function PrivacyControlsScreen() {
         )}
         ListEmptyComponent={
           session.status === 'authenticated' && !query.isError ? (
-            <StatusPanel
-              message={query.isPending ? ENQUIRY_TEXT.loading : ENQUIRY_TEXT.emptyPermissions}
-              pending={query.isPending}
-            />
+            query.isPending ? (
+              <StatusPanel message={ENQUIRY_TEXT.loading} pending />
+            ) : (
+              <Text accessibilityLiveRegion="polite" style={styles.text}>
+                {ENQUIRY_TEXT.emptyPermissions}
+              </Text>
+            )
           ) : session.status === 'restoring' || session.status === 'unavailable' ? (
             <StatusPanel
               message={session.error ?? AUTH_TEXT.restoring}

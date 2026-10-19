@@ -12,19 +12,16 @@ import { AppState } from 'react-native';
 import { createAuthApi, type AuthApi } from '../auth-api';
 import { credentialStorage } from '../credential-storage';
 import { SessionManager } from '../session-manager';
+import { clearCustomerCache } from '../private-customer-cache';
 
 const AuthContext = createContext<{ manager: SessionManager; api: AuthApi } | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [value] = useState(() => {
     const api = createAuthApi();
-    const manager = new SessionManager(credentialStorage, api, () => {
-      void queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === 'customer' });
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] === 'customer' });
-      const mutations = queryClient.getMutationCache();
-      for (const mutation of mutations.getAll())
-        if (mutation.options.mutationKey?.[0] === 'customer') mutations.remove(mutation);
-    });
+    const manager = new SessionManager(credentialStorage, api, () =>
+      clearCustomerCache(queryClient),
+    );
     return { api, manager };
   });
   useSyncExternalStore(

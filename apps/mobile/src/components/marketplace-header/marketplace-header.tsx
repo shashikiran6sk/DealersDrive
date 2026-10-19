@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { usePathname } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { carsApi } from '../../features/cars/cars-api';
 import { locationStore, useDistrict } from '../../features/location/location';
@@ -9,9 +9,11 @@ import { colors, spacing, typography } from '../../theme/tokens';
 import { Brand } from '../brand';
 import { Icon } from '../icon';
 import { SelectionSheet } from '../selection-sheet';
+import { MARKETPLACE_HEADER_TEXT } from './marketplace-header.constants';
 
 export function MarketplaceHeader() {
   const path = usePathname();
+  const { width } = useWindowDimensions();
   const discovery = path === '/' || path === '/cars' || path === '/dealers' || path === '/explore';
   const district = useDistrict();
   const [open, setOpen] = useState(false);
@@ -23,11 +25,11 @@ export function MarketplaceHeader() {
   });
   const label =
     query.data?.districts.find((item) => item.slug === district)?.name ??
-    (district ? district.replace(/-/g, ' ') : 'All districts');
+    (district ? district.replace(/-/g, ' ') : MARKETPLACE_HEADER_TEXT.allDistricts);
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.header}>
-        <Brand />
+        <Brand compact={width < 390} />
         {discovery ? (
           <Pressable
             accessibilityRole="button"
@@ -46,14 +48,14 @@ export function MarketplaceHeader() {
       </View>
       {open ? (
         <SelectionSheet
-          title="Choose district"
+          title={MARKETPLACE_HEADER_TEXT.chooseDistrict}
           searchable
           value={district ?? ''}
           pending={query.isPending}
           error={query.error?.message}
           retry={() => void query.refetch()}
           options={[
-            { value: '', label: 'All districts' },
+            { value: '', label: MARKETPLACE_HEADER_TEXT.allDistricts },
             ...(query.data?.districts.map((item) => ({
               value: item.slug,
               label: item.name,

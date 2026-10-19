@@ -1,0 +1,9 @@
+appId: ${APP_ID}
+---
+- assertVisible:
+    id: car-details-back
+- takeScreenshot: artifacts/startup-window-car-link
+- back
+- assertVisible:
+    id: home-title
+- stopApp

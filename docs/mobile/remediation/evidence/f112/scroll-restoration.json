@@ -1,0 +1,6 @@
+{
+  "car_accessible_bounds_before": "[45,311][1035,944]",
+  "car_accessible_bounds_after": "[45,311][1035,944]",
+  "same_scroll": true,
+  "initial_route": "/cars?district=vellore&city=vellore&sort=price_asc"
+}
