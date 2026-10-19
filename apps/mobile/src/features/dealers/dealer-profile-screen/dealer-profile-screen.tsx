@@ -1,3 +1,7 @@
+import { DiscoveryTools } from '../../../components/discovery-tools';
+import { EmptyState } from '../../../components/empty-state';
+import { SortDialog } from '../../cars/sort-dialog';
+import { AppliedFilters } from '../../cars/applied-filters';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { VehicleCardDto } from '@dealers-drive/contracts/public';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts/public';
@@ -6,6 +10,9 @@ import {
   readVehicleSearch,
   setParam,
   type VehicleSearchParams,
+  activeFilterCount,
+  clearFilters,
+  VEHICLE_PARAM_ORDER,
 } from '@dealers-drive/contracts/vehicle-search';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,7 +21,6 @@ import { FlatList, Linking, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import cover from '../../../assets/dealer-cover.svg';
 import { ActionButton } from '../../../components/action-button';
-import { AuthField } from '../../../components/auth-field';
 import { CarCard } from '../../../components/car-card';
 import { PhotoGallery } from '../../../components/photo-gallery';
 import { StatusPanel } from '../../../components/status-panel';
@@ -29,11 +35,18 @@ export function DealerProfileScreen() {
   const slug = input.slug;
   const router = useRouter();
   const valid = SlugParam.safeParse({ slug }).success;
-  const [params, setParams] = useState<VehicleSearchParams>(() =>
-    readVehicleSearch(input, 'dealer'),
-  );
-  const [search, setSearch] = useState(params.q ?? '');
+  const params = readVehicleSearch(input, 'dealer');
+  delete params.q;
   const [filters, setFilters] = useState(false);
+  const [sort, setSort] = useState(false);
+  const apply = (next: VehicleSearchParams) => {
+    router.setParams(
+      Object.fromEntries(
+        VEHICLE_PARAM_ORDER.map((key) => [key, key === 'q' ? undefined : next[key]]),
+      ),
+    );
+    setFilters(false);
+  };
   const profile = useQuery({
     queryKey: ['public', 'dealer', slug],
     queryFn: ({ signal }) => dealersApi.profile(slug, signal),
@@ -160,23 +173,17 @@ export function DealerProfileScreen() {
             <Text accessibilityRole="header" style={styles.heading}>
               {DEALERS_TEXT.inventory}
             </Text>
-            <AuthField
-              label={CARS_TEXT.searchLabel}
-              placeholder={CARS_TEXT.searchPlaceholder}
-              value={search}
-              onChangeText={setSearch}
-              returnKeyType="search"
-              maxLength={120}
-              onSubmitEditing={() => setParams(setParam(params, 'q', search.trim() || undefined))}
-            />
-            <ActionButton
-              label={CARS_TEXT.search}
-              onPress={() => setParams(setParam(params, 'q', search.trim() || undefined))}
-            />
-            <ActionButton
-              variant="secondary"
-              label={DEALERS_TEXT.filterCars}
-              onPress={() => setFilters(true)}
+            {cars.length || activeFilterCount(params) ? (
+              <DiscoveryTools
+                count={activeFilterCount(params)}
+                onSort={() => setSort(true)}
+                onFilters={() => setFilters(true)}
+              />
+            ) : null}
+            <AppliedFilters
+              params={params}
+              facets={first?.facets ?? NO_VEHICLE_FACETS}
+              onChange={apply}
             />
             {first ? (
               <Text accessibilityLiveRegion="polite" style={styles.text}>
@@ -200,16 +207,26 @@ export function DealerProfileScreen() {
         )}
         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         ListEmptyComponent={
-          <StatusPanel
-            pending={inventory.isPending}
-            message={
-              inventory.isPending
-                ? CARS_TEXT.loading
-                : inventory.isError
-                  ? inventory.error.message
-                  : DEALERS_TEXT.noCars
-            }
-          />
+          inventory.isPending ? (
+            <StatusPanel pending message={CARS_TEXT.loading} />
+          ) : !inventory.isError ? (
+            <EmptyState
+              title={
+                activeFilterCount(params)
+                  ? 'No cars match these filters'
+                  : 'No cars available here yet'
+              }
+              description={
+                activeFilterCount(params)
+                  ? 'Remove a filter to see more of this dealership’s cars.'
+                  : 'You can keep exploring cars from other local dealerships.'
+              }
+              action={activeFilterCount(params) ? 'Clear filters' : 'Explore cars'}
+              onAction={() =>
+                activeFilterCount(params) ? apply(clearFilters(params)) : router.navigate('/cars')
+              }
+            />
+          ) : null
         }
         ListFooterComponent={
           inventory.hasNextPage ? (
@@ -221,6 +238,13 @@ export function DealerProfileScreen() {
           ) : null
         }
       />
+      {sort ? (
+        <SortDialog
+          value={params.sort}
+          onSelect={(value) => apply(setParam(params, 'sort', value))}
+          onClose={() => setSort(false)}
+        />
+      ) : null}
       {filters ? (
         <FilterDialog
           params={params}
@@ -229,11 +253,7 @@ export function DealerProfileScreen() {
           scope="dealer"
           cacheScope={slug}
           previewList={(draft, signal) => dealersApi.inventory(slug, draft, 1, signal)}
-          onApply={(next) => {
-            setParams(next);
-            setSearch(next.q ?? '');
-            setFilters(false);
-          }}
+          onApply={apply}
           onClose={() => setFilters(false)}
         />
       ) : null}

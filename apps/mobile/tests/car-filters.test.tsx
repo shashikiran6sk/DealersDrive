@@ -72,12 +72,13 @@ it('switches to all districts while preserving non-location filters', async () =
 });
 it('drops orphaned models when their selected brand is removed', async () => {
   const h = await dialog({ brand: 'hyundai', model: 'creta', page: '3' });
-  await fireEvent.press(screen.getByRole('checkbox', { name: 'Hyundai (1)' }));
+  await fireEvent.press(screen.getByRole('checkbox', { name: /^Hyundai(?: \(1\))?$/ }));
   await fireEvent.press(screen.getByRole('button', { name: CARS_TEXT.apply }));
   expect(h.apply).toHaveBeenCalledWith({});
 });
 it('refuses inverted ranges instead of applying silently empty search', async () => {
   const h = await dialog({ minPrice: '50000000' });
+  await fireEvent.press(screen.getByRole('button', { name: 'Price' }));
   await fireEvent.changeText(
     screen.getByLabelText(`${CARS_TEXT.customPrice} ${CARS_TEXT.rangeMax}`),
     '100',
@@ -92,4 +93,30 @@ it('keeps dealership inventory filters scoped and omits district/town/dealer con
   expect(screen.queryByLabelText(CARS_TEXT.district)).toBeNull();
   expect(screen.queryByText('City / Town')).toBeNull();
   expect(screen.queryByText('Dealer')).toBeNull();
+  expect(screen.queryByText(CARS_TEXT.sort)).toBeNull();
+  expect(screen.queryByText('Newest first')).toBeNull();
+});
+
+it('discards town and dealer dependencies immediately when the district draft is reset', async () => {
+  const apply = jest.fn();
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
+  clients.push(client);
+  await render(
+    <QueryClientProvider client={client}>
+      <FilterDialog
+        params={{ district: 'vellore', city: 'katpadi', dealer: 'test-dealer', fuel: 'petrol' }}
+        facets={{ ...facets, cities: [{ value: 'katpadi', label: 'Katpadi', count: 1 }] }}
+        locations={undefined}
+        onApply={apply}
+        onClose={jest.fn()}
+      />
+    </QueryClientProvider>,
+  );
+  expect(screen.getByRole('checkbox', { name: /^Katpadi/ })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('checkbox', { name: CARS_TEXT.allDistricts }));
+  expect(screen.queryByRole('checkbox', { name: /^Katpadi/ })).toBeNull();
+  await fireEvent.press(screen.getByRole('button', { name: CARS_TEXT.apply }));
+  expect(apply).toHaveBeenCalledWith({ fuel: 'petrol' });
 });

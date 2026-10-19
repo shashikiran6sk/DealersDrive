@@ -1,20 +1,25 @@
-import { readVehicleSearch } from '@dealers-drive/contracts/vehicle-search';
-import { useDirectoryLocation } from '../../location/use-directory-location';
-import { carsApi } from '../../cars/cars-api';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import type { DealerCard as Dealer } from '@dealers-drive/contracts/public';
+import {
+  csvOf,
+  readVehicleSearch,
+  toggleCsv,
+  setParam,
+  pageOf,
+} from '@dealers-drive/contracts/vehicle-search';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Keyboard, StyleSheet, Text, View } from 'react-native';
 import { ActionButton } from '../../../components/action-button';
-import { AuthField } from '../../../components/auth-field';
-import { ConsentChoice } from '../../../components/consent-choice';
 import { DealerCard } from '../../../components/dealer-card';
+import { EmptyState } from '../../../components/empty-state';
 import { StatusPanel } from '../../../components/status-panel';
+import { TownPills } from '../../../components/town-pills';
 import { colors, spacing, typography } from '../../../theme/tokens';
+import { useDirectoryLocation } from '../../location/use-directory-location';
 import { dealersApi, type DirectoryParams } from '../dealers-api';
 import { DEALERS_TEXT } from '../dealers.constants';
+import { DealerSearchInput } from '../dealer-search-input';
 
 export function DealerDirectoryScreen() {
   const router = useRouter();
@@ -22,34 +27,22 @@ export function DealerDirectoryScreen() {
   const parsed = readVehicleSearch(route);
   const params: DirectoryParams = { district: parsed.district, city: parsed.city, q: parsed.q };
   const locationReady = useDirectoryLocation(params.district);
-  const setParams = (next: DirectoryParams) =>
-    router.setParams({ district: next.district, city: next.city, q: next.q });
+  const list = useRef<FlatList<Dealer>>(null);
+  const apply = (next: DirectoryParams) => {
+    router.setParams({ district: next.district, city: next.city, q: next.q, page: undefined });
+    list.current?.scrollToOffset({ offset: 0, animated: false });
+    Keyboard.dismiss();
+  };
   const [search, setSearch] = useState(params.q ?? '');
   useEffect(() => setSearch(params.q ?? ''), [params.q]);
-  const [debounced, setDebounced] = useState('');
-  const [focus, setFocus] = useState(false);
-  const [location, setLocation] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(search.trim()), 350);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const initialPage = Math.min(40, pageOf(parsed));
   const query = useInfiniteQuery({
-    queryKey: ['public', 'dealers', params],
+    queryKey: ['public', 'dealers', params, initialPage],
     enabled: locationReady,
-    initialPageParam: 1,
+    initialPageParam: initialPage,
     queryFn: ({ pageParam, signal }) => dealersApi.directory(params, pageParam, signal),
     getNextPageParam: (last) =>
       last.page.page < Math.min(last.page.totalPages, 40) ? last.page.page + 1 : undefined,
-  });
-  const suggestions = useQuery({
-    queryKey: ['public', 'dealer-suggestions', params.district, params.city, debounced],
-    queryFn: ({ signal }) => dealersApi.suggest(params, debounced, signal),
-    enabled: focus && debounced.length > 0 && debounced.length <= 120,
-  });
-  const locations = useQuery({
-    queryKey: ['public', 'locations'],
-    queryFn: ({ signal }) => carsApi.locations(signal),
-    staleTime: 600000,
   });
   const first = query.data?.pages[0];
   const data = [
@@ -57,13 +50,11 @@ export function DealerDirectoryScreen() {
       (query.data?.pages.flatMap((page) => page.data) ?? []).map((dealer) => [dealer.slug, dealer]),
     ).values(),
   ];
-  const submit = () => {
-    setParams({ ...params, q: search.trim() || undefined });
-    setFocus(false);
-  };
+  const submit = () => apply({ ...params, q: search.trim() || undefined });
   return (
     <View style={styles.root}>
       <FlatList<Dealer>
+        ref={list}
         data={data}
         keyExtractor={(dealer) => dealer.slug}
         contentContainerStyle={styles.content}
@@ -72,48 +63,46 @@ export function DealerDirectoryScreen() {
         windowSize={7}
         removeClippedSubviews
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        onScrollBeginDrag={Keyboard.dismiss}
         refreshing={query.isRefetching && !query.isFetchingNextPage}
-        onRefresh={() => void query.refetch()}
+        onRefresh={() => {
+          if (locationReady) void query.refetch();
+        }}
         onEndReached={() => {
           if (query.hasNextPage && !query.isFetchingNextPage)
             void query.fetchNextPage({ cancelRefetch: false });
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text testID="dealers-title" accessibilityRole="header" style={styles.title}>
               {DEALERS_TEXT.title}
             </Text>
-            <AuthField
-              label={DEALERS_TEXT.search}
-              placeholder={DEALERS_TEXT.searchPlaceholder}
+            <Text style={styles.muted}>Find the dealership behind your next car.</Text>
+            <DealerSearchInput
+              params={params}
               value={search}
-              onChangeText={setSearch}
-              onFocus={() => setFocus(true)}
-              onSubmitEditing={submit}
-              returnKeyType="search"
-              maxLength={120}
+              onChange={setSearch}
+              onSubmit={submit}
+              onSelect={(slug) => router.navigate(`/dealers/${encodeURIComponent(slug)}`)}
             />
-            {focus && suggestions.data?.search === debounced
-              ? suggestions.data.data.map((item) => (
-                  <Pressable
-                    key={item.slug}
-                    accessibilityRole="button"
-                    onPress={() => router.navigate(`/dealers/${encodeURIComponent(item.slug)}`)}
-                    style={styles.suggestion}
-                  >
-                    <Text style={styles.text}>{item.brandName}</Text>
-                    <Text style={styles.muted}>{item.metaLabel}</Text>
-                  </Pressable>
-                ))
-              : null}
-            <ActionButton label={DEALERS_TEXT.submit} onPress={submit} />
-            <ActionButton
-              variant="secondary"
-              label={DEALERS_TEXT.showLocation}
-              onPress={() => setLocation(true)}
-            />
+            {search.trim() && search.trim() !== params.q ? (
+              <ActionButton variant="ghost" label="Search dealer directory" onPress={submit} />
+            ) : null}
+            {params.district && first ? (
+              <TownPills
+                options={first.cities.map((city) => ({
+                  value: city.slug,
+                  label: city.name,
+                  count: city.count,
+                }))}
+                selected={csvOf(parsed, 'city')}
+                onToggle={(city) => apply(toggleCsv(params, 'city', city))}
+                onClear={() => apply(setParam(params, 'city', undefined))}
+              />
+            ) : null}
             {first ? (
-              <Text accessibilityLiveRegion="polite" style={styles.text}>
+              <Text accessibilityLiveRegion="polite" style={styles.count}>
                 {first.countLabel}
               </Text>
             ) : null}
@@ -130,16 +119,19 @@ export function DealerDirectoryScreen() {
         )}
         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         ListEmptyComponent={
-          <StatusPanel
-            pending={query.isPending}
-            message={
-              query.isPending
-                ? DEALERS_TEXT.loading
-                : query.isError
-                  ? query.error.message
-                  : DEALERS_TEXT.empty
-            }
-          />
+          query.isPending ? (
+            <StatusPanel pending message={DEALERS_TEXT.loading} />
+          ) : !query.isError ? (
+            <EmptyState
+              title="No dealerships found"
+              description="Try another town or remove your search to explore this district."
+              action="Clear search and towns"
+              onAction={() => {
+                setSearch('');
+                apply({ district: params.district });
+              }}
+            />
+          ) : null
         }
         ListFooterComponent={
           query.hasNextPage ? (
@@ -151,71 +143,20 @@ export function DealerDirectoryScreen() {
           ) : null
         }
       />
-      {location ? (
-        <Modal visible animationType="slide" onRequestClose={() => setLocation(false)}>
-          <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-            <ScrollView contentContainerStyle={styles.content}>
-              <Text style={styles.title}>{DEALERS_TEXT.location}</Text>
-              <ActionButton
-                variant="ghost"
-                label={DEALERS_TEXT.close}
-                onPress={() => setLocation(false)}
-              />
-              <ConsentChoice
-                label={DEALERS_TEXT.allDistricts}
-                checked={!params.district}
-                onChange={() => setParams({ ...params, district: undefined, city: undefined })}
-              />
-              {locations.data?.districts.map((district) => (
-                <ConsentChoice
-                  key={district.slug}
-                  label={`${district.name}${district.state ? `, ${district.state}` : ''}`}
-                  checked={params.district === district.slug}
-                  onChange={() =>
-                    setParams({ ...params, district: district.slug, city: undefined })
-                  }
-                />
-              ))}
-              <ConsentChoice
-                label={DEALERS_TEXT.allTowns}
-                checked={!params.city}
-                onChange={() => setParams({ ...params, city: undefined })}
-              />
-              {first?.cities.map((city) => (
-                <ConsentChoice
-                  key={city.slug}
-                  label={`${city.name} (${city.count})`}
-                  checked={params.city?.split(',').includes(city.slug) ?? false}
-                  onChange={() => {
-                    const selected = params.city?.split(',') ?? [];
-                    const next = selected.includes(city.slug)
-                      ? selected.filter((entry) => entry !== city.slug)
-                      : [...selected, city.slug];
-                    setParams({ ...params, city: next.sort().join(',') || undefined });
-                  }}
-                />
-              ))}
-              <ActionButton label={DEALERS_TEXT.apply} onPress={() => setLocation(false)} />
-            </ScrollView>
-          </SafeAreaView>
-        </Modal>
-      ) : null}
     </View>
   );
 }
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
-  header: { gap: spacing.md, marginBottom: spacing.lg },
-  title: { fontFamily: typography.family, color: colors.ink, fontSize: 26, fontWeight: '800' },
-  text: { fontFamily: typography.family, color: colors.ink, fontSize: typography.body },
-  muted: { fontFamily: typography.family, color: colors.muted, fontSize: 13 },
-  suggestion: {
-    padding: spacing.md,
-    minHeight: 48,
-    backgroundColor: colors.page,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.divider,
+  header: { gap: 12, marginBottom: spacing.md },
+  title: { fontFamily: typography.family, color: colors.ink, fontSize: 28, fontWeight: '800' },
+  count: { fontFamily: typography.family, color: colors.ink, fontSize: 14, fontWeight: '600' },
+  muted: {
+    fontFamily: typography.family,
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
   },
 });

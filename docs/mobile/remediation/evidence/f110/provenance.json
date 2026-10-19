@@ -1,0 +1,27 @@
+{
+  "base_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+  "source_content_sha256": "e2fd66f51a026a202df3c99dd7fbb5c2c456fb6c8455e2fdf574e09f45d1c739",
+  "apk_sha256": "72c4c17baa23c215c341972e045fd9a07502e968a5e058cf840dbe9fa15e6040",
+  "build": "release variant, validation signing, arm64-v8a, compile/target SDK 36",
+  "environment": "preview, public API reads only; no injected inventory or customer mutations",
+  "device": "Pixel_8 read-only AVD; API 37; 1080x2400, 420dpi",
+  "physical_device_tested": false,
+  "native_checks": [
+    "Home anchored dropdown with keyboard open",
+    "first tap on model selects canonical Cars results",
+    "existing town filter not retained by new model navigation",
+    "separate Sort selection closes",
+    "Filter draft district and API town options",
+    "town selection and removable chip",
+    "genuine Ranipet empty Home/Cars and recovery",
+    "dealer directory town pills and genuine empty inventory",
+    "actual IME Done and outside tap dismiss without submitting draft"
+  ],
+  "limits": [
+    "multiple town choices covered by test fixtures; live tested districts expose one town each",
+    "injected Enter differs from actual IME action; full hardware Back matrix remains F112",
+    "font registration/Back headers/saved journeys remain F111",
+    "width/font/offline/physical/TalkBack matrix remains F112"
+  ],
+  "screenshot_notes": "Source-matched final Filters/Town chips/Home/search/Sort/directory captures; earlier empty-state captures cover unchanged surfaces in the same F110 worktree. Final APK rebuilt after formatting-only correction; no subsequent product behavior change."
+}
