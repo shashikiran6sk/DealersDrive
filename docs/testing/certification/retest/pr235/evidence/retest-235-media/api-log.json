@@ -1,0 +1,62 @@
+[
+  {
+    "req": "POST /v1/admin/dealers/57a9a2ef-bfe2-499b-9d60-9abdee26b022/suspend",
+    "status": 200,
+    "body": {
+      "id": "57a9a2ef-bfe2-499b-9d60-9abdee26b022",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:39:51.931Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/57a9a2ef-bfe2-499b-9d60-9abdee26b022/reinstate",
+    "status": 200,
+    "body": {
+      "id": "57a9a2ef-bfe2-499b-9d60-9abdee26b022",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:39:51.970Z"
+    }
+  },
+  {
+    "before": {
+      "car": {
+        "status": 200,
+        "cache": "no-store"
+      },
+      "yard": {
+        "status": 200,
+        "cache": "no-store"
+      }
+    },
+    "suspended": {
+      "car": {
+        "status": 404,
+        "cache": "no-store"
+      },
+      "yard": {
+        "status": 200,
+        "cache": "no-store"
+      },
+      "carPage": 404,
+      "dealerPage": 404
+    },
+    "reinstated": {
+      "car": {
+        "status": 200,
+        "cache": "no-store"
+      },
+      "yard": {
+        "status": 200,
+        "cache": "no-store"
+      }
+    }
+  }
+]

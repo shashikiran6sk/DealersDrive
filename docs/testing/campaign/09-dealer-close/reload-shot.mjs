@@ -1,0 +1,13 @@
+import { resolve } from 'node:path';
+import * as b from '../../certification/harness/bkit.mjs';
+import * as h from '../../certification/harness/lib.mjs';
+const admin = await h.admin('cert-admin@example.test');
+const d = await h.one(`SELECT id FROM dealers WHERE "legalName" ILIKE 'CloseProbe%' AND status='CLOSED' ORDER BY "createdAt" DESC LIMIT 1`);
+const ctx = await b.context({ cookie: admin.cookie, viewport: { width: 1280, height: 900 } });
+const p = await ctx.newPage();
+await p.goto(`${b.WEB}/admin/dealers/${d.id}`, { waitUntil: 'networkidle' });
+const actions = p.getByRole('heading', { name: 'Actions' });
+await actions.scrollIntoViewIfNeeded();
+console.log(JSON.stringify({ status: await p.getByText('Closed', { exact: true }).count(), closeButton: await p.getByRole('button', { name: 'Close application' }).count(), nothing: await p.getByText('No decisions are available from this state.').count() }));
+await p.screenshot({ path: resolve(process.cwd(), 'admin-closed-reloaded.png') });
+await b.close(); process.exit(0);

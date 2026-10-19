@@ -1,0 +1,215 @@
+{
+  "sha": "1030a4a8d005ca4ab2979360e47ec672fe070073",
+  "rows": [
+    {
+      "scenario": "navigation-search-contained-table-view-detail-status-tab",
+      "width": 320,
+      "result": "PASS",
+      "scroll": {
+        "scrollLeft": 498,
+        "viewportWidth": 278,
+        "contentWidth": 776
+      },
+      "detail": {
+        "width": 320,
+        "document": 320
+      }
+    },
+    {
+      "scenario": "navigation-search-contained-table-view-detail-status-tab",
+      "width": 390,
+      "result": "PASS",
+      "scroll": {
+        "scrollLeft": 428,
+        "viewportWidth": 348,
+        "contentWidth": 776
+      },
+      "detail": {
+        "width": 390,
+        "document": 390
+      }
+    },
+    {
+      "scenario": "navigation-search-contained-table-view-detail-status-tab",
+      "width": 768,
+      "result": "PASS",
+      "scroll": {
+        "scrollLeft": 256,
+        "viewportWidth": 520,
+        "contentWidth": 776
+      },
+      "detail": {
+        "width": 768,
+        "document": 768
+      }
+    },
+    {
+      "scenario": "navigation-search-contained-table-view-detail-status-tab",
+      "width": 1440,
+      "result": "PASS",
+      "scroll": {
+        "scrollLeft": 0,
+        "viewportWidth": 1192,
+        "contentWidth": 1192
+      },
+      "detail": {
+        "width": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "scenario": "long-email-granted-moderator-controls",
+      "width": 320,
+      "result": "PASS",
+      "geometry": {
+        "width": 320,
+        "document": 320
+      }
+    },
+    {
+      "scenario": "long-email-granted-moderator-controls",
+      "width": 390,
+      "result": "PASS",
+      "geometry": {
+        "width": 390,
+        "document": 390
+      }
+    },
+    {
+      "scenario": "long-email-granted-moderator-controls",
+      "width": 768,
+      "result": "PASS",
+      "geometry": {
+        "width": 768,
+        "document": 768
+      }
+    },
+    {
+      "scenario": "server-and-browser-denial",
+      "role": "anonymous",
+      "result": "PASS",
+      "responses": [
+        {
+          "path": "/v1/admin/metrics/overview",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/dealers",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/listings",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries/4429bef9-ba9a-4242-8310-f31dd0f65f14",
+          "status": 401
+        }
+      ],
+      "redirect": "/admin/login"
+    },
+    {
+      "scenario": "server-and-browser-denial",
+      "role": "customer",
+      "result": "PASS",
+      "responses": [
+        {
+          "path": "/v1/admin/metrics/overview",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/dealers",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/listings",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries/4429bef9-ba9a-4242-8310-f31dd0f65f14",
+          "status": 401
+        }
+      ],
+      "redirect": "/admin/login"
+    },
+    {
+      "scenario": "server-and-browser-denial",
+      "role": "dealer-owner",
+      "result": "PASS",
+      "responses": [
+        {
+          "path": "/v1/admin/metrics/overview",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/dealers",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/listings",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries/4429bef9-ba9a-4242-8310-f31dd0f65f14",
+          "status": 401
+        }
+      ],
+      "redirect": "/admin/login"
+    },
+    {
+      "scenario": "server-and-browser-denial",
+      "role": "expired-admin",
+      "result": "PASS",
+      "responses": [
+        {
+          "path": "/v1/admin/metrics/overview",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/dealers",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/listings",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries",
+          "status": 401
+        },
+        {
+          "path": "/v1/admin/enquiries/4429bef9-ba9a-4242-8310-f31dd0f65f14",
+          "status": 401
+        }
+      ],
+      "redirect": "/admin/login"
+    },
+    {
+      "scenario": "revoked-granted-admin-existing-tab-refresh",
+      "result": "PASS",
+      "revoke": 204,
+      "staleApi": 401,
+      "redirect": "/admin/login"
+    },
+    {
+      "scenario": "mobile-sign-out-and-stale-cookie-denial",
+      "width": 320,
+      "result": "PASS",
+      "staleApi": 401
+    }
+  ],
+  "result": "PASS",
+  "humanUat": "PENDING"
+}

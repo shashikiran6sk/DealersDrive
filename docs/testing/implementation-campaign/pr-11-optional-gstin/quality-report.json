@@ -1,0 +1,31 @@
+{
+  "prNumber": 298,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/298",
+  "branch": "feat/optional-gstin",
+  "baseBranch": "feat/dealer-verification",
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+  "incrementalFiles": 27,
+  "migration": "20261010153000_optional_gstin",
+  "testsPassed": {
+    "api": 3268,
+    "web": 1537,
+    "contracts": 484,
+    "total": 5289,
+    "browserChecks": 13
+  },
+  "testsFailedFinal": 0,
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826917",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826913",
+  "ciHeadSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+  "ciFinalStatus": "SUCCESS",
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployment": false,
+  "notRun": [
+    "live tax registry verification",
+    "physical devices",
+    "native Safari",
+    "production migrations"
+  ],
+  "next": "combined regression, then independent Draft PR 12 from latest main"
+}

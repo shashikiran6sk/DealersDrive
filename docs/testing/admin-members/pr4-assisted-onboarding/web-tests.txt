@@ -1,0 +1,24 @@
+ ✓ tests/unit/features/auth/document-uploader.test.tsx > DocumentUploader > uploads through the dealer’s own routes by default 252ms
+ ✓ tests/unit/features/auth/document-uploader.test.tsx > DocumentUploader > uploads through the Sales routes when given their base 42ms
+ ✓ tests/unit/features/sales/assisted-dealer-form.test.tsx > AssistedDealerForm > sends only filled fields, upper-casing GSTIN and PAN 389ms
+ ✓ tests/unit/features/sales/assisted-dealer-form.test.tsx > AssistedDealerForm > sends empty required fields on create, so the schema answers in words 63ms
+ ✓ tests/unit/features/sales/assisted-dealer-form.test.tsx > AssistedDealerForm > marks the fields the API refused, by name 77ms
+ ✓ tests/unit/features/sales/assisted-dealer-form.test.tsx > AssistedDealerForm > is read-only when the dealership is locked 36ms
+ ✓ tests/unit/features/sales/assisted-dealer-start.test.tsx > AssistedDealerStart > will not send a code until the dealer has consented 354ms
+ ✓ tests/unit/features/sales/assisted-dealer-start.test.tsx > AssistedDealerStart > refuses a number that is not an Indian mobile 83ms
+ ✓ tests/unit/features/sales/assisted-dealer-start.test.tsx > AssistedDealerStart > verifies with consent, then creates the dealership with the ticket 457ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > verifyDealerPhoneAction > sends the consent with the token, and returns the ticket 8ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > verifyDealerPhoneAction > refuses without consent before calling the API 2ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > verifyDealerPhoneAction > answers the API’s refusal in its words 2ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > the dealership writes > validates before creating, and names the fields 3ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > the dealership writes > answers a missing tagline and service in the schema’s words, not Zod’s 1ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > the dealership writes > patches and submits the dealership by id 2ms
+ ✓ tests/unit/features/sales/sales-actions.test.ts > the dealership writes > carries the API’s field errors back 2ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > SalesDealerList > shows each dealership with its verification state in words 205ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > SalesDealerList > says so when there is nothing 5ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > SubmitAssistedDealer > names what is missing and will not submit an incomplete application 18ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > SubmitAssistedDealer > submits once and confirms 45ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > OnboardingProvenance > tells the reviewer who assisted, and what is and is not verified 8ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > OnboardingProvenance > warns a reviewer who assisted that they may not decide 3ms
+ ✓ tests/unit/features/sales/sales-components.test.tsx > OnboardingProvenance > shows a self-onboarded dealership without assistant rows 3ms
+      Tests  23 passed (23)

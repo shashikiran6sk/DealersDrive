@@ -1,0 +1,9 @@
+{
+  "environment": "verified local development PostgreSQL; read-only session",
+  "productionAccess": false,
+  "capturedAt": "2026-10-09T17:01:41.362Z",
+  "dealerRows": 126,
+  "canonicalUserConflictGroups": 0,
+  "multipleActiveOwnerGroups": 0,
+  "primaryDealerConflictGroups": 0
+}

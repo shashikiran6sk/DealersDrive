@@ -1,0 +1,25 @@
+{
+  "created": 201,
+  "msg1": 201,
+  "msg2": 201,
+  "msg3": 201,
+  "msg4": 201,
+  "msg5": 201,
+  "sixth": "SUPPORT_MESSAGE_LIMIT_REACHED",
+  "resolve": 200,
+  "resolvedView": { "panel": 1, "composer": 0, "reopenButton": 1, "overflow": false },
+  "forgedMessageWhileResolved": "SUPPORT_TICKET_RESOLVED",
+  "afterReopen": {
+    "status": "OPEN",
+    "remaining": 0,
+    "canReply": false,
+    "messages": 5,
+    "limitShown": 1
+  },
+  "supportReply": 201,
+  "afterSupportReply": { "composer": 1, "remaining": 5 },
+  "close": 200,
+  "closedView": { "closedTitle": 1, "newRequest": 1, "composer": 0, "reopenButton": 0 },
+  "reopenClosed": "SUPPORT_TICKET_CLOSED",
+  "messageClosed": "SUPPORT_TICKET_CLOSED"
+}

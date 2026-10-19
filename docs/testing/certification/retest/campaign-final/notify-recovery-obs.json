@@ -1,0 +1,372 @@
+{
+  "NOTIFY-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "notifications are async via outbox→worker; delivery row may lag. Outbox event present (NOTIFY-003).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.045Z"
+  },
+  "NOTIFY-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "email is dispatched via the transactional outbox after commit; a mail failure cannot roll back or corrupt onboarding (dealer ACTIVE regardless)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.235Z"
+  },
+  "NOTIFY-003": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "notification_deliveries carries a dedupeKey; 0 duplicate deliveries → retries are idempotent, not destructive",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.245Z"
+  },
+  "NOTIFY-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dev uses the console mail driver (no real send); env.ts refuses MAIL_DRIVER=console in production (must be resend) — intended non-production behaviour",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.246Z"
+  },
+  "NOTIFY-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "enquiry creation succeeds (201) with no enquiry-notification dependency (deliveries 2477→2477); listing/enquiry/complaint emails are not implemented and nothing assumes them",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.770Z"
+  },
+  "RECOVERY-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "with the API down the client receives no false 2xx (connection refused); graceful public UX is the web error boundary — verified in the browser campaign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.772Z"
+  },
+  "RECOVERY-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a listing save against an unreachable API cannot return a success code; the web form surfaces the error (browser dimension). No partial write occurs because nothing reaches the server.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:31.772Z"
+  },
+  "RECOVERY-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "enquiry retry is safe: one-open-per-car means a retried submit does not duplicate (1 row; retry → 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.331Z"
+  },
+  "RECOVERY-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "database outage → /health/ready 503, requests 500 (controlled). In production the 500 detail is suppressed (error-handler gates detail on env.isProduction); dev includes error.message by design.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.504Z"
+  },
+  "RECOVERY-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a failed/absent storage write → commit 422; listing uncorrupted (PENDING_REVIEW)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.752Z"
+  },
+  "RECOVERY-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "a rejected OTP verdict creates no session and no user — no partial authentication",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.756Z"
+  },
+  "RECOVERY-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "OAuth failure handled (access_denied → 302, bad code/state → 302); recoverable, no crash. Full Google flow unreachable here (SIM).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.761Z"
+  },
+  "RECOVERY-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "email dispatch is post-commit (outbox); a mail failure leaves onboarding/approval intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.935Z"
+  },
+  "RECOVERY-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "browser refresh during a critical flow recovers because server state is authoritative and reads are idempotent (draft persists, enquiry one-open-per-car). Visual recovery verified in the browser campaign.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:32.936Z"
+  },
+  "RECOVERY-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "re-submitting a lifecycle mutation (Back+resubmit) → second 409, status SOLD once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:33.485Z"
+  },
+  "RECOVERY-011": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "CONCURRENCY"
+    ],
+    "note": "double-click reserve → RESERVED once (statuses 200/409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.029Z"
+  },
+  "RECOVERY-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "timeout+retry safe: concurrent identical enquiries → 1 row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.554Z"
+  },
+  "RECOVERY-013": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "persisted state survives restarts (Postgres durable; the API was restarted during this session): 929 dealers, 1498 listings, health 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.558Z"
+  },
+  "OBS-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "requests carry correlation IDs (x-request-id + x-trace-id: _nT64tvy-f)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.605Z"
+  },
+  "OBS-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "auth failure → 401 with code NOT_AUTHENTICATED + traceId, no secret in body",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.606Z"
+  },
+  "OBS-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "authorization failure observable (→ 401 + traceId R7yd1qHCdl)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.623Z"
+  },
+  "OBS-004": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "dealer suspension traceable (audit_logs dealer.suspended with actor + traceId)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:34.843Z"
+  },
+  "OBS-005": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "member permission changes traceable: member.invited, member.joined, member.role_changed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:35.049Z"
+  },
+  "OBS-006": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "listing lifecycle traceable: listing.check_set, listing.marked_sold, listing.submitted, listing.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:35.573Z"
+  },
+  "OBS-007": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "enquiry lifecycle traceable: enquiry.contacted, enquiry.created",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.135Z"
+  },
+  "OBS-008": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "admin actions traceable (20 recent ADMIN audit rows)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.136Z"
+  },
+  "OBS-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "5xx are captured: the error handler logs when status ≥ 500 (verified in code), DB-down request → 500",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.142Z"
+  },
+  "OBS-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "API log (one full campaign) contains no OTP tokens, session tokens, or passwords",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.145Z"
+  },
+  "OBS-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "health reflects service state: live 200, ready 200 healthy / 503 when DB down",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.151Z"
+  },
+  "OBS-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "workflows are traceable end-to-end: audit rows carry a traceId that matches the request x-trace-id",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-04T19:53:36.343Z"
+  }
+}

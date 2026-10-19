@@ -1,0 +1,9 @@
+{
+  "command": ["node", "docs/testing/fixes/BUG-005/browser-uat.mjs"],
+  "sha": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
+  "start_utc": "2026-10-04T07:29:01.256379+00:00",
+  "end_utc": "2026-10-04T07:29:07.573777+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug005-browser-baseline-green.log",
+  "cache": "TURBO_FORCE=true"
+}

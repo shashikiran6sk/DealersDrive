@@ -1,0 +1,8 @@
+{"level":30,"time":1791568334575,"service":"dealers-drive-api","env":"production","environment":"production","msg":"runtime info"}
+{"level":40,"time":1791568334576,"service":"dealers-drive-api","env":"production","environment":"production","msg":"runtime warn"}
+{"level":50,"time":1791568334576,"service":"dealers-drive-api","env":"production","environment":"production","msg":"runtime error"}
+{"level":60,"time":1791568334576,"service":"dealers-drive-api","env":"production","environment":"production","msg":"runtime fatal"}
+{"fixturePort":33105}
+{"level":30,"time":1791568334578,"service":"dealers-drive-api","env":"production","environment":"production","component":"jobs","job":"test","msg":"runtime worker"}
+{"level":30,"time":1791568334578,"service":"dealers-drive-api","env":"production","environment":"production","password":"[redacted]","passwordHash":"[redacted]","otp":"[redacted]","token":"[redacted]","email":"[redacted]","meta":{"token":"[redacted]","password":"[redacted]"},"req":{"headers":{"authorization":"[redacted]","cookie":"[redacted]"}},"res":{"headers":{"set-cookie":"[redacted]"}},"url":"[redacted]","error":"[redacted]","err":{"type":"Error","code":"TEST_FAILURE","stack":"    at emit (file:///app/apps/api/fixture.mjs:62:26)\n    at file:///app/apps/api/fixture.mjs:87:3\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"},"msg":"runtime redaction"}
+{"level":30,"time":1791568335841,"service":"dealers-drive-api","env":"production","environment":"production","traceId":"docker-test-trace","method":"GET","route":"/dealers/:id","status":200,"status_code":200,"durationMs":7.76,"dbMs":12,"dbOps":2,"msg":"request completed"}

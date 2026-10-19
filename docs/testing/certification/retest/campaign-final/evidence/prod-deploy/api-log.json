@@ -1,0 +1,92 @@
+[
+  {
+    "validProdExit": 0,
+    "out": "OK {\"storage\":\"r2\",\"otp\":\"msg91\",\"mail\":\"resend\",\"cache\":\"postgres\",\"docs\":false}"
+  },
+  {
+    "minioAcceptedInProd": false,
+    "localRefused": true
+  },
+  {
+    "fakeOtpRefusedInProd": true
+  },
+  {
+    "consoleMailRefusedInProd": true
+  },
+  {
+    "devSeedExit": 1,
+    "reason": "The dev seed refuses to write dealerships with NODE_ENV=production. "
+  },
+  {
+    "note": "dev seed guarded; prod DATABASE_URL is a separate SSM secret"
+  },
+  {
+    "exit": 0
+  },
+  {
+    "localRefused": true,
+    "r2Accepted": true
+  },
+  {
+    "googleRequiredInProd": true,
+    "callbackConfigured": true
+  },
+  {
+    "msg91RequiredInProd": true
+  },
+  {
+    "clientBundleSecretHits": 0,
+    "nextPublicVars": "(none)"
+  },
+  {
+    "docsBehindFlag": true,
+    "metricsBehindFlag": true
+  },
+  {
+    "defaultSessionSecretRefused": true
+  },
+  {
+    "appliedMigrations": 39,
+    "unfinished": 0
+  },
+  {
+    "activeDealersWithoutOwner": 0
+  },
+  {
+    "dupPhones": 0,
+    "dupMemberships": 0
+  },
+  {
+    "l": 1500,
+    "e": 396,
+    "d": 2802
+  },
+  {
+    "migrationCount": 39,
+    "ordered": true
+  },
+  {
+    "deployDocMentionsMigration": true,
+    "dedicatedMigrateTask": true
+  },
+  {
+    "exit": 1,
+    "reason": "The dev seed refuses to write cars with NODE_ENV=production. "
+  },
+  {
+    "indexCount": 101,
+    "critical": {
+      "listing public visibility": true,
+      "enquiry dealer inbox": true,
+      "membership lookup": true,
+      "session by token": true,
+      "saved per customer": true
+    }
+  },
+  {
+    "note": "managed-DB backup/restore not reproducible in this isolated container"
+  },
+  {
+    "note": "depends on DEPLOY-009 restore"
+  }
+]

@@ -1,0 +1,80 @@
+vehicle-vehiclegallery--twenty [ 320, 375 ]
+vehicle-vehiclegallery--portrait [ 320, 375 ]
+vehicle-vehiclegallery--one-photo [ 320, 375 ]
+{
+  "viewports": 36,
+  "failures": [
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 379
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 420.25
+      }
+    }
+  ]
+}

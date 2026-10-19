@@ -1,0 +1,10 @@
+Actual API readiness, normal request, 404, and authenticated metrics PASS
+{"mode":"false","actualApiStdoutRecords":7,"requestTrace":"verified","numericLevels":"verified"}
+Actual API readiness, normal request, 404, and authenticated metrics PASS
+{"mode":"true","actualApiStdoutRecords":7,"requestTrace":"verified","numericLevels":"verified"}
+{"actualWorkerStdoutRecords":4,"numericLevels":"verified"}
+TEST_RECEIVER_READY
+{"received":5,"levels":[30,30,40,30,30],"messages":["dealers-drive api listening","request completed","request rejected","request completed","request completed"],"routes":["/v1/config/public","unmatched","/internal/metrics"],"authentication":"verified","redaction":"verified"}
+{"received":2,"levels":[30,30],"messages":["draining — readiness is now failing, still serving in-flight requests","shutdown complete"],"routes":[],"authentication":"verified","redaction":"verified"}
+{"received":2,"levels":[30,30],"messages":["background workers started","dealers-drive worker started"],"routes":[],"authentication":"verified","redaction":"verified"}
+{"received":2,"levels":[30,30],"messages":["worker draining","worker shutdown complete"],"routes":[],"authentication":"verified","redaction":"verified"}

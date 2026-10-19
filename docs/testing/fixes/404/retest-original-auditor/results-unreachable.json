@@ -1,0 +1,45 @@
+[
+  {
+    "id": "outage-unreachable-car",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-unreachable-cars",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-unreachable-dealer",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-unreachable-dealers",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-unreachable-home",
+    "ok": true,
+    "status": 200
+  },
+  {
+    "id": "outage-unreachable-bff",
+    "ok": true,
+    "status": 502,
+    "body": "{\"type\":\"about:blank\",\"title\":\"Service unavailable\",\"status\":502,\"code\":\"SERVICE_UNAVAILABLE\",\"detail\":\"This service is temporarily unavailable. Please try again.\"}"
+  }
+]

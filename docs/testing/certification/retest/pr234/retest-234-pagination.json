@@ -1,0 +1,42 @@
+{
+  "R234-saved-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-04T13:27:45.626Z"
+  },
+  "R234-customer-enquiries-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-04T13:27:45.645Z"
+  },
+  "R234-dealer-inbox-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-04T13:27:45.666Z"
+  },
+  "R234-dealer-inventory-ties (BUG-NEW-007, not in #234 scope)": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "expected 5 tied rows; walked 2 (2 unique) in 2 pages",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-04T13:27:45.683Z"
+  }
+}

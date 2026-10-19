@@ -1,0 +1,61 @@
+
+ RUN  v5.0.0 /tmp/dealersdrive-console-cleanup/apps/web
+
+ ❯ tests/unit/components/dealer/console-utilities.test.tsx (6 tests | 1 failed) 671ms
+   ❯ ConsoleUtilities (6)
+     × closes its disclosure before a containing Radix navigation dialog 377ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/components/dealer/console-utilities.test.tsx > ConsoleUtilities > closes its disclosure before a containing Radix navigation dialog
+TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Dealer console"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "Open navigation":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"dialog"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<button[39m
+      [33maria-expanded[39m=[32m"false"[39m
+      [33maria-haspopup[39m=[32m"dialog"[39m
+      [33mdata-state[39m=[32m"closed"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m>[39m
+      [0mOpen navigation[0m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../../../workspace/DealersDrive/node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../workspace/DealersDrive/node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../workspace/DealersDrive/node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../workspace/DealersDrive/node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/components/dealer/console-utilities.test.tsx:79:19
+     77|     expect(screen.getByRole('menuitem', { name: /Dealership invitation…
+     78|     await user.keyboard('{Escape}');
+     79|     expect(screen.getByRole('dialog', { name: 'Dealer console' })).toB…
+       |                   ^
+     80|     expect(summary.closest('details')).not.toHaveAttribute('open');
+     81|     expect(summary).toHaveFocus();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  09:29:23
+   Duration  2.51s (environment 41%, tests 29%, transform 16%, setup 9%, import 5%)
+

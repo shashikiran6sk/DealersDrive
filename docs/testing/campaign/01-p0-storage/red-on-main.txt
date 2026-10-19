@@ -1,0 +1,8 @@
+     × does not mount the upload stand-in: a forged PUT never reaches the bucket 31ms
+     × does not mount the private-read stand-in: a forged GET never reads the bucket 6ms
+     × does not mount the upload stand-in: a forged PUT never reaches the bucket 4ms
+     × does not mount the private-read stand-in: a forged GET never reads the bucket 4ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 200 to be 404 // Object.is equality
+AssertionError: expected 200 to be 404 // Object.is equality
+      Tests  4 failed | 1 passed (5)

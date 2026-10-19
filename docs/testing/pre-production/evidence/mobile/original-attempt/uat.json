@@ -1,0 +1,135 @@
+{
+  "stage": "mobile",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "engine": "Chromium 151",
+  "rows": [
+    {
+      "id": "UAT-mobile-001",
+      "canonical": [],
+      "title": "Anonymous search journey by keyboard and navigation",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "The expression evaluated to a falsy value:\n\n  assert.ok(page.url().includes('hyundai'))\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-002",
+      "canonical": [],
+      "title": "Apply a filter, refresh, clear filters and use browser history",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-003",
+      "canonical": [],
+      "title": "Open car, operate gallery arrows and fullscreen, cancel and reopen",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-004",
+      "canonical": [],
+      "title": "Normal customer login, account menu, saved cars and enquiry history",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ '/saved'\n- '/enquiries'\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-005",
+      "canonical": [],
+      "title": "Save, remove, save again and verify persistence after logout/login",
+      "status": "PASS",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observed": {
+        "screenshot": "evidence/mobile/saved-persistence.png"
+      },
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-006",
+      "canonical": [],
+      "title": "Open enquiry, inspect verified identity, cancel/reopen and submit",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-007",
+      "canonical": [],
+      "title": "Dealer directory, dealer portfolio and branded not-found page",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "The expression evaluated to a falsy value:\n\n  assert.ok(new URL(page.url()).pathname.startsWith('/dealers/'))\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-mobile-008",
+      "canonical": [],
+      "title": "Resize and inspect page widths and named interactive controls",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    }
+  ],
+  "actions": [
+    {
+      "at": "2026-10-02T15:58:24.678Z",
+      "message": "Scrolled homepage through vehicle rows and footer; inspected available and empty states."
+    },
+    {
+      "at": "2026-10-02T15:58:25.940Z",
+      "message": "Selected Hyundai brand; checked the URL and refreshed with that filter."
+    },
+    {
+      "at": "2026-10-02T15:58:46.352Z",
+      "message": "Entered fictional phone identity through the customer login form."
+    },
+    {
+      "at": "2026-10-02T15:58:46.757Z",
+      "message": "Entered the configured local proof; no SMS sent and no proof saved in evidence."
+    },
+    {
+      "at": "2026-10-02T15:58:49.206Z",
+      "message": "Entered fictional phone identity through the customer login form."
+    },
+    {
+      "at": "2026-10-02T15:58:49.293Z",
+      "message": "Entered the configured local proof; no SMS sent and no proof saved in evidence."
+    }
+  ],
+  "pageErrors": []
+}

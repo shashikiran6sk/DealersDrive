@@ -1,0 +1,6 @@
+@dealers-drive/contracts:test:  Test Files  20 passed (20)
+@dealers-drive/contracts:test:       Tests  485 passed (485)
+@dealers-drive/web:test:  Test Files  133 passed (133)
+@dealers-drive/web:test:       Tests  1544 passed (1544)
+@dealers-drive/api:test:  Test Files  167 passed (167)
+@dealers-drive/api:test:       Tests  3296 passed (3296)

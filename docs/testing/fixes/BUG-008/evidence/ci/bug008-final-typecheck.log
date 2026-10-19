@@ -1,0 +1,47 @@
+
+> dealers-drive@0.0.0 typecheck /workspace/DealersDrive-fixes
+> turbo run typecheck
+
+• turbo 2.10.12
+
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running typecheck in 5 packages
+   • Remote caching disabled, using shared worktree cache
+
+@dealers-drive/config:typecheck: cache bypass, force executing 8ce1a48137ae6ede
+@dealers-drive/contracts:build: cache bypass, force executing 1dfcd5699ca7b1d8
+@dealers-drive/contracts:typecheck: cache bypass, force executing fe3f0ccddbb97c68
+@dealers-drive/config:typecheck:
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck /workspace/DealersDrive-fixes/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck:
+@dealers-drive/contracts:typecheck:
+@dealers-drive/contracts:typecheck: > @dealers-drive/contracts@0.0.0 typecheck /workspace/DealersDrive-fixes/packages/contracts
+@dealers-drive/contracts:typecheck: > tsc -p tsconfig.json
+@dealers-drive/contracts:typecheck:
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/contracts:build:
+@dealers-drive/contracts:build: > @dealers-drive/contracts@0.0.0 build /workspace/DealersDrive-fixes/packages/contracts
+@dealers-drive/contracts:build: > tsc -p tsconfig.build.json
+@dealers-drive/contracts:build:
+@dealers-drive/sandbox:typecheck: cache bypass, force executing 5ec7f4101d4cacdd
+@dealers-drive/web:typecheck: cache bypass, force executing 73580988d9cbb6ce
+@dealers-drive/api:typecheck: cache bypass, force executing c4e684da37e1c205
+@dealers-drive/web:typecheck:
+@dealers-drive/web:typecheck: > @dealers-drive/web@0.0.0 typecheck /workspace/DealersDrive-fixes/apps/web
+@dealers-drive/web:typecheck: > tsc --noEmit
+@dealers-drive/web:typecheck:
+@dealers-drive/api:typecheck:
+@dealers-drive/api:typecheck: > @dealers-drive/api@0.0.0 typecheck /workspace/DealersDrive-fixes/apps/api
+@dealers-drive/api:typecheck: > tsc -p tsconfig.json
+@dealers-drive/api:typecheck:
+@dealers-drive/sandbox:typecheck:
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck /workspace/DealersDrive-fixes/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck:
+
+ Tasks:    6 successful, 6 total
+Cached:    0 cached, 6 total
+  Time:    8.664s
+
+ WARNING  no output files found for task @dealers-drive/config#typecheck. Please check your `outputs` key in `turbo.json`

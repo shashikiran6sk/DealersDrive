@@ -1,0 +1,47 @@
+{
+  "bug": "BUG-005",
+  "initialHistoryScan": "FAIL four generic-api-key findings",
+  "findings": [
+    {
+      "rule": "generic-api-key",
+      "file": "docs/testing/fixes/BUG-005/evidence/verification-manifest.json",
+      "line": 15,
+      "commit": "471ea014fce64cc163983c69e401f66b93cc5620",
+      "artifact": "baseline-refreshed-access-1440.png",
+      "sha256": "ed812bc17b7629ce05b6cb72ff06b7b9efcef2ce0e365b686bc935a38364860f",
+      "recomputedFromCommittedScreenshot": true,
+      "classification": "Nonsecret deterministic screenshot checksum"
+    },
+    {
+      "rule": "generic-api-key",
+      "file": "docs/testing/fixes/BUG-005/evidence/verification-manifest.json",
+      "line": 26,
+      "commit": "471ea014fce64cc163983c69e401f66b93cc5620",
+      "artifact": "fixed-refreshed-access-1440.png",
+      "sha256": "310131fbfec15a7763eaca70874811e8035c80a5e7f60832d723eeb3c1cf0e59",
+      "recomputedFromCommittedScreenshot": true,
+      "classification": "Nonsecret deterministic screenshot checksum"
+    },
+    {
+      "rule": "generic-api-key",
+      "file": "docs/testing/fixes/BUG-005/evidence/verification-manifest.json",
+      "line": 27,
+      "commit": "471ea014fce64cc163983c69e401f66b93cc5620",
+      "artifact": "fixed-refreshed-access-390.png",
+      "sha256": "d9bdf8750fbc08860432e8b1712207766e0175975198fa987896b15267a62e4f",
+      "recomputedFromCommittedScreenshot": true,
+      "classification": "Nonsecret deterministic screenshot checksum"
+    },
+    {
+      "rule": "generic-api-key",
+      "file": "docs/testing/fixes/BUG-005/evidence/verification-manifest.json",
+      "line": 28,
+      "commit": "471ea014fce64cc163983c69e401f66b93cc5620",
+      "artifact": "fixed-refreshed-access-768.png",
+      "sha256": "c3d6af9712ed04dc6213902be6a2670632f0a55aca3ec428083bd7c31bfd01c5",
+      "recomputedFromCommittedScreenshot": true,
+      "classification": "Nonsecret deterministic screenshot checksum"
+    }
+  ],
+  "disposition": "Exact full assignment allowlist; no history rewrite; different values in the same artifact fields must still be detected"
+}

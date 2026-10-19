@@ -1,0 +1,44 @@
+node:net:2145
+      const error = new UVExceptionWithHostPort(rval, 'listen', address, port);
+                    ^
+
+Error: listen EPERM: operation not permitted /tmp/tsx-1000/102779.pipe
+    at Server.setupListenHandle [as _listen2] (node:net:2145:21)
+    at listenInCluster (node:net:2224:12)
+    at Server.listen (node:net:2361:5)
+    at file:///workspace/DealersDrive-fixes/node_modules/.pnpm/tsx@4.23.13/node_modules/tsx/dist/cli.mjs:53:31472
+    at new Promise (<anonymous>)
+    at createIpcServer (file:///workspace/DealersDrive-fixes/node_modules/.pnpm/tsx@4.23.13/node_modules/tsx/dist/cli.mjs:53:31450)
+    at async file:///workspace/DealersDrive-fixes/node_modules/.pnpm/tsx@4.23.13/node_modules/tsx/dist/cli.mjs:55:542 {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '/tmp/tsx-1000/102779.pipe',
+  port: -1
+}
+
+Node.js v24.19.0
+
+CONFIG-001 FAIL rejected
+CONFIG-002 FAIL rejected
+CONFIG-003 FAIL rejected
+CONFIG-004 FAIL rejected
+CONFIG-005 FAIL rejected
+CONFIG-006 FAIL rejected
+CONFIG-007 FAIL rejected
+CONFIG-008 FAIL rejected
+BUG006-MINIO-local FAIL rejected
+BUG006-MINIO-preview FAIL rejected
+BUG006-MINIO-dev FAIL rejected
+BUG006-MINIO-production FAIL rejected
+BUG006-development-local FAIL rejected
+BUG006-development-minio FAIL rejected
+BUG006-development-r2 FAIL rejected
+BUG006-test-local FAIL rejected
+BUG006-test-minio FAIL rejected
+BUG006-test-r2 FAIL rejected
+BUG006-missing-S3_ACCESS_KEY_ID FAIL rejected
+BUG006-missing-S3_SECRET_ACCESS_KEY FAIL rejected
+BUG006-driver-omitted FAIL rejected
+BUG006-unknown-driver FAIL rejected
+{"PASS": 0, "FAIL": 22}

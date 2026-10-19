@@ -1,0 +1,17 @@
+Subject: DD-1001: Awaiting your reply — Dealers-Drive
+
+Your request is awaiting your reply
+
+Hi Asha Menon,
+
+About DD-1001:
+
+  Dealer has not confirmed my visit
+
+We need a little more from you before we can go further. Please reply in the request.
+
+View your request: http://localhost:3000/support-requests/d93e1421-8974-4be9-bc3e-d0cd7b283ff0
+
+—
+Dealers-Drive
+Questions? support@example.com

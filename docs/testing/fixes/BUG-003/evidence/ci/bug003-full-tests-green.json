@@ -1,0 +1,21 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "turbo",
+    "run",
+    "test",
+    "--env-mode=loose",
+    "--force",
+    "--",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=fix-cert-results.json"
+  ],
+  "sha": "20c1b39efeab1b5885bb42774b2b594e5f4fffd2",
+  "start_utc": "2026-10-04T05:15:26.484918+00:00",
+  "end_utc": "2026-10-04T05:18:35.804052+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug003-full-tests-green.log",
+  "cache": "TURBO_FORCE=true"
+}

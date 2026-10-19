@@ -1,0 +1,20 @@
+{
+  "label": "fix-branch",
+  "path": "Admin console Suspend button (server action)",
+  "warm": [
+    200,
+    200
+  ],
+  "dealerPageWarm": 200,
+  "apiAfterSuspend": 404,
+  "carPageAfterSuspend": [
+    404,
+    404
+  ],
+  "carPageAfter65s": [
+    404,
+    404
+  ],
+  "dealerPageAfterSuspend": 404,
+  "verdict": "PASS"
+}

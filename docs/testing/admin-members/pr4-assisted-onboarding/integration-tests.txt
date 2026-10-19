@@ -1,0 +1,19 @@
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > verifying the dealer’s phone > hands the representative the OTP widget configuration, never a secret 13ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > verifying the dealer’s phone > needs the dealer’s consent 8ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > verifying the dealer’s phone > refuses a wrong code, a provider-refused (expired) token and a replay 31ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > verifying the dealer’s phone > records the verification without the code or the token 14ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > verifying the dealer’s phone > refuses a number that already belongs to a dealership 75ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > creating the dealership > is an ASSISTED draft: phone verified, email unverified, attributed, not owned 49ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > creating the dealership > spends the ticket once, and only for the member it was issued to 50ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > creating the dealership > cannot be created with a typed number, or with a dealerId 23ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > preparing and submitting > edits the draft, and clears email verification when the address changes 115ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > preparing and submitting > runs the full journey through the ordinary review 367ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > preparing and submitting > refuses submission until the application is complete 42ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > separation of duties > refuses a reviewer the decisions on a dealership they assisted 264ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > scope > hides another representative’s dealership behind a 404, on every route 54ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > scope > does not reach self-onboarded dealerships at all 7ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > scope > keeps console roles out of the Sales workspace, and dealers out of both 29ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > scope > lists only my dealerships, with counts, and filters by status 14ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > scope > counts a rejected dealership as onboarded on the dashboard 88ms
+ ✓ |integration| tests/sales-assisted-onboarding.test.ts > self-service onboarding is unchanged > still records SELF and needs no assistant 50ms
+      Tests  18 passed (18)

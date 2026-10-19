@@ -1,0 +1,46 @@
+[
+  {
+    "width": 320,
+    "cards": 24,
+    "coverImgs": 24,
+    "coversLoaded": 24,
+    "otherMainImgs": 0,
+    "yardVerifiedText": false,
+    "verifiedDealerText": 24,
+    "overflow": false,
+    "failed": []
+  },
+  {
+    "width": 390,
+    "cards": 24,
+    "coverImgs": 24,
+    "coversLoaded": 24,
+    "otherMainImgs": 0,
+    "yardVerifiedText": false,
+    "verifiedDealerText": 24,
+    "overflow": false,
+    "failed": []
+  },
+  {
+    "width": 768,
+    "cards": 24,
+    "coverImgs": 24,
+    "coversLoaded": 24,
+    "otherMainImgs": 0,
+    "yardVerifiedText": false,
+    "verifiedDealerText": 24,
+    "overflow": false,
+    "failed": []
+  },
+  {
+    "width": 1280,
+    "cards": 24,
+    "coverImgs": 24,
+    "coversLoaded": 24,
+    "otherMainImgs": 0,
+    "yardVerifiedText": false,
+    "verifiedDealerText": 24,
+    "overflow": false,
+    "failed": []
+  }
+]

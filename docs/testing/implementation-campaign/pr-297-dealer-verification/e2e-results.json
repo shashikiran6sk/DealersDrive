@@ -1,0 +1,15 @@
+{
+  "api": {
+    "initial": "NOT_VERIFIED v0",
+    "toInReview": "IN_REVIEW",
+    "verifiedWithoutFiles": "VERIFICATION_DOCUMENTS_REQUIRED",
+    "verifiedWithEvidence": "VERIFIED v2",
+    "publicIsVerified": true
+  },
+  "browser": {
+    "whileVerified": { "directoryBadges": 1, "detailBadge": 1, "oldUnsupportedClaims": false },
+    "adminPanel": { "present": 1, "status": "Dealer Verified", "overflow": false },
+    "adminAfterRevokeViaUi": "Verification revoked",
+    "afterRevoke": { "directoryBadges": 0, "detailBadge": 0, "oldUnsupportedClaims": false }
+  }
+}

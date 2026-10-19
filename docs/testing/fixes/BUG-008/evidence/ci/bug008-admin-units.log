@@ -1,0 +1,12 @@
+
+ RUN  v5.0.0 /workspace/DealersDrive-fixes/apps/web
+
+
+ Test Files  15 passed (15)
+      Tests  138 passed (138)
+   Start at  10:53:51
+   Duration  20.40s (environment 41%, tests 34%, import 9%, setup 9%, transform 7%)
+
+Environment  jsdom was created 15 times · 7.86s total, 41% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

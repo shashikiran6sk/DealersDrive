@@ -1,0 +1,47 @@
+{
+  "stage": "pre-pr",
+  "browser": "155.0.8059.39",
+  "results": [
+    {
+      "width": 320,
+      "registrationWithoutTagline": true,
+      "persistedNull": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "registrationWithoutTagline": true,
+      "persistedNull": true,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "registrationWithoutTagline": true,
+      "persistedNull": true,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "registrationWithoutTagline": true,
+      "persistedNull": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "removalHeldForApproval": true,
+      "adminApproval": true,
+      "publicTaglineAbsent": true,
+      "noPlaceholder": true,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "removalHeldForApproval": true,
+      "adminApproval": true,
+      "publicTaglineAbsent": true,
+      "noPlaceholder": true,
+      "overflow": false
+    }
+  ],
+  "privacy": "Synthetic local fixtures. Sessions, OTPs and identifier/contact fields excluded."
+}

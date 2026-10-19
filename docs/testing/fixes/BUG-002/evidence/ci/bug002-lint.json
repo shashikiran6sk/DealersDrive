@@ -1,0 +1,12 @@
+{
+  "command": ["pnpm", "lint"],
+  "sha": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+  "start_utc": "2026-10-03T05:22:20.721913+00:00",
+  "end_utc": "2026-10-03T05:24:23.665935+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug002-lint.log",
+  "cache": "TURBO_FORCE=true",
+  "sourceBaseSha": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+  "uncommittedImplementationDuringRun": true,
+  "matchingImplementationCommit": "4df14b434ea9680bf06629b544d233edfb83416a"
+}

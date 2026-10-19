@@ -1,0 +1,52 @@
+{
+  "bug": "BUG-005",
+  "testedCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
+  "environment": "isolated certification PostgreSQL16; fake providers",
+  "result": "PASS",
+  "scope": "Read-only final DB check; detailed before/after snapshots retained in browser and integration assertions",
+  "constraints": {
+    "total": 33,
+    "unvalidated": 0
+  },
+  "cases": [
+    {
+      "width": 1440,
+      "membership": "REMOVED",
+      "removedAtPresent": true,
+      "removedByOwner": true,
+      "listing": "DRAFT",
+      "ownershipMatches": true,
+      "removalAuditActor": "OWNER",
+      "saved": 1,
+      "enquiries": 1,
+      "listingAudits": 0,
+      "listingEvents": 0
+    },
+    {
+      "width": 768,
+      "membership": "REMOVED",
+      "removedAtPresent": true,
+      "removedByOwner": true,
+      "listing": "DRAFT",
+      "ownershipMatches": true,
+      "removalAuditActor": "OWNER",
+      "saved": 1,
+      "enquiries": 1,
+      "listingAudits": 0,
+      "listingEvents": 0
+    },
+    {
+      "width": 390,
+      "membership": "REMOVED",
+      "removedAtPresent": true,
+      "removedByOwner": true,
+      "listing": "DRAFT",
+      "ownershipMatches": true,
+      "removalAuditActor": "OWNER",
+      "saved": 1,
+      "enquiries": 1,
+      "listingAudits": 0,
+      "listingEvents": 0
+    }
+  ]
+}

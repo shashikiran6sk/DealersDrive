@@ -1,0 +1,16 @@
+ ✓ |integration| tests/admin-members.test.ts > inviting > creates an INVITED member that the first sign-in activates 135ms
+ ✓ |integration| tests/admin-members.test.ts > inviting > refuses an address that is already a member 34ms
+ ✓ |integration| tests/admin-members.test.ts > inviting > refuses unknown fields and a missing role, by name 18ms
+ ✓ |integration| tests/admin-members.test.ts > inviting > records the inviter in the audit trail 34ms
+ ✓ |integration| tests/admin-members.test.ts > changing a role > applies on the member’s next request, without signing in again 96ms
+ ✓ |integration| tests/admin-members.test.ts > changing a role > demotes on the next request too 73ms
+ ✓ |integration| tests/admin-members.test.ts > changing a role > refuses your own membership and an allow-listed member 65ms
+ ✓ |integration| tests/admin-members.test.ts > changing a role > answers 404 for a member that does not exist 9ms
+ ✓ |integration| tests/admin-members.test.ts > disabling and re-activating > revokes their sessions at once, refuses their sign-in, and keeps the reason 89ms
+ ✓ |integration| tests/admin-members.test.ts > disabling and re-activating > re-activates to ACTIVE when they had signed in, INVITED when they had not 144ms
+ ✓ |integration| tests/admin-members.test.ts > disabling and re-activating > needs a reason 20ms
+ ✓ |integration| tests/admin-members.test.ts > the last Super admin > survives two Super admins disabling each other at once 93ms
+ ✓ |integration| tests/admin-members.test.ts > who may manage members > refuses every member route to Operations, Support and Sales 232ms
+ ✓ |integration| tests/admin-members.test.ts > who may manage members > filters by status and role, and counts by status 17ms
+ Test Files  1 passed (1)
+      Tests  14 passed (14)

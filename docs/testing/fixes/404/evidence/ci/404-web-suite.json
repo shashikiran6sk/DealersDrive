@@ -1,0 +1,9 @@
+{
+  "command": ["pnpm", "--filter", "@dealers-drive/web", "test"],
+  "sha": "389babb3a04488afe30ab8898419fe3920c8aa78",
+  "start_utc": "2026-10-02T18:16:57.013194+00:00",
+  "end_utc": "2026-10-02T18:19:25.581331+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/404-web-suite.log",
+  "cache": "TURBO_FORCE=true"
+}

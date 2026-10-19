@@ -1,0 +1,73 @@
+{
+  "prNumber": 294,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/294",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/admin-mobile-otp",
+  "headRefName": "feat/mobile-admin-access",
+  "headRefOid": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+  "files": [
+    "apps/web/src/app/(admin)/admin/dealers/page.tsx",
+    "apps/web/src/app/(admin)/admin/page.tsx",
+    "apps/web/src/components/layout/customer-header/customer-header.constants.ts",
+    "apps/web/src/components/layout/customer-header/customer-header.tsx",
+    "apps/web/src/components/layout/mobile-nav/mobile-nav.tsx",
+    "apps/web/src/components/ui/dialog/dialog.variants.ts",
+    "apps/web/src/components/ui/table/table.constants.ts",
+    "apps/web/src/components/ui/table/table.tsx",
+    "apps/web/src/components/ui/table/table.types.ts",
+    "apps/web/src/features/admin/admin-members/admin-members.tsx",
+    "apps/web/src/features/admin/enquiry-oversight/enquiry-oversight.tsx",
+    "apps/web/src/features/admin/moderation-queue/moderation-queue.tsx",
+    "apps/web/src/features/admin/moderation-queue/reactivation-queue.tsx",
+    "apps/web/src/features/admin/notification-log/notification-log.tsx",
+    "apps/web/src/features/admin/support-queue/support-queue.tsx",
+    "apps/web/src/features/auth/header-account/account-menu.tsx",
+    "apps/web/src/features/auth/header-account/header-account.constants.ts",
+    "apps/web/tests/unit/components/layout/customer-header.test.tsx",
+    "apps/web/tests/unit/components/ui/table.test.tsx",
+    "apps/web/tests/unit/features/auth/header-account.test.tsx",
+    "docs/code/web/components/ui/table.md",
+    "docs/project/mobile-admin-access.md"
+  ],
+  "commits": ["a17b4a4ea98b084fbf65691d64a9debc10f5901f"],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38040008694/job/114178191170"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38040008694/job/114178191025"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38040008694/job/114178190871"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38040008656/job/114178190810"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "a17b4a4ea98b084fbf65691d64a9debc10f5901f",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38040008656/job/114178190735"
+    }
+  ]
+}

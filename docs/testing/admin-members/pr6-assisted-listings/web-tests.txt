@@ -1,0 +1,82 @@
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > shows the dealership, each section, the description and the history with its reason 280ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the steps > has five data steps and no Photos step (R45) 67ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > shows the uploaded images inside the photography panel (R45) 97ms
+ ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx > /dealer/vehicles/new > opens on the registration step 261ms
+ ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx > /dealer/vehicles/[id]/edit > reads the dealer’s own vehicle, uncached, and opens the step in the URL 39ms
+ ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx > /dealer/vehicles/[id]/edit > falls back to the basics step for a step it does not know 41ms
+ ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx > /dealer/vehicles/[id]/edit > answers another dealership’s vehicle with a 404 page 4ms
+ ✓ tests/unit/features/vehicle/vehicle-pages.test.tsx > /dealer/vehicles/[id]/edit > lets any other failure reach the error boundary 1ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > starting a vehicle > asks for the plate, with Cancel and Continue and nothing to go back to 242ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a saved vehicle > fills the step from what was saved and names the vehicle and step it posts 52ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > shows the photography status and lets a moderator change it, with the internal note 110ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > shows photography read-only once the listing is out of review 50ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a saved vehicle > offers Back, Save draft and Continue as three intents of one form 60ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a saved vehicle > shows the price in rupees, grouped the Indian way 13ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a saved vehicle > confirms a saved draft 18ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the colour > is a choice of the twelve families, holding the saved one 48ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the colour > shows the family by name on the review step 21ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the review step > says a complete vehicle is ready and links each section back to its step 74ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > offers to tick what is unticked and undo what is ticked, and counts them 56ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > offers Request changes and Reject in review, and holds Approve until nothing blocks it 59ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > offers Approve once the API says nothing blocks it 157ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > shows the checklist read-only once the listing is out of review 45ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the review step > lists what is missing, each with a link to the step that fixes it 32ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > the review step > tells the dealer that Dealers-Drive takes the photographs 14ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > what the listing allows (F064) > shows a vehicle under review read-only, with no form and no edit links 28ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > what the listing allows (F064) > shows the moderator’s words when changes are requested, and stays editable 23ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the review screen > lists what is still missing 31ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > /admin/listings/[id] > reads the listing uncached and renders it 18ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > /admin/listings/[id] > answers an unknown listing with the 404 page 2ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setListingCheckAction > puts the check and refreshes the review screen 2ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setListingCheckAction > ignores a form naming an unknown check 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setListingCheckAction > refreshes after a refusal, and fails loudly if the API is unreachable 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setPhotographyAction > puts the status with a trimmed note and refreshes the review screen 3ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setPhotographyAction > clears the note when it is left empty 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setPhotographyAction > ignores a form naming an unknown status 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > setPhotographyAction > refreshes after a refusal, and fails loudly if the API is unreachable 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > approveListingAction > approves and refreshes the review screen, the queue and the public pages 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > approveListingAction > passes on why the API refused 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > presigns a valid file and hands back the signed upload 2ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > refuses a file the contract refuses, without asking the API 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > passes on what the API said, or that it could not be reached 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > commits an upload by its ids and refuses ids that are not uuids 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > removes an image and refreshes, and fails loudly if the API is unreachable 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > sends a new order and refreshes, and ignores a malformed one 2ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > chooses the primary image and refreshes 1ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > the image actions > ignores a removal form without valid ids 0ms
+ ✓ tests/unit/features/admin/listing-review.test.tsx > a listing Sales prepared (R114) > names who prepared and submitted it, and warns a reviewer who did 25ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > what the listing allows (F064) > offers a reserved car its lifecycle moves under the read-only review (R70) 71ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > what the listing allows (F064) > shows why a vehicle was not approved 29ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > submitting (F065) > offers Submit for review on a complete draft 97ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > submitting (F065) > disables it, and says why, until the vehicle is complete 48ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > submitting (F065) > calls it a resubmission when changes were requested 25ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > submitting (F065) > confirms a submission, and says who takes the photographs 14ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a member who may not publish (R95) > saves the draft but offers no Submit, and says who sends it for review 56ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > a member who may not publish (R95) > offers Submit to a member who may 41ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > in the Sales workspace (R114) > carries the dealership on every form and links within the Sales workspace 42ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > in the Sales workspace (R114) > explains that submission waits for approval 10ms
+ ✓ tests/unit/features/vehicle/vehicle-wizard.test.tsx > in the Sales workspace (R114) > does not offer the dealer’s lifecycle actions on a locked listing 7ms
+ ✓ tests/unit/features/sales/sales-vehicle-list.test.tsx > SalesVehicleList > links each prepared listing to its Sales edit page, and offers a new one 161ms
+ ✓ tests/unit/features/sales/sales-vehicle-list.test.tsx > SalesVehicleList > says drafts wait for approval, and shows a reviewer’s reason 9ms
+ ✓ tests/unit/features/sales/sales-vehicle-list.test.tsx > SalesVehicleList > offers nothing new for a closed dealership, and says when there is nothing 3ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > createVehicleAction > refuses a plate the parser cannot read, without calling the API 7ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > createVehicleAction > sends the canonical plate and nothing else, then opens the basics step 4ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > createVehicleAction > puts a duplicate refusal on the plate field 3ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > createVehicleAction > says the API is unavailable when it cannot be reached 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > sends only this step’s fields, clearing emptied ones with null 4ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > holds Continue on a step the API still finds incomplete, and keeps what was typed 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > saves and stays on the step for Save draft 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > saves and goes back for Back 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > converts rupees to paise on the pricing step 2ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > refuses letters in a number without calling the API 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > names a price the schema refuses on the rupee field 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > refuses a request that names no vehicle or an unknown step 0ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > saveVehicleStepAction > shows the API’s sentence when it names no field 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > submitVehicleAction > submits with no body and opens the confirmation 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > submitVehicleAction > shows the API’s sentence when the vehicle is incomplete 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > submitVehicleAction > says so when another dealership already has the car in review 0ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > submitVehicleAction > refuses a form that names no vehicle, and survives an unreachable API 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > in the Sales workspace (R114) > creates through the Sales route and stays in the Sales workspace 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > in the Sales workspace (R114) > saves and submits through the Sales routes 1ms
+ ✓ tests/unit/features/vehicle/actions.test.ts > in the Sales workspace (R114) > ignores a salesDealerId that is not an id, and stays on the dealer route 1ms
+      Tests  81 passed (81)

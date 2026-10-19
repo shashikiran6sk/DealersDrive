@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import {browser,pause} from './dealer-ux-cdp.mjs';
+const b=await browser(),checks=[],out='/tmp/dealer-ux-evidence/integrated-gallery';await fs.mkdir(out,{recursive:true});
+const assert=(ok,label)=>{if(!ok)throw Error(label);checks.push(label);};
+await b.size(375,568);await b.load('http://localhost:6006/iframe.html?id=vehicle-vehiclegallery--twenty&viewMode=story');
+await b.wait("!!document.querySelector('#storybook-root button')");
+await b.click("document.querySelector('#storybook-root button')");await b.wait("!!document.querySelector('[role=dialog]')");
+assert(await b.evaluate("document.querySelector('.dd-rail').getBoundingClientRect().top>400"),'Twenty-photo mobile gallery keeps thumbnails below the image');
+await b.send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight'});await b.send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight'});await b.wait("document.querySelector('[role=dialog]').innerText.includes('2 / 20')");assert(true,'Fullscreen gallery advances with the existing keyboard control');
+await pause(350);
+await b.evaluate("[...document.querySelectorAll('.dd-rail button')].at(-1).scrollIntoView({block:'nearest',inline:'center',behavior:'instant'})");
+await pause(350);
+await b.click("[...document.querySelectorAll('.dd-rail button')].at(-1)");await b.wait("document.querySelector('[role=dialog]')?.innerText.includes('20 / 20')");assert(true,'Native thumbnail selection reaches the last photo');
+await b.shot(out+'/last-photo-375.png');await b.size(320,360);
+assert(await b.evaluate("document.documentElement.scrollWidth<=document.documentElement.clientWidth"),'Short gallery viewport has no document overflow');
+assert(await b.evaluate("(()=>{const r=document.querySelector('.dd-rail').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+1;})()"),'Short viewport keeps the thumbnail rail accessible');await b.shot(out+'/short-height-320.png');
+await b.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape'});await b.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape'});await b.wait("!document.querySelector('[role=dialog]')&&document.activeElement?.getAttribute('aria-label')?.startsWith('View all')");assert(true,'Gallery Escape returns focus to its opener');
+await fs.writeFile(out+'/results.json',JSON.stringify({checks,source:'Existing twenty-photo story renders real production VehicleGallery'},null,2));console.log(checks.length,'gallery checks passed');await b.close();

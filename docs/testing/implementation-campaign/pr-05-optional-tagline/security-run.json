@@ -1,0 +1,142 @@
+{
+  "conclusion": "success",
+  "headSha": "465a5cd129de8b03be02cd551ca9e4bf238a39c6",
+  "jobs": [
+    {
+      "completedAt": "2026-10-09T21:27:14Z",
+      "conclusion": "success",
+      "databaseId": 114033192026,
+      "name": "semgrep",
+      "startedAt": "2026-10-09T21:26:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-09T21:26:08Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-09T21:26:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:09Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "startedAt": "2026-10-09T21:26:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:09Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v7",
+          "number": 3,
+          "startedAt": "2026-10-09T21:26:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:22Z",
+          "conclusion": "success",
+          "name": "Install Semgrep",
+          "number": 4,
+          "startedAt": "2026-10-09T21:26:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:27:12Z",
+          "conclusion": "success",
+          "name": "Scan",
+          "number": 5,
+          "startedAt": "2026-10-09T21:26:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:27:13Z",
+          "conclusion": "success",
+          "name": "Report",
+          "number": 6,
+          "startedAt": "2026-10-09T21:27:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:27:13Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v7",
+          "number": 11,
+          "startedAt": "2026-10-09T21:27:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:27:13Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 12,
+          "startedAt": "2026-10-09T21:27:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:27:13Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-09T21:27:13Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922/job/114033192026"
+    },
+    {
+      "completedAt": "2026-10-09T21:27:00Z",
+      "conclusion": "success",
+      "databaseId": 114033192444,
+      "name": "gitleaks",
+      "startedAt": "2026-10-09T21:26:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-09T21:26:08Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-09T21:26:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:14Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "startedAt": "2026-10-09T21:26:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:58Z",
+          "conclusion": "success",
+          "name": "Scan the repository and its history",
+          "number": 3,
+          "startedAt": "2026-10-09T21:26:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:59Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 6,
+          "startedAt": "2026-10-09T21:26:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-09T21:26:59Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 7,
+          "startedAt": "2026-10-09T21:26:59Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922/job/114033192444"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37993422922"
+}

@@ -1,0 +1,20 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "vitest",
+    "run",
+    "--project",
+    "integration",
+    "tests/bug002-purge-probe.test.ts",
+    "--reporter=verbose"
+  ],
+  "sha": "fc452697337212dd300953030022ca15d5b3ac83",
+  "start_utc": "2026-10-03T10:14:50.308131+00:00",
+  "end_utc": "2026-10-03T10:14:55.547912+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug002-final-purge-red.log",
+  "cache": "TURBO_FORCE=true"
+}

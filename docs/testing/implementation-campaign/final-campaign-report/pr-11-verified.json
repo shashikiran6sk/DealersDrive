@@ -1,0 +1,78 @@
+{
+  "prNumber": 298,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/298",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/dealer-verification",
+  "headRefName": "feat/optional-gstin",
+  "headRefOid": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+  "files": [
+    "apps/api/prisma/migrations/20261010153000_optional_gstin/migration.sql",
+    "apps/api/src/modules/admin/admin.service.ts",
+    "apps/api/src/modules/dealers/dealer-registration-conflict.ts",
+    "apps/api/src/modules/dealers/dealers.docs.ts",
+    "apps/api/src/modules/dealers/dealers.facade.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/src/modules/sales/sales.service.ts",
+    "apps/api/tests/dealer-approval-gate.test.ts",
+    "apps/api/tests/optional-gstin-migration.test.ts",
+    "apps/api/tests/optional-gstin.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.service.test.ts",
+    "apps/web/src/app/(admin)/admin/dealers/[id]/page.tsx",
+    "apps/web/src/features/admin/dealer-actions/approve-block.tsx",
+    "apps/web/src/features/admin/dealer-profile-editor/dealer-profile-editor.constants.ts",
+    "apps/web/src/features/auth/onboarding-wizard/documents-step.tsx",
+    "apps/web/src/features/dealer/profile-form/profile-form.tsx",
+    "apps/web/src/features/sales/assisted-dealer-form/assisted-dealer-form.constants.ts",
+    "apps/web/src/features/sales/assisted-dealer-form/utils.ts",
+    "apps/web/tests/unit/features/admin/dealer-actions.test.tsx",
+    "apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx",
+    "apps/web/tests/unit/features/sales/assisted-dealer-form.test.tsx",
+    "docs/project/optional-gstin.md",
+    "packages/contracts/src/admin.ts",
+    "packages/contracts/src/dealer-gstin.ts",
+    "packages/contracts/src/dealer.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/tests/unit/dealer-gstin.test.ts"
+  ],
+  "commits": ["b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826913/job/114300153613"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826913/job/114300153437"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826917/job/114300153407"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826917/job/114300153373"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38081826917/job/114300153178"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+$ turbo run typecheck
+• turbo 2.10.12
+
+   • Packages in scope: @dealers-drive/api, @dealers-drive/config, @dealers-drive/contracts, @dealers-drive/sandbox, @dealers-drive/web
+   • Running typecheck in 5 packages
+   • Remote caching disabled
+
+@dealers-drive/config:typecheck: cache miss, executing e719da02f9bb6587
+@dealers-drive/contracts:typecheck: cache miss, executing 2dc79b7db8a6046e
+@dealers-drive/contracts:build: cache hit, replaying logs da59ad6814a9965f
+@dealers-drive/contracts:build: $ tsc -p tsconfig.build.json
+@dealers-drive/web:typecheck: cache miss, executing aec25ab6269990cc
+@dealers-drive/api:typecheck: cache miss, executing 34a31991c7763c1b
+@dealers-drive/sandbox:typecheck: cache miss, executing ff3625313032798f
+@dealers-drive/config:typecheck: $ echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/contracts:typecheck: $ tsc -p tsconfig.json
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+@dealers-drive/sandbox:typecheck: $ tsc --noEmit
+@dealers-drive/web:typecheck: $ tsc --noEmit
+@dealers-drive/api:typecheck: $ tsc -p tsconfig.json
+
+ Tasks:    6 successful, 6 total
+Cached:    1 cached, 6 total
+  Time:    31.109s 
+
+ WARNING  no output files found for task @dealers-drive/config#typecheck. Please check your `outputs` key in `turbo.json`

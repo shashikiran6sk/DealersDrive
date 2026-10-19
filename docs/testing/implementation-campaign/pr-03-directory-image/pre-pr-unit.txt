@@ -1,0 +1,8 @@
+
+ RUN  v5.0.3 <repo>/apps/api
+
+
+ Test Files  2 passed (2)
+      Tests  243 passed (243)
+   Start at  23:00:32
+   Duration  330ms (transform 55%, import 36%, tests 8%, worker 1%)

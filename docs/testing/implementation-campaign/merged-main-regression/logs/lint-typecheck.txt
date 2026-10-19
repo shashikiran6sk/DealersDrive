@@ -1,0 +1,15 @@
+@dealers-drive/sandbox:typecheck: > @dealers-drive/sandbox@0.0.0 typecheck /home/user/wt-298/apps/sandbox
+@dealers-drive/sandbox:typecheck: > tsc --noEmit
+@dealers-drive/sandbox:typecheck: 
+@dealers-drive/config:typecheck: cache hit, replaying logs 9e781609632f77ee
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: > @dealers-drive/config@0.0.0 typecheck /home/user/wt-298/packages/config
+@dealers-drive/config:typecheck: > echo "@dealers-drive/config: nothing to typecheck"
+@dealers-drive/config:typecheck: 
+@dealers-drive/config:typecheck: @dealers-drive/config: nothing to typecheck
+
+ Tasks:    6 successful, 6 total
+Cached:    6 cached, 6 total
+  Time:    71ms >>> FULL TURBO
+
+TC_EXIT 0

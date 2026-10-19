@@ -1,0 +1,113 @@
+{
+  "prNumber": 297,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/297",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "fix/mobile-sidebar-navigation",
+  "headRefName": "feat/dealer-verification",
+  "headRefOid": "23c47d14cd39f0effc59f5327d42661efa411edd",
+  "files": [
+    "apps/api/prisma/migrations/20261010150000_dealer_verification/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/docs/schemas.ts",
+    "apps/api/src/modules/admin/admin.docs.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/admin/admin.service.ts",
+    "apps/api/src/modules/admin/dealer-verification.service.ts",
+    "apps/api/src/modules/admin/routes/dealer-verification.ts",
+    "apps/api/src/modules/dealers/dealer-verification.ts",
+    "apps/api/src/modules/dealers/dealers.facade.ts",
+    "apps/api/src/modules/dealers/dealers.public.docs.ts",
+    "apps/api/src/modules/dealers/dealers.public.service.ts",
+    "apps/api/src/modules/dealers/dealers.repository.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/src/modules/search/search.mapper.ts",
+    "apps/api/src/modules/search/search.repository.ts",
+    "apps/api/tests/dealer-verification-migration.test.ts",
+    "apps/api/tests/dealer-verification.test.ts",
+    "apps/api/tests/public-vehicle-page.test.ts",
+    "apps/api/tests/public-vehicles.test.ts",
+    "apps/api/tests/unit/modules/admin/admin.routes.test.ts",
+    "apps/api/tests/unit/modules/admin/admin.service.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.public.service.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.repository.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.service.test.ts",
+    "apps/api/tests/unit/modules/search/search.test.ts",
+    "apps/web/src/app/(admin)/admin/dealers/[id]/page.tsx",
+    "apps/web/src/app/(public)/dealers/[slug]/page.tsx",
+    "apps/web/src/app/(public)/dealers/page.tsx",
+    "apps/web/src/components/auth/entry-shell/entry-shell.constants.ts",
+    "apps/web/src/components/dealers/dealer-card/dealer-card.constants.ts",
+    "apps/web/src/components/dealers/dealer-inventory/dealer-inventory.constants.ts",
+    "apps/web/src/components/dealers/dealer-search-box/dealer-search-box.constants.ts",
+    "apps/web/src/components/dealers/dealer-search-box/dealer-suggestion-row.tsx",
+    "apps/web/src/components/layout/customer-footer/customer-footer.constants.ts",
+    "apps/web/src/components/public/coming-soon.tsx",
+    "apps/web/src/components/vehicle/vdp-dealer-card/vdp-dealer-card.constants.ts",
+    "apps/web/src/components/vehicle/vdp-dealer-card/vdp-dealer-card.tsx",
+    "apps/web/src/components/vehicle/vehicle-card/vehicle-card.constants.ts",
+    "apps/web/src/features/admin/dealer-verification/actions.ts",
+    "apps/web/src/features/admin/dealer-verification/dealer-verification.tsx",
+    "apps/web/src/features/auth/onboarding-wizard/onboarding-wizard.constants.ts",
+    "apps/web/src/features/dealer/profile-form/profile-form.constants.ts",
+    "apps/web/src/features/home/audience-section/audience-section.constants.ts",
+    "apps/web/src/features/home/home.constants.ts",
+    "apps/web/src/features/home/trust-section/trust-section.constants.ts",
+    "apps/web/src/lib/seo/seo.constants.ts",
+    "apps/web/tests/unit/app/seo-routes.test.tsx",
+    "apps/web/tests/unit/components/dealers/directory.test.tsx",
+    "apps/web/tests/unit/components/dealers/portfolio-page.test.tsx",
+    "apps/web/tests/unit/components/layout/customer-footer.test.tsx",
+    "apps/web/tests/unit/components/vehicle/vehicle-card.test.tsx",
+    "apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx",
+    "apps/web/tests/unit/features/admin/dealer-verification.test.tsx",
+    "apps/web/tests/unit/features/dealer/profile-form.test.tsx",
+    "docs/project/dealer-verification.md",
+    "packages/contracts/src/dealer-verification.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/tests/unit/dealer-verification.test.ts"
+  ],
+  "commits": [
+    "79ef0dbec4ee63d50d0ec8b88cb78e6f28604d0c",
+    "23c47d14cd39f0effc59f5327d42661efa411edd"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684496/job/114296792484"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684496/job/114296792428"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684488/job/114296792375"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684496/job/114296792320"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684488/job/114296792229"
+    }
+  ]
+}

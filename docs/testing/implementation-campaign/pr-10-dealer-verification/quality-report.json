@@ -1,0 +1,34 @@
+{
+  "prNumber": 297,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/297",
+  "branch": "feat/dealer-verification",
+  "baseBranch": "fix/mobile-sidebar-navigation",
+  "baseSha": "cefed41177086685bb56423522bfd67d2ea9e7dc",
+  "headSha": "23c47d14cd39f0effc59f5327d42661efa411edd",
+  "incrementalFiles": 59,
+  "featureCommits": 2,
+  "migration": "20261010150000_dealer_verification",
+  "testsPassed": {
+    "api": 3247,
+    "web": 1535,
+    "contracts": 474,
+    "total": 5256,
+    "browserChecks": 17
+  },
+  "testsFailedFinal": 0,
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684496",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38080684488",
+  "ciFinalStatus": "SUCCESS",
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployment": false,
+  "postCreationDefectFixed": "public badge cache not invalidated after a persisted review decision",
+  "notRun": [
+    "live government document verification",
+    "production data migration",
+    "physical devices",
+    "native Safari"
+  ],
+  "next": "PR 11: feat/optional-gstin",
+  "ciHeadSha": "23c47d14cd39f0effc59f5327d42661efa411edd"
+}

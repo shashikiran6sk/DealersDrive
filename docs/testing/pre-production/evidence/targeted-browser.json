@@ -1,0 +1,221 @@
+[
+  {
+    "id": "TARGET-desktop-customer",
+    "canonical": [],
+    "status": "BLOCKED",
+    "reason": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /^Account menu for/ }) to be visible\u001b[22m\n",
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "UI-DISC-001-desktop",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "FAIL",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/desktop/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-desktop-404",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/desktop/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-tablet-customer",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "BROWSER_WITH_PREVIOUSLY_AUTHENTICATED_STATE",
+      "screenshot": "evidence/tablet/targeted-enquiry.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "UI-DISC-001-tablet",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "FAIL",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/tablet/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-tablet-404",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/tablet/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-mobile-customer",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "BROWSER_WITH_PREVIOUSLY_AUTHENTICATED_STATE",
+      "screenshot": "evidence/mobile/targeted-enquiry.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "UI-DISC-001-mobile",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "FAIL",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/mobile/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-mobile-404",
+    "canonical": ["PUBLIC-021", "SEO-009"],
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "customBrand": false,
+      "visibleText": "LOCAL — NOT REAL DATA\n404\nThis page could not be found.",
+      "screenshot": "evidence/mobile/not-found.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-OWNER-workspace",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "CUSTOMER_SCOPE_FIXTURE_THEN_UI_WORKSPACE_SWITCH",
+      "measurements": [
+        {
+          "path": "/dealer",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/inventory",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/enquiries",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ]
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-OWNER-team",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "screenshot": "evidence/dealer-owner/team-cancel-reopen.png"
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-MANAGER-workspace",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "CUSTOMER_SCOPE_FIXTURE_THEN_UI_WORKSPACE_SWITCH",
+      "measurements": [
+        {
+          "path": "/dealer",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/inventory",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/enquiries",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ]
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-STAFF-workspace",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "CUSTOMER_SCOPE_FIXTURE_THEN_UI_WORKSPACE_SWITCH",
+      "measurements": [
+        {
+          "path": "/dealer",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/inventory",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "path": "/dealer/enquiries",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ]
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-STAFF-draft",
+    "canonical": [],
+    "status": "BLOCKED",
+    "reason": "locator.fill: Error: strict mode violation: getByLabel('Registration number') resolved to 2 elements:\n    1) <section class=\"card gap-[16px] p-[20px]\" aria-labelledby=\"wizard-step-heading\">…</section> aka getByRole('region', { name: 'Registration number' })\n    2) <input type=\"text\" required=\"\" autofocus=\"\" maxlength=\"24\" inputmode=\"text\" autocomplete=\"off\" spellcheck=\"false\" id=\"registrationNumber\" name=\"registrationNumber\" autocapitalize=\"characters\" placeholder=\"KA 01 AB 1234\" class=\"input dd-plate-input\"/> aka getByRole('textbox', { name: 'Registration numberas printed' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel('Registration number')\u001b[22m\n",
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  },
+  {
+    "id": "TARGET-ADMIN-views",
+    "canonical": [],
+    "status": "PASS",
+    "observed": {
+      "method": "SCOPED_ADMIN_FIXTURE_NOT_REAL_GOOGLE_SIGN_IN",
+      "measurements": [
+        {
+          "path": "/admin/dealers",
+          "width": 390,
+          "scrollWidth": 423
+        },
+        {
+          "path": "/admin/listings",
+          "width": 390,
+          "scrollWidth": 423
+        },
+        {
+          "path": "/admin/enquiries",
+          "width": 390,
+          "scrollWidth": 423
+        }
+      ]
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  }
+]
