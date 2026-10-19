@@ -13,3 +13,9 @@ Store graphics derive from the unchanged approved SVG masters through the existi
 See [validation](../../mobile/f108-validation.md), [security assessment](../../mobile/security-review.md) and [production NO-GO](../../mobile/production-acceptance.md). No self-approval, merge, production activation or publication follows from a green check.
 
 The mobile Turbo task explicitly passes/hashes all public and build-identity inputs used by dynamic Expo configuration. Its strict environment remains enabled; unrelated packages are unchanged. Preview positive/negative builds verify version input propagation without creating a production identity or asserting release approval. CI uses a full AOSP API 36 image for native screenshot smoke after preserving a Google-image System UI ANR failure; it never auto-dismisses ANR dialogs or reports an obstructed run as passed.
+
+## `apps/mobile/e2e/guest.yaml`, `apps/mobile/e2e/public-links.yaml`
+
+### `extendedWaitUntil: home-title`
+
+The first Home assertion after a cold `launchApp` waits up to 45 seconds instead of Maestro's default. A release cold start on the CI emulator, which uses software rendering, took about 20 seconds when it passed and once ran past the default wait (PR #323, run 39206425519). The wait is an upper bound, not a delay: the flow continues as soon as Home is visible, and a launch that never reaches Home still fails.
