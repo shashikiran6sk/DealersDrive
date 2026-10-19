@@ -25,6 +25,16 @@ export const DEALERS_TEXT = Object.freeze({
   close: 'Close',
   apply: 'Apply',
   filterCars: 'Filter cars',
+  services: 'Services',
+  updating: 'Updating cars…',
+  directionsFailedTitle: 'Directions unavailable',
+  directionsFailedBody: 'No maps app could open this address. Please try again.',
+  noMatchTitle: 'No cars match these filters',
+  noMatchBody: 'Remove a filter to see more of this dealership’s cars.',
+  noMatchAction: 'Clear filters',
+  noStockTitle: 'No cars available here yet',
+  noStockBody: 'You can keep exploring cars from other local dealerships.',
+  noStockAction: 'Explore cars',
   cars: (count: number) =>
     `${count.toLocaleString('en-IN')} ${count === 1 ? 'car' : 'cars'} listed`,
 });

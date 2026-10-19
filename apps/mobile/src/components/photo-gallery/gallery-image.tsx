@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { CARS_TEXT } from '../../features/cars/cars.constants';
 import { typography } from '../../theme/tokens';
+import { VIEWER_TEXT } from './photo-gallery.constants';
 
 export function GalleryImage({
   image,
@@ -50,7 +51,7 @@ export function GalleryImage({
       {loading && !failed ? (
         <ActivityIndicator
           accessibilityLabel={CARS_TEXT.loadingPhoto}
-          color="#ffffff"
+          color={VIEWER_TEXT}
           style={{ position: 'absolute' }}
         />
       ) : null}
@@ -58,6 +59,6 @@ export function GalleryImage({
   );
 }
 const styles = StyleSheet.create({
-  text: { color: '#ffffff', fontFamily: typography.family, fontSize: 15 },
+  text: { color: VIEWER_TEXT, fontFamily: typography.family, fontSize: 15 },
   image: { width: '100%', height: '100%' },
 });

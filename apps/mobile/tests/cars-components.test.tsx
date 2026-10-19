@@ -67,10 +67,11 @@ it('handles empty galleries and clamps primary indexes before paging', async () 
       title={car.title}
     />,
   );
-  expect(screen.getByText(CARS_TEXT.photos(1, 2))).toBeOnTheScreen();
-  expect(screen.getByRole('button', { name: CARS_TEXT.next })).toBeDisabled();
-  await fireEvent.press(screen.getByRole('button', { name: CARS_TEXT.previous }));
-  expect(screen.getByText(CARS_TEXT.photos(0, 2))).toBeOnTheScreen();
+  expect(screen.getByTestId('photo-gallery-region')).toHaveAccessibilityValue({
+    text: CARS_TEXT.photos(1, 2),
+  });
+  expect(screen.queryByRole('button', { name: CARS_TEXT.next })).toBeNull();
+  expect(screen.queryByRole('button', { name: CARS_TEXT.previous })).toBeNull();
 });
 
 const mockSaved = {

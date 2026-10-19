@@ -2,7 +2,7 @@ import { DiscoveryTools } from '../../../components/discovery-tools';
 import { EmptyState } from '../../../components/empty-state';
 import { SortDialog } from '../../cars/sort-dialog';
 import { AppliedFilters } from '../../cars/applied-filters';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { VehicleCardDto } from '@dealers-drive/contracts/public';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts/public';
 import { GoogleMapsUrl, SlugParam } from '@dealers-drive/contracts/common';
@@ -16,19 +16,21 @@ import {
 } from '@dealers-drive/contracts/vehicle-search';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Alert, FlatList, Linking, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Linking, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import cover from '../../../assets/dealer-cover.svg';
 import { ActionButton } from '../../../components/action-button';
 import { CarCard } from '../../../components/car-card';
 import { PhotoGallery } from '../../../components/photo-gallery';
+import { ServicePills } from '../../../components/service-pills';
 import { StatusPanel } from '../../../components/status-panel';
 import { colors, spacing, typography } from '../../../theme/tokens';
 import { CARS_TEXT } from '../../cars/cars.constants';
 import { FilterDialog } from '../../cars/filter-dialog';
 import { dealersApi } from '../dealers-api';
 import { DEALERS_TEXT } from '../dealers.constants';
+import { inventoryOffset } from './utils';
 
 export function DealerProfileScreen() {
   const input = useLocalSearchParams<{ slug: string }>();
@@ -39,6 +41,8 @@ export function DealerProfileScreen() {
   delete params.q;
   const [filters, setFilters] = useState(false);
   const [sort, setSort] = useState(false);
+  const list = useRef<FlatList<VehicleCardDto>>(null);
+  const inventoryTop = useRef<number | null>(null);
   const apply = (next: VehicleSearchParams) => {
     router.setParams(
       Object.fromEntries(
@@ -46,6 +50,9 @@ export function DealerProfileScreen() {
       ),
     );
     setFilters(false);
+    setSort(false);
+    if (inventoryTop.current !== null)
+      list.current?.scrollToOffset({ offset: inventoryTop.current, animated: true });
   };
   const profile = useQuery({
     queryKey: ['public', 'dealer', slug],
@@ -58,8 +65,10 @@ export function DealerProfileScreen() {
     queryFn: ({ pageParam, signal }) => dealersApi.inventory(slug, params, pageParam, signal),
     getNextPageParam: (last) =>
       last.page.page < last.page.totalPages ? last.page.page + 1 : undefined,
+    placeholderData: keepPreviousData,
     enabled: valid,
   });
+  const updating = inventory.isPlaceholderData && inventory.isFetching;
   const dealer = profile.data;
   const photos = useMemo(
     () =>
@@ -91,6 +100,8 @@ export function DealerProfileScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList<VehicleCardDto>
+        ref={list}
+        testID="dealer-profile-list"
         data={cars}
         keyExtractor={(car) => car.slug}
         initialNumToRender={6}
@@ -146,12 +157,15 @@ export function DealerProfileScreen() {
                   </View>
                 ),
               )}
-              {dealer.services.map((service) => (
-                <Text key={service} style={styles.text}>
-                  {service}
-                </Text>
-              ))}
             </View>
+            {dealer.services.length ? (
+              <View style={styles.section}>
+                <Text accessibilityRole="header" style={styles.subheading}>
+                  {DEALERS_TEXT.services}
+                </Text>
+                <ServicePills services={dealer.services} label={DEALERS_TEXT.services} />
+              </View>
+            ) : null}
             <View style={styles.box}>
               <Text style={styles.text}>{dealer.address.full}</Text>
               {maps.success ? (
@@ -162,8 +176,8 @@ export function DealerProfileScreen() {
                     onPress={() =>
                       void Linking.openURL(maps.data).catch(() =>
                         Alert.alert(
-                          'Directions unavailable',
-                          'No maps app could open this address. Please try again.',
+                          DEALERS_TEXT.directionsFailedTitle,
+                          DEALERS_TEXT.directionsFailedBody,
                         ),
                       )
                     }
@@ -174,10 +188,17 @@ export function DealerProfileScreen() {
                 <Text style={styles.muted}>{DEALERS_TEXT.directionsUnavailable}</Text>
               )}
             </View>
-            <Text accessibilityRole="header" style={styles.heading}>
+            <Text
+              testID="dealer-inventory-heading"
+              accessibilityRole="header"
+              style={styles.heading}
+              onLayout={(event) => {
+                inventoryTop.current = inventoryOffset(event.nativeEvent.layout.y);
+              }}
+            >
               {DEALERS_TEXT.inventory}
             </Text>
-            {cars.length || activeFilterCount(params) ? (
+            {cars.length || activeFilterCount(params) || params.sort || inventory.isError ? (
               <DiscoveryTools
                 count={activeFilterCount(params)}
                 onSort={() => setSort(true)}
@@ -193,6 +214,12 @@ export function DealerProfileScreen() {
               <Text accessibilityLiveRegion="polite" style={styles.text}>
                 {CARS_TEXT.resultCount(first.available)}
               </Text>
+            ) : null}
+            {updating ? (
+              <View testID="dealer-inventory-updating" style={styles.updating}>
+                <ActivityIndicator color={colors.ink} />
+                <Text style={styles.muted}>{DEALERS_TEXT.updating}</Text>
+              </View>
             ) : null}
             {inventory.isError ? (
               <StatusPanel
@@ -216,16 +243,14 @@ export function DealerProfileScreen() {
           ) : !inventory.isError ? (
             <EmptyState
               title={
-                activeFilterCount(params)
-                  ? 'No cars match these filters'
-                  : 'No cars available here yet'
+                activeFilterCount(params) ? DEALERS_TEXT.noMatchTitle : DEALERS_TEXT.noStockTitle
               }
               description={
-                activeFilterCount(params)
-                  ? 'Remove a filter to see more of this dealership’s cars.'
-                  : 'You can keep exploring cars from other local dealerships.'
+                activeFilterCount(params) ? DEALERS_TEXT.noMatchBody : DEALERS_TEXT.noStockBody
               }
-              action={activeFilterCount(params) ? 'Clear filters' : 'Explore cars'}
+              action={
+                activeFilterCount(params) ? DEALERS_TEXT.noMatchAction : DEALERS_TEXT.noStockAction
+              }
               onAction={() =>
                 activeFilterCount(params) ? apply(clearFilters(params)) : router.navigate('/cars')
               }
@@ -286,6 +311,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   heading: { fontFamily: typography.family, color: colors.ink, fontSize: 21, fontWeight: '800' },
+  subheading: { fontFamily: typography.family, color: colors.ink, fontSize: 17, fontWeight: '800' },
+  section: { gap: spacing.sm },
+  updating: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   text: {
     fontFamily: typography.family,
     color: colors.ink,

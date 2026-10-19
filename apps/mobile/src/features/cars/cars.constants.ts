@@ -64,6 +64,9 @@ export const CARS_TEXT = Object.freeze({
   anyKm: 'Any distance',
   previous: 'Previous photo',
   next: 'Next photo',
+  openViewer: 'Open full-screen photos',
+  photoCounter: (index: number, total: number) => `${index + 1} / ${total}`,
+  swipeHint: 'Swipe left or right to browse photos.',
 });
 export const FILTER_LABELS = Object.freeze({
   city: 'City / Town',
