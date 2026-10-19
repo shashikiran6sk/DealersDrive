@@ -11,6 +11,7 @@ import { SignInScreen } from '../src/features/auth/sign-in-screen';
 import { AUTH_TEXT } from '../src/features/auth/auth.constants';
 import { ApiError } from '../src/services/api';
 
+const mockBeforeRemove = jest.fn<void, [string, () => void]>();
 const mockRouter = { back: jest.fn(), replace: jest.fn(), push: jest.fn(), canGoBack: () => true };
 const mockManager = {
   beginAuthentication: jest.fn(() => 1),
@@ -85,7 +86,12 @@ const mockApi = {
 };
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
-  useNavigation: () => ({ addListener: () => () => undefined }),
+  useNavigation: () => ({
+    addListener: (event: string, listener: () => void) => {
+      mockBeforeRemove(event, listener);
+      return () => undefined;
+    },
+  }),
 }));
 jest.mock('../src/features/auth/auth-provider', () => ({
   useAuth: () => ({ manager: mockManager, api: mockApi }),
@@ -161,11 +167,12 @@ it('keeps Terms acceptance and Privacy acknowledgment unticked and completes onl
   );
   expect(mockRouter.back).toHaveBeenCalledTimes(1);
 });
-it('cancels the current generation and original pending action on explicit cancellation', async () => {
+it('cancels the current generation and pending action when native navigation removes sign in', async () => {
   await form();
-  await fireEvent.press(screen.getByRole('button', { name: AUTH_TEXT.cancel }));
+  const listener = mockBeforeRemove.mock.calls.find((call) => call[0] === 'beforeRemove')?.[1];
+  expect(listener).toBeDefined();
+  listener?.();
   expect(mockManager.cancelAuthentication).toHaveBeenCalledWith(1);
-  expect(mockRouter.back).toHaveBeenCalledTimes(1);
   expect(mockManager.accept).not.toHaveBeenCalled();
 });
 it('shows a failed signup without completing authentication or reporting success', async () => {

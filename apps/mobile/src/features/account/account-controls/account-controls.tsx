@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionButton } from '../../../components/action-button';
-import { Brand } from '../../../components/brand';
 import { ConsentChoice } from '../../../components/consent-choice';
 import { Page } from '../../../components/page';
 import { StatusPanel } from '../../../components/status-panel';
@@ -80,14 +79,8 @@ export function AccountControls() {
     }
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <Page header={<Brand />} title={ACCOUNT_TEXT.title}>
-        <ActionButton
-          variant="ghost"
-          label={ACCOUNT_TEXT.back}
-          disabled={busy}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'))}
-        />
+    <SafeAreaView style={styles.root} edges={['bottom']}>
+      <Page showTitle={false} title={ACCOUNT_TEXT.title}>
         {session.status === 'guest' ? (
           <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />
         ) : session.status !== 'authenticated' ? (

@@ -8,8 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionButton } from '../../../components/action-button';
 import { AuthField } from '../../../components/auth-field';
-import { Brand } from '../../../components/brand';
-import { ConsentChoice } from '../../../components/consent-choice';
+import { PolicyChoice } from '../../../components/policy-choice';
 import { Page } from '../../../components/page';
 import { ApiError } from '../../../services/api';
 import { colors, spacing, typography } from '../../../theme/tokens';
@@ -68,10 +67,7 @@ export function SignInScreen() {
     setTerms(false);
     setPrivacy(false);
   }, [policyVersion]);
-  const cancelAuthentication = () => {
-    controller.current.abort();
-    if (generation.current !== null) manager.cancelAuthentication(generation.current);
-  };
+
   useEffect(
     () =>
       navigation.addListener('beforeRemove', () => {
@@ -228,10 +224,9 @@ export function SignInScreen() {
   const blocked = Math.max(0, Math.ceil((blockedUntil - now) / 1000));
   const primary = (label: string) => (blocked ? AUTH_TEXT.tryAgainIn(blocked) : label);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView behavior="height" style={styles.root}>
         <Page
-          header={<Brand />}
           title={
             phase === 'phone'
               ? AUTH_TEXT.title
@@ -295,11 +290,13 @@ export function SignInScreen() {
                 onPress={() => void verify()}
               />
               <ActionButton
+                variant="secondary"
                 label={remaining ? AUTH_TEXT.resendWait(remaining) : AUTH_TEXT.resend}
                 disabled={busy || remaining > 0 || blocked > 0}
                 onPress={() => void resend()}
               />
               <ActionButton
+                variant="ghost"
                 label={AUTH_TEXT.changeNumber}
                 disabled={busy}
                 onPress={() => {
@@ -336,14 +333,14 @@ export function SignInScreen() {
               />
               {publication.data?.collectionEnabled ? (
                 <View>
-                  <ConsentChoice
-                    label={AUTH_TEXT.acceptTerms}
+                  <PolicyChoice
+                    kind="terms"
                     checked={terms}
                     onChange={() => setTerms(!terms)}
                     disabled={busy}
                   />
-                  <ConsentChoice
-                    label={AUTH_TEXT.acknowledgePrivacy}
+                  <PolicyChoice
+                    kind="privacy"
                     checked={privacy}
                     onChange={() => setPrivacy(!privacy)}
                     disabled={busy}
@@ -371,30 +368,24 @@ export function SignInScreen() {
               {error}
             </Text>
           ) : null}
-          <View style={styles.links}>
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => router.push('/policy/terms')}
-              style={styles.link}
-            >
-              <Text style={styles.linkText}>{AUTH_TEXT.terms}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => router.push('/policy/privacy')}
-              style={styles.link}
-            >
-              <Text style={styles.linkText}>{AUTH_TEXT.privacy}</Text>
-            </Pressable>
-          </View>
-          <ActionButton
-            label={AUTH_TEXT.cancel}
-            onPress={() => {
-              cancelAuthentication();
-              if (router.canGoBack()) router.back();
-              else router.replace('/');
-            }}
-          />
+          {phase !== 'name' ? (
+            <View style={styles.links}>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => router.push('/policy/terms')}
+                style={styles.link}
+              >
+                <Text style={styles.linkText}>{AUTH_TEXT.terms}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => router.push('/policy/privacy')}
+                style={styles.link}
+              >
+                <Text style={styles.linkText}>{AUTH_TEXT.privacy}</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </Page>
       </KeyboardAvoidingView>
     </SafeAreaView>

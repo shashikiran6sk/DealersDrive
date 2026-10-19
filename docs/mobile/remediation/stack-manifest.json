@@ -22,13 +22,19 @@
       "branch": "feat/f110-mobile-discovery-search",
       "base": "feat/f109-mobile-ux-foundation",
       "base_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
-      "state": "IMPLEMENTING"
+      "state": "OPEN",
+      "pr": 323,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/323",
+      "head_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9",
+      "tested_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9",
+      "draft": true
     },
     {
       "feature": "F111",
       "branch": "feat/f111-mobile-customer-journeys",
       "base": "feat/f110-mobile-discovery-search",
-      "state": "PLANNED"
+      "state": "IMPLEMENTING",
+      "base_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9"
     },
     {
       "feature": "F112",

@@ -1,8 +1,8 @@
 import { SaveButton } from '../save-button';
 import { titleWithoutYear, type VehicleCardDto } from '@dealers-drive/contracts/public';
 import { Image } from 'expo-image';
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../../theme/tokens';
 import { CARS_TEXT } from '../../features/cars/cars.constants';
 
@@ -13,6 +13,11 @@ export interface CarCardProps {
 }
 export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(Boolean(car.image));
+  useEffect(() => {
+    setFailed(false);
+    setLoading(Boolean(car.image));
+  }, [car.slug, car.image?.url]);
   const reserved = car.availability !== 'AVAILABLE';
   const availabilityLabel =
     car.availability === 'SOLD'
@@ -46,20 +51,30 @@ export function CarCard({ car, onOpen, onDealer }: CarCardProps) {
               cachePolicy="memory-disk"
               recyclingKey={car.slug}
               accessibilityLabel={car.image.alt}
-              onError={() => setFailed(true)}
+              onLoadStart={() => setLoading(true)}
+              onLoadEnd={() => setLoading(false)}
+              onError={() => {
+                setFailed(true);
+                setLoading(false);
+              }}
             />
           ) : (
             <Text style={styles.fallback}>
               {failed ? CARS_TEXT.imageFailed : CARS_TEXT.noPhoto}
             </Text>
           )}
+          {loading && !failed && car.image ? (
+            <ActivityIndicator
+              accessibilityLabel={CARS_TEXT.loadingPhoto}
+              color={colors.ink}
+              style={{ position: 'absolute' }}
+            />
+          ) : null}
           {car.year ? <Text style={styles.year}>{car.year}</Text> : null}
           {reserved ? <Text style={styles.badge}>{availabilityLabel}</Text> : null}
         </View>
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
-            {titleWithoutYear(car)}
-          </Text>
+          <Text style={styles.title}>{titleWithoutYear(car)}</Text>
           <Text style={styles.price}>{car.priceLabel ?? CARS_TEXT.priceRequest}</Text>
           <Text style={styles.meta}>{car.metaLabel}</Text>
         </View>

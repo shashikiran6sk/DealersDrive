@@ -1980,3 +1980,16 @@ Existing native CarCard, ActionButton, SelectionSheet and filtering contracts re
 | InventoryRow                     | features/home/inventory-row                           | Actual nonempty card data only, horizontal layout, canonical browse action                                                                  | home-discovery.test.tsx; native Home screenshot                      |
 
 No backend records, counts or photographs are injected to populate runtime screens. Test fixtures are isolated to native tests.
+
+### F111 — customer journeys and consistent cards
+
+Native components extend the existing shared Card, ConsentChoice, Page, Icon, SelectionSheet and EmptyState system. React Native fixtures and snapshots cover these controls; no HTML sandbox is imported.
+
+| Component                      | Source under apps/mobile/src                          | States and consumers                                                                                     | Evidence                                                 |
+| ------------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| NavigationBack / NavigationRow | components/navigation-back; components/navigation-row | Native Back/close; grouped Profile destinations                                                          | navigation-discard fixtures and emulator screenshots     |
+| SelectionField                 | components/selection-field                            | Selected/placeholder/disabled/expanded; contract-backed support category sheet                           | support-create fixtures                                  |
+| PolicyChoice / CheckBoxMark    | components/policy-choice; components/consent-choice   | Separate affirmative choice and document link; signup/agreements                                         | policy-choice, sign-in and enquiry fixtures              |
+| CarCard / SaveButton           | components/car-card; components/save-button           | One system for all placements, solid/outlined black heart, image recovery, availability and missing data | cars-components snapshots and saved rollback/cache tests |
+
+Full source-level behavior and the pinned navigation adapter are described in [customer navigation](../code/mobile/customer-navigation.md).

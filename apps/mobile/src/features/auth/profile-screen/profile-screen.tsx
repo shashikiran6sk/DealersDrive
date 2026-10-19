@@ -5,8 +5,9 @@ import { SUPPORT_TEXT } from '../../support/support.constants';
 import { ACCOUNT_TEXT } from '../../account/account.constants';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { NavigationRow } from '../../../components/navigation-row';
 import { ActionButton } from '../../../components/action-button';
 import { Page } from '../../../components/page';
 import { colors, typography } from '../../../theme/tokens';
@@ -70,42 +71,36 @@ export function ProfileScreen() {
           {notice}
         </Text>
       ) : null}
-      <ActionButton
-        variant="secondary"
-        label={ENQUIRY_TEXT.history}
-        onPress={() => router.navigate('/enquiries')}
-      />
-      <ActionButton
-        variant="secondary"
-        label={ACCOUNT_TEXT.title}
-        onPress={() => router.navigate('/account')}
-      />
-      <ActionButton
-        variant="secondary"
-        label={SUPPORT_TEXT.title}
-        onPress={() => router.navigate('/support')}
-      />
-      <ActionButton
-        variant="secondary"
-        label={ENQUIRY_TEXT.privacyControls}
-        onPress={() => router.navigate('/privacy-controls')}
-      />
-      <ActionButton
-        variant="secondary"
-        label={SAVED_TEXT.agreements}
-        onPress={() => router.navigate('/agreements')}
-      />
-      <ActionButton
-        variant="ghost"
-        label={RELIABILITY_TEXT.about}
-        onPress={() => router.navigate('/about')}
-      />
-      <ActionButton label={AUTH_TEXT.terms} onPress={() => router.push('/policy/terms')} />
-      <ActionButton label={AUTH_TEXT.privacy} onPress={() => router.push('/policy/privacy')} />
+      {session.status === 'authenticated' ? (
+        <View style={styles.group}>
+          <NavigationRow
+            label={ENQUIRY_TEXT.history}
+            onPress={() => router.navigate('/enquiries')}
+          />
+          <NavigationRow label={ACCOUNT_TEXT.title} onPress={() => router.navigate('/account')} />
+          <NavigationRow
+            label={SAVED_TEXT.agreements}
+            onPress={() => router.navigate('/agreements')}
+          />
+        </View>
+      ) : null}
+      <View style={styles.group}>
+        <NavigationRow label={SUPPORT_TEXT.title} onPress={() => router.navigate('/support')} />
+        <NavigationRow
+          label={ENQUIRY_TEXT.privacyControls}
+          onPress={() => router.navigate('/privacy-controls')}
+        />
+        <NavigationRow label={RELIABILITY_TEXT.about} onPress={() => router.navigate('/about')} />
+      </View>
+      <View style={styles.group}>
+        <NavigationRow label={AUTH_TEXT.terms} onPress={() => router.push('/policy/terms')} />
+        <NavigationRow label={AUTH_TEXT.privacy} onPress={() => router.push('/policy/privacy')} />
+      </View>
     </Page>
   );
 }
 const styles = StyleSheet.create({
+  group: { borderWidth: 1, borderColor: colors.divider, borderRadius: 14, overflow: 'hidden' },
   text: { fontFamily: typography.family, color: colors.ink, fontSize: typography.body },
   name: { fontFamily: typography.family, color: colors.ink, fontSize: 20, fontWeight: '700' },
 });

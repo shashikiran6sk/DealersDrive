@@ -1,4 +1,7 @@
 export const ENQUIRY_TEXT = Object.freeze({
+  emptyTitle: 'No enquiries yet',
+  emptyBody: 'Ask a dealership about a car to start a conversation.',
+  emptyAction: 'Explore cars',
   enquire: 'Enquire now',
   heading: 'Interested in this vehicle?',
   login: 'Sign in with your mobile number to enquire.',
@@ -7,7 +10,7 @@ export const ENQUIRY_TEXT = Object.freeze({
   placeholder: 'Ask about the car, or when you can visit.',
   verified: 'Verified mobile',
   permission: (dealer: string) =>
-    `I permit sharing my name, verified mobile number and submitted enquiry messages with ${dealer} so it can respond to my enquiries.`,
+    `Share my name, verified mobile number and enquiry messages with ${dealer} to respond to my enquiries.`,
   shareNote: (dealer: string) =>
     `${dealer} will receive your name and verified mobile number, and will contact you.`,
   sent: 'Enquiry sent',

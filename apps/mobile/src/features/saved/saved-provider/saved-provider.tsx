@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Alert, AppState } from 'react-native';
@@ -6,16 +6,35 @@ import { ApiError } from '../../../services/api';
 import { useAuth, useSession } from '../../auth/auth-provider';
 import { savedApi, hydrateSavedSlugs } from '../saved-api';
 import { SAVED_TEXT } from '../saved.constants';
+import {
+  patchSavedMembership,
+  removeSavedFromPages,
+  restoreSavedRows,
+  savedSlugsKey,
+} from '../saved-cache';
 
 interface SavedContextValue {
   isSaved: (slug: string) => boolean;
   isPending: (slug: string) => boolean;
   ready: boolean;
+  updating: boolean;
   toggle: (slug: string) => void;
   save: (slug: string) => Promise<void>;
   resume: () => void;
   error: string | null;
   retry: () => void;
+}
+interface SaveOperation {
+  id: number;
+  wanted: boolean;
+  optimistic: boolean;
+  current: () => boolean;
+}
+interface SaveVariables {
+  owner: string;
+  slug: string;
+  wanted: boolean;
+  id: number;
 }
 const SavedContext = createContext<SavedContextValue | null>(null);
 export function SavedProvider({ children }: { children: ReactNode }) {
@@ -24,17 +43,21 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const cache = useQueryClient();
   const [pending, setPending] = useState<Set<string>>(new Set());
-  const locks = useRef(new Set<string>());
+  const operations = useRef(new Map<string, SaveOperation>());
+  const sequence = useRef(0);
   const userId = session.customer?.id;
   const query = useQuery({
     queryKey: ['customer', userId, 'saved-slugs'],
     enabled: session.status === 'authenticated',
     queryFn: ({ signal }) => {
       const token = manager.token();
-      if (!token) throw new ApiError('AUTH_REQUIRED', 'Sign in to continue.', 401);
+      if (!token || manager.getSnapshot().customer?.id !== userId)
+        throw new ApiError('AUTH_REQUIRED', 'Sign in to continue.', 401);
       return hydrateSavedSlugs(token, signal);
     },
     staleTime: 30000,
+    refetchOnWindowFocus: () =>
+      cache.isMutating({ mutationKey: ['customer', userId, 'saved-set'] }) === 0,
   });
   useEffect(() => {
     if (
@@ -45,12 +68,70 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       void manager.invalidate();
   }, [query.error, manager, userId]);
   useEffect(() => {
+    if (operations.current.size) {
+      operations.current.clear();
+      setPending(new Set());
+    }
+  }, [userId]);
+  useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active')
+      if (
+        state === 'active' &&
+        session.status === 'authenticated' &&
+        cache.isMutating({ mutationKey: ['customer', userId, 'saved-set'] }) === 0
+      )
         void cache.invalidateQueries({ queryKey: ['customer', userId, 'saved-slugs'] });
     });
     return () => sub.remove();
-  }, [cache, userId]);
+  }, [cache, userId, session.status]);
+  const mutation = useMutation({
+    mutationKey: ['customer', userId, 'saved-set'],
+    retry: false,
+    gcTime: 0,
+    mutationFn: async (variables: SaveVariables) => {
+      const operation = operations.current.get(`${variables.owner}:${variables.slug}`);
+      const token = manager.token();
+      if (!operation?.current() || operation.id !== variables.id || !token)
+        throw new ApiError('REQUEST_CANCELLED', 'This saved action was cancelled.');
+      const result = await savedApi.set(token, variables.slug, variables.wanted);
+      if (result.slug !== variables.slug)
+        throw new ApiError('INVALID_RESPONSE', 'The saved response could not be confirmed.');
+      return result;
+    },
+    onMutate: async (variables: SaveVariables) => {
+      const operation = operations.current.get(`${variables.owner}:${variables.slug}`);
+      if (!operation || operation.id !== variables.id || !operation.current()) return;
+      await cache.cancelQueries({ queryKey: savedSlugsKey(variables.owner) });
+      await cache.cancelQueries({ queryKey: ['customer', variables.owner, 'saved-list'] });
+      if (!operation.current()) return;
+      const previous = cache.getQueryData<string[]>(savedSlugsKey(variables.owner));
+      const wasSaved = previous?.includes(variables.slug);
+      patchSavedMembership(cache, variables.owner, variables.slug, variables.wanted);
+      const removed = variables.wanted
+        ? []
+        : removeSavedFromPages(cache, variables.owner, variables.slug);
+      return { current: operation.current, wasSaved, removed };
+    },
+    onError: (_error, variables, snapshot) => {
+      if (!snapshot?.current()) return;
+      const operation = operations.current.get(`${variables.owner}:${variables.slug}`);
+      if (operation) operation.optimistic = false;
+      setPending(new Set(operations.current.keys()));
+      if (snapshot.wasSaved !== undefined)
+        patchSavedMembership(cache, variables.owner, variables.slug, snapshot.wasSaved);
+      restoreSavedRows(cache, snapshot.removed);
+    },
+    onSuccess: (result, variables, snapshot) => {
+      if (snapshot?.current()) {
+        const operation = operations.current.get(`${variables.owner}:${variables.slug}`);
+        if (operation) operation.wanted = result.saved;
+        patchSavedMembership(cache, variables.owner, variables.slug, result.saved);
+      }
+    },
+  });
+  useEffect(() => {
+    if (mutation.status !== 'idle') mutation.reset();
+  }, [userId]);
   const set = async (slug: string, wanted: boolean) => {
     const token = manager.token();
     const owner = manager.getSnapshot().customer?.id;
@@ -62,30 +143,19 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       return;
     }
     const key = `${owner}:${slug}`;
-    if (locks.current.has(key)) return;
-    locks.current.add(key);
-    setPending(new Set(locks.current));
+    if (operations.current.get(key)?.current()) return;
+    const operation: SaveOperation = {
+      id: ++sequence.current,
+      wanted,
+      optimistic: true,
+      current: () => manager.getSnapshot().customer?.id === owner && manager.token() === token,
+    };
+    operations.current.set(key, operation);
+    setPending(new Set(operations.current.keys()));
     try {
-      const result = await savedApi.set(token, slug, wanted);
-      if (manager.getSnapshot().customer?.id !== owner || manager.token() !== token) return;
-      await cache.cancelQueries({ queryKey: ['customer', owner, 'saved-slugs'] });
-      await cache.cancelQueries({ queryKey: ['customer', owner, 'saved-list'] });
-      if (manager.getSnapshot().customer?.id !== owner || manager.token() !== token) return;
-      cache.setQueryData<string[]>(['customer', owner, 'saved-slugs'], (previous) => {
-        if (!previous) return previous;
-        const next = new Set(previous);
-        if (result.saved) next.add(result.slug);
-        else next.delete(result.slug);
-        return [...next];
-      });
-      await cache.invalidateQueries({ queryKey: ['customer', owner, 'saved-list'] });
-      await cache.fetchQuery({
-        queryKey: ['customer', owner, 'saved-slugs'],
-        queryFn: ({ signal }) => hydrateSavedSlugs(token, signal),
-        staleTime: 0,
-      });
+      await mutation.mutateAsync({ owner, slug, wanted, id: operation.id });
     } catch (error) {
-      if (manager.getSnapshot().customer?.id !== owner || manager.token() !== token) return;
+      if (!operation.current()) return;
       if (error instanceof ApiError && error.status === 401) {
         await manager.invalidate();
         manager.pending.request({ kind: 'save', slug });
@@ -98,11 +168,23 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         manager.pending.request({ kind: 'save', slug });
         manager.pending.bind(owner);
         router.navigate('/agreements');
-      } else
+      } else if (!(error instanceof ApiError && error.code === 'REQUEST_CANCELLED'))
         Alert.alert(SAVED_TEXT.title, error instanceof Error ? error.message : SAVED_TEXT.retry);
     } finally {
-      locks.current.delete(key);
-      setPending(new Set(locks.current));
+      if (operations.current.get(key) === operation) {
+        const anotherPending = [...operations.current.values()].some(
+          (other) => other !== operation && other.current(),
+        );
+        if (operation.current() && !anotherPending)
+          await Promise.all([
+            cache.invalidateQueries({ queryKey: ['customer', owner, 'saved-list'] }),
+            cache.invalidateQueries({ queryKey: savedSlugsKey(owner) }),
+          ]);
+        if (operations.current.get(key) === operation) {
+          operations.current.delete(key);
+          setPending(new Set(operations.current.keys()));
+        }
+      }
     }
   };
   const resume = () => {
@@ -115,10 +197,19 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (session.status === 'authenticated') resume();
   }, [session.status, userId]);
+  const activeOperation = (slug: string) => {
+    const key = `${userId}:${slug}`;
+    const operation = operations.current.get(key);
+    return pending.has(key) && operation?.current() ? operation : undefined;
+  };
   const value: SavedContextValue = {
-    isSaved: (slug) => query.data?.includes(slug) ?? false,
-    isPending: (slug) => pending.has(`${userId}:${slug}`),
-    ready: session.status === 'guest' || query.isSuccess,
+    isSaved: (slug) => {
+      const operation = activeOperation(slug);
+      return operation?.optimistic ? operation.wanted : (query.data?.includes(slug) ?? false);
+    },
+    isPending: (slug) => Boolean(activeOperation(slug)),
+    ready: session.status === 'guest' || query.data !== undefined,
+    updating: [...operations.current.values()].some((operation) => operation.current()),
     toggle: (slug) => void set(slug, !query.data?.includes(slug)),
     save: (slug) => set(slug, true),
     resume,

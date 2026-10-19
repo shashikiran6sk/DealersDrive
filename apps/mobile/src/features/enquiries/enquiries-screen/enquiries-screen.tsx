@@ -1,3 +1,4 @@
+import { EmptyState } from '../../../components/empty-state';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { CustomerEnquiry } from '@dealers-drive/contracts/enquiry-client';
 import { useRouter } from 'expo-router';
@@ -39,7 +40,7 @@ export function EnquiriesScreen() {
       void manager.invalidate();
   }, [query.error, manager, owner]);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList<CustomerEnquiry>
         data={
           session.status === 'authenticated'
@@ -61,16 +62,6 @@ export function EnquiriesScreen() {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.title}>
-              {ENQUIRY_TEXT.history}
-            </Text>
-            <ActionButton
-              variant="ghost"
-              label={ENQUIRY_TEXT.back}
-              onPress={() =>
-                router.canGoBack() ? router.back() : router.replace('/(tabs)/profile')
-              }
-            />
             <ActionButton
               variant="secondary"
               label={ENQUIRY_TEXT.privacyControls}
@@ -104,10 +95,16 @@ export function EnquiriesScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           session.status === 'authenticated' && !query.isError ? (
-            <StatusPanel
-              message={query.isPending ? ENQUIRY_TEXT.loading : ENQUIRY_TEXT.empty}
-              pending={query.isPending}
-            />
+            query.isPending ? (
+              <StatusPanel message={ENQUIRY_TEXT.loading} pending />
+            ) : (
+              <EmptyState
+                title={ENQUIRY_TEXT.emptyTitle}
+                description={ENQUIRY_TEXT.emptyBody}
+                action={ENQUIRY_TEXT.emptyAction}
+                onAction={() => router.navigate('/cars')}
+              />
+            )
           ) : session.status === 'restoring' || session.status === 'unavailable' ? (
             <StatusPanel
               message={session.error ?? AUTH_TEXT.restoring}

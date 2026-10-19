@@ -1,4 +1,10 @@
 export const SUPPORT_TEXT = Object.freeze({
+  emptyTitle: 'No support requests yet',
+  emptyBody: 'Your requests and replies will appear here.',
+  emptyAction: 'New support request',
+  categoryPlaceholder: 'Choose an issue category',
+  categoryTitle: 'Issue category',
+  disclosureToggle: 'How we use your request',
   title: 'Contact & support',
   requests: 'My support requests',
   create: 'Create support request',

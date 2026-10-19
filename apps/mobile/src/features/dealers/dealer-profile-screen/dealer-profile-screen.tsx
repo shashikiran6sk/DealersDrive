@@ -17,7 +17,7 @@ import {
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Linking, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import cover from '../../../assets/dealer-cover.svg';
 import { ActionButton } from '../../../components/action-button';
@@ -75,11 +75,9 @@ export function DealerProfileScreen() {
       (inventory.data?.pages.flatMap((page) => page.data) ?? []).map((car) => [car.slug, car]),
     ).values(),
   ];
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/dealers'));
   if (!valid || profile.isError || !dealer)
     return (
-      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-        <ActionButton variant="ghost" label={DEALERS_TEXT.back} onPress={back} />
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <StatusPanel
           pending={profile.isPending && valid}
           message={
@@ -91,7 +89,7 @@ export function DealerProfileScreen() {
     );
   const maps = GoogleMapsUrl.safeParse(dealer.address.mapsUrl);
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList<VehicleCardDto>
         data={cars}
         keyExtractor={(car) => car.slug}
@@ -114,7 +112,6 @@ export function DealerProfileScreen() {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <ActionButton variant="ghost" label={DEALERS_TEXT.back} onPress={back} />
             <View style={styles.headingRow}>
               <Text style={styles.initials}>{dealer.initials}</Text>
               <Text accessibilityRole="header" style={styles.title}>
@@ -162,7 +159,14 @@ export function DealerProfileScreen() {
                   <ActionButton
                     variant="secondary"
                     label={DEALERS_TEXT.directions}
-                    onPress={() => void Linking.openURL(maps.data).catch(() => undefined)}
+                    onPress={() =>
+                      void Linking.openURL(maps.data).catch(() =>
+                        Alert.alert(
+                          'Directions unavailable',
+                          'No maps app could open this address. Please try again.',
+                        ),
+                      )
+                    }
                   />
                   <Text style={styles.muted}>{DEALERS_TEXT.mapNotice}</Text>
                 </>

@@ -4,6 +4,7 @@ import type { PublicVehicleImage } from '@dealers-drive/contracts/public';
 import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
@@ -13,7 +14,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BrandSymbol } from '../brand';
+import { Icon } from '../icon';
 import { ActionButton } from '../action-button';
 import { CARS_TEXT } from '../../features/cars/cars.constants';
 import { colors, spacing, typography } from '../../theme/tokens';
@@ -32,12 +33,14 @@ export function PhotoGallery({
   const [open, setOpen] = useState(false);
   const [viewerHeight, setViewerHeight] = useState(500);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(Boolean(images[initial]));
   const dimensions = useWindowDimensions();
   const list = useRef<FlatList<PublicVehicleImage>>(null);
   useEffect(() => {
     setSelected(Math.max(0, Math.min(primaryIndex, images.length - 1)));
     if (images.length === 0) setOpen(false);
     setFailed(false);
+    setLoading(images.length > 0);
   }, [primaryIndex, images]);
   const image = images[selected] ?? images[0];
   const move = (offset: number) => {
@@ -45,6 +48,7 @@ export function PhotoGallery({
     const next = Math.max(0, Math.min(selected + offset, images.length - 1));
     setSelected(next);
     setFailed(false);
+    setLoading(true);
     if (open) list.current?.scrollToIndex({ index: next, animated: true });
   };
   return (
@@ -58,16 +62,29 @@ export function PhotoGallery({
       >
         {image && !failed ? (
           <Image
+            recyclingKey={image.url}
             source={{ uri: image.url }}
             style={styles.image}
             contentFit="cover"
             cachePolicy="memory-disk"
             accessibilityLabel={image.alt}
-            onError={() => setFailed(true)}
+            onLoadStart={() => setLoading(true)}
+            onLoadEnd={() => setLoading(false)}
+            onError={() => {
+              setFailed(true);
+              setLoading(false);
+            }}
           />
         ) : (
           <Text style={styles.fallback}>{failed ? CARS_TEXT.imageFailed : CARS_TEXT.noPhoto}</Text>
         )}
+        {loading && !failed && image ? (
+          <ActivityIndicator
+            accessibilityLabel={CARS_TEXT.loadingPhoto}
+            color={colors.ink}
+            style={{ position: 'absolute' }}
+          />
+        ) : null}
         {image ? (
           <Text style={styles.count}>{CARS_TEXT.photos(selected, images.length)}</Text>
         ) : null}
@@ -97,14 +114,16 @@ export function PhotoGallery({
           <SafeAreaView style={styles.viewer} edges={['top', 'bottom', 'left', 'right']}>
             <StatusBar style="light" />
             <View style={styles.viewerHeader}>
-              <BrandSymbol surface="dark" />
+              <Text style={[styles.white, { flex: 1 }]} numberOfLines={2}>
+                {title}
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={CARS_TEXT.close}
                 onPress={() => setOpen(false)}
                 style={styles.close}
               >
-                <Text style={styles.white}>{CARS_TEXT.close}</Text>
+                <Icon name="close" color="#ffffff" />
               </Pressable>
             </View>
             <FlatList

@@ -60,7 +60,7 @@ const mockApi = {
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
   useLocalSearchParams: () => ({ slug: 'car-one' }),
-  useNavigation: () => ({ addListener: () => () => undefined }),
+  useNavigation: () => ({ dispatch: jest.fn(), addListener: () => () => undefined }),
 }));
 jest.mock('../src/features/cars/cars-api', () => ({
   carsApi: { detail: () => Promise.resolve({ title: 'Car One' }) },

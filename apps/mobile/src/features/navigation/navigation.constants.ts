@@ -26,3 +26,11 @@ export const CUSTOMER_TABS = [
   { route: 'saved', label: TAB_TEXT.saved, icon: 'saved' },
   { route: 'profile', label: TAB_TEXT.profile, icon: 'profile' },
 ] as const;
+export const DISCARD_TEXT = Object.freeze({
+  busyTitle: 'Sending your request',
+  busyBody: 'Please wait for this request to finish.',
+  title: 'Discard changes?',
+  body: 'Your unsent changes will be lost.',
+  keep: 'Keep editing',
+  discard: 'Discard',
+});

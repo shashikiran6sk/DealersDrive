@@ -1,10 +1,10 @@
+import { useDiscardChanges } from '../../navigation/use-discard-changes';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Linking, StyleSheet, Text, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionButton } from '../../../components/action-button';
-import { Brand } from '../../../components/brand';
 import { ConsentChoice } from '../../../components/consent-choice';
 import { Page } from '../../../components/page';
 import { StatusPanel } from '../../../components/status-panel';
@@ -29,6 +29,7 @@ export function DeletionRequest() {
   const [error, setError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
   const lock = useRef(false);
+  useDiscardChanges(Boolean(message.trim()) && !receipt, busy, () => Boolean(receipt));
   const retry = useRef(new RetryIdentity());
   const submit = async () => {
     if (lock.current || !confirmed) return;
@@ -73,15 +74,9 @@ export function DeletionRequest() {
     }
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView style={styles.root} behavior="height">
-        <Page header={<Brand />} title={ACCOUNT_TEXT.delete}>
-          <ActionButton
-            variant="ghost"
-            label={ACCOUNT_TEXT.back}
-            disabled={busy}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/account'))}
-          />
+        <Page showTitle={false} title={ACCOUNT_TEXT.delete}>
           <Text style={styles.text}>{ACCOUNT_TEXT.deletionBody}</Text>
           {session.status === 'guest' ? (
             <ActionButton label={AUTH_TEXT.login} onPress={() => router.navigate('/sign-in')} />

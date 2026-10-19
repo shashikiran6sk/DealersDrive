@@ -28,7 +28,10 @@ const mockManager = {
 };
 const mockDeactivate = jest.fn(() => Promise.resolve({ deactivated: true }));
 const mockCreate = jest.fn(() => Promise.resolve(supportTicket));
-jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
+jest.mock('expo-router', () => ({
+  useNavigation: () => ({ dispatch: jest.fn() }),
+  useRouter: () => mockRouter,
+}));
 jest.mock('expo-crypto', () => ({ randomUUID: () => '11111111-1111-4111-8111-111111111111' }));
 jest.mock('../src/features/auth/auth-provider', () => ({
   useAuth: () => ({ manager: mockManager }),
