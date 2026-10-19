@@ -1,3 +1,4 @@
+import { useDirectoryLocation } from '../../location/use-directory-location';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { NO_VEHICLE_FACETS, type VehicleCardDto } from '@dealers-drive/contracts/public';
 import {
@@ -7,6 +8,7 @@ import {
   activeFilterCount,
   pageOf,
   type VehicleSearchParams,
+  VEHICLE_PARAM_ORDER,
 } from '@dealers-drive/contracts/vehicle-search';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -23,19 +25,20 @@ import { FilterDialog } from '../filter-dialog';
 export function CarsScreen() {
   const initial = useLocalSearchParams<Record<string, string | string[]>>();
   const router = useRouter();
-  const [params, setParams] = useState(() => readVehicleSearch(initial));
+  const params = readVehicleSearch(initial);
+  const locationReady = useDirectoryLocation(params.district);
   const [search, setSearch] = useState(params.q ?? '');
   const [filters, setFilters] = useState(false);
   const list = useRef<FlatList<VehicleCardDto>>(null);
   const signature = JSON.stringify(initial);
   useEffect(() => {
     const next = readVehicleSearch(initial);
-    setParams(next);
     setSearch(next.q ?? '');
   }, [signature]);
 
   const query = useInfiniteQuery({
     queryKey: ['public', 'cars', params],
+    enabled: locationReady,
     initialPageParam: pageOf(params),
     queryFn: ({ pageParam, signal }) => carsApi.list(params, pageParam, signal),
     getNextPageParam: (last) =>
@@ -51,7 +54,8 @@ export function CarsScreen() {
   const cards = query.data?.pages.flatMap((page) => page.data) ?? [];
   const unique = [...new Map(cards.map((car) => [car.slug, car])).values()];
   const apply = (next: VehicleSearchParams) => {
-    setParams(next);
+    const patch = Object.fromEntries(VEHICLE_PARAM_ORDER.map((key) => [key, next[key]]));
+    router.setParams(patch);
     setSearch(next.q ?? '');
     setFilters(false);
     list.current?.scrollToOffset({ offset: 0, animated: false });

@@ -40,7 +40,7 @@ export function HomeScreen() {
     })),
   });
   const browse = (params: (typeof DISCOVERY_SECTIONS)[number]['params']) =>
-    router.navigate({ pathname: '/(tabs)/explore', params });
+    router.navigate({ pathname: '/cars', params });
   return (
     <ScrollView
       style={styles.root}

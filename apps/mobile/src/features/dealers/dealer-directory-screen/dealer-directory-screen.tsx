@@ -1,7 +1,9 @@
+import { readVehicleSearch } from '@dealers-drive/contracts/vehicle-search';
+import { useDirectoryLocation } from '../../location/use-directory-location';
 import { carsApi } from '../../cars/cars-api';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { DealerCard as Dealer } from '@dealers-drive/contracts/public';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,8 +18,14 @@ import { DEALERS_TEXT } from '../dealers.constants';
 
 export function DealerDirectoryScreen() {
   const router = useRouter();
-  const [params, setParams] = useState<DirectoryParams>({});
-  const [search, setSearch] = useState('');
+  const route = useLocalSearchParams<Record<string, string | string[]>>();
+  const parsed = readVehicleSearch(route);
+  const params: DirectoryParams = { district: parsed.district, city: parsed.city, q: parsed.q };
+  const locationReady = useDirectoryLocation(params.district);
+  const setParams = (next: DirectoryParams) =>
+    router.setParams({ district: next.district, city: next.city, q: next.q });
+  const [search, setSearch] = useState(params.q ?? '');
+  useEffect(() => setSearch(params.q ?? ''), [params.q]);
   const [debounced, setDebounced] = useState('');
   const [focus, setFocus] = useState(false);
   const [location, setLocation] = useState(false);
@@ -27,6 +35,7 @@ export function DealerDirectoryScreen() {
   }, [search]);
   const query = useInfiniteQuery({
     queryKey: ['public', 'dealers', params],
+    enabled: locationReady,
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) => dealersApi.directory(params, pageParam, signal),
     getNextPageParam: (last) =>
@@ -48,13 +57,12 @@ export function DealerDirectoryScreen() {
       (query.data?.pages.flatMap((page) => page.data) ?? []).map((dealer) => [dealer.slug, dealer]),
     ).values(),
   ];
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
   const submit = () => {
     setParams({ ...params, q: search.trim() || undefined });
     setFocus(false);
   };
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <View style={styles.root}>
       <FlatList<Dealer>
         data={data}
         keyExtractor={(dealer) => dealer.slug}
@@ -72,7 +80,6 @@ export function DealerDirectoryScreen() {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <ActionButton variant="ghost" label={DEALERS_TEXT.back} onPress={back} />
             <Text accessibilityRole="header" style={styles.title}>
               {DEALERS_TEXT.title}
             </Text>
@@ -193,7 +200,7 @@ export function DealerDirectoryScreen() {
           </SafeAreaView>
         </Modal>
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 const styles = StyleSheet.create({
