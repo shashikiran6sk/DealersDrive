@@ -282,4 +282,5 @@ These are patch and minor bumps for security advisories. The web build and the A
 ### Remediation PRs
 
 - **#329 F114 (web):** squashed as `70b348d` from head `0b2c7e7`. It covers inventory scroll (`loading.tsx` removed), the Home district preference and the Maps investigation.
-- **#328 F113 (mobile):** head `a1b1c06` after merging `main` `70b348d` (a clean merge). CI is pending.
+- **#328 F113 (mobile):** head `a1b1c06`, after a clean merge of `main` `70b348d`. Squashed as `589549c` with CI all green.
+- **Release runs:** after the final merges they were build-only, with "Assume the CI role" and "Log in to ECR" skipped (run 267). Nothing was deployed.

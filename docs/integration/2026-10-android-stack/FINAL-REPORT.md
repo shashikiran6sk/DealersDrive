@@ -26,7 +26,7 @@ This is the closing report for the reviewed squash integration of #279 and F099�
 - Each PR was merged on its own, after `expectedHeadSha` confirmed the head.
 - No branch was force-pushed or rewritten. Descendants were reconciled with merge commits: merge the final parent head, then record `main` with `-s ours`. A patch-equivalence gate showed each PR's diff against `main` equals its original diff, apart from the explained fixes.
 
-Two focused remediation PRs follow the stack: #328 (F113, mobile) and #329 (F114, web). They carry the owner's §7–§8 product fixes and are reviewed and merged the same way. #329 is squashed as `70b348d`. Their final state is recorded in [MANIFEST.md](MANIFEST.md).
+Two focused remediation PRs follow the stack: #328 (F113, mobile) and #329 (F114, web). They carry the owner's §7–§8 product fixes and are reviewed and merged the same way. #329 is squashed as `70b348d` (head `0b2c7e7`) and #328 as `589549c` (head `a1b1c06`). Their final state is recorded in [MANIFEST.md](MANIFEST.md).
 
 ## 2. Reported defects
 
@@ -72,3 +72,13 @@ Nothing in this campaign deployed, migrated, published or changed production con
 | Android build quality                          | **CONDITIONAL**         | Release-variant compile and smoke flows pass on the emulator. The emulator cold start is slow (≈20 s). Physical-device, TalkBack and performance gates are open.                  |
 | Live OTP and authenticated QA                  | **NO-GO (blocked)**     | No MSG91 or backend access. Real OTP and the authenticated journeys are unverified.                                                                                               |
 | Production / Play release                      | **NO-GO**               | Not authorised here. It also needs legal approval, deletion fulfilment, signing, App Links and store review.                                                                      |
+
+## 5. Open items for the owner
+
+1. **Web Home rows:** should they be district-scoped as on Android? The page is ISR-cached, so this needs per-district rendering. (#329)
+2. **Header links:** should Buy cars and Dealers carry the chosen district? (#329)
+3. **`DealerPageLoading`:** it no longer has a route. Delete it? (#329)
+4. **Free-text search:** removed in F110. Confirm that is the intended product decision.
+5. **Deletion intake:** add a server-owned intake endpoint and the F107 lows before releasing deletion (`docs/mobile/deletion-fulfilment-runbook.md`).
+6. **Back from a cold deep link:** a cold deep link into a non-Home tab exits the app on Back (`backBehavior="history"`). Should it go Home?
+7. **Device acceptance:** live MSG91 OTP, authenticated QA, physical-device TalkBack and performance, signing, App Links and Play review all need your access.
