@@ -26,7 +26,7 @@ This is the closing report for the reviewed squash integration of #279 and F099�
 - Each PR was merged on its own, after `expectedHeadSha` confirmed the head.
 - No branch was force-pushed or rewritten. Descendants were reconciled with merge commits: merge the final parent head, then record `main` with `-s ours`. A patch-equivalence gate showed each PR's diff against `main` equals its original diff, apart from the explained fixes.
 
-Two focused remediation PRs follow the stack: #328 (F113, mobile) and #329 (F114, web). They carry the owner's §7–§8 product fixes and are reviewed and merged the same way. Their final state is recorded in [MANIFEST.md](MANIFEST.md).
+Two focused remediation PRs follow the stack: #328 (F113, mobile) and #329 (F114, web). They carry the owner's §7–§8 product fixes and are reviewed and merged the same way. #329 is squashed as `70b348d`. Their final state is recorded in [MANIFEST.md](MANIFEST.md).
 
 ## 2. Reported defects
 
