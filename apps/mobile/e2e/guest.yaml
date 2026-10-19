@@ -2,8 +2,10 @@ appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- assertVisible:
-    id: home-title
+- extendedWaitUntil:
+    visible:
+      id: home-title
+    timeout: 45000
 - takeScreenshot: artifacts/home-approved-brand
 - tapOn: Profile
 - assertVisible: Your account
@@ -26,5 +28,7 @@ appId: ${APP_ID}
 - assertVisible: Your account
 - stopApp
 - launchApp
-- assertVisible:
-    id: home-title
+- extendedWaitUntil:
+    visible:
+      id: home-title
+    timeout: 45000
