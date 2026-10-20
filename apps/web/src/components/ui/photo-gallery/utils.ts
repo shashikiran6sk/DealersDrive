@@ -1,5 +1,5 @@
-import { RAIL_NUMBER_DIGITS, SWIPE_THRESHOLD_PX } from './photo-gallery.constants';
-import type { GalleryPhoto, GalleryStep } from './photo-gallery.types';
+import { RAIL_NUMBER_DIGITS, STUDIO_BACKDROP, SWIPE_THRESHOLD_PX } from './photo-gallery.constants';
+import type { GalleryPhoto, GalleryStep, PhotoKind } from './photo-gallery.types';
 
 export function wrapIndex(index: number, total: number): number {
   if (total <= 0) return 0;
@@ -58,4 +58,45 @@ export function swipeStep(
 
 export function captionOf(photo: GalleryPhoto): string {
   return photo.caption?.trim() || photo.alt;
+}
+
+const CHANNEL_MAX = 255;
+
+export function studioWhiteLevel(level: number): number {
+  const { level: backdrop, knee } = STUDIO_BACKDROP;
+  if (level <= knee) return level;
+  if (level >= backdrop) return CHANNEL_MAX;
+  return knee + ((level - knee) * (CHANNEL_MAX - knee)) / (backdrop - knee);
+}
+
+export function studioWhiteTable(): string {
+  const { tableStep } = STUDIO_BACKDROP;
+  const values: string[] = [];
+  for (let level = 0; level <= CHANNEL_MAX; level += tableStep) {
+    values.push(String(Number((studioWhiteLevel(level) / CHANNEL_MAX).toFixed(4))));
+  }
+  return values.join(' ');
+}
+
+export function isStudioBackdrop(rgba: ArrayLike<number>): boolean {
+  const { level, tolerance } = STUDIO_BACKDROP;
+  for (let offset = 0; offset + 2 < rgba.length; offset += 4) {
+    for (let channel = 0; channel < 3; channel += 1) {
+      const value = rgba[offset + channel];
+      if (value === undefined || Math.abs(value - level) > tolerance) return false;
+    }
+  }
+  return rgba.length >= 4;
+}
+
+export function cornerKind(rgba: ArrayLike<number>, edge: number): PhotoKind {
+  const last = edge - 1;
+  const corners = [0, last, last * edge, last * edge + last].flatMap((pixel) =>
+    Array.from({ length: 4 }, (_, channel) => rgba[pixel * 4 + channel] ?? -1),
+  );
+  return isStudioBackdrop(corners) ? 'studio' : 'photo';
+}
+
+export function studioFilterId(reactId: string): string {
+  return `${STUDIO_BACKDROP.filterIdPrefix}${reactId.replace(/[^A-Za-z0-9_-]/g, '')}`;
 }

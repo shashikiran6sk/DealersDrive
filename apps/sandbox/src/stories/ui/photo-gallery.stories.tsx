@@ -12,6 +12,20 @@ const YARD_FALLBACK = {
   alt: `Dealers-Drive illustration of a dealership yard, shown until ${DEALER} publishes photographs`,
 };
 const BROKEN_URL = 'https://media.invalid/by-media/missing/1600.webp';
+const STUDIO_TITLE = '2019 Ford Endeavour Titanium 3.2 4x4 AT';
+
+function studioPhoto(label: string, size: string): GalleryPhoto {
+  return {
+    url: `https://placehold.co/${size}/f6f6f6/3b2a20.png?text=${label}`,
+    alt: `${STUDIO_TITLE}, ${label.replaceAll('+', ' ').toLowerCase()}`,
+  };
+}
+
+const STUDIO_PHOTOS: GalleryPhoto[] = [
+  studioPhoto('Front', '1704x1446'),
+  studioPhoto('Front+three-quarter', '1868x1444'),
+  { url: '/images/home-hero.webp', alt: `${STUDIO_TITLE}, a photograph off the studio backdrop` },
+];
 
 function images(count: number, size = '1200x900'): GalleryPhoto[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -49,6 +63,7 @@ const meta = {
     stageClassName: { control: 'text' },
     emptyLabel: { control: 'text' },
     fallback: { control: 'object' },
+    variant: { control: 'inline-radio', options: ['cover', 'studio'] },
   },
   args: { title: '2023 Hyundai Creta SX(O)', photos: images(8), startIndex: 0, strip: true },
 } satisfies Meta<typeof PhotoGallery>;
@@ -143,4 +158,18 @@ export const Phone: Story = {
       </div>
     ),
   ],
+};
+
+export const StudioBackdrop: Story = {
+  args: { title: STUDIO_TITLE, photos: STUDIO_PHOTOS, variant: 'studio' },
+};
+
+export const StudioBackdropNotStudioFirst: Story = {
+  args: { ...StudioBackdrop.args, startIndex: 2 },
+};
+
+export const StudioBackdropPhone: Story = {
+  ...StudioBackdrop,
+  parameters: Phone.parameters,
+  decorators: Phone.decorators,
 };

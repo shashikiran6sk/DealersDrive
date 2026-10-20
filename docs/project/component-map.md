@@ -1916,3 +1916,18 @@ now 1600 × 640) and the dealer page passes the same constant as its hero
 `components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
 **Sandbox** `Layout/MobileNav` (`CustomerWithBrand`), `Primitives/PhotoGallery`
 (`EmptyWideHero`, `EmptyWideHeroPhone`, `BrokenPhotoFallsBack`, `FallbackImageFails`).
+
+## StudioCar floating exteriors on the car page
+
+| Component           | Source                                                             | Props / states                                                                                                                                                                                                                                                                                                                                                                              | Consumers                                                             |
+| ------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `PhotoGallery`      | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`       | + `variant?` (`'cover'` default · `'studio'`): studio draws the stage on the page colour with no border, contains the photograph instead of cropping it, and whitens the StudioCar backdrop (`#F6F6F6` as delivered) through `StudioWhiteFilter` until `classifyPhoto` reads the photograph as not StudioCar's · + studio · + studio, photograph off the backdrop · + studio at phone width | `/car/[slug]` (`studio`); `/dealers/[slug]` hero (`cover`, unchanged) |
+| `StudioWhiteFilter` | `apps/web/src/components/ui/photo-gallery/studio-white-filter.tsx` | `id`: a hidden SVG `feComponentTransfer` lookup table in sRGB — identity to 216, linear to white at 246, white above                                                                                                                                                                                                                                                                        | `PhotoGallery` (`studio`)                                             |
+
+`classifyPhoto` (`classify-photo.ts`) samples the stage photograph's four
+corners on a 16 × 16 canvas; `null` (not loaded, tainted cross-origin canvas)
+keeps the filter on. **Unchanged:** the API, contracts and stored images,
+StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
+gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
+`components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
+(`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
