@@ -1,3 +1,4 @@
+import { requireDealerAgreement, hasDealerAgreement } from '../legal/legal.facade.js';
 import {
   activationState,
   createActivationOverrideService,
@@ -465,16 +466,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const owner = dealer.members[0];
       const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
-      const overrideBlocked = overrideBlockReason({
-        status: dealer.status,
-        selfReview:
-          assistedBy(dealer, admin) ||
-          dealer.members.some((member) => member.userId === admin.userId),
-        accountComplete: application.steps[0]?.complete ?? false,
-        businessComplete: application.steps[1]?.complete ?? false,
-        documents: dealer.documents,
-        gstin: dealer.gstin,
-      });
+      const dealerHasAccepted = await hasDealerAgreement(prisma, dealerId);
+      const overrideBlocked = !dealerHasAccepted
+        ? 'The dealership owner must accept the current Terms before activation.'
+        : overrideBlockReason({
+            status: dealer.status,
+            selfReview:
+              assistedBy(dealer, admin) ||
+              dealer.members.some((member) => member.userId === admin.userId),
+            accountComplete: application.steps[0]?.complete ?? false,
+            businessComplete: application.steps[1]?.complete ?? false,
+            documents: dealer.documents,
+            gstin: dealer.gstin,
+          });
 
       const canReview = admin.permissions.includes('admin:document:review');
       const documents = await Promise.all(
@@ -595,6 +599,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         actions: {
           canApprove:
             dealer.status === 'PENDING_APPROVAL' &&
+            dealerHasAccepted &&
             allVerified &&
             application.isComplete &&
             !assistedBy(dealer, admin),
@@ -604,7 +609,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canRequestChanges: dealer.status === 'PENDING_APPROVAL' && !assistedBy(dealer, admin),
           canClose: dealer.status === 'DRAFT' || dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',
-          canReinstate: dealer.status === 'SUSPENDED',
+          canReinstate: dealer.status === 'SUSPENDED' && dealerHasAccepted,
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
           canEdit: admin.permissions.includes('admin:dealer:approve'),
           canOverrideActivation:
@@ -641,6 +646,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'Only a submitted application can be approved.',
           );
         }
+        await requireDealerAgreement(tx, dealerId);
         await tx.$queryRaw`
           SELECT "id" FROM "dealer_documents" WHERE "dealerId" = ${dealerId}::uuid
           ORDER BY "id" FOR UPDATE`;
@@ -1032,6 +1038,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'A dealership must have been approved before it can be reinstated.',
           );
         }
+
+        if (status === 'ACTIVE') await requireDealerAgreement(tx, dealerId);
 
         const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 

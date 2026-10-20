@@ -1,0 +1,32 @@
+{
+  "base_sha": "2756c9ae64acebe79d6fc8c2d2dfe7fa1e6686b0",
+  "source_content_sha256": "15302b829872d3b8389f05d15829067007379d53543c3982d6ca158bd174e5e6",
+  "final_preview_apk_sha256": "47d57b9dcf07c794d02825eb5befb3cddf12003f730165518e58d246be4f2c05",
+  "device": "Read-only Pixel_8 AVD, Android API37; 1080x2400; density per matrix device.json",
+  "physical_device_tested": false,
+  "preview_build": "arm64-v8a release variant, validation signing, compile/target SDK36; public API GET only",
+  "local_build": "release variant, fake OTP, draft legal collection and console email; two dedicated QA identities; existing local test inventory; no new inventory or photographs",
+  "test_counts": {
+    "suites": 36,
+    "tests": 194,
+    "card_snapshots": 4,
+    "native_manifest_unit_tests": 4,
+    "ELF_libraries_checked": 24
+  },
+  "native_startup_race": "failed before fix; final native repeated3/3 detail and Back passed",
+  "capture_provenance": [
+    "360/393/412 and150% UI matrices reflect final UI source; precede native-only retained-intent generation, which does not alter these layouts",
+    "Gallery, warm-filter link, scroll restoration, startup-window after and performance captures use final retained-intent release APK",
+    "Local journey evidence uses earlier same-campaign release candidate; later changes are placeholder/header size, native accent, focused polling and concise privacy overview, not consent/API/saved contracts",
+    "F111 API35 artifact is explicitly separate at head2756c9ae; not presented as F112 CI evidence"
+  ],
+  "remaining_gates": [
+    "final F112 CI",
+    "manual spoken TalkBack and predictive-edge gesture review",
+    "physical budget-device performance",
+    "controlled slow-network end-to-end timings",
+    "production backend/provider/legal/signing/Play approvals"
+  ],
+  "original_protected_stack": "Re-fetched; #279/F099-F108 heads/bases/ancestry and main a969dc2 unchanged",
+  "source_hash_scope": "apps/mobile src, app, config, app.json, app.config.ts, package.json and root pnpm-lock.yaml; paths and bytes in lexical order"
+}

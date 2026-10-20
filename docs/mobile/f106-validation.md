@@ -1,0 +1,15 @@
+# F106 customer support — validation checkpoint
+
+Immediate base: F105 feat/f105-mobile-consent-enquiries at 1b310ecc1629604d8cd33163b1d3db2cb37b8fed / draft PR #318. Its GitHub CI completed successfully; all mobile predecessors and PR #279 remain open/unmerged. Main remains a969dc2; foundation remains 6180a4b.
+
+Public customer contacts, private support list/create/conversation/reply/reopen, privacy-request prefill and related enquiry entry are implemented. Native forms reuse strict server contracts and quotas, stay accessible without renewed Terms and reset private state on account change. No attachment or push capability is invented.
+
+Optional create retries add nullable clientRequestId/requestDigest fields and a customer/id unique index through 20261015100000_support_create_retry. Legacy callers remain unchanged. Same-payload concurrent retries create one ticket/audit/outbox; changed payload returns 409; customer isolation is preserved. A lean support-client export preserves original contract names. SDK-matched expo-crypto 57.0.4 supplies in-memory UUIDs; frozen offline install validates a lockfile diff of only 12 additive lines, with other dependency resolutions preserved.
+
+Local evidence so far: 19 native suites / 86 tests PASS; native lint/types/boundaries/approved asset checks PASS. Contracts 596 tests and coverage gates PASS; website 1,727 tests PASS. Focused support API suite 30 tests PASS including migration, concurrency, legacy behavior and private response shape. OpenAPI route/contract tests PASS. Final full API suite: 179 files / 3,506 tests PASS; coverage statements 95.71%, branches 90.31%, functions 97.93%, lines 96.96%, all existing gates pass. Added account-linking cases preserve both tickets under a retry-key collision and deny a stale unavailable customer write. Native/browser conversation synchronization and foreign reply denial pass. Root lint/types/build PASS before the final focused backend compatibility change; final API lint/types/build and format checks PASS afterward. Android Hermes JS/assets export passes; no APK/AAB is claimed. Installed SDK dependency-map validation reports dependencies up to date in offline mode; this is not an online Expo Doctor/device result.
+
+The first full API run found a new test expecting 200 for the unchanged support-message route's 201 response. The assertion was corrected; no production response or validation was changed. No live provider, notification, installed Android/device/screenshot, accessibility or performance evidence is claimed. Existing provider fakes and local test-database resets are isolated from production.
+
+Deployment requires separate approval and migration before backend release. The nullable fields/index may remain unused under a compatible rollback. No production migration, resource change, legal activation, release signing or Play submission occurred. F107's separate owner-approved web/native deactivation and deletion-request amendment is documented in [account controls](account-controls-amendment.md); actual deletion fulfilment/retention remains a release blocker.
+
+See [internals](../code/mobile/support.md).

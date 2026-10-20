@@ -229,12 +229,24 @@ describe('choosing a district', () => {
   });
 
   /**
-   * Choosing a place from the home page is a person saying where they are, and
-   * the useful answer is the dealerships there — not the same home page with a
-   * query string on it that nothing reads.
+   * F114 (owner remediation §8.2): choosing a district is a location preference,
+   * not a navigation. The home page keeps the buyer where they are, with the
+   * district in its URL; the hero's browse chips carry it onward. Before F114 this
+   * sent them to the directory.
    */
-  it('sends a visitor from anywhere else to the directory', async () => {
+  it('keeps a visitor on the home page and records the district there', async () => {
     setLocation('/');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /select district/i);
+    await user.click(screen.getByRole('button', { name: /^mysuru/i }));
+
+    expect(navigationState.pushed).toEqual(['/?district=mysuru']);
+  });
+
+  it('sends a visitor from a page that reads no district to the directory', async () => {
+    setLocation('/saved');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
 

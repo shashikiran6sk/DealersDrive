@@ -65,3 +65,11 @@ export const OWNER_ACCOUNT_UNAVAILABLE =
 
 export const OWNER_HAS_DEALERSHIP =
   'This phone or email already belongs to someone who manages a dealership on Dealers-Drive.';
+export const CUSTOMER_DEACTIVATED =
+  'Your customer account is deactivated. Verify your mobile number and choose to reactivate it.';
+export const CUSTOMER_REAUTH_REQUIRED =
+  'Verify your mobile number again before deactivating your customer account.';
+export const CUSTOMER_PHONE_CHANGED =
+  'Your verified mobile number has changed. Start verification again.';
+export const CUSTOMER_REACTIVATION_EXPIRED =
+  'This reactivation confirmation has expired. Verify your mobile number again.';

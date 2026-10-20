@@ -1,0 +1,52 @@
+import type { ReactNode } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { colors, spacing, typography } from '../../theme/tokens';
+
+export interface PageProps {
+  title: string;
+  description?: string;
+  children?: ReactNode;
+  header?: ReactNode;
+  showTitle?: boolean;
+}
+
+export function Page({ title, description, children, header, showTitle = true }: PageProps) {
+  return (
+    <ScrollView
+      style={styles.page}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
+      {header ? <View style={styles.header}>{header}</View> : null}
+      {showTitle ? (
+        <Text accessibilityRole="header" style={styles.title}>
+          {title}
+        </Text>
+      ) : null}
+      {description ? <Text style={styles.description}>{description}</Text> : null}
+      <View style={[styles.children, !showTitle && styles.compact]}>{children}</View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  page: { flex: 1, backgroundColor: colors.page },
+  content: { padding: spacing.md, paddingTop: spacing.lg, paddingBottom: spacing.xl },
+  title: {
+    color: colors.ink,
+    fontFamily: typography.family,
+    fontSize: typography.title,
+    fontWeight: '800',
+  },
+  description: {
+    color: colors.muted,
+    fontFamily: typography.family,
+    fontSize: typography.body,
+    lineHeight: 24,
+    marginTop: spacing.sm,
+  },
+  header: { marginBottom: spacing.lg },
+  children: { marginTop: spacing.lg, gap: spacing.md },
+  compact: { marginTop: 0 },
+});

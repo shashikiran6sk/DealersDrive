@@ -7,6 +7,7 @@ import {
   type DealerProfile,
 } from '@dealers-drive/contracts';
 
+import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { Banner } from '@/components/ui/primitives';
 import { DocumentUploader, documentForCategory } from '@/features/auth/document-uploader';
 
@@ -28,6 +29,7 @@ export function DocumentsStep({
   onBack,
   onDone,
 }: DocumentsStepProps) {
+  const legal = useLegalEnabled();
   const outstanding = stepOutstanding(completeness, 'documents').concat(
     stepOutstanding(completeness, 'business'),
   );
@@ -41,6 +43,20 @@ export function DocumentsStep({
         <p className="mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.documentsIntro}</p>
       </div>
 
+      {legal ? (
+        <p className="text-[13px] leading-[1.7]">
+          {ONBOARDING_TEXT.documentsPrivacy}{' '}
+          <a
+            href="/privacy#clause-5"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            {ONBOARDING_TEXT.privacyPolicy}
+          </a>
+          .
+        </p>
+      ) : null}
       <div className="flex flex-col gap-[6px] text-[13px] ink-muted">
         <p>{ONBOARDING_TEXT.documentsRule}</p>
         <p>{ONBOARDING_TEXT.gstResponsibility}</p>

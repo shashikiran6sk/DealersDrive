@@ -430,64 +430,11 @@ export type PhoneSignInResponse = z.infer<typeof PhoneSignInResponse>;
  * control characters are refused, so a name cannot be blank-looking or break a
  * line on the dealer's screen.
  */
-export const CustomerName = z
-  .string()
-  .trim()
-  .min(2, 'Enter your name.')
-  .max(80, 'Keep your name under 80 characters.')
-  .refine((value) => /\p{L}/u.test(value), 'Enter your name.')
-  .refine((value) => !/\p{Cc}/u.test(value), 'Enter your name.');
-
-/** `POST /v1/auth/sign-in/phone/customer` — the same proof a dealer presents. */
-export const CustomerSignInInput = z
-  .object({
-    phone: IndianMobile,
-    accessToken: z.string().trim().min(1, 'The verification token is missing.').max(4096),
-  })
-  .strict();
-export type CustomerSignInInput = z.infer<typeof CustomerSignInInput>;
-
-/** A customer, as the customer themselves sees it. */
-export const CustomerProfile = z.object({
-  id: Uuid,
-  fullName: z.string(),
-  phone: z.string(),
-  phoneDisplay: z.string(),
-});
-export type CustomerProfile = z.infer<typeof CustomerProfile>;
-
-/**
- * What a proved number leads to.
- *
- * `SIGNED_IN` — the account existed; `dd_session` is on the response.
- *
- * `NAME_REQUIRED` — the number is proved and no account is named for it yet.
- * `signUpToken` is the proof, carried to `POST /v1/auth/sign-up/customer`: an
- * HMAC-sealed, single-use ticket for **this** number that expires at
- * `expiresAt`. It is not a session and opens nothing else.
- */
-export const CustomerSignInResponse = z.object({
-  status: z.enum(['SIGNED_IN', 'NAME_REQUIRED']),
-  /** The signed-in customer. Null while `NAME_REQUIRED`. */
-  customer: CustomerProfile.nullable(),
-  /** The sealed sign-up ticket. Null once `SIGNED_IN`. */
-  signUpToken: z.string().nullable(),
-  /** When `signUpToken` stops being accepted. Null once `SIGNED_IN`. */
-  expiresAt: z.string().nullable(),
-  /** The proved number, formatted — what the name screen says was verified. */
-  phoneDisplay: z.string(),
-});
-export type CustomerSignInResponse = z.infer<typeof CustomerSignInResponse>;
-
-/** `POST /v1/auth/sign-up/customer` — the ticket, and the name. Nothing else. */
-export const CustomerSignUpInput = z
-  .object({
-    signUpToken: z.string().trim().min(1).max(2048),
-    fullName: CustomerName,
-  })
-  .strict();
-export type CustomerSignUpInput = z.infer<typeof CustomerSignUpInput>;
-
-/** `GET /v1/auth/customer/me` and the answer to a completed sign-up. */
-export const CustomerSession = z.object({ customer: CustomerProfile });
-export type CustomerSession = z.infer<typeof CustomerSession>;
+export {
+  CustomerName,
+  CustomerSignInInput,
+  CustomerProfile,
+  CustomerSignInResponse,
+  CustomerSignUpInput,
+  CustomerSession,
+} from './customer-auth.js';

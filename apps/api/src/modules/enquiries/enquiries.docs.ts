@@ -52,7 +52,7 @@ export const enquiriesDocs: ModuleDocs = {
       summary: 'Enquire about a car',
       description:
         'Takes **which car** — `listingSlug`, the listing’s public address — and an optional ' +
-        'message, and nothing else. No name, no phone, no `dealerId`: the body is `.strict()`, ' +
+        'message, plus explicit versioned sharing permission when legal enforcement is active. No name, no phone, no `dealerId`: the body is `.strict()`, ' +
         'so sending one is a 400 that names it. An empty or whitespace-only message is stored ' +
         'as no message.\n\n' +
         '**Only a car that is available right now** — listing `ACTIVE` and its dealership ' +

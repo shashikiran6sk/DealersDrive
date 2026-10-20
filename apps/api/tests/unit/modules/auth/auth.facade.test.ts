@@ -57,6 +57,7 @@ describe('the exported surface', () => {
         'permissionsForRole',
         'provisionOwnerAccount',
         'revokeAdminSessions',
+        'requireCustomerAccess',
         'setSeatStatus',
         'syncLegacyAdminColumns',
       ].sort(),

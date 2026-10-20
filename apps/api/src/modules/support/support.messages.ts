@@ -49,3 +49,7 @@ export const ASSIGNED_TO = (label: string) => `to ${label}`;
 export const UNKNOWN_ADMIN = 'a former admin';
 
 export const VEHICLE_IMAGE_ALT = (title: string) => `Photograph of the ${title}`;
+export const SUPPORT_REQUEST_RETRY_CONFLICT =
+  'This retry identifier was already used for a different support request.';
+export const CUSTOMER_ACCOUNT_UNAVAILABLE =
+  'This customer account is no longer available. Sign in again to continue.';

@@ -5,6 +5,7 @@ import { env } from '../src/config/env.js';
 import { mergeAccounts, mergeRefusal } from '../src/modules/auth/account-merge.js';
 import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
+import { randomUUID } from 'node:crypto';
 
 /**
  * One person, whichever door they came in by.
@@ -400,6 +401,72 @@ describe('races and repeats', () => {
     expect(first.merged).toBe(true);
     expect(second.merged).toBe(false);
     expect(self.merged).toBe(false);
+  });
+  it('preserves customer deactivation and closes newly consolidated disclosure and customer sessions', async () => {
+    const customer = await newCustomer();
+    const dealer = await googleFirstDealer();
+    await h.prisma.user.update({
+      where: { id: dealer.userId },
+      data: { customerDeactivatedAt: new Date() },
+    });
+    const listing = await h.prisma.listing.findUniqueOrThrow({ where: { id: listingId } });
+    const legacy = await h.prisma.enquiry.create({
+      data: { customerId: dealer.userId, dealerId: listing.dealerId, listingId },
+    });
+    const previous = await h.prisma.session.findFirstOrThrow({
+      where: { userId: customer.userId, scope: 'CUSTOMER', revokedAt: null },
+    });
+    await h.prisma.$transaction((tx) =>
+      mergeAccounts(tx, createAuditService(h.prisma), {
+        survivorId: customer.userId,
+        absorbedId: dealer.userId,
+        proof: 'PHONE_OTP',
+      }),
+    );
+    expect(
+      (await h.prisma.user.findUniqueOrThrow({ where: { id: customer.userId } }))
+        .customerDeactivatedAt,
+    ).not.toBeNull();
+    const moved = await h.prisma.enquiry.findUniqueOrThrow({ where: { id: legacy.id } });
+    expect(moved.customerId).toBe(customer.userId);
+    expect(moved.sharingWithdrawnAt).not.toBeNull();
+    expect(
+      (await h.prisma.session.findUniqueOrThrow({ where: { id: previous.id } })).revokedAt,
+    ).not.toBeNull();
+  });
+  it('preserves both support tickets when absorbed accounts used the same create retry id', async () => {
+    const customer = await newCustomer();
+    const dealer = await googleFirstDealer();
+    const clientRequestId = randomUUID();
+    const data = {
+      category: 'ACCOUNT_ISSUE' as const,
+      subject: 'Account history request',
+      description: 'Preserve both account support histories.',
+      clientRequestId,
+      requestDigest: 'test-digest',
+    };
+    const first = await h.prisma.supportTicket.create({
+      data: { ...data, customerId: customer.userId },
+    });
+    const second = await h.prisma.supportTicket.create({
+      data: { ...data, customerId: dealer.userId },
+    });
+    await h.prisma.$transaction((tx) =>
+      mergeAccounts(tx, createAuditService(h.prisma), {
+        survivorId: customer.userId,
+        absorbedId: dealer.userId,
+        proof: 'PHONE_OTP',
+      }),
+    );
+    const rows = await h.prisma.supportTicket.findMany({
+      where: { id: { in: [first.id, second.id] } },
+      orderBy: { id: 'asc' },
+    });
+    expect(rows).toHaveLength(2);
+    expect(rows.every((row) => row.customerId === customer.userId)).toBe(true);
+    expect(rows.find((row) => row.id === first.id)?.clientRequestId).toBe(clientRequestId);
+    expect(rows.find((row) => row.id === second.id)?.clientRequestId).toBeNull();
+    expect(rows.find((row) => row.id === second.id)?.requestDigest).toBeNull();
   });
 
   it('an account already folded into someone else cannot be folded again', async () => {

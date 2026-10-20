@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: home-title
+    timeout: 45000
+- openLink: dealersdrive://car/missing-release-validation-car
+- assertVisible:
+    id: car-details-back
+- takeScreenshot: artifacts/car-link-received
+- back
+- assertVisible:
+    id: home-title
+- stopApp
+- openLink: dealersdrive://car/missing-release-validation-car
+- assertVisible:
+    id: car-details-back
+- takeScreenshot: artifacts/car-cold-link-received
+- openLink: dealersdrive://admin
+- assertVisible:
+    id: home-title
+- openLink: dealersdrive://saved
+- assertVisible: Sign in to see your saved cars.
+- takeScreenshot: artifacts/guest-saved-auth-gate
+- stopApp

@@ -1,0 +1,59 @@
+{
+  "foundation": {
+    "branch": "feat/f108-mobile-release-hardening",
+    "sha": "945856fd385710cbdd6867a345c8e8fd543a676a"
+  },
+  "original_stack_snapshot": "github-stack.json",
+  "remediation": [
+    {
+      "feature": "F109",
+      "pr": 322,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/322",
+      "branch": "feat/f109-mobile-ux-foundation",
+      "base": "feat/f108-mobile-release-hardening",
+      "base_sha": "945856fd385710cbdd6867a345c8e8fd543a676a",
+      "head_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "tested_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "state": "OPEN",
+      "draft": true
+    },
+    {
+      "feature": "F110",
+      "branch": "feat/f110-mobile-discovery-search",
+      "base": "feat/f109-mobile-ux-foundation",
+      "base_sha": "39edbf868dc40320b56988f4f1ff6c142691a1f4",
+      "state": "OPEN",
+      "pr": 323,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/323",
+      "head_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9",
+      "tested_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9",
+      "draft": true
+    },
+    {
+      "feature": "F111",
+      "branch": "feat/f111-mobile-customer-journeys",
+      "base": "feat/f110-mobile-discovery-search",
+      "state": "OPEN",
+      "base_sha": "33f697b47249090bb7ed0bf0806659bc1e76a2c9",
+      "pr": 324,
+      "url": "https://github.com/shashikiran6sk/DealersDrive/pull/324",
+      "head_sha": "2756c9ae64acebe79d6fc8c2d2dfe7fa1e6686b0",
+      "tested_sha": "2756c9ae64acebe79d6fc8c2d2dfe7fa1e6686b0",
+      "draft": true,
+      "ci": {
+        "regular": 38888414282,
+        "security": 38888414363,
+        "android": 38888414295,
+        "conclusion": "SUCCESS"
+      }
+    },
+    {
+      "feature": "F112",
+      "branch": "feat/f112-mobile-ux-hardening",
+      "base": "feat/f111-mobile-customer-journeys",
+      "state": "IMPLEMENTING",
+      "base_sha": "2756c9ae64acebe79d6fc8c2d2dfe7fa1e6686b0"
+    }
+  ],
+  "merge_deploy_publish_authorized": false
+}

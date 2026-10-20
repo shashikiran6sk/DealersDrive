@@ -304,3 +304,18 @@ Tracked here too, because they gate UI features rather than following them.
 - [ ] S5 — `@storybook/addon-vitest` wired
 - [ ] S6 — the five missing primitives
 - [ ] S7 — feature components
+
+## Android customer stack
+
+Foundation: unmerged Draft PR #279; each mobile PR targets its predecessor.
+
+- [~] F099 — Mobile foundation — GitHub checks pass; draft [PR #312](https://github.com/shashikiran6sk/DealersDrive/pull/312), local checks pass; native compilation/device evidence and release gates remain
+- [~] F100 — Native authentication backend — draft [PR #313](https://github.com/shashikiran6sk/DealersDrive/pull/313), GitHub checks pass; provider/legal activation gated
+- [~] F101 — Native authentication UI — draft [PR #314](https://github.com/shashikiran6sk/DealersDrive/pull/314), repaired GitHub checks pass
+- [~] F102 — Cars, search and gallery — draft [PR #315](https://github.com/shashikiran6sk/DealersDrive/pull/315), GitHub checks pass
+- [~] F103 — Home and dealers — draft [PR #316](https://github.com/shashikiran6sk/DealersDrive/pull/316), GitHub checks pass
+- [~] F104 — Saved cars and account — draft [PR #317](https://github.com/shashikiran6sk/DealersDrive/pull/317), GitHub checks pass
+- [~] F105 — Consent and enquiries — draft [PR #318](https://github.com/shashikiran6sk/DealersDrive/pull/318), GitHub checks pass
+- [~] F106 — Customer support — draft [PR #319](https://github.com/shashikiran6sk/DealersDrive/pull/319), GitHub checks pass
+- [~] F107 — Account controls/deletion requests — draft [PR #320](https://github.com/shashikiran6sk/DealersDrive/pull/320), GitHub checks pass; actual erasure fulfilment/retention remains blocked
+- [~] F108 — Release hardening — draft [PR #321](https://github.com/shashikiran6sk/DealersDrive/pull/321), native validation in progress; launch verdict NO-GO

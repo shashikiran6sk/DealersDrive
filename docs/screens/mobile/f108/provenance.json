@@ -1,0 +1,48 @@
+{
+  "source_head_sha": "e0874e6a37f762d3dc5685c70063ef447e81c63d",
+  "run_id": 38702174641,
+  "ui_artifact_id": 11957660993,
+  "binary_artifact_id": 11957566366,
+  "device": "AOSP API35 x86_64 emulator, Pixel5 profile, 1080x2340 at 440 dpi",
+  "api_origin": "https://api.validation.invalid",
+  "web_origin": "https://web.validation.invalid",
+  "result": "2_OF_2_GUEST_PUBLIC_LINK_FLOWS_PASS",
+  "physical_device_validation": false,
+  "live_provider_validation": false,
+  "production_release_approved": false,
+  "evidence": [
+    {
+      "file": "home.png",
+      "sha256": "6ac00f5fa6eb86158e7b56a642fd75590f7f8aa393d30af5078e01c6ef8e2067",
+      "width": 1080,
+      "height": 2340,
+      "description": "Guest Home; no live API data",
+      "edited": false
+    },
+    {
+      "file": "about.png",
+      "sha256": "ef0e702c1008701613fc788ab4d88d97c8f640be3127e0b013c0b314c3f7e89c",
+      "width": 1080,
+      "height": 2340,
+      "description": "Guest About with approved separate symbol/wordmark",
+      "edited": false
+    },
+    {
+      "file": "car-cold-link-error.png",
+      "sha256": "311e043975413c5fdecbeb797016f76cdc03955542747b6bd4433a3bfb389b89",
+      "width": 1080,
+      "height": 2340,
+      "description": "Cold car route at a missing validation slug; network-error view, not loaded vehicle",
+      "edited": false
+    },
+    {
+      "file": "saved-guest.png",
+      "sha256": "c6f149e760f9a77d038a64fda01bcd1f7b49ece5444c36d7482df1ee283134dc",
+      "width": 1080,
+      "height": 2340,
+      "description": "Guest Saved authentication gate",
+      "edited": false
+    }
+  ],
+  "junit_sha256": "0ddcbf9a75c7a8def45166fa4c4f3c0c2055356400e20b367d006c30df28a1b3"
+}

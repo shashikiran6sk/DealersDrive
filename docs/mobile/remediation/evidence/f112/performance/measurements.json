@@ -1,0 +1,47 @@
+{
+  "trials": [
+    {
+      "activity_launch_ms": 270,
+      "home_visible_probe_upper_ms": 3269,
+      "inventory_visible_probe_upper_ms": 3269
+    },
+    {
+      "activity_launch_ms": 279,
+      "home_visible_probe_upper_ms": 3043,
+      "inventory_visible_probe_upper_ms": 3043
+    },
+    {
+      "activity_launch_ms": 290,
+      "home_visible_probe_upper_ms": 3056,
+      "inventory_visible_probe_upper_ms": 3056
+    },
+    {
+      "activity_launch_ms": 331,
+      "home_visible_probe_upper_ms": 3080,
+      "inventory_visible_probe_upper_ms": 3080
+    },
+    {
+      "activity_launch_ms": 280,
+      "home_visible_probe_upper_ms": 3092,
+      "inventory_visible_probe_upper_ms": 3092
+    }
+  ],
+  "medians": {
+    "activity_launch_ms": 280,
+    "home_visible_probe_upper_ms": 3080,
+    "inventory_visible_probe_upper_ms": 3080
+  },
+  "package": "com.dealersdrive.customer.preview",
+  "serial": "emulator-5554",
+  "pixel_size": "Physical size: 1080x2400",
+  "density": "Physical density: 420\nOverride density: 419",
+  "font_scale": "1.0",
+  "api_level": "37",
+  "limitations": [
+    "Activity launch is not JavaScript TTI.",
+    "UIAutomator adds probe overhead; visible timings are upper bounds.",
+    "Process-cold repeats retain OS disk/image caches; these are not first-install startup measurements.",
+    "Software-rendered emulator results do not establish budget physical-device performance.",
+    "No like-for-like F108 performance baseline; no numeric improvement claim."
+  ]
+}
