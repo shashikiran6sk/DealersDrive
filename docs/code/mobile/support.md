@@ -1,0 +1,19 @@
+# Native customer support
+
+F106 reuses the existing customer-scoped ticket/conversation/quota/reopen services. Support and rights remain available when current Terms are declined. Public contact options use server configuration and explicit user-initiated email/phone/approved WhatsApp links; no contact, location or notification permission is requested. No attachment capability is invented because the existing customer API has none.
+
+## Requests and conversation
+
+Owned requests use keyset pages and a virtualized native list. Creation validates the shared category/subject/description/enquiry contract, offers the 20 recent owned enquiries and accepts a direct older enquiry context. Account changes remount private forms; no complaint text or retry identity is persisted. Profile, enquiry detail and privacy-request entry points share these routes.
+
+Conversation uses server public messages/status labels, a virtualized list and explicit refresh. Polling runs every 15 seconds while active and authenticated, with no push provider. Customer identity, ticket ownership, closed/resolved state and five-unanswered-message quota remain server decisions. Resolved tickets require explicit Reopen; closed history requires a new request. Replies use the existing clientMessageId contract, retained only for unchanged validated text, and report success only from the server. Mutation locks prevent repeated taps. Expired sessions and late old-account responses cannot update another customer's state.
+
+## Optional create retry protection
+
+An additive nullable clientRequestId/requestDigest pair and unique customer/id index in support_tickets support safe explicit retries. The service locks the customer/request key, hashes the canonical validated category/subject/description/enquiry tuple and either returns the current owned ticket or rejects changed content under that id. Creation, audit and outbox stay in the existing transaction and execute once. Different customers can use the same UUID without seeing one another's requests. If those identities are later consolidated by the existing verified account-linking rules, overlapping absorbed request keys are cleared before ownership moves; both tickets remain, the survivor key stays authoritative and changed-payload retry still conflicts. Ticket creation takes the existing User row lock before writing, serializing with account absorption and refusing stale unavailable identities. Legacy callers without an id retain their behavior; the identifiers and digest never enter customer responses or logs.
+
+Native RetryIdentity retains an id for the same validated payload in memory and clears it after success or account/screen destruction. It uses expo-crypto 57.0.4, matched to installed Expo SDK 57's bundledNativeModules, for native random UUIDs. No hand-built random generator, analytics SDK or extra permission is added. See [official Expo Crypto reference](https://docs.expo.dev/versions/latest/sdk/crypto/).
+
+Migration 20261015100000_support_create_retry must be applied before a separately authorized backend release. It adds nullable columns and a customer-scoped unique index; existing rows and web callers remain compatible. Existing support quotas/rate limits are not bypassed by retries. Rollback can leave the unused additive fields/index in place while reverting the unmerged application change; no production migration is run by this work.
+
+Lean support-client exports preserve original contracts while excluding admin DTOs from Android imports. Local tests prove concurrent create idempotency, one audit/outbox, changed-payload conflict, legacy behavior, private response shape, account isolation, privacy intake without Terms, native/web conversation consistency, quota/reopen and payload-bound explicit retries. Device visuals, keyboard/TalkBack/back/foreground behavior and live notifications remain manual release gates.

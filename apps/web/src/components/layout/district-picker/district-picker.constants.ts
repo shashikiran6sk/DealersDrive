@@ -24,6 +24,8 @@ export const DISTRICT_PICKER_TEXT = {
   selectedDistrict: (name: string, state: string | null) => (state ? `${name}, ${state}` : name),
 } as const;
 
+export const HOME_PATH = '/';
+
 export const DIRECTORY_PATH = '/dealers';
 
 export const CARS_PATH = '/cars';

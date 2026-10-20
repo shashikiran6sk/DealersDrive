@@ -1,0 +1,21 @@
+{
+  "base_sha": "945856fd385710cbdd6867a345c8e8fd543a676a",
+  "source_content_sha256": "7f188d6bb121702f5a1ef3da04e63aede79dee838ff9a40f199b10ba8a6f2a55",
+  "apk_sha256": "553c8103ae0b453323b6f5fdc86e16213875deed892024c307193e22072a8253",
+  "build": "release variant, validation signing, arm64-v8a, compile/target SDK 36",
+  "environment": "preview; read-only public API https://api.dealers-drive.com; no customer mutations",
+  "device": "read-only Pixel_8 AVD; API 37.2 system image; emulator only",
+  "physical_device_tested": false,
+  "manual_checks": [
+    "five tabs",
+    "district sheet open and system Back dismiss",
+    "Home Vellore selection -> Cars Vellore -> Dealers Vellore",
+    "warm dealer deep link ranipet",
+    "warm dealer deep link all districts"
+  ],
+  "limitations": [
+    "Home redesign and selection-only autocomplete belong to F110",
+    "authenticated and offline journeys not yet tested",
+    "360/393/412dp and large-font matrix belongs to F112"
+  ]
+}

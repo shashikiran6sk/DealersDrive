@@ -1,22 +1,32 @@
 'use server';
 
 import {
+  TermsAcceptanceInput,
+  type AgreementAcceptance,
   CustomerName,
   CustomerSignInInput,
   PhoneSignInInput,
   type CustomerSession,
   type CustomerSignInResponse,
   type PhoneSignInResponse,
+  CustomerReactivationInput,
+  Uuid,
+  CUSTOMER_ACCOUNT_TEXT,
 } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
 
-import { ApiError, apiSend } from '@/lib/api';
+import { legalEnforcementEnabled } from '@/lib/legal-release';
+import { ApiError, apiSend, SESSION_COOKIE } from '@/lib/api';
+import { writeAuthHint } from '@/lib/auth-hint-cookie';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { relaySessionCookie } from '@/lib/session-cookie';
 
 import {
   SIGN_IN_ACTION_TEXT,
   SIGN_UP_COOKIE,
   SIGN_UP_TTL_SECONDS,
+  REACTIVATION_COOKIE,
 } from './sign-in-actions.constants';
 
 export interface DealerSignInState {
@@ -25,7 +35,8 @@ export interface DealerSignInState {
 }
 
 export interface CustomerSignInState {
-  status?: 'SIGNED_IN' | 'NAME_REQUIRED';
+  status?: 'SIGNED_IN' | 'NAME_REQUIRED' | 'REACTIVATION_REQUIRED';
+  reactivationId?: string;
   fullName?: string;
   phoneDisplay?: string;
   error?: string;
@@ -88,6 +99,7 @@ export async function customerPhoneSignInAction(
     );
 
     if (result.status === 'NAME_REQUIRED' && result.signUpToken) {
+      (await cookies()).delete(REACTIVATION_COOKIE);
       (await cookies()).set(SIGN_UP_COOKIE, result.signUpToken, {
         httpOnly: true,
         sameSite: 'lax',
@@ -96,8 +108,30 @@ export async function customerPhoneSignInAction(
       });
       return { status: 'NAME_REQUIRED', phoneDisplay: result.phoneDisplay };
     }
+    if (result.status === 'REACTIVATION_REQUIRED' && result.reactivationToken) {
+      const jar = await cookies();
+      const flowId = randomUUID();
+      jar.delete(SESSION_COOKIE);
+      jar.delete(SIGN_UP_COOKIE);
+      await writeAuthHint(false);
+      jar.set(REACTIVATION_COOKIE, JSON.stringify({ token: result.reactivationToken, flowId }), {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: SIGN_UP_TTL_SECONDS,
+      });
+      return {
+        status: 'REACTIVATION_REQUIRED',
+        reactivationId: flowId,
+        phoneDisplay: result.phoneDisplay,
+        fullName: result.reactivationName,
+      };
+    }
 
     if (!(await relaySessionCookie(setCookies))) return { error: SIGN_IN_ACTION_TEXT.noSession };
+    (await cookies()).delete(REACTIVATION_COOKIE);
+    (await cookies()).delete(REACTIVATION_COOKIE);
     return {
       status: 'SIGNED_IN',
       phoneDisplay: result.phoneDisplay,
@@ -108,7 +142,14 @@ export async function customerPhoneSignInAction(
   }
 }
 
-export async function customerSignUpAction(fullName: string): Promise<CustomerSignUpState> {
+export async function customerSignUpAction(
+  fullName: string,
+  agreement?: AgreementAcceptance,
+): Promise<CustomerSignUpState> {
+  if (agreement && !legalEnforcementEnabled())
+    return { error: 'Agreement collection has changed. Refresh before continuing.' };
+  if (legalEnforcementEnabled() && !TermsAcceptanceInput.safeParse(agreement).success)
+    return { error: 'Accept the Terms and acknowledge the Privacy Policy to create your account.' };
   const name = CustomerName.safeParse(fullName);
   if (!name.success) {
     return { fieldError: name.error.issues[0]?.message ?? SIGN_IN_ACTION_TEXT.nameRequired };
@@ -123,7 +164,7 @@ export async function customerSignUpAction(fullName: string): Promise<CustomerSi
     await apiSend<CustomerSession>(
       'POST',
       '/v1/auth/sign-up/customer',
-      { signUpToken, fullName: name.data },
+      { signUpToken, fullName: name.data, ...(legalEnforcementEnabled() ? { agreement } : {}) },
       { onSetCookie: (received) => (setCookies = received) },
     );
   } catch (error) {
@@ -137,8 +178,44 @@ export async function customerSignUpAction(fullName: string): Promise<CustomerSi
   }
 
   jar.delete(SIGN_UP_COOKIE);
+  jar.delete(REACTIVATION_COOKIE);
   if (!(await relaySessionCookie(setCookies))) return { error: SIGN_IN_ACTION_TEXT.noSession };
   return { done: true };
+}
+
+export async function customerReactivateAction(flowId: string): Promise<CustomerSignUpState> {
+  const jar = await cookies();
+  if (!Uuid.safeParse(flowId).success || jar.get(SESSION_COOKIE)?.value)
+    return { error: SIGN_IN_ACTION_TEXT.startAgain };
+  let stored: unknown;
+  try {
+    stored = JSON.parse(jar.get(REACTIVATION_COOKIE)?.value ?? 'null');
+  } catch {
+    return { error: SIGN_IN_ACTION_TEXT.startAgain };
+  }
+  const ticket = z
+    .object({ flowId: Uuid, token: z.string().min(1).max(2048) })
+    .strict()
+    .safeParse(stored);
+  if (!ticket.success || ticket.data.flowId !== flowId)
+    return { error: SIGN_IN_ACTION_TEXT.startAgain };
+  const input = CustomerReactivationInput.parse({
+    reactivationToken: ticket.data.token,
+    confirmed: true,
+  });
+  let setCookies: string[] = [];
+  try {
+    await apiSend<CustomerSession>('POST', '/v1/auth/customer/reactivate', input, {
+      onSetCookie: (received) => (setCookies = received),
+    });
+    if (!(await relaySessionCookie(setCookies))) return { error: SIGN_IN_ACTION_TEXT.noSession };
+    jar.delete(REACTIVATION_COOKIE);
+    return { done: true };
+  } catch (error) {
+    if (error instanceof ApiError && error.code === 'CUSTOMER_REACTIVATION_EXPIRED')
+      jar.delete(REACTIVATION_COOKIE);
+    return { error: messageOf(error, CUSTOMER_ACCOUNT_TEXT.failed) };
+  }
 }
 
 function messageOf(error: unknown, fallback: string): string {

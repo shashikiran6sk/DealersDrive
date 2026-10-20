@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import type { ComponentType } from 'react';
 
 import { SectionError } from '@/components/errors/section-error';
+import { DistrictScopedLink } from '@/components/layout/district-scoped-link';
 import { CarSearchBox } from '@/components/search/car-search-box';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { AudienceSection } from '@/features/home/audience-section';
@@ -72,12 +72,12 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <Link href="/cars" className="relative dd-chip">
+          <DistrictScopedLink href="/cars" className="relative dd-chip">
             <LinkPendingLabel>{HOME_TEXT.browseAll}</LinkPendingLabel>
-          </Link>
-          <Link href="/dealers" className="relative dd-chip">
+          </DistrictScopedLink>
+          <DistrictScopedLink href="/dealers" className="relative dd-chip">
             <LinkPendingLabel>{HOME_TEXT.browseDealers}</LinkPendingLabel>
-          </Link>
+          </DistrictScopedLink>
         </div>
       </HeroBanner>
 

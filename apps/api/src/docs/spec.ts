@@ -22,6 +22,7 @@ export interface OperationSpec {
   summary: string;
   description: string;
   audience: Audience;
+  nativeBearer?: boolean;
   permission?: string;
   requiresActiveDealer?: boolean;
   params?: string;

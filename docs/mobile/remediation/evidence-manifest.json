@@ -1,0 +1,16 @@
+{
+  "audit_date": "2026-10-16",
+  "source_head": "945856fd385710cbdd6867a345c8e8fd543a676a",
+  "main_head": "a969dc2c5223ddb04c23d720ded6a4daccfe33ab",
+  "recording_path": "/Users/shashikiran/Downloads/screen-recording-2026-10-15-at-101129-pm_d7i1p3Qb.mp4",
+  "recording_sha256": "d5202abdaaf1000f78905f3aad8b06a6dea4c48881d65a80db5d8502df114ed1",
+  "recording_duration_seconds": 176.834,
+  "review_method": "Full timeline: extracted frames at every integer second 0 through 176; inspected all nine chronological contact sheets and selected full-size interaction frames. Not continuous native-device playback.",
+  "extracted_frames": 177,
+  "all_frames_directory": "/private/tmp/dd-ux-audit-video",
+  "native_run_url": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38717431430",
+  "native_artifact_id": 11963672672,
+  "native_artifact_scope": "API35 emulator, preview app with unreachable validation APIs, guest and cold/warm-link smoke only",
+  "recording_provenance": "iPhone-style preview shell, mouse cursor and floating preview controls visible; exact runtime and source SHA unknown",
+  "repository_changes": "None; diagnostic probes and deliverables stored outside repository"
+}

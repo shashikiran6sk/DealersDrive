@@ -1,3 +1,8 @@
+import {
+  sharingDisclosureWhere,
+  mayDiscloseEnquiry,
+  SHARING_GRANT_SELECT,
+} from '../legal/legal.facade.js';
 import { initialsOf, slugify } from '@dealers-drive/contracts';
 import type {
   DealerDocCategory,
@@ -240,11 +245,15 @@ export function createDealersRepository(prisma: PrismaClient) {
 
     async recentEnquiries(dealerId: string, limit: number): Promise<RecentEnquiryRow[]> {
       const rows = await prisma.enquiry.findMany({
-        where: { dealerId, status: { not: 'SPAM' } },
+        where: { dealerId, status: { not: 'SPAM' }, ...sharingDisclosureWhere() },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit,
         select: {
           id: true,
+          customerId: true,
+          dealerId: true,
+          sharingWithdrawnAt: true,
+          sharingGrant: { select: SHARING_GRANT_SELECT },
           createdAt: true,
           customer: { select: { fullName: true, phone: true } },
           listing: {
@@ -262,13 +271,15 @@ export function createDealersRepository(prisma: PrismaClient) {
           },
         },
       });
-      return rows.map((row) => ({
-        id: row.id,
-        name: row.customer.fullName,
-        phone: row.customer.phone,
-        createdAt: row.createdAt,
-        vehicle: row.listing.vehicle,
-      }));
+      return rows
+        .filter((row) => mayDiscloseEnquiry(row))
+        .map((row) => ({
+          id: row.id,
+          name: row.customer.fullName,
+          phone: row.customer.phone,
+          createdAt: row.createdAt,
+          vehicle: row.listing.vehicle,
+        }));
     },
 
     // eslint-disable-next-line @typescript-eslint/require-await -- nothing expires a listing yet (R47)

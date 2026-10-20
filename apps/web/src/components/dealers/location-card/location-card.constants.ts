@@ -1,7 +1,7 @@
 export const LOCATION_CARD_TEXT = {
   heading: 'Location',
-  mapPlaceholder: 'Map — dealership location',
-  directions: 'Get directions',
-  mapTitle: (brandName: string, city?: string) =>
-    `Map showing ${brandName}${city ? ` in ${city}` : ''}`,
+  directions: 'Get Directions',
+  location: (name: string) => `${name} location`,
+  unavailable: 'Address unavailable',
+  directionsUnavailable: 'Directions are unavailable for this location.',
 } as const;

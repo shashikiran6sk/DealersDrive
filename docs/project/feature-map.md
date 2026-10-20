@@ -7067,3 +7067,47 @@ survives would otherwise show one error page per cached URL.
   - the second request sends no session cookie
   - the old shape from the API itself still throws, naming the field
   - an uncached read is not retried
+
+## Android customer stack — F099–F108
+
+The owner-approved Android plan supersedes main-only ancestry and the reconstruction-only merged-dependency rule for these features. Every child targets its immediate predecessor, starting at Draft PR #279. Scope, contracts, migrations, tests, rollback and release gates are in `docs/mobile/README.md`. No privileged native screens, production publication or merge is authorized.
+
+### F099 — Mobile foundation
+
+Dependency: PR #279. apps/mobile; lean common/public contracts exports; package/dev integration; stacked CI/security triggers; docs/mobile and native code documentation. Native environment/API/component tests, lint/types/SDK/Android bundle plus affected regressions. No API or DB behavior change.
+
+### F100 — Native authentication backend
+
+Dependency: F099. Existing identity/session services; customer-only bearer; backend MSG91 challenge; current legal publication adapter. Strict contracts/OpenAPI, auth/isolation/cookie/legal/migration regression tests.
+
+### F101 — Native authentication UI
+
+Dependency: F100. Phone/OTP/name, SecureStore, restore/logout/pending intent, shared policy reader/choices. Native and cross-platform identity evidence.
+
+### F102 — Cars, search and gallery
+
+Dependency: F101. Existing public APIs and filters; native cards/detail/gallery/sharing and Android navigation tests.
+
+### F103 — Home and dealers
+
+Dependency: F102. Existing hero/home rows/directory/profile/inventory/directions; partial failures and visual evidence.
+
+### F104 — Saved cars and account
+
+Dependency: F103. Existing saved records; complete hydration; Profile/Agreements/history entry; account isolation/synchronization.
+
+### F105 — Consent and enquiries
+
+Dependency: F104. PR #279 grants/withdrawal/services only; native enquiry/history/privacy controls; optional safe create retry.
+
+### F106 — Customer support
+
+Dependency: F105. Existing ticket/message/quota/reopen services; native screens/privacy prefill; safe retries and ownership.
+
+### F107 — Account deletion
+
+Dependency: F106. Owner-approved amendment: separate OTP-confirmed customer-only deactivation/reactivation and deletion-request controls on native/web; customer session revocation and immutable sharing withdrawal; dealer/admin roles unaffected. Existing support request channel plus approved verified fulfillment/status/retention/multi-role process. No blind User deletion. See docs/mobile/account-controls-amendment.md.
+
+### F108 — Release hardening
+
+Dependency: F107. Android E2E/security/performance/accessibility/build/signing/app links/store preparation; manual external gates; no automatic upload/deployment.

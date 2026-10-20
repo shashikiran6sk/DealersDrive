@@ -1,3 +1,5 @@
+import { nativeAuthOperations } from './native-auth.docs.js';
+import { customerAccountOperations } from './customer-account.docs.js';
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
 import { adminPhoneOperations } from './admin-phone.docs.js';
@@ -18,6 +20,8 @@ export const authDocs: ModuleDocs = {
     'account and member, the applicable bootstrap allow-list rule, and no suspended admin seat.',
   operations: [
     ...adminPhoneOperations,
+    ...nativeAuthOperations,
+    ...customerAccountOperations,
     {
       method: 'get',
       path: '/v1/auth/providers',

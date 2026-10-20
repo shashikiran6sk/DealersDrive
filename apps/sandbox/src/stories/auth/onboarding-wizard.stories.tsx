@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { authActionStub } from '../../mocks/auth-actions';
 import { phoneActionStub } from '../../mocks/phone-actions';
 
+import { LegalProvider } from '@/features/legal/legal-provider';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
 
@@ -432,4 +433,15 @@ export const EveryStep: Story = {
       ))}
     </div>
   ),
+};
+
+export const OwnerLegalReview: Story = {
+  args: { step: 3, session: { ...session(), role: 'OWNER' }, completeness: completeness() },
+  decorators: [
+    (Story) => (
+      <LegalProvider enabled>
+        <Story />
+      </LegalProvider>
+    ),
+  ],
 };

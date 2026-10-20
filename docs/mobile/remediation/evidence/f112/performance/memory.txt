@@ -1,0 +1,72 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 3777141 Realtime: 3777141
+
+** MEMINFO in pid 16902 [com.dealersdrive.customer.preview] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    55236    55216        0       25    57024    70832    60351     4312
+  Dalvik Heap    19086    18992       16       51    22704    13560     6780     6780
+ Dalvik Other     1643     1568        0        6     2304                           
+        Stack     1344     1344        0        0     1344                           
+    Other dev       21        0       16        0      592                           
+     .so mmap     3389     1072        0        0    51904                           
+    .jar mmap     1406        0        0        0    40672                           
+    .apk mmap    20335      944    18928        0    23632                           
+    .ttf mmap      497        0       96        0     1488                           
+    .dex mmap    26859        0    26848        0    27952                           
+    .oat mmap      394        0        0        0    12208                           
+    .art mmap     7013     6640       48        4    28240                           
+   Other mmap      916       16      784        0     2816                           
+        Memfd       17        0        0        0      640                           
+      Unknown    15753    15664       80        0    18592                           
+        TOTAL   153995   101456    46816       86   292112    84392    67131    11092
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    25680                          50944
+         Native Heap:    55216                          57024
+                Code:    47888                         157984
+               Stack:     1344                           1344
+            Graphics:        0                              0
+       Private Other:    18144
+              System:     5723
+             Unknown:                                   24816
+ 
+           TOTAL PSS:   153995            TOTAL RSS:   292112       TOTAL SWAP PSS:       86
+ 
+ Objects
+               Views:      290         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       23        AssetManagers:        0
+       Local Binders:       24        Proxy Binders:       58
+       Parcel memory:       11         Parcel count:       38
+    Death Recipients:        0             WebViews:        0
+ 
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):     1687                            159
+ Other (nonmalloced):       85                             62
+   Bitmap (malloced):       28                          10305
+    Other (malloced):       28                              2
+ 
+ Shared Bitmaps
+                         Count                       Size(KB)
+                        ------                         ------
+              Mapped:        0                              0
+  (Enable debug.hwui.bitmap_ashmem_long_name sysprop to count unique bitmap allocations)
+ 
+ SQL
+         MEMORY_USED:       76
+  PAGECACHE_OVERFLOW:       16          MALLOC_SIZE:       46
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       20             27     1    20     2  /data/user/0/com.dealersdrive.customer.preview/databases/RKStorage
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+              1            21             2  /data/user/0/com.dealersdrive.customer.preview/databases/RKStorage
+ 

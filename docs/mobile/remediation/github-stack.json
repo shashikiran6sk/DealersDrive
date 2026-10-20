@@ -1,0 +1,134 @@
+[
+  {
+    "baseRefName": "feat/f107-mobile-account-deletion",
+    "headRefName": "feat/f108-mobile-release-hardening",
+    "headRefOid": "945856fd385710cbdd6867a345c8e8fd543a676a",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 321,
+    "state": "OPEN",
+    "title": "F108: Android release hardening and acceptance evidence",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/321"
+  },
+  {
+    "baseRefName": "feat/f106-mobile-support",
+    "headRefName": "feat/f107-mobile-account-deletion",
+    "headRefOid": "9a774251f950f00c4d5204523650c1328158400e",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 320,
+    "state": "OPEN",
+    "title": "F107: Customer deactivation and deletion requests",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/320"
+  },
+  {
+    "baseRefName": "feat/f105-mobile-consent-enquiries",
+    "headRefName": "feat/f106-mobile-support",
+    "headRefOid": "18245c5c77032d85babd69feb15371abc35ea998",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 319,
+    "state": "OPEN",
+    "title": "F106 \u2014 Mobile customer support and safe request retries",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/319"
+  },
+  {
+    "baseRefName": "feat/f104-mobile-saved-account",
+    "headRefName": "feat/f105-mobile-consent-enquiries",
+    "headRefOid": "1b310ecc1629604d8cd33163b1d3db2cb37b8fed",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 318,
+    "state": "OPEN",
+    "title": "F105 \u2014 Mobile dealership consent and customer enquiries",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/318"
+  },
+  {
+    "baseRefName": "feat/f103-mobile-home-dealers",
+    "headRefName": "feat/f104-mobile-saved-account",
+    "headRefOid": "1f0d258db5b84fe09981aba7ce04ef9af1be2694",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 317,
+    "state": "OPEN",
+    "title": "F104 \u2014 Mobile saved cars and account agreements",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/317"
+  },
+  {
+    "baseRefName": "feat/f102-mobile-cars-search-gallery",
+    "headRefName": "feat/f103-mobile-home-dealers",
+    "headRefOid": "b4357a32c49b3ac0285cd9b1521672ab48fff527",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 316,
+    "state": "OPEN",
+    "title": "feat(mobile): F103 customer Home and dealer discovery",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/316"
+  },
+  {
+    "baseRefName": "feat/f101-mobile-auth-ui",
+    "headRefName": "feat/f102-mobile-cars-search-gallery",
+    "headRefOid": "dab6e7ab745e54703e83e532f24eeca1ded5bd23",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 315,
+    "state": "OPEN",
+    "title": "feat(mobile): F102 car discovery filters details and native gallery",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/315"
+  },
+  {
+    "baseRefName": "feat/f100-mobile-auth-backend",
+    "headRefName": "feat/f101-mobile-auth-ui",
+    "headRefOid": "7046f5436ac6a3b4c827d6c53b3bed38815fc41f",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 314,
+    "state": "OPEN",
+    "title": "feat(mobile): F101 native customer sign-in and secure session UX",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/314"
+  },
+  {
+    "baseRefName": "feat/f099-mobile-foundation",
+    "headRefName": "feat/f100-mobile-auth-backend",
+    "headRefOid": "8ec6b2da319166bd5dde01917daec541158dc454",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 313,
+    "state": "OPEN",
+    "title": "feat(auth): F100 customer-only native OTP and session transport",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/313"
+  },
+  {
+    "baseRefName": "feature/legal-compliance-and-consent-v1",
+    "headRefName": "feat/f099-mobile-foundation",
+    "headRefOid": "ba2f30c5633833dbece9a9c099a34004bb2e1a8d",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 312,
+    "state": "OPEN",
+    "title": "feat(mobile): F099 Android customer foundation and approved branding",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/312"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "feat/dealersdrive-new-brand-identity",
+    "headRefOid": "fcafd23b5367dd78dc733eeab8df921865576e4c",
+    "isDraft": false,
+    "mergedAt": "2026-10-14T12:26:44Z",
+    "number": 311,
+    "state": "MERGED",
+    "title": "feat(branding): replace DealersDrive identity across app, favicon and SEO",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/311"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "feature/legal-compliance-and-consent-v1",
+    "headRefOid": "6180a4b52522493b884550448d0a84e7d95432df",
+    "isDraft": true,
+    "mergedAt": null,
+    "number": 279,
+    "state": "OPEN",
+    "title": "feat: consolidate legal policies and dealership consent UX",
+    "url": "https://github.com/shashikiran6sk/DealersDrive/pull/279"
+  }
+]

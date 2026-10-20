@@ -21,7 +21,7 @@ name: Security
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, feature/legal-compliance-and-consent-v1, 'feat/f*-mobile-*']
   push:
     branches: [main]
   schedule:

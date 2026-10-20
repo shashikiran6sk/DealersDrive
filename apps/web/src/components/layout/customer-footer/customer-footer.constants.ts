@@ -23,3 +23,9 @@ export const FOOTER_TEXT = {
   copyright: (year: number) => `© ${String(year)} Dealers-Drive`,
   socialLinkLabel: (label: string) => `Dealers-Drive on ${label}`,
 } as const;
+
+export const LEGAL_LINKS: FooterLink[] = [
+  { label: 'Terms & Conditions', href: '/terms' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Privacy controls', href: '/data-rights' },
+];
