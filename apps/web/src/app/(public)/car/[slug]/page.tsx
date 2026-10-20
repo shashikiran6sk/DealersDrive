@@ -135,6 +135,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
               title={vehicle.title}
               photos={vehicle.images}
               startIndex={vehicle.primaryIndex}
+              variant="studio"
             />
           </div>
 

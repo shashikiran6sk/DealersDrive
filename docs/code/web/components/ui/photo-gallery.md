@@ -12,7 +12,7 @@ dealer page builds from its approved portfolio.
 
 ## `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`
 
-### `export function PhotoGallery({ title, photos, startIndex, strip, stageClassName, emptyLabel }: PhotoGalleryProps)`
+### `export function PhotoGallery({ title, photos, startIndex, strip, stageClassName, emptyLabel, fallback, variant }: PhotoGalleryProps)`
 
 DESIGN-SPEC §2.9/§2.10 as the legacy gallery drew them (**R49**, F083): a
 `.blueprint` stage with its four corner marks, the 108px thumbnail strip under
@@ -80,6 +80,75 @@ fallback loop. The fallback is a `next/image` with `fill`, `priority` (it is
 the largest thing above the fold when it shows) and `unoptimized`, as an SVG
 has nothing for the optimiser to do. The car page passes no fallback and keeps
 its slot.
+
+### `variant?: PhotoGalleryVariant` — `'cover'` (default) or `'studio'`
+
+**The car page floats its StudioCar exteriors on the page.** Every vehicle
+photograph is a StudioCar output, and StudioCar's default background,
+Premium White / Plain, is a flat `#F5F5F5` PNG
+(`workers/image-processing/assets/backgrounds/premium-white-plain.png` in
+StudioCar). Its lossy WebP encoder rounds that to **`#F6F6F6`** at every
+quality, and that is what reaches the browser — the API serves the stored file
+and re-encodes nothing. So the photograph is a light-grey rectangle, and on a
+white page no stage colour can hide it: a `#F6F6F6` stage only moves the edge
+from the photograph to the stage.
+
+`'studio'` therefore does three things, and `'cover'` none of them (the dealer
+hero keeps `'cover'`):
+
+- **The stage is the page colour, with no border.** `border-0` overrides the
+  `.blueprint` border (utilities outrank the components layer) and the stage
+  is `bg-(--color-page)`. The corner marks stay hidden by `.blueprint`.
+- **The photograph is `object-contain`.** `object-cover` cropped StudioCar's
+  framing — a 1704 × 1446 front view lost its shadow's tail in a 4:3 stage, a
+  16:9 photograph a sixth of each side. Contained, nothing is cropped; the
+  pillarbox is the page colour.
+- **The backdrop is mapped to white at display time.** `StudioWhiteFilter`
+  is one hidden SVG `<filter>` with an `feComponentTransfer` lookup table on
+  R, G and B (`studioWhiteTable` in `utils.ts`), and the stage `<img>` points
+  `filter: url(#…)` at it. The table is the identity up to the knee (216),
+  rises linearly to white at the backdrop (246), and is white above it. The
+  car's body, glass and tyres sit below the knee and are untouched; the
+  shadow's soft tail sits in the band and keeps its gradient into white; the
+  backdrop and anything brighter becomes white. The table has 86 points, one
+  every three levels, so 216 and 246 are exact breakpoints.
+  `color-interpolation-filters="sRGB"` is load-bearing: the default,
+  `linearRGB`, would apply the table to linearised values and move the knee.
+  The stored image, and StudioCar, are not changed.
+
+**Only StudioCar photographs are whitened.** The public image has only `url`
+and `alt` — nothing says which shot is an exterior on the backdrop — so the
+gallery looks. `classifyPhoto` draws the loaded stage photograph onto a
+16 × 16 canvas and `cornerKind` reads its four corners: all four within ±3 of
+246 is `'studio'`, anything else `'photo'`. A `'photo'` (an interior, a
+photograph not taken on the backdrop) is shown exactly as stored. The answer
+is remembered by URL, so stepping back to a photograph does not flash.
+
+Until a photograph has been read it **is** whitened, because nearly every
+vehicle photograph is a StudioCar exterior: whitening by default draws the
+server-rendered page right before JavaScript runs, and the cost of guessing
+wrong is a photograph that is not StudioCar's having its brightest highlights
+(above 216) lifted until it has loaded, by at most nine levels. The opposite
+default would flash a grey rectangle on every page before hydration. A
+photograph whose pixels cannot be read stays whitened: the canvas is tainted
+by a cross-origin image, which is the case in local development (web on
+:3000, media on :4000) but not in a deployment, where `MEDIA_BASE_URL` is
+`https://<domain>/media` on the page's own origin. `crossOrigin` is not set on
+the `<img>` — without CORS headers on `/media` it would stop the photograph
+loading at all.
+
+The filter's id is `useId()` with everything but `[A-Za-z0-9_-]` removed
+(`studioFilterId`), so it can be named in `url(#…)` without escaping.
+
+**What it rests on.** The backdrop is StudioCar's Premium White / Plain as
+delivered. If StudioCar changes that background or its encoder, change
+`STUDIO_BACKDROP.level` in `photo-gallery.constants.ts` with it. Premium White
+/ Horizon, Grey and Dark have gradients or other colours, are not recognised
+by the corner check, and are shown as stored. A transparent or pure-white
+export from StudioCar would make the filter unnecessary.
+
+**Not changed.** The thumbnail strip, the viewer (its `#151a23` stage), the
+dealer hero and the mobile app's gallery.
 
 ## `apps/web/src/components/ui/photo-gallery/use-swipe.ts`
 
@@ -162,3 +231,20 @@ index changes, however it changed.
 One `.dd-arrow` for both places §2.9/§2.10 draw it: `strip` at the ends of the
 thumbnail strip, `stage` inset 14px either side of the stage photograph at
 38px on white at 90%. Both grow to 44px below 768.
+
+## `apps/web/src/components/ui/photo-gallery/classify-photo.ts`
+
+### `export function classifyPhoto(image): PhotoKind | null`
+
+Reads whether a loaded photograph is on the StudioCar backdrop (see
+`variant` above). `null` means it cannot say — not loaded yet, no 2D context,
+or a tainted canvas (`getImageData` throws a `SecurityError` on a cross-origin
+image) — and the gallery then keeps its default. `willReadFrequently` asks
+for a CPU-backed canvas, which is what a one-off `getImageData` wants.
+
+## `apps/web/src/components/ui/photo-gallery/studio-white-filter.tsx`
+
+### `export function StudioWhiteFilter({ id }: StudioWhiteFilterProps)`
+
+The hidden, zero-size SVG that holds the backdrop-to-white filter. It is
+`aria-hidden` and not focusable; the table is built once, at module load.

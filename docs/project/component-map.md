@@ -2027,3 +2027,18 @@ Native fixtures supplement the DOM sandbox. Installed Android review of swipe fe
 | PhotoViewer                     | photo-gallery (photo-viewer.tsx)               | images, title, initialIndex, onClose(index); full-screen swipe, counter, Close and system Back return the current index to the inline gallery                                                    | photo-gallery.test.tsx  |
 | GalleryIndicator / GallerySlide | photo-gallery                                  | index, total, tone; hidden from TalkBack because the region carries the value. Slide: per-photo load/failure                                                                                     | photo-gallery.test.tsx  |
 | ServicePills                    | service-pills                                  | services, label; trimmed, de-duplicated server services; wraps, two-line limit; renders nothing when empty; dealer profile                                                                       | dealer-profile.test.tsx |
+
+## StudioCar floating exteriors on the car page
+
+| Component           | Source                                                             | Props / states                                                                                                                                                                                                                                                                                                                                                                              | Consumers                                                             |
+| ------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `PhotoGallery`      | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`       | + `variant?` (`'cover'` default · `'studio'`): studio draws the stage on the page colour with no border, contains the photograph instead of cropping it, and whitens the StudioCar backdrop (`#F6F6F6` as delivered) through `StudioWhiteFilter` until `classifyPhoto` reads the photograph as not StudioCar's · + studio · + studio, photograph off the backdrop · + studio at phone width | `/car/[slug]` (`studio`); `/dealers/[slug]` hero (`cover`, unchanged) |
+| `StudioWhiteFilter` | `apps/web/src/components/ui/photo-gallery/studio-white-filter.tsx` | `id`: a hidden SVG `feComponentTransfer` lookup table in sRGB — identity to 216, linear to white at 246, white above                                                                                                                                                                                                                                                                        | `PhotoGallery` (`studio`)                                             |
+
+`classifyPhoto` (`classify-photo.ts`) samples the stage photograph's four
+corners on a 16 × 16 canvas; `null` (not loaded, tainted cross-origin canvas)
+keeps the filter on. **Unchanged:** the API, contracts and stored images,
+StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
+gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
+`components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
+(`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
