@@ -1,4 +1,3 @@
-import { legalEnabled, requireListingCertification } from '../legal/legal.facade.js';
 import type {
   AdminListingDetail,
   AdminListingQuery,
@@ -238,10 +237,6 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
         assertTransition(listing.status, 'approve', 'ADMIN');
         await assertNotAssistant(tx, listing, admin);
 
-        if (legalEnabled()) {
-          const vehicle = await tx.vehicle.findUniqueOrThrow({ where: { id: listing.vehicleId } });
-          await requireListingCertification(tx, listing, vehicle);
-        }
         const state = await approvalStateOf(tx, listing, minImages);
         const blockers = approvalBlockers(state);
         if (blockers.length > 0) {

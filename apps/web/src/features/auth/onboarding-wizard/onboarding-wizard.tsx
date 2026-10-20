@@ -177,7 +177,6 @@ export function OnboardingWizard({
             />
           </div>
 
-          {!edit ? <div hidden={local === 0}></div> : null}
           <div className="flex gap-[8px]" hidden={local === 0}>
             <button
               type="button"

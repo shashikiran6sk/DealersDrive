@@ -40,13 +40,12 @@ export const savedVehiclesDocs: ModuleDocs = {
       operationId: 'listSavedVehicleSlugs',
       tag: DOC_TAGS.savedVehicles,
       summary: 'Which cars you have saved',
-      query: 'SavedSlugsQuery',
       description:
         'Every slug the customer has saved (at most 500), so a page of cards can draw each ' +
-        'heart from one request instead of one per card. Legacy requests without query retain only {slugs}. Optional limit/cursor enable keyset paging with a page descriptor so native hydration can include records beyond 500 without fetching full cards.',
+        'heart from one request instead of one per card.',
       audience: 'customer',
       responses: [{ status: 200, description: 'The saved slugs.', schema: 'SavedVehicleSlugs' }],
-      errors: [400, 401, 409],
+      errors: [401],
     },
     {
       method: 'put',

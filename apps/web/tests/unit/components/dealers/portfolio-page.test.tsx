@@ -147,9 +147,7 @@ describe('the dealership it shows', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sri Lakshmi Motors');
     expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
-    expect(
-      screen.getAllByText('12 Katpadi Road, Vellore 632001, Tamil Nadu').length,
-    ).toBeGreaterThan(0);
+    expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
   });
 
   /** R118 — on a phone the name sits beside the 60px logo tile, centred on it. */
@@ -307,8 +305,7 @@ describe('the dealership card', () => {
 
     const cards = container.querySelectorAll('section:not(#inventory)');
     expect(cards).toHaveLength(2);
-    expect(cards[1]).toContainElement(screen.getByRole('link', { name: 'Get Directions' }));
-    expect(container.querySelector('iframe')).toBeNull();
+    expect(cards[1]).toContainElement(container.querySelector('iframe'));
   });
 
   it('renders every service the dealership listed', async () => {
@@ -368,11 +365,10 @@ describe('the location map', () => {
     serve(DEALER);
     const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
-    expect(container.querySelector('iframe')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Get Directions' })).toHaveAttribute(
-      'href',
-      DEALER.address.mapsUrl,
-    );
+    const frame = container.querySelector('iframe');
+    expect(frame?.getAttribute('src')).toBe(DEALER.address.embedUrl);
+    // Named for a screen reader, which otherwise announces "iframe".
+    expect(frame?.getAttribute('title')).toMatch(/Sri Lakshmi Motors/);
   });
 
   it('shows the slot, not a map of the town, when no pin was resolved', async () => {
@@ -380,7 +376,7 @@ describe('the location map', () => {
     const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(container.querySelector('iframe')).toBeNull();
-    expect(screen.getAllByText(DEALER.address.full).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Map — dealership location/i)).toBeInTheDocument();
     // Not fallen back to the address string, which is the whole point.
     expect(container.innerHTML).not.toContain('Katpadi+Road');
     expect(container.innerHTML).not.toContain('output=embed');

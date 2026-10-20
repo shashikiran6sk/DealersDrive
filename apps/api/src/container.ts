@@ -1,10 +1,3 @@
-import { createNativeWidget } from './platform/phone-otp/native-widget.adapter.js';
-import type { NativeWidgetPort } from './platform/phone-otp/native-widget.port.js';
-import {
-  createNativeAuthService,
-  type NativeAuthService,
-} from './modules/auth/native-auth.service.js';
-import { createLegalPublication } from './modules/legal/legal-publication.js';
 import {
   createServiceLocationsService,
   type ServiceLocationsService,
@@ -152,7 +145,6 @@ export interface Container {
   readonly sales: SalesService;
   readonly adminNotifications: AdminNotificationsService;
   readonly customers: CustomerAuthService;
-  readonly nativeAuth: NativeAuthService;
   readonly workspaces: WorkspaceService;
   readonly team: TeamService;
   readonly invitations: InvitationsService;
@@ -179,7 +171,6 @@ export interface ContainerOverrides {
   readonly sessions?: SessionResolver;
   readonly oauth?: OAuthProvider;
   readonly phoneOtp?: PhoneOtpPort;
-  readonly nativeWidget?: NativeWidgetPort;
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await -- see above
@@ -235,12 +226,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     otp: phoneOtp,
     cache,
     audit,
-  });
-  const nativeAuth = createNativeAuthService({
-    cache,
-    customers,
-    widget: overrides.nativeWidget ?? createNativeWidget(),
-    productionReady: createLegalPublication(prisma).ready,
   });
   const workspaces = createWorkspaceService({ prisma, sessions: sessionStore, audit });
   const team = createTeamService({ prisma, audit });
@@ -304,7 +289,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     phone,
     phoneSignIn,
     customers,
-    nativeAuth,
     workspaces,
     team,
     invitations,

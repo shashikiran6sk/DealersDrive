@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
-import { LegalProvider } from '@/features/legal/legal-provider';
-import { legalEnforcementEnabled } from '@/lib/legal-release';
-import { PublicAnalytics } from '@/features/analytics/public-analytics';
+import { Analytics } from '@vercel/analytics/next';
 
 import { AUTH_HINT_SCRIPT } from '@/lib/auth-hint';
 import { serverConfig } from '@/lib/config';
@@ -33,8 +31,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {config.appEnv} — not real data
           </div>
         ) : null}
-        <LegalProvider enabled={legalEnforcementEnabled()}>{children}</LegalProvider>
-        <PublicAnalytics />
+        {children}
+        <Analytics />
       </body>
     </html>
   );

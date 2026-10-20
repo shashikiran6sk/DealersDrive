@@ -53,7 +53,6 @@ function knownScripts() {
     // declared only here. Omitting it made every reference to that script look
     // stale — found at F041, when CONTEXT.md first named it.
     'apps/sandbox/package.json',
-    'apps/mobile/package.json',
     'packages/contracts/package.json',
     'packages/config/package.json',
   ];
@@ -99,8 +98,6 @@ const BASES = [
   'apps/api/src/platform',
   'apps/web',
   'apps/web/src',
-  'apps/mobile',
-  'apps/mobile/src',
   'packages/contracts',
   'packages/contracts/src',
   'packages/config',

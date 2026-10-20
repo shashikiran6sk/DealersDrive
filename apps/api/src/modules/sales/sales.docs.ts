@@ -246,10 +246,6 @@ export const salesDocs: ModuleDocs = {
       audience: 'admin',
       permission: 'sales:dealer:submit',
       params: 'IdParam',
-      requestBody: {
-        schema: 'SalesDealerSubmitInput',
-        description: 'Empty object only. A representative cannot supply owner acceptance.',
-      },
       responses: [{ status: 200, description: 'Submitted.', schema: 'DealerSubmitResponse' }],
       errors: [400, 401, 403, 404, 409, 422],
     },
@@ -325,7 +321,7 @@ export const salesDocs: ModuleDocs = {
       tag: DOC_TAGS.sales,
       summary: 'Submit a prepared listing for review',
       description:
-        'Only once the dealership is approved (`409 DEALER_NOT_APPROVED`), current owner Terms and exact revision certification are present when enforcement is active, and the vehicle is complete (`422 VEHICLE_INCOMPLETE`). Enters the ordinary moderation queue as a `SALES` submission; `listings.submittedByMemberId` records who, and the reviewer sees it.',
+        'Only once the dealership is approved (`409 DEALER_NOT_APPROVED`) and the vehicle is complete (`422 VEHICLE_INCOMPLETE`). Enters the ordinary moderation queue as a `SALES` submission; `listings.submittedByMemberId` records who, and the reviewer sees it.',
       audience: 'admin',
       permission: 'sales:listing:submit',
       params: 'SalesVehicleParam',

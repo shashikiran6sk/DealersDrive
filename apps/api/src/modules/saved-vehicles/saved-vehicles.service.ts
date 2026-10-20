@@ -1,9 +1,6 @@
-import { requireCustomerAccess } from '../auth/auth.facade.js';
-import { requireTerms } from '../legal/legal.facade.js';
 import {
   SAVED_SLUGS_MAX,
   type SavedState,
-  type SavedSlugsQuery,
   type SavedVehicleSlugs,
   type SavedVehiclesQuery,
   type SavedVehiclesResponse,
@@ -69,52 +66,21 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       };
     },
 
-    async slugs(
-      customer: CustomerPrincipal,
-      query: SavedSlugsQuery = {},
-    ): Promise<SavedVehicleSlugs> {
-      const paged = query.cursor !== undefined || query.limit !== undefined;
-      const limit = query.limit ?? SAVED_SLUGS_MAX;
-      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
+    async slugs(customer: CustomerPrincipal): Promise<SavedVehicleSlugs> {
       const rows = await prisma.savedVehicle.findMany({
-        where: {
-          customerId: customer.userId,
-          ...(cursor
-            ? {
-                OR: [
-                  { createdAt: { lt: cursor.at } },
-                  ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
-                ],
-              }
-            : {}),
-        },
-        select: { id: true, createdAt: true, listing: { select: { slug: true } } },
+        where: { customerId: customer.userId },
+        select: { listing: { select: { slug: true } } },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        take: paged ? limit + 1 : SAVED_SLUGS_MAX,
+        take: SAVED_SLUGS_MAX,
       });
-      const hasMore = paged && rows.length > limit;
-      const items = hasMore ? rows.slice(0, limit) : rows;
-      const last = items[items.length - 1];
-      return {
-        slugs: items.flatMap((row) => (row.listing.slug ? [row.listing.slug] : [])),
-        ...(paged
-          ? {
-              page: {
-                hasMore,
-                nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
-              },
-            }
-          : {}),
-      };
+      return { slugs: rows.flatMap((row) => (row.listing.slug ? [row.listing.slug] : [])) };
     },
 
     async save(customer: CustomerPrincipal, slug: string): Promise<SavedState> {
       const listing = await listingBySlug(slug);
 
       return withTransaction(prisma, async (tx) => {
-        await requireCustomerAccess(tx, customer.userId);
         await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
-        await requireTerms(tx, customer.userId);
         const pair = { customerId: customer.userId, listingId: listing.id };
 
         const already = await tx.savedVehicle.findUnique({
@@ -147,7 +113,6 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       const listing = await listingBySlug(slug);
 
       return withTransaction(prisma, async (tx) => {
-        await requireCustomerAccess(tx, customer.userId);
         const removed = await tx.savedVehicle.deleteMany({
           where: { customerId: customer.userId, listingId: listing.id },
         });

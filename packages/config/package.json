@@ -33,6 +33,6 @@
   },
   "peerDependencies": {
     "eslint": "^10.9.1",
-    "typescript": "^5.9.3 || ^6.0.3"
+    "typescript": "^5.9.3"
   }
 }

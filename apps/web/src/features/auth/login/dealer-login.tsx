@@ -1,6 +1,5 @@
 'use client';
 
-import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -16,7 +15,6 @@ const DEALER_PHONE_PANEL = 'dealer-phone-panel';
 
 export function DealerLogin({ widget, google, returnTo, error }: DealerLoginProps) {
   const router = useRouter();
-  const legal = useLegalEnabled();
   const [phoneOpen, setPhoneOpen] = useState(!google.enabled);
   const revealed = useRef(false);
 
@@ -49,16 +47,6 @@ export function DealerLogin({ widget, google, returnTo, error }: DealerLoginProp
         </Banner>
       )}
 
-      {legal ? (
-        <p className="mb-4 text-[12px] leading-[1.7]">
-          Google sign-in provides account identity details; it does not accept our agreements or
-          establish authority to bind a dealership.{' '}
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
-            Privacy Policy (opens in a new tab)
-          </a>
-          .
-        </p>
-      ) : null}
       <GoogleSignInButton href={google.href} disabled={!google.enabled} variant="primary" />
 
       {phoneOpen ? null : (

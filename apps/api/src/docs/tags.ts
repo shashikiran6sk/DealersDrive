@@ -1,6 +1,5 @@
 export const DOC_TAGS = {
   auth: 'Authentication',
-  legal: 'Legal agreements and choices',
   config: 'Platform configuration',
   dealersPublic: 'Dealers (public)',
   vehiclesPublic: 'Vehicles (public)',
@@ -26,7 +25,6 @@ export type DocTag = (typeof DOC_TAGS)[keyof typeof DOC_TAGS];
 
 export const TAG_ORDER: DocTag[] = [
   DOC_TAGS.auth,
-  DOC_TAGS.legal,
   DOC_TAGS.config,
   DOC_TAGS.dealersPublic,
   DOC_TAGS.vehiclesPublic,

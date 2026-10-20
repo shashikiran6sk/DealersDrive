@@ -1,16 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import type { EnquirySharingPermission } from '@dealers-drive/contracts';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { Button } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import {
   enquiryCustomerAction,
-  enquirySharingStatusAction,
   sendEnquiryAction,
   type EnquiryCustomer,
   type SendEnquiryState,
@@ -21,12 +18,6 @@ import { ENQUIRY_PANEL_TEXT, loginHref, MY_ENQUIRIES_HREF } from './enquiry-pane
 import type { EnquiryPanelProps, EnquiryPanelStage } from './enquiry-panel.types';
 
 export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: EnquiryPanelProps) {
-  const legal = useLegalEnabled();
-  const [sharing, setSharing] = useState<{
-    required: boolean;
-    recipientId: string;
-    dealerName: string;
-  } | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [stage, setStage] = useState<EnquiryPanelStage>(autoOpen ? 'checking' : 'idle');
@@ -41,7 +32,6 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     let signedIn: EnquiryCustomer | null;
     try {
       signedIn = await enquiryCustomerAction();
-      if (signedIn && legal) setSharing(await enquirySharingStatusAction(listingSlug));
     } catch {
       setNotice(ENQUIRY_PANEL_TEXT.openFailed);
       setStage('idle');
@@ -53,7 +43,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     }
     setCustomer(signedIn);
     setStage('form');
-  }, [pathname, router, listingSlug, legal]);
+  }, [pathname, router]);
 
   useEffect(() => {
     if (stage !== 'form') return;
@@ -82,35 +72,12 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     // eslint-disable-next-line react-hooks/exhaustive-deps -- asked once on mount; autoOpen asks through open()
   }, []);
 
-  async function send(
-    message: string,
-    sharing?: EnquirySharingPermission,
-    recipientId?: string,
-  ): Promise<SendEnquiryState> {
+  async function send(message: string): Promise<SendEnquiryState> {
     let result: SendEnquiryState;
     try {
-      result =
-        legal && recipientId
-          ? await sendEnquiryAction(listingSlug, message, sharing, recipientId)
-          : sharing
-            ? await sendEnquiryAction(listingSlug, message, sharing)
-            : await sendEnquiryAction(listingSlug, message);
+      result = await sendEnquiryAction(listingSlug, message);
     } catch {
       return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_PANEL_TEXT.sendFailed };
-    }
-    if (
-      result.status === 'refused' &&
-      [
-        'ENQUIRY_PERMISSION_REQUIRED',
-        'ENQUIRY_RECIPIENT_CHANGED',
-        'SHARING_NOTICE_CHANGED',
-      ].includes(result.code)
-    ) {
-      try {
-        setSharing(await enquirySharingStatusAction(listingSlug));
-      } catch {
-        setSharing(null);
-      }
     }
     if (result.status === 'sent') {
       setStage('sent');
@@ -180,11 +147,8 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
 
       {stage === 'form' && customer ? (
         <EnquiryForm
-          key={sharing?.recipientId ?? listingSlug}
           customer={customer}
-          dealerName={sharing?.dealerName ?? dealerName}
-          sharingRequired={sharing?.required ?? true}
-          recipientId={sharing?.recipientId}
+          dealerName={dealerName}
           onSend={send}
           onCancel={() => {
             setStage('idle');

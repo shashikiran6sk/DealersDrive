@@ -156,25 +156,6 @@ describe('the request-context mixin', () => {
 });
 
 describe('redaction', () => {
-  it('redacts reactivation credentials and entire accidentally logged request bodies', () => {
-    const { lines, log } = probe();
-    log.info(
-      {
-        reactivationToken: 'controlled-proof',
-        body: { reactivationToken: 'controlled-proof' },
-        req: { body: { otp: '123456', reactivationToken: 'controlled-proof' } },
-        event: 'account.reactivation',
-      },
-      'account control',
-    );
-    expect(lines[0]).toMatchObject({
-      reactivationToken: '[redacted]',
-      body: { reactivationToken: '[redacted]' },
-      req: { body: '[redacted]' },
-      event: 'account.reactivation',
-    });
-    expect(JSON.stringify(lines[0])).not.toMatch(/controlled-proof|123456/);
-  });
   it('never centralizes uncontrolled error messages that can contain credentials', () => {
     const { lines, log } = probe();
     const error = Object.assign(new Error('request failed with token=super-secret'), {
