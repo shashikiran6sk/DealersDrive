@@ -1071,3 +1071,13 @@ describe('filtering the inventory (F086)', () => {
     expect(screen.queryByRole('combobox', { name: 'Sort cars' })).toBeNull();
   });
 });
+
+describe('the portfolio route', () => {
+  it('has no loading boundary, so an inventory filter keeps the scroll position (F114)', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const route = path.join(process.cwd(), 'src/app/(public)/dealers/[slug]/');
+    expect(fs.existsSync(`${route}page.tsx`)).toBe(true);
+    expect(fs.existsSync(`${route}loading.tsx`)).toBe(false);
+  });
+});

@@ -1694,7 +1694,9 @@ under a centred spinner, so the button keeps its width. Consumers: `ButtonLink`
 **C136 `ConsolePageLoading`** and its siblings `VehiclePageLoading`,
 `DealerPageLoading`, `CustomerEnquiriesLoading`, `SavedListLoading` — the
 `loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`,
-`/enquiries` and `/saved`. No props; each is a `role="status"` on its page's own
+`/enquiries` and `/saved`. **F114:** `/dealers/[slug]/loading.tsx` is removed (its
+filters are URL state, and the boundary made Next.js drop `scroll: false`), so
+`DealerPageLoading` has no route consumer; it keeps its story. No props; each is a `role="status"` on its page's own
 grid, built from `.skeleton`, `SkeletonLines` and `VehicleCardSkeleton`.
 
 **Changed:** `ButtonLink` (adds `relative` + `LinkPendingLabel`), `ConsoleNav`
