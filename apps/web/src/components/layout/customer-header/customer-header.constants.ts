@@ -27,3 +27,9 @@ export const MOBILE_HEADER_NAV = [
   { href: HEADER_NAV.cars, label: HEADER_TEXT.buyCars },
   { href: HEADER_NAV.dealers, label: HEADER_TEXT.dealers },
 ];
+
+export const LOCATION_SELECTOR_PATHS: readonly string[] = [
+  HEADER_NAV.home,
+  HEADER_NAV.cars,
+  HEADER_NAV.dealers,
+];

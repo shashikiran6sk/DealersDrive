@@ -32,6 +32,36 @@ string, and `useSearchParams` opts a route out of static prerendering
 unless it sits behind a boundary. Keeping the boundary this tight
 means the rest of the header still renders on the server.
 
+### `{showsLocationSelector(pathname) ? (…) : null}`
+
+The district selector is offered on Home, `/cars` and `/dealers`, and on no
+other page. A car page and a dealership's page are each about one thing; the
+selector there read "Select district" even when the visitor had arrived from
+a directory scoped to one, because the choice lives in the directory's query
+string and a detail link does not carry it. Rather than thread `?district=`
+through every route, the product decision was to show the control only where
+it filters something. The account, saved-cars, enquiry, support and contact
+pages lose it for the same reason.
+
+The whole boundary goes, not just the button: the fallback is the button's
+footprint, so leaving it would leave a "Select district" ghost beside Login.
+The right cluster then holds Login alone and `ml-auto` keeps it flush right,
+so there is no gap to close. The choice itself is untouched — it is still
+the URL's — so returning to a directory shows the same district it left with.
+
+The rule reuses the `usePathname` the nav highlight already reads, so it adds
+no client JavaScript and the server render and the hydrated one agree.
+
+## `apps/web/src/components/layout/customer-header/utils.ts`
+
+### `export function showsLocationSelector(pathname: string): boolean`
+
+An exact match against `LOCATION_SELECTOR_PATHS`, after dropping trailing
+slashes — deliberately not the prefix match `HeaderLink` uses for the nav.
+Every dealership's page starts with `/dealers`, and `/car/…` shares four
+letters with `/cars`; a prefix rule would put the selector on exactly the
+pages it is meant to leave.
+
 ### `{account ?? (<Link href={HEADER_NAV.login} …>)}`
 
 One door, `Login` (**R35**, renamed at **R63**), visible at every width

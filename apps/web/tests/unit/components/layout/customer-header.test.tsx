@@ -3,9 +3,9 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-import { setLocation } from '../../../setup';
+import { navigationState, setLocation } from '../../../setup';
 
-import { CustomerHeader } from '@/components/layout/customer-header';
+import { CustomerHeader, showsLocationSelector } from '@/components/layout/customer-header';
 
 /**
  * The buyer chrome.
@@ -252,5 +252,191 @@ describe('the mobile drawer brand', () => {
     expect(brand.querySelector('img[src="/brand/dealersdrive-wordmark-black.svg"]')).toHaveClass(
       'max-sm:sr-only',
     );
+  });
+});
+
+/**
+ * The district selector belongs to the two directories and the home page that
+ * leads into them. A car page and a dealership's page are each about one
+ * thing; a "Select district" button there reads as a filter on a page that has
+ * nothing to filter. The rule is an exact match on the pathname, so a detail
+ * page two segments under `/dealers` does not inherit the directory's chrome
+ * the way the nav highlight above deliberately does.
+ */
+describe('the district selector', () => {
+  const DEALER_PAGE = '/dealers/sri-lakshmi-motors-katpadi-vellore-tamil-nadu';
+  const CAR_PAGE = '/car/2023-hyundai-creta-sx-o-katpadi-3f9a1c2b';
+
+  function selector(): HTMLElement | null {
+    return screen.queryByRole('button', { name: /select district|vellore|ranipet|tirupattur/i });
+  }
+
+  function rightCluster(): HTMLElement {
+    const cluster = screen.getByRole('link', { name: 'Login' }).parentElement;
+    if (!(cluster instanceof HTMLElement)) throw new Error('no right cluster');
+    return cluster;
+  }
+
+  it.each([['/'], ['/cars'], ['/dealers']])('is offered on %s', (pathname) => {
+    setLocation(pathname);
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    expect(screen.getByRole('button', { name: /select district/i })).toBeInTheDocument();
+  });
+
+  it('names the chosen district on the directory', () => {
+    setLocation('/dealers', 'district=ranipet');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    expect(screen.getByRole('button', { name: /ranipet/i })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['an individual car', CAR_PAGE],
+    ["a dealership's page", DEALER_PAGE],
+  ])('is not offered on %s', (_, pathname) => {
+    setLocation(pathname);
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    expect(selector()).toBeNull();
+    expect(screen.queryByText(/select district/i)).toBeNull();
+  });
+
+  it('is not offered on a detail page even when the URL still carries a district', () => {
+    setLocation(DEALER_PAGE, 'district=ranipet');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    expect(selector()).toBeNull();
+  });
+
+  it.each([['/saved'], ['/contact'], ['/enquiries'], ['/support-requests/new'], ['/invitations']])(
+    'is not offered on %s, which is not a directory',
+    (pathname) => {
+      setLocation(pathname);
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      expect(selector()).toBeNull();
+    },
+  );
+
+  /**
+   * `/car/…` and `/cars` share four letters, and every dealership's page starts
+   * with `/dealers`. A prefix rule would have hidden it from the directories or
+   * shown it on the detail pages; these pin it to exact segments.
+   */
+  it.each([
+    ['/cars', true],
+    ['/cars/', true],
+    ['/dealers', true],
+    ['/dealers/', true],
+    ['/', true],
+    ['/car', false],
+    ['/car/', false],
+    [CAR_PAGE, false],
+    [`${CAR_PAGE}/`, false],
+    [DEALER_PAGE, false],
+    [`${DEALER_PAGE}/`, false],
+    ['/dealersx', false],
+    ['/carsx', false],
+    ['/login', false],
+    ['/dealer', false],
+    ['/dealer/inventory', false],
+    ['/admin', false],
+    ['/sales/dealers', false],
+  ])('%s → shown: %s', (pathname, shown) => {
+    expect(showsLocationSelector(pathname)).toBe(shown);
+  });
+
+  it('leaves no placeholder behind: Login is all that is left in the corner', () => {
+    setLocation(DEALER_PAGE);
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    const cluster = rightCluster();
+    expect(cluster.children).toHaveLength(1);
+    expect(cluster.firstElementChild).toBe(screen.getByRole('link', { name: 'Login' }));
+  });
+
+  it('keeps the selector first and Login last in the corner on the directory', () => {
+    setLocation('/dealers');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    const cluster = rightCluster();
+    expect(cluster.children).toHaveLength(2);
+    expect(cluster.firstElementChild).toBe(
+      screen.getByRole('button', { name: /select district/i }),
+    );
+    expect(cluster.lastElementChild).toBe(screen.getByRole('link', { name: 'Login' }));
+  });
+
+  it.each([
+    [CAR_PAGE, []],
+    [DEALER_PAGE, ['Dealers']],
+  ])('keeps the brand, the nav, the menu and Login on %s', (pathname, highlighted) => {
+    setLocation(pathname);
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    const header = screen.getByRole('banner');
+    expect(within(header).getAllByRole('link', { name: /Dealers-Drive/ })[0]).toHaveAttribute(
+      'href',
+      '/',
+    );
+    expect(within(header).getByRole('button', { name: 'Open Main menu' })).toBeInTheDocument();
+    expect(within(header).getByRole('link', { name: 'Buy cars' })).toHaveAttribute('href', '/cars');
+    expect(within(header).getByRole('link', { name: 'Dealers' })).toHaveAttribute(
+      'href',
+      '/dealers',
+    );
+    expect(within(header).getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/login');
+    expect(current()).toEqual(highlighted);
+  });
+
+  it('keeps the mobile drawer whole on a detail page', async () => {
+    setLocation(CAR_PAGE);
+    render(<CustomerHeader locations={LOCATIONS} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Open Main menu' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Main' });
+
+    expect(
+      within(within(drawer).getByRole('navigation', { name: 'Main' }))
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Home', 'Buy cars', 'Dealers']);
+  });
+
+  /**
+   * The choice lives in the URL and nowhere else, so hiding the button on the
+   * way through cannot lose it: back on the directory the same query string
+   * names the same district, and nothing was pushed in between.
+   */
+  it('hands the same district back on the way from a dealership to the directory', () => {
+    setLocation('/dealers', 'district=ranipet');
+    const { rerender } = render(<CustomerHeader locations={LOCATIONS} />);
+    expect(screen.getByRole('button', { name: /ranipet/i })).toBeInTheDocument();
+
+    setLocation(DEALER_PAGE);
+    rerender(<CustomerHeader locations={LOCATIONS} />);
+    expect(selector()).toBeNull();
+
+    setLocation('/dealers', 'district=ranipet');
+    rerender(<CustomerHeader locations={LOCATIONS} />);
+    expect(screen.getByRole('button', { name: /ranipet/i })).toBeInTheDocument();
+    expect(navigationState.pushed).toEqual([]);
+    expect(navigationState.replaced).toEqual([]);
+  });
+
+  it('still chooses a district from the directory after a visit to a car', async () => {
+    setLocation(CAR_PAGE);
+    const { rerender } = render(<CustomerHeader locations={LOCATIONS} />);
+    expect(selector()).toBeNull();
+
+    setLocation('/cars');
+    rerender(<CustomerHeader locations={LOCATIONS} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /select district/i }));
+    await user.click(screen.getByRole('button', { name: /^ranipet/i }));
+
+    expect(navigationState.pushed).toEqual(['/cars?district=ranipet']);
   });
 });
