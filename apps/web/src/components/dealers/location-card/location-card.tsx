@@ -1,5 +1,7 @@
 import type { DealerPublicProfile } from '@dealers-drive/contracts';
 
+import { Blueprint, ImageSlot } from '@/components/ui/primitives';
+
 import { LOCATION_CARD_TEXT } from './location-card.constants';
 
 export interface LocationCardProps {
@@ -9,11 +11,23 @@ export interface LocationCardProps {
 
 export function LocationCard({ address, brandName }: LocationCardProps) {
   return (
-    <section className="card min-w-0 p-[14px]" aria-label={LOCATION_CARD_TEXT.location(brandName)}>
+    <section className="card p-[14px]">
       <h2 className="eyebrow">{LOCATION_CARD_TEXT.heading}</h2>
-      <address className="mt-3 text-[14px] not-italic leading-[1.7] [overflow-wrap:anywhere]">
-        {address.full || LOCATION_CARD_TEXT.unavailable}
-      </address>
+
+      <Blueprint className="min-h-[310px] flex-1 overflow-hidden bg-(--color-surface)">
+        {address.embedUrl ? (
+          <iframe
+            src={address.embedUrl}
+            title={LOCATION_CARD_TEXT.mapTitle(brandName, address.city ?? undefined)}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="h-full min-h-[220px] w-full border-0"
+          />
+        ) : (
+          <ImageSlot label={LOCATION_CARD_TEXT.mapPlaceholder} />
+        )}
+      </Blueprint>
+
       {address.mapsUrl ? (
         <a
           href={address.mapsUrl}
@@ -23,9 +37,7 @@ export function LocationCard({ address, brandName }: LocationCardProps) {
         >
           {LOCATION_CARD_TEXT.directions}
         </a>
-      ) : (
-        <p className="mt-3 text-[13px] ink-secondary">{LOCATION_CARD_TEXT.directionsUnavailable}</p>
-      )}
+      ) : null}
     </section>
   );
 }

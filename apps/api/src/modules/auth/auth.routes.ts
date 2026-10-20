@@ -7,9 +7,6 @@ import type { PhoneService } from './phone.service.js';
 import type { PhoneSignInService } from './phone-sign-in.service.js';
 import { getAdminGoogleStart } from './routes/get-admin-google-start.js';
 import { getCustomerMe } from './routes/get-customer-me.js';
-import { getCustomerAccount } from './routes/get-customer-account.js';
-import { postCustomerDeactivate } from './routes/post-customer-deactivate.js';
-import { postCustomerReactivate } from './routes/post-customer-reactivate.js';
 import { postSignInPhoneCustomer } from './routes/post-sign-in-phone-customer.js';
 import { postSignUpCustomer } from './routes/post-sign-up-customer.js';
 import { postCustomerLogout } from './routes/post-customer-logout.js';
@@ -47,7 +44,6 @@ const PUBLIC_ROUTES: PublicAuthRoute[] = [
   postSignInPhoneCustomer,
   postSignUpCustomer,
   postCustomerLogout,
-  postCustomerReactivate,
 ];
 
 export function createPublicAuthRouter(
@@ -61,11 +57,7 @@ export function createPublicAuthRouter(
   return router;
 }
 
-const CUSTOMER_ROUTES: CustomerAuthRoute[] = [
-  getCustomerMe,
-  getCustomerAccount,
-  postCustomerDeactivate,
-];
+const CUSTOMER_ROUTES: CustomerAuthRoute[] = [getCustomerMe];
 
 export function createCustomerAuthRouter(customers: CustomerAuthService): Router {
   const router = Router();

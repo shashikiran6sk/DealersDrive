@@ -38,16 +38,8 @@ export const SavedVehiclesResponse = z.object({
 export type SavedVehiclesResponse = z.infer<typeof SavedVehiclesResponse>;
 
 /** Every slug the customer has saved, so any card can draw its heart without a request each. */
-export const SavedSlugsQuery = z
-  .object({
-    cursor: z.string().max(500).optional(),
-    limit: z.coerce.number().int().min(1).max(SAVED_SLUGS_MAX).optional(),
-  })
-  .strict();
-export type SavedSlugsQuery = z.infer<typeof SavedSlugsQuery>;
 export const SavedVehicleSlugs = z.object({
   slugs: z.array(z.string()).max(SAVED_SLUGS_MAX),
-  page: CursorPage.optional(),
 });
 export type SavedVehicleSlugs = z.infer<typeof SavedVehicleSlugs>;
 

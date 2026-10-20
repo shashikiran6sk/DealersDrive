@@ -82,15 +82,3 @@ regexes = [
   '''^fixed\-refreshed\-access\-390\.png": "d9bdf8750fbc08860432e8b1712207766e0175975198fa987896b15267a62e4f"$''',
   '''^fixed\-refreshed\-access\-768\.png": "c3d6af9712ed04dc6213902be6a2670632f0a55aca3ec428083bd7c31bfd01c5"$''',
 ]
-
-[[rules.allowlists]]
-description = "One exact sentence fragment in the F108 App Links notes, not a credential"
-regexTarget = "match"
-# docs/mobile/release-operations.md (commit 4884735, F108) says the app rejects
-# "privileged routes, credentials, duplicate/unknown query keys". `generic-api-key`
-# reads the word `credentials` as a keyword and `duplicate/unknown` as its value,
-# with entropy 3.69. It is prose. The scan covers every fetched branch and its history,
-# and that commit cannot be rewritten (CLAUDE.md), so the exact captured text is
-# allowlisted. The pattern is anchored on both ends: any other value after
-# `credentials` is still caught.
-regexes = ['''^credentials, duplicate/unknown $''']

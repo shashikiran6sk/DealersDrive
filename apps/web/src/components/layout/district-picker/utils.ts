@@ -1,15 +1,9 @@
 import type { DistrictChip, PublicLocations } from '@dealers-drive/contracts';
 
-import {
-  CARS_PATH,
-  DIRECTORY_PATH,
-  HOME_PATH,
-  VEHICLE_PATH_PREFIX,
-} from './district-picker.constants';
+import { CARS_PATH, DIRECTORY_PATH, VEHICLE_PATH_PREFIX } from './district-picker.constants';
 import type { DistrictUnit, StateGroup } from './district-picker.types';
 
 export function scopedPathOf(pathname: string): string {
-  if (pathname === HOME_PATH) return HOME_PATH;
   if (pathname === CARS_PATH || pathname.startsWith(VEHICLE_PATH_PREFIX)) return CARS_PATH;
   return DIRECTORY_PATH;
 }

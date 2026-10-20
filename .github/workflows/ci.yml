@@ -36,7 +36,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, feature/legal-compliance-and-consent-v1, 'feat/f*-mobile-*']
+    branches: [main]
 
 # One run per branch. A force-push mid-review should not leave two suites
 # racing, and the newer commit is the only one anybody cares about.
@@ -125,11 +125,8 @@ jobs:
       # vitest configs enforce. The suite creates and migrates its own
       # `dealersdrive_test` database — that is `global-setup`'s job, not this
       # workflow's.
-      - name: Web, API and contract tests
-        run: pnpm exec turbo run test --filter='!@dealers-drive/mobile'
-
-      - name: Native tests
-        run: pnpm --filter @dealers-drive/mobile test
+      - name: Test
+        run: pnpm test
 
       - name: Build
         run: pnpm build
@@ -181,10 +178,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Preserve the repository gate: critical advisories block and high findings
-      # are reported. Web/API and the native toolchain have transitive advisories;
-      # mobile release acceptance separately requires remediation or a reviewed
-      # reachability assessment. This gate does not declare an app launch-ready.
+      # Blocking at `critical` and reporting at `high` is a deliberate split,
+      # not laziness. Every current high advisory is transitive through `next`
+      # or `prisma` and has no fix this repository can apply — a gate that is
+      # red for reasons nobody can act on gets ignored, and then the critical
+      # one is ignored too. Dependabot (.github/dependabot.yml) is what
+      # actually closes these, by raising the upstream bump as a PR.
       - name: Block on critical advisories
         run: pnpm audit --audit-level=critical
 

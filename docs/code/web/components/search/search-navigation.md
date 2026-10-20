@@ -11,15 +11,6 @@ server component; a filter change is a navigation, and inside a transition
 React keeps the current results on screen until the next ones are ready
 instead of blanking the page. `pending` is what lets the results region say so.
 
-### `anchor` — F114
-
-When the page passes an element id, a settled update (`pending` going from true
-back to false) calls `revealAnchor` once. A dealer's inventory sits below the
-dealership's header, yard photographs, details and location. After a filter or
-sort, the buyer should be at the inventory's heading or still inside the results,
-never left below a shorter result set or above the section. `/cars` passes no
-anchor, so its behaviour is unchanged.
-
 ### `optimistic?.()`
 
 Called inside the transition, which is where `useOptimistic` requires its
@@ -41,13 +32,6 @@ polite status for a screen reader. The page's total is itself a
 `role="status"`, so the new count is announced when it arrives.
 
 ## `apps/web/src/components/search/search-navigation/utils.ts`
-
-### `export function revealAnchor(id)`
-
-Scrolls only when the anchor's top has gone above the viewport. If the heading is
-still on screen, or below it, the page is left exactly where the buyer put it, so
-ticking a filter while looking at the heading moves nothing. The section's
-`scroll-mt` keeps the heading clear of the sticky header.
 
 ### `export function resultsRegionClass(pending, className)` — R57
 

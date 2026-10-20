@@ -3,7 +3,6 @@ export {
   CARS_PATH,
   DIRECTORY_PATH,
   DISTRICT_PICKER_TEXT,
-  HOME_PATH,
   LOCATION_CHILD_PARAMS,
   VEHICLE_PATH_PREFIX,
 } from './district-picker.constants';

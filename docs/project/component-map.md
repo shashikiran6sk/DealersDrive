@@ -641,13 +641,22 @@ opening the panel or asking again.
 
 ### C068 — `LocationCard`
 
-`components/dealers/location-card/location-card.tsx`. Props: `address: DealerPublicProfile['address']`, `brandName: string`. Server component consumed by the public portfolio. Shows the public business address and a single Get Directions link. No iframe, map-loading state or automatic Google request. States: validated pin, complete public address fallback, existing validated share link, incomplete location with no directions. Directions are composed and encoded by the API. Stored location/address management and geocoding remain. Sandbox stories and web/API tests cover nullable destinations. **P2** ✅
+`components/dealers/location-card.tsx:47`. Props:
+`address: DealerPublicProfile['address']`, `brandName: string`. States: place
+card, pin only, directions only, map only, neither. One consumer (the
+portfolio), where it was inline until **R10**.
 
-### LegalCheck and LegalDocument
+The states are the component's whole reason for existing as one: the map is
+`address.embedUrl` and the button is `address.mapsUrl`, and the two are
+independently nullable because a share link carries neither a pin nor a place
+until it is followed and following it is best-effort. Neither is ever composed
+from the address. A server component — a Google embed in an `<iframe>` needs no
+JavaScript of ours. **P2** ✅
 
-`features/legal/legal-check` exposes `kind`, `dealerName`, `onCompleteChange`; consumers are customer registration, final dealer Review & Submit, account checkpoints, enquiry submission and vehicle declaration. One unticked sentence per decision, independent policy links outside checkbox labels, keyboard choice and natural wrapping. Account/dealer choice records contractual acceptance and a distinct privacy acknowledgement; optional sharing remains a separate control. No duplicate control appears in draft creation or document collection. `LegalProvider` supplies the server release flag; it does not establish backend authority. Existing props remain compatible; policy versions are hidden form values, not routine labels.
-
-`features/legal/legal-document` renders immutable snapshot content, version/effective/review metadata, contents anchors and archives. Current related policies are exactly Terms and Privacy. Historical document identifiers resolve by recorded version. Sandbox states: draft, archive, account, dealer, enquiry, certification, disabled and mobile. Tests cover anchors, one-line sentences, accessible names, keyboard action, links without checkbox toggling, signup/enquiry refusals and reused permissions.
+Which map is in the frame is **not this component's decision**. `embedUrl` is
+composed by the API (**R14**), so the card renders one `<iframe>` and cannot
+tell a place card from a bare pin — which is what let the map gain the yard's
+name, rating and an in-frame directions control without the card changing shape.
 
 ### C071 — `DistrictPicker`
 
@@ -690,21 +699,6 @@ a buyer on `/cars` (and sends one on `/car/<slug>` there), and sends everything
 else — home, a portfolio — to `/dealers`. Leaving the district drops `city`,
 `dealer` and `page`, the three parameters that belonged to it. On `/cars` the
 dialog counts **cars** (`PublicLocations.cars`) instead of dealerships.
-
-**F114 — home keeps the buyer where they are.** Choosing a district on `/` now
-writes `/?district=<slug>` and stays on the home page, as the Android app does.
-The hero's browse chips carry the district onward through `DistrictScopedLink`
-(C137). `/car/<slug>` still goes to `/cars`, and a portfolio or any page that
-reads no district still goes to `/dealers`.
-
-### C137 — `DistrictScopedLink`
-
-`components/layout/district-scoped-link/`. Props: `href`, `className?`,
-`children`. States: no district, district chosen, invalid district ignored. One
-consumer (the home page's two hero browse chips). **NEW at F114.** **Reusable.**
-A client link that appends the page's own `?district=` to its `href`, inside its own
-`Suspense` boundary so a static page still prerenders. The fallback is the plain
-link. `scopedHref` is the pure part.
 
 ### C069 — `LocationSelector`
 
@@ -1700,9 +1694,7 @@ under a centred spinner, so the button keeps its width. Consumers: `ButtonLink`
 **C136 `ConsolePageLoading`** and its siblings `VehiclePageLoading`,
 `DealerPageLoading`, `CustomerEnquiriesLoading`, `SavedListLoading` — the
 `loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`,
-`/enquiries` and `/saved`. **F114:** `/dealers/[slug]/loading.tsx` is removed (its
-filters are URL state, and the boundary made Next.js drop `scroll: false`), so
-`DealerPageLoading` has no route consumer; it keeps its story. No props; each is a `role="status"` on its page's own
+`/enquiries` and `/saved`. No props; each is a `role="status"` on its page's own
 grid, built from `.skeleton`, `SkeletonLines` and `VehicleCardSkeleton`.
 
 **Changed:** `ButtonLink` (adds `relative` + `LinkPendingLabel`), `ConsoleNav`
@@ -1903,10 +1895,6 @@ image), `PortfolioManager`, the admin portfolio queue. **Tests**
 (`WideHero`, `WithCaptions`, `OnePhoto`, `NoPhotos`, `EmptyWideHero`, `Twenty`,
 `Portrait`, `Phone`).
 
-### PublicAnalytics privacy adapter
-
-`features/analytics/public-analytics/public-analytics.tsx`, consumed only by RootLayout, wraps the existing #309 SDK. It has no visible UI or props; public/privileged path states live in `lib/public-analytics.ts` and its privacy boundary tests. A sandbox infrastructure story records its invisible behavior with public/private mocked paths. It strips URL query/fragment fields and suppresses custom/private events. It does not add a provider or represent legal approval of analytics processing.
-
 ## Mobile drawer brand and dealer yard fallback (R118)
 
 | Component         | Source                                                            | Props / states                                                                                                                                                                    | Consumers                                                      |
@@ -1926,104 +1914,3 @@ now 1600 × 640) and the dealer page passes the same constant as its hero
 `components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
 **Sandbox** `Layout/MobileNav` (`CustomerWithBrand`), `Primitives/PhotoGallery`
 (`EmptyWideHero`, `EmptyWideHeroPhone`, `BrokenPhotoFallsBack`, `FallbackImageFails`).
-
-## Native enquiry components (F105)
-
-Native components use React Native fixtures rather than the DOM sandbox. Existing ActionButton, ConsentChoice, Page, StatusPanel, Brand and car APIs are reused.
-
-| Component                                   | Source folder under apps/mobile/src/features/enquiries | Props/states and consumers                                                                                  | Evidence                                                              |
-| ------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| EnquiryScreen / EnquiryFormScreen           | enquiry-screen / enquiry-form-screen                   | Account/car keyed form; guest/restore/error/unticked/reused/changed/submitting/confirmed; car detail action | enquiry-screen.test.tsx                                               |
-| EnquiriesScreen / EnquiryDetailScreen       | enquiries-screen / enquiry-detail-screen               | Owned cursor history, old/missing car and linked/legacy withdrawal; Profile                                 | API legal tests and native form fixtures; installed-screen QA pending |
-| WithdrawButton                              | withdraw-button                                        | id, grant, dealershipScope; confirm/cancel/in-flight/failure/success; rights/detail                         | withdraw-button.test.tsx                                              |
-| PrivacyControlsScreen / SharingNoticeScreen | privacy-controls-screen / sharing-notice-screen        | Owned effective permissions; authoritative full notice/draft/unavailable; Profile/form                      | Shared contracts/API integration; installed-screen QA pending         |
-
-## Native support components (F106)
-
-Existing ActionButton, Page, Brand and StatusPanel are reused. Native fixtures supplement the DOM sandbox; installed Android visual review remains pending.
-
-| Component                                 | Folder under apps/mobile/src/features/support | Props/states/consumers                                                                   | Evidence                                   |
-| ----------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
-| SupportScreen / SupportListScreen         | support-screen / support-list-screen          | Public configured contact actions; owned keyset requests/guest/error/empty; Profile      | Contracts/API tests; device review pending |
-| SupportCreateScreen / SupportCreateForm   | support-create-screen / support-create-form   | Account-keyed category/subject/body/owned enquiry; privacy prefill; uncertain/safe retry | support-create.test.tsx                    |
-| SupportDetailScreen / SupportConversation | support-detail-screen / support-conversation  | Account/ticket-keyed messages, active polling, quota, explicit reopen/closed/new-request | support-conversation.test.tsx              |
-| SupportMessageBubble                      | support-message                               | Public author/body/date; customer/support variants; virtualized conversation             | Conversation fixtures                      |
-
-## Account controls (F107)
-
-| Component                             | Source                                  | Props/states/consumers                                                                           | Evidence                                                   |
-| ------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| AccountControlsHost / AccountControls | web features/account/account-controls   | customerId, canDeactivate; guest, fresh/stale OTP, unticked, pending, refused, receipt; /account | Forms/CustomerAccountControls; web action/UI tests         |
-| DeletionRequest                       | web features/account/deletion-request   | customerId; explicit choice, optional details, retry/error, intake receipt; /account-deletion    | Forms/CustomerDeletionRequest; action/UI tests             |
-| CustomerReactivation                  | web features/auth/customer-reactivation | flow identity/name/phone, explicit confirm, expiry/restart; CustomerLogin                        | Forms/CustomerReactivation; cookie isolation/UI tests      |
-| AccountScreen / AccountControls       | mobile features/account                 | owner/session keyed; fresh/stale OTP, explicit confirm, error/logout receipt; Profile            | account-controls.test.tsx; installed visual review pending |
-| DeletionScreen / DeletionRequest      | mobile features/account                 | guest external resource, owner-scoped UUID retry, unticked intake/receipt; account               | account-controls.test.tsx; installed visual review pending |
-
-Existing Button/ConsentChoice/Page/StatusPanel/Brand components are reused. Web Storybook static build passes; visual review was blocked by automatic browser approval review, so no visual acceptance is claimed.
-
-## Native release components (F108)
-
-| Component        | Folder under apps/mobile/src/features/reliability | Props/states/consumers                                                                       | Evidence                                                           |
-| ---------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| AppErrorBoundary | app-error-boundary                                | Expo Router retry; generic render failure with no raw exception/credential text; root layout | reliability.test.tsx; installed injection pending                  |
-| AboutScreen      | about-screen                                      | Public version/build, brand, terms/privacy/support/home; Profile                             | Approved asset/bundle/type checks; installed visual review pending |
-
-Existing native Brand/Page/ActionButton are reused; native fixtures supplement the DOM sandbox. System launcher/splash visuals and E2E screenshots remain device acceptance gates.
-
-### F109 — Android remediation foundation
-
-The approved remediation extends the existing native Brand and directory screens. DOM sandbox components were searched; native primitives use Testing Library fixtures and installed Android evidence instead.
-
-| Component         | Native source                                 | Props/states and consumers                                                                                       | Validation                                                               |
-| ----------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| MarketplaceHeader | apps/mobile/src/components/marketplace-header | Approved lockup, responsive district pill, API loading/error, all districts; five-tab shell                      | navigation-location fixtures; native screenshots in remediation evidence |
-| SelectionSheet    | apps/mobile/src/components/selection-sheet    | title/options/value/select/close, search/loading/error/retry, radio semantics and system Back; district selector | selection-sheet.test.tsx                                                 |
-| Icon              | apps/mobile/src/components/icon               | Existing SVG runtime, decorative named paths, size/color/fill; shared native controls                            | consumer fixtures and native screenshots                                 |
-
-Zustand contains public district preference only. SessionManager and TanStack Query retain identity and remote-state ownership. No legal source or API contract changes are introduced by this foundation.
-
-### F110 — native discovery and search
-
-Existing native CarCard, ActionButton, SelectionSheet and filtering contracts remain the shared foundations. New native fixtures supplement the DOM sandbox, whose HTML controls are not imported into Android.
-
-| Component                        | Native source                                         | Props/states and consumers                                                                                                                  | Validation                                                           |
-| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| AutocompleteField / MatchedLabel | components/autocomplete-field                         | Search/clear, query-derived options, loading/empty/error/retry, measured anchored panel, keyboard/Back/outside dismissal; Home/Cars/Dealers | query interaction fixtures and actual keyboard-open native selection |
-| OverlayHost                      | components/overlay-host                               | One owner-scoped transient overlay above navigation/list clipping; no persisted UI or remote data                                           | native anchored dropdown screenshots                                 |
-| DiscoveryTools / SortDialog      | components/discovery-tools; features/cars/sort-dialog | Separate sort/filter actions; contract-derived radio options and auto-close; Cars/dealer inventory                                          | discovery-controls.test.tsx                                          |
-| AppliedFilters                   | features/cars/applied-filters                         | Removable CSV/range/q chips with dependent model/page reset; Cars/dealer inventory                                                          | discovery-controls.test.tsx                                          |
-| TownPills                        | components/town-pills                                 | API options, multiple selected towns, zero-count removal and reset; dealer directory                                                        | discovery-controls and dealer-directory-state fixtures               |
-| EmptyState                       | components/empty-state                                | title/description/action/icon, semantic heading rather than alert; Cars/dealer inventory/directory                                          | consumer fixtures and native empty district/inventory screenshots    |
-| InventoryRow                     | features/home/inventory-row                           | Actual nonempty card data only, horizontal layout, canonical browse action                                                                  | home-discovery.test.tsx; native Home screenshot                      |
-
-No backend records, counts or photographs are injected to populate runtime screens. Test fixtures are isolated to native tests.
-
-### F111 — customer journeys and consistent cards
-
-Native components extend the existing shared Card, ConsentChoice, Page, Icon, SelectionSheet and EmptyState system. React Native fixtures and snapshots cover these controls; no HTML sandbox is imported.
-
-| Component                      | Source under apps/mobile/src                          | States and consumers                                                                                     | Evidence                                                 |
-| ------------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| NavigationBack / NavigationRow | components/navigation-back; components/navigation-row | Native Back/close; grouped Profile destinations                                                          | navigation-discard fixtures and emulator screenshots     |
-| SelectionField                 | components/selection-field                            | Selected/placeholder/disabled/expanded; contract-backed support category sheet                           | support-create fixtures                                  |
-| PolicyChoice / CheckBoxMark    | components/policy-choice; components/consent-choice   | Separate affirmative choice and document link; signup/agreements                                         | policy-choice, sign-in and enquiry fixtures              |
-| CarCard / SaveButton           | components/car-card; components/save-button           | One system for all placements, solid/outlined black heart, image recovery, availability and missing data | cars-components snapshots and saved rollback/cache tests |
-
-Full source-level behavior and the pinned navigation adapter are described in [customer navigation](../code/mobile/customer-navigation.md).
-
-### F112 — native acceptance and hardening
-
-The existing Brand adds a compact geometry-preserving lockup for narrow headers. AuthField/AutocompleteField explicitly keep single-line native input semantics and concise placeholders at 150% system text. Brand and field consumer tests plus 360/393/412dp and large-text release screenshots verify the variants. The native theme plugin sets the dialog accent to the same neutral token; no raster branding or UI dependency is added.
-
-Saved private-cache cancellation/removal and focused support polling have direct regression tests. The retained-intent prebuild adapter has template/idempotence tests and a native startup-window Maestro flow. Source details are in [customer navigation](../code/mobile/customer-navigation.md); evidence and remaining physical/accessibility gates are in [acceptance results](../mobile/remediation/acceptance-results.md).
-
-## Native gallery and dealer components (F113)
-
-Native fixtures supplement the DOM sandbox. Installed Android review of swipe feel, TalkBack and narrow-width wrapping remains pending.
-
-| Component                       | Source folder under apps/mobile/src/components | Props/states/consumers                                                                                                                                                                           | Evidence                |
-| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
-| PhotoGallery                    | photo-gallery                                  | images, primaryIndex?, title; none/one/many/long (no dots past seven); swipe paging, dots and "n / total"; adjustable increment/decrement/activate; tap opens viewer; car detail, dealer profile | photo-gallery.test.tsx  |
-| PhotoViewer                     | photo-gallery (photo-viewer.tsx)               | images, title, initialIndex, onClose(index); full-screen swipe, counter, Close and system Back return the current index to the inline gallery                                                    | photo-gallery.test.tsx  |
-| GalleryIndicator / GallerySlide | photo-gallery                                  | index, total, tone; hidden from TalkBack because the region carries the value. Slide: per-photo load/failure                                                                                     | photo-gallery.test.tsx  |
-| ServicePills                    | service-pills                                  | services, label; trimmed, de-duplicated server services; wraps, two-line limit; renders nothing when empty; dealer profile                                                                       | dealer-profile.test.tsx |

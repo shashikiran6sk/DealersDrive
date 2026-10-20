@@ -1,23 +1,12 @@
 import { BrandLockup } from '@/components/brand-logo';
 
-import {
-  BUYER_LINKS,
-  DEALER_LINKS,
-  FOOTER_TEXT,
-  SUPPORT_LINKS,
-  LEGAL_LINKS,
-} from './customer-footer.constants';
+import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT, SUPPORT_LINKS } from './customer-footer.constants';
 import type { CustomerFooterProps } from './customer-footer.types';
 import { FooterColumn } from './footer-column';
 import { FooterLinkItem } from './footer-link-item';
 import { SocialRow } from './social-row';
 
-export function CustomerFooter({
-  social,
-  supportEmail,
-  supportPhone,
-  legalVisible = false,
-}: CustomerFooterProps) {
+export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerFooterProps) {
   return (
     <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 max-sm:grid-cols-2 max-sm:gap-6 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
@@ -71,13 +60,6 @@ export function CustomerFooter({
             </li>
           ) : null}
         </FooterColumn>
-        {legalVisible ? (
-          <FooterColumn title="Legal & privacy">
-            {LEGAL_LINKS.map((link) => (
-              <FooterLinkItem key={link.href} {...link} />
-            ))}
-          </FooterColumn>
-        ) : null}
       </div>
 
       <div className="border-t border-(--color-rule)">

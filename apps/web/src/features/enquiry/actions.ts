@@ -1,16 +1,9 @@
 'use server';
 
-import {
-  CreateEnquiryInput,
-  CustomerSession,
-  SharingStatus,
-  type EnquirySharingPermission,
-  type EnquiryReceipt,
-} from '@dealers-drive/contracts';
+import { CreateEnquiryInput, CustomerSession, type EnquiryReceipt } from '@dealers-drive/contracts';
 
 import { cookies } from 'next/headers';
 
-import { legalEnforcementEnabled } from '@/lib/legal-release';
 import { ApiError, apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 import { ENQUIRY_ACTION_TEXT } from './actions.constants';
@@ -45,19 +38,8 @@ export async function enquiryCustomerAction(): Promise<EnquiryCustomer | null> {
 export async function sendEnquiryAction(
   listingSlug: string,
   message: string,
-  sharing?: EnquirySharingPermission,
-  recipientId?: string,
 ): Promise<SendEnquiryState> {
-  if (sharing && !legalEnforcementEnabled())
-    return {
-      status: 'invalid',
-      message: 'Sharing collection has changed. Refresh before continuing.',
-    };
-  const parsed = CreateEnquiryInput.safeParse({
-    listingSlug,
-    message,
-    ...(legalEnforcementEnabled() ? { sharing, recipientId } : {}),
-  });
+  const parsed = CreateEnquiryInput.safeParse({ listingSlug, message });
   if (!parsed.success) {
     return {
       status: 'invalid',
@@ -79,12 +61,4 @@ export async function sendEnquiryAction(
     }
     return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_ACTION_TEXT.unavailable };
   }
-}
-
-export async function enquirySharingStatusAction(listingSlug: string) {
-  return apiGetParsed(
-    SharingStatus,
-    `/v1/enquiries/sharing-status?listingSlug=${encodeURIComponent(listingSlug)}`,
-    { revalidate: false },
-  );
 }

@@ -6,8 +6,6 @@ import {
   Uuid,
   type DealerVehicle,
 } from '@dealers-drive/contracts';
-import { legalEnforcementEnabled } from '@/lib/legal-release';
-import { listingDeclaration } from '@/features/legal/legal-form-input';
 import { redirect } from 'next/navigation';
 
 import { ApiError, apiSend } from '@/lib/api';
@@ -181,15 +179,9 @@ export async function submitVehicleAction(
   const scope = scopeOf(formData);
 
   try {
-    const declaration = listingDeclaration(formData);
-    if (legalEnforcementEnabled() && scope.kind === 'dealer' && !declaration.success)
-      return { message: 'Confirm the listing declaration before submitting.' };
     await apiSend<DealerVehicle>(
       'POST',
       `${vehiclesPath(scope)}/${encodeURIComponent(vehicleId)}/submit`,
-      ...(legalEnforcementEnabled() && scope.kind === 'dealer' && declaration.success
-        ? [declaration.data]
-        : []),
     );
   } catch (error) {
     if (error instanceof ApiError) {

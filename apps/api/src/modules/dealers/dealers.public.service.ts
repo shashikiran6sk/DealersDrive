@@ -19,7 +19,7 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
-import { isGoogleMapsUrl } from '@dealers-drive/contracts';
+import { embedUrlFor } from '../../platform/maps/maps-link.js';
 import { mediaUrl } from '../../platform/media/urls.js';
 import type { DealersRepository } from './dealers.repository.js';
 
@@ -219,20 +219,20 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           state,
           pincode: dealer.pincode,
           full: fullAddress,
-          mapsUrl: directionsUrl(
-            dealer.mapsUrl,
-            dealer.lat,
-            dealer.lng,
-            dealer.addressLine,
-            city,
-            state,
-            fullAddress,
-          ),
+          mapsUrl: directionsUrl(dealer.mapsUrl, dealer.lat, dealer.lng),
           geo:
             dealer.lat === null || dealer.lng === null
               ? null
               : { lat: dealer.lat, lng: dealer.lng },
-          embedUrl: null,
+          embedUrl: embedUrlFor({
+            mapsUrl: dealer.mapsUrl,
+            placeId: dealer.mapsPlaceId,
+            coordinates:
+              dealer.lat === null || dealer.lng === null
+                ? null
+                : { lat: dealer.lat, lng: dealer.lng },
+            label: dealer.brandName,
+          }),
         },
         stats: [
           { key: 'cars', label: 'Cars available', value: String(carCount) },
@@ -273,38 +273,23 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
 export type DealersPublicService = ReturnType<typeof createDealersPublicService>;
 
-export function directionsUrl(
+function directionsUrl(
   mapsUrl: string | null,
   lat: number | null,
   lng: number | null,
-  addressLine: string | null,
-  city: string,
-  state: string,
-  fullAddress: string,
 ): string | null {
-  let destination: string | null = null;
-  if (
-    lat !== null &&
-    lng !== null &&
-    Number.isFinite(lat) &&
-    Number.isFinite(lng) &&
-    Math.abs(lat) <= 90 &&
-    Math.abs(lng) <= 180 &&
-    (lat !== 0 || lng !== 0)
-  ) {
-    destination = `${lat},${lng}`;
-  } else if (addressLine?.trim() && city.trim() && state.trim()) {
-    destination = fullAddress;
-  }
-  if (destination) {
-    const url = new URL('https://www.google.com/maps/dir/');
-    url.searchParams.set('api', '1');
-    url.searchParams.set('destination', destination);
-    return url.href;
-  }
-  if (mapsUrl && isGoogleMapsUrl(mapsUrl) && !new URL(mapsUrl).pathname.startsWith('/maps/embed'))
+  if (!mapsUrl) return null;
+  if (lat === null || lng === null) return mapsUrl;
+
+  let path: string;
+  try {
+    path = new URL(mapsUrl).pathname;
+  } catch {
     return mapsUrl;
-  return null;
+  }
+
+  if (!path.startsWith('/maps/embed')) return mapsUrl;
+  return `https://www.google.com/maps/dir/?api=1&destination=${String(lat)},${String(lng)}`;
 }
 
 function citySlugsIn(value: string | undefined): Set<string> {

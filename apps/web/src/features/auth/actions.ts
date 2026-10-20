@@ -6,8 +6,6 @@ import {
   type AuthSession,
   type DealerSubmitResponse,
 } from '@dealers-drive/contracts';
-import { legalEnforcementEnabled } from '@/lib/legal-release';
-import { dealerAgreement } from '@/features/legal/legal-form-input';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -136,16 +134,9 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
   redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
 }
 
-export async function submitForVerificationAction(formData?: FormData): Promise<ActionState> {
+export async function submitForVerificationAction(): Promise<ActionState> {
   try {
-    const agreement = dealerAgreement(formData);
-    if (legalEnforcementEnabled() && !agreement.success)
-      return { message: 'Accept the agreements and confirm your authority before submitting.' };
-    if (legalEnforcementEnabled() && agreement.success)
-      await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit', {
-        agreement: agreement.data,
-      });
-    else await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
+    await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
   } catch (error) {
     if (error instanceof ApiError) {
       return { message: error.userMessage('That could not be submitted yet.') };

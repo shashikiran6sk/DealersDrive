@@ -1,4 +1,3 @@
-import type { EnquirySharingPermission } from '@dealers-drive/contracts';
 import type { EnquiryCustomer, SendEnquiryState } from '@/features/enquiry/actions';
 
 export interface EnquiryPanelProps {
@@ -12,12 +11,6 @@ export type EnquiryPanelStage = 'idle' | 'checking' | 'form' | 'sent' | 'already
 export interface EnquiryFormProps {
   customer: EnquiryCustomer;
   dealerName: string;
-  sharingRequired?: boolean;
-  recipientId?: string;
-  onSend: (
-    message: string,
-    sharing?: EnquirySharingPermission,
-    recipientId?: string,
-  ) => Promise<SendEnquiryState>;
+  onSend: (message: string) => Promise<SendEnquiryState>;
   onCancel: () => void;
 }

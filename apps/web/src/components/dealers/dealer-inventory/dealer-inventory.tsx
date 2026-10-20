@@ -46,7 +46,7 @@ export function DealerInventory({
   const hasStock = total > 0 || page.total > 0;
 
   return (
-    <SearchNavigationProvider anchor={INVENTORY_ANCHOR}>
+    <SearchNavigationProvider>
       <section
         id={INVENTORY_ANCHOR}
         aria-labelledby="inventory-heading"

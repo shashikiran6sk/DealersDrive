@@ -15,12 +15,3 @@ inventory grid as `VehicleCardSkeleton`s — so the page lands where it was draw
 `/dealers` and `/cars` deliberately have no `loading.tsx`: their filters change
 the URL's search params, and a boundary there would replace the results with a
 skeleton on every filter click instead of keeping them while the next set loads.
-
-### No route renders it since F114
-
-`app/(public)/dealers/[slug]/loading.tsx` was removed, because with it Next.js
-dropped `scroll: false` on every inventory filter change and the page jumped to the
-top. The full trace is in [`dealers/[slug]`](<../../app/(public)/dealers/[slug].md>).
-The component, its sandbox story and its skeleton test stay, so the owner can
-decide whether to delete it or use it for a different, non-search-parameter
-transition.

@@ -1,8 +1,5 @@
 'use client';
 
-import { LEGAL_VERSION, PRIVACY_VERSION } from '@dealers-drive/contracts';
-import { LegalCheck } from '@/features/legal/legal-check';
-import { useLegalEnabled } from '@/features/legal/legal-provider';
 import { useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
@@ -20,8 +17,6 @@ export interface CustomerNameStepProps {
 }
 
 export function CustomerNameStep({ phoneDisplay, onCreated, onRestart }: CustomerNameStepProps) {
-  const legal = useLegalEnabled();
-  const [agreed, setAgreed] = useState(false);
   const [name, setName] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,19 +28,8 @@ export function CustomerNameStep({ phoneDisplay, onCreated, onRestart }: Custome
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
-        if (legal && !agreed) {
-          setError('Accept the Terms and acknowledge the Privacy Policy to create your account.');
-          return;
-        }
         startTransition(async () => {
-          const result = legal
-            ? await customerSignUpAction(name, {
-                version: LEGAL_VERSION,
-                privacyVersion: PRIVACY_VERSION,
-                accepted: true,
-                privacyAcknowledged: true,
-              })
-            : await customerSignUpAction(name);
+          const result = await customerSignUpAction(name);
           if (result.done) {
             onCreated();
             return;
@@ -91,7 +75,6 @@ export function CustomerNameStep({ phoneDisplay, onCreated, onRestart }: Custome
         />
       </Field>
 
-      <LegalCheck kind="account" onCompleteChange={setAgreed} />
       <Button type="submit" variant="primary" size="md" block loading={pending}>
         {pending ? LOGIN_TEXT.creating : LOGIN_TEXT.createAccount}
       </Button>

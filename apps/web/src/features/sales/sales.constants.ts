@@ -11,9 +11,6 @@ export const SALES_NAV: NavItem[] = [
 ];
 
 export const SALES_TEXT = {
-  ownerAcceptanceNote:
-    'The verified owner must sign in and accept the Terms at Review & Submit before the dealership can be activated.',
-  ownerReviewLink: 'Owner Review & Submit',
   brand: 'Sales',
   addDealership: '+ Add Dealership',
   dashboardHeading: (name: string | null) => (name ? `Hello, ${name}` : 'Your dealerships'),

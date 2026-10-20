@@ -40,9 +40,6 @@ export const MISSING_LABELS: Record<string, string> = {
 };
 
 export const ONBOARDING_TEXT = {
-  documentsPrivacy:
-    'Your verification documents are private and used by authorized reviewers to assess this dealership.',
-  privacyPolicy: 'Privacy Policy',
   missingName: 'Tell us your name.',
   missingPhone: 'Enter a 10-digit Indian mobile number.',
 

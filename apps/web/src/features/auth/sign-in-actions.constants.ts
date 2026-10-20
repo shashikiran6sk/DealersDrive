@@ -1,5 +1,4 @@
 export const SIGN_UP_COOKIE = 'dd_signup';
-export const REACTIVATION_COOKIE = 'dd_customer_reactivation';
 
 export const SIGN_UP_TTL_SECONDS = 600;
 

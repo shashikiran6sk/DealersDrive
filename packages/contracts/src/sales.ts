@@ -205,5 +205,3 @@ export const SalesVehiclesResponse = z.object({
   data: z.array(DealerInventoryRow),
 });
 export type SalesVehiclesResponse = z.infer<typeof SalesVehiclesResponse>;
-
-export const SalesDealerSubmitInput = z.object({}).strict();
