@@ -36,4 +36,3 @@ export {
   revokeAdminSessions,
   syncLegacyAdminColumns,
 } from './admin-member.js';
-export { requireCustomerAccess } from './customer-access.js';

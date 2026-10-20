@@ -777,17 +777,6 @@ them sign in again would either replace their dealer session or tempt a
 second account. What an enquiry needs is a verified number and a name, and
 that account has both.
 
-### `export function presentedCustomerCredential(req: Request): PresentedCustomerCredential`
-
-The one place that decides which transport a customer request arrived on. The
-resolver authenticates with it, and the account routes (`GET /account`,
-`POST /account/deactivate`) re-read the presented session with it, so the
-two can never disagree. A native session is honoured only as a bearer and a
-website session only as a cookie (F100). If the account service read the
-cookie on its own, a native request would authenticate and then find no
-session to judge OTP freshness against, and a cookie carrying a native token
-would be judged by a session the resolver had already refused.
-
 ## `apps/api/src/modules/auth/dev-session.adapter.ts`
 
 ### `export function createDevSessionResolver(prisma: PrismaClient): SessionResolver`

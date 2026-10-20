@@ -6,9 +6,6 @@ import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { env } from '../src/config/env.js';
-import { randomUUID } from 'node:crypto';
-import { createSupportService } from '../src/modules/support/support.service.js';
-import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 
 /**
@@ -63,62 +60,6 @@ const VALID = {
   subject: 'How do I compare two cars?',
   description: 'I would like to see two cars side by side before I enquire about either.',
 };
-
-describe('optional support create retry protection', () => {
-  it('refuses a write when a previously resolved customer has become unavailable', async () => {
-    const retired = await customer('Retired Customer');
-    await h.prisma.user.update({ where: { id: retired.id }, data: { status: 'DELETED' } });
-    const service = createSupportService({ prisma: h.prisma, audit: createAuditService(h.prisma) });
-    await expect(
-      service.create(
-        {
-          kind: 'CUSTOMER',
-          userId: retired.id,
-          fullName: 'Retired Customer',
-          phone: '919737700001',
-          via: 'CUSTOMER',
-          permissions: [],
-        },
-        { category: 'GENERAL_QUESTION', subject: VALID.subject, description: VALID.description },
-      ),
-    ).rejects.toMatchObject({ code: 'ACCOUNT_UNAVAILABLE' });
-    expect(await h.prisma.supportTicket.count({ where: { customerId: retired.id } })).toBe(0);
-  });
-  it('serializes identical attempts into one owned ticket and one audit/outbox event', async () => {
-    const clientRequestId = randomUUID();
-    const results = await Promise.all([
-      create(asha, { ...VALID, clientRequestId }).expect(201),
-      create(asha, { ...VALID, clientRequestId }).expect(201),
-    ]);
-    expect(results[0].body.id).toBe(results[1].body.id);
-    const id = results[0].body.id as string;
-    expect(
-      await h.prisma.supportTicket.count({ where: { customerId: asha.id, clientRequestId } }),
-    ).toBe(1);
-    expect(
-      await h.prisma.auditLog.count({ where: { entityId: id, action: 'support_ticket.created' } }),
-    ).toBe(1);
-    expect(
-      await h.prisma.outboxEvent.count({
-        where: { aggregateId: id, eventType: 'SupportTicketCreated' },
-      }),
-    ).toBe(1);
-    expect(results[0].body).not.toHaveProperty('clientRequestId');
-    expect(results[0].body).not.toHaveProperty('requestDigest');
-    await create(asha, { ...VALID, subject: 'Different support request', clientRequestId }).expect(
-      409,
-    );
-    const foreign = await create(ravi, { ...VALID, clientRequestId }).expect(201);
-    expect(foreign.body.id).not.toBe(id);
-    await ravi.agent.get(`/v1/support/tickets/${id}`).expect(404);
-  });
-  it('keeps legacy creation unchanged and validates the optional identifier strictly', async () => {
-    const first = await create(asha).expect(201);
-    const second = await create(asha).expect(201);
-    expect(first.body.id).not.toBe(second.body.id);
-    await create(asha, { ...VALID, clientRequestId: 'invalid' }).expect(400);
-  });
-});
 
 function create(who: Customer, body: Record<string, unknown> = VALID) {
   return who.agent.post('/v1/support/tickets').send(body);

@@ -99,7 +99,6 @@ describe('HeaderAccount', () => {
       'Saved cars',
       'My enquiries',
       'Support requests',
-      'Account controls',
       'Dealer Login',
       'Logout',
     ]);
@@ -119,16 +118,13 @@ describe('HeaderAccount', () => {
 
   it('puts focus on the first item, moves with the arrow keys, Home and End, and wraps', async () => {
     const { user, menu } = await openMenu();
-    const [saved, enquiries, support, controls, dealer, logout] =
-      within(menu).getAllByRole('menuitem');
+    const [saved, enquiries, support, dealer, logout] = within(menu).getAllByRole('menuitem');
 
     await waitFor(() => expect(saved).toHaveFocus());
     await user.keyboard('{ArrowDown}');
     expect(enquiries).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(support).toHaveFocus();
-    await user.keyboard('{ArrowDown}');
-    expect(controls).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(dealer).toHaveFocus();
     await user.keyboard('{ArrowDown}');
@@ -195,7 +191,7 @@ describe('HeaderAccount', () => {
     await waitFor(() =>
       expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveFocus(),
     );
-    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}');
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
     expect(dealer).toHaveFocus();
     await user.keyboard('{Enter}');
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
@@ -309,7 +305,6 @@ describe('a member’s dealerships (R93)', () => {
       'Saved cars',
       'My enquiries',
       'Support requests',
-      'Account controls',
       'ABC MotorsCurrentDealer dashboard · Manager',
       'XYZ CarsDealer dashboard · Staff',
       'Logout',

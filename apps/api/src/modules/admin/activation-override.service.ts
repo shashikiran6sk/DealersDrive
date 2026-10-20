@@ -1,4 +1,3 @@
-import { requireDealerAgreement } from '../legal/legal.facade.js';
 import {
   DEALER_ACTIVATION_METHOD_LABELS,
   MANUAL_ACTIVATION_DISCLAIMER_VERSION,
@@ -134,7 +133,6 @@ export function createActivationOverrideService({
           gstin: dealer.gstin,
         });
         if (blocked) throw new ConflictError('ACTIVATION_OVERRIDE_BLOCKED', blocked);
-        await requireDealerAgreement(tx, dealerId);
 
         const now = new Date();
         const updated = await tx.dealer.update({

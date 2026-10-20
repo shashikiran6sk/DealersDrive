@@ -1,17 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useTransition,
-  type ReactNode,
-} from 'react';
-
-import { revealAnchor } from './utils';
+import { createContext, useContext, useMemo, useTransition, type ReactNode } from 'react';
 
 export type NavigationMode = 'push' | 'replace';
 
@@ -27,21 +17,9 @@ export interface SearchNavigation {
 
 const SearchNavigationContext = createContext<SearchNavigation | null>(null);
 
-export function SearchNavigationProvider({
-  children,
-  anchor,
-}: {
-  children: ReactNode;
-  anchor?: string;
-}) {
+export function SearchNavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const wasPending = useRef(false);
-
-  useEffect(() => {
-    if (wasPending.current && !pending && anchor) revealAnchor(anchor);
-    wasPending.current = pending;
-  }, [pending, anchor]);
 
   const value = useMemo<SearchNavigation>(
     () => ({

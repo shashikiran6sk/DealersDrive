@@ -7,8 +7,3 @@ export function resultsRegionClass(pending: boolean, className?: string): string
     className,
   );
 }
-
-export function revealAnchor(id: string): void {
-  const target = document.getElementById(id);
-  if (target && target.getBoundingClientRect().top < 0) target.scrollIntoView({ block: 'start' });
-}

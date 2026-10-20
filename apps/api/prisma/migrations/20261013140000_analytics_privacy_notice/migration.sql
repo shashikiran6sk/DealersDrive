@@ -1,1 +1,0 @@
-INSERT INTO "legal_policy_versions" ("id", "documentId", "version", "digest", "publicationState") VALUES ('081353d4-5616-4b3d-822f-328239f2e10f', 'privacy', '2.0-draft.2', 'c091a3e4d02e14acad8338dfaa0fa65c774344636755b0dc2ac30785d96dc914', 'DRAFT');

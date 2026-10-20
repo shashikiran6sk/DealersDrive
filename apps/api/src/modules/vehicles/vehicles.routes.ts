@@ -9,7 +9,6 @@ import { postVehicle } from './routes/post-vehicle.js';
 import { postVehicleMarkSold } from './routes/post-vehicle-mark-sold.js';
 import { postVehicleRequestReactivation } from './routes/post-vehicle-request-reactivation.js';
 import { postVehicleReserve } from './routes/post-vehicle-reserve.js';
-import { postVehicleCertify } from './routes/post-vehicle-certify.js';
 import { postVehicleSubmit } from './routes/post-vehicle-submit.js';
 import { postVehicleWithdraw } from './routes/post-vehicle-withdraw.js';
 import type { VehiclesRoute } from './routes/route.js';
@@ -23,7 +22,6 @@ const ROUTES: VehiclesRoute[] = [
   patchVehicle,
   deleteVehicle,
   postVehicleSubmit,
-  postVehicleCertify,
   postVehicleReserve,
   postVehicleMarkSold,
   postVehicleWithdraw,

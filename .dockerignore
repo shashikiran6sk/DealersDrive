@@ -15,12 +15,3 @@ docs
 .vscode
 .idea
 .DS_Store
-
-# Native outputs and local signing material never enter the API image context.
-**/.expo
-apps/mobile/android
-apps/mobile/ios
-**/*.jks
-**/*.keystore
-**/credentials.json
-**/__pycache__

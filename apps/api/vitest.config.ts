@@ -21,8 +21,6 @@ import { defineConfig } from 'vitest/config';
  */
 const ENV = {
   NODE_ENV: 'test',
-  APP_ENV: 'local',
-  LEGAL_ENFORCEMENT_ENABLED: 'false',
   DATABASE_URL: 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive_test',
   // pg-boss off: the suite drives handlers directly where it needs them, and a
   // background poller against the test database is just noise.

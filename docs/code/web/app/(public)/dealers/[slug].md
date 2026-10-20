@@ -5,46 +5,6 @@ Parent: [web](../../../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
-## `apps/web/src/app/(public)/dealers/[slug]/`
-
-### Why the portfolio has no `loading.tsx` (F114)
-
-The portfolio's inventory filters, sort and pages are URL state on this same page
-(`?fuel=PETROL`, `?sort=price_asc`, `?page=2`), so the reason `/cars` and
-`/dealers` never had a `loading.tsx` applies here too. R101 gave this route one
-anyway, and that was the jump to the top of the dealership that the owner
-reported (remediation §8.1).
-
-The mechanism, reproduced against a production build in Chromium and traced to
-Next.js 15.5.27's router:
-
-- When a dealership page is first rendered, Next seeds its prefetch cache with an
-  entry for that pathname.
-- A filter or sort change navigates to the same pathname with new search
-  parameters. `getExistingCacheEntry` returns the seeded entry as an **aliased**
-  match.
-- `handleAliasedPrefetchEntry` takes that path only when the tree has a loading
-  component (`hasLoadingComponentInSeedData`), and here `loading.tsx` was that
-  component.
-- The aliased path never sets `mutable.shouldScroll`, and `handleMutable` defaults
-  it to `true`. The `{ scroll: false }` that `SearchNavigationProvider` passes is
-  therefore dropped, and `ScrollAndFocusHandler` sets `scrollTop = 0`. The trace
-  showed exactly that call.
-- Without a loading component the aliased path declines, and the ordinary
-  navigation honours `scroll: false`. `/cars` measured the same way kept its
-  position.
-
-Moving the page into a route group, so the boundary's key ignored search
-parameters, did not help: the build still went to `y = 0`, because the trigger is
-the presence of a loading component, not the remount. With the file removed, a
-sort from 250px into the inventory stayed in the inventory at 1280px and at 390px,
-and Back returned to the earlier position.
-
-On the way into a dealership, feedback now comes from the link that was clicked:
-`DirectoryCard`'s and `VehicleCard`'s `LinkPendingIndicator`/`LinkPendingLabel`
-(R101). Do not add a `loading.tsx` here again without re-running that check
-against the Next.js version in use.
-
 ## `apps/web/src/app/(public)/dealers/[slug]/page.tsx`
 
 ### `export const revalidate = 600`

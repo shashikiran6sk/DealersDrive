@@ -8,9 +8,6 @@ type ZodSchema = z.ZodType;
 const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 const INPUT_SCHEMA_NAMES = [
-  'NativeOtpRequestInput',
-  'NativeOtpChallengeInput',
-  'NativeOtpVerifyInput',
   'DealerVerificationDecisionInput',
   'AdminPhoneChallengeInput',
   'AdminPhoneVerifyInput',
@@ -18,15 +15,6 @@ const INPUT_SCHEMA_NAMES = [
   'ServiceLocationParam',
   'ServiceLocationSettings',
   'AddServiceDistrictInput',
-  'TermsAcceptanceInput',
-  'DealerAcceptanceInput',
-  'SubmitVehicleInput',
-  'DealerSubmitInput',
-  'LegalEnquiryParam',
-  'LegalEvidenceQuery',
-  'SharingStatusQuery',
-  'SharingGrantParam',
-  'SalesDealerSubmitInput',
   'SalesPhoneVerifyInput',
   'SalesEmailCodeInput',
   'SalesEmailVerifyInput',
@@ -75,13 +63,10 @@ const INPUT_SCHEMA_NAMES = [
   'VerifyPhoneInput',
   'PhoneSignInInput',
   'CustomerSignInInput',
-  'CustomerDeactivationInput',
-  'CustomerReactivationInput',
   'CustomerSignUpInput',
   'CreateEnquiryInput',
   'CustomerEnquiryQuery',
   'SavedVehiclesQuery',
-  'SavedSlugsQuery',
   'CreateSupportTicketInput',
   'SupportMessageInput',
   'CustomerSupportTicketQuery',
@@ -140,7 +125,7 @@ function typeOf(schema: ZodSchema): string {
 
 function isComponentWorthy(schema: ZodSchema): boolean {
   const type = typeOf(schema);
-  return type === 'object' || type === 'enum' || type === 'union';
+  return type === 'object' || type === 'enum';
 }
 
 const JS_SAFE_INT = 9_007_199_254_740_991;

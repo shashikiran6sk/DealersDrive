@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { navigationState, setLocation } from '../../../setup';
+import { navigationState } from '../../../setup';
 
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
@@ -559,7 +559,6 @@ describe('DirectoryFilters', () => {
     });
 
     it('opens the picker and writes the district it chooses', async () => {
-      setLocation('/dealers');
       const user = userEvent.setup();
       render(<DirectoryFilters locations={LOCATIONS} cities={CITIES} />);
 

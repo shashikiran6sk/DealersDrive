@@ -1,1 +1,0 @@
-ALTER TABLE "sessions" ADD COLUMN "native" BOOLEAN NOT NULL DEFAULT false;

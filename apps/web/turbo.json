@@ -3,14 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": [
-        "APP_ENV",
-        "API_BASE_URL",
-        "API_ORIGIN",
-        "WEB_BASE_URL",
-        "LEGAL_ENFORCEMENT_ENABLED",
-        "VERCEL_ENV"
-      ]
+      "env": ["APP_ENV", "API_BASE_URL", "API_ORIGIN", "WEB_BASE_URL"]
     }
   }
 }

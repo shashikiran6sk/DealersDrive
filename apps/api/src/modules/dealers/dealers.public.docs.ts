@@ -129,11 +129,21 @@ export const dealersPublicDocs: ModuleDocs = {
       tag: DOC_TAGS.dealersPublic,
       summary: "One dealership's public page",
       description:
-        'The portfolio identifies the dealership and its public business location. ' +
-        '`address.mapsUrl` uses an encoded Google Maps directions destination from validated business coordinates, ' +
-        'or a complete public business address. With incomplete location, a validated Google share link remains usable; otherwise the link is null. ' +
-        '`address.geo` retains the stored business pin and is never derived from town coordinates. ' +
-        '`address.embedUrl` is retained as null for compatibility; no iframe resource is loaded.\n\n' +
+        'The portfolio header: who the dealership is, what it does, where the yard is and ' +
+        'how quickly it answers. `address.mapsUrl` is the link the dealer pasted themselves ' +
+        'and is null on dealerships that predate the question — the page renders no ' +
+        '"Get directions" rather than composing one from the address, because a typed ' +
+        'address is several pins in one district.\n\n' +
+        '`address.geo` is the pin **read out of that link** when the API could follow it to ' +
+        'one. The two are independently nullable: a `maps.app.goo.gl` share link carries no ' +
+        'coordinates until it is followed, and following it is best-effort, so a dealership ' +
+        'can have the link and no pin. Neither is ever derived from the address.\n\n' +
+        '`address.embedUrl` is what the portfolio actually draws, composed from whichever of ' +
+        'those the link turned out to carry. When it **named a place**, this is Google’s ' +
+        '`/maps/embed?pb=…` form and the frame comes back as the place card — the ' +
+        'dealership’s name, address, rating and review count, zoom controls and a directions ' +
+        'control inside the map. When the link only carried coordinates it is the plain ' +
+        '`?q=lat,lng&output=embed` pin, and it is null when the link carried neither.\n\n' +
         '**404 on anything but an ACTIVE dealership.** A suspended or pending dealership is ' +
         'not "temporarily unavailable" to a buyer; it is not listed.\n\n' +
         '`Cache-Control: public, max-age=300`.',
