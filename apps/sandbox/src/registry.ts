@@ -421,7 +421,7 @@ export const registry: RegistryEntry[] = [
     category: 'Layout',
     ownership: 'Shared',
     purpose:
-      'The buyer chrome — sticky 64px, wordmark, section nav, the location chip, and the account corner: Login (R63), or the signed-in customer (R67).',
+      'The buyer chrome — sticky 64px, wordmark, section nav, the location chip (Home, /cars and /dealers only), and the account corner: Login (R63), or the signed-in customer (R67).',
     aliases: [
       'PublicHeader',
       'SiteHeader',
@@ -438,7 +438,9 @@ export const registry: RegistryEntry[] = [
       'home (nothing current)',
       'cars',
       'dealers',
-      'dealer portfolio (prefix match)',
+      'dealer portfolio (prefix match; no district selector)',
+      'car detail (no district selector)',
+      'dealer portfolio, mobile',
       'saved',
       'mobile',
       'tablet',

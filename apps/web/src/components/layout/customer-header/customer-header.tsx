@@ -12,6 +12,7 @@ import { HEADER_NAV, HEADER_TEXT, MOBILE_HEADER_NAV } from './customer-header.co
 import { HeaderBrand } from './header-brand';
 import { HeaderLink } from './header-link';
 import { LocationChipFallback } from './location-chip-fallback';
+import { showsLocationSelector } from './utils';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 export interface CustomerHeaderProps {
@@ -56,9 +57,11 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 max-md:min-w-0">
-          <Suspense fallback={<LocationChipFallback />}>
-            <LocationSelector locations={locations} />
-          </Suspense>
+          {showsLocationSelector(pathname) ? (
+            <Suspense fallback={<LocationChipFallback />}>
+              <LocationSelector locations={locations} />
+            </Suspense>
+          ) : null}
           {account ?? (
             <Link
               href={HEADER_NAV.login}

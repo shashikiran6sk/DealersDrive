@@ -56,6 +56,22 @@ export const DealerPortfolio: Story = {
   },
 };
 
+export const CarDetail: Story = {
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: { pathname: '/car/2023-hyundai-creta-sx-o-katpadi-3f9a1c2b' },
+    },
+  },
+};
+
+export const DealerPortfolioMobile: Story = {
+  parameters: {
+    nextjs: { appDirectory: true, navigation: { pathname: '/dealers/sri-lakshmi-motors' } },
+    viewport: { defaultViewport: 'mobile' },
+  },
+};
+
 export const SavedCars: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/saved' } } },
 };
