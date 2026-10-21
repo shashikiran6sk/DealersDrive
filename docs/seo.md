@@ -20,7 +20,7 @@ what the page already says. Everything below is one of those four.
 | `/cars`                   | dynamic                    | the base, each district, plain later pages  | the base and each stocked district |
 | `/car/[slug]`             | ISR, 60 s, tag-revalidated | ACTIVE and RESERVED; every other state 404s | ACTIVE and RESERVED                |
 | `/dealers`                | dynamic                    | the base, each district, plain later pages  | the base and each district         |
-| `/dealers/[slug]`         | ISR, 600 s                 | an ACTIVE dealership with an available car  | the same                           |
+| `/dealers/[slug]`         | ISR, 60 s, tag-revalidated | an ACTIVE dealership with an available car  | the same                           |
 | `/contact`                | ISR, 10 min                | yes                                         | yes                                |
 | `/support`                | 308 → `/contact`           | —                                           | no                                 |
 | `/login`                  | dynamic                    | `noindex, follow`                           | no                                 |

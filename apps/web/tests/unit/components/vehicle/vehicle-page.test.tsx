@@ -344,7 +344,7 @@ describe('/car/[slug]', () => {
       new ApiError({ type: 'x', title: 'Not found', status: 404, code: 'VEHICLE_NOT_FOUND' }),
     );
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'gone' }) });
-    expect(metadata.title).toBe('Car not found');
+    expect(metadata.title).toBe('Page not found');
   });
 });
 

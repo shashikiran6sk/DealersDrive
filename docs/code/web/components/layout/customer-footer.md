@@ -90,3 +90,10 @@ than an absent row.
 
 `rel="noreferrer"` as well as `noopener`: these are the only outbound links on
 a buyer page, and the referring URL can carry a search a buyer ran.
+
+### `{formatPhone(supportPhone)}`
+
+The number is shown grouped (`+91 41622 48890`) and dialled as the API sent it
+(`tel:+914162248890`). It printed raw before BUG-107, the only place on the
+site a phone number did; `formatPhone` from contracts is what every other
+number goes through.

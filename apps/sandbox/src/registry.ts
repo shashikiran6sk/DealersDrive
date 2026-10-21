@@ -1856,6 +1856,7 @@ export const registry: RegistryEntry[] = [
       'compact (portfolio, no dealer strip)',
       'with photograph',
       'without photograph',
+      'photograph fails to load',
       'price on request',
       'long title',
       'unverified dealer',

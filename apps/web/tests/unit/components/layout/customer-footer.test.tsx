@@ -168,4 +168,13 @@ describe('the support contacts', () => {
 
     expect(columnHrefs('Support')).toEqual(['/contact']);
   });
+
+  it('shows the number grouped for reading, and dials it unformatted (BUG-107)', () => {
+    renderFooter();
+
+    expect(screen.getByRole('link', { name: '+91 41622 48890' })).toHaveAttribute(
+      'href',
+      'tel:+914162248890',
+    );
+  });
 });
