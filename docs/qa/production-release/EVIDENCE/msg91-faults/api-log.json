@@ -1,0 +1,116 @@
+[
+  {
+    "rejected": {
+      "customer": {
+        "status": 422,
+        "code": "PHONE_VERIFICATION_FAILED",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 53
+      },
+      "dealer": {
+        "status": 422,
+        "code": "PHONE_VERIFICATION_FAILED",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 5
+      }
+    },
+    "provider500": {
+      "customer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 4
+      },
+      "dealer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 4
+      }
+    },
+    "throttled429": {
+      "customer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 3
+      },
+      "dealer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 3
+      }
+    },
+    "timeout": {
+      "customer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 1510
+      },
+      "dealer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 1507
+      }
+    },
+    "network": {
+      "customer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 6
+      },
+      "dealer": {
+        "status": 503,
+        "code": "PHONE_OTP_UNAVAILABLE",
+        "cookie": false,
+        "sessions": 0,
+        "ms": 3
+      }
+    }
+  },
+  {
+    "customer": {
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "cookie": false,
+      "sessions": 0,
+      "ms": 3
+    },
+    "dealer": {
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "cookie": false,
+      "sessions": 0,
+      "ms": 2
+    }
+  },
+  {
+    "first": {
+      "status": 200,
+      "code": "NAME_REQUIRED",
+      "cookie": false,
+      "sessions": 0,
+      "ms": 15
+    },
+    "second": {
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "cookie": false,
+      "sessions": 0,
+      "ms": 4
+    }
+  }
+]

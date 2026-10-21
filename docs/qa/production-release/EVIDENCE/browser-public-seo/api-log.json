@@ -1,0 +1,237 @@
+[
+  {
+    "fixture": [
+      {
+        "id": "7fb10340-af03-4949-a84a-26cfa7b421ea",
+        "slug": "2023-hyundai-creta-sx-o-vellore-d57c3371",
+        "status": "WITHDRAWN"
+      },
+      {
+        "id": "3dfa1445-babc-4eff-b6b9-c2d890f142a9",
+        "slug": "2023-hyundai-creta-sx-o-vellore-65810f5a",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "626213e0-84d2-41a4-a135-28124463a889",
+        "slug": "2023-hyundai-creta-sx-o-vellore-aa395d7c",
+        "status": "SOLD"
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "h1": "Find your next car",
+    "cards": 16,
+    "url": "<redacted>",
+    "shot": "screenshots/PUBLIC-001-home-desktop.png"
+  },
+  {
+    "url": "<redacted>",
+    "kept": "Creta",
+    "results": 24,
+    "shot": "screenshots/PUBLIC-002-search-results.png"
+  },
+  {
+    "before": {
+      "url": "<redacted>",
+      "cards": 24
+    },
+    "after": {
+      "url": "<redacted>",
+      "cards": 24
+    }
+  },
+  {
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "shot": "screenshots/PUBLIC-021-404.png"
+  },
+  {
+    "out": [
+      {
+        "vp": "desktop",
+        "p": "/",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/cars",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/car/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "canonical": "https://www.dealers-drive.com/",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Browse used cars from independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership advertising the car.",
+    "types": ["Organization", "WebSite"],
+    "ogTitle": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "ogImage": "https://www.dealers-drive.com/og/dealersdrive-v2.png"
+  },
+  {
+    "base": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["index, follow, max-image-preview:large"]
+    },
+    "narrowed": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["noindex, follow"]
+    },
+    "page2": {
+      "s": 200,
+      "c": "https://www.dealers-drive.com/cars?page=2",
+      "r": ["index, follow, max-image-preview:large"]
+    }
+  },
+  {
+    "status": 200,
+    "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/car/2023-hyundai-creta-sx-o-vellore-65810f5a",
+    "robots": ["index, follow, max-image-preview:large"],
+    "types": ["Car", "BreadcrumbList"],
+    "ogImage": true
+  },
+  {
+    "status": 200,
+    "title": "SeoMotors Motors 711785f5e4a0 — Used Car Dealer in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/dealers/seomotors-motors-711785f5e4a0-vellore-tamil-nadu",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Quality used cars from SeoMotors SeoMotors Motors 711785f5e4a0 is an independent used-car dealer in Vellore, Tamil Nadu. Browse the cars it has available and enquire directly on Dealers-Drive."
+  },
+  {
+    "apiIncludesLive": true,
+    "apiIncludesSold": false,
+    "apiIncludesWithdrawn": false,
+    "status": 200,
+    "total": 683,
+    "cars": 438,
+    "dealers": 217,
+    "badCars": [],
+    "soldInMap": 0,
+    "badDealers": [],
+    "foreign": [],
+    "privateUrls": [],
+    "includesLive": false,
+    "includesWithdrawn": false,
+    "includesSold": false
+  },
+  {
+    "sold": {
+      "status": 200,
+      "robots": ["noindex", "noindex"],
+      "title": "Car not found | Dealers-Drive"
+    },
+    "withdrawn": {
+      "status": 200,
+      "robots": ["noindex", "noindex"],
+      "title": "Car not found | Dealers-Drive"
+    },
+    "privatePages": [
+      {
+        "p": "/login",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "redirect": null
+      },
+      {
+        "p": "/saved",
+        "status": 200,
+        "robots": ["noindex, nofollow"],
+        "redirect": null
+      },
+      {
+        "p": "/enquiries",
+        "status": 200,
+        "robots": ["noindex, nofollow"],
+        "redirect": null
+      },
+      {
+        "p": "/support-requests",
+        "status": 200,
+        "robots": ["noindex, nofollow"],
+        "redirect": null
+      },
+      {
+        "p": "/invitations",
+        "status": 307,
+        "robots": ["noindex, nofollow"],
+        "redirect": "/login?returnTo=%2Finvitations"
+      }
+    ]
+  },
+  {
+    "prod": "User-Agent: *\nAllow: /\nDisallow: /api/\nDisallow: /v1/\n\nSitemap: https://www.dealers-drive.com/sitemap.xml\n",
+    "local": "User-Agent: *\nDisallow: /\n\n"
+  },
+  {
+    "icons": {
+      "/favicon.ico": 200,
+      "/icon.png": 200,
+      "/apple-icon.png": 200
+    },
+    "linkIcons": ["/favicon.ico", "/icon.png?189909e0a1837296", "/apple-icon.png?f60137a01ceccb7d"],
+    "homeOg": {
+      "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+      "image": "https://www.dealers-drive.com/og/dealersdrive-v2.png"
+    },
+    "carOg": {
+      "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+      "image": "http://localhost:4000/media/by-media/df96383c-317a-4182-a3ca-8378eed869c9/1024.webp",
+      "fetch": 200
+    }
+  },
+  {
+    "generic": {
+      "status": 404,
+      "h1": "Page not found",
+      "robots": ["noindex"],
+      "title": "Page not found | Dealers-Drive"
+    },
+    "car": {
+      "status": 200,
+      "title": "Car not found | Dealers-Drive",
+      "robots": ["noindex", "noindex"]
+    },
+    "dealer": {
+      "status": 404,
+      "title": "Dealership not found | Dealers-Drive",
+      "robots": ["noindex"]
+    }
+  },
+  {
+    "status": 200,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false,
+    "shot": "screenshots/SEO-010-outage.png"
+  }
+]

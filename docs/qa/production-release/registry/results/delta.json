@@ -1,0 +1,222 @@
+{
+  "SUPPORT-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "five replies accepted, sixth 409:SUPPORT_MESSAGE_LIMIT_REACHED; counter 5, 5 rows",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.160Z"
+  },
+  "SUPPORT-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "8 concurrent replies at 3/5: exactly 2 persisted, 6 refused; counter 5",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.239Z"
+  },
+  "SUPPORT-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "an internal note does not reset; a support reply resets to a fresh allowance (counter 1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.376Z"
+  },
+  "SUPPORT-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "customer B gets 404 on read, reply and reopen of A’s ticket; internal notes absent from the customer payload",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.401Z"
+  },
+  "SUPPORT-DISC-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESOLVED refuses replies, explicit reopen → OPEN, CLOSED is final for customer and support",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.500Z"
+  },
+  "SUPPORT-DISC-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "retry with the same clientMessageId persists once and consumes one slot; reused id with new text refused; authorType field → 400",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.562Z"
+  },
+  "SUPPORT-DISC-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "another customer’s enquiryId refused (422 SUPPORT_ENQUIRY_INVALID)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.596Z"
+  },
+  "ADMIN-RBAC-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "SUPPORT/MODERATOR/SALES_REP/SUPER_ADMIN matrix matches ADMIN_PERMISSIONS",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-ADMIT",
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.760Z"
+  },
+  "ADMIN-RBAC-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "DATABASE"],
+    "note": "disabling a member revokes its open admin session at once (200 → 401); self-disable refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.833Z"
+  },
+  "ADMIN-RBAC-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a role change applies on the next request of the same session (console closed, Sales opened)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.878Z"
+  },
+  "ADMIN-SESSION-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "an ADMIN token is refused on customer/dealer routes and a person token on admin routes, whichever cookie carries it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.891Z"
+  },
+  "ADMIN-SESSION-DISC-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin logout revokes the server session (next request 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.920Z"
+  },
+  "SALES-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "TENANT"],
+    "note": "a Sales rep gets 404 on another rep’s dealership (read, vehicles, edit) and on self-serve dealers; list carries none",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.946Z"
+  },
+  "SALES-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealerId in a Sales body refused (400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.951Z"
+  },
+  "VERIFY-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "DATABASE"],
+    "note": "only a reviewer grants Dealer Verified; stale expectedVersion 409; decision audited",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.253Z"
+  },
+  "VERIFY-DISC-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "Dealer Verified refused for an unapproved application (422 DEALER_NOT_APPROVED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.481Z"
+  },
+  "VERIFY-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a verified dealer disappears while suspended and returns verified after reinstatement",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.790Z"
+  },
+  "PORTFOLIO-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "STORAGE", "SECURITY"],
+    "note": "a pending portfolio photo is private, public only after approval, private again after take-down",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.909Z"
+  },
+  "PORTFOLIO-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "TENANT", "RBAC"],
+    "note": "portfolio is OWNER-only (STAFF 403, MANAGER 403); another dealer’s delete 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.227Z"
+  },
+  "DOC-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "TENANT"],
+    "note": "another dealer’s document list carries none of A’s documents; SUPPORT and SALES_REP cannot review KYC (403), document unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.372Z"
+  },
+  "NOTIFY-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "NOTIFY"],
+    "note": "7299 console emails across 21 templates (183 dealer enquiry alerts): no enquiry or support email carries a mobile number",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.557Z"
+  },
+  "AUTH-DISC-002": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "/v1/auth/me reports emailVerified:true for a user with no email address",
+    "evidence": [],
+    "bug": "BUG-102",
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.592Z"
+  }
+}

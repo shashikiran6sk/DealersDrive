@@ -1,0 +1,42 @@
+{
+  "MEDIA-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "the dealer-page card and the vehicle page hero both show the primary image (vehicle_media.isPrimary)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:10.906Z"
+  },
+  "MEDIA-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "hero arrows: 1/6 → Next 2/6 → Previous 1/6 → Previous wraps to 6/6",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:12.081Z"
+  },
+  "MEDIA-011": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "“view all” opens a full-screen viewer (1 / 6); ArrowRight → 2 / 6; Escape closes and focus returns to the trigger",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:13.280Z"
+  },
+  "MEDIA-012": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "STORAGE"],
+    "note": "vehicle-page gallery falls back correctly (all missing → “Photographs coming soon”; two of six missing → 1/4), but a vehicle card whose primary object is missing renders a broken image: 1 on the page (2023 Hyundai Creta SX(O), the primary photograph)",
+    "evidence": [],
+    "bug": "BUG-109",
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:17.926Z"
+  }
+}

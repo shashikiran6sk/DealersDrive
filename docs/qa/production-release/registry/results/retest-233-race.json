@@ -1,0 +1,12 @@
+{
+  "R233-approve-vs-reject-race": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "8 races, invariants hold: [\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-233-race",
+    "at": "2026-10-21T05:29:15.109Z"
+  }
+}
