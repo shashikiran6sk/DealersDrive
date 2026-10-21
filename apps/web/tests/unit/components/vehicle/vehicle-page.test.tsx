@@ -458,3 +458,13 @@ describe('/car/[slug] structured data', () => {
     ).toBe(true);
   });
 });
+
+describe('the car route', () => {
+  it('has no loading boundary, so a missing car answers 404 and an outage 500 (BUG-101)', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const route = path.join(process.cwd(), 'src/app/(public)/car/[slug]/');
+    expect(fs.existsSync(`${route}page.tsx`)).toBe(true);
+    expect(fs.existsSync(`${route}loading.tsx`)).toBe(false);
+  });
+});
