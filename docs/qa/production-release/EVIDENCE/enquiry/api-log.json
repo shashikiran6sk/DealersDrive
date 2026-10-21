@@ -30,7 +30,7 @@
         "id": "5d0a1f7f-b220-45b4-b1eb-68a7f1c7527c",
         "fullName": "Enq Buyer",
         "phone": "+••••••••6870",
-        "phoneDisplay": "+91 96004 46870"
+        "phoneDisplay": "+91 •••••• 6870"
       }
     }
   },
@@ -315,8 +315,8 @@
             "name": "Dup Buyer",
             "initials": "DB",
             "phone": "+••••••••6879",
-            "phoneDisplay": "+91 96004 46879",
-            "callHref": "tel:+919600446879"
+            "phoneDisplay": "+91 •••••• 6879",
+            "callHref": "tel:+91••••••6879"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -343,8 +343,8 @@
             "name": "Race Buyer",
             "initials": "RB",
             "phone": "+••••••••6878",
-            "phoneDisplay": "+91 96004 46878",
-            "callHref": "tel:+919600446878"
+            "phoneDisplay": "+91 •••••• 6878",
+            "callHref": "tel:+91••••••6878"
           },
           "vehicle": {
             "id": "6ca73919-9e79-458b-a3fc-acd82e5e1a06",
@@ -371,8 +371,8 @@
             "name": "With Message Buyer",
             "initials": "WM",
             "phone": "+••••••••6873",
-            "phoneDisplay": "+91 96004 46873",
-            "callHref": "tel:+919600446873"
+            "phoneDisplay": "+91 •••••• 6873",
+            "callHref": "tel:+91••••••6873"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -399,8 +399,8 @@
             "name": "No Message Buyer",
             "initials": "NM",
             "phone": "+••••••••6872",
-            "phoneDisplay": "+91 96004 46872",
-            "callHref": "tel:+919600446872"
+            "phoneDisplay": "+91 •••••• 6872",
+            "callHref": "tel:+91••••••6872"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -427,8 +427,8 @@
             "name": "Enq Buyer",
             "initials": "EB",
             "phone": "+••••••••6870",
-            "phoneDisplay": "+91 96004 46870",
-            "callHref": "tel:+919600446870"
+            "phoneDisplay": "+91 •••••• 6870",
+            "callHref": "tel:+91••••••6870"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -468,7 +468,7 @@
           "customer": {
             "id": "3def9fef-7f43-4c5c-9e35-30f6888ae456",
             "name": "Dup Buyer",
-            "phoneDisplay": "+91 96004 46879"
+            "phoneDisplay": "+91 •••••• 6879"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -495,7 +495,7 @@
           "customer": {
             "id": "92938a6f-0156-4f0f-a5f2-aaa8436be61c",
             "name": "Race Buyer",
-            "phoneDisplay": "+91 96004 46878"
+            "phoneDisplay": "+91 •••••• 6878"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -522,7 +522,7 @@
           "customer": {
             "id": "fdcbd2b4-8f3e-4337-94b7-1a909cd5f48f",
             "name": "With Message Buyer",
-            "phoneDisplay": "+91 96004 46873"
+            "phoneDisplay": "+91 •••••• 6873"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -549,7 +549,7 @@
           "customer": {
             "id": "b8141ea5-29a5-4600-9d9e-b0deb813e213",
             "name": "No Message Buyer",
-            "phoneDisplay": "+91 96004 46872"
+            "phoneDisplay": "+91 •••••• 6872"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -576,7 +576,7 @@
           "customer": {
             "id": "5d0a1f7f-b220-45b4-b1eb-68a7f1c7527c",
             "name": "Enq Buyer",
-            "phoneDisplay": "+91 96004 46870"
+            "phoneDisplay": "+91 •••••• 6870"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -657,8 +657,8 @@
             "name": "Life Initial",
             "initials": "LI",
             "phone": "+••••••••6881",
-            "phoneDisplay": "+91 96004 46881",
-            "callHref": "tel:+919600446881"
+            "phoneDisplay": "+91 •••••• 6881",
+            "callHref": "tel:+91••••••6881"
           },
           "vehicle": {
             "id": "9861caef-9cf8-4ce7-a26e-d8d7bfcee83f",
@@ -685,8 +685,8 @@
             "name": "Dup Buyer",
             "initials": "DB",
             "phone": "+••••••••6879",
-            "phoneDisplay": "+91 96004 46879",
-            "callHref": "tel:+919600446879"
+            "phoneDisplay": "+91 •••••• 6879",
+            "callHref": "tel:+91••••••6879"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -713,8 +713,8 @@
             "name": "Race Buyer",
             "initials": "RB",
             "phone": "+••••••••6878",
-            "phoneDisplay": "+91 96004 46878",
-            "callHref": "tel:+919600446878"
+            "phoneDisplay": "+91 •••••• 6878",
+            "callHref": "tel:+91••••••6878"
           },
           "vehicle": {
             "id": "6ca73919-9e79-458b-a3fc-acd82e5e1a06",
@@ -741,8 +741,8 @@
             "name": "With Message Buyer",
             "initials": "WM",
             "phone": "+••••••••6873",
-            "phoneDisplay": "+91 96004 46873",
-            "callHref": "tel:+919600446873"
+            "phoneDisplay": "+91 •••••• 6873",
+            "callHref": "tel:+91••••••6873"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -769,8 +769,8 @@
             "name": "No Message Buyer",
             "initials": "NM",
             "phone": "+••••••••6872",
-            "phoneDisplay": "+91 96004 46872",
-            "callHref": "tel:+919600446872"
+            "phoneDisplay": "+91 •••••• 6872",
+            "callHref": "tel:+91••••••6872"
           },
           "vehicle": {
             "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
@@ -817,8 +817,8 @@
         "name": "Staff Contact",
         "initials": "SC",
         "phone": "+••••••••6882",
-        "phoneDisplay": "+91 96004 46882",
-        "callHref": "tel:+919600446882"
+        "phoneDisplay": "+91 •••••• 6882",
+        "callHref": "tel:+91••••••6882"
       },
       "vehicle": {
         "id": "1cad3c25-7b39-4757-8ea0-768669f08108",
@@ -873,8 +873,8 @@
         "name": "Mgr Contact",
         "initials": "MC",
         "phone": "+••••••••6884",
-        "phoneDisplay": "+91 96004 46884",
-        "callHref": "tel:+919600446884"
+        "phoneDisplay": "+91 •••••• 6884",
+        "callHref": "tel:+91••••••6884"
       },
       "vehicle": {
         "id": "888db21e-6e48-4100-bc04-598ae6121ef6",
@@ -911,8 +911,8 @@
         "name": "Mgr Close",
         "initials": "MC",
         "phone": "+••••••••6885",
-        "phoneDisplay": "+91 96004 46885",
-        "callHref": "tel:+919600446885"
+        "phoneDisplay": "+91 •••••• 6885",
+        "callHref": "tel:+91••••••6885"
       },
       "vehicle": {
         "id": "2013e7dc-f68c-403d-b06a-1a9276691c46",
@@ -950,8 +950,8 @@
         "name": "Owner All",
         "initials": "OA",
         "phone": "+••••••••6886",
-        "phoneDisplay": "+91 96004 46886",
-        "callHref": "tel:+919600446886"
+        "phoneDisplay": "+91 •••••• 6886",
+        "callHref": "tel:+91••••••6886"
       },
       "vehicle": {
         "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
@@ -988,8 +988,8 @@
         "name": "Owner All",
         "initials": "OA",
         "phone": "+••••••••6886",
-        "phoneDisplay": "+91 96004 46886",
-        "callHref": "tel:+919600446886"
+        "phoneDisplay": "+91 •••••• 6886",
+        "callHref": "tel:+91••••••6886"
       },
       "vehicle": {
         "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
@@ -1023,8 +1023,8 @@
         "name": "Owner All",
         "initials": "OA",
         "phone": "+••••••••6886",
-        "phoneDisplay": "+91 96004 46886",
-        "callHref": "tel:+919600446886"
+        "phoneDisplay": "+91 •••••• 6886",
+        "callHref": "tel:+91••••••6886"
       },
       "vehicle": {
         "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
@@ -1113,8 +1113,8 @@
         "name": "Concurrent Enq",
         "initials": "CE",
         "phone": "+••••••••6891",
-        "phoneDisplay": "+91 96004 46891",
-        "callHref": "tel:+919600446891"
+        "phoneDisplay": "+91 •••••• 6891",
+        "callHref": "tel:+91••••••6891"
       },
       "vehicle": {
         "id": "129e5ce0-a300-4578-bae7-bb507a5483fb",
@@ -1151,8 +1151,8 @@
         "name": "Concurrent Enq",
         "initials": "CE",
         "phone": "+••••••••6891",
-        "phoneDisplay": "+91 96004 46891",
-        "callHref": "tel:+919600446891"
+        "phoneDisplay": "+91 •••••• 6891",
+        "callHref": "tel:+91••••••6891"
       },
       "vehicle": {
         "id": "129e5ce0-a300-4578-bae7-bb507a5483fb",
@@ -1220,7 +1220,7 @@
           "customer": {
             "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96004 46904"
+            "phoneDisplay": "+91 •••••• 6904"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1247,7 +1247,7 @@
           "customer": {
             "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96004 46902"
+            "phoneDisplay": "+91 •••••• 6902"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1274,7 +1274,7 @@
           "customer": {
             "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96004 46900"
+            "phoneDisplay": "+91 •••••• 6900"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1301,7 +1301,7 @@
           "customer": {
             "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96004 46899"
+            "phoneDisplay": "+91 •••••• 6899"
           },
           "dealer": {
             "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
@@ -1328,7 +1328,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1380,7 +1380,7 @@
         "id": "0220ee5e-7880-4272-bcf0-87559517777d",
         "name": "Attrib Enq",
         "phone": "+••••••••6904",
-        "phoneDisplay": "+91 96004 46904",
+        "phoneDisplay": "+91 •••••• 6904",
         "phoneVerified": true,
         "memberSinceLabel": "21 Oct 2026"
       },
@@ -1391,7 +1391,7 @@
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 46867",
+        "phoneDisplay": "+91 •••••• 6867",
         "adminHref": "/admin/dealers/a0a69ff8-ba0e-4ef2-bf69-a690a0f08174"
       },
       "vehicle": {
@@ -1447,7 +1447,7 @@
           "customer": {
             "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96004 46904"
+            "phoneDisplay": "+91 •••••• 6904"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1474,7 +1474,7 @@
           "customer": {
             "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96004 46902"
+            "phoneDisplay": "+91 •••••• 6902"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1501,7 +1501,7 @@
           "customer": {
             "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96004 46900"
+            "phoneDisplay": "+91 •••••• 6900"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1528,7 +1528,7 @@
           "customer": {
             "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96004 46899"
+            "phoneDisplay": "+91 •••••• 6899"
           },
           "dealer": {
             "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
@@ -1555,7 +1555,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1602,7 +1602,7 @@
           "customer": {
             "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96004 46904"
+            "phoneDisplay": "+91 •••••• 6904"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1629,7 +1629,7 @@
           "customer": {
             "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96004 46902"
+            "phoneDisplay": "+91 •••••• 6902"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1656,7 +1656,7 @@
           "customer": {
             "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96004 46900"
+            "phoneDisplay": "+91 •••••• 6900"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1683,7 +1683,7 @@
           "customer": {
             "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96004 46899"
+            "phoneDisplay": "+91 •••••• 6899"
           },
           "dealer": {
             "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
@@ -1710,7 +1710,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1757,7 +1757,7 @@
           "customer": {
             "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96004 46904"
+            "phoneDisplay": "+91 •••••• 6904"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1784,7 +1784,7 @@
           "customer": {
             "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96004 46902"
+            "phoneDisplay": "+91 •••••• 6902"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1811,7 +1811,7 @@
           "customer": {
             "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96004 46900"
+            "phoneDisplay": "+91 •••••• 6900"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1838,7 +1838,7 @@
           "customer": {
             "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96004 46899"
+            "phoneDisplay": "+91 •••••• 6899"
           },
           "dealer": {
             "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
@@ -1865,7 +1865,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1912,7 +1912,7 @@
           "customer": {
             "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96004 46899"
+            "phoneDisplay": "+91 •••••• 6899"
           },
           "dealer": {
             "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
@@ -1939,7 +1939,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1966,7 +1966,7 @@
           "customer": {
             "id": "4a978782-b807-41ed-8876-b9736a7ca36b",
             "name": "Hist Reserved",
-            "phoneDisplay": "+91 96004 46896"
+            "phoneDisplay": "+91 •••••• 6896"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -1993,7 +1993,7 @@
           "customer": {
             "id": "0c8572bc-144e-4081-b5df-73812720776d",
             "name": "Hist Withdrawn",
-            "phoneDisplay": "+91 96004 46895"
+            "phoneDisplay": "+91 •••••• 6895"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2020,7 +2020,7 @@
           "customer": {
             "id": "295c5f59-2f69-4710-993b-684ef93bc0d8",
             "name": "Hist Sold",
-            "phoneDisplay": "+91 96004 46894"
+            "phoneDisplay": "+91 •••••• 6894"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2067,7 +2067,7 @@
           "customer": {
             "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96004 46904"
+            "phoneDisplay": "+91 •••••• 6904"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2094,7 +2094,7 @@
           "customer": {
             "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96004 46902"
+            "phoneDisplay": "+91 •••••• 6902"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2121,7 +2121,7 @@
           "customer": {
             "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96004 46900"
+            "phoneDisplay": "+91 •••••• 6900"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2148,7 +2148,7 @@
           "customer": {
             "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96004 46897"
+            "phoneDisplay": "+91 •••••• 6897"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
@@ -2175,7 +2175,7 @@
           "customer": {
             "id": "4a978782-b807-41ed-8876-b9736a7ca36b",
             "name": "Hist Reserved",
-            "phoneDisplay": "+91 96004 46896"
+            "phoneDisplay": "+91 •••••• 6896"
           },
           "dealer": {
             "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",

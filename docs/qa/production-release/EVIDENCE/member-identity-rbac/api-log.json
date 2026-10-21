@@ -7,7 +7,7 @@
     "status": 201,
     "body": {
       "id": "2c404e6c-9de7-4bb9-81b7-95b51520bcfc",
-      "phoneDisplay": "+91 96004 64676",
+      "phoneDisplay": "+91 •••••• 4676",
       "role": "MANAGER",
       "roleLabel": "Manager",
       "status": "PENDING",
@@ -37,7 +37,7 @@
     "status": 201,
     "body": {
       "id": "dda444d4-8979-4e90-8018-656e17b7793b",
-      "phoneDisplay": "+91 96004 64677",
+      "phoneDisplay": "+91 •••••• 4677",
       "role": "STAFF",
       "roleLabel": "Staff",
       "status": "PENDING",
@@ -67,7 +67,7 @@
     "status": 201,
     "body": {
       "id": "44d07090-a94d-460f-81b6-89de74690bd1",
-      "phoneDisplay": "+91 96004 64678",
+      "phoneDisplay": "+91 •••••• 4678",
       "role": "STAFF",
       "roleLabel": "Staff",
       "status": "PENDING",
@@ -242,7 +242,7 @@
     "status": 201,
     "body": {
       "id": "176a8230-0a02-48b0-8479-ef8fc1b96c23",
-      "phoneDisplay": "+91 96004 64683",
+      "phoneDisplay": "+91 •••••• 4683",
       "role": "STAFF",
       "roleLabel": "Staff",
       "status": "PENDING",
@@ -257,7 +257,7 @@
     "status": 201,
     "body": {
       "id": "176a8230-0a02-48b0-8479-ef8fc1b96c23",
-      "phoneDisplay": "+91 96004 64683",
+      "phoneDisplay": "+91 •••••• 4683",
       "role": "MANAGER",
       "roleLabel": "Manager",
       "status": "PENDING",
@@ -347,7 +347,7 @@
       "id": "79702d45-0fbe-4215-9a04-646d700e43e9",
       "name": "A Manager",
       "initials": "AM",
-      "phoneDisplay": "+91 96004 64672",
+      "phoneDisplay": "+91 •••••• 4672",
       "email": null,
       "role": "STAFF",
       "roleLabel": "Staff",
@@ -367,7 +367,7 @@
       "id": "612c9df8-fa18-43ef-8cea-b4e3558dc2cd",
       "name": "A Staff",
       "initials": "AS",
-      "phoneDisplay": "+91 96004 64673",
+      "phoneDisplay": "+91 •••••• 4673",
       "email": null,
       "role": "MANAGER",
       "roleLabel": "Manager",
@@ -441,7 +441,7 @@
         "id": "e006feea-fe3b-4af0-927e-256092256b62",
         "fullName": "Still Customer",
         "phone": "+••••••••4693",
-        "phoneDisplay": "+91 96004 64693"
+        "phoneDisplay": "+91 •••••• 4693"
       }
     }
   },
@@ -996,7 +996,7 @@
       "contact": {
         "fullName": "RbacA Owner",
         "phone": "+••••••••4671",
-        "phoneDisplay": "+91 96004 64671",
+        "phoneDisplay": "+91 •••••• 4671",
         "email": "rbaca.464672731e7f@example.test",
         "landline": null
       },
@@ -1060,7 +1060,7 @@
       "contact": {
         "fullName": "RbacA Owner",
         "phone": "+••••••••4671",
-        "phoneDisplay": "+91 96004 64671",
+        "phoneDisplay": "+91 •••••• 4671",
         "email": "rbaca.464672731e7f@example.test",
         "landline": null
       },
@@ -1096,7 +1096,7 @@
         "id": "7c387cd7-fbf6-4568-a42c-68500b101665",
         "fullName": "A Manager",
         "phone": "+••••••••4672",
-        "phoneDisplay": "+91 96004 64672",
+        "phoneDisplay": "+91 •••••• 4672",
         "phoneVerified": true,
         "email": null,
         "emailVerified": false
@@ -1142,7 +1142,7 @@
       "contact": {
         "fullName": "RbacA Owner",
         "phone": "+••••••••4671",
-        "phoneDisplay": "+91 96004 64671",
+        "phoneDisplay": "+91 •••••• 4671",
         "email": "rbaca.464672731e7f@example.test",
         "landline": null
       },
@@ -1178,7 +1178,7 @@
         "id": "c5e8ca90-0bb0-4c87-87bf-dddbda3dc545",
         "fullName": "A Staff",
         "phone": "+••••••••4673",
-        "phoneDisplay": "+91 96004 64673",
+        "phoneDisplay": "+91 •••••• 4673",
         "phoneVerified": true,
         "email": null,
         "emailVerified": false
@@ -1257,7 +1257,7 @@
         "id": "53cdac6c-4da5-494c-95b7-4ea52db12df8",
         "fullName": "Revoke Keeps Customer",
         "phone": "+••••••••4708",
-        "phoneDisplay": "+91 96004 64708"
+        "phoneDisplay": "+91 •••••• 4708"
       }
     }
   },
@@ -1350,7 +1350,7 @@
       "contact": {
         "fullName": "RbacB Owner",
         "phone": "+••••••••4674",
-        "phoneDisplay": "+91 96004 64674",
+        "phoneDisplay": "+91 •••••• 4674",
         "email": "rbacb.4646785f6a91@example.test",
         "landline": null
       },
@@ -1386,7 +1386,7 @@
         "id": "ef97ba73-4b60-4c9f-aa52-befdc9fbe519",
         "fullName": "Multi Member",
         "phone": "+••••••••4711",
-        "phoneDisplay": "+91 96004 64711",
+        "phoneDisplay": "+91 •••••• 4711",
         "phoneVerified": true,
         "email": null,
         "emailVerified": false
@@ -1610,7 +1610,7 @@
       "contact": {
         "fullName": "RbacA Owner",
         "phone": "+••••••••4671",
-        "phoneDisplay": "+91 96004 64671",
+        "phoneDisplay": "+91 •••••• 4671",
         "email": "rbaca.464672731e7f@example.test",
         "landline": null
       },
@@ -2093,8 +2093,8 @@
         "name": "Mgr Contact Buyer",
         "initials": "MC",
         "phone": "+••••••••4713",
-        "phoneDisplay": "+91 96004 64713",
-        "callHref": "tel:+919600464713"
+        "phoneDisplay": "+91 •••••• 4713",
+        "callHref": "tel:+91••••••4713"
       },
       "vehicle": {
         "id": "7d576e4c-5612-4cae-a65e-45cc2ce1ad31",
@@ -2131,8 +2131,8 @@
         "name": "Mgr Close Buyer",
         "initials": "MC",
         "phone": "+••••••••4714",
-        "phoneDisplay": "+91 96004 64714",
-        "callHref": "tel:+919600464714"
+        "phoneDisplay": "+91 •••••• 4714",
+        "callHref": "tel:+91••••••4714"
       },
       "vehicle": {
         "id": "9bb9b6e6-08cb-4236-abd9-e8e5b3bbd731",
@@ -2416,8 +2416,8 @@
             "name": "Mgr Close Buyer",
             "initials": "MC",
             "phone": "+••••••••4714",
-            "phoneDisplay": "+91 96004 64714",
-            "callHref": "tel:+919600464714"
+            "phoneDisplay": "+91 •••••• 4714",
+            "callHref": "tel:+91••••••4714"
           },
           "vehicle": {
             "id": "9bb9b6e6-08cb-4236-abd9-e8e5b3bbd731",
@@ -2447,8 +2447,8 @@
             "name": "Mgr Contact Buyer",
             "initials": "MC",
             "phone": "+••••••••4713",
-            "phoneDisplay": "+91 96004 64713",
-            "callHref": "tel:+919600464713"
+            "phoneDisplay": "+91 •••••• 4713",
+            "callHref": "tel:+91••••••4713"
           },
           "vehicle": {
             "id": "7d576e4c-5612-4cae-a65e-45cc2ce1ad31",
@@ -2478,8 +2478,8 @@
             "name": "Buyer For Attrib",
             "initials": "BF",
             "phone": "+••••••••4702",
-            "phoneDisplay": "+91 96004 64702",
-            "callHref": "tel:+919600464702"
+            "phoneDisplay": "+91 •••••• 4702",
+            "callHref": "tel:+91••••••4702"
           },
           "vehicle": {
             "id": "fa1b7dab-8623-4380-8a70-0a1bac268e94",
@@ -2526,8 +2526,8 @@
         "name": "Staff Contact Buyer",
         "initials": "SC",
         "phone": "+••••••••4716",
-        "phoneDisplay": "+91 96004 64716",
-        "callHref": "tel:+919600464716"
+        "phoneDisplay": "+91 •••••• 4716",
+        "callHref": "tel:+91••••••4716"
       },
       "vehicle": {
         "id": "4d387f0f-7384-4bae-888f-a3d3b418942e",
@@ -2629,7 +2629,7 @@
       "contact": {
         "fullName": "RbacA Owner",
         "phone": "+••••••••4671",
-        "phoneDisplay": "+91 96004 64671",
+        "phoneDisplay": "+91 •••••• 4671",
         "email": "rbaca.464672731e7f@example.test",
         "landline": null
       },

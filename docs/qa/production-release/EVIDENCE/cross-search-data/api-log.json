@@ -131,8 +131,8 @@
         "name": "Cross12 Buyer",
         "initials": "CB",
         "phone": "+••••••••0376",
-        "phoneDisplay": "+91 96004 80376",
-        "callHref": "tel:+919600480376"
+        "phoneDisplay": "+91 •••••• 0376",
+        "callHref": "tel:+91••••••0376"
       },
       "vehicle": {
         "id": "fb0d9a31-b53b-4098-9887-3946afc5dcda",
@@ -295,7 +295,7 @@
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 80383"
+        "phoneDisplay": "+91 •••••• 0383"
       },
       "sections": [
         {
@@ -703,7 +703,7 @@
         "id": "fa4dfa28-34b5-46ff-92c9-bb4487cf1fd2",
         "fullName": "Cross24 Staff",
         "phone": "+••••••••0399",
-        "phoneDisplay": "+91 96004 80399"
+        "phoneDisplay": "+91 •••••• 0399"
       }
     }
   },
@@ -739,7 +739,7 @@
         "id": "35acb19b-8976-4432-a706-ecf624312263",
         "fullName": "Cross25 Staff",
         "phone": "+••••••••0401",
-        "phoneDisplay": "+91 96004 80401"
+        "phoneDisplay": "+91 •••••• 0401"
       }
     }
   },

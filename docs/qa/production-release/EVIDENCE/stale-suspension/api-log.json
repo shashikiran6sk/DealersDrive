@@ -4,8 +4,8 @@
     "warm": [200, 200, 200, 200],
     "suspend": 200,
     "api": 404,
-    "carGoneAfterS": 70,
-    "dealerGoneAfterS": null,
+    "carGoneAfterS": 71,
+    "dealerGoneAfterS": 614,
     "samples": [
       "0s car 200 dealer 200",
       "30s car 200 dealer 200",

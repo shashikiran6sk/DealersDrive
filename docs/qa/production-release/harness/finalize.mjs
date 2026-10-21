@@ -50,6 +50,7 @@ const FILE_OF = {
   'agent-uat-touch': 'u02-touch-history.mjs',
   'gallery-browser': 'u03-gallery.mjs',
   'recovery-browser': 'u04-recovery.mjs',
+  'stored-xss': 's01-stored-xss.mjs',
   'retest-new012': 'retest-new012-enquiry-race.mjs',
   analysis: '(analysis — see note)',
 };

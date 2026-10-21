@@ -9,7 +9,7 @@
         "id": "87aec89b-d3dd-41c3-ae28-fa4482bff5fe",
         "fullName": null,
         "phone": "+••••••••1148",
-        "phoneDisplay": "+91 96004 61148",
+        "phoneDisplay": "+91 •••••• 1148",
         "phoneVerified": true,
         "email": null,
         "emailVerified": true
@@ -83,7 +83,7 @@
         "id": "630f7cae-5ed2-4127-8cb0-3b503804e5a8",
         "fullName": "Google Link Owner",
         "phone": "+••••••••1151",
-        "phoneDisplay": "+91 96004 61151",
+        "phoneDisplay": "+91 •••••• 1151",
         "phoneVerified": true,
         "email": "gl.46115781934f@example.test",
         "emailVerified": true
@@ -240,7 +240,7 @@
         "id": "786f975d-f9bf-4490-a3e0-2d7fbb8e715e",
         "fullName": "LogoutState Owner",
         "phone": "+••••••••1155",
-        "phoneDisplay": "+91 96004 61155",
+        "phoneDisplay": "+91 •••••• 1155",
         "phoneVerified": true,
         "email": "logoutstate.461173d9077a@example.test",
         "emailVerified": true
@@ -691,8 +691,8 @@
         "reviewerIsAssistant": false
       },
       "contactName": "VerifyApp Owner",
-      "contactPhone": "+919600461168",
-      "contactPhoneDisplay": "+91 96004 61168",
+      "contactPhone": "+91••••••1168",
+      "contactPhoneDisplay": "+91 •••••• 1168",
       "contactEmail": "verifyapp.461222fb6e4b@example.test",
       "landline": null,
       "tagline": "Quality used cars from VerifyApp",

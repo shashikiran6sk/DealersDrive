@@ -72,7 +72,7 @@
   "UAT-OBS-002": {
     "status": "FAIL",
     "layers": ["AGENT_UAT"],
-    "note": "Cosmetic: an unknown car URL renders <title> “Car not found” but the heading “Page not found / 404” (and HTTP 200, BUG-101); the footer prints the support number unformatted (+914162248890). P3.",
+    "note": "Cosmetic: an unknown car URL renders <title> “Car not found” but the heading “Page not found / 404” (and HTTP 200, BUG-101); the footer prints the support number unformatted (+91••••••8890). P3.",
     "evidence": [
       "EVIDENCE/screenshots/UAT-B-mobile-invalid-17-unknown-car-url.png",
       "EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"

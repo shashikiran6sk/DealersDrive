@@ -1,117 +1,4 @@
 {
-  "CI-001": {
-    "status": "PASS",
-    "layers": ["UNIT", "INTEGRATION", "STATIC"],
-    "note": "Repository gate on 6e39a9a under Node 24.22.0: prisma generate, format:check, lint (0 errors, 1 warning), docs:check, typecheck, test (API 3,422/3,422 in 173 files; web 1,756/1,756 in 145; contracts 576/576 in 24; coverage gate 90 % met — API lines 96.99 %, branches 90.19 %), build — all exit 0.",
-    "evidence": ["EVIDENCE/ci/summary.log", "EVIDENCE/ci/test.log"],
-    "bug": null,
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-20T15:43:57Z"
-  },
-  "DEP-DISC-001": {
-    "status": "FAIL",
-    "layers": ["STATIC", "SECURITY"],
-    "note": "pnpm audit: 0 critical (CI gate passes), 7 high, 8 moderate. Production-reachable: qs 6.15.3 via express body-parser (express.urlencoded extended, server.ts:36) — a bounded 1 MB crafted-body probe was refused in 4–16 ms with the API healthy, no practical DoS observed. postcss (next), mysql2/deepmerge-ts/fast-uri (prisma CLI), braces, source-map-js, vite (dev tooling) are build/dev-time. P3 hygiene.",
-    "evidence": ["EVIDENCE/ci/audit-critical.log", "EVIDENCE/dependency-audit.txt"],
-    "bug": "BUG-108",
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T04:56:00Z"
-  },
-  "PERF-001": {
-    "status": "PASS",
-    "layers": ["PERFORMANCE"],
-    "note": "60 samples per cell, sequential and at 10 concurrent clients, 4-CPU container: every API read p95 ≤ 25 ms sequential / ≤ 176 ms at c10; every page p95 ≤ 33 ms sequential / ≤ 363 ms at c10 — inside the repository's alerting thresholds (p95 > 1 s, p99 > 2 s, docs/observability.md). Local measurement, not a production capacity claim.",
-    "evidence": ["EVIDENCE/performance/latency.json", "EVIDENCE/performance/latency.txt"],
-    "bug": null,
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T05:15:00Z"
-  },
-  "PERF-DISC-001": {
-    "status": "FAIL",
-    "layers": ["PERFORMANCE", "DATABASE"],
-    "note": "notification.email drains at exactly 30 jobs/min per worker process (pg-boss work() with default batchSize 1 and 2 s polling, platform/jobs/queue.ts). Under the campaign's bursts the median queue wait was 1,054 s (p95 1,281 s). Admin notifications fan out to every permitted Admin Member, multiplying volume. The Sales email code is sent synchronously and is unaffected; no email is lost. P3 capacity ceiling.",
-    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
-    "bug": "BUG-104",
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T05:20:00Z"
-  },
-  "DATA-DISC-003": {
-    "status": "FAIL",
-    "layers": ["DATABASE"],
-    "note": "prisma/seed/dev-sales.ts writes four assisted dealerships directly, none with an OWNER membership — one of them ACTIVE (Kaveri Auto Hub) — contradicting the #301 invariant that an assisted dealership has its owner from creation (proved for the API path by sales-assisted-onboarding.test.ts). Development seed only (dev-guard refuses production). P3.",
-    "evidence": ["EVIDENCE/prod-deploy/api-log.json"],
-    "bug": "BUG-103",
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-20T15:57:00Z"
-  },
-  "DOC-DISC-002": {
-    "status": "FAIL",
-    "layers": ["STATIC"],
-    "note": "CLAUDE.md §4 invariant 6 says a sold car stays on the marketplace (greyed, badged, sorted last). The implemented policy (R71, #194) removes SOLD and WITHDRAWN cars from every public surface, and the harness confirms it (PUBLIC-011, SEARCH-002). The operating manual contradicts the product. P3 documentation defect.",
-    "evidence": ["EVIDENCE/public/api-log.json"],
-    "bug": "BUG-106",
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-20T15:33:00Z"
-  },
-  "UAT-OBS-001": {
-    "status": "FAIL",
-    "layers": ["AGENT_UAT"],
-    "note": "A signed-out visitor on /saved (e.g. right after Logout in that tab) sees “No saved cars yet — Tap the heart…”, which reads as if their saved cars were lost, instead of a prompt to sign in to see them. The data is intact (signing in shows them). P3 UX.",
-    "evidence": ["EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"],
-    "bug": "BUG-105",
-    "auth": "FAKE-OTP",
-    "area": "analysis",
-    "at": "2026-10-21T05:25:00Z"
-  },
-  "UAT-OBS-002": {
-    "status": "FAIL",
-    "layers": ["AGENT_UAT"],
-    "note": "Cosmetic: an unknown car URL renders <title> “Car not found” but the heading “Page not found / 404” (and HTTP 200, BUG-101); the footer prints the support number unformatted (+914162248890). P3.",
-    "evidence": [
-      "EVIDENCE/screenshots/UAT-B-mobile-invalid-17-unknown-car-url.png",
-      "EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"
-    ],
-    "bug": "BUG-107",
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T05:25:00Z"
-  },
-  "SEC-DISC-002": {
-    "status": "PASS",
-    "layers": ["SECURITY", "API"],
-    "note": "Bounded urlencoded-body abuse against the API (1 MB of a[]=, deep nesting, 100k indexed keys, a 400k-item comma list): each refused in 4–16 ms (400/401); /health/live ok throughout.",
-    "evidence": ["EVIDENCE/dependency-audit.txt"],
-    "bug": null,
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T04:57:00Z"
-  },
-  "RECOVERY-DISC-001": {
-    "status": "PASS",
-    "layers": ["RECOVERY", "DATABASE"],
-    "note": "Unplanned: the session's container worker restarted mid-campaign, stopping PostgreSQL and every API and web process with 461 notification jobs queued. After restart all services came back healthy, the queued jobs resumed draining at the same 30/min (EVIDENCE/email-queue), and the final full regression pass — every campaign including the DATA-* integrity checks in c09 — ran afterwards against the same database.",
-    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
-    "bug": null,
-    "auth": null,
-    "area": "analysis",
-    "at": "2026-10-21T04:46:00Z"
-  },
-  "UAT-OBS-003": {
-    "status": "FAIL",
-    "layers": ["AGENT_UAT"],
-    "note": "The dealer console shows “0 credits” in its top bar and a “Listing credits 0” panel in the sidebar, although billing is deferred (F050–F054) and there is no way to buy or use credits. A dealer may read it as a blocker. P3 UX / product decision.",
-    "evidence": ["EVIDENCE/screenshots/RECOVERY-002-save-while-api-down.png"],
-    "bug": "BUG-110",
-    "auth": "FAKE-OTP",
-    "area": "analysis",
-    "at": "2026-10-21T05:40:00Z"
-  },
   "SEC-DISC-001a": {
     "status": "PASS",
     "layers": ["API"],
@@ -4802,6 +4689,16 @@
     "area": "msg91-faults",
     "at": "2026-10-21T05:29:02.852Z"
   },
+  "SEC-DISC-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SECURITY"],
+    "note": "4 payloads stored in tagline, description, enquiry and ticket; rendered as inert text on 8 of 9 public, dealer, customer and admin pages; none executed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "stored-xss",
+    "at": "2026-10-21T07:59:50.193Z"
+  },
   "R232-valid-approve-suspend-reinstate": {
     "status": "PASS",
     "layers": ["API"],
@@ -6343,13 +6240,126 @@
     "at": "2026-10-21T05:40:07.605Z"
   },
   "BUG-NEW-010-timing": {
-    "status": "FAIL",
+    "status": "PASS",
     "layers": ["BROWSER", "API"],
-    "note": "API 404 at once; warmed car page 404 after 70 s, dealer page after >600 s (out-of-band suspension; console path is immediate, #243)",
+    "note": "API 404 at once; warmed car page 404 after 71 s, dealer page after 614 s (out-of-band suspension; console path is immediate, #243) — inside the designed cache windows (car ≤ 90 s, dealer ≤ 660 s)",
     "evidence": [],
-    "bug": null,
+    "bug": "BUG-111",
     "auth": null,
     "area": "stale-suspension",
-    "at": "2026-10-21T05:52:11.926Z"
+    "at": "2026-10-21T08:07:51.001Z"
+  },
+  "CI-001": {
+    "status": "PASS",
+    "layers": ["UNIT", "INTEGRATION", "STATIC"],
+    "note": "Repository gate on 6e39a9a under Node 24.22.0: prisma generate, format:check, lint (0 errors, 1 warning), docs:check, typecheck, test (API 3,422/3,422 in 173 files; web 1,756/1,756 in 145; contracts 576/576 in 24; coverage gate 90 % met — API lines 96.99 %, branches 90.19 %), build — all exit 0.",
+    "evidence": ["EVIDENCE/ci/summary.log", "EVIDENCE/ci/test.log"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:43:57Z"
+  },
+  "DEP-DISC-001": {
+    "status": "FAIL",
+    "layers": ["STATIC", "SECURITY"],
+    "note": "pnpm audit: 0 critical (CI gate passes), 7 high, 8 moderate. Production-reachable: qs 6.15.3 via express body-parser (express.urlencoded extended, server.ts:36) — a bounded 1 MB crafted-body probe was refused in 4–16 ms with the API healthy, no practical DoS observed. postcss (next), mysql2/deepmerge-ts/fast-uri (prisma CLI), braces, source-map-js, vite (dev tooling) are build/dev-time. P3 hygiene.",
+    "evidence": ["EVIDENCE/ci/audit-critical.log", "EVIDENCE/dependency-audit.txt"],
+    "bug": "BUG-108",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:56:00Z"
+  },
+  "PERF-001": {
+    "status": "PASS",
+    "layers": ["PERFORMANCE"],
+    "note": "60 samples per cell, sequential and at 10 concurrent clients, 4-CPU container: every API read p95 ≤ 25 ms sequential / ≤ 176 ms at c10; every page p95 ≤ 33 ms sequential / ≤ 363 ms at c10 — inside the repository's alerting thresholds (p95 > 1 s, p99 > 2 s, docs/observability.md). Local measurement, not a production capacity claim.",
+    "evidence": ["EVIDENCE/performance/latency.json", "EVIDENCE/performance/latency.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:15:00Z"
+  },
+  "PERF-DISC-001": {
+    "status": "FAIL",
+    "layers": ["PERFORMANCE", "DATABASE"],
+    "note": "notification.email drains at exactly 30 jobs/min per worker process (pg-boss work() with default batchSize 1 and 2 s polling, platform/jobs/queue.ts). Under the campaign's bursts the median queue wait was 1,054 s (p95 1,281 s). Admin notifications fan out to every permitted Admin Member, multiplying volume. The Sales email code is sent synchronously and is unaffected; no email is lost. P3 capacity ceiling.",
+    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
+    "bug": "BUG-104",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:20:00Z"
+  },
+  "DATA-DISC-003": {
+    "status": "FAIL",
+    "layers": ["DATABASE"],
+    "note": "prisma/seed/dev-sales.ts writes four assisted dealerships directly, none with an OWNER membership — one of them ACTIVE (Kaveri Auto Hub) — contradicting the #301 invariant that an assisted dealership has its owner from creation (proved for the API path by sales-assisted-onboarding.test.ts). Development seed only (dev-guard refuses production). P3.",
+    "evidence": ["EVIDENCE/prod-deploy/api-log.json"],
+    "bug": "BUG-103",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:57:00Z"
+  },
+  "DOC-DISC-002": {
+    "status": "FAIL",
+    "layers": ["STATIC"],
+    "note": "CLAUDE.md §4 invariant 6 says a sold car stays on the marketplace (greyed, badged, sorted last). The implemented policy (R71, #194) removes SOLD and WITHDRAWN cars from every public surface, and the harness confirms it (PUBLIC-011, SEARCH-002). The operating manual contradicts the product. P3 documentation defect.",
+    "evidence": ["EVIDENCE/public/api-log.json"],
+    "bug": "BUG-106",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:33:00Z"
+  },
+  "UAT-OBS-001": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "A signed-out visitor on /saved (e.g. right after Logout in that tab) sees “No saved cars yet — Tap the heart…”, which reads as if their saved cars were lost, instead of a prompt to sign in to see them. The data is intact (signing in shows them). P3 UX.",
+    "evidence": ["EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"],
+    "bug": "BUG-105",
+    "auth": "FAKE-OTP",
+    "area": "analysis",
+    "at": "2026-10-21T05:25:00Z"
+  },
+  "UAT-OBS-002": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "Cosmetic: an unknown car URL renders <title> “Car not found” but the heading “Page not found / 404” (and HTTP 200, BUG-101); the footer prints the support number unformatted (+91••••••8890). P3.",
+    "evidence": [
+      "EVIDENCE/screenshots/UAT-B-mobile-invalid-17-unknown-car-url.png",
+      "EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"
+    ],
+    "bug": "BUG-107",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:25:00Z"
+  },
+  "SEC-DISC-002": {
+    "status": "PASS",
+    "layers": ["SECURITY", "API"],
+    "note": "Bounded urlencoded-body abuse against the API (1 MB of a[]=, deep nesting, 100k indexed keys, a 400k-item comma list): each refused in 4–16 ms (400/401); /health/live ok throughout.",
+    "evidence": ["EVIDENCE/dependency-audit.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:57:00Z"
+  },
+  "RECOVERY-DISC-001": {
+    "status": "PASS",
+    "layers": ["RECOVERY", "DATABASE"],
+    "note": "Unplanned: the session's container worker restarted mid-campaign, stopping PostgreSQL and every API and web process with 461 notification jobs queued. After restart all services came back healthy, the queued jobs resumed draining at the same 30/min (EVIDENCE/email-queue), and the final full regression pass — every campaign including the DATA-* integrity checks in c09 — ran afterwards against the same database.",
+    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:46:00Z"
+  },
+  "UAT-OBS-003": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "The dealer console shows “0 credits” in its top bar and a “Listing credits 0” panel in the sidebar, although billing is deferred (F050–F054) and there is no way to buy or use credits. A dealer may read it as a blocker. P3 UX / product decision.",
+    "evidence": ["EVIDENCE/screenshots/RECOVERY-002-save-while-api-down.png"],
+    "bug": "BUG-110",
+    "auth": "FAKE-OTP",
+    "area": "analysis",
+    "at": "2026-10-21T05:40:00Z"
   }
 }

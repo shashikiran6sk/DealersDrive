@@ -194,17 +194,28 @@ export function recorder(area) {
       evidence.push(...items.map(compact));
     },
     save() {
-      writeFileSync(file, `${JSON.stringify(store, null, 2)}\n`);
+      writeFileSync(file, maskMobiles(`${JSON.stringify(store, null, 2)}\n`));
       if (evidence.length) {
         const dir = process.env.CERT_RESULTS_DIR
           ? resolve(process.env.CERT_RESULTS_DIR, 'EVIDENCE', area)
           : resolve(CERT, 'EVIDENCE', area);
         mkdirSync(dir, { recursive: true });
-        writeFileSync(resolve(dir, 'api-log.json'), `${JSON.stringify(evidence, null, 2)}\n`);
+        writeFileSync(
+          resolve(dir, 'api-log.json'),
+          maskMobiles(`${JSON.stringify(evidence, null, 2)}\n`),
+        );
       }
     },
   };
   return api;
+}
+
+/** Synthetic numbers are still well-formed Indian mobiles: keep only the last four digits. */
+export function maskMobiles(text) {
+  return text
+    .replace(/\+91(\s?)\d{6}(\d{4})/g, '+91$1••••••$2')
+    .replace(/\+91 [6-9]\d{4} \d(\d{4})/g, '+91 •••••• $1')
+    .replace(/(?<![\w-])[6-9]\d{4} \d(\d{4})(?![\w-])/g, '••••• •$1');
 }
 
 const SECRET_KEYS = /token|cookie|signature|accessToken|signUpToken|uploadUrl|url/i;

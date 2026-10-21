@@ -21,7 +21,7 @@ repository, then gives the plan that was executed. The application was not modif
   (#288), R98–R108 performance/caching work and the #304/#330 galleries.
 - The "Production Acceptance Baseline v2.0 (676 scenarios)" was searched for on `main` and
   every branch of `origin` (32 branches) by name and by content (`676`, `v2.0`). **It does not
-  exist.** The inventory used is the 556 canonical scenarios plus 87 discovered ones — see
+  exist.** The inventory used is the 556 canonical scenarios plus 80 discovered ones — see
   [ACCEPTANCE-BASELINE-PR304.md](ACCEPTANCE-BASELINE-PR304.md).
 
 ## 2. Environment
@@ -183,7 +183,7 @@ scenarios; the IDs run to ENQ-CREATE-018 and ADMIN-DEALER-010 and no scenario wa
 
 ## 24. Additional scenarios
 
-87 discovered scenarios across the delta features, security, regression of every finding
+80 discovered scenarios across the delta features, security, regression of every finding
 from the previous fix campaign, Agent UAT and analysis — listed in
 [ACCEPTANCE-BASELINE-PR304.md](ACCEPTANCE-BASELINE-PR304.md).
 

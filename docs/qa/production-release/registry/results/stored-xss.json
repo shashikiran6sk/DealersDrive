@@ -1,0 +1,12 @@
+{
+  "SEC-DISC-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SECURITY"],
+    "note": "4 payloads stored in tagline, description, enquiry and ticket; rendered as inert text on 8 of 9 public, dealer, customer and admin pages; none executed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "stored-xss",
+    "at": "2026-10-21T07:59:50.193Z"
+  }
+}

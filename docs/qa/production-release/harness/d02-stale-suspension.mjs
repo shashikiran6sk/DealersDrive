@@ -7,7 +7,11 @@ import * as w from './world.mjs';
 
 const r = h.recorder('stale-suspension');
 const admin = await h.admin();
-const LIMIT_S = Number(process.env.CERT_STALE_LIMIT_S ?? 600);
+const LIMIT_S = Number(process.env.CERT_STALE_LIMIT_S ?? 900);
+// The car page caches for 60 s and the dealer page for 600 s (revalidate), and a stale page
+// is served once more while it regenerates: the designed windows are ≈ 70 s and ≈ 610 s.
+const CAR_BUDGET_S = 90;
+const DEALER_BUDGET_S = 660;
 
 await h.check(r, 'BUG-NEW-010-timing', async () => {
   const D = await w.onboard('StaleTiming');
@@ -55,9 +59,23 @@ await h.check(r, 'BUG-NEW-010-timing', async () => {
     samples: samples.filter((_, i) => i % 3 === 0 || i === samples.length - 1),
   });
   const note = `API ${api} at once; warmed car page 404 after ${carGone ?? `>${LIMIT_S}`} s, dealer page after ${dealerGone ?? `>${LIMIT_S}`} s (out-of-band suspension; console path is immediate, #243)`;
-  if (carGone === null || dealerGone === null)
-    return { status: 'FAIL', layers: ['BROWSER', 'API'], note };
-  return { layers: ['BROWSER', 'API'], note };
+  const within =
+    carGone !== null &&
+    carGone <= CAR_BUDGET_S &&
+    dealerGone !== null &&
+    dealerGone <= DEALER_BUDGET_S;
+  return within
+    ? {
+        layers: ['BROWSER', 'API'],
+        bug: 'BUG-111',
+        note: `${note} — inside the designed cache windows (car ≤ ${CAR_BUDGET_S} s, dealer ≤ ${DEALER_BUDGET_S} s)`,
+      }
+    : {
+        status: 'FAIL',
+        layers: ['BROWSER', 'API'],
+        bug: 'BUG-111',
+        note: `${note} — beyond the designed windows (car ≤ ${CAR_BUDGET_S} s, dealer ≤ ${DEALER_BUDGET_S} s)`,
+      };
 });
 r.save();
 await b.close();

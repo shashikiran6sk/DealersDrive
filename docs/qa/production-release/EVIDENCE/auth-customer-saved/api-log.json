@@ -7,7 +7,7 @@
       "customer": null,
       "signUpToken": "<redacted>",
       "expiresAt": "2026-10-21T05:37:21.588Z",
-      "phoneDisplay": "+91 96004 41485"
+      "phoneDisplay": "+91 •••••• 1485"
     }
   },
   {
@@ -18,7 +18,7 @@
         "id": "0b2a9115-cf0d-4236-9b4e-c2e666bd711d",
         "fullName": "New Customer",
         "phone": "+••••••••1485",
-        "phoneDisplay": "+91 96004 41485"
+        "phoneDisplay": "+91 •••••• 1485"
       }
     }
   },
@@ -30,7 +30,7 @@
         "id": "0b2a9115-cf0d-4236-9b4e-c2e666bd711d",
         "fullName": "New Customer",
         "phone": "+••••••••1485",
-        "phoneDisplay": "+91 96004 41485"
+        "phoneDisplay": "+91 •••••• 1485"
       }
     }
   },
@@ -43,11 +43,11 @@
         "id": "d6c5e2a0-d475-4f2b-acd4-d12790772669",
         "fullName": "Existing Cust",
         "phone": "+••••••••1486",
-        "phoneDisplay": "+91 96004 41486"
+        "phoneDisplay": "+91 •••••• 1486"
       },
       "signUpToken": null,
       "expiresAt": null,
-      "phoneDisplay": "+91 96004 41486"
+      "phoneDisplay": "+91 •••••• 1486"
     }
   },
   {
@@ -77,7 +77,7 @@
       "customer": null,
       "signUpToken": "<redacted>",
       "expiresAt": "2026-10-21T05:37:21.652Z",
-      "phoneDisplay": "+91 96004 41488"
+      "phoneDisplay": "+91 •••••• 1488"
     }
   },
   {
@@ -110,7 +110,7 @@
       "customer": null,
       "signUpToken": "<redacted>",
       "expiresAt": "2026-10-21T05:37:21.666Z",
-      "phoneDisplay": "+91 96004 41490"
+      "phoneDisplay": "+91 •••••• 1490"
     }
   },
   {
@@ -121,7 +121,7 @@
       "customer": null,
       "signUpToken": "<redacted>",
       "expiresAt": "2026-10-21T05:37:21.666Z",
-      "phoneDisplay": "+91 96004 41491"
+      "phoneDisplay": "+91 •••••• 1491"
     }
   },
   {
@@ -132,7 +132,7 @@
         "id": "3d123a18-bdee-485f-910a-303d6c0b01ad",
         "fullName": "Logout Cust",
         "phone": "+••••••••1492",
-        "phoneDisplay": "+91 96004 41492"
+        "phoneDisplay": "+91 •••••• 1492"
       }
     }
   },
@@ -197,7 +197,7 @@
         "id": "9e16f36a-fa1d-4041-a5fd-453aa7b6d8ff",
         "fullName": "Account Cust",
         "phone": "+••••••••1498",
-        "phoneDisplay": "+91 96004 41498"
+        "phoneDisplay": "+91 •••••• 1498"
       }
     }
   },
@@ -596,7 +596,7 @@
         "id": "9e16f36a-fa1d-4041-a5fd-453aa7b6d8ff",
         "fullName": "Account Cust",
         "phone": "+••••••••1498",
-        "phoneDisplay": "+91 96004 41498"
+        "phoneDisplay": "+91 •••••• 1498"
       }
     }
   },
@@ -611,7 +611,7 @@
         "id": "83379282-e4d5-4b35-8489-9b7c200349ba",
         "fullName": "Dual Role Person",
         "phone": "+••••••••1502",
-        "phoneDisplay": "+91 96004 41502"
+        "phoneDisplay": "+91 •••••• 1502"
       }
     }
   },
@@ -634,7 +634,7 @@
         "id": "d12859ab-c59b-436b-ad6b-05e7438d2260",
         "fullName": "ToRevoke Person",
         "phone": "+••••••••1504",
-        "phoneDisplay": "+91 96004 41504"
+        "phoneDisplay": "+91 •••••• 1504"
       }
     }
   },
@@ -662,7 +662,7 @@
         "id": "66c856c1-f503-451e-9476-b118204f0d05",
         "fullName": "Suspended Co Member",
         "phone": "+••••••••1506",
-        "phoneDisplay": "+91 96004 41506"
+        "phoneDisplay": "+91 •••••• 1506"
       }
     }
   },

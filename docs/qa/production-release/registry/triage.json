@@ -20,5 +20,27 @@
   },
   "AUTH-DISC-002": {
     "bug": "BUG-102"
+  },
+  "ENQ-LIFE-010": {
+    "status": "BLOCKED",
+    "reason": "Permission enforcement is proved (STAFF→CLOSED/SPAM 403, unknown status 400), but the scenario asks for invalid transitions to be rejected and the product defines none: OWNER/MANAGER may move an enquiry from any status to any other, including CLOSED → NEW and CONTACTED → NEW (enquiries.service.ts setStatus). Undefined product decision UPD-2."
+  },
+  "PUBLIC-015": {
+    "bug": "BUG-101",
+    "reason": "Experience correct (branded not-found page, noindex, no listing data); the web page answers HTTP 200 rather than 404 — BUG-101, judged under SEO-009."
+  },
+  "LISTING-LIFE-015": {
+    "bug": "BUG-101",
+    "reason": "API 404 and no listing content on the web; the web page's HTTP status is 200 (BUG-101)."
+  },
+  "STORAGE-005": {
+    "bug": "BUG-109",
+    "reason": "No page crashes on a missing object; a vehicle card shows a broken image instead of its fallback (BUG-109, judged under MEDIA-012)."
+  },
+  "NOTIFY-001": {
+    "reason": "Strengthened by NOTIFY-DISC-001: the console mailer emitted 274 dealer.application.received e-mails during the campaign; the outbox → worker path is asynchronous (PERF-DISC-001)."
+  },
+  "BUG-NEW-010-timing": {
+    "reason": "Out-of-band suspension (no console action): designed cache windows are ≈ 70 s (car, revalidate 60) and ≈ 610 s (dealer, revalidate 600); BUG-111 records the window."
   }
 }

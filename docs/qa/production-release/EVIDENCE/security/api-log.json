@@ -1075,7 +1075,7 @@
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96005 03725"
+        "phoneDisplay": "+91 •••••• 3725"
       },
       "sections": [
         {
@@ -1376,8 +1376,8 @@
         "name": "Conc Enq Buyer",
         "initials": "CE",
         "phone": "+••••••••3727",
-        "phoneDisplay": "+91 96005 03727",
-        "callHref": "tel:+919600503727"
+        "phoneDisplay": "+91 •••••• 3727",
+        "callHref": "tel:+91••••••3727"
       },
       "vehicle": {
         "id": "c23f3803-1a4c-46cf-a2ae-0c87e8a8b2f0",
@@ -1414,8 +1414,8 @@
         "name": "Conc Enq Buyer",
         "initials": "CE",
         "phone": "+••••••••3727",
-        "phoneDisplay": "+91 96005 03727",
-        "callHref": "tel:+919600503727"
+        "phoneDisplay": "+91 •••••• 3727",
+        "callHref": "tel:+91••••••3727"
       },
       "vehicle": {
         "id": "c23f3803-1a4c-46cf-a2ae-0c87e8a8b2f0",

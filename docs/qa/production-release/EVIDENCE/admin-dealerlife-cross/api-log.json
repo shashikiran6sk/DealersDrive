@@ -366,8 +366,8 @@
         "reviewerIsAssistant": false
       },
       "contactName": "AdminInspects Owner",
-      "contactPhone": "+919600472895",
-      "contactPhoneDisplay": "+91 96004 72895",
+      "contactPhone": "+91••••••2895",
+      "contactPhoneDisplay": "+91 •••••• 2895",
       "contactEmail": "admininspects.472904db42b7@example.test",
       "landline": null,
       "tagline": "Quality used cars from AdminInspects",
@@ -765,7 +765,7 @@
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 72903"
+        "phoneDisplay": "+91 •••••• 2903"
       },
       "sections": [
         {
@@ -988,7 +988,7 @@
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 72903"
+        "phoneDisplay": "+91 •••••• 2903"
       },
       "sections": [
         {
@@ -1313,7 +1313,7 @@
         "statusLabel": "Suspended",
         "statusTone": "err",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 72905"
+        "phoneDisplay": "+91 •••••• 2905"
       },
       "sections": [
         {
@@ -1632,7 +1632,7 @@
         "id": "872f3d1e-190f-4732-886c-ce4da3b4c431",
         "fullName": "DL Staff",
         "phone": "+••••••••2909",
-        "phoneDisplay": "+91 96004 72909"
+        "phoneDisplay": "+91 •••••• 2909"
       }
     }
   },

@@ -182,9 +182,12 @@ const staff = await w.addMember(D, 'STAFF', 'Uat Staff');
     return `reserved badge(s) on the dealer page ${reserved}`;
   });
   await step(page, 'A-mobile-buyer', 'back-forward', async () => {
-    await page.goBack({ waitUntil: 'networkidle' });
+    // History traversal inside the app is client-side: wait for the URL, not a network lull.
+    await page.goBack({ waitUntil: 'commit' });
+    await page.waitForURL(/\/enquiries/, { timeout: 15000 });
     const back = new URL(page.url()).pathname;
-    await page.goForward({ waitUntil: 'networkidle' });
+    await page.goForward({ waitUntil: 'commit' });
+    await page.waitForURL(/\/dealers\//, { timeout: 15000 });
     return `back → ${back}, forward → ${new URL(page.url()).pathname}`;
   });
   await ctx.close();
