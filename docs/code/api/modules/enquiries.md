@@ -169,10 +169,24 @@ revealed — and two people on one dealership pressing at once are serialised:
 the second sees the first's status and, if it asked for the same one, changes
 nothing. Without the lock both read `NEW` and both write an audit row.
 
-Any status may follow any other, so a mistaken Close or Spam is undone by
-choosing the right one; there is no state machine to argue with. A move to the
-status an enquiry already has returns it unchanged and audits nothing, so a
-double press leaves one record.
+**The moves are `ENQUIRY_TRANSITIONS` (UPD-2).** Until UPD-2 any status could
+follow any other. The certification found two problems with that: an OWNER or
+MANAGER could pull a contacted enquiry back to NEW, so the inbox claimed nobody
+had called a customer somebody had called, and a reopen skipped the one-open-
+enquiry rule `create` enforces. The API now accepts exactly the moves the inbox
+offers — forward from NEW, and back to NEW to undo a Close or a Spam — and
+refuses the rest with `409 ENQUIRY_INVALID_TRANSITION`, after the role check, so
+a STAFF member still learns first that the move is not theirs to make. A move to
+the status an enquiry already has returns it unchanged and audits nothing, so a
+double press leaves one record; two different end states pressed at once leave
+one winner and one 409.
+
+**A reopen respects the open-enquiry rule.** Once an enquiry is CLOSED its
+customer may enquire about the car again, so reopening the old one could leave
+two open enquiries from one customer on one car. A move to NEW takes the same
+advisory lock `create` takes for that customer and car, and is a
+`409 ENQUIRY_ALREADY_OPEN` naming the open one (`openEnquiryId`) if there is
+one.
 
 **Authority is read after the lock, not before (BUG-NEW-012).** The
 permissions on the request principal were read when the request arrived. A

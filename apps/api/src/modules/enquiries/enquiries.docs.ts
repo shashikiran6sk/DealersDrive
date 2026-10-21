@@ -150,8 +150,13 @@ export const enquiriesDocs: ModuleDocs = {
       tag: DOC_TAGS.enquiries,
       summary: 'Move an enquiry to another tab',
       description:
-        'Mark contacted, close, mark as spam, or reopen as new. Any status may follow any ' +
-        'other, so a mistaken Close is undone by choosing the right one.\n\n' +
+        'Mark contacted, close, mark as spam, or reopen as new.\n\n' +
+        '**Allowed moves (UPD-2).** NEW → CONTACTED, CLOSED or SPAM; CONTACTED → CLOSED or ' +
+        'SPAM; CLOSED → NEW (reopen); SPAM → NEW (not spam). Any other move is ' +
+        '`409 ENQUIRY_INVALID_TRANSITION` with `enquiryStatus` and `requestedStatus`; a mistaken ' +
+        'Close or Spam is undone by reopening it as NEW. Reopening while the same customer has ' +
+        'a newer open enquiry on the same car is `409 ENQUIRY_ALREADY_OPEN` with ' +
+        '`openEnquiryId`.\n\n' +
         '**By role (R92).** Every member may move a new enquiry to CONTACTED ' +
         '(`enquiry:contact`). Closing, marking spam, reopening, or moving a closed enquiry back ' +
         'needs `enquiry:close` — OWNER and MANAGER — and STAFF get a 403 ' +

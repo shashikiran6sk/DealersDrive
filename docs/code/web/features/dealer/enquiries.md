@@ -39,8 +39,9 @@ rather than leaving a blank line.
 
 The moves that make sense from where an enquiry is (`ENQUIRY_MOVES`): a new one
 can be marked contacted, closed or spammed; a contacted one closed or spammed;
-a closed one reopened; a spammed one marked not spam. The API accepts any move —
-this list is what is worth a button. All buttons disable while one is in flight.
+a closed one reopened; a spammed one marked not spam. These are exactly
+`ENQUIRY_TRANSITIONS` in contracts, which the API enforces (UPD-2), and a test
+holds the two lists together. All buttons disable while one is in flight.
 On success the Server Action's `revalidatePath` redraws the page, so the card
 moves tab with no client state to keep in step; a refusal shows the API's
 sentence under the buttons.

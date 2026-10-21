@@ -7,7 +7,9 @@ import {
   DEALER_ROLE_LABELS,
   canDealer,
   dealerPermissionsFor,
+  ENQUIRY_TRANSITIONS,
   enquiryTransitionPermission,
+  isEnquiryTransition,
   type DealerPermission,
 } from '../../src/dealer-access.js';
 import { DealerRole, EnquiryStatus } from '../../src/enums.js';
@@ -92,6 +94,31 @@ describe('enquiryTransitionPermission', () => {
       for (const to of EnquiryStatus.options) {
         expect(DEALER_PERMISSION_NAMES).toContain(enquiryTransitionPermission(from, to));
       }
+    }
+  });
+});
+
+describe('ENQUIRY_TRANSITIONS (UPD-2)', () => {
+  it('allows exactly the seven inbox moves', () => {
+    const allowed = EnquiryStatus.options.flatMap((from) =>
+      EnquiryStatus.options
+        .filter((to) => isEnquiryTransition(from, to))
+        .map((to) => `${from}→${to}`),
+    );
+    expect(allowed).toEqual([
+      'NEW→CONTACTED',
+      'NEW→CLOSED',
+      'NEW→SPAM',
+      'CONTACTED→CLOSED',
+      'CONTACTED→SPAM',
+      'CLOSED→NEW',
+      'SPAM→NEW',
+    ]);
+  });
+
+  it('never lists a status as a move to itself', () => {
+    for (const from of EnquiryStatus.options) {
+      expect(ENQUIRY_TRANSITIONS[from]).not.toContain(from);
     }
   });
 });
