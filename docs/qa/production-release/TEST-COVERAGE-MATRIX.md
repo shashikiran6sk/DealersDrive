@@ -9,7 +9,7 @@ Human UAT is pending for every scenario; the prioritised human list is [MANUAL-U
 | Section        | n   | PASS | FAIL | BLOCKED | N/A | API | DATABASE | SECURITY | BROWSER | A11Y | SEO | CONCURRENCY | RECOVERY | STORAGE | STATIC | INTEGRATION | AGENT_UAT |
 | -------------- | --- | ---- | ---- | ------- | --- | --- | -------- | -------- | ------- | ---- | --- | ----------- | -------- | ------- | ------ | ----------- | --------- |
 | PUBLIC         | 24  | 24   | 0    | 0       | 0   | 19  |          | 1        | 5       |      |     |             |          |         |        |             |           |
-| AUTH           | 15  | 10   | 0    | 5       | 0   | 10  |          | 3        |         |      |     |             |          |         |        |             |           |
+| AUTH           | 15  | 10   | 0    | 4       | 1   | 10  |          | 3        |         |      |     |             |          |         |        |             |           |
 | CUSTOMER       | 10  | 10   | 0    | 0       | 0   | 10  | 1        |          |         |      |     |             |          |         |        |             |           |
 | SAVED          | 10  | 10   | 0    | 0       | 0   | 10  | 2        | 1        |         |      |     |             |          |         |        |             |           |
 | ENQ-CREATE     | 18  | 18   | 0    | 0       | 0   | 18  | 3        | 2        |         |      |     |             |          |         |        |             |           |

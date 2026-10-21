@@ -540,7 +540,7 @@
     "canonical": true
   },
   "AUTH-012": {
-    "status": "BLOCKED",
+    "status": "NOT_APPLICABLE",
     "layers": ["AUTH"],
     "note": "Logout-all is not a V1 requirement (product decision confirmed by owner). No route exists; revokeAllForUser is present but unused. Documented as a future consideration, not a defect.",
     "evidence": [],
@@ -549,7 +549,7 @@
     "area": "auth-customer-saved",
     "at": "2026-10-21T05:27:21.697Z",
     "harnessStatus": "NOT_APPLICABLE",
-    "triage": "No logout-all route exists (SessionService.revokeAllForUser is unused). The prior campaign recorded this as NOT_APPLICABLE on an owner decision that is not documented anywhere in the repository; without a documented decision it is an undefined product decision, not proven inapplicability.",
+    "triage": "Product owner decision UPD-1, recorded 2026-10-21: \"log out of all devices\" is not needed for V1. No logout-all route exists (SessionService.revokeAllForUser is unused); single-session logout (AUTH-011) and server-side revocation on disable, removal and suspension are covered elsewhere. Revisit for a later release.",
     "canonical": true
   },
   "AUTH-013": {

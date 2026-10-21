@@ -23,7 +23,8 @@ environment cannot produce and which has not yet been produced elsewhere:
    not human UAT);
 2. real-provider behaviour (MSG91 expiry/attempt/resend caps, Google OAuth, Resend
    deliverability, R2) and Safari/Firefox/Edge/iOS are unverified (BLOCKED, human checklist);
-3. two product decisions are open (logout-all, the enquiry state machine);
+3. one product decision is open (the enquiry state machine, UPD-2); logout-all (UPD-1) was
+   decided "not for V1" on 2026-10-21;
 4. mandatory human UAT is pending.
 
 None of these is a known product defect. Once OP-001 (restore drill) passes, the two decisions
@@ -32,15 +33,15 @@ pass, the evidence supports **GO**; fixing BUG-101 (P2) first is recommended but
 
 ## Counts (from `EVIDENCE/final-counts.json`)
 
-|            | PASS | FAIL | BLOCKED | NOT_RUN |                MANUAL_REQUIRED | NOT_APPLICABLE | Total |
-| ---------- | ---: | ---: | ------: | ------: | -----------------------------: | -------------: | ----: |
-| Canonical  |  542 |    3 |      11 |       0 | (11 of the BLOCKED, see below) |              0 |   556 |
-| Discovered |   70 |    9 |       0 |       0 |                              0 |              1 |    80 |
+|            | PASS | FAIL | BLOCKED | NOT_RUN |               MANUAL_REQUIRED | NOT_APPLICABLE | Total |
+| ---------- | ---: | ---: | ------: | ------: | ----------------------------: | -------------: | ----: |
+| Canonical  |  542 |    3 |      10 |       0 | (8 of the BLOCKED, see below) |              1 |   556 |
+| Discovered |   70 |    9 |       0 |       0 |                             0 |              1 |    80 |
 
 Accounted 556 / 556 · missing 0 · unclassified 0. NOT_RUN is 0: every scenario was either
-executed or is BLOCKED with its reason. Of the 11 BLOCKED canonical scenarios, 8 are waiting on
-real providers or real browsers (manual), 2 on an owner decision and 1 (DEPLOY-009) on
-infrastructure.
+executed or is BLOCKED with its reason. Of the 10 BLOCKED canonical scenarios, 8 are waiting on
+real providers or real browsers (manual), 1 on an owner decision and 1 (DEPLOY-009) on
+infrastructure. The one NOT_APPLICABLE is AUTH-012 (logout-all), by owner decision UPD-1.
 
 | Canonical FAIL                                                                 | Defect  | Severity |
 | ------------------------------------------------------------------------------ | ------- | -------- |
@@ -102,13 +103,13 @@ Details: [DEFECT-REGISTER.md](DEFECT-REGISTER.md).
 
 **Automated FAIL:** 12 (canonical 3 · discovered 9) — all mapped to BUG-101…111
 
-**BLOCKED:** 11
+**BLOCKED:** 10
 
 **NOT_RUN:** 0
 
 **MANUAL_REQUIRED:** 8 of the BLOCKED (real providers and browsers) + 22 human checks pending
 
-**NOT_APPLICABLE:** 1
+**NOT_APPLICABLE:** 2 (canonical 1 — AUTH-012, owner decision UPD-1 · discovered 1)
 
 **Critical Journeys Passed:** 10 / 10 golden paths in the browser (GOLDEN-001…010); 3 / 3 mid-journey outage and refresh checks (u04); 47 / 47 Agent UAT steps
 
@@ -130,8 +131,8 @@ Details: [DEFECT-REGISTER.md](DEFECT-REGISTER.md).
 
 **Final Recommendation: NO-GO**
 
-**Top Launch Blockers:** (1) managed-database restore unverified — DEPLOY-009/OP-001; (2) real-provider OTP, OAuth, e-mail and storage unverified — HUMAN-UAT-001…005, 018, 019; (3) Safari/Firefox/Edge/iOS unverified — HUMAN-UAT-016/017; (4) product decisions UPD-1 (logout-all) and UPD-2 (enquiry transitions); (5) human UAT pending. No product defect blocks launch.
+**Top Launch Blockers:** (1) managed-database restore unverified — DEPLOY-009/OP-001; (2) real-provider OTP, OAuth, e-mail and storage unverified — HUMAN-UAT-001…005, 018, 019; (3) Safari/Firefox/Edge/iOS unverified — HUMAN-UAT-016/017; (4) product decision UPD-2 (enquiry transitions); (5) human UAT pending. No product defect blocks launch.
 
-**Required Actions Before Launch:** run OP-001…OP-003 on staging/production copies; complete the P0 and P1 human checks on a staging deployment of exactly `6e39a9a`; record UPD-1…UPD-4; fix BUG-101 (recommended) and re-run SEO-009/010; re-run `harness/run-all.sh` on any later commit before calling it certified.
+**Required Actions Before Launch:** run OP-001…OP-003 on staging/production copies; complete the P0 and P1 human checks on a staging deployment of exactly `6e39a9a`; record UPD-2…UPD-4 (UPD-1 recorded: logout-all not for V1); fix BUG-101 (recommended) and re-run SEO-009/010; re-run `harness/run-all.sh` on any later commit before calling it certified.
 
 **Evidence and Report Locations:** `docs/qa/production-release/` — this report, [FINAL-CERTIFICATION.md](FINAL-CERTIFICATION.md), [TEST-TRACEABILITY.csv](TEST-TRACEABILITY.csv), `EVIDENCE/`, `registry/results.final.json`, `harness/`.

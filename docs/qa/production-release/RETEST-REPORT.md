@@ -47,11 +47,11 @@ API-level PASS into a browser FAIL (BUG-109) as a result.
 
 ### 2c. Reclassified after review (`registry/triage.json`, harness verdict kept)
 
-| Scenario                  | Harness        | Final          | Why                                                        |
-| ------------------------- | -------------- | -------------- | ---------------------------------------------------------- |
-| AUTH-012                  | NOT_APPLICABLE | BLOCKED        | the "owner decision" it cited is not documented anywhere   |
-| ENQ-LIFE-010              | PASS           | BLOCKED        | no invalid enquiry transition is defined to reject (UPD-2) |
-| BUG-NEW-010 (65 s sample) | FAIL           | NOT_APPLICABLE | superseded by the measured BUG-NEW-010-timing              |
+| Scenario                  | Harness        | Final          | Why                                                                                                                                     |
+| ------------------------- | -------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| AUTH-012                  | NOT_APPLICABLE | NOT_APPLICABLE | first BLOCKED (the "owner decision" it cited was undocumented); NOT_APPLICABLE once the owner recorded UPD-1 "not for V1" on 2026-10-21 |
+| ENQ-LIFE-010              | PASS           | BLOCKED        | no invalid enquiry transition is defined to reject (UPD-2)                                                                              |
+| BUG-NEW-010 (65 s sample) | FAIL           | NOT_APPLICABLE | superseded by the measured BUG-NEW-010-timing                                                                                           |
 
 ### 2d. My own harness mistakes, found from the evidence and fixed
 

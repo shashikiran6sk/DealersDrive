@@ -4,8 +4,8 @@
     "expected": 556,
     "PASS": 542,
     "FAIL": 3,
-    "BLOCKED": 11,
-    "NOT_APPLICABLE": 0,
+    "BLOCKED": 10,
+    "NOT_APPLICABLE": 1,
     "accounted": 556,
     "missing": 0,
     "unclassified": 0

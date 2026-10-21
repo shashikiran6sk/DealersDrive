@@ -16,7 +16,7 @@ justification is [RELEASE-READINESS-REPORT.md](RELEASE-READINESS-REPORT.md).
 
 | PASS | FAIL | BLOCKED | NOT_APPLICABLE |
 | ---: | ---: | ------: | -------------: |
-|  542 |    3 |      11 |              0 |
+|  542 |    3 |      10 |              1 |
 
 ## ADDITIONAL DISCOVERED TESTS
 
@@ -53,11 +53,14 @@ By origin: audit of features merged since `8436820` 20 · security 22 · regress
 
 ## OUTSTANDING PRODUCT DECISIONS
 
-UPD-1 logout-all (AUTH-012) · UPD-2 enquiry transitions (ENQ-LIFE-010) · UPD-3 signed-out
-`/saved` (BUG-105) · UPD-4 credits while billing is deferred (BUG-110).
+UPD-2 enquiry transitions (ENQ-LIFE-010) · UPD-3 signed-out `/saved` (BUG-105) · UPD-4
+credits while billing is deferred (BUG-110).
+
+Recorded: UPD-1 logout-all — not needed for V1 (product owner, 2026-10-21); AUTH-012 is
+NOT_APPLICABLE.
 
 ## LAUNCH GATE
 
 **NO GO** — no product defect blocks launch (0 P0, 0 P1), but required evidence is missing:
 the managed-database restore (DEPLOY-009), real-provider and non-Chromium checks (8 BLOCKED),
-two product decisions and the human UAT. See RELEASE-READINESS-REPORT.md, "Required actions".
+one product decision (UPD-2) and the human UAT. See RELEASE-READINESS-REPORT.md, "Required actions".

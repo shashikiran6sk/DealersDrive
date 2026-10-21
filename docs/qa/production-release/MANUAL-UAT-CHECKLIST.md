@@ -198,7 +198,7 @@ With VoiceOver (iPhone) or TalkBack (Android): log in, search, open a car, use t
 
 | ID                   | Decision                                                                               | Choose                                |
 | -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
-| UPD-1 (AUTH-012)     | Is "log out of all devices" required for launch?                                       | ☐ Required ☐ Not for V1 (record it)   |
+| UPD-1 (AUTH-012)     | Is "log out of all devices" required for launch?                                       | ☑ Not for V1 — recorded 2026-10-21    |
 | UPD-2 (ENQ-LIFE-010) | May an OWNER/MANAGER move an enquiry back to NEW (e.g. CLOSED → NEW, CONTACTED → NEW)? | ☐ Yes, any move ☐ Restrict to: ______ |
 | UPD-3 (BUG-105)      | Signed-out `/saved`: show a sign-in prompt instead of "No saved cars yet"?             | ☐ Yes ☐ No                            |
 | UPD-4 (BUG-110)      | Hide listing credits until billing exists?                                             | ☐ Hide ☐ Keep                         |

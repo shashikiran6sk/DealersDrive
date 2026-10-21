@@ -152,12 +152,12 @@ restore drill.
 
 ## 18. Undefined business rules found
 
-| ID    | Rule                                                                                                                         | Affects      |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| UPD-1 | Is "log out of every device" a V1 requirement? No route exists; `revokeAllForUser` is unused; no decision is documented.     | AUTH-012     |
-| UPD-2 | Which enquiry status moves are invalid? OWNER/MANAGER may move any status to any other (e.g. CLOSED → NEW, CONTACTED → NEW). | ENQ-LIFE-010 |
-| UPD-3 | Should a signed-out `/saved` invite sign-in rather than show "No saved cars yet"?                                            | UAT-OBS-001  |
-| UPD-4 | Should the console show listing credits while billing (F050–F054) is deferred?                                               | UAT-OBS-003  |
+| ID    | Rule                                                                                                                              | Affects      |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| UPD-1 | Is "log out of every device" a V1 requirement? No route exists; `revokeAllForUser` is unused. **Decided 2026-10-21: not for V1.** | AUTH-012     |
+| UPD-2 | Which enquiry status moves are invalid? OWNER/MANAGER may move any status to any other (e.g. CLOSED → NEW, CONTACTED → NEW).      | ENQ-LIFE-010 |
+| UPD-3 | Should a signed-out `/saved` invite sign-in rather than show "No saved cars yet"?                                                 | UAT-OBS-001  |
+| UPD-4 | Should the console show listing credits while billing (F050–F054) is deferred?                                                    | UAT-OBS-003  |
 
 ## 19–20. Test data and destructive-test safety
 
