@@ -1,4 +1,4 @@
-import { PgBoss } from 'pg-boss';
+import { PgBoss, type WorkOptions } from 'pg-boss';
 
 import { env } from '../../config/env.js';
 import { logger } from '../telemetry/logger.js';
@@ -45,6 +45,10 @@ const RETRY: Partial<Record<JobName, { retryLimit: number; retryDelay: number }>
   'notification.email': { retryLimit: 5, retryDelay: 30 },
 };
 
+const WORKERS: Partial<Record<JobName, WorkOptions>> = {
+  'notification.email': { pollingIntervalSeconds: 0.5 },
+};
+
 export function createQueue(): Queue {
   if (!env.JOBS_ENABLED) return createInlineQueue();
 
@@ -63,7 +67,7 @@ export function createQueue(): Queue {
     name: JobName,
     handler: (data: Record<string, unknown>) => Promise<void>,
   ): Promise<void> {
-    await boss.work<Record<string, unknown>>(name, async (jobs) => {
+    await boss.work<Record<string, unknown>>(name, WORKERS[name] ?? {}, async (jobs) => {
       for (const job of jobs) {
         await handler(job.data);
       }

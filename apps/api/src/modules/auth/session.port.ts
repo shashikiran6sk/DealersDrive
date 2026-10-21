@@ -27,6 +27,7 @@ export interface PendingPrincipal {
   fullName: string | null;
   phone: string | null;
   phoneVerified: boolean;
+  emailVerified: boolean;
   permissions: readonly string[];
 }
 
