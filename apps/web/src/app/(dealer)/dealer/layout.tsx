@@ -18,7 +18,7 @@ import {
 import { ButtonLink } from '@/components/ui/button';
 import { ConsoleUtilities } from '@/components/dealer/console-utilities';
 import { BrandLogo } from '@/components/brand-logo';
-import { Blueprint, StatusTag } from '@/components/ui/primitives';
+import { StatusTag } from '@/components/ui/primitives';
 import { customerAccountAction } from '@/features/auth/customer-account-actions';
 import { apiGet } from '@/lib/api';
 import { currentSession, hasSession } from '@/lib/session';
@@ -53,20 +53,6 @@ export default async function DealerLayout({ children }: { children: ReactNode }
         </Link>
 
         {navigation}
-
-        <Blueprint className="mt-auto rounded-[14px] bg-white p-4">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] ink-muted">
-            Listing credits
-          </div>
-          <div className="my-[6px] font-heading text-[28px] font-extrabold leading-none tnum">
-            {dealer.creditBalance}
-          </div>
-          {dealer.creditsHeld > 0 ? (
-            <div className="mb-[6px] text-[11px] ink-subtle tnum">
-              {dealer.creditsHeld} held for cars under review
-            </div>
-          ) : null}
-        </Blueprint>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -95,10 +81,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
             {dealer.statusLabel}
           </StatusTag>
 
-          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum max-md:hidden">
-            {dealer.creditBalance} credits
-          </span>
-          <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
+          <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="ml-auto max-md:hidden">
             {ADD_VEHICLE_LABEL}
           </ButtonLink>
         </header>
