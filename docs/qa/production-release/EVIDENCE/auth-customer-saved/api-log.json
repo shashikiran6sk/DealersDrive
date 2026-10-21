@@ -6,8 +6,8 @@
       "status": "NAME_REQUIRED",
       "customer": null,
       "signUpToken": "<redacted>",
-      "expiresAt": "2026-10-20T15:42:29.820Z",
-      "phoneDisplay": "+91 96003 49630"
+      "expiresAt": "2026-10-21T05:37:21.588Z",
+      "phoneDisplay": "+91 96004 41485"
     }
   },
   {
@@ -15,10 +15,10 @@
     "status": 201,
     "body": {
       "customer": {
-        "id": "623a3c95-effc-402f-934f-ba5919c685b9",
+        "id": "0b2a9115-cf0d-4236-9b4e-c2e666bd711d",
         "fullName": "New Customer",
-        "phone": "+••••••••9630",
-        "phoneDisplay": "+91 96003 49630"
+        "phone": "+••••••••1485",
+        "phoneDisplay": "+91 96004 41485"
       }
     }
   },
@@ -27,10 +27,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "623a3c95-effc-402f-934f-ba5919c685b9",
+        "id": "0b2a9115-cf0d-4236-9b4e-c2e666bd711d",
         "fullName": "New Customer",
-        "phone": "+••••••••9630",
-        "phoneDisplay": "+91 96003 49630"
+        "phone": "+••••••••1485",
+        "phoneDisplay": "+91 96004 41485"
       }
     }
   },
@@ -40,14 +40,14 @@
     "body": {
       "status": "SIGNED_IN",
       "customer": {
-        "id": "01e0a032-5770-4b19-b878-23a39ca7f10d",
+        "id": "d6c5e2a0-d475-4f2b-acd4-d12790772669",
         "fullName": "Existing Cust",
-        "phone": "+••••••••9631",
-        "phoneDisplay": "+91 96003 49631"
+        "phone": "+••••••••1486",
+        "phoneDisplay": "+91 96004 41486"
       },
       "signUpToken": null,
       "expiresAt": null,
-      "phoneDisplay": "+91 96003 49631"
+      "phoneDisplay": "+91 96004 41486"
     }
   },
   {
@@ -58,7 +58,7 @@
       "title": "Phone verification failed",
       "status": 422,
       "code": "PHONE_VERIFICATION_FAILED",
-      "traceId": "LuqAOtsms9",
+      "traceId": "3bS9y5_IIm",
       "detail": "That code could not be verified. Request a new one and try again.",
       "errors": [
         {
@@ -76,8 +76,8 @@
       "status": "NAME_REQUIRED",
       "customer": null,
       "signUpToken": "<redacted>",
-      "expiresAt": "2026-10-20T15:42:30.030Z",
-      "phoneDisplay": "+91 96003 49633"
+      "expiresAt": "2026-10-21T05:37:21.652Z",
+      "phoneDisplay": "+91 96004 41488"
     }
   },
   {
@@ -88,7 +88,7 @@
       "title": "Phone verification failed",
       "status": 422,
       "code": "PHONE_VERIFICATION_FAILED",
-      "traceId": "QzEjk_qXt0",
+      "traceId": "J5pDpSCYKS",
       "detail": "That code has already been used. Request a new one and try again.",
       "errors": [
         {
@@ -109,8 +109,8 @@
       "status": "NAME_REQUIRED",
       "customer": null,
       "signUpToken": "<redacted>",
-      "expiresAt": "2026-10-20T15:42:30.059Z",
-      "phoneDisplay": "+91 96003 49635"
+      "expiresAt": "2026-10-21T05:37:21.666Z",
+      "phoneDisplay": "+91 96004 41490"
     }
   },
   {
@@ -120,8 +120,8 @@
       "status": "NAME_REQUIRED",
       "customer": null,
       "signUpToken": "<redacted>",
-      "expiresAt": "2026-10-20T15:42:30.081Z",
-      "phoneDisplay": "+91 96003 49636"
+      "expiresAt": "2026-10-21T05:37:21.666Z",
+      "phoneDisplay": "+91 96004 41491"
     }
   },
   {
@@ -129,10 +129,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "343427e5-6887-4776-9eef-4931c5720565",
+        "id": "3d123a18-bdee-485f-910a-303d6c0b01ad",
         "fullName": "Logout Cust",
-        "phone": "+••••••••9637",
-        "phoneDisplay": "+91 96003 49637"
+        "phone": "+••••••••1492",
+        "phoneDisplay": "+91 96004 41492"
       }
     }
   },
@@ -149,7 +149,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "JFrQibwkfv",
+      "traceId": "759jZPLKav",
       "detail": "Sign in with your mobile number to do that."
     }
   },
@@ -164,15 +164,24 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "s8MnAMka3U",
+      "traceId": "ocvx9LfBf8",
       "detail": "Sign in with your mobile number to do that."
     }
   },
   {
-    "ticketCreate": 400
+    "ticketCreate": 201
   },
   {
-    "status": "n/a"
+    "req": "GET /v1/support/tickets/176f79df-0f53-42a0-9a2d-96b4ac0a1a9e",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/support-ticket-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "SUPPORT_TICKET_NOT_FOUND",
+      "traceId": "U1aIqME-qY",
+      "detail": "There is no support request with that reference on your account."
+    }
   },
   {
     "aSeesOwnOnly": true
@@ -185,10 +194,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "5053c2ea-78a4-4ff1-89c6-cf4fa3024e1e",
+        "id": "9e16f36a-fa1d-4041-a5fd-453aa7b6d8ff",
         "fullName": "Account Cust",
-        "phone": "+••••••••9643",
-        "phoneDisplay": "+91 96003 49643"
+        "phone": "+••••••••1498",
+        "phoneDisplay": "+91 96004 41498"
       }
     }
   },
@@ -225,7 +234,7 @@
     "body": {
       "data": [
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-0f84219d",
+          "slug": "2023-hyundai-creta-sx-o-vellore-ff16d6bb",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -237,14 +246,14 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "IdorDealer Motors 349645679dc9",
-            "slug": "idordealer-motors-349645679dc9-vellore-tamil-nadu",
+            "name": "IdorDealer Motors 4415003c5ba4",
+            "slug": "idordealer-motors-4415003c5ba4-vellore-tamil-nadu",
             "initials": "IM",
             "isVerified": false
           }
         },
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-61997788",
+          "slug": "2023-hyundai-creta-sx-o-vellore-a817833f",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -256,57 +265,66 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "PubVis Motors 327700de063d",
-            "slug": "pubvis-motors-327700de063d-vellore-tamil-nadu",
+            "name": "PubVis Motors 436253607cbc",
+            "slug": "pubvis-motors-436253607cbc-vellore-tamil-nadu",
             "initials": "PM",
             "isVerified": false
           }
         },
         {
-          "slug": "2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+          "slug": "2023-hyundai-creta-sx-o-vellore-40c5a8d4",
           "availability": "AVAILABLE",
-          "title": "2022 Maruti Suzuki Brezza ZXi+",
-          "year": 2022,
-          "priceLabel": "₹5,95,000",
-          "metaLabel": "54,900 km · Petrol · Automatic · Mangalagiri",
-          "image": null,
-          "imageCount": 0,
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
           "dealer": {
-            "name": "Capital Region Motors",
-            "slug": "capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh",
-            "initials": "CR",
+            "name": "PrioA Motors 434792d60178",
+            "slug": "prioa-motors-434792d60178-vellore-tamil-nadu",
+            "initials": "PM",
             "isVerified": false
           }
         },
         {
-          "slug": "2022-tata-altroz-xz-anekal-cf74b84f",
+          "slug": "2023-hyundai-creta-sx-o-vellore-40a68b45",
           "availability": "AVAILABLE",
-          "title": "2022 Tata Altroz XZ",
-          "year": 2022,
-          "priceLabel": "₹7,05,000",
-          "metaLabel": "52,200 km · CNG · Manual · Anekal",
-          "image": null,
-          "imageCount": 0,
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
           "dealer": {
-            "name": "Attibele Highway Cars",
-            "slug": "attibele-highway-cars-pvt-ltd-anekal-bengaluru-urban-karnataka",
-            "initials": "AH",
+            "name": "RecoveryMotors Motors 2937381c3293",
+            "slug": "recoverymotors-motors-2937381c3293-vellore-tamil-nadu",
+            "initials": "RM",
             "isVerified": false
           }
         },
         {
-          "slug": "2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+          "slug": "2023-hyundai-creta-sx-o-vellore-e91c98a4",
           "availability": "AVAILABLE",
-          "title": "2016 Maruti Suzuki Wagon R LXi",
-          "year": 2016,
-          "priceLabel": "₹2,75,000",
-          "metaLabel": "1,29,500 km · Petrol · Manual · Katpadi",
-          "image": null,
-          "imageCount": 0,
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
           "dealer": {
-            "name": "Sri Balaji Cars",
-            "slug": "sri-balaji-cars-and-credits-katpadi-vellore-tamil-nadu",
-            "initials": "SB",
+            "name": "GalleryMotors Motors 1276703645",
+            "slug": "gallerymotors-motors-1276703645-vellore-tamil-nadu",
+            "initials": "GM",
             "isVerified": false
           }
         }
@@ -314,27 +332,27 @@
       "page": {
         "page": 1,
         "limit": 5,
-        "total": 275,
-        "totalPages": 55
+        "total": 544,
+        "totalPages": 109
       },
-      "available": 262,
+      "available": 514,
       "facets": {
         "cities": [],
         "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 280
+          },
           {
             "value": "maruti-suzuki",
             "label": "Maruti Suzuki",
             "count": 70
           },
           {
-            "value": "hyundai",
-            "label": "Hyundai",
-            "count": 47
-          },
-          {
             "value": "tata",
             "label": "Tata",
-            "count": 29
+            "count": 48
           },
           {
             "value": "toyota",
@@ -352,12 +370,12 @@
           {
             "value": "petrol",
             "label": "Petrol",
-            "count": 138
+            "count": 389
           },
           {
             "value": "diesel",
             "label": "Diesel",
-            "count": 62
+            "count": 63
           },
           {
             "value": "cng",
@@ -379,7 +397,7 @@
           {
             "value": "automatic",
             "label": "Automatic",
-            "count": 136
+            "count": 388
           },
           {
             "value": "manual",
@@ -391,7 +409,7 @@
           {
             "value": "suv",
             "label": "SUV",
-            "count": 109
+            "count": 361
           },
           {
             "value": "hatchback",
@@ -423,7 +441,7 @@
           {
             "value": "white",
             "label": "White",
-            "count": 56
+            "count": 308
           },
           {
             "value": "grey",
@@ -445,7 +463,7 @@
           {
             "value": "1",
             "label": "First owner",
-            "count": 119
+            "count": 371
           },
           {
             "value": "2",
@@ -473,7 +491,7 @@
           {
             "value": "2023",
             "label": "2023",
-            "count": 52
+            "count": 304
           },
           {
             "value": "2022",
@@ -502,13 +520,13 @@
             "min": 50000000,
             "max": 100000000,
             "label": "₹5–10 lakh",
-            "count": 113
+            "count": 114
           },
           {
             "min": 100000000,
             "max": 150000000,
             "label": "₹10–15 lakh",
-            "count": 60
+            "count": 311
           },
           {
             "min": 150000000,
@@ -534,7 +552,7 @@
             "min": 20000,
             "max": 40000,
             "label": "20,000–40,000 km",
-            "count": 79
+            "count": 331
           },
           {
             "min": 40000,
@@ -566,7 +584,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "xEMoR0GxMY",
+      "traceId": "-Q0AOeXel6",
       "detail": "Sign in with your mobile number to do that."
     }
   },
@@ -575,10 +593,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "5053c2ea-78a4-4ff1-89c6-cf4fa3024e1e",
+        "id": "9e16f36a-fa1d-4041-a5fd-453aa7b6d8ff",
         "fullName": "Account Cust",
-        "phone": "+••••••••9643",
-        "phoneDisplay": "+91 96003 49643"
+        "phone": "+••••••••1498",
+        "phoneDisplay": "+91 96004 41498"
       }
     }
   },
@@ -590,10 +608,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "8e2ac679-f03c-4a5d-abc5-7411bf423344",
+        "id": "83379282-e4d5-4b35-8489-9b7c200349ba",
         "fullName": "Dual Role Person",
-        "phone": "+••••••••9647",
-        "phoneDisplay": "+91 96003 49647"
+        "phone": "+••••••••1502",
+        "phoneDisplay": "+91 96004 41502"
       }
     }
   },
@@ -613,10 +631,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "21d53866-1e2a-4e8b-aece-22f1788805e3",
+        "id": "d12859ab-c59b-436b-ad6b-05e7438d2260",
         "fullName": "ToRevoke Person",
-        "phone": "+••••••••9649",
-        "phoneDisplay": "+91 96003 49649"
+        "phone": "+••••••••1504",
+        "phoneDisplay": "+91 96004 41504"
       }
     }
   },
@@ -641,10 +659,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "78483263-e1f2-4f66-a9a0-e6bf826414d8",
+        "id": "66c856c1-f503-451e-9476-b118204f0d05",
         "fullName": "Suspended Co Member",
-        "phone": "+••••••••9651",
-        "phoneDisplay": "+91 96003 49651"
+        "phone": "+••••••••1506",
+        "phoneDisplay": "+91 96004 41506"
       }
     }
   },
@@ -663,10 +681,10 @@
     "dealerConsole": 401
   },
   {
-    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-7864903b",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+      "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
       "saved": true
     }
   },
@@ -676,9 +694,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:32:39.435Z",
+          "savedAt": "2026-10-21T05:27:26.169Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
             "availability": "AVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -690,8 +708,8 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
@@ -705,22 +723,22 @@
     }
   },
   {
-    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-7864903b",
     "status": 401,
     "body": {
       "type": "https://dealers-drive.com/errors/not-authenticated",
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "_p12j5devs",
+      "traceId": "QnG8MuuT8e",
       "detail": "Sign in with your mobile number to do that."
     }
   },
   {
-    "req": "DELETE /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "req": "DELETE /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-7864903b",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+      "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
       "saved": false
     }
   },
@@ -736,17 +754,17 @@
   },
   {
     "before": {
-      "slugs": ["2023-hyundai-creta-sx-o-vellore-0890dd9a"]
+      "slugs": ["2023-hyundai-creta-sx-o-vellore-7864903b"]
     },
     "after": {
-      "slugs": ["2023-hyundai-creta-sx-o-vellore-0890dd9a"]
+      "slugs": ["2023-hyundai-creta-sx-o-vellore-7864903b"]
     }
   },
   {
-    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-d452caa0",
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+      "slug": "2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
       "saved": true
     }
   },
@@ -756,9 +774,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:32:39.588Z",
+          "savedAt": "2026-10-21T05:27:26.233Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "slug": "2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
             "availability": "RESERVED",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -770,17 +788,17 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
           }
         },
         {
-          "savedAt": "2026-10-20T15:32:39.495Z",
+          "savedAt": "2026-10-21T05:27:26.198Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
             "availability": "AVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -792,8 +810,8 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
@@ -807,14 +825,14 @@
     }
   },
   {
-    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-8ca4a3a9",
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-6afb5371",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-saveable",
       "title": "Listing not saveable",
       "status": 409,
       "code": "LISTING_NOT_SAVEABLE",
-      "traceId": "dNtoO2XCzd",
+      "traceId": "Ne2u7Wo4hX",
       "detail": "This car is no longer on the marketplace, so it cannot be saved. Cars you saved before it left stay in your list."
     }
   },
@@ -824,9 +842,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:32:39.588Z",
+          "savedAt": "2026-10-21T05:27:26.233Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "slug": "2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
             "availability": "RESERVED",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -838,17 +856,17 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
           }
         },
         {
-          "savedAt": "2026-10-20T15:32:39.495Z",
+          "savedAt": "2026-10-21T05:27:26.198Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
             "availability": "AVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -860,8 +878,8 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
@@ -875,14 +893,14 @@
     }
   },
   {
-    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-8f11a2c3",
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0320c24b",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-saveable",
       "title": "Listing not saveable",
       "status": 409,
       "code": "LISTING_NOT_SAVEABLE",
-      "traceId": "I2RgXPwwh8",
+      "traceId": "LgU88zXGuh",
       "detail": "This car is no longer on the marketplace, so it cannot be saved. Cars you saved before it left stay in your list."
     }
   },
@@ -892,9 +910,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:32:39.588Z",
+          "savedAt": "2026-10-21T05:27:26.233Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "slug": "2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
             "availability": "RESERVED",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -906,17 +924,17 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
           }
         },
         {
-          "savedAt": "2026-10-20T15:32:39.495Z",
+          "savedAt": "2026-10-21T05:27:26.198Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
             "availability": "AVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -928,8 +946,8 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
@@ -948,9 +966,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:32:40.618Z",
+          "savedAt": "2026-10-21T05:27:26.710Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0e5986b9",
+            "slug": "2023-hyundai-creta-sx-o-vellore-aedb3b0d",
             "availability": "UNAVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -959,17 +977,17 @@
             "image": null,
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
           }
         },
         {
-          "savedAt": "2026-10-20T15:32:39.588Z",
+          "savedAt": "2026-10-21T05:27:26.233Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "slug": "2023-hyundai-creta-sx-o-vellore-4f6b1cb9",
             "availability": "RESERVED",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -981,17 +999,17 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }
           }
         },
         {
-          "savedAt": "2026-10-20T15:32:39.495Z",
+          "savedAt": "2026-10-21T05:27:26.198Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "slug": "2023-hyundai-creta-sx-o-vellore-7864903b",
             "availability": "AVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -1003,8 +1021,8 @@
             },
             "imageCount": 6,
             "dealer": {
-              "name": "SavedDealer Motors 349671ba2368",
-              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "name": "SavedDealer Motors 4415269ace2f",
+              "slug": "saveddealer-motors-4415269ace2f-vellore-tamil-nadu",
               "initials": "SM",
               "isVerified": false
             }

@@ -14,7 +14,9 @@ export const WEB = process.env.CERT_WEB ?? 'http://localhost:3000';
 export const WEB_PROD = process.env.CERT_WEB_PROD ?? 'http://localhost:3001';
 export const WEB_DOWN = process.env.CERT_WEB_DOWN ?? 'http://localhost:3002';
 export const SHOTS = resolve(
-  process.env.CERT_RESULTS_DIR ? resolve(process.env.CERT_RESULTS_DIR, 'EVIDENCE') : resolve(h.CERT, 'EVIDENCE'),
+  process.env.CERT_RESULTS_DIR
+    ? resolve(process.env.CERT_RESULTS_DIR, 'EVIDENCE')
+    : resolve(h.CERT, 'EVIDENCE'),
   'screenshots',
 );
 mkdirSync(SHOTS, { recursive: true });

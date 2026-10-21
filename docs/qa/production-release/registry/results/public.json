@@ -7,27 +7,27 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:12.577Z"
+    "at": "2026-10-21T05:27:18.841Z"
   },
   "PUBLIC-004": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "brand=74, fuel=diesel=65, minYear2022 all>=2022",
+    "note": "brand=75, fuel=diesel=66, minYear2022 all>=2022",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:12.820Z"
+    "at": "2026-10-21T05:27:18.951Z"
   },
   "PUBLIC-005": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "intersection brand∩fuel (36) ≤ brand (74)",
+    "note": "intersection brand∩fuel (37) ≤ brand (75)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:12.932Z"
+    "at": "2026-10-21T05:27:19.006Z"
   },
   "PUBLIC-006": {
     "status": "PASS",
@@ -37,27 +37,27 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.038Z"
+    "at": "2026-10-21T05:27:19.041Z"
   },
   "PUBLIC-007": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "clear-all default returns 274",
+    "note": "clear-all default returns 543",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.073Z"
+    "at": "2026-10-21T05:27:19.065Z"
   },
   "PUBLIC-008": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "district filter scopes by dealer district (vellore 38, ernakulam 16); 0 out-of-district rows",
+    "note": "district filter scopes by dealer district (vellore 307, ernakulam 16); 0 out-of-district rows",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.160Z"
+    "at": "2026-10-21T05:27:19.116Z"
   },
   "PUBLIC-009": {
     "status": "PASS",
@@ -67,7 +67,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.172Z"
+    "at": "2026-10-21T05:27:19.120Z"
   },
   "PUBLIC-010": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.469Z"
+    "at": "2026-10-21T05:27:19.420Z"
   },
   "PUBLIC-011": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:13.834Z"
+    "at": "2026-10-21T05:27:19.702Z"
   },
   "PUBLIC-012": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.253Z"
+    "at": "2026-10-21T05:27:19.953Z"
   },
   "PUBLIC-013": {
     "status": "PASS",
@@ -107,7 +107,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.254Z"
+    "at": "2026-10-21T05:27:19.955Z"
   },
   "PUBLIC-014": {
     "status": "PASS",
@@ -117,7 +117,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.256Z"
+    "at": "2026-10-21T05:27:19.956Z"
   },
   "PUBLIC-015": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.283Z"
+    "at": "2026-10-21T05:27:19.962Z"
   },
   "PUBLIC-016": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.306Z"
+    "at": "2026-10-21T05:27:19.977Z"
   },
   "PUBLIC-017": {
     "status": "PASS",
@@ -147,7 +147,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.335Z"
+    "at": "2026-10-21T05:27:19.986Z"
   },
   "PUBLIC-018": {
     "status": "PASS",
@@ -157,7 +157,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.375Z"
+    "at": "2026-10-21T05:27:20.009Z"
   },
   "PUBLIC-019": {
     "status": "PASS",
@@ -167,7 +167,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.434Z"
+    "at": "2026-10-21T05:27:20.053Z"
   },
   "PUBLIC-022": {
     "status": "PASS",
@@ -177,7 +177,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.439Z"
+    "at": "2026-10-21T05:27:20.055Z"
   },
   "PUBLIC-024": {
     "status": "PASS",
@@ -187,7 +187,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.461Z"
+    "at": "2026-10-21T05:27:20.071Z"
   },
   "SEARCH-001": {
     "status": "PASS",
@@ -197,7 +197,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.719Z"
+    "at": "2026-10-21T05:27:20.369Z"
   },
   "SEARCH-002": {
     "status": "PASS",
@@ -207,7 +207,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:14.955Z"
+    "at": "2026-10-21T05:27:20.628Z"
   },
   "SEARCH-003": {
     "status": "PASS",
@@ -217,7 +217,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:15.168Z"
+    "at": "2026-10-21T05:27:20.913Z"
   },
   "SEARCH-004": {
     "status": "PASS",
@@ -227,7 +227,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:15.393Z"
+    "at": "2026-10-21T05:27:21.177Z"
   },
   "SEARCH-010": {
     "status": "PASS",
@@ -237,7 +237,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:15.697Z"
+    "at": "2026-10-21T05:27:21.369Z"
   },
   "SEARCH-011": {
     "status": "PASS",
@@ -247,7 +247,7 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:15.709Z"
+    "at": "2026-10-21T05:27:21.373Z"
   },
   "SEARCH-012": {
     "status": "PASS",
@@ -257,6 +257,6 @@
     "bug": null,
     "auth": null,
     "area": "public",
-    "at": "2026-10-20T15:32:15.726Z"
+    "at": "2026-10-21T05:27:21.385Z"
   }
 }

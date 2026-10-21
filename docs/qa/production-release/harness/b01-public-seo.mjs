@@ -340,30 +340,53 @@ await h.check(r, 'SEO-005', async () => {
 });
 
 await h.check(r, 'SEO-006', async () => {
+  // Judged on indexing, which is what the scenario asks: every SOLD/WITHDRAWN/private page
+  // must carry noindex in the server HTML. The HTTP status of a non-public car (200, a
+  // soft 404) is BUG-101 and is judged under SEO-009.
   const s = await prodFacts(`/car/${sold.slug}`);
   const g = await prodFacts(`/car/${gone.slug}`);
+  const serverRobots = async (p) => {
+    const res = await fetch(`${b.WEB_PROD}${p}`, { redirect: 'manual' });
+    const html = await res.text();
+    return {
+      p,
+      status: res.status,
+      robots: [...html.matchAll(/<meta name="robots" content="([^"]+)"/g)].map((m) => m[1]),
+      redirect: res.headers.get('location'),
+    };
+  };
   const privatePages = [];
-  for (const p of ['/login', '/saved', '/enquiries', '/dealer', '/admin']) {
-    const f = await prodFacts(p);
-    privatePages.push({ p, status: f.status, robots: f.robots, url: f.url });
-  }
+  for (const p of [
+    '/login',
+    '/saved',
+    '/enquiries',
+    '/support-requests',
+    '/invitations',
+    '/dealer',
+    '/admin',
+  ])
+    privatePages.push(await serverRobots(p));
   r.ev({
-    sold: { status: s.status, robots: s.robots, canonical: s.canonical },
-    withdrawn: { status: g.status, robots: g.robots },
+    sold: { status: s.status, robots: s.robots, title: s.title },
+    withdrawn: { status: g.status, robots: g.robots, title: g.title },
     privatePages,
   });
   h.assert(
-    [200, 404].includes(s.status) && s.robots.some((x) => /noindex/.test(x)),
+    s.robots.some((x) => /noindex/.test(x)),
     `sold ${s.status} ${JSON.stringify(s.robots)}`,
   );
-  h.assert(g.status === 404 && g.robots.some((x) => /noindex/.test(x)), `withdrawn ${g.status}`);
+  h.assert(
+    g.robots.some((x) => /noindex/.test(x)),
+    `withdrawn ${g.status} ${JSON.stringify(g.robots)}`,
+  );
   h.assert(
     privatePages.every((x) => x.robots.some((y) => /noindex/.test(y))),
     `private ${JSON.stringify(privatePages)}`,
   );
   return {
     layers: ['BROWSER', 'SEO'],
-    note: `SOLD car → ${s.status} + noindex (public visibility is ACTIVE/RESERVED only, so a sold car leaves the marketplace — matches GOLDEN-010); WITHDRAWN car → ${g.status} noindex; /login /saved /enquiries /dealer /admin all noindex`,
+    bug: s.status === 404 && g.status === 404 ? null : 'BUG-101',
+    note: `SOLD car → ${s.status} "${s.title}" + noindex; WITHDRAWN car → ${g.status} "${g.title}" + noindex; /login /saved /enquiries /support-requests /invitations /dealer /admin carry noindex in server HTML. Status ${s.status}/${g.status} (soft 404) is BUG-101, judged under SEO-009.`,
   };
 });
 
@@ -415,14 +438,28 @@ await h.check(r, 'SEO-008', async () => {
 
 await h.check(r, 'SEO-009', async () => {
   const f = await prodFacts('/no/such/page/at/all');
-  r.ev({ status: f.status, h1: f.h1, robots: f.robots, title: f.title });
+  const car = await prodFacts('/car/no-such-car-cert-404');
+  const dealer = await prodFacts('/dealers/no-such-dealer-cert-404');
+  r.ev({
+    generic: { status: f.status, h1: f.h1, robots: f.robots, title: f.title },
+    car: { status: car.status, title: car.title, robots: car.robots },
+    dealer: { status: dealer.status, title: dealer.title, robots: dealer.robots },
+  });
   h.assert(
     f.status === 404 && f.h1 === 'Page not found' && f.robots.some((x) => /noindex/.test(x)),
     `404 ${f.status}`,
   );
+  if (car.status !== 404 || dealer.status !== 404) {
+    return {
+      status: 'FAIL',
+      layers: ['BROWSER', 'SEO'],
+      bug: 'BUG-101',
+      note: `generic invalid URL → 404 branded page; but an invalid car URL → HTTP ${car.status} "${car.title}" (soft 404, noindex), invalid dealer URL → ${dealer.status}`,
+    };
+  }
   return {
     layers: ['BROWSER', 'SEO'],
-    note: 'invalid URL in production config → 404 branded page, noindex (fixed by #209)',
+    note: 'invalid generic, car and dealer URLs → 404 branded page, noindex',
   };
 });
 
@@ -444,7 +481,7 @@ await h.check(r, 'SEO-010', async () => {
       f.h1 === 'Something went wrong' &&
       !leak &&
       f.robots.some((x) => /noindex/.test(x)),
-    `outage ${status} ${f.h1}`,
+    `outage ${status} ${f.h1}${status < 500 && f.h1 === 'Something went wrong' && !leak ? ' — branded error page served with HTTP 200 (BUG-101)' : ''}`,
   );
   return {
     layers: ['BROWSER', 'SEO'],

@@ -719,40 +719,44 @@ await h.check(r, 'DOC-DISC-001', async () => {
 
 // ─── Notification privacy (R117) ───────────────────────────────────────────────
 await h.check(r, 'NOTIFY-DISC-001', async () => {
-  const { readFileSync } = await import('node:fs');
-  const logFile = process.env.CERT_API_LOG;
-  const buyer = await h.customer('Delta Notify Buyer');
-  const marker = `Notification privacy probe ${h.nonce()}`;
-  const e = await buyer.post('/v1/enquiries', { listingSlug: car.slug, message: marker });
-  let mail = null;
-  for (let i = 0; i < 20 && !mail; i += 1) {
-    await new Promise((res) => setTimeout(res, 1000));
-    mail = readFileSync(logFile, 'utf8')
-      .split('\n')
-      .find((line) => line.includes('dealer.enquiry.received') && line.includes(marker));
+  // R117: a dealer's new-enquiry email never carries the buyer's number. Judged over every
+  // email the console mailer wrote to the API log(s) during the campaign (CERT_API_LOG,
+  // comma-separated), not one timed delivery: the email queue drains at 30/min (PERF-DISC-001).
+  const { readFileSync, existsSync } = await import('node:fs');
+  const files = (process.env.CERT_API_LOG ?? '').split(',').filter((f) => f && existsSync(f));
+  const support = /\+914162248890|\+91 41622 48890/g;
+  const mobile = /(?<![\w-])(\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\w-])/;
+  const byTemplate = {};
+  const hits = {};
+  for (const f of files) {
+    for (const line of readFileSync(f, 'utf8').split('\n')) {
+      if (!line.includes('"driver":"console"') || !line.includes('"to"')) continue;
+      let d;
+      try {
+        d = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      byTemplate[d.tag] = (byTemplate[d.tag] ?? 0) + 1;
+      const body = String(d.msg ?? '').replace(support, '<SUPPORT>');
+      // Only enquiry and support emails can carry a customer; other templates name the
+      // dealership, whose synthetic legal name may itself contain ten digits.
+      if (/enquiry|support/.test(d.tag) && mobile.test(body)) hits[d.tag] = (hits[d.tag] ?? 0) + 1;
+    }
   }
-  if (!mail)
-    return {
-      status: 'BLOCKED',
-      note: 'no console-mailer line for the enquiry within 20 s; privacy not judged',
-    };
-  const digits = buyer.phone.replace(/^\+91/, '');
-  const leaks = mail.includes(digits) || mail.includes(buyer.phone);
-  r.ev({
-    enquiry: e.status,
-    template: 'dealer.enquiry.received',
-    containsMessage: true,
-    leaksBuyerPhone: leaks,
-  });
-  return !leaks
+  const enquiryEmails = byTemplate['dealer.enquiry.received'] ?? 0;
+  r.ev({ logs: files.length, emailsByTemplate: byTemplate, templatesWithAMobileNumber: hits });
+  if (enquiryEmails === 0)
+    return { status: 'BLOCKED', note: 'no dealer.enquiry.received email in the API log(s)' };
+  return Object.keys(hits).length === 0
     ? {
         layers: ['API', 'NOTIFY'],
-        note: 'the dealer’s new-enquiry email carries the buyer’s message but not their number (console mailer)',
+        note: `${Object.values(byTemplate).reduce((x, y) => x + y, 0)} console emails across ${Object.keys(byTemplate).length} templates (${enquiryEmails} dealer enquiry alerts): no enquiry or support email carries a mobile number`,
       }
     : {
         status: 'FAIL',
         layers: ['API', 'NOTIFY'],
-        note: 'buyer phone present in the dealer’s enquiry email',
+        note: `mobile-number pattern in ${JSON.stringify(hits)}`,
       };
 });
 
@@ -764,7 +768,7 @@ await h.check(r, 'AUTH-DISC-002', async () => {
   return me.json?.user?.email === null && me.json?.user?.emailVerified === true
     ? {
         status: 'FAIL',
-        bug: 'BUG-002',
+        bug: 'BUG-102',
         note: '/v1/auth/me reports emailVerified:true for a user with no email address',
       }
     : { note: `emailVerified ${me.json?.user?.emailVerified} for email ${me.json?.user?.email}` };

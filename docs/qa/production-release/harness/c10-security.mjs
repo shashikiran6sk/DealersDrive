@@ -105,7 +105,7 @@ await h.check(r, 'API-SEC-007', async () => {
   const t = await custB.post('/v1/support/tickets', {
     category: 'OTHER',
     subject: 'B only',
-    message: 'B private support body goes here',
+    description: 'B private support body goes here',
   });
   const tid = t.json?.id ?? t.json?.ticket?.id;
   const cross = tid ? await custA.get(`/v1/support/tickets/${tid}`) : { status: 'n/a' };
@@ -115,7 +115,8 @@ await h.check(r, 'API-SEC-007', async () => {
       ? { layers: ['API', 'SECURITY'], note: `Customer A → Customer B ticket → ${cross.status}` }
       : { status: 'FAIL', note: `cross ${cross.status}` }
     : {
-        note: 'ticket create path n/a; enquiry/saved are session-scoped with no id param (see AUTH-014)',
+        status: 'FAIL',
+        note: `support ticket could not be created (${t.status}); cross-customer read not exercised`,
       };
 });
 await h.check(r, 'API-SEC-008', async () => {
@@ -265,41 +266,56 @@ await h.check(r, 'API-SEC-014', async () => {
 await h.check(r, 'STORAGE-001', async () => {
   const tooBig = await owner.post('/v1/dealer/documents/presign', {
     type: 'GST_CERTIFICATE',
+    category: 'BUSINESS_IDENTITY',
     fileName: 'x.pdf',
     mimeType: 'application/pdf',
     bytes: 99_000_000,
   });
   const badType = await owner.post('/v1/dealer/documents/presign', {
     type: 'GST_CERTIFICATE',
+    category: 'BUSINESS_IDENTITY',
     fileName: 'x.exe',
     mimeType: 'application/x-msdownload',
     bytes: 100,
   });
   r.ev(tooBig, badType);
-  return [400, 422].includes(tooBig.status) && [400, 422].includes(badType.status)
+  const fieldOf = (x) => (x.json?.errors ?? []).map((e) => e.field);
+  return [400, 422].includes(tooBig.status) &&
+    [400, 422].includes(badType.status) &&
+    fieldOf(tooBig).includes('body.bytes') &&
+    !fieldOf(tooBig).includes('body.category') &&
+    fieldOf(badType).includes('body.mimeType') &&
+    !fieldOf(badType).includes('body.category')
     ? {
         layers: ['API'],
         note: `presign restricts type/size (oversize ${tooBig.status}, bad mime ${badType.status})`,
       }
     : { status: 'FAIL', note: `big ${tooBig.status} type ${badType.status}` };
 });
-await h.check(r, 'STORAGE-002', async () => {
-  // Upload commit validates ownership: commit another dealer's docId.
+await h.check(r, 'STORAGE-003', async () => {
+  // Upload commit validates ownership: a DRAFT applicant (documents not locked) commits
+  // another dealer's documentId into its own business-identity slot.
+  const applicant = await w.onboard('StorageCommit', { submit: false });
   const bDoc = await h.one(`SELECT id FROM dealer_documents WHERE "dealerId"=$1 LIMIT 1`, [
     B.dealerId,
   ]);
-  const cross = await owner.post('/v1/dealer/documents/GST_CERTIFICATE/commit', {
+  const cross = await applicant.post('/v1/dealer/documents/BUSINESS_IDENTITY/commit', {
     documentId: bDoc.id,
   });
-  r.ev(cross);
-  return [400, 404].includes(cross.status)
+  const bAfter = await h.one(`SELECT "dealerId", status FROM dealer_documents WHERE id=$1`, [
+    bDoc.id,
+  ]);
+  r.ev(cross, { bDocStillB: bAfter.dealerId === B.dealerId, bStatus: bAfter.status });
+  return [400, 404].includes(cross.status) &&
+    cross.json?.code !== 'VALIDATION_FAILED' &&
+    bAfter.dealerId === B.dealerId
     ? {
         layers: ['API', 'SECURITY'],
-        note: `committing another dealer's documentId → ${cross.status} (ownership validated)`,
+        note: `committing another dealer's documentId → ${cross.status} ${cross.json?.code} (ownership validated; B's row untouched)`,
       }
-    : { status: 'FAIL', note: `status ${cross.status}` };
+    : { status: 'FAIL', note: `status ${cross.status} ${cross.json?.code}` };
 });
-await h.check(r, 'STORAGE-003', async () => {
+await h.check(r, 'STORAGE-002', async () => {
   // Upload authorization is bound to the signed key: a presigned PUT URL cannot be re-pointed at a different key.
   // (The HMAC covers key+type+length+expiry; changing the key invalidates the signature.)
   // A DRAFT applicant: an ACTIVE dealer's verified documents are locked since #242.

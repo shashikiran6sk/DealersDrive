@@ -1,0 +1,32 @@
+{
+  "RECOVERY-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "RECOVERY", "DATABASE"],
+    "note": "Save draft with the API unreachable shows an error (no “Draft saved”), nothing is written; the same click after the API returns saves the edit",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:40:26.348Z"
+  },
+  "RECOVERY-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "RECOVERY", "DATABASE"],
+    "note": "Send enquiry with the API unreachable reports no success and writes nothing; retrying after recovery (twice) leaves exactly one enquiry",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:41:05.279Z"
+  },
+  "RECOVERY-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "refreshing a half-typed enquiry sends nothing and the form returns; a saved draft shows its saved value after refresh",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:42:06.966Z"
+  }
+}

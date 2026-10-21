@@ -1,0 +1,6355 @@
+{
+  "CI-001": {
+    "status": "PASS",
+    "layers": ["UNIT", "INTEGRATION", "STATIC"],
+    "note": "Repository gate on 6e39a9a under Node 24.22.0: prisma generate, format:check, lint (0 errors, 1 warning), docs:check, typecheck, test (API 3,422/3,422 in 173 files; web 1,756/1,756 in 145; contracts 576/576 in 24; coverage gate 90 % met — API lines 96.99 %, branches 90.19 %), build — all exit 0.",
+    "evidence": ["EVIDENCE/ci/summary.log", "EVIDENCE/ci/test.log"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:43:57Z"
+  },
+  "DEP-DISC-001": {
+    "status": "FAIL",
+    "layers": ["STATIC", "SECURITY"],
+    "note": "pnpm audit: 0 critical (CI gate passes), 7 high, 8 moderate. Production-reachable: qs 6.15.3 via express body-parser (express.urlencoded extended, server.ts:36) — a bounded 1 MB crafted-body probe was refused in 4–16 ms with the API healthy, no practical DoS observed. postcss (next), mysql2/deepmerge-ts/fast-uri (prisma CLI), braces, source-map-js, vite (dev tooling) are build/dev-time. P3 hygiene.",
+    "evidence": ["EVIDENCE/ci/audit-critical.log", "EVIDENCE/dependency-audit.txt"],
+    "bug": "BUG-108",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:56:00Z"
+  },
+  "PERF-001": {
+    "status": "PASS",
+    "layers": ["PERFORMANCE"],
+    "note": "60 samples per cell, sequential and at 10 concurrent clients, 4-CPU container: every API read p95 ≤ 25 ms sequential / ≤ 176 ms at c10; every page p95 ≤ 33 ms sequential / ≤ 363 ms at c10 — inside the repository's alerting thresholds (p95 > 1 s, p99 > 2 s, docs/observability.md). Local measurement, not a production capacity claim.",
+    "evidence": ["EVIDENCE/performance/latency.json", "EVIDENCE/performance/latency.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:15:00Z"
+  },
+  "PERF-DISC-001": {
+    "status": "FAIL",
+    "layers": ["PERFORMANCE", "DATABASE"],
+    "note": "notification.email drains at exactly 30 jobs/min per worker process (pg-boss work() with default batchSize 1 and 2 s polling, platform/jobs/queue.ts). Under the campaign's bursts the median queue wait was 1,054 s (p95 1,281 s). Admin notifications fan out to every permitted Admin Member, multiplying volume. The Sales email code is sent synchronously and is unaffected; no email is lost. P3 capacity ceiling.",
+    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
+    "bug": "BUG-104",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:20:00Z"
+  },
+  "DATA-DISC-003": {
+    "status": "FAIL",
+    "layers": ["DATABASE"],
+    "note": "prisma/seed/dev-sales.ts writes four assisted dealerships directly, none with an OWNER membership — one of them ACTIVE (Kaveri Auto Hub) — contradicting the #301 invariant that an assisted dealership has its owner from creation (proved for the API path by sales-assisted-onboarding.test.ts). Development seed only (dev-guard refuses production). P3.",
+    "evidence": ["EVIDENCE/prod-deploy/api-log.json"],
+    "bug": "BUG-103",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:57:00Z"
+  },
+  "DOC-DISC-002": {
+    "status": "FAIL",
+    "layers": ["STATIC"],
+    "note": "CLAUDE.md §4 invariant 6 says a sold car stays on the marketplace (greyed, badged, sorted last). The implemented policy (R71, #194) removes SOLD and WITHDRAWN cars from every public surface, and the harness confirms it (PUBLIC-011, SEARCH-002). The operating manual contradicts the product. P3 documentation defect.",
+    "evidence": ["EVIDENCE/public/api-log.json"],
+    "bug": "BUG-106",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-20T15:33:00Z"
+  },
+  "UAT-OBS-001": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "A signed-out visitor on /saved (e.g. right after Logout in that tab) sees “No saved cars yet — Tap the heart…”, which reads as if their saved cars were lost, instead of a prompt to sign in to see them. The data is intact (signing in shows them). P3 UX.",
+    "evidence": ["EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"],
+    "bug": "BUG-105",
+    "auth": "FAKE-OTP",
+    "area": "analysis",
+    "at": "2026-10-21T05:25:00Z"
+  },
+  "UAT-OBS-002": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "Cosmetic: an unknown car URL renders <title> “Car not found” but the heading “Page not found / 404” (and HTTP 200, BUG-101); the footer prints the support number unformatted (+914162248890). P3.",
+    "evidence": [
+      "EVIDENCE/screenshots/UAT-B-mobile-invalid-17-unknown-car-url.png",
+      "EVIDENCE/screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"
+    ],
+    "bug": "BUG-107",
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T05:25:00Z"
+  },
+  "SEC-DISC-002": {
+    "status": "PASS",
+    "layers": ["SECURITY", "API"],
+    "note": "Bounded urlencoded-body abuse against the API (1 MB of a[]=, deep nesting, 100k indexed keys, a 400k-item comma list): each refused in 4–16 ms (400/401); /health/live ok throughout.",
+    "evidence": ["EVIDENCE/dependency-audit.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:57:00Z"
+  },
+  "RECOVERY-DISC-001": {
+    "status": "PASS",
+    "layers": ["RECOVERY", "DATABASE"],
+    "note": "Unplanned: the session's container worker restarted mid-campaign, stopping PostgreSQL and every API and web process with 461 notification jobs queued. After restart all services came back healthy, the queued jobs resumed draining at the same 30/min (EVIDENCE/email-queue), and the final full regression pass — every campaign including the DATA-* integrity checks in c09 — ran afterwards against the same database.",
+    "evidence": ["EVIDENCE/email-queue/throughput.txt"],
+    "bug": null,
+    "auth": null,
+    "area": "analysis",
+    "at": "2026-10-21T04:46:00Z"
+  },
+  "UAT-OBS-003": {
+    "status": "FAIL",
+    "layers": ["AGENT_UAT"],
+    "note": "The dealer console shows “0 credits” in its top bar and a “Listing credits 0” panel in the sidebar, although billing is deferred (F050–F054) and there is no way to buy or use credits. A dealer may read it as a blocker. P3 UX / product decision.",
+    "evidence": ["EVIDENCE/screenshots/RECOVERY-002-save-while-api-down.png"],
+    "bug": "BUG-110",
+    "auth": "FAKE-OTP",
+    "area": "analysis",
+    "at": "2026-10-21T05:40:00Z"
+  },
+  "SEC-DISC-001a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.610Z"
+  },
+  "SEC-DISC-001b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged GET /private → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.613Z"
+  },
+  "SEC-DISC-001c": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.615Z"
+  },
+  "LIFE-DISC-001a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.690Z"
+  },
+  "LIFE-DISC-001b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.863Z"
+  },
+  "LIFE-DISC-002a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 INVALID_DEALER_TRANSITION",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:15.978Z"
+  },
+  "LIFE-DISC-002b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspend 422/DRAFT, reinstate 422/DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.047Z"
+  },
+  "LIFE-DISC-002c": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.055Z"
+  },
+  "API-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer: business-identity presign 409 DOCUMENT_LOCKED; rows VERIFIED and files intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.065Z"
+  },
+  "API-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "personal-identity presign 409 DOCUMENT_LOCKED; a blind commit 404; nothing changed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.079Z"
+  },
+  "API-DISC-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer: DELETE of either reviewed category 409 DOCUMENT_LOCKED; rows and files intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.092Z"
+  },
+  "API-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "no unmoderated yard-photo route (404); a new portfolio photo is PENDING and absent from the public page until reviewed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-21T05:27:16.158Z"
+  },
+  "PUBLIC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "anonymous /cars data: 5 cars, no auth",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:18.841Z"
+  },
+  "PUBLIC-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "brand=75, fuel=diesel=66, minYear2022 all>=2022",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:18.951Z"
+  },
+  "PUBLIC-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "intersection brand∩fuel (37) ≤ brand (75)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.006Z"
+  },
+  "PUBLIC-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "clearing a filter widens results",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.041Z"
+  },
+  "PUBLIC-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "clear-all default returns 543",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.065Z"
+  },
+  "PUBLIC-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "district filter scopes by dealer district (vellore 307, ernakulam 16); 0 out-of-district rows",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.116Z"
+  },
+  "PUBLIC-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE vehicle opens public portfolio, availability AVAILABLE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.120Z"
+  },
+  "PUBLIC-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED vehicle is visible (page + search) and labelled RESERVED (R71)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.420Z"
+  },
+  "PUBLIC-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD absent from public search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.702Z"
+  },
+  "PUBLIC-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN absent from public search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.953Z"
+  },
+  "PUBLIC-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "PENDING_REVIEW listing (slug none) not discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.955Z"
+  },
+  "PUBLIC-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "DRAFT has no public listing; REJECTED (REJECTED) not discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.956Z"
+  },
+  "PUBLIC-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unknown slug → 404 JSON (VEHICLE_NOT_FOUND); SOLD page → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.962Z"
+  },
+  "PUBLIC-016": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer directory: 5+ dealers, anonymous",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.977Z"
+  },
+  "PUBLIC-017": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "active dealer portfolio opens",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:19.986Z"
+  },
+  "PUBLIC-018": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "public count (1) == ACTIVE available (1); RESERVED visible but not counted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.009Z"
+  },
+  "PUBLIC-019": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "page 1 and 2 disjoint — no duplicates/omissions",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.053Z"
+  },
+  "PUBLIC-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "bad query → 400 VALIDATION_FAILED (structured), browser error UX in browser campaign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.055Z"
+  },
+  "PUBLIC-024": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "public vehicle/dealer payloads expose no dealer phone, GSTIN or KYC ids",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.071Z"
+  },
+  "SEARCH-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approved listing searchable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.369Z"
+  },
+  "SEARCH-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD removed from search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.628Z"
+  },
+  "SEARCH-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN removed from search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:20.913Z"
+  },
+  "SEARCH-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED shown in search (policy R71), card unlinked/badged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:21.177Z"
+  },
+  "SEARCH-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "no filter combination surfaced a SOLD/WITHDRAWN listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:21.369Z"
+  },
+  "SEARCH-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "unknown query params (status, dealerStatus) → 400/400 via strict schema; visibility cannot be widened",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:21.373Z"
+  },
+  "SEARCH-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer portfolio and search agree: SOLD/WITHDRAWN absent from both",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-21T05:27:21.385Z"
+  },
+  "AUTH-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "new customer: prove → NAME_REQUIRED → sign-up → session; /me 200",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.617Z"
+  },
+  "AUTH-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "existing verified phone → SIGNED_IN directly",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.644Z"
+  },
+  "AUTH-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "wrong OTP code → 422 PHONE_VERIFICATION_FAILED, no session",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.647Z"
+  },
+  "AUTH-004": {
+    "status": "BLOCKED",
+    "layers": ["AUTH"],
+    "note": "OTP expiry is enforced by the MSG91 widget/verifyAccessToken (the server trusts its verdict). Not reachable with PHONE_OTP_DRIVER=fake; verify against MSG91 staging. Server-side: a malformed/expired-shaped token is rejected (see AUTH-003).",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.647Z"
+  },
+  "AUTH-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "server replay guard: same access token reused → 422 \"That code has been used\" (spent-token counter in CachePort)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.657Z"
+  },
+  "AUTH-006": {
+    "status": "BLOCKED",
+    "layers": ["AUTH"],
+    "note": "OTP attempt cap is MSG91-side. The server adds a per-number sign-in rate limit, tested under ABUSE-001/API-SEC-427 on the rate-limited instance.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.657Z"
+  },
+  "AUTH-007": {
+    "status": "BLOCKED",
+    "layers": ["AUTH"],
+    "note": "OTP resend cap is MSG91-side (widget). Not reachable with the fake driver.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.657Z"
+  },
+  "AUTH-008": {
+    "status": "BLOCKED",
+    "layers": ["AUTH"],
+    "note": "OTP provider outage UX requires a real/forced MSG91 failure; see RECOVERY-448 for the server-side partial-session check with a rejected token.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.657Z"
+  },
+  "AUTH-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "prove step creates a sign-up ticket, not a user; a refresh before naming leaves no half-made account",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.662Z"
+  },
+  "AUTH-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "concurrent sign-in attempts for distinct numbers both resolve to their own ticket",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.668Z"
+  },
+  "AUTH-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "logout revokes the session (DB revokedAt set); /me → 401 afterwards",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.697Z"
+  },
+  "AUTH-012": {
+    "status": "NOT_APPLICABLE",
+    "layers": ["AUTH"],
+    "note": "Logout-all is not a V1 requirement (product decision confirmed by owner). No route exists; revokeAllForUser is present but unused. Documented as a future consideration, not a defect.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.697Z"
+  },
+  "AUTH-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "expired session → 401 (graceful; web redirects to login)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:21.718Z"
+  },
+  "AUTH-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "cross-customer support ticket read → 404; A's enquiry list excludes B's",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.551Z"
+  },
+  "AUTH-015": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dd_session: HttpOnly ✓, SameSite=Lax ✓, Path=/ ✓, Expires ✓; Secure is set when NODE_ENV=production (code-verified: secure: env.isProduction). Dev response has no Secure, as expected.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.569Z"
+  },
+  "CUSTOMER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer /me returns name \"Account Cust\" + masked phone for the account menu/avatar",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.588Z"
+  },
+  "CUSTOMER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "Saved Cars endpoint reachable by customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.593Z"
+  },
+  "CUSTOMER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "My Enquiries endpoint reachable by customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.599Z"
+  },
+  "CUSTOMER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "after logout: /me → 401, public browsing still 200 (public state restored)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:22.651Z"
+  },
+  "CUSTOMER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer account and enquiry history stay usable after the enquiry's dealer is suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:23.335Z"
+  },
+  "CUSTOMER-006": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "a customer who accepted a dealer invitation keeps full customer account access (one identity, two seats)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:23.574Z"
+  },
+  "CUSTOMER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "after membership revocation the person's customer account still works",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:23.818Z"
+  },
+  "CUSTOMER-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "IDENTITY"],
+    "note": "membership revoked: user ACTIVE, CUSTOMER seat untouched, but dealer console → 401 (dealer access gone, customer auth intact)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:23.825Z"
+  },
+  "CUSTOMER-009": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "dealership suspended: member's customer account works (me 200), dealer console 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:24.056Z"
+  },
+  "CUSTOMER-010": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "Customer and dealership authorization are independent seats, re-read per request; CUSTOMER-005/008/009 demonstrate each stays intact as the other changes.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:24.056Z"
+  },
+  "SAVED-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer saves an ACTIVE car; it appears in the saved list",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.179Z"
+  },
+  "SAVED-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unauthenticated save → 401; web wraps this as the login-and-return intent (browser dimension in Agent UAT)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.180Z"
+  },
+  "SAVED-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unsave removes the car",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.191Z"
+  },
+  "SAVED-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "saving twice yields exactly one saved_vehicles row (idempotent PUT)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.208Z"
+  },
+  "SAVED-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "saved cars persist across logout/login (server-side storage)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.227Z"
+  },
+  "SAVED-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a RESERVED car can be saved and shows in its reserved/unavailable group",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.242Z"
+  },
+  "SAVED-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a SOLD saved car shows as no-longer-available without corrupting the saved list or history",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.257Z"
+  },
+  "SAVED-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a WITHDRAWN saved car renders as unavailable without error",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.267Z"
+  },
+  "SAVED-009": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "a saved car whose listing is later withdrawn/removed does not break Saved Cars; saved_vehicles row preserved (R74 never-delete)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.739Z"
+  },
+  "SAVED-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "saved records are session-scoped (no id in path); another customer sees only their own",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-21T05:27:26.758Z"
+  },
+  "ENQ-CREATE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer enquiry on an ACTIVE car → 201, status NEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.214Z"
+  },
+  "ENQ-CREATE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "anonymous enquire → 401; the web layer sends the buyer through phone sign-in and back (?enquire=1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.216Z"
+  },
+  "ENQ-CREATE-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry carries the session customer name/phone (prefilled server-side, not from the body)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.227Z"
+  },
+  "ENQ-CREATE-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry without a description → 201 (message optional)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.253Z"
+  },
+  "ENQ-CREATE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry with a description → 201",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.278Z"
+  },
+  "ENQ-CREATE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid input rejected server-side: empty slug 400, over-length message 400, unknown dealerId field 400 (strict)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.289Z"
+  },
+  "ENQ-CREATE-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD car enquiry → 409 LISTING_NOT_AVAILABLE (SOLD not publicly available)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.312Z"
+  },
+  "ENQ-CREATE-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN car enquiry → 409 LISTING_NOT_AVAILABLE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.334Z"
+  },
+  "ENQ-CREATE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "non-public (PENDING_REVIEW) car enquiry → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.348Z"
+  },
+  "ENQ-CREATE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED car enquiry → 409 LISTING_RESERVED (defined behaviour, R71)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.369Z"
+  },
+  "ENQ-CREATE-011": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "sell vs enquire race resolved cleanly: sell 200, enquire 201, 1 enquiry row(s)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.887Z"
+  },
+  "ENQ-CREATE-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "one open enquiry per customer per car enforced under concurrency: 3 attempts → 1 row (dupes → 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.926Z"
+  },
+  "ENQ-CREATE-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "successful enquiry appears in My Enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.932Z"
+  },
+  "ENQ-CREATE-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "successful enquiry appears in the correct dealer inbox",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.940Z"
+  },
+  "ENQ-CREATE-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "successful enquiry appears in admin tracking",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.948Z"
+  },
+  "ENQ-CREATE-016": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "customer/dealer/admin views reference one enquiry row with consistent data",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:29.969Z"
+  },
+  "ENQ-CREATE-017": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "Dealer B cannot view/patch Dealer A's enquiry → 404, not in B's inbox",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:30.140Z"
+  },
+  "ENQ-CREATE-018": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "Customer A and B each see only their own enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:30.149Z"
+  },
+  "ENQ-LIFE-001": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "new enquiry begins NEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:30.663Z"
+  },
+  "ENQ-LIFE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF views dealership enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:30.671Z"
+  },
+  "ENQ-LIFE-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "STAFF marks NEW → CONTACTED; contactedById stamped",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:31.127Z"
+  },
+  "ENQ-LIFE-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot close → 403 ENQUIRY_ACTION_FORBIDDEN; status unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:31.614Z"
+  },
+  "ENQ-LIFE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER marks CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:32.154Z"
+  },
+  "ENQ-LIFE-006": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "MANAGER closes; closedById stamped",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:32.648Z"
+  },
+  "ENQ-LIFE-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER performs CONTACTED/CLOSED/SPAM transitions",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:33.204Z"
+  },
+  "ENQ-LIFE-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "CONTACTED records actor + time",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:33.685Z"
+  },
+  "ENQ-LIFE-009": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "CLOSED records actor + time",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:34.194Z"
+  },
+  "ENQ-LIFE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "permission-forbidden transition → 403; unknown status value → 400. (Note: there is no from→to transition table — any status pair the actor is permitted for is accepted; see DISC.)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:34.691Z"
+  },
+  "ENQ-LIFE-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct API cannot bypass enquiry permissions (STAFF→SPAM → 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:35.212Z"
+  },
+  "ENQ-LIFE-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent updates (FOR UPDATE) → deterministic valid final state: CLOSED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:35.760Z"
+  },
+  "ENQ-LIFE-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer history survives CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:36.222Z"
+  },
+  "ENQ-LIFE-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer history survives CLOSED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:36.709Z"
+  },
+  "ENQ-LIFE-015": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "enquiry + customer history survive the car being SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:37.239Z"
+  },
+  "ENQ-LIFE-016": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry + history survive WITHDRAWN",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:37.744Z"
+  },
+  "ENQ-LIFE-017": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry survives the car being RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:38.254Z"
+  },
+  "ENQ-LIFE-018": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "historical enquiry remains readable (customer + admin) after the listing leaves the public read model",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:38.708Z"
+  },
+  "ENQ-LIFE-019": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "dealer suspension does not delete enquiry history (row + admin detail intact)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:39.307Z"
+  },
+  "ENQ-LIFE-020": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "removing the member who contacted an enquiry leaves the enquiry and its contactedById intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.333Z"
+  },
+  "ENQ-LIFE-021": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "removed member row retained (status REMOVED, removedAt set) so past actions stay attributable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.849Z"
+  },
+  "ADMIN-ENQ-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees cross-dealer enquiries (2 dealers in one page)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.858Z"
+  },
+  "ADMIN-ENQ-002to008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows customer name (353), phone (354), description (355), dealership (356), vehicle (357), status (358)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.873Z"
+  },
+  "ADMIN-ENQ-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct customer name",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.889Z"
+  },
+  "ADMIN-ENQ-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct customer phone",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.903Z"
+  },
+  "ADMIN-ENQ-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct description",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.916Z"
+  },
+  "ADMIN-ENQ-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.928Z"
+  },
+  "ADMIN-ENQ-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct vehicle",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.940Z"
+  },
+  "ADMIN-ENQ-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry detail shows correct status",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.958Z"
+  },
+  "ADMIN-ENQ-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin enquiry aggregation remains populated after dealer status changes (see ENQ-LIFE-019)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.966Z"
+  },
+  "ADMIN-ENQ-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "listing status changes do not erase admin enquiry history (see ENQ-LIFE-015/016/018)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.973Z"
+  },
+  "ADMIN-ENQ-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "member removal does not erase actor/history in admin view (see ENQ-LIFE-020/021)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:40.979Z"
+  },
+  "ADMIN-ENQ-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin filters/search/pagination work; bad filter → 400",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:41.029Z"
+  },
+  "ADMIN-ENQ-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer members and customers cannot reach admin enquiry aggregation (owner 401, staff 401, customer 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry",
+    "at": "2026-10-21T05:27:41.033Z"
+  },
+  "ONBOARD-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "new eligible user (phone sign-in) → /me next=ONBOARDING",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.294Z"
+  },
+  "ONBOARD-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "repeated onboarding submit keeps one dealership per user (1); second attempt → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.456Z"
+  },
+  "ONBOARD-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer phone verification works (phoneVerifiedAt set on sign-in)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.474Z"
+  },
+  "ONBOARD-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "onboarding requires a linked Google identity (422 ONBOARDING_IDENTITY_INCOMPLETE until linked, then 201). Google link simulated (OAuth unreachable here).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.537Z"
+  },
+  "ONBOARD-005": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "phone + Google attach to one user row (no duplicate human)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.557Z"
+  },
+  "ONBOARD-006": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "partial onboarding persists across a new sign-in: one document saved, documents step incomplete; the second completes it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.703Z"
+  },
+  "ONBOARD-007": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "after upload, a fresh completeness GET shows documents complete — progress persisted server-side, survives refresh",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.820Z"
+  },
+  "ONBOARD-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "next ONBOARDING, dealer true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.945Z"
+  },
+  "ONBOARD-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "required dealership fields cannot be skipped → 400 naming missing fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:41.977Z"
+  },
+  "ONBOARD-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "submit without documents → 422; dealership stays DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.030Z"
+  },
+  "ONBOARD-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "oversize (400) and disallowed mime (400) rejected at presign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.149Z"
+  },
+  "ONBOARD-012": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "all 2 documents carry the correct dealerId",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.243Z"
+  },
+  "ONBOARD-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer A's documents list contains only A's; no id param exists to request B's",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.430Z"
+  },
+  "ONBOARD-014": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "completed onboarding + submit → PENDING_APPROVAL",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.538Z"
+  },
+  "ONBOARD-015": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer cannot self-approve (admin route → 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.648Z"
+  },
+  "ONBOARD-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct submit with incomplete onboarding → 422 (server-side completeness gate)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.709Z"
+  },
+  "ONBOARD-017": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "unverified (PENDING_APPROVAL) dealer submit listing → 403 DEALER_NOT_ACTIVE (requireDealerActive)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.878Z"
+  },
+  "ONBOARD-018": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "one Google identity (provider+sub) cannot attach to two users — unique index refuses, linking never merges humans (R59)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:42.910Z"
+  },
+  "VERIFY-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees the submitted application in the PENDING_APPROVAL queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.042Z"
+  },
+  "VERIFY-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin detail shows dealer info + required documents",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.056Z"
+  },
+  "VERIFY-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves a valid (documents verified) dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.095Z"
+  },
+  "VERIFY-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "approved dealership → ACTIVE with approvedAt",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.096Z"
+  },
+  "VERIFY-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "after approval the dealer can submit listings (capability gained post-approval)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.156Z"
+  },
+  "VERIFY-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin rejects a dealer → 200; reject is a purge (row deleted)",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-SESSION",
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.296Z"
+  },
+  "VERIFY-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "rejected dealer: row purged/deleted; remediation path is a fresh onboarding (owner /me next=ONBOARDING). Reject=purge is the documented behaviour.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.435Z"
+  },
+  "VERIFY-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "rejected/purged dealer cannot reach dealer features (dashboard 401, create vehicle 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.591Z"
+  },
+  "VERIFY-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "request-changes → DRAFT with reason; dealer corrects and resubmits → 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.732Z"
+  },
+  "VERIFY-010": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "resubmission re-enters PENDING_APPROVAL",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.869Z"
+  },
+  "VERIFY-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:43.921Z"
+  },
+  "VERIFY-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent approve vs request-changes → one valid final state (ACTIVE), a=200 b=422. (Note: neither path locks the row; see LIFE-DISC-003 for the approve-vs-reject variant.)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:44.073Z"
+  },
+  "VERIFY-013": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "verification transitions audit-logged: dealer.onboarding.created, dealer.submitted, dealer.documents.viewed, dealer.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:44.077Z"
+  },
+  "VERIFY-014": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "verification change later: listing hidden while suspended (404), row preserved (ACTIVE), restored on reinstate (200) — no listing data destroyed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-21T05:27:44.566Z"
+  },
+  "MEMBER-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "onboarding owner holds OWNER membership (migration/creation)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.270Z"
+  },
+  "MEMBER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites existing customer as MANAGER; accept joins as MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.315Z"
+  },
+  "MEMBER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites existing customer as STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.355Z"
+  },
+  "MEMBER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites an unregistered phone → PENDING invitation held against the number",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.368Z"
+  },
+  "MEMBER-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "inviting an existing customer creates no duplicate user (one row before and after)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.404Z"
+  },
+  "MEMBER-006": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "member joins with just phone identity proof (no dealer KYC) and reaches the console",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.458Z"
+  },
+  "MEMBER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "accepted invitation joins the inviting dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.502Z"
+  },
+  "MEMBER-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "one membership row per person per dealership (1); re-invite does not fork",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.544Z"
+  },
+  "MEMBER-009": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "re-inviting a pending number amends the one PENDING row (partial unique index); 1 pending",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.565Z"
+  },
+  "MEMBER-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "expired invitation rejected → 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.598Z"
+  },
+  "MEMBER-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "revoked invitation cannot be accepted → 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.642Z"
+  },
+  "MEMBER-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "invitation matched to the session's verified number; a different person → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.668Z"
+  },
+  "MEMBER-013": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "second accept → 409; one membership row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.709Z"
+  },
+  "MEMBER-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER changes MANAGER → STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.730Z"
+  },
+  "MEMBER-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER changes STAFF → MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.751Z"
+  },
+  "MEMBER-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "role change takes effect on the next request: demoted MANAGER→STAFF submit → 403 (session re-read, no wait)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.833Z"
+  },
+  "MEMBER-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "OWNER removes a member → row REMOVED with removedAt (kept for attribution)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.881Z"
+  },
+  "MEMBER-018": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "removed member immediately loses dealership access (dashboard + inventory → 401) using the same session",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:46.937Z"
+  },
+  "MEMBER-019": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "membership (not session) is what gates dealer access: dealer → 401, customer /me → 200, session revokedAt=false",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.001Z"
+  },
+  "MEMBER-020": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member remains a valid customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.056Z"
+  },
+  "MEMBER-021": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member can browse normally",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.143Z"
+  },
+  "MEMBER-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member keeps personal saved cars",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.214Z"
+  },
+  "MEMBER-023": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member keeps personal enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.281Z"
+  },
+  "MEMBER-024": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member cannot enter former dealer dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.342Z"
+  },
+  "MEMBER-025": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft created by a since-removed member stays owned by the dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.425Z"
+  },
+  "MEMBER-026": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "removing a member does not delete the listings/drafts they created",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:47.502Z"
+  },
+  "MEMBER-027": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "removing a member keeps enquiries they handled, with contactedById intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.110Z"
+  },
+  "MEMBER-028": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "member removal leaves dealership listings untouched",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.163Z"
+  },
+  "MEMBER-029": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot invite → 403 (member:manage is OWNER-only)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.168Z"
+  },
+  "MEMBER-030": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot change roles → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.173Z"
+  },
+  "MEMBER-031": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot remove members → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.178Z"
+  },
+  "MEMBER-032": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage members (invite 403, team list 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.188Z"
+  },
+  "MEMBER-033": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "last OWNER cannot remove themselves → 409 OWNER_LOCKED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.197Z"
+  },
+  "MEMBER-034": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "last OWNER cannot demote themselves → 409 OWNER_LOCKED (OWNER not an assignable role)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.204Z"
+  },
+  "MEMBER-035": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct member-management API calls by STAFF → 403/403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.215Z"
+  },
+  "IDENTITY-001": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "OWNER's ordinary customer sign-in reaches the dealer console; workspaces lists their dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.241Z"
+  },
+  "IDENTITY-002": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "MANAGER reaches console via customer login, /me role MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.268Z"
+  },
+  "IDENTITY-003": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "STAFF reaches console via customer login, /me role STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.297Z"
+  },
+  "IDENTITY-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "customer with no membership is denied the dealer console → 401; workspaces empty (never offered onboarding)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.323Z"
+  },
+  "IDENTITY-005": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "one session answers both customer and dealer reads — personal → dealer needs no second OTP",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.344Z"
+  },
+  "IDENTITY-006": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "Dealer → Personal is the same session (see IDENTITY-005); the customer and dealer reads share one cookie, no OTP to switch back.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.344Z"
+  },
+  "IDENTITY-007": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "switching context creates no duplicate user (one user row for the phone)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.369Z"
+  },
+  "IDENTITY-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "IDENTITY"],
+    "note": "an owner's personal enquiry is owned by their user id (customerId), tied to the target dealer, not their own dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.391Z"
+  },
+  "IDENTITY-009": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "dealer action (create vehicle) is stamped with the dealership; actor is the session user",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.406Z"
+  },
+  "IDENTITY-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "revocation during an open dealer context: next dealer request → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.465Z"
+  },
+  "IDENTITY-011": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "revocation does not terminate customer access",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.526Z"
+  },
+  "IDENTITY-012": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "dealer suspension blocks dealer ops (401) but preserves personal customer access (200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.723Z"
+  },
+  "IDENTITY-013": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "two memberships; switching by membershipId resolves the right dealer + role (B as MANAGER)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.831Z"
+  },
+  "IDENTITY-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "switch takes a membershipId the caller owns, never a dealer id: passing A's dealerId → 404, a fabricated membership → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.860Z"
+  },
+  "OWNER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER accesses dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.874Z"
+  },
+  "OWNER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages listings (inventory + lifecycle)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.918Z"
+  },
+  "OWNER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.925Z"
+  },
+  "OWNER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER edits dealership profile",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.942Z"
+  },
+  "OWNER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages verification documents",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.951Z"
+  },
+  "OWNER-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages Team",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.958Z"
+  },
+  "OWNER-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER of A cannot access B's resources (B draft GET 404, PATCH 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.970Z"
+  },
+  "OWNER-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER cannot perform admin-only ops (approve 401, admin list 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.973Z"
+  },
+  "MANAGER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER accesses dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.983Z"
+  },
+  "MANAGER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER views inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:48.992Z"
+  },
+  "MANAGER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER creates/edits drafts",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:49.038Z"
+  },
+  "MANAGER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER submits an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:49.098Z"
+  },
+  "MANAGER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER performs allowed lifecycle transitions (reserve)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:49.633Z"
+  },
+  "MANAGER-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER views enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:49.641Z"
+  },
+  "MANAGER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER marks CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.235Z"
+  },
+  "MANAGER-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER closes enquiry",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.832Z"
+  },
+  "MANAGER-009": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot edit protected dealer profile → 403 (dealer:update is OWNER-only)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.839Z"
+  },
+  "MANAGER-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot manage verification (docs 403, presign 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.850Z"
+  },
+  "MANAGER-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot manage Team → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.856Z"
+  },
+  "MANAGER-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot access admin → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.857Z"
+  },
+  "MANAGER-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot access another dealer's resources → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.866Z"
+  },
+  "STAFF-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF accesses permitted dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.879Z"
+  },
+  "STAFF-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF views inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.889Z"
+  },
+  "STAFF-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.915Z"
+  },
+  "STAFF-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.935Z"
+  },
+  "STAFF-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot submit → 403 (listing:submit is OWNER/MANAGER)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:50.940Z"
+  },
+  "STAFF-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot RESERVE → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:51.430Z"
+  },
+  "STAFF-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot mark SOLD → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:51.435Z"
+  },
+  "STAFF-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot WITHDRAW → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:51.440Z"
+  },
+  "STAFF-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF views enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:51.447Z"
+  },
+  "STAFF-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF sees required enquiry contact details (customer phone)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:51.454Z"
+  },
+  "STAFF-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF marks NEW → CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.033Z"
+  },
+  "STAFF-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot close → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.597Z"
+  },
+  "STAFF-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot edit dealer profile → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.602Z"
+  },
+  "STAFF-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage verification → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.608Z"
+  },
+  "STAFF-015": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage Team → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.614Z"
+  },
+  "STAFF-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot access admin → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.616Z"
+  },
+  "STAFF-017": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot access another dealer's resources → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.623Z"
+  },
+  "PROFILE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER updates permitted profile information (self-update accepted; tagline change queued for review)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.659Z"
+  },
+  "PROFILE-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot update owner-only profile fields → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.666Z"
+  },
+  "PROFILE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot update dealer profile → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.671Z"
+  },
+  "PROFILE-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "profile tagline change queued for review (PENDING); after admin approval the public profile reflects it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.727Z"
+  },
+  "PROFILE-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "GSTIN not accepted via the self-update endpoint while ACTIVE → 400 (not in DealerSelfUpdateInput)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.734Z"
+  },
+  "PROFILE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid profile values rejected (year<1900 → 400, tagline>200 → 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.744Z"
+  },
+  "PROFILE-007": {
+    "status": "PASS",
+    "layers": ["DATABASE", "SECURITY"],
+    "note": "dealer media storage key is namespaced under the dealer's own slug",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.792Z"
+  },
+  "PROFILE-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "profile updates audit-logged: dealer.profile_change.approved, dealer.profile_change.submitted, dealer.profile_change.withdrawn",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-21T05:27:52.794Z"
+  },
+  "ADMIN-AUTH-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "valid admin (allow-listed, ADMIN seat) authenticates to admin APIs. Session minted directly — admin sign-in is Google-only (unreachable here).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-SESSION",
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.014Z"
+  },
+  "ADMIN-AUTH-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "unauthenticated → 401; admin UI is server-guarded (hidden nav is not the control)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.307Z"
+  },
+  "ADMIN-AUTH-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.309Z"
+  },
+  "ADMIN-AUTH-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.311Z"
+  },
+  "ADMIN-AUTH-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot call admin APIs → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.312Z"
+  },
+  "ADMIN-AUTH-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "customer cannot call admin APIs (dealers 401, metrics 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.315Z"
+  },
+  "ADMIN-AUTH-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "admin write route refuses a dealer session → 401 (server-side, not nav hiding)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.317Z"
+  },
+  "ADMIN-AUTH-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "expired admin session → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.323Z"
+  },
+  "ADMIN-AUTH-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin logout invalidates admin access (→ 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.333Z"
+  },
+  "ADMIN-AUTH-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "admin bootstrap/grant guarded: dealer → 401, anonymous → 401; only an authorized admin can grant admin access",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.337Z"
+  },
+  "ADMIN-DEALER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "authorized admin user-management (access list) works",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.345Z"
+  },
+  "ADMIN-DEALER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees onboarding applications",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.475Z"
+  },
+  "ADMIN-DEALER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin inspects verification data (documents)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.617Z"
+  },
+  "ADMIN-DEALER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves an eligible dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.791Z"
+  },
+  "ADMIN-DEALER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin rejects a dealer (purge)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:53.936Z"
+  },
+  "ADMIN-DEALER-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin suspends an active dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:54.132Z"
+  },
+  "ADMIN-DEALER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin reinstates an eligible suspended dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:54.426Z"
+  },
+  "ADMIN-DEALER-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspension immediately hides listings (200→404) and blocks the console (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:55.184Z"
+  },
+  "ADMIN-DEALER-009": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "admin dealer actions audit-logged: dealer.onboarding.created, dealer.submitted, dealer.suspended, dealer.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:55.421Z"
+  },
+  "ADMIN-DEALER-010": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "double suspend → still SUSPENDED (a 200, b 422); idempotent, no impossible state",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:55.663Z"
+  },
+  "ADMIN-LISTING-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees the moderation queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:55.681Z"
+  },
+  "ADMIN-LISTING-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees dealer/listing/media detail",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:55.969Z"
+  },
+  "ADMIN-LISTING-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:56.399Z"
+  },
+  "ADMIN-LISTING-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin rejects an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:56.472Z"
+  },
+  "ADMIN-LISTING-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approval reaches the public read model",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:56.926Z"
+  },
+  "ADMIN-LISTING-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "rejected listing remains non-public",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:56.996Z"
+  },
+  "ADMIN-LISTING-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "approve on a suspended dealer's listing: public VDP still 404 (dealer not ACTIVE gates visibility), approve returned 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:57.643Z"
+  },
+  "ADMIN-LISTING-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer suspension during review leaves the listing consistent (still PENDING_REVIEW, admin can view)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:57.878Z"
+  },
+  "ADMIN-LISTING-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "listing review state stays consistent across dealer verification changes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:58.083Z"
+  },
+  "ADMIN-LISTING-010": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "admin listing actions audit-logged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:58.560Z"
+  },
+  "DEALER-LIFE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE verified dealer operates normally",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.787Z"
+  },
+  "DEALER-LIFE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin suspends ACTIVE dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.799Z"
+  },
+  "DEALER-LIFE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "suspended dealer immediately loses prohibited ops (create 401, dashboard 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.809Z"
+  },
+  "DEALER-LIFE-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "existing member session cannot bypass suspension → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.814Z"
+  },
+  "DEALER-LIFE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspended dealer public profile policy: /v1/dealers/dealerlife-motors-472954b2edb3-vellore-tamil-nadu → 404 (dealer not in public ACTIVE set → 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.818Z"
+  },
+  "DEALER-LIFE-006": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "ACTIVE listings of a suspended dealer are hidden publicly (404) but the row is preserved (status ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.822Z"
+  },
+  "DEALER-LIFE-007": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "RESERVED listing of a suspended dealer remains consistent (still RESERVED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.822Z"
+  },
+  "DEALER-LIFE-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "existing enquiries survive suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.823Z"
+  },
+  "DEALER-LIFE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer enquiry history survives dealer suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.827Z"
+  },
+  "DEALER-LIFE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "saved cars from a suspended dealer remain non-broken",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.832Z"
+  },
+  "DEALER-LIFE-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "members cannot bypass suspension through a valid membership → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.836Z"
+  },
+  "DEALER-LIFE-012": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "members retain personal customer capabilities during employer suspension",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.870Z"
+  },
+  "DEALER-LIFE-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reinstatement restores intended dealer capabilities",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.899Z"
+  },
+  "DEALER-LIFE-014": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "reinstatement created no duplicates: listings 3, enquiries 1, members 3 (unchanged)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.900Z"
+  },
+  "DEALER-LIFE-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "hidden listings restore per lifecycle policy: ACTIVE visible again (200), RESERVED stays RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.905Z"
+  },
+  "DEALER-LIFE-016": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "suspension + reinstatement audit-logged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:27:59.908Z"
+  },
+  "DEALER-LIFE-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "Close (#249): PENDING → CLOSED with reason; members 1, uploaded documents 2 kept; audit rows 4 → 5 (+dealer.closed). ACTIVE dealerships remain suspend-only (V1 owner decision).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:28:00.044Z"
+  },
+  "DEALER-LIFE-018": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "suspended dealer direct submit → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "admin-dealerlife-cross",
+    "at": "2026-10-21T05:28:00.262Z"
+  },
+  "CROSS-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspension hides the listing publicly (404) without deleting it (row ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:01.148Z"
+  },
+  "CROSS-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reinstatement restores the hidden ACTIVE listing (200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:01.818Z"
+  },
+  "CROSS-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspension while RESERVED stays consistent (row RESERVED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:02.434Z"
+  },
+  "CROSS-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspension while moderation-pending leaves the listing PENDING_REVIEW (explicit: not published while dealer suspended)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:02.633Z"
+  },
+  "CROSS-005": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "suspension vs enquiry race resolves safely (enq 201, 1 row)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:03.336Z"
+  },
+  "CROSS-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspension preserves existing enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:03.956Z"
+  },
+  "CROSS-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer rejection (purge) with drafts: dealer deleted, drafts removed with dealer — defined purge policy",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:04.114Z"
+  },
+  "CROSS-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE saved car → SOLD: Saved Cars still loads, saved row preserved (shown unavailable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:04.836Z"
+  },
+  "CROSS-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE enquiry → SOLD preserves history (row + customer list)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:05.479Z"
+  },
+  "CROSS-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE enquiry → WITHDRAWN preserves history (row + customer list)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:06.164Z"
+  },
+  "CROSS-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE enquiry → RESERVED preserves history (row + customer list)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:06.852Z"
+  },
+  "CROSS-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "an existing enquiry on a now-RESERVED car can still be worked (CONTACTED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:07.533Z"
+  },
+  "CROSS-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD → reactivation/transition rejected (reserve 409); SOLD is terminal",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:08.263Z"
+  },
+  "CROSS-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN invalid transitions rejected (reserve 409); back on sale needs admin (R82)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:08.899Z"
+  },
+  "CROSS-015": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft created by a removed STAFF remains dealership-owned",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:09.126Z"
+  },
+  "CROSS-016": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF draft → promoted to MANAGER → can now submit (permission re-read live)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:09.356Z"
+  },
+  "CROSS-017": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "listing submitted by a since-demoted manager still moderates and approves normally",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:10.043Z"
+  },
+  "CROSS-018": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "enquiry contactedBy preserved after the manager who contacted it is removed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:10.716Z"
+  },
+  "CROSS-019": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "removal vs mutation race → valid state (NEW), mutate 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:11.400Z"
+  },
+  "CROSS-020": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "open member session: next request after revoke → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:11.603Z"
+  },
+  "CROSS-021": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "open dealer session: next prohibited op after suspend → denied",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:11.746Z"
+  },
+  "CROSS-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reinstated dealer + valid membership restores appropriate access",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:11.939Z"
+  },
+  "CROSS-023": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "reinstated dealer but member revoked during suspension → member still denied (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:12.132Z"
+  },
+  "CROSS-024": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "revoked member signs in as customer (200) but dealer access stays revoked (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:12.336Z"
+  },
+  "CROSS-025": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "old dealer bookmark → 401; customer session intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:12.517Z"
+  },
+  "CROSS-026": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "customer accepting an invite while signed in creates no duplicate identity",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:12.676Z"
+  },
+  "CROSS-027": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "IDENTITY"],
+    "note": "member's personal enquiry belongs to the competitor dealer + their own user; employer inbox never sees it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:13.457Z"
+  },
+  "CROSS-028": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "member's personal saved competitor car is keyed to their user; not visible to employer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:14.318Z"
+  },
+  "CROSS-029": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "employer suspension leaves the member's unrelated customer activity (saved, enquire elsewhere) working",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:15.321Z"
+  },
+  "SEARCH-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspended dealer listings follow suspension visibility policy (hidden)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:15.952Z"
+  },
+  "SEARCH-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reinstated dealer inventory returns to search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:16.638Z"
+  },
+  "SEARCH-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "public dealer count updates after approval (0→1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:17.309Z"
+  },
+  "SEARCH-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "count updates after SOLD (1→0)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:18.014Z"
+  },
+  "SEARCH-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "count updates after WITHDRAWN (1→0)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:18.636Z"
+  },
+  "DATA-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "membership revocation never cascades dealership listings",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:19.314Z"
+  },
+  "DATA-002": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "membership changes never delete enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:20.047Z"
+  },
+  "DATA-003": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "listing lifecycle changes never delete enquiry history",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:20.713Z"
+  },
+  "DATA-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "dealer suspension never destroys historical data (listings + enquiries unchanged)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:21.408Z"
+  },
+  "DATA-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "no orphaned FKs across all lifecycle transitions exercised this run",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:21.413Z"
+  },
+  "DATA-006": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "no duplicate users by phone or email across all flows this run",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:21.415Z"
+  },
+  "DATA-007": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "no user ended up owning two dealerships via retries/races",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:21.416Z"
+  },
+  "DATA-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "duplicate memberships prevented at DB level (unique dealerId+userId); 0 duplicates",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:21.418Z"
+  },
+  "DATA-009": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "double mark-sold → first 200, second 409; status SOLD (idempotent/guarded)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:22.085Z"
+  },
+  "DATA-010": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "audit rows for a removed actor survive (3 rows)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:22.853Z"
+  },
+  "DATA-011": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "authoritative lifecycle lives in listings.status (SOLD); the public read is derived and simply hides it (404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "cross-search-data",
+    "at": "2026-10-21T05:28:23.591Z"
+  },
+  "API-SEC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "all protected routes unauthenticated → 401 (6 checked)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.361Z"
+  },
+  "API-SEC-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "customer cannot call dealer-only API (dashboard 401, inventory 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.372Z"
+  },
+  "API-SEC-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot call MANAGER-only (mark-sold → 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.867Z"
+  },
+  "API-SEC-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot call OWNER-only (invite 403, profile 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.876Z"
+  },
+  "API-SEC-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER cannot call admin-only → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.878Z"
+  },
+  "API-SEC-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "Dealer A → Dealer B by id → all 404 (tenant-scoped, existence not leaked): {\"getVehicle\":404,\"patchVehicle\":404,\"sellVehicle\":404}",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.898Z"
+  },
+  "API-SEC-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "Customer A → Customer B ticket → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.916Z"
+  },
+  "API-SEC-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "invalid id → 400, missing → 404; no stack/SQL/Prisma in body",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.930Z"
+  },
+  "API-SEC-009": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "unknown privileged fields rejected by strict Zod (create 400, enquiry 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.939Z"
+  },
+  "API-SEC-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "mass assignment blocked: injected dealerId/status/createdByUserId do not reassign tenant or publish (vehicle stays A, listing stays DRAFT), role=OWNER tamper → 400",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.964Z"
+  },
+  "API-SEC-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "pagination/filter params validated (limit 400, page 400, sort 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:25.969Z"
+  },
+  "API-SEC-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "customer sign-in rate limited on the RL instance: 4/14 attempts → 429 (per-number cap 10/600s)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.069Z"
+  },
+  "API-SEC-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "revoked session token → 401 (no retained access)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.093Z"
+  },
+  "API-SEC-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "error responses carry structured JSON with no stack/SQL/secret/env leakage (sampled 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.095Z"
+  },
+  "STORAGE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "presign restricts type/size (oversize 400, bad mime 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.105Z"
+  },
+  "STORAGE-002": {
+    "status": "PASS",
+    "layers": ["STORAGE", "SECURITY"],
+    "note": "repointing a presigned URL to another key → 422 (signature binds the key). NOTE: a forged-from-default-secret signature is the separate BUG-001.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.336Z"
+  },
+  "STORAGE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "committing another dealer's documentId → 404 NOT_FOUND (ownership validated; B's row untouched)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.223Z"
+  },
+  "STORAGE-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "removing an upload resets the slot to REQUIRED and deletes the stored object (object before true, after false)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.442Z"
+  },
+  "STORAGE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "missing media object → 404, does not crash the page",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.445Z"
+  },
+  "STORAGE-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "KYC docs are not publicly fetchable (unsigned /private → 400, not on public media route → 404). Signed access only; forged-signature caveat is BUG-001.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.450Z"
+  },
+  "STORAGE-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "public vehicle images are served only via /media/by-media/* (no direct bucket URLs)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.455Z"
+  },
+  "STORAGE-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "object keys/URLs in public payloads expose no bucket paths, raw originals, or KYC prefixes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.460Z"
+  },
+  "ABUSE-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OTP/sign-in abuse rate-limited (8/14 → 429)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.535Z"
+  },
+  "ABUSE-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "enquiry spam capped: 10 created then 4 → 429 (per-customer 10/hr)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:35.527Z"
+  },
+  "ABUSE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "unverified dealer automated submit → 403 (requireDealerActive)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:35.685Z"
+  },
+  "ABUSE-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "role headers ignored; STAFF sell still → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:35.691Z"
+  },
+  "ABUSE-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "x-dealer-id header ignored; vehicle created under the session dealership (A)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:35.709Z"
+  },
+  "ABUSE-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "status/listingStatus in the body is rejected (400) and does not publish the draft (listing stays DRAFT); transitions only via the state machine",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:35.732Z"
+  },
+  "ABUSE-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "enquiry status in create body ignored/rejected (create 400); STAFF close still 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.200Z"
+  },
+  "ABUSE-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "invitation role=OWNER rejected by schema → 400 (only MANAGER/STAFF assignable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.204Z"
+  },
+  "ABUSE-009": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "membership manipulation cannot remove/demote the final OWNER (remove 409, demote 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.217Z"
+  },
+  "ABUSE-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "suspended dealer cannot regain via client headers → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.377Z"
+  },
+  "ABUSE-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "removed member's stale session/headers cannot regain access (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.562Z"
+  },
+  "ABUSE-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "every \"hidden\" route is server-guarded regardless of UI (customer→admin 401, customer→dealer-team 401, staff→admin 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.568Z"
+  },
+  "CONCURRENCY-001": {
+    "status": "PASS",
+    "layers": ["DATABASE", "CONCURRENCY"],
+    "note": "two staff editing one draft → one consistent row (km 22222)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:36.600Z"
+  },
+  "CONCURRENCY-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "two managers sell same car → SOLD once (statuses 200/409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:37.076Z"
+  },
+  "CONCURRENCY-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "reserve vs sold race → one valid state (SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:37.575Z"
+  },
+  "CONCURRENCY-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "approve vs dealer edit race → valid state (ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:38.182Z"
+  },
+  "CONCURRENCY-005": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "suspend vs submit → no invalid publication (listing DRAFT, submit 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:38.356Z"
+  },
+  "CONCURRENCY-006": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "contacted vs closed race → valid transition (CLOSED) under FOR UPDATE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:38.804Z"
+  },
+  "CONCURRENCY-007": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "member removal vs mutation → safe (enquiry NEW, mutate 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:39.501Z"
+  },
+  "CONCURRENCY-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent admin approvals → ACTIVE once (statuses 200/422)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:39.670Z"
+  },
+  "CONCURRENCY-009": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "simultaneous legitimate enquiries both retained (2)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:40.963Z"
+  },
+  "CONCURRENCY-010": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent accept → one membership (1); statuses 200/409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:41.166Z"
+  },
+  "NOTIFY-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "notifications are async via outbox→worker; delivery row may lag. Outbox event present (NOTIFY-003).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:42.440Z"
+  },
+  "NOTIFY-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "email is dispatched via the transactional outbox after commit; a mail failure cannot roll back or corrupt onboarding (dealer ACTIVE regardless)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:42.608Z"
+  },
+  "NOTIFY-003": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "notification_deliveries carries a dedupeKey; 0 duplicate deliveries → retries are idempotent, not destructive",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:42.624Z"
+  },
+  "NOTIFY-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dev uses the console mail driver (no real send); env.ts refuses MAIL_DRIVER=console in production (must be resend) — intended non-production behaviour",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:42.624Z"
+  },
+  "NOTIFY-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "enquiry creation succeeds (201) with no enquiry-notification dependency (deliveries 7271→7271); listing/enquiry/complaint emails are not implemented and nothing assumes them",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:43.334Z"
+  },
+  "RECOVERY-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "with the API down the client receives no false 2xx (connection refused); graceful public UX is the web error boundary — verified in the browser campaign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:43.338Z"
+  },
+  "RECOVERY-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "RECOVERY", "DATABASE"],
+    "note": "Save draft with the API unreachable shows an error (no “Draft saved”), nothing is written; the same click after the API returns saves the edit",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:40:26.348Z"
+  },
+  "RECOVERY-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "RECOVERY", "DATABASE"],
+    "note": "Send enquiry with the API unreachable reports no success and writes nothing; retrying after recovery (twice) leaves exactly one enquiry",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:41:05.279Z"
+  },
+  "RECOVERY-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "database outage → /health/ready 503, requests 500 (controlled). In production the 500 detail is suppressed (error-handler gates detail on env.isProduction); dev includes error.message by design.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:44.121Z"
+  },
+  "RECOVERY-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a failed/absent storage write → commit 422; listing uncorrupted (PENDING_REVIEW)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:44.375Z"
+  },
+  "RECOVERY-006": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "a rejected OTP verdict creates no session and no user — no partial authentication",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:44.379Z"
+  },
+  "RECOVERY-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OAuth failure handled (access_denied → 302, bad code/state → 302); recoverable, no crash. Full Google flow unreachable here (SIM).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:44.385Z"
+  },
+  "RECOVERY-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "email dispatch is post-commit (outbox); a mail failure leaves onboarding/approval intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:44.542Z"
+  },
+  "RECOVERY-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "refreshing a half-typed enquiry sends nothing and the form returns; a saved draft shows its saved value after refresh",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "recovery-browser",
+    "at": "2026-10-21T05:42:06.966Z"
+  },
+  "RECOVERY-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "re-submitting a lifecycle mutation (Back+resubmit) → second 409, status SOLD once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:45.160Z"
+  },
+  "RECOVERY-011": {
+    "status": "PASS",
+    "layers": ["API", "CONCURRENCY"],
+    "note": "double-click reserve → RESERVED once (statuses 200/409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:45.789Z"
+  },
+  "RECOVERY-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "timeout+retry safe: concurrent identical enquiries → 1 row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.462Z"
+  },
+  "RECOVERY-013": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "persisted state survives restarts (Postgres durable; the API was restarted during this session): 690 dealers, 978 listings, health 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.465Z"
+  },
+  "OBS-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "requests carry correlation IDs (x-request-id + x-trace-id: HhFuMVeBZ-)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.499Z"
+  },
+  "OBS-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "auth failure → 401 with code NOT_AUTHENTICATED + traceId, no secret in body",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.501Z"
+  },
+  "OBS-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "authorization failure observable (→ 401 + traceId SLRSidVF8y)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.521Z"
+  },
+  "OBS-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "dealer suspension traceable (audit_logs dealer.suspended with actor + traceId)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.685Z"
+  },
+  "OBS-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "member permission changes traceable: member.invited, member.joined, member.role_changed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:46.897Z"
+  },
+  "OBS-006": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "listing lifecycle traceable: listing.check_set, listing.submitted, listing.approved, listing.marked_sold",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:47.541Z"
+  },
+  "OBS-007": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "enquiry lifecycle traceable: enquiry.created, enquiry.contacted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.254Z"
+  },
+  "OBS-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "admin actions traceable (20 recent ADMIN audit rows)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.255Z"
+  },
+  "OBS-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5xx are captured: the error handler logs when status ≥ 500 (verified in code), DB-down request → 500",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.262Z"
+  },
+  "OBS-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "API log (one full campaign) contains no OTP tokens, session tokens, or passwords",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.400Z"
+  },
+  "OBS-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "health reflects service state: live 200, ready 200 healthy / 503 when DB down",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.413Z"
+  },
+  "OBS-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "workflows are traceable end-to-end: audit rows carry a traceId that matches the request x-trace-id",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-21T05:28:48.584Z"
+  },
+  "PROD-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a correct production env (r2/msg91/resend/postgres/cookie) boots; local-only services are refused (see PROD-002..005)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:48.808Z"
+  },
+  "PROD-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "minio refused in production",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:49.067Z"
+  },
+  "PROD-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production refuses PHONE_OTP_DRIVER=fake (must be msg91)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:49.211Z"
+  },
+  "PROD-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production refuses MAIL_DRIVER=console (Mailpit/console) — must be resend",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:49.346Z"
+  },
+  "PROD-005": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "dev seed refuses to run with NODE_ENV=production (dev-guard throws even with full prod config)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:49.874Z"
+  },
+  "PROD-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dev tooling is guarded (PROD-005) and production DATABASE_URL/storage are separate secrets (deploy/aws SSM); development cannot point at prod by default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:49.874Z"
+  },
+  "PROD-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production DATABASE_URL is required and read from the environment (SSM in deploy/aws), not a default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:50.018Z"
+  },
+  "PROD-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "storage points to r2 in production; local filesystem refused (non-durable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:50.313Z"
+  },
+  "PROD-009": {
+    "status": "PASS",
+    "layers": ["STATIC", "API"],
+    "note": "production boots with resend + API key + a monitored sender on its own domain; refuses console mail, a missing RESEND_API_KEY, a resend.dev sender, a no-reply sender and a malformed MAIL_FROM. Real deliverability (SPF/DKIM/DMARC) is MANUAL-UAT.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.077Z"
+  },
+  "PROD-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "Google OAuth client id/secret required in production; callback URL configurable (GOOGLE_CALLBACK_URL)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.202Z"
+  },
+  "PROD-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MSG91 (WhatsApp/SMS OTP) auth key required in production when PHONE_OTP_DRIVER=msg91",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.316Z"
+  },
+  "PROD-012": {
+    "status": "PASS",
+    "layers": ["SECURITY"],
+    "note": "no server secret values in the client bundle; no NEXT_PUBLIC_* secret vars (MSG91 widget id is a public client identifier, not the AUTH_KEY)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.344Z"
+  },
+  "PROD-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "/api/docs is behind DOCS_ENABLED (off in prod) and metrics behind METRICS_ENABLED + a scrape token",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.344Z"
+  },
+  "DEPLOY-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "prisma migrate deploy applied 56 migrations cleanly on the cert DB (0 unfinished)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.501Z"
+  },
+  "DEPLOY-002": {
+    "status": "PASS",
+    "layers": ["DATABASE", "INTEGRATION"],
+    "note": "every ACTIVE dealership outside the dev-sales seed has an ACTIVE OWNER (1 seeded fixture(s) without one: DATA-DISC-003); migration proved by dealer-membership-migration.test.ts",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.505Z"
+  },
+  "DEPLOY-003": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "migration/flows created no duplicate users or memberships",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.508Z"
+  },
+  "DEPLOY-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "listings/enquiries/documents preserved through all migrations (980/255/1382)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.510Z"
+  },
+  "DEPLOY-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "56 timestamp-ordered migrations; prisma applies in order (deploy workflow runs migrate before serving)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.510Z"
+  },
+  "DEPLOY-006": {
+    "status": "PASS",
+    "layers": ["DEPLOY"],
+    "note": "deployment runs migrations as a dedicated step (migrate taskdef); recovery strategy documented in deploy/aws. Prisma migrate deploy is forward-only — down-recovery is restore-from-backup (see DEPLOY-009 BLOCKED).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.510Z"
+  },
+  "DEPLOY-007": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "seed scripts refuse to execute against NODE_ENV=production (dev-guard), even with full prod config",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:52.064Z"
+  },
+  "DEPLOY-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "indexes support critical queries: listing public visibility, enquiry dealer inbox, membership lookup, session by token, saved per customer (139 total)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:52.069Z"
+  },
+  "DEPLOY-009": {
+    "status": "BLOCKED",
+    "layers": ["DEPLOY"],
+    "note": "Backup/restore of the production managed database cannot be exercised in this isolated container (no managed DB, no snapshot API). Recovery strategy is documented in deploy/aws. Requires a staging restore drill.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:52.069Z"
+  },
+  "DEPLOY-010": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "pg_dump → pg_restore into a fresh database: 17 counts and relationship hashes identical, 0 unvalidated FKs. Logical drill only — the managed snapshot/PITR path is DEPLOY-009 (BLOCKED).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "backup-restore",
+    "at": "2026-10-21T05:52:14.220Z"
+  },
+  "PROD-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "production refuses the default SESSION_SECRET. UPLOAD_SIGNING_SECRET has no such guard but is unused under r2 (stand-ins are local-driver only, #241; SEC-DISC-001a–c).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-21T05:28:51.476Z"
+  },
+  "SUPPORT-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "five replies accepted, sixth 409:SUPPORT_MESSAGE_LIMIT_REACHED; counter 5, 5 rows",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.160Z"
+  },
+  "SUPPORT-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "8 concurrent replies at 3/5: exactly 2 persisted, 6 refused; counter 5",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.239Z"
+  },
+  "SUPPORT-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "an internal note does not reset; a support reply resets to a fresh allowance (counter 1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.376Z"
+  },
+  "SUPPORT-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "customer B gets 404 on read, reply and reopen of A’s ticket; internal notes absent from the customer payload",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.401Z"
+  },
+  "SUPPORT-DISC-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESOLVED refuses replies, explicit reopen → OPEN, CLOSED is final for customer and support",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.500Z"
+  },
+  "SUPPORT-DISC-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "retry with the same clientMessageId persists once and consumes one slot; reused id with new text refused; authorType field → 400",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.562Z"
+  },
+  "SUPPORT-DISC-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "another customer’s enquiryId refused (422 SUPPORT_ENQUIRY_INVALID)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.596Z"
+  },
+  "ADMIN-RBAC-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "SUPPORT/MODERATOR/SALES_REP/SUPER_ADMIN matrix matches ADMIN_PERMISSIONS",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-ADMIT",
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.760Z"
+  },
+  "ADMIN-RBAC-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "DATABASE"],
+    "note": "disabling a member revokes its open admin session at once (200 → 401); self-disable refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.833Z"
+  },
+  "ADMIN-RBAC-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a role change applies on the next request of the same session (console closed, Sales opened)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.878Z"
+  },
+  "ADMIN-SESSION-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "an ADMIN token is refused on customer/dealer routes and a person token on admin routes, whichever cookie carries it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.891Z"
+  },
+  "ADMIN-SESSION-DISC-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin logout revokes the server session (next request 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.920Z"
+  },
+  "SALES-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "TENANT"],
+    "note": "a Sales rep gets 404 on another rep’s dealership (read, vehicles, edit) and on self-serve dealers; list carries none",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.946Z"
+  },
+  "SALES-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealerId in a Sales body refused (400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:53.951Z"
+  },
+  "VERIFY-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "DATABASE"],
+    "note": "only a reviewer grants Dealer Verified; stale expectedVersion 409; decision audited",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.253Z"
+  },
+  "VERIFY-DISC-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "Dealer Verified refused for an unapproved application (422 DEALER_NOT_APPROVED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.481Z"
+  },
+  "VERIFY-DISC-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a verified dealer disappears while suspended and returns verified after reinstatement",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.790Z"
+  },
+  "PORTFOLIO-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "STORAGE", "SECURITY"],
+    "note": "a pending portfolio photo is private, public only after approval, private again after take-down",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:54.909Z"
+  },
+  "PORTFOLIO-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "TENANT", "RBAC"],
+    "note": "portfolio is OWNER-only (STAFF 403, MANAGER 403); another dealer’s delete 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.227Z"
+  },
+  "DOC-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "TENANT"],
+    "note": "another dealer’s document list carries none of A’s documents; SUPPORT and SALES_REP cannot review KYC (403), document unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.372Z"
+  },
+  "NOTIFY-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "NOTIFY"],
+    "note": "7299 console emails across 21 templates (183 dealer enquiry alerts): no enquiry or support email carries a mobile number",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.557Z"
+  },
+  "AUTH-DISC-002": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "/v1/auth/me reports emailVerified:true for a user with no email address",
+    "evidence": [],
+    "bug": "BUG-102",
+    "auth": null,
+    "area": "delta",
+    "at": "2026-10-21T05:28:55.592Z"
+  },
+  "BUG-NEW-010-console-timing": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API"],
+    "note": "console suspension (DB SUSPENDED, API 404); warmed car page 404 after 0.1 s, dealer page after 0.1 s; first samples 0.1s car 404 dealer 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "console-suspension",
+    "at": "2026-10-21T05:28:59.547Z"
+  },
+  "AUTH-DISC-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "RECOVERY"],
+    "note": "MSG91 refusal → 422 PHONE_VERIFICATION_FAILED; provider 500/429/timeout/network → 503/503/503/503 (PHONE_OTP_UNAVAILABLE); timeout answered in 1510 ms; no session or cookie in any case, customer or dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-21T05:29:02.823Z"
+  },
+  "AUTH-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "a token proving one number cannot sign in another (422 PHONE_VERIFICATION_FAILED / 422 PHONE_VERIFICATION_FAILED); no session",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-21T05:29:02.831Z"
+  },
+  "AUTH-DISC-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "first use 200 NAME_REQUIRED; the server refuses the replayed access token itself (422 PHONE_VERIFICATION_FAILED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-21T05:29:02.852Z"
+  },
+  "R232-valid-approve-suspend-reinstate": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approve 200 → suspend 200 → second suspend 422 → reinstate 200; approvedAt preserved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-232-adjacent",
+    "at": "2026-10-21T05:29:03.283Z"
+  },
+  "R232-unverified-pending-refused": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "PENDING with unverified uploads: approve → 422 DOCUMENTS_NOT_VERIFIED; state unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-232-adjacent",
+    "at": "2026-10-21T05:29:03.419Z"
+  },
+  "R233-approve-vs-reject-race": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "8 races, invariants hold: [\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\",\"200/422/ACTIVE\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-233-race",
+    "at": "2026-10-21T05:29:15.109Z"
+  },
+  "R234-saved-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-21T05:29:28.551Z"
+  },
+  "R234-customer-enquiries-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-21T05:29:28.574Z"
+  },
+  "R234-dealer-inbox-ties": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-21T05:29:28.602Z"
+  },
+  "R234-dealer-inventory-ties (BUG-NEW-007, not in #234 scope)": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, 3 pages of 2, each seen once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-234-pagination",
+    "at": "2026-10-21T05:29:28.624Z"
+  },
+  "R235-vehicle-image-follows-dealer-status": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "vehicle image 200 no-cache → (suspend) 404 no-store → (reinstate) 200; car API 404, dealer API 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-21T05:29:39.526Z"
+  },
+  "R235-yard-photo-while-suspended (BUG-NEW-009, not in #235 scope)": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "yard photo 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-21T05:29:39.526Z"
+  },
+  "R237-PROD-002-minio-and-local-refused": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production: r2 boots; minio refused (STORAGE_DRIVER: must be `r2` in production — `local` and `minio` are development adapters.); local refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-21T05:29:51.034Z"
+  },
+  "R237-BUG-NEW-013-r2-endpoint-unvalidated": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "omitted 1, loopback 1",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-21T05:29:51.035Z"
+  },
+  "R237-ORIG-BUG-001-default-signing-secret-in-production": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "stand-ins mounted only for the local driver and production refuses local; default secret under r2 present but unused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-21T05:29:51.036Z"
+  },
+  "ORIG-DISC-PROFILE-001 second profile edit": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "second edit while pending → 409 PROFILE_EDIT_PENDING, as the API reference documents (\"One request at a time … a 409, not a merge\"). Reclassified NOT A BUG in the campaign triage.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:29:51.719Z"
+  },
+  "ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "DRAFT dealership: suspend → 422 (suspend-only once ACTIVE), close → 200, record kept as CLOSED with its reason (#249). Documented in OpenAPI (1 close path).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:29:51.852Z"
+  },
+  "BUG-NEW-006 onboarding account overflow on mobile": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "no overflow [{\"width\":320,\"status\":200,\"url\":\"/dealer/onboarding\",\"overflow\":0,\"h1\":\"Create your account\"},{\"width\":390,\"status\":200,\"url\":\"/dealer/onboarding\",\"overflow\":0,\"h1\":\"Create your account\"}]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:29:54.245Z"
+  },
+  "BUG-NEW-008 local private PDF served as image/jpeg": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "types [{\"status\":200,\"type\":\"application/pdf\",\"isPdf\":true},{\"status\":200,\"type\":\"application/pdf\",\"isPdf\":true}]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:29:54.409Z"
+  },
+  "BUG-NEW-010 warmed car page survives dealer suspension": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "API"],
+    "note": "after Admin suspension the API returns 404 but the warmed car page still returns 200; after 65 s: 200 then 200 (ISR revalidate=60 serves stale once, then refreshes). Suspension does not revalidate the vehicle tag. Confirmed. P2.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:31:31.743Z"
+  },
+  "BUG-NEW-011 media width contract vs documentation": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "{\"widths\":{\"320\":200,\"500\":200,\"4000\":200,\"4001\":404},\"docSaysFixed\":false}",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-21T05:31:31.836Z"
+  },
+  "BUG-NEW-012-queued-enquiry-close-after-removal": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "queued close → 401, enquiry NEW, member REMOVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-new012",
+    "at": "2026-10-21T05:31:33.428Z"
+  },
+  "CAMPAIGN-01 ORIG-BUG-001 forged stand-in links behind an S3 driver": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver API: forged PUT 404, forged read 404 — stand-ins not mounted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:33.936Z"
+  },
+  "CAMPAIGN-02 ORIG-BUG-004 verified KYC locked for an ACTIVE dealer": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "presign 409 DOCUMENT_LOCKED, delete 409, both categories still VERIFIED (#299 two-category model)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:34.140Z"
+  },
+  "CAMPAIGN-03 BUG-NEW-010 warmed car page after Admin suspension (console)": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "API"],
+    "note": "after 200,200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:36.297Z"
+  },
+  "CAMPAIGN-05 ORIG-BUG-005 + BUG-NEW-009 yard photo locked and hidden while suspended": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "no unmoderated yard-photo route (404); approved portfolio photo 200 while ACTIVE, 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:36.603Z"
+  },
+  "CAMPAIGN-07 BUG-NEW-007 dealer inventory over tied timestamps": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "5 tied rows, pages of 2 → 5 unique",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:36.827Z"
+  },
+  "CAMPAIGN-09 ORIG-GAP-CLOSE close keeps the record and shuts the members out": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "PENDING → CLOSED 200, both documents kept, member session 401, second close 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-campaign",
+    "at": "2026-10-21T05:31:36.997Z"
+  },
+  "LISTING-CREATE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.801Z"
+  },
+  "LISTING-CREATE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.817Z"
+  },
+  "LISTING-CREATE-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.832Z"
+  },
+  "LISTING-CREATE-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft belongs to the dealership, not the employee",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.834Z"
+  },
+  "LISTING-CREATE-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft creation records the creating actor (audit vehicle.created)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.838Z"
+  },
+  "LISTING-CREATE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.855Z"
+  },
+  "LISTING-CREATE-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.883Z"
+  },
+  "LISTING-CREATE-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.918Z"
+  },
+  "LISTING-CREATE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "submit with required fields missing → 422 (server-side completeness)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.952Z"
+  },
+  "LISTING-CREATE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid price/year/km/owners rejected → 400 (Zod bounds)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.975Z"
+  },
+  "LISTING-CREATE-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "injected dealerId does not reassign the vehicle (create 400, stays with A); strict schema path",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:37.988Z"
+  },
+  "LISTING-CREATE-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "two concurrent submits → one listing row (1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.060Z"
+  },
+  "LISTING-CREATE-013": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent edits → one deterministic value (20000), no corruption",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.103Z"
+  },
+  "LISTING-CREATE-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "persisted draft survives reload (server-side)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.157Z"
+  },
+  "LISTING-CREATE-015": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "uploaded image is linked to the correct vehicle",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.278Z"
+  },
+  "LISTING-CREATE-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer A cannot access B's draft (GET 404, PATCH 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.332Z"
+  },
+  "MODERATION-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot submit for moderation → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.376Z"
+  },
+  "MODERATION-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF direct submit API → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.422Z"
+  },
+  "MODERATION-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER submits a valid draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.492Z"
+  },
+  "MODERATION-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER submits a valid draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.553Z"
+  },
+  "MODERATION-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "incomplete listing cannot submit → 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.587Z"
+  },
+  "MODERATION-006": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "submitted listing → PENDING_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.588Z"
+  },
+  "MODERATION-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "submitted listing is not public before approval",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.589Z"
+  },
+  "MODERATION-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees the listing in the moderation queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.620Z"
+  },
+  "MODERATION-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees dealer/listing/media detail",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:38.629Z"
+  },
+  "MODERATION-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves a valid listing → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.250Z"
+  },
+  "MODERATION-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approved listing becomes publicly discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.255Z"
+  },
+  "MODERATION-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin rejects a listing → REJECTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.332Z"
+  },
+  "MODERATION-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "rejected listing remains non-public",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.333Z"
+  },
+  "MODERATION-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer sees the rejection state/reason",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.342Z"
+  },
+  "MODERATION-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "changes-requested → dealer corrects → resubmit → PENDING_REVIEW (REJECTED is terminal; correction path is CHANGES_REQUESTED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.453Z"
+  },
+  "MODERATION-016": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "double approve → first 200, second 409; status ACTIVE, no invalid state",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:39.994Z"
+  },
+  "MODERATION-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent approve vs reject → one valid final state (ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:40.505Z"
+  },
+  "MODERATION-018": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "moderation actions audit-logged: listing.check_set, listing.submitted, listing.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:40.509Z"
+  },
+  "MEDIA-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "vehicle data exists before photography is attached (draft without images)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:40.527Z"
+  },
+  "MEDIA-002": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "studio output links to the correct listing/vehicle",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:40.645Z"
+  },
+  "MEDIA-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "the maximum of 20 images attaches; the 21st is refused (presign 409 VEHICLE_IMAGES_FULL); 20 rows",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:41.843Z"
+  },
+  "MEDIA-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "reversing three images is stored in that order; a partial (422) or empty (400) order is refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.067Z"
+  },
+  "MEDIA-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid media rejected (oversize 400, bad mime 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.135Z"
+  },
+  "MEDIA-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "image removal works (200), gallery intact (0 left)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.254Z"
+  },
+  "MEDIA-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "commit without upload → 422; listing uncorrupted (PENDING_REVIEW)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.319Z"
+  },
+  "MEDIA-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "public VDP references only /media/by-media/* URLs; no raw storage keys or original paths",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.323Z"
+  },
+  "MEDIA-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "the dealer-page card and the vehicle page hero both show the primary image (vehicle_media.isPrimary)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:10.906Z"
+  },
+  "MEDIA-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "hero arrows: 1/6 → Next 2/6 → Previous 1/6 → Previous wraps to 6/6",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:12.081Z"
+  },
+  "MEDIA-011": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "“view all” opens a full-screen viewer (1 / 6); ArrowRight → 2 / 6; Escape closes and focus returns to the trigger",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:13.280Z"
+  },
+  "MEDIA-012": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "STORAGE"],
+    "note": "vehicle-page gallery falls back correctly (all missing → “Photographs coming soon”; two of six missing → 1/4), but a vehicle card whose primary object is missing renders a broken image: 1 on the page (2023 Hyundai Creta SX(O), the primary photograph)",
+    "evidence": [],
+    "bug": "BUG-109",
+    "auth": null,
+    "area": "gallery-browser",
+    "at": "2026-10-21T05:40:17.926Z"
+  },
+  "MEDIA-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer cannot touch another listing's media via admin routes (401/401); photography is admin-only",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.448Z"
+  },
+  "LISTING-LIFE-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "approved listing → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.925Z"
+  },
+  "LISTING-LIFE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE appears on /cars",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.946Z"
+  },
+  "LISTING-LIFE-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE appears in dealer portfolio",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.957Z"
+  },
+  "LISTING-LIFE-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE contributes to the public dealer count (available ACTIVE=4)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.968Z"
+  },
+  "LISTING-LIFE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER → RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:42.990Z"
+  },
+  "LISTING-LIFE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER → RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.456Z"
+  },
+  "LISTING-LIFE-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot RESERVE → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.908Z"
+  },
+  "LISTING-LIFE-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED visual state (availability=RESERVED) correct",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.913Z"
+  },
+  "LISTING-LIFE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED car still shown (availability RESERVED), card behaviour per R71",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.926Z"
+  },
+  "LISTING-LIFE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED enquiry → 409 LISTING_RESERVED (defined)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.951Z"
+  },
+  "LISTING-LIFE-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED → ACTIVE via dealer request + admin approval (R82)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:43.992Z"
+  },
+  "LISTING-LIFE-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER marks eligible vehicle SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:44.528Z"
+  },
+  "LISTING-LIFE-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER marks SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:45.030Z"
+  },
+  "LISTING-LIFE-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot mark SOLD → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:45.514Z"
+  },
+  "LISTING-LIFE-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD disappears from public inventory (search + VDP 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:46.041Z"
+  },
+  "LISTING-LIFE-016": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD disappears from dealer public available inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:46.054Z"
+  },
+  "LISTING-LIFE-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "SOLD removed from active listing count (count reads ACTIVE available=6)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:46.066Z"
+  },
+  "LISTING-LIFE-018": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "SOLD remains in dealer/admin history (row present, status SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:46.075Z"
+  },
+  "LISTING-LIFE-019": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "existing enquiries survive SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:46.604Z"
+  },
+  "LISTING-LIFE-020": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer enquiry history survives SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:47.131Z"
+  },
+  "LISTING-LIFE-021": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER withdraws",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:47.698Z"
+  },
+  "LISTING-LIFE-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER withdraws",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:48.178Z"
+  },
+  "LISTING-LIFE-023": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot WITHDRAW → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:48.664Z"
+  },
+  "LISTING-LIFE-024": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN disappears publicly (search + VDP 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:49.201Z"
+  },
+  "LISTING-LIFE-025": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "WITHDRAWN remains in internal history",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:49.201Z"
+  },
+  "LISTING-LIFE-026": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "existing enquiries survive WITHDRAWN",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:49.707Z"
+  },
+  "LISTING-LIFE-027": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid transitions from SOLD rejected (reserve 409, withdraw 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:49.732Z"
+  },
+  "LISTING-LIFE-028": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct API cannot bypass lifecycle permission (STAFF sell → 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:50.242Z"
+  },
+  "LISTING-LIFE-029": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "reserve vs sold race → one valid state (SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:50.682Z"
+  },
+  "LISTING-LIFE-030": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "read model is synchronous with lifecycle (visible→200, sold→404 on next read)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:51.168Z"
+  },
+  "LISTING-LIFE-031": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "withdrawn car leaves search immediately — no stale exposure",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-21T05:31:51.690Z"
+  },
+  "PUBLIC-001": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "anonymous homepage 200 without redirect; h1 \"Find your next car\"; 16 car links render; no session cookie",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:31:55.419Z"
+  },
+  "PUBLIC-002": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "homepage search \"Creta\" + Enter → /cars?q=Creta; 24 results; search box keeps \"Creta\"",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:31:56.705Z"
+  },
+  "PUBLIC-020": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "refresh keeps ?q=Creta&fuel=PETROL and the same 24 results (state lives in the URL)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:27.471Z"
+  },
+  "PUBLIC-021": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "unknown route → HTTP 404, branded \"Page not found\" with site header, Home/Browse links, noindex (fixed by #209; baseline: default Next.js 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:28.505Z"
+  },
+  "PUBLIC-023": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "15 page×viewport cases (desktop 1440, tablet 820, mobile 390 emulated): 200, header, no horizontal overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:43.160Z"
+  },
+  "SEO-001": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "canonical https://www.dealers-drive.com/; robots index, follow, max-image-preview:large; title \"Dealers-Drive | Used Cars from Verified Independent Dealers\"; JSON-LD Organization/WebSite; og:title present=true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:44.211Z"
+  },
+  "SEO-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "/cars index,follow canonical /cars; /cars?q=… noindex,follow canonical /cars; /cars?page=2 → 200 index, follow, max-image-preview:large",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:47.330Z"
+  },
+  "SEO-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "ACTIVE car: canonical, index, og:image, JSON-LD Car/BreadcrumbList",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:48.318Z"
+  },
+  "SEO-004": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "dealer portfolio: title \"SeoMotors Motors 711785f5e4a0 — Used Car Dealer in Vellore | Dealers-Drive\", canonical, index, description",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:49.217Z"
+  },
+  "SEO-005": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO", "DATABASE"],
+    "note": "683 URLs, all on https://www.dealers-drive.com; 438 cars all ACTIVE/RESERVED of ACTIVE dealers; 217 dealers all ACTIVE; no private routes. Sitemap source (/v1/sitemap) includes the fresh ACTIVE car and excludes the SOLD and WITHDRAWN ones; the web sitemap is cached (revalidate) so a car published seconds earlier appears after the window",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:49.284Z"
+  },
+  "SEO-006": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "SOLD car → 200 \"Car not found | Dealers-Drive\" + noindex; WITHDRAWN car → 200 \"Car not found | Dealers-Drive\" + noindex; /login /saved /enquiries /support-requests /invitations /dealer /admin carry noindex in server HTML. Status 200/200 (soft 404) is BUG-101, judged under SEO-009.",
+    "evidence": [],
+    "bug": "BUG-101",
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:51.286Z"
+  },
+  "SEO-007": {
+    "status": "PASS",
+    "layers": ["SEO"],
+    "note": "production: Allow / ; Disallow /api/ /v1/ ; Sitemap absolute. Non-production: Disallow /. Private pages are not robots-blocked by design — they carry noindex (SEO-006), which crawlers can only see if not blocked",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:51.295Z"
+  },
+  "SEO-008": {
+    "status": "PASS",
+    "layers": ["BROWSER", "SEO"],
+    "note": "favicon/icon/apple-icon 200; og:title on home and car; car og:image set (fetch via local API → 200; production media host not reachable here)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:53.178Z"
+  },
+  "SEO-009": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "SEO"],
+    "note": "generic invalid URL → 404 branded page; but an invalid car URL → HTTP 200 \"Car not found | Dealers-Drive\" (soft 404, noindex), invalid dealer URL → 404",
+    "evidence": [],
+    "bug": "BUG-101",
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:56.011Z"
+  },
+  "SEO-010": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "harness assertion: outage 200 Something went wrong — branded error page served with HTTP 200 (BUG-101)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-21T05:32:57.619Z"
+  },
+  "BROWSER-001": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "Chromium 141 desktop 1440: 19 public/dealer/admin pages 200 with no overflow (headless Chromium = Chrome's engine; branded Google Chrome itself not installed)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:17.261Z"
+  },
+  "BROWSER-002": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Safari (WebKit) desktop is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:17.262Z"
+  },
+  "BROWSER-003": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Firefox (Gecko) desktop is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:17.262Z"
+  },
+  "BROWSER-004": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Microsoft Edge is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:17.262Z"
+  },
+  "BROWSER-005": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "EMULATED Chrome Android (Chromium mobile: Pixel UA, touch, DPR 3, 390×844): tap search → results → tap car; no overflow. Real Android hardware not available — real-device check stays in HUMAN-UAT.md",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:18.589Z"
+  },
+  "BROWSER-006": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Safari on iPhone (WebKit/iOS) is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:18.590Z"
+  },
+  "BROWSER-007": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "tablet 820×1180: 18 public/dealer/admin pages 200, no overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:34.159Z"
+  },
+  "BROWSER-008": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "dealer console at 320/390 (emulated mobile): 12 pages 200, no overflow; enquiry actions reachable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:33:45.438Z"
+  },
+  "BROWSER-009": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "35 admin page×width cases clean (320–1440)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:14.864Z"
+  },
+  "BROWSER-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "invite dialog at 390×420 (keyboard-open viewport): phone field typeable, Invite button scrolls into view, Escape closes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:16.241Z"
+  },
+  "BROWSER-011": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "back restores ?q=Creta&fuel=PETROL with the same 24 results; forward returns to the car",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:17.546Z"
+  },
+  "BROWSER-012": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "second tab shares the session (/enquiries renders); signing out in tab 1 → tab 2’s next navigation goes to /login",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:49.496Z"
+  },
+  "UX-001": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "search box reachable by Tab from page start; typing + Enter submits to /cars?q=Creta",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:50.632Z"
+  },
+  "UX-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "phone → Enter sends OTP (focus moves to \"null\"), digits typed → Enter verifies, name → Enter creates account; signed in without a pointer",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:51.809Z"
+  },
+  "UX-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "add-vehicle form: all 2 interactive controls reachable by Tab",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:55.754Z"
+  },
+  "UX-004": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "admin configuration form: all 180 controls reachable by Tab",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:34:59.944Z"
+  },
+  "UX-005": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "every visible input/select/textarea on 8 forms has a label or aria-label",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:07.342Z"
+  },
+  "UX-006": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "invalid phone: aria-invalid=true, message \"Enter a 10-digit Indian mobile number.\" tied to the field",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:08.823Z"
+  },
+  "UX-007": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "withdraw dialog: focus moves inside on open, Tab is trapped (12 presses), Escape closes and focus returns to the Withdraw trigger",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:10.218Z"
+  },
+  "UX-008": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "6 pages: every visible button/link has a text or aria-label name (icon buttons such as ♡/✕/‹› carry aria-labels like \"Save 2023 Hyundai Creta SX(O)\", \"Close\")",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:15.895Z"
+  },
+  "UX-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "triple-click on \"Send enquiry\" → exactly 1 enquiry row (button enters a pending state; server also de-duplicates)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:19.881Z"
+  },
+  "UX-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "empty states: /saved → \"Saved cars Cars you have saved, on any device you sign in on. No saved…\" [Browse cars] | /enquiries → \"My enquiries Each dealership has your name and verified mobile number,…\" [Browse cars] | /dealer/inventory?status=SOLD → \"Inventory 0 vehicles Add vehicle All 0 Draft 0 Pending review 0 Change…\" [Add vehicle, All0] | /dealer/enquiries → \"Enquiries 0 enquiries New 0 Contacted 0 Closed 0 Spam 0 No new enquiri…\" [New0, Contacted0]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:23.699Z"
+  },
+  "UX-011": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "\"Mark this vehicle as sold?\", \"Withdraw this listing?\" (reason required) and \"Remove Ux Manager?\" confirmations; cancelling leaves listings and members unchanged in the DB",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:25.673Z"
+  },
+  "UX-012": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "denials render as pages, not crashes: STAFF /dealer/team → 200 /dealer \"Good morning, Staff\"; STAFF /dealer/profile → 200 /dealer/profile \"Dealer profile\"; STAFF /admin → 200 /admin/login?error=session_expired \"Admin sign-in\"; CUSTOMER /dealer → 200 /login?as=dealer \"Login\"; CUSTOMER /admin/dealers → 200 /admin/login?error=session_expired \"Admin sign-in\"",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-21T05:35:30.100Z"
+  },
+  "GOLDEN-001": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "search \"G1930310\" → car → Enquire → OTP sign-up → enquiry NEW → STAFF \"Mark contacted\" (CONTACTED; STAFF sees 0 Close buttons) → MANAGER \"Close\" (CLOSED) → Admin enquiry page shows Contacted and Closed; audit [\"enquiry.created\",\"enquiry.contacted\",\"enquiry.closed\"]. Hybrid journey: setup via API where noted (onboarding SIM-GOOGLE, vehicle details, photography); every human decision in the browser; outcomes verified in the DB.",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:35:39.045Z"
+  },
+  "GOLDEN-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "OTP sign-up → Save (1 row) → Logout → OTP sign-in (same account, no duplicate user) → /saved lists the car → enquiry → Logout → sign-in → /enquiries still lists it",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:36:19.448Z"
+  },
+  "GOLDEN-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "onboarding (API, SIM-GOOGLE) → Admin UI verifies each document shown (2 since #299) + typed-confirmation Approve → ACTIVE → listing (API details, 6 photos) → Admin UI checks + \"Approve and publish\" → public 200 → enquiry → dealer UI \"Mark sold\" confirm → SOLD, public 404, customer still sees enquiry (NEW); listing audit [\"listing.submitted\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.approved\",\"listing.marked_sold\"]. Hybrid journey: setup via API where noted (onboarding SIM-GOOGLE, vehicle details, photography); every human decision in the browser; outcomes verified in the DB.",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:36:29.094Z"
+  },
+  "GOLDEN-004": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "OWNER invites STAFF in the UI dialog → existing customer accepts on /invitations → lands on /dealer with the same session (no re-login) → STAFF drafts (API) → STAFF submit 403 → OWNER submit 200 → Admin approve → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:36:32.108Z"
+  },
+  "GOLDEN-005": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "MANAGER in personal customer context → account menu switches to the dealership (same session) → submits listing → Admin approve → enquiry Mark contacted → Close → inventory Mark sold (confirm) → enquiry CLOSED, listing SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:04.726Z"
+  },
+  "GOLDEN-006": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "STAFF drafts and marks CONTACTED in the UI; UI shows Close×0, Spam×0, Mark sold×0, Withdraw×0, Invite×0; every privileged API attempt → 403 {\"close\":403,\"submit\":403,\"sold\":403,\"withdraw\":403,\"delete\":403,\"invite\":403,\"profile\":403}; DB unchanged (car ACTIVE, draft kept)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:09.327Z"
+  },
+  "GOLDEN-007": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "OWNER removes STAFF in the UI (confirm) → member REMOVED → the STAFF's already-open dealer tab reloads to /login (no dealer data); dealer API 401; same session still works as a customer (/saved 200, /me 200)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:13.315Z"
+  },
+  "GOLDEN-008": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "Admin UI suspend (reason) → SUSPENDED: car/dealer public API 404 (web page 200 'Car not found | Dealers-Drive', soft 404 BUG-101), listing kept ACTIVE, dealer console API 401, customer still sees the enquiry → Admin UI reinstate → ACTIVE, car public 200, listing ACTIVE, enquiry NEW intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:18.641Z"
+  },
+  "GOLDEN-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "a MANAGER of dealership A, browsing as a customer, enquires on dealership B’s car in the UI → enquiry belongs to B and to the person; A’s inbox unchanged; B’s inbox carries no employer (A) data; the person sees it under My enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:22.383Z"
+  },
+  "GOLDEN-010": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API", "DATABASE"],
+    "note": "dealer UI Mark reserved → RESERVED: public page 200 with a Reserved notice (Enquire button ×0; new enquiry → 409) → Mark sold (confirm) → SOLD: public page no longer serves the car (HTTP 200 'Car not found | Dealers-Drive', soft 404 BUG-101), out of the sitemap; customer’s enquiry history kept; audit [\"listing.submitted\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.check_set\",\"listing.approved\",\"listing.reserved\",\"listing.marked_sold\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-golden",
+    "at": "2026-10-21T05:37:54.495Z"
+  },
+  "UAT-DISC-001": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "a left swipe on the phone gallery advances it (1 / 6 → 2 / 6)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "agent-uat-touch",
+    "at": "2026-10-21T05:40:06.186Z"
+  },
+  "UAT-DISC-002": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "Back → /cars?fuel=diesel (filter kept), Forward → the car again (\"2023 Tata Nexon XZ+\")",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "agent-uat-touch",
+    "at": "2026-10-21T05:40:07.605Z"
+  },
+  "BUG-NEW-010-timing": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "API"],
+    "note": "API 404 at once; warmed car page 404 after 70 s, dealer page after >600 s (out-of-band suspension; console path is immediate, #243)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "stale-suspension",
+    "at": "2026-10-21T05:52:11.926Z"
+  }
+}

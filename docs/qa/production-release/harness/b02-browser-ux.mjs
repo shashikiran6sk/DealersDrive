@@ -313,6 +313,13 @@ await h.check(r, 'UX-002', async () => {
 // Each interactive control gets a stable index (data-cert-idx) so identical-looking
 // controls are distinct; the starting (auto-focused) element counts as reached.
 async function indexControls(page) {
+  // A closed <details> is opened the way a keyboard user opens it — focus its <summary>
+  // and press Enter — so a control behind a disclosure counts only once it is revealed.
+  const summaries = page.locator('main details:not([open]) > summary');
+  for (let i = (await summaries.count()) - 1; i >= 0; i -= 1) {
+    await summaries.nth(i).focus();
+    await page.keyboard.press('Enter');
+  }
   return page.evaluate(() =>
     [
       ...document.querySelectorAll(
@@ -326,7 +333,7 @@ async function indexControls(page) {
       }),
   );
 }
-async function tabStops(page, max = 150) {
+async function tabStops(page, max = 600) {
   const at = () => page.evaluate(() => document.activeElement?.getAttribute('data-cert-idx'));
   const stops = new Set();
   const first = await at();
@@ -503,10 +510,25 @@ async function unnamedButtons(cookie, path) {
           '';
         return name.length === 0 || /^[♡♥✕×‹›←→]$/.test(name);
       })
-      .map((e) => `${e.tagName}:${e.outerHTML.slice(0, 80)}`),
+      .map((e, i) => {
+        e.setAttribute('data-cert-unnamed', String(i));
+        return `${e.tagName}:${e.outerHTML.slice(0, 80)}`;
+      }),
   );
+  // The DOM heuristic only nominates candidates; the browser's accessibility tree decides.
+  // A candidate is unnamed when its ARIA snapshot carries no quoted name (or only a glyph).
+  const confirmed = [];
+  for (let i = 0; i < list.length; i += 1) {
+    const snap = await page
+      .locator(`[data-cert-unnamed="${i}"]`)
+      .first()
+      .ariaSnapshot()
+      .catch(() => '');
+    const name = snap.split('\n')[0].match(/^- \w+ "([^"]*)"/)?.[1] ?? '';
+    if (name.trim().length === 0 || /^[♡♥✕×‹›←→]$/.test(name.trim())) confirmed.push(list[i]);
+  }
   await ctx.close();
-  return list;
+  return confirmed;
 }
 await h.check(r, 'UX-008', async () => {
   const pages = [

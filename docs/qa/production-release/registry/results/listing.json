@@ -7,7 +7,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.444Z"
+    "at": "2026-10-21T05:31:37.801Z"
   },
   "LISTING-CREATE-002": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.464Z"
+    "at": "2026-10-21T05:31:37.817Z"
   },
   "LISTING-CREATE-003": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.486Z"
+    "at": "2026-10-21T05:31:37.832Z"
   },
   "LISTING-CREATE-004": {
     "status": "PASS",
@@ -37,7 +37,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.488Z"
+    "at": "2026-10-21T05:31:37.834Z"
   },
   "LISTING-CREATE-005": {
     "status": "PASS",
@@ -47,7 +47,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.491Z"
+    "at": "2026-10-21T05:31:37.838Z"
   },
   "LISTING-CREATE-006": {
     "status": "PASS",
@@ -57,7 +57,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.515Z"
+    "at": "2026-10-21T05:31:37.855Z"
   },
   "LISTING-CREATE-007": {
     "status": "PASS",
@@ -67,7 +67,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.563Z"
+    "at": "2026-10-21T05:31:37.883Z"
   },
   "LISTING-CREATE-008": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.618Z"
+    "at": "2026-10-21T05:31:37.918Z"
   },
   "LISTING-CREATE-009": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.656Z"
+    "at": "2026-10-21T05:31:37.952Z"
   },
   "LISTING-CREATE-010": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.690Z"
+    "at": "2026-10-21T05:31:37.975Z"
   },
   "LISTING-CREATE-011": {
     "status": "PASS",
@@ -107,7 +107,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.705Z"
+    "at": "2026-10-21T05:31:37.988Z"
   },
   "LISTING-CREATE-012": {
     "status": "PASS",
@@ -117,7 +117,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.784Z"
+    "at": "2026-10-21T05:31:38.060Z"
   },
   "LISTING-CREATE-013": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.852Z"
+    "at": "2026-10-21T05:31:38.103Z"
   },
   "LISTING-CREATE-014": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:30.931Z"
+    "at": "2026-10-21T05:31:38.157Z"
   },
   "LISTING-CREATE-015": {
     "status": "PASS",
@@ -147,7 +147,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.144Z"
+    "at": "2026-10-21T05:31:38.278Z"
   },
   "LISTING-CREATE-016": {
     "status": "PASS",
@@ -157,7 +157,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.240Z"
+    "at": "2026-10-21T05:31:38.332Z"
   },
   "MODERATION-001": {
     "status": "PASS",
@@ -167,7 +167,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.311Z"
+    "at": "2026-10-21T05:31:38.376Z"
   },
   "MODERATION-002": {
     "status": "PASS",
@@ -177,7 +177,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.377Z"
+    "at": "2026-10-21T05:31:38.422Z"
   },
   "MODERATION-003": {
     "status": "PASS",
@@ -187,7 +187,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.458Z"
+    "at": "2026-10-21T05:31:38.492Z"
   },
   "MODERATION-004": {
     "status": "PASS",
@@ -197,7 +197,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.571Z"
+    "at": "2026-10-21T05:31:38.553Z"
   },
   "MODERATION-005": {
     "status": "PASS",
@@ -207,7 +207,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.628Z"
+    "at": "2026-10-21T05:31:38.587Z"
   },
   "MODERATION-006": {
     "status": "PASS",
@@ -217,7 +217,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.629Z"
+    "at": "2026-10-21T05:31:38.588Z"
   },
   "MODERATION-007": {
     "status": "PASS",
@@ -227,7 +227,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.630Z"
+    "at": "2026-10-21T05:31:38.589Z"
   },
   "MODERATION-008": {
     "status": "PASS",
@@ -237,7 +237,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.647Z"
+    "at": "2026-10-21T05:31:38.620Z"
   },
   "MODERATION-009": {
     "status": "PASS",
@@ -247,7 +247,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:31.667Z"
+    "at": "2026-10-21T05:31:38.629Z"
   },
   "MODERATION-010": {
     "status": "PASS",
@@ -257,7 +257,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.609Z"
+    "at": "2026-10-21T05:31:39.250Z"
   },
   "MODERATION-011": {
     "status": "PASS",
@@ -267,7 +267,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.615Z"
+    "at": "2026-10-21T05:31:39.255Z"
   },
   "MODERATION-012": {
     "status": "PASS",
@@ -277,7 +277,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.721Z"
+    "at": "2026-10-21T05:31:39.332Z"
   },
   "MODERATION-013": {
     "status": "PASS",
@@ -287,7 +287,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.722Z"
+    "at": "2026-10-21T05:31:39.333Z"
   },
   "MODERATION-014": {
     "status": "PASS",
@@ -297,7 +297,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.732Z"
+    "at": "2026-10-21T05:31:39.342Z"
   },
   "MODERATION-015": {
     "status": "PASS",
@@ -307,7 +307,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:32.947Z"
+    "at": "2026-10-21T05:31:39.453Z"
   },
   "MODERATION-016": {
     "status": "PASS",
@@ -317,17 +317,17 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:33.745Z"
+    "at": "2026-10-21T05:31:39.994Z"
   },
   "MODERATION-017": {
     "status": "PASS",
     "layers": ["API", "DATABASE", "CONCURRENCY"],
-    "note": "concurrent approve vs reject → one valid final state (REJECTED)",
+    "note": "concurrent approve vs reject → one valid final state (ACTIVE)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:34.534Z"
+    "at": "2026-10-21T05:31:40.505Z"
   },
   "MODERATION-018": {
     "status": "PASS",
@@ -337,7 +337,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:34.535Z"
+    "at": "2026-10-21T05:31:40.509Z"
   },
   "MEDIA-001": {
     "status": "PASS",
@@ -347,7 +347,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:34.567Z"
+    "at": "2026-10-21T05:31:40.527Z"
   },
   "MEDIA-002": {
     "status": "PASS",
@@ -357,27 +357,27 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:34.722Z"
+    "at": "2026-10-21T05:31:40.645Z"
   },
   "MEDIA-003": {
     "status": "PASS",
     "layers": ["API", "DATABASE"],
-    "note": "image count capped/handled: 14 rows after 14 attempts (last presign 201, commit 200)",
+    "note": "the maximum of 20 images attaches; the 21st is refused (presign 409 VEHICLE_IMAGES_FULL); 20 rows",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.028Z"
+    "at": "2026-10-21T05:31:41.843Z"
   },
   "MEDIA-004": {
     "status": "PASS",
-    "layers": ["API"],
-    "note": "image ordering endpoint responds (400); empty order rejected or no-op",
+    "layers": ["API", "DATABASE"],
+    "note": "reversing three images is stored in that order; a partial (422) or empty (400) order is refused",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.332Z"
+    "at": "2026-10-21T05:31:42.067Z"
   },
   "MEDIA-005": {
     "status": "PASS",
@@ -387,7 +387,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.407Z"
+    "at": "2026-10-21T05:31:42.135Z"
   },
   "MEDIA-006": {
     "status": "PASS",
@@ -397,7 +397,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.606Z"
+    "at": "2026-10-21T05:31:42.254Z"
   },
   "MEDIA-007": {
     "status": "PASS",
@@ -407,7 +407,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.721Z"
+    "at": "2026-10-21T05:31:42.319Z"
   },
   "MEDIA-008": {
     "status": "PASS",
@@ -417,7 +417,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.730Z"
+    "at": "2026-10-21T05:31:42.323Z"
   },
   "MEDIA-009": {
     "status": "PASS",
@@ -427,7 +427,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.738Z"
+    "at": "2026-10-21T05:31:42.327Z"
   },
   "MEDIA-010": {
     "status": "PASS",
@@ -437,7 +437,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.746Z"
+    "at": "2026-10-21T05:31:42.330Z"
   },
   "MEDIA-011": {
     "status": "PASS",
@@ -447,7 +447,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.799Z"
+    "at": "2026-10-21T05:31:42.348Z"
   },
   "MEDIA-012": {
     "status": "PASS",
@@ -457,7 +457,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.799Z"
+    "at": "2026-10-21T05:31:42.348Z"
   },
   "MEDIA-013": {
     "status": "PASS",
@@ -467,7 +467,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:36.995Z"
+    "at": "2026-10-21T05:31:42.448Z"
   },
   "LISTING-LIFE-001": {
     "status": "PASS",
@@ -477,7 +477,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:37.938Z"
+    "at": "2026-10-21T05:31:42.925Z"
   },
   "LISTING-LIFE-002": {
     "status": "PASS",
@@ -487,7 +487,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:37.975Z"
+    "at": "2026-10-21T05:31:42.946Z"
   },
   "LISTING-LIFE-003": {
     "status": "PASS",
@@ -497,17 +497,17 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:37.994Z"
+    "at": "2026-10-21T05:31:42.957Z"
   },
   "LISTING-LIFE-004": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "ACTIVE contributes to the public dealer count (available ACTIVE=3)",
+    "note": "ACTIVE contributes to the public dealer count (available ACTIVE=4)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:38.011Z"
+    "at": "2026-10-21T05:31:42.968Z"
   },
   "LISTING-LIFE-005": {
     "status": "PASS",
@@ -517,7 +517,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:38.043Z"
+    "at": "2026-10-21T05:31:42.990Z"
   },
   "LISTING-LIFE-006": {
     "status": "PASS",
@@ -527,7 +527,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:39.006Z"
+    "at": "2026-10-21T05:31:43.456Z"
   },
   "LISTING-LIFE-007": {
     "status": "PASS",
@@ -537,7 +537,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:39.877Z"
+    "at": "2026-10-21T05:31:43.908Z"
   },
   "LISTING-LIFE-008": {
     "status": "PASS",
@@ -547,7 +547,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:39.884Z"
+    "at": "2026-10-21T05:31:43.913Z"
   },
   "LISTING-LIFE-009": {
     "status": "PASS",
@@ -557,7 +557,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:39.907Z"
+    "at": "2026-10-21T05:31:43.926Z"
   },
   "LISTING-LIFE-010": {
     "status": "PASS",
@@ -567,7 +567,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:39.976Z"
+    "at": "2026-10-21T05:31:43.951Z"
   },
   "LISTING-LIFE-011": {
     "status": "PASS",
@@ -577,7 +577,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:40.072Z"
+    "at": "2026-10-21T05:31:43.992Z"
   },
   "LISTING-LIFE-012": {
     "status": "PASS",
@@ -587,7 +587,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:40.957Z"
+    "at": "2026-10-21T05:31:44.528Z"
   },
   "LISTING-LIFE-013": {
     "status": "PASS",
@@ -597,7 +597,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:41.818Z"
+    "at": "2026-10-21T05:31:45.030Z"
   },
   "LISTING-LIFE-014": {
     "status": "PASS",
@@ -607,7 +607,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:42.674Z"
+    "at": "2026-10-21T05:31:45.514Z"
   },
   "LISTING-LIFE-015": {
     "status": "PASS",
@@ -617,7 +617,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:43.578Z"
+    "at": "2026-10-21T05:31:46.041Z"
   },
   "LISTING-LIFE-016": {
     "status": "PASS",
@@ -627,17 +627,17 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:43.600Z"
+    "at": "2026-10-21T05:31:46.054Z"
   },
   "LISTING-LIFE-017": {
     "status": "PASS",
     "layers": ["API", "DATABASE"],
-    "note": "SOLD removed from active listing count (count reads ACTIVE available=5)",
+    "note": "SOLD removed from active listing count (count reads ACTIVE available=6)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:43.623Z"
+    "at": "2026-10-21T05:31:46.066Z"
   },
   "LISTING-LIFE-018": {
     "status": "PASS",
@@ -647,7 +647,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:43.642Z"
+    "at": "2026-10-21T05:31:46.075Z"
   },
   "LISTING-LIFE-019": {
     "status": "PASS",
@@ -657,7 +657,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:44.607Z"
+    "at": "2026-10-21T05:31:46.604Z"
   },
   "LISTING-LIFE-020": {
     "status": "PASS",
@@ -667,7 +667,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:45.606Z"
+    "at": "2026-10-21T05:31:47.131Z"
   },
   "LISTING-LIFE-021": {
     "status": "PASS",
@@ -677,7 +677,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:46.534Z"
+    "at": "2026-10-21T05:31:47.698Z"
   },
   "LISTING-LIFE-022": {
     "status": "PASS",
@@ -687,7 +687,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:47.507Z"
+    "at": "2026-10-21T05:31:48.178Z"
   },
   "LISTING-LIFE-023": {
     "status": "PASS",
@@ -697,7 +697,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:48.336Z"
+    "at": "2026-10-21T05:31:48.664Z"
   },
   "LISTING-LIFE-024": {
     "status": "PASS",
@@ -707,7 +707,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:49.367Z"
+    "at": "2026-10-21T05:31:49.201Z"
   },
   "LISTING-LIFE-025": {
     "status": "PASS",
@@ -717,7 +717,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:49.368Z"
+    "at": "2026-10-21T05:31:49.201Z"
   },
   "LISTING-LIFE-026": {
     "status": "PASS",
@@ -727,7 +727,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:50.376Z"
+    "at": "2026-10-21T05:31:49.707Z"
   },
   "LISTING-LIFE-027": {
     "status": "PASS",
@@ -737,7 +737,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:50.411Z"
+    "at": "2026-10-21T05:31:49.732Z"
   },
   "LISTING-LIFE-028": {
     "status": "PASS",
@@ -747,7 +747,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:51.347Z"
+    "at": "2026-10-21T05:31:50.242Z"
   },
   "LISTING-LIFE-029": {
     "status": "PASS",
@@ -757,7 +757,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:52.252Z"
+    "at": "2026-10-21T05:31:50.682Z"
   },
   "LISTING-LIFE-030": {
     "status": "PASS",
@@ -767,7 +767,7 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:53.086Z"
+    "at": "2026-10-21T05:31:51.168Z"
   },
   "LISTING-LIFE-031": {
     "status": "PASS",
@@ -777,6 +777,6 @@
     "bug": null,
     "auth": null,
     "area": "listing",
-    "at": "2026-10-20T15:33:54.048Z"
+    "at": "2026-10-21T05:31:51.690Z"
   }
 }

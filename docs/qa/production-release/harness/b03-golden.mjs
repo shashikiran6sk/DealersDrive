@@ -156,7 +156,14 @@ await h.check(r, 'GOLDEN-002', async () => {
   await page.getByRole('menuitem', { name: 'Logout' }).click();
   await page.waitForLoadState('networkidle');
   await b.uiLogin(page, { phone, name: 'unused', returnTo: '/saved' });
-  const savedListed = await page.locator(`a[href="/car/${car.slug}"]`).count();
+  // The saved list can render a moment after the sign-in redirect settles (observed once in
+  // four runs: 0 links at load, 1 within 3 s); wait for it rather than sample once.
+  const savedListed = await page
+    .locator(`a[href="/car/${car.slug}"]`)
+    .first()
+    .waitFor({ timeout: 8000 })
+    .then(() => 1)
+    .catch(() => 0);
   await page.goto(`${b.WEB}/car/${car.slug}?enquire=1`, { waitUntil: 'networkidle' });
   await page.locator('textarea[name=message]').fill('Golden two: still available?');
   await page.getByRole('button', { name: 'Send enquiry' }).click();
@@ -186,8 +193,11 @@ await h.check(r, 'GOLDEN-003', async () => {
   const D = await w.onboard('Golden3');
   const actx = await b.context({ cookie: admin.cookie });
   const a = await b.open(actx, `/admin/dealers/${D.dealerId}`);
-  for (let i = 0; i < 3; i++) {
-    await a.page.getByRole('button', { name: 'Verify', exact: true }).first().click();
+  // #299: two document categories, so verify every document the page offers.
+  for (let i = 0; i < 4; i++) {
+    const verify = a.page.getByRole('button', { name: 'Verify', exact: true });
+    if ((await verify.count()) === 0) break;
+    await verify.first().click();
     if (await a.page.getByRole('dialog').count()) await dialogConfirm(a.page, /verify/i);
     await a.page.waitForLoadState('networkidle');
     await b.sleep(600);
@@ -244,7 +254,7 @@ await h.check(r, 'GOLDEN-003', async () => {
   return {
     layers: ['BROWSER', 'API', 'DATABASE'],
     auth: 'SIM-GOOGLE',
-    note: `onboarding (API, SIM-GOOGLE) → Admin UI verifies 3 documents + typed-confirmation Approve → ACTIVE → listing (API details, 6 photos) → Admin UI checks + "Approve and publish" → public 200 → enquiry → dealer UI "Mark sold" confirm → SOLD, public 404, customer still sees enquiry (${eAfter.status}); listing audit ${JSON.stringify(trail)}. ${HYBRID}`,
+    note: `onboarding (API, SIM-GOOGLE) → Admin UI verifies each document shown (2 since #299) + typed-confirmation Approve → ACTIVE → listing (API details, 6 photos) → Admin UI checks + "Approve and publish" → public 200 → enquiry → dealer UI "Mark sold" confirm → SOLD, public 404, customer still sees enquiry (${eAfter.status}); listing audit ${JSON.stringify(trail)}. ${HYBRID}`,
   };
 });
 
@@ -487,6 +497,8 @@ await h.check(r, 'GOLDEN-008', async () => {
   };
   const pctx = await b.context();
   const pub = await b.open(pctx, `/car/${car.slug}`);
+  pub.title = await pub.page.title();
+  pub.gone = pub.status === 404 || /not found/i.test(pub.title);
   await pctx.close();
   await a.page.reload({ waitUntil: 'networkidle' });
   const reason = a.page.getByLabel(/reason/i).first();
@@ -508,12 +520,12 @@ await h.check(r, 'GOLDEN-008', async () => {
     enquiry: (await enquiryOf(e.json.id)).status,
     dealerApi: (await D.get('/v1/dealer/enquiries')).status,
   };
-  r.ev({ suspended, during, publicPage: pub.status, after });
+  r.ev({ suspended, during, publicPage: pub.status, publicTitle: pub.title, after });
   h.assert(
     suspended === 'SUSPENDED' &&
       during.car === 404 &&
       during.dealer === 404 &&
-      pub.status === 404 &&
+      pub.gone &&
       during.customerSees &&
       after.dealer === 'ACTIVE' &&
       after.car === 200 &&
@@ -523,7 +535,7 @@ await h.check(r, 'GOLDEN-008', async () => {
   );
   return {
     layers: ['BROWSER', 'API', 'DATABASE'],
-    note: `Admin UI suspend (reason) → SUSPENDED: car/dealer public 404 (web page ${pub.status}), listing kept ${during.listing}, dealer console API ${during.dealerApi}, customer still sees the enquiry → Admin UI reinstate → ACTIVE, car public 200, listing ACTIVE, enquiry ${after.enquiry} intact`,
+    note: `Admin UI suspend (reason) → SUSPENDED: car/dealer public API 404 (web page ${pub.status} '${pub.title}'${pub.status === 404 ? '' : ', soft 404 BUG-101'}), listing kept ${during.listing}, dealer console API ${during.dealerApi}, customer still sees the enquiry → Admin UI reinstate → ACTIVE, car public 200, listing ACTIVE, enquiry ${after.enquiry} intact`,
   };
 });
 
@@ -605,7 +617,10 @@ await h.check(r, 'GOLDEN-010', async () => {
   await dctx.close();
   const p2page = await pctx.newPage();
   const p2resp = await p2page.goto(`${b.WEB}/car/${car.slug}`, { waitUntil: 'load' });
-  const p2 = { status: p2resp?.status() ?? 0 };
+  // Removal is judged on what is served: HTTP 404, or the not-found document served
+  // with 200 (soft 404, BUG-101 — judged under SEO-009).
+  const p2 = { status: p2resp?.status() ?? 0, title: await p2page.title() };
+  p2.gone = p2.status === 404 || /not found/i.test(p2.title);
   await pctx.close();
   const sold = (await listingOf(car.listingId)).status;
   const trail = await audits(car.listingId);
@@ -630,14 +645,14 @@ await h.check(r, 'GOLDEN-010', async () => {
       p1.status === 200 &&
       /reserved/i.test(reservedText) &&
       sold === 'SOLD' &&
-      p2.status === 404 &&
+      p2.gone &&
       custSees &&
       !sitemap,
     'lifecycle',
   );
   return {
     layers: ['BROWSER', 'API', 'DATABASE'],
-    note: `dealer UI Mark reserved → RESERVED: public page 200 with a Reserved notice (Enquire button ×${enquireOnReserved}; new enquiry → ${newEnquiry}) → Mark sold (confirm) → SOLD: public 404, out of the sitemap; customer’s enquiry history kept; audit ${JSON.stringify(trail)}`,
+    note: `dealer UI Mark reserved → RESERVED: public page 200 with a Reserved notice (Enquire button ×${enquireOnReserved}; new enquiry → ${newEnquiry}) → Mark sold (confirm) → SOLD: public page no longer serves the car (HTTP ${p2.status} '${p2.title}'${p2.status === 404 ? '' : ', soft 404 BUG-101'}), out of the sitemap; customer’s enquiry history kept; audit ${JSON.stringify(trail)}`,
   };
 });
 

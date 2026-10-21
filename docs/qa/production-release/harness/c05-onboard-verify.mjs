@@ -133,18 +133,27 @@ await h.check(r, 'ONBOARD-006', async () => {
     mapsUrl: 'https://maps.app.goo.gl/abcdEFGH1234',
   });
   d.cookie = h.sessionCookieOf(ob) ?? d.cookie;
-  const { pan, gstin } = w.panAndGstin();
-  await d.patch('/v1/dealer/onboarding', { gstin });
-  const c1 = await d.get('/v1/dealer/completeness');
-  await d.patch('/v1/dealer/onboarding', { pan });
-  const c2 = await d.get('/v1/dealer/completeness');
-  r.ev(c1, c2);
-  const business = c2.json.steps.find((s) => s.key === 'business');
-  return c2.status === 200 && business && business.complete
+  // #299/#302: resume is proved on the documents step — one category uploaded, a new
+  // session (sign in again) sees it persisted and the step still incomplete, then the
+  // second category completes it.
+  const first = await w.uploadDocument(d, 'PAN_CARD');
+  const again = await h.dealerPhone('Resume', d.phone);
+  const c1 = await again.get('/v1/dealer/completeness');
+  const second = await w.uploadDocument(again, 'GST_CERTIFICATE');
+  const c2 = await again.get('/v1/dealer/completeness');
+  r.ev(c1, c2, { firstCommit: first.commit?.status, secondCommit: second.commit?.status });
+  const docs1 = c1.json?.steps?.find((s) => s.key === 'documents');
+  const docs2 = c2.json?.steps?.find((s) => s.key === 'documents');
+  return first.commit?.status === 200 &&
+    docs1 &&
+    !docs1.complete &&
+    second.commit?.status === 200 &&
+    docs2?.complete
     ? {
-        note: 'partial onboarding persists and resumes step by step (business step completes once GSTIN+PAN saved)',
+        layers: ['API', 'DATABASE'],
+        note: 'partial onboarding persists across a new sign-in: one document saved, documents step incomplete; the second completes it',
       }
-    : { status: 'FAIL', note: 'did not resume' };
+    : { status: 'FAIL', note: `did not resume: ${JSON.stringify({ docs1, docs2 })}` };
 });
 await h.check(r, 'ONBOARD-007', async () => {
   // Refresh preserves progress: a fresh GET after writes returns the saved state.
@@ -202,8 +211,6 @@ await h.check(r, 'ONBOARD-010', async () => {
     mapsUrl: 'https://maps.app.goo.gl/abcdEFGH1234',
   });
   d.cookie = h.sessionCookieOf(ob) ?? d.cookie;
-  const { pan, gstin } = w.panAndGstin();
-  await d.patch('/v1/dealer/onboarding', { pan, gstin });
   const submit = await d.post('/v1/dealer/submit');
   const status = await h.one('SELECT status FROM dealers WHERE id=$1', [ob.json.dealer.id]);
   r.ev(submit, { dealerStatus: status.status });
@@ -215,18 +222,26 @@ await h.check(r, 'ONBOARD-011', async () => {
   const owner = await w.onboard('BadDoc', { submit: false });
   const tooBig = await owner.post('/v1/dealer/documents/presign', {
     type: 'GST_CERTIFICATE',
+    category: 'BUSINESS_IDENTITY',
     fileName: 'big.pdf',
     mimeType: 'application/pdf',
     bytes: 99_000_000,
   });
   const badType = await owner.post('/v1/dealer/documents/presign', {
     type: 'GST_CERTIFICATE',
+    category: 'BUSINESS_IDENTITY',
     fileName: 'x.exe',
     mimeType: 'application/x-msdownload',
     bytes: 1000,
   });
   r.ev(tooBig, badType);
-  return [400, 422].includes(tooBig.status) && [400, 422].includes(badType.status)
+  const fieldOf = (x) => (x.json?.errors ?? []).map((e) => e.field);
+  return [400, 422].includes(tooBig.status) &&
+    [400, 422].includes(badType.status) &&
+    fieldOf(tooBig).includes('body.bytes') &&
+    !fieldOf(tooBig).includes('body.category') &&
+    fieldOf(badType).includes('body.mimeType') &&
+    !fieldOf(badType).includes('body.category')
     ? {
         layers: ['API'],
         note: `oversize (${tooBig.status}) and disallowed mime (${badType.status}) rejected at presign`,

@@ -7,7 +7,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:02.011Z"
+    "at": "2026-10-21T05:28:42.440Z"
   },
   "NOTIFY-002": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:02.256Z"
+    "at": "2026-10-21T05:28:42.608Z"
   },
   "NOTIFY-003": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:02.266Z"
+    "at": "2026-10-21T05:28:42.624Z"
   },
   "NOTIFY-004": {
     "status": "PASS",
@@ -37,17 +37,17 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:02.267Z"
+    "at": "2026-10-21T05:28:42.624Z"
   },
   "NOTIFY-005": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "enquiry creation succeeds (201) with no enquiry-notification dependency (deliveries 1055→1055); listing/enquiry/complaint emails are not implemented and nothing assumes them",
+    "note": "enquiry creation succeeds (201) with no enquiry-notification dependency (deliveries 7271→7271); listing/enquiry/complaint emails are not implemented and nothing assumes them",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:03.388Z"
+    "at": "2026-10-21T05:28:43.334Z"
   },
   "RECOVERY-001": {
     "status": "PASS",
@@ -57,7 +57,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:03.393Z"
+    "at": "2026-10-21T05:28:43.338Z"
   },
   "RECOVERY-002": {
     "status": "PASS",
@@ -67,7 +67,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:03.393Z"
+    "at": "2026-10-21T05:28:43.338Z"
   },
   "RECOVERY-003": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:04.459Z"
+    "at": "2026-10-21T05:28:44.059Z"
   },
   "RECOVERY-004": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:04.524Z"
+    "at": "2026-10-21T05:28:44.121Z"
   },
   "RECOVERY-005": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:04.910Z"
+    "at": "2026-10-21T05:28:44.375Z"
   },
   "RECOVERY-006": {
     "status": "PASS",
@@ -107,7 +107,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:04.915Z"
+    "at": "2026-10-21T05:28:44.379Z"
   },
   "RECOVERY-007": {
     "status": "PASS",
@@ -117,7 +117,7 @@
     "bug": null,
     "auth": "SIM-GOOGLE",
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:04.920Z"
+    "at": "2026-10-21T05:28:44.385Z"
   },
   "RECOVERY-008": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:05.226Z"
+    "at": "2026-10-21T05:28:44.542Z"
   },
   "RECOVERY-009": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:05.227Z"
+    "at": "2026-10-21T05:28:44.542Z"
   },
   "RECOVERY-010": {
     "status": "PASS",
@@ -147,7 +147,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:06.267Z"
+    "at": "2026-10-21T05:28:45.160Z"
   },
   "RECOVERY-011": {
     "status": "PASS",
@@ -157,7 +157,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:07.300Z"
+    "at": "2026-10-21T05:28:45.789Z"
   },
   "RECOVERY-012": {
     "status": "PASS",
@@ -167,27 +167,27 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.302Z"
+    "at": "2026-10-21T05:28:46.462Z"
   },
   "RECOVERY-013": {
     "status": "PASS",
     "layers": ["API", "DATABASE"],
-    "note": "persisted state survives restarts (Postgres durable; the API was restarted during this session): 369 dealers, 613 listings, health 200",
+    "note": "persisted state survives restarts (Postgres durable; the API was restarted during this session): 690 dealers, 978 listings, health 200",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.309Z"
+    "at": "2026-10-21T05:28:46.465Z"
   },
   "OBS-001": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "requests carry correlation IDs (x-request-id + x-trace-id: 79K1tQC0iw)",
+    "note": "requests carry correlation IDs (x-request-id + x-trace-id: HhFuMVeBZ-)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.369Z"
+    "at": "2026-10-21T05:28:46.499Z"
   },
   "OBS-002": {
     "status": "PASS",
@@ -197,17 +197,17 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.373Z"
+    "at": "2026-10-21T05:28:46.501Z"
   },
   "OBS-003": {
     "status": "PASS",
     "layers": ["API"],
-    "note": "authorization failure observable (→ 401 + traceId YkFnmZ1jN_)",
+    "note": "authorization failure observable (→ 401 + traceId SLRSidVF8y)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.405Z"
+    "at": "2026-10-21T05:28:46.521Z"
   },
   "OBS-004": {
     "status": "PASS",
@@ -217,7 +217,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.639Z"
+    "at": "2026-10-21T05:28:46.685Z"
   },
   "OBS-005": {
     "status": "PASS",
@@ -227,7 +227,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:08.937Z"
+    "at": "2026-10-21T05:28:46.897Z"
   },
   "OBS-006": {
     "status": "PASS",
@@ -237,7 +237,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:09.896Z"
+    "at": "2026-10-21T05:28:47.541Z"
   },
   "OBS-007": {
     "status": "PASS",
@@ -247,7 +247,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:10.897Z"
+    "at": "2026-10-21T05:28:48.254Z"
   },
   "OBS-008": {
     "status": "PASS",
@@ -257,7 +257,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:10.901Z"
+    "at": "2026-10-21T05:28:48.255Z"
   },
   "OBS-009": {
     "status": "PASS",
@@ -267,7 +267,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:10.916Z"
+    "at": "2026-10-21T05:28:48.262Z"
   },
   "OBS-010": {
     "status": "PASS",
@@ -277,7 +277,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:10.970Z"
+    "at": "2026-10-21T05:28:48.400Z"
   },
   "OBS-011": {
     "status": "PASS",
@@ -287,7 +287,7 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:10.983Z"
+    "at": "2026-10-21T05:28:48.413Z"
   },
   "OBS-012": {
     "status": "PASS",
@@ -297,6 +297,6 @@
     "bug": null,
     "auth": null,
     "area": "notify-recovery-obs",
-    "at": "2026-10-20T15:46:11.219Z"
+    "at": "2026-10-21T05:28:48.584Z"
   }
 }

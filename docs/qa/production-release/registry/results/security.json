@@ -7,7 +7,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:20.303Z"
+    "at": "2026-10-21T05:28:25.361Z"
   },
   "API-SEC-002": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:20.319Z"
+    "at": "2026-10-21T05:28:25.372Z"
   },
   "API-SEC-003": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.280Z"
+    "at": "2026-10-21T05:28:25.867Z"
   },
   "API-SEC-004": {
     "status": "PASS",
@@ -37,7 +37,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.315Z"
+    "at": "2026-10-21T05:28:25.876Z"
   },
   "API-SEC-005": {
     "status": "PASS",
@@ -47,7 +47,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.319Z"
+    "at": "2026-10-21T05:28:25.878Z"
   },
   "API-SEC-006": {
     "status": "PASS",
@@ -57,17 +57,17 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.364Z"
+    "at": "2026-10-21T05:28:25.898Z"
   },
   "API-SEC-007": {
     "status": "PASS",
-    "layers": ["API"],
-    "note": "ticket create path n/a; enquiry/saved are session-scoped with no id param (see AUTH-014)",
+    "layers": ["API", "SECURITY"],
+    "note": "Customer A → Customer B ticket → 404",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.371Z"
+    "at": "2026-10-21T05:28:25.916Z"
   },
   "API-SEC-008": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.394Z"
+    "at": "2026-10-21T05:28:25.930Z"
   },
   "API-SEC-009": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.412Z"
+    "at": "2026-10-21T05:28:25.939Z"
   },
   "API-SEC-010": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.456Z"
+    "at": "2026-10-21T05:28:25.964Z"
   },
   "API-SEC-011": {
     "status": "PASS",
@@ -107,17 +107,17 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.467Z"
+    "at": "2026-10-21T05:28:25.969Z"
   },
   "API-SEC-012": {
     "status": "PASS",
     "layers": ["API", "SECURITY"],
-    "note": "customer sign-in rate limited on the RL instance: 14/14 attempts → 429 (per-number cap 10/600s)",
+    "note": "customer sign-in rate limited on the RL instance: 4/14 attempts → 429 (per-number cap 10/600s)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.627Z"
+    "at": "2026-10-21T05:28:26.069Z"
   },
   "API-SEC-013": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.675Z"
+    "at": "2026-10-21T05:28:26.093Z"
   },
   "API-SEC-014": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.680Z"
+    "at": "2026-10-21T05:28:26.095Z"
   },
   "STORAGE-001": {
     "status": "PASS",
@@ -147,19 +147,9 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.703Z"
+    "at": "2026-10-21T05:28:26.105Z"
   },
   "STORAGE-002": {
-    "status": "PASS",
-    "layers": ["API", "SECURITY"],
-    "note": "committing another dealer's documentId → 400 (ownership validated)",
-    "evidence": [],
-    "bug": null,
-    "auth": null,
-    "area": "security",
-    "at": "2026-10-20T15:42:21.714Z"
-  },
-  "STORAGE-003": {
     "status": "PASS",
     "layers": ["STORAGE", "SECURITY"],
     "note": "repointing a presigned URL to another key → 422 (signature binds the key). NOTE: a forged-from-default-secret signature is the separate BUG-001.",
@@ -167,7 +157,17 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:21.933Z"
+    "at": "2026-10-21T05:28:26.336Z"
+  },
+  "STORAGE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "committing another dealer's documentId → 404 NOT_FOUND (ownership validated; B's row untouched)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-21T05:28:26.223Z"
   },
   "STORAGE-004": {
     "status": "PASS",
@@ -177,7 +177,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.127Z"
+    "at": "2026-10-21T05:28:26.442Z"
   },
   "STORAGE-005": {
     "status": "PASS",
@@ -187,7 +187,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.132Z"
+    "at": "2026-10-21T05:28:26.445Z"
   },
   "STORAGE-006": {
     "status": "PASS",
@@ -197,7 +197,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.141Z"
+    "at": "2026-10-21T05:28:26.450Z"
   },
   "STORAGE-007": {
     "status": "PASS",
@@ -207,7 +207,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.151Z"
+    "at": "2026-10-21T05:28:26.455Z"
   },
   "STORAGE-008": {
     "status": "PASS",
@@ -217,17 +217,17 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.159Z"
+    "at": "2026-10-21T05:28:26.460Z"
   },
   "ABUSE-001": {
     "status": "PASS",
     "layers": ["API", "SECURITY"],
-    "note": "OTP/sign-in abuse rate-limited (14/14 → 429)",
+    "note": "OTP/sign-in abuse rate-limited (8/14 → 429)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:22.272Z"
+    "at": "2026-10-21T05:28:26.535Z"
   },
   "ABUSE-002": {
     "status": "PASS",
@@ -237,7 +237,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:38.569Z"
+    "at": "2026-10-21T05:28:35.527Z"
   },
   "ABUSE-003": {
     "status": "PASS",
@@ -247,7 +247,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:38.815Z"
+    "at": "2026-10-21T05:28:35.685Z"
   },
   "ABUSE-004": {
     "status": "PASS",
@@ -257,7 +257,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:38.823Z"
+    "at": "2026-10-21T05:28:35.691Z"
   },
   "ABUSE-005": {
     "status": "PASS",
@@ -267,7 +267,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:38.843Z"
+    "at": "2026-10-21T05:28:35.709Z"
   },
   "ABUSE-006": {
     "status": "PASS",
@@ -277,7 +277,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:38.878Z"
+    "at": "2026-10-21T05:28:35.732Z"
   },
   "ABUSE-007": {
     "status": "PASS",
@@ -287,7 +287,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:39.666Z"
+    "at": "2026-10-21T05:28:36.200Z"
   },
   "ABUSE-008": {
     "status": "PASS",
@@ -297,7 +297,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:39.673Z"
+    "at": "2026-10-21T05:28:36.204Z"
   },
   "ABUSE-009": {
     "status": "PASS",
@@ -307,7 +307,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:39.697Z"
+    "at": "2026-10-21T05:28:36.217Z"
   },
   "ABUSE-010": {
     "status": "PASS",
@@ -317,7 +317,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:40.000Z"
+    "at": "2026-10-21T05:28:36.377Z"
   },
   "ABUSE-011": {
     "status": "PASS",
@@ -327,7 +327,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:40.347Z"
+    "at": "2026-10-21T05:28:36.562Z"
   },
   "ABUSE-012": {
     "status": "PASS",
@@ -337,7 +337,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:40.357Z"
+    "at": "2026-10-21T05:28:36.568Z"
   },
   "CONCURRENCY-001": {
     "status": "PASS",
@@ -347,7 +347,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:40.416Z"
+    "at": "2026-10-21T05:28:36.600Z"
   },
   "CONCURRENCY-002": {
     "status": "PASS",
@@ -357,7 +357,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:41.343Z"
+    "at": "2026-10-21T05:28:37.076Z"
   },
   "CONCURRENCY-003": {
     "status": "PASS",
@@ -367,7 +367,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:42.165Z"
+    "at": "2026-10-21T05:28:37.575Z"
   },
   "CONCURRENCY-004": {
     "status": "PASS",
@@ -377,7 +377,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:43.107Z"
+    "at": "2026-10-21T05:28:38.182Z"
   },
   "CONCURRENCY-005": {
     "status": "PASS",
@@ -387,7 +387,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:43.411Z"
+    "at": "2026-10-21T05:28:38.356Z"
   },
   "CONCURRENCY-006": {
     "status": "PASS",
@@ -397,7 +397,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:44.244Z"
+    "at": "2026-10-21T05:28:38.804Z"
   },
   "CONCURRENCY-007": {
     "status": "PASS",
@@ -407,17 +407,17 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:45.308Z"
+    "at": "2026-10-21T05:28:39.501Z"
   },
   "CONCURRENCY-008": {
     "status": "PASS",
     "layers": ["API", "DATABASE", "CONCURRENCY"],
-    "note": "concurrent admin approvals → ACTIVE once (statuses 422/200)",
+    "note": "concurrent admin approvals → ACTIVE once (statuses 200/422)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:45.615Z"
+    "at": "2026-10-21T05:28:39.670Z"
   },
   "CONCURRENCY-009": {
     "status": "PASS",
@@ -427,7 +427,7 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:47.508Z"
+    "at": "2026-10-21T05:28:40.963Z"
   },
   "CONCURRENCY-010": {
     "status": "PASS",
@@ -437,6 +437,6 @@
     "bug": null,
     "auth": null,
     "area": "security",
-    "at": "2026-10-20T15:42:47.847Z"
+    "at": "2026-10-21T05:28:41.166Z"
   }
 }

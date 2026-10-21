@@ -1,0 +1,22 @@
+{
+  "UAT-DISC-001": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "a left swipe on the phone gallery advances it (1 / 6 → 2 / 6)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "agent-uat-touch",
+    "at": "2026-10-21T05:40:06.186Z"
+  },
+  "UAT-DISC-002": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "Back → /cars?fuel=diesel (filter kept), Forward → the car again (\"2023 Tata Nexon XZ+\")",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "agent-uat-touch",
+    "at": "2026-10-21T05:40:07.605Z"
+  }
+}

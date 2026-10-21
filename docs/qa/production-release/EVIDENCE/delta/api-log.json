@@ -10,7 +10,7 @@
   {
     "ok": 2,
     "refused": 6,
-    "other": [201, 409, 409, 201, 409],
+    "other": [201, 201, 409, 409, 409],
     "db": {
       "n": 5,
       "status": "OPEN",
@@ -161,6 +161,33 @@
     "supportReject": 403,
     "salesVerify": 403,
     "still": "VERIFIED"
+  },
+  {
+    "logs": 2,
+    "emailsByTemplate": {
+      "dealer.application.received": 367,
+      "admin.application.received": 2646,
+      "dealer.application.approved": 326,
+      "admin.listing.submitted": 2822,
+      "dealer.listing.approved": 352,
+      "dealer.listing.rejected": 6,
+      "dealer.enquiry.received": 183,
+      "dealer.account.suspended": 66,
+      "dealer.application.rejected": 11,
+      "dealer.application.changes-requested": 6,
+      "dealer.application.resubmitted": 6,
+      "admin.application.resubmitted": 36,
+      "dealer.account.reinstated": 19,
+      "admin.listing.reactivation-requested": 28,
+      "admin.profile-change.submitted": 36,
+      "dealer.profile-change.approved": 2,
+      "dealer.listing.changes-requested": 2,
+      "admin.listing.resubmitted": 16,
+      "dealer.listing.reactivation-approved": 2,
+      "dealer.application.closed": 4,
+      "admin.support.ticket-created": 363
+    },
+    "templatesWithAMobileNumber": {}
   },
   {
     "email": null,

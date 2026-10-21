@@ -147,7 +147,29 @@ await h.check(r, 'PROD-008', async () => {
       }
     : { status: 'FAIL', note: `local ${localRefused} r2 ${r2Ok}` };
 });
+// PROD-009 — email sender configuration (env.ts: production requires resend, an API key and a
+// monitored sender on a verified domain).
 await h.check(r, 'PROD-009', async () => {
+  const cases = {
+    valid: probeEnv({}).code,
+    console: probeEnv({ MAIL_DRIVER: 'console' }).code,
+    noApiKey: probeEnv({ RESEND_API_KEY: '' }).code,
+    resendDevDomain: probeEnv({ MAIL_FROM: 'Dealers-Drive <updates@resend.dev>' }).code,
+    noReply: probeEnv({ MAIL_FROM: 'Dealers-Drive <no-reply@dealers-drive.com>' }).code,
+    notAnAddress: probeEnv({ MAIL_FROM: 'Dealers-Drive' }).code,
+  };
+  r.ev(cases);
+  const refusedAll = ['console', 'noApiKey', 'resendDevDomain', 'noReply', 'notAnAddress'].every(
+    (k) => cases[k] !== 0,
+  );
+  return cases.valid === 0 && refusedAll
+    ? {
+        layers: ['STATIC', 'API'],
+        note: 'production boots with resend + API key + a monitored sender on its own domain; refuses console mail, a missing RESEND_API_KEY, a resend.dev sender, a no-reply sender and a malformed MAIL_FROM. Real deliverability (SPF/DKIM/DMARC) is MANUAL-UAT.',
+      }
+    : { status: 'FAIL', note: JSON.stringify(cases) };
+});
+await h.check(r, 'PROD-010', async () => {
   const noGoogle = refused({ GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '' });
   const envExample = readFileSync(resolve(ROOT, '.env.example'), 'utf8');
   r.ev({
@@ -161,7 +183,7 @@ await h.check(r, 'PROD-009', async () => {
       }
     : { status: 'FAIL', note: 'google not required' };
 });
-await h.check(r, 'PROD-010', async () => {
+await h.check(r, 'PROD-011', async () => {
   const noMsg91 = refused({ MSG91_AUTH_KEY: '' });
   r.ev({ msg91RequiredInProd: noMsg91 });
   return noMsg91
@@ -171,7 +193,7 @@ await h.check(r, 'PROD-010', async () => {
       }
     : { status: 'FAIL', note: 'msg91 key not required' };
 });
-await h.check(r, 'PROD-011', async () => {
+await h.check(r, 'PROD-012', async () => {
   // Secrets absent from client bundle/repository.
   const staticDir = resolve(ROOT, 'apps/web/.next/static');
   let hits = [];
@@ -200,7 +222,7 @@ await h.check(r, 'PROD-011', async () => {
       }
     : { status: 'FAIL', bug: 'SECRET-BUNDLE', note: `secret in client bundle: ${hits.join(', ')}` };
 });
-await h.check(r, 'PROD-012', async () => {
+await h.check(r, 'PROD-013', async () => {
   // Debug/docs/internal endpoints follow production policy: DOCS_ENABLED gates /api/docs; metrics token-gated.
   const docsGate = readFileSync(resolve(ROOT, 'apps/api/src/routes.ts'), 'utf8').includes(
     'env.DOCS_ENABLED',
@@ -216,14 +238,14 @@ await h.check(r, 'PROD-012', async () => {
       }
     : { status: 'FAIL', note: `docs ${docsGate} metrics ${metricsGate}` };
 });
-await h.check(r, 'PROD-013', async () => {
+await h.check(r, 'PROD-DISC-001', async () => {
   const defaultSecretRefused = refused({ SESSION_SECRET: 'dealers-drive-local-session-secret' });
   r.ev({ defaultSessionSecretRefused: defaultSecretRefused });
-  // NOTE: UPLOAD_SIGNING_SECRET has no such production guard — see BUG-001 / SEC-DISC-001.
+  // UPLOAD_SIGNING_SECRET is unused under r2: the signed stand-ins mount only for the local driver (#241).
   return defaultSecretRefused
     ? {
         layers: ['API', 'SECURITY'],
-        note: 'production refuses the default SESSION_SECRET. (UPLOAD_SIGNING_SECRET has NO equivalent guard — tracked as BUG-001/SEC-DISC-001.)',
+        note: 'production refuses the default SESSION_SECRET. UPLOAD_SIGNING_SECRET has no such guard but is unused under r2 (stand-ins are local-driver only, #241; SEC-DISC-001a–c).',
       }
     : { status: 'FAIL', note: 'default session secret accepted' };
 });

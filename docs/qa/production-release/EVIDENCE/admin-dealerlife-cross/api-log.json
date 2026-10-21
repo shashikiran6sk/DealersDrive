@@ -5,47 +5,9 @@
     "body": {
       "data": [
         {
-          "id": "ae4848c1-0ebe-4614-ada7-37550ac6a304",
-          "slug": "listb-motors-409463aecb9d-vellore-tamil-nadu",
-          "brandName": "ListB Motors 409463aecb9d",
-          "initials": "LM",
-          "city": "Vellore",
-          "district": "Vellore",
-          "state": "Tamil Nadu",
-          "status": "ACTIVE",
-          "statusLabel": "Active",
-          "statusTone": "ok",
-          "vehicleCount": 0,
-          "activeCount": 0,
-          "joinedAt": "2026-10-20T15:33:30.197Z",
-          "joinedLabel": "20 Oct 2026",
-          "creditBalance": 0,
-          "documentsVerified": true,
-          "hasPendingProfileEdit": false
-        },
-        {
-          "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-          "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
-          "brandName": "ListA Motors 409457ffec59",
-          "initials": "LM",
-          "city": "Vellore",
-          "district": "Vellore",
-          "state": "Tamil Nadu",
-          "status": "ACTIVE",
-          "statusLabel": "Active",
-          "statusTone": "ok",
-          "vehicleCount": 0,
-          "activeCount": 0,
-          "joinedAt": "2026-10-20T15:33:29.764Z",
-          "joinedLabel": "20 Oct 2026",
-          "creditBalance": 0,
-          "documentsVerified": true,
-          "hasPendingProfileEdit": false
-        },
-        {
-          "id": "3605d193-f7cf-4161-b012-acce2b2f0184",
-          "slug": "suspidentity-motors-3957550849b6-vellore-tamil-nadu",
-          "brandName": "SuspIdentity Motors 3957550849b6",
+          "id": "696b413a-8a32-4d91-a590-d74f413e0713",
+          "slug": "suspidentity-motors-4647176d4b81-vellore-tamil-nadu",
+          "brandName": "SuspIdentity Motors 4647176d4b81",
           "initials": "SM",
           "city": "Vellore",
           "district": "Vellore",
@@ -55,16 +17,16 @@
           "statusTone": "err",
           "vehicleCount": 0,
           "activeCount": 0,
-          "joinedAt": "2026-10-20T15:33:22.615Z",
-          "joinedLabel": "20 Oct 2026",
+          "joinedAt": "2026-10-21T05:27:48.561Z",
+          "joinedLabel": "21 Oct 2026",
           "creditBalance": 0,
           "documentsVerified": true,
           "hasPendingProfileEdit": false
         },
         {
-          "id": "dc251473-4c28-4b3f-900d-28f38d84e606",
-          "slug": "rbacb-motors-3957187af14c-vellore-tamil-nadu",
-          "brandName": "RbacB Motors 3957187af14c",
+          "id": "d6b32ad4-fa2d-4cd1-b889-1b6326e33f5f",
+          "slug": "rbacb-motors-4646804a87cb-vellore-tamil-nadu",
+          "brandName": "RbacB Motors 4646804a87cb",
           "initials": "RM",
           "city": "Vellore",
           "district": "Vellore",
@@ -74,16 +36,16 @@
           "statusTone": "ok",
           "vehicleCount": 0,
           "activeCount": 0,
-          "joinedAt": "2026-10-20T15:33:16.441Z",
-          "joinedLabel": "20 Oct 2026",
+          "joinedAt": "2026-10-21T05:27:45.081Z",
+          "joinedLabel": "21 Oct 2026",
           "creditBalance": 0,
           "documentsVerified": true,
           "hasPendingProfileEdit": false
         },
         {
-          "id": "e3a220db-97e5-45ce-869e-cc168543bf04",
-          "slug": "rbaca-motors-39571286aa0f-vellore-tamil-nadu",
-          "brandName": "RbacA Motors 39571286aa0f",
+          "id": "5600c2aa-3431-468c-bce5-8cecebff9523",
+          "slug": "rbaca-motors-4646740c99f5-vellore-tamil-nadu",
+          "brandName": "RbacA Motors 4646740c99f5",
           "initials": "RM",
           "city": "Vellore",
           "district": "Vellore",
@@ -93,22 +55,61 @@
           "statusTone": "ok",
           "vehicleCount": 0,
           "activeCount": 0,
-          "joinedAt": "2026-10-20T15:33:16.022Z",
-          "joinedLabel": "20 Oct 2026",
+          "joinedAt": "2026-10-21T05:27:44.841Z",
+          "joinedLabel": "21 Oct 2026",
           "creditBalance": 0,
           "documentsVerified": true,
-          "hasPendingProfileEdit": true
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "d2d2f2d3-803f-4e23-8065-3629f381f8e0",
+          "slug": "concreview-motors-4612522e0330-vellore-tamil-nadu",
+          "brandName": "ConcReview Motors 4612522e0330",
+          "initials": "CM",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "ACTIVE",
+          "statusLabel": "Active",
+          "statusTone": "ok",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-21T05:27:43.956Z",
+          "joinedLabel": "21 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": true,
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "9aee5f4d-99a0-4fff-a538-f90538792d34",
+          "slug": "inc-461248c34934-vellore-tamil-nadu",
+          "brandName": "Inc 461248c34934",
+          "initials": "IC",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-21T05:27:43.902Z",
+          "joinedLabel": "21 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": false,
+          "hasPendingProfileEdit": false
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzoxNi4wMjJa",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzo0My45MDJa",
         "hasMore": true
       },
       "counts": {
-        "SUSPENDED": 4,
-        "ACTIVE": 136,
-        "PENDING_APPROVAL": 8,
-        "DRAFT": 13
+        "SUSPENDED": 53,
+        "ACTIVE": 421,
+        "CLOSED": 4,
+        "PENDING_APPROVAL": 45,
+        "DRAFT": 71
       },
       "facets": {
         "cities": ["Adoni", "Aluva", "Ambur", "Anekal", "Arakkonam"],
@@ -125,7 +126,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "Gyav0TtIQp",
+      "traceId": "L5s4nWf1hP",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -137,7 +138,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "6AAeBs6z82",
+      "traceId": "VRJAJR7iYl",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -149,7 +150,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "4Jlw5hr3fL",
+      "traceId": "nysamg3DmH",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -161,7 +162,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "8T5Z474ZbH",
+      "traceId": "indjRzoOP7",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -173,7 +174,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "15jVQda-eQ",
+      "traceId": "67zOriTHYx",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -185,19 +186,19 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "mozTjfChWw",
+      "traceId": "2KCTSXDz0p",
       "detail": "Sign in to the admin console to do that."
     }
   },
   {
-    "req": "POST /v1/admin/dealers/026b7c64-eddf-4c62-9ad7-bcd166358d4b/suspend",
+    "req": "POST /v1/admin/dealers/71814454-0591-4141-916c-3d78694dea2b/suspend",
     "status": 401,
     "body": {
       "type": "https://dealers-drive.com/errors/not-authenticated",
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "lEDHIxR8CF",
+      "traceId": "2luO4GZuNR",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -209,7 +210,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "pIgpXEryR2",
+      "traceId": "jVwAJC6fi6",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -226,7 +227,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "WvNLyVN4b_",
+      "traceId": "kTs3_Lymdt",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -238,7 +239,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "IcxAhf9oHs",
+      "traceId": "zwPp32l4Xi",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -250,7 +251,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "GTNVdRumps",
+      "traceId": "WXBLzJ7ZcX",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -299,27 +300,27 @@
           "revokeBlockedReason": "Set in ADMIN_ALLOWLIST"
         },
         {
-          "userId": "2c2e7afe-04cb-43d8-a270-1c5e7b3b6c83",
-          "email": "kavya.sales@dealers-drive.test",
-          "fullName": "Kavya (Field Sales)",
-          "adminRole": "SALES_REP",
+          "userId": "ee14c611-93bf-4715-9360-f9fa3bf3ebab",
+          "email": "deltalogout.3586287397ad@example.test",
+          "fullName": "deltalogout MODERATOR",
+          "adminRole": "MODERATOR",
           "source": "GRANT",
           "sourceLabel": "Granted",
-          "grantedByEmail": null,
-          "grantedAt": "2026-10-20T15:29:15.556Z",
+          "grantedByEmail": "cert-admin@example.test",
+          "grantedAt": "2026-10-21T05:09:20.426Z",
           "lastLoginLabel": "Never",
           "canRevoke": true,
           "revokeBlockedReason": null
         },
         {
-          "userId": "0f1e200e-5abb-425e-84ed-4ccf25908d58",
-          "email": "priya.ops@dealers-drive.test",
-          "fullName": "Priya (Operations)",
+          "userId": "83c037aa-3022-4216-82db-10f88670cca2",
+          "email": "deltalogout.37946433f192@example.test",
+          "fullName": "deltalogout MODERATOR",
           "adminRole": "MODERATOR",
           "source": "GRANT",
           "sourceLabel": "Granted",
-          "grantedByEmail": null,
-          "grantedAt": "2026-10-20T15:29:15.582Z",
+          "grantedByEmail": "cert-admin@example.test",
+          "grantedAt": "2026-10-21T05:09:41.215Z",
           "lastLoginLabel": "Never",
           "canRevoke": true,
           "revokeBlockedReason": null
@@ -332,19 +333,19 @@
     "sees": true
   },
   {
-    "req": "GET /v1/admin/dealers/3965cc35-2e87-4bfa-95d7-9edf534055f9",
+    "req": "GET /v1/admin/dealers/92bebff3-71f9-4f87-8719-adadc290c4cc",
     "status": 200,
     "body": {
-      "id": "3965cc35-2e87-4bfa-95d7-9edf534055f9",
-      "slug": "admininspects-motors-4342465d947b-vellore-tamil-nadu",
-      "brandName": "AdminInspects Motors 4342465d947b",
-      "legalName": "AdminInspects Motors 4342465d947b",
+      "id": "92bebff3-71f9-4f87-8719-adadc290c4cc",
+      "slug": "admininspects-motors-4729061aae5f-vellore-tamil-nadu",
+      "brandName": "AdminInspects Motors 4729061aae5f",
+      "legalName": "AdminInspects Motors 4729061aae5f",
       "initials": "AM",
       "status": "PENDING_APPROVAL",
       "statusLabel": "Pending",
       "statusTone": "warn",
       "statusReason": null,
-      "gstin": "33WCWCD7803N1Z4",
+      "gstin": "33BHWCW6976L1Z1",
       "pan": null,
       "city": "Vellore",
       "district": "Vellore",
@@ -365,13 +366,13 @@
         "reviewerIsAssistant": false
       },
       "contactName": "AdminInspects Owner",
-      "contactPhone": "+919600434236",
-      "contactPhoneDisplay": "+91 96004 34236",
-      "contactEmail": "admininspects.434244af1412@example.test",
+      "contactPhone": "+919600472895",
+      "contactPhoneDisplay": "+91 96004 72895",
+      "contactEmail": "admininspects.472904db42b7@example.test",
       "landline": null,
       "tagline": "Quality used cars from AdminInspects",
       "specialities": ["SUVs", "Sedans"],
-      "joinedLabel": "20 Oct 2026",
+      "joinedLabel": "21 Oct 2026",
       "creditBalance": 0,
       "creditsHeld": 0,
       "counts": {
@@ -382,7 +383,7 @@
       },
       "documents": [
         {
-          "id": "94795fc5-963a-4228-92a8-e5126f6113c6",
+          "id": "4c7e4cbc-ffa1-452b-9661-e4efe357c302",
           "category": "BUSINESS_IDENTITY",
           "categoryLabel": "Business Identity Proof",
           "type": "GST_CERTIFICATE",
@@ -392,7 +393,7 @@
           "mimeType": "application/pdf",
           "description": null,
           "bytes": 193,
-          "uploadedAt": "2026-10-20T15:33:55.714Z",
+          "uploadedAt": "2026-10-21T05:27:53.578Z",
           "reviewedAt": null,
           "submissionCount": 1,
           "viewUrl": "<redacted>",
@@ -400,7 +401,7 @@
           "rejectionReason": null
         },
         {
-          "id": "5d437ce1-8ae6-406e-a8ae-aeedbb78cb6b",
+          "id": "3313ac81-6d2a-4f88-ba00-99aa33775309",
           "category": "PERSONAL_IDENTITY",
           "categoryLabel": "Personal Identity Proof",
           "type": "PAN_CARD",
@@ -410,7 +411,7 @@
           "mimeType": "application/pdf",
           "description": null,
           "bytes": 193,
-          "uploadedAt": "2026-10-20T15:33:55.646Z",
+          "uploadedAt": "2026-10-21T05:27:53.550Z",
           "reviewedAt": null,
           "submissionCount": 1,
           "viewUrl": "<redacted>",
@@ -430,7 +431,7 @@
       "documentGaps": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"],
       "documentHistory": [
         {
-          "at": "2026-10-20T15:33:55.718Z",
+          "at": "2026-10-21T05:27:53.581Z",
           "action": "SUBMITTED",
           "category": "BUSINESS_IDENTITY",
           "type": "GST_CERTIFICATE",
@@ -438,7 +439,7 @@
           "actorType": "DEALER"
         },
         {
-          "at": "2026-10-20T15:33:55.649Z",
+          "at": "2026-10-21T05:27:53.551Z",
           "action": "SUBMITTED",
           "category": "PERSONAL_IDENTITY",
           "type": "PAN_CARD",
@@ -466,57 +467,57 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/715e0901-8756-48eb-a267-ff888c008f59/approve",
+    "req": "POST /v1/admin/dealers/f7c08bdf-6cb1-4198-aa6f-f2435f981d69/approve",
     "status": 200,
     "body": {
-      "id": "715e0901-8756-48eb-a267-ff888c008f59",
+      "id": "f7c08bdf-6cb1-4198-aa6f-f2435f981d69",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:33:56.050Z"
+      "notifiedAt": "2026-10-21T05:27:53.789Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/08e4c3aa-0050-4006-8f60-c2f5abfbf228/reject",
+    "req": "POST /v1/admin/dealers/3d967309-2abb-4882-aa84-7bf01c6a7d41/reject",
     "status": 200,
     "body": {
-      "id": "08e4c3aa-0050-4006-8f60-c2f5abfbf228",
-      "brandName": "AdminRejects Motors 434254b3cc0a",
+      "id": "3d967309-2abb-4882-aa84-7bf01c6a7d41",
+      "brandName": "AdminRejects Motors 47291404f2ec",
       "documentsDeleted": 2,
       "objectsDeleted": 2,
       "reason": "Documents do not match, rejecting",
-      "purgedAt": "2026-10-20T15:33:56.262Z"
+      "purgedAt": "2026-10-21T05:27:53.924Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/d8dcd3d5-05f7-4643-bd20-48515f6536a3/suspend",
+    "req": "POST /v1/admin/dealers/ec843cbd-fb21-4d4a-8ee0-c430649fd865/suspend",
     "status": 200,
     "body": {
-      "id": "d8dcd3d5-05f7-4643-bd20-48515f6536a3",
+      "id": "ec843cbd-fb21-4d4a-8ee0-c430649fd865",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:33:56.597Z"
+      "notifiedAt": "2026-10-21T05:27:54.129Z"
     }
   },
   {
     "status": "SUSPENDED"
   },
   {
-    "req": "POST /v1/admin/dealers/d08e9423-99a6-423b-bce2-fd8ecfc223b1/reinstate",
+    "req": "POST /v1/admin/dealers/ab9efb3a-c8fd-48c7-aaf5-717ffccbecce/reinstate",
     "status": 200,
     "body": {
-      "id": "d08e9423-99a6-423b-bce2-fd8ecfc223b1",
+      "id": "ab9efb3a-c8fd-48c7-aaf5-717ffccbecce",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:33:56.945Z"
+      "notifiedAt": "2026-10-21T05:27:54.419Z"
     }
   },
   {
@@ -531,32 +532,32 @@
     "actions": [
       "dealer.onboarding.created",
       "dealer.submitted",
-      "dealer.approved",
-      "dealer.suspended"
+      "dealer.suspended",
+      "dealer.approved"
     ]
   },
   {
-    "req": "POST /v1/admin/dealers/c7559e6d-2d83-499a-a097-555dd9aa4161/suspend",
+    "req": "POST /v1/admin/dealers/460b4da7-0c3a-4d64-a636-8cb184a2bdee/suspend",
     "status": 200,
     "body": {
-      "id": "c7559e6d-2d83-499a-a097-555dd9aa4161",
+      "id": "460b4da7-0c3a-4d64-a636-8cb184a2bdee",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:33:58.834Z"
+      "notifiedAt": "2026-10-21T05:27:55.650Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/c7559e6d-2d83-499a-a097-555dd9aa4161/suspend",
+    "req": "POST /v1/admin/dealers/460b4da7-0c3a-4d64-a636-8cb184a2bdee/suspend",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "W-hOBsdLn0",
+      "traceId": "tLPZGUu3aV",
       "detail": "Only an active dealership can be suspended."
     }
   },
@@ -706,44 +707,44 @@
         }
       ],
       "page": {
-        "nextCursor": null,
-        "hasMore": false
+        "nextCursor": "MjAyNi0xMC0yMVQwNDo1MzoxMi44Nzha",
+        "hasMore": true
       },
       "counts": {
-        "DRAFT": 33,
-        "PENDING_REVIEW": 26,
+        "RESERVED": 36,
+        "WITHDRAWN": 34,
+        "ACTIVE": 561,
+        "PENDING_REVIEW": 54,
+        "SOLD": 71,
         "CHANGES_REQUESTED": 6,
-        "ACTIVE": 298,
-        "RESERVED": 19,
-        "REJECTED": 9,
-        "SOLD": 25,
-        "WITHDRAWN": 16
+        "REJECTED": 13,
+        "DRAFT": 119
       },
-      "reactivationPending": 1
+      "reactivationPending": 3
     }
   },
   {
-    "req": "GET /v1/admin/listings/3f6dc7d7-b081-44ee-8d3e-3e7e1c20fd14",
+    "req": "GET /v1/admin/listings/6586b718-a12f-4a3e-b2ec-b85ad2eb2f69",
     "status": 200,
     "body": {
       "listing": {
-        "id": "3f6dc7d7-b081-44ee-8d3e-3e7e1c20fd14",
-        "vehicleId": "1c17cb1e-75c3-470f-a6c5-1748f1d346c2",
+        "id": "6586b718-a12f-4a3e-b2ec-b85ad2eb2f69",
+        "vehicleId": "138dbbfb-445e-48db-a380-ca0ba3cfa48e",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 84 GG 1942",
+        "registrationDisplay": "TN 87 FZ 6993",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "dealer": {
-          "id": "8163e678-4159-4410-bf3b-3fda3dca1cff",
-          "name": "AdmListDealer Motors 4342783bbfd9",
-          "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu"
+          "id": "f45cf9ae-cba3-4546-89d5-708747c70bf2",
+          "name": "AdmListDealer Motors 472938fabb13",
+          "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:33:59.311Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:27:55.955Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": "just now",
         "resubmission": false,
         "photography": {
@@ -757,14 +758,14 @@
         "publishedAt": null
       },
       "dealer": {
-        "id": "8163e678-4159-4410-bf3b-3fda3dca1cff",
-        "name": "AdmListDealer Motors 4342783bbfd9",
-        "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+        "id": "f45cf9ae-cba3-4546-89d5-708747c70bf2",
+        "name": "AdmListDealer Motors 472938fabb13",
+        "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 34244"
+        "phoneDisplay": "+91 96004 72903"
       },
       "sections": [
         {
@@ -773,11 +774,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 84 GG 1942"
+              "value": "TN 87 FZ 6993"
             },
             {
               "label": "RTO",
-              "value": "TN84"
+              "value": "TN87"
             },
             {
               "label": "Registration year",
@@ -911,8 +912,8 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:33:59.316Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:27:55.957Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [
@@ -946,27 +947,27 @@
     "status": "ACTIVE"
   },
   {
-    "req": "POST /v1/admin/listings/7a6af3e5-28d8-4e43-99c4-658072666152/reject",
+    "req": "POST /v1/admin/listings/0d98ec5a-45ef-4f14-bedf-e082c62bb296/reject",
     "status": 200,
     "body": {
       "listing": {
-        "id": "7a6af3e5-28d8-4e43-99c4-658072666152",
-        "vehicleId": "4fae115e-feb3-48c4-860b-a681a2831a10",
+        "id": "0d98ec5a-45ef-4f14-bedf-e082c62bb296",
+        "vehicleId": "11e724a7-bb87-4e47-9cc5-05ade4e13f5f",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 35 TZ 7795",
+        "registrationDisplay": "TN 45 HU 4112",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "REJECTED",
         "statusLabel": "Rejected",
         "statusTone": "err",
         "dealer": {
-          "id": "8163e678-4159-4410-bf3b-3fda3dca1cff",
-          "name": "AdmListDealer Motors 4342783bbfd9",
-          "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu"
+          "id": "f45cf9ae-cba3-4546-89d5-708747c70bf2",
+          "name": "AdmListDealer Motors 472938fabb13",
+          "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:34:00.377Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:27:56.451Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": null,
         "resubmission": false,
         "photography": {
@@ -980,14 +981,14 @@
         "publishedAt": null
       },
       "dealer": {
-        "id": "8163e678-4159-4410-bf3b-3fda3dca1cff",
-        "name": "AdmListDealer Motors 4342783bbfd9",
-        "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+        "id": "f45cf9ae-cba3-4546-89d5-708747c70bf2",
+        "name": "AdmListDealer Motors 472938fabb13",
+        "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 34244"
+        "phoneDisplay": "+91 96004 72903"
       },
       "sections": [
         {
@@ -996,11 +997,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 35 TZ 7795"
+              "value": "TN 45 HU 4112"
             },
             {
               "label": "RTO",
-              "value": "TN35"
+              "value": "TN45"
             },
             {
               "label": "Registration year",
@@ -1134,16 +1135,16 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:34:00.381Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:27:56.452Z",
+          "atLabel": "21 Oct 2026"
         },
         {
           "action": "listing.rejected",
           "label": "Rejected",
           "actor": "Dealers-Drive",
           "reason": "Rejecting this listing for the test",
-          "at": "2026-10-20T15:34:00.406Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:27:56.464Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [],
@@ -1164,10 +1165,10 @@
     "status": "REJECTED"
   },
   {
-    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-1c4ffe02",
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-1b500b3c",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-1c4ffe02",
+      "slug": "2023-hyundai-creta-sx-o-vellore-1b500b3c",
       "availability": "AVAILABLE",
       "title": "2023 Hyundai Creta SX(O)",
       "year": 2023,
@@ -1220,7 +1221,7 @@
         }
       ],
       "primaryIndex": 0,
-      "publishedLabel": "Listed 20 Oct 2026",
+      "publishedLabel": "Listed 21 Oct 2026",
       "facts": {
         "make": "Hyundai",
         "model": "Creta",
@@ -1234,8 +1235,8 @@
         "pricePaise": 145000000
       },
       "dealer": {
-        "name": "AdmListDealer Motors 4342783bbfd9",
-        "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+        "name": "AdmListDealer Motors 472938fabb13",
+        "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
         "initials": "AM",
         "isVerified": false,
         "location": "Vellore",
@@ -1249,14 +1250,14 @@
     "vdp": 404
   },
   {
-    "req": "POST /v1/admin/listings/7b2e6f59-0797-497b-9898-2dc76e3171d3/approve",
+    "req": "POST /v1/admin/listings/3764b28c-7da2-4744-bf2e-cc427162a174/approve",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-ready",
       "title": "Listing not ready",
       "status": 409,
       "code": "LISTING_NOT_READY",
-      "traceId": "M7hhdyfiye",
+      "traceId": "DAcOBrtUOA",
       "detail": "This listing is not ready to approve yet.",
       "blockers": [
         {
@@ -1271,27 +1272,27 @@
     "publicVdp": 404
   },
   {
-    "req": "GET /v1/admin/listings/3e7a5404-ffd5-4099-8dc6-524cf53cec65",
+    "req": "GET /v1/admin/listings/3db32c24-ac54-4bd5-b41b-4658c290a6fb",
     "status": 200,
     "body": {
       "listing": {
-        "id": "3e7a5404-ffd5-4099-8dc6-524cf53cec65",
-        "vehicleId": "8c8fc27c-861d-43b5-ba05-d86c6593d86d",
+        "id": "3db32c24-ac54-4bd5-b41b-4658c290a6fb",
+        "vehicleId": "1510b67e-5ecf-432e-b223-525d869a470f",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 65 KF 3495",
+        "registrationDisplay": "TN 81 ZW 2716",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "dealer": {
-          "id": "3c76af74-977b-4709-8840-370668ea4033",
-          "name": "AdmListReview Motors 4342863d4363",
-          "slug": "admlistreview-motors-4342863d4363-vellore-tamil-nadu"
+          "id": "450fe213-1490-4eed-a304-81903715c38a",
+          "name": "AdmListReview Motors 4729462ffe80",
+          "slug": "admlistreview-motors-4729462ffe80-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:34:03.142Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:27:57.856Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": "just now",
         "resubmission": false,
         "photography": {
@@ -1305,14 +1306,14 @@
         "publishedAt": null
       },
       "dealer": {
-        "id": "3c76af74-977b-4709-8840-370668ea4033",
-        "name": "AdmListReview Motors 4342863d4363",
-        "slug": "admlistreview-motors-4342863d4363-vellore-tamil-nadu",
+        "id": "450fe213-1490-4eed-a304-81903715c38a",
+        "name": "AdmListReview Motors 4729462ffe80",
+        "slug": "admlistreview-motors-4729462ffe80-vellore-tamil-nadu",
         "status": "SUSPENDED",
         "statusLabel": "Suspended",
         "statusTone": "err",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 34246"
+        "phoneDisplay": "+91 96004 72905"
       },
       "sections": [
         {
@@ -1321,11 +1322,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 65 KF 3495"
+              "value": "TN 81 ZW 2716"
             },
             {
               "label": "RTO",
-              "value": "TN65"
+              "value": "TN81"
             },
             {
               "label": "Registration year",
@@ -1459,8 +1460,8 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:34:03.143Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:27:57.857Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [
@@ -1501,19 +1502,19 @@
     "listingStatus": "PENDING_REVIEW"
   },
   {
-    "actions": ["listing.check_set", "listing.submitted", "listing.approved"]
+    "actions": ["listing.check_set", "listing.approved", "listing.submitted"]
   },
   {
-    "req": "POST /v1/admin/dealers/5c59e93c-6045-497d-a8ce-b67f25447b47/suspend",
+    "req": "POST /v1/admin/dealers/03ce9f23-aecb-4f2e-8b14-f4381ded44e4/suspend",
     "status": 200,
     "body": {
-      "id": "5c59e93c-6045-497d-a8ce-b67f25447b47",
+      "id": "03ce9f23-aecb-4f2e-8b14-f4381ded44e4",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:34:06.979Z"
+      "notifiedAt": "2026-10-21T05:27:59.797Z"
     }
   },
   {
@@ -1527,7 +1528,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "PZ4HbiZBnr",
+      "traceId": "k64rqM_Xwd",
       "detail": "You must be signed in to do that."
     }
   },
@@ -1539,7 +1540,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "efzQYl0hb-",
+      "traceId": "bAWBmwcKOf",
       "detail": "You must be signed in to do that."
     }
   },
@@ -1551,19 +1552,19 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "6KroUmAmOP",
+      "traceId": "LKfcwYuqCB",
       "detail": "You must be signed in to do that."
     }
   },
   {
-    "req": "GET /v1/dealers/dealerlife-motors-434294a13a30-vellore-tamil-nadu",
+    "req": "GET /v1/dealers/dealerlife-motors-472954b2edb3-vellore-tamil-nadu",
     "status": 404,
     "body": {
       "type": "https://dealers-drive.com/errors/not-found",
       "title": "Not found",
       "status": 404,
       "code": "NOT_FOUND",
-      "traceId": "-14BzGjXfs",
+      "traceId": "h_pefozifJ",
       "detail": "That dealership is not listed."
     }
   },
@@ -1586,9 +1587,9 @@
     "body": {
       "data": [
         {
-          "savedAt": "2026-10-20T15:34:06.905Z",
+          "savedAt": "2026-10-21T05:27:59.767Z",
           "vehicle": {
-            "slug": "2023-hyundai-creta-sx-o-vellore-2c3565f6",
+            "slug": "2023-hyundai-creta-sx-o-vellore-45f88a99",
             "availability": "UNAVAILABLE",
             "title": "2023 Hyundai Creta SX(O)",
             "year": 2023,
@@ -1597,8 +1598,8 @@
             "image": null,
             "imageCount": 6,
             "dealer": {
-              "name": "DealerLife Motors 434294a13a30",
-              "slug": "dealerlife-motors-434294a13a30-vellore-tamil-nadu",
+              "name": "DealerLife Motors 472954b2edb3",
+              "slug": "dealerlife-motors-472954b2edb3-vellore-tamil-nadu",
               "initials": "DM",
               "isVerified": false
             }
@@ -1619,7 +1620,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "tPQAn2sD2x",
+      "traceId": "6KwFOAaOXG",
       "detail": "You must be signed in to do that."
     }
   },
@@ -1628,10 +1629,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "39ea56fc-0758-4141-92db-e1d6688df1e5",
+        "id": "872f3d1e-190f-4732-886c-ce4da3b4c431",
         "fullName": "DL Staff",
-        "phone": "+••••••••4250",
-        "phoneDisplay": "+91 96004 34250"
+        "phone": "+••••••••2909",
+        "phoneDisplay": "+91 96004 72909"
       }
     }
   },
@@ -1641,7 +1642,7 @@
     "body": {
       "data": [
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-66c2bde1",
+          "slug": "2023-hyundai-creta-sx-o-vellore-7d655b93",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -1653,14 +1654,14 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "AdmListDealer Motors 4342783bbfd9",
-            "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+            "name": "AdmListDealer Motors 472938fabb13",
+            "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
             "initials": "AM",
             "isVerified": false
           }
         },
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-1c4ffe02",
+          "slug": "2023-hyundai-creta-sx-o-vellore-1b500b3c",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -1672,14 +1673,14 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "AdmListDealer Motors 4342783bbfd9",
-            "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+            "name": "AdmListDealer Motors 472938fabb13",
+            "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
             "initials": "AM",
             "isVerified": false
           }
         },
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-418d5ddf",
+          "slug": "2023-hyundai-creta-sx-o-vellore-7b72e35f",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -1691,14 +1692,14 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "AdmListDealer Motors 4342783bbfd9",
-            "slug": "admlistdealer-motors-4342783bbfd9-vellore-tamil-nadu",
+            "name": "AdmListDealer Motors 472938fabb13",
+            "slug": "admlistdealer-motors-472938fabb13-vellore-tamil-nadu",
             "initials": "AM",
             "isVerified": false
           }
         },
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-4810712e",
+          "slug": "2023-hyundai-creta-sx-o-vellore-ab86fc13",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -1710,14 +1711,14 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "ListA Motors 409457ffec59",
-            "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
-            "initials": "LM",
+            "name": "RbacA Motors 4646740c99f5",
+            "slug": "rbaca-motors-4646740c99f5-vellore-tamil-nadu",
+            "initials": "RM",
             "isVerified": false
           }
         },
         {
-          "slug": "2023-hyundai-creta-sx-o-vellore-56127a0a",
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f5f2afd",
           "availability": "AVAILABLE",
           "title": "2023 Hyundai Creta SX(O)",
           "year": 2023,
@@ -1729,9 +1730,9 @@
           },
           "imageCount": 6,
           "dealer": {
-            "name": "ListA Motors 409457ffec59",
-            "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
-            "initials": "LM",
+            "name": "RbacA Motors 4646740c99f5",
+            "slug": "rbaca-motors-4646740c99f5-vellore-tamil-nadu",
+            "initials": "RM",
             "isVerified": false
           }
         }
@@ -1739,17 +1740,17 @@
       "page": {
         "page": 1,
         "limit": 5,
-        "total": 317,
-        "totalPages": 64
+        "total": 578,
+        "totalPages": 116
       },
-      "available": 298,
+      "available": 543,
       "facets": {
         "cities": [],
         "brands": [
           {
             "value": "hyundai",
             "label": "Hyundai",
-            "count": 83
+            "count": 309
           },
           {
             "value": "maruti-suzuki",
@@ -1759,7 +1760,7 @@
           {
             "value": "tata",
             "label": "Tata",
-            "count": 29
+            "count": 48
           },
           {
             "value": "toyota",
@@ -1777,12 +1778,12 @@
           {
             "value": "petrol",
             "label": "Petrol",
-            "count": 174
+            "count": 418
           },
           {
             "value": "diesel",
             "label": "Diesel",
-            "count": 62
+            "count": 63
           },
           {
             "value": "cng",
@@ -1804,7 +1805,7 @@
           {
             "value": "automatic",
             "label": "Automatic",
-            "count": 172
+            "count": 417
           },
           {
             "value": "manual",
@@ -1816,7 +1817,7 @@
           {
             "value": "suv",
             "label": "SUV",
-            "count": 145
+            "count": 390
           },
           {
             "value": "hatchback",
@@ -1848,7 +1849,7 @@
           {
             "value": "white",
             "label": "White",
-            "count": 92
+            "count": 337
           },
           {
             "value": "grey",
@@ -1870,7 +1871,7 @@
           {
             "value": "1",
             "label": "First owner",
-            "count": 155
+            "count": 400
           },
           {
             "value": "2",
@@ -1898,7 +1899,7 @@
           {
             "value": "2023",
             "label": "2023",
-            "count": 88
+            "count": 333
           },
           {
             "value": "2022",
@@ -1927,13 +1928,13 @@
             "min": 50000000,
             "max": 100000000,
             "label": "₹5–10 lakh",
-            "count": 113
+            "count": 114
           },
           {
             "min": 100000000,
             "max": 150000000,
             "label": "₹10–15 lakh",
-            "count": 96
+            "count": 340
           },
           {
             "min": 150000000,
@@ -1959,7 +1960,7 @@
             "min": 20000,
             "max": 40000,
             "label": "20,000–40,000 km",
-            "count": 115
+            "count": 360
           },
           {
             "min": 40000,
@@ -1984,16 +1985,16 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/5c59e93c-6045-497d-a8ce-b67f25447b47/reinstate",
+    "req": "POST /v1/admin/dealers/03ce9f23-aecb-4f2e-8b14-f4381ded44e4/reinstate",
     "status": 200,
     "body": {
-      "id": "5c59e93c-6045-497d-a8ce-b67f25447b47",
+      "id": "03ce9f23-aecb-4f2e-8b14-f4381ded44e4",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:34:07.176Z"
+      "notifiedAt": "2026-10-21T05:27:59.885Z"
     }
   },
   {
@@ -2020,16 +2021,16 @@
     "actions": ["dealer.suspended", "dealer.reinstated"]
   },
   {
-    "req": "POST /v1/admin/dealers/970a4d9c-f0af-4470-8c4d-fe3dde0812a2/close",
+    "req": "POST /v1/admin/dealers/30223420-d2ca-482e-b255-c0895277c767/close",
     "status": 200,
     "body": {
-      "id": "970a4d9c-f0af-4470-8c4d-fe3dde0812a2",
+      "id": "30223420-d2ca-482e-b255-c0895277c767",
       "status": "CLOSED",
       "statusLabel": "Closed",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:34:07.476Z"
+      "notifiedAt": "2026-10-21T05:28:00.041Z"
     }
   },
   {
@@ -2058,14 +2059,14 @@
     "status": "CLOSED"
   },
   {
-    "req": "POST /v1/dealer/vehicles/93bbd70d-2d42-4dd5-8388-6d868896dab7/submit",
+    "req": "POST /v1/dealer/vehicles/bd1ee41a-3bc8-4c93-82ef-3602f8f019f2/submit",
     "status": 401,
     "body": {
       "type": "https://dealers-drive.com/errors/not-authenticated",
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "lsz13XJL4c",
+      "traceId": "MwD4oI6YIi",
       "detail": "You must be signed in to do that."
     }
   }

@@ -436,7 +436,12 @@ await h.check(r, 'OBS-009', async () => {
 });
 await h.check(r, 'OBS-010', async () => {
   // Logs contain no OTP/token/password/private-document leakage.
-  const log = readFileSync(resolve(process.env.CERT_API_LOG ?? 'api-4000.log'), 'utf8');
+  // CERT_API_LOG may list several log files (comma-separated), e.g. across an API restart.
+  const log = (process.env.CERT_API_LOG ?? 'api-4000.log')
+    .split(',')
+    .filter(Boolean)
+    .map((f) => readFileSync(resolve(f), 'utf8'))
+    .join('\n');
   const otpTokens = (log.match(/dev-otp:/g) ?? []).length;
   const sessionTokens = /dd_(admin_)?session=[A-Za-z0-9_-]{20,}/.test(log);
   const passwords = /password"\s*:\s*"[^"]+/i.test(log);

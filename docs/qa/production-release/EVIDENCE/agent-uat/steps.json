@@ -1,0 +1,407 @@
+[
+  {
+    "journey": "A-mobile-buyer",
+    "step": "home",
+    "outcome": "ok",
+    "detail": "h1 \"Find your next car\"",
+    "ms": 1333,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-01-home.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "search-creta",
+    "outcome": "ok",
+    "detail": "/cars?q=Creta",
+    "ms": 354,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-02-search-creta.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "filters-sheet",
+    "outcome": "ok",
+    "detail": "filters dialog visible true",
+    "ms": 751,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-03-filters-sheet.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "filters-close",
+    "outcome": "ok",
+    "detail": "dialog closed true",
+    "ms": 461,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-04-filters-close.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "open-car",
+    "outcome": "ok",
+    "detail": "title \"2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive\"",
+    "ms": 938,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-05-open-car.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "gallery-swipe",
+    "outcome": "ok",
+    "detail": "counter 1 / 6 → 1 / 6",
+    "ms": 810,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-06-gallery-swipe.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "gallery-fullscreen",
+    "outcome": "ok",
+    "detail": "lightbox opened and closed with Escape",
+    "ms": 846,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-07-gallery-fullscreen.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "save-anonymous",
+    "outcome": "ok",
+    "detail": "redirected to /login?returnTo=%2Fcar%2F2023-hyundai-creta-sx-o-vellore-f0656f6f%",
+    "ms": 295,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-08-save-anonymous.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "otp-sign-up",
+    "outcome": "ok",
+    "detail": "back on /car/2023-hyundai-creta-sx-o-vellore-f0656f6f",
+    "ms": 1327,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-09-otp-sign-up.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "saved-after-login",
+    "outcome": "ok",
+    "detail": "saved rows 1",
+    "ms": 178,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-10-saved-after-login.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "enquire-dialog",
+    "outcome": "ok",
+    "detail": "message field visible true",
+    "ms": 24325,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-11-enquire-dialog.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "enquire-double-tap",
+    "outcome": "ok",
+    "detail": "enquiry rows after a double tap: 1",
+    "ms": 1045,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-12-enquire-double-tap.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "my-enquiries",
+    "outcome": "ok",
+    "detail": "lists the Creta true",
+    "ms": 867,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-13-my-enquiries.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "reserved-card",
+    "outcome": "ok",
+    "detail": "reserved badge(s) on the dealer page 2",
+    "ms": 1000,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-14-reserved-card.png"
+  },
+  {
+    "journey": "A-mobile-buyer",
+    "step": "back-forward",
+    "outcome": "error",
+    "detail": "page.goForward: Timeout 30000ms exceeded.",
+    "ms": 35117,
+    "overflow": 0,
+    "shot": "screenshots/UAT-A-mobile-buyer-15-back-forward.png"
+  },
+  {
+    "journey": "B-mobile-invalid",
+    "step": "login-short-number",
+    "outcome": "ok",
+    "detail": "aria-invalid fields 1; message \"Enter a 10-digit Indian mobile number.\"",
+    "ms": 1392,
+    "overflow": 0,
+    "shot": "screenshots/UAT-B-mobile-invalid-16-login-short-number.png"
+  },
+  {
+    "journey": "B-mobile-invalid",
+    "step": "unknown-car-url",
+    "outcome": "ok",
+    "detail": "HTTP 200 title \"Car not found | Dealers-Drive\" h1 \"Page not found\"",
+    "ms": 920,
+    "overflow": 0,
+    "shot": "screenshots/UAT-B-mobile-invalid-17-unknown-car-url.png"
+  },
+  {
+    "journey": "B-mobile-invalid",
+    "step": "refresh-on-filtered-search",
+    "outcome": "ok",
+    "detail": "URL kept true",
+    "ms": 28505,
+    "overflow": 0,
+    "shot": "screenshots/UAT-B-mobile-invalid-18-refresh-on-filtered-search.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer h1 \"Good morning, Owner\"",
+    "ms": 991,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-19-_dealer.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer_inventory",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer/inventory h1 \"Inventory\"",
+    "ms": 845,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-20-_dealer_inventory.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer_enquiries",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer/enquiries h1 \"Enquiries\"",
+    "ms": 828,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-21-_dealer_enquiries.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer_team",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer/team h1 \"Team\"",
+    "ms": 812,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-22-_dealer_team.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer_profile",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer/profile h1 \"Dealer profile\"",
+    "ms": 787,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-23-_dealer_profile.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "_dealer_documents",
+    "outcome": "ok",
+    "detail": "HTTP 200 → /dealer/documents h1 \"Your documents\"",
+    "ms": 807,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-24-_dealer_documents.png"
+  },
+  {
+    "journey": "C-mobile-owner",
+    "step": "nav-drawer",
+    "outcome": "ok",
+    "detail": "drawer/dialog open true",
+    "ms": 1634,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-owner-25-nav-drawer.png"
+  },
+  {
+    "journey": "C-mobile-staff",
+    "step": "switch-to-dealer",
+    "outcome": "ok",
+    "detail": "→ /dealer h1 \"Good morning, Staff\"",
+    "ms": 954,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-staff-26-switch-to-dealer.png"
+  },
+  {
+    "journey": "C-mobile-staff",
+    "step": "team-denied",
+    "outcome": "ok",
+    "detail": "→ /dealer; Invite buttons 0",
+    "ms": 954,
+    "overflow": 0,
+    "shot": "screenshots/UAT-C-mobile-staff-27-team-denied.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Operations overview\"",
+    "ms": 867,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-28-_admin.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_dealers",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Dealers\"",
+    "ms": 829,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-29-_admin_dealers.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_dealers_c4aaebc6-1804-4049-82b2-6",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"UatMotors Motors 7471223533a\"",
+    "ms": 849,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-30-_admin_dealers_c4aaebc6-1804-4049-82b2-6.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_listings",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Listings\"",
+    "ms": 797,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-31-_admin_listings.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_enquiries",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Enquiries\"",
+    "ms": 796,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-32-_admin_enquiries.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_support",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Support Tickets\"",
+    "ms": 746,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-33-_admin_support.png"
+  },
+  {
+    "journey": "D-admin-tablet",
+    "step": "_admin_members",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Members\"",
+    "ms": 837,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-tablet-34-_admin_members.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Operations overview\"",
+    "ms": 880,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-35-_admin.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_dealers",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Dealers\"",
+    "ms": 910,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-36-_admin_dealers.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_dealers_c4aaebc6-1804-4049-82b2-6",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"UatMotors Motors 7471223533a\"",
+    "ms": 924,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-37-_admin_dealers_c4aaebc6-1804-4049-82b2-6.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_listings",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Listings\"",
+    "ms": 878,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-38-_admin_listings.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_enquiries",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Enquiries\"",
+    "ms": 773,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-39-_admin_enquiries.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_support",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Support Tickets\"",
+    "ms": 805,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-40-_admin_support.png"
+  },
+  {
+    "journey": "D-admin-mobile",
+    "step": "_admin_members",
+    "outcome": "ok",
+    "detail": "HTTP 200 h1 \"Members\"",
+    "ms": 842,
+    "overflow": 0,
+    "shot": "screenshots/UAT-D-admin-mobile-41-_admin_members.png"
+  },
+  {
+    "journey": "E-desktop-tabs",
+    "step": "tab-one-saved",
+    "outcome": "ok",
+    "detail": "h1 \"Saved cars\"",
+    "ms": 1406,
+    "overflow": 0,
+    "shot": "screenshots/UAT-E-desktop-tabs-42-tab-one-saved.png"
+  },
+  {
+    "journey": "E-desktop-tabs",
+    "step": "tab-two-enquiries",
+    "outcome": "ok",
+    "detail": "h1 \"My enquiries\"",
+    "ms": 888,
+    "overflow": 0,
+    "shot": "screenshots/UAT-E-desktop-tabs-43-tab-two-enquiries.png"
+  },
+  {
+    "journey": "E-desktop-tabs",
+    "step": "logout-tab-one",
+    "outcome": "ok",
+    "detail": "tab one → /saved",
+    "ms": 191,
+    "overflow": 0,
+    "shot": "screenshots/UAT-E-desktop-tabs-44-logout-tab-one.png"
+  },
+  {
+    "journey": "E-desktop-tabs",
+    "step": "tab-two-next-navigation",
+    "outcome": "ok",
+    "detail": "tab two → /login h1 \"Login\"",
+    "ms": 1810,
+    "overflow": 0,
+    "shot": "screenshots/UAT-E-desktop-tabs-45-tab-two-next-navigation.png"
+  }
+]

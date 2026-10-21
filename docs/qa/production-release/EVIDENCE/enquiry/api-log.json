@@ -3,10 +3,10 @@
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "8938e1ed-8ed0-4d9d-9fac-f5aebdeddbdc",
+      "id": "e9ef5d46-4480-4388-a4e2-539203b3c834",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:32:45.787Z",
-      "dealerName": "EnqMain Motors 36096745b689",
+      "createdAt": "2026-10-21T05:27:29.209Z",
+      "dealerName": "EnqMain Motors 446870c02001",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
@@ -18,7 +18,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "Tp-Cfwgro-",
+      "traceId": "5UePmhabEN",
       "detail": "Sign in with your mobile number to do that."
     }
   },
@@ -27,10 +27,10 @@
     "status": 200,
     "body": {
       "customer": {
-        "id": "c39689dc-cc9d-4748-9bb5-c5aa8c52a618",
+        "id": "5d0a1f7f-b220-45b4-b1eb-68a7f1c7527c",
         "fullName": "Enq Buyer",
-        "phone": "+••••••••0967",
-        "phoneDisplay": "+91 96003 60967"
+        "phone": "+••••••••6870",
+        "phoneDisplay": "+91 96004 46870"
       }
     }
   },
@@ -41,10 +41,10 @@
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "93481cb8-e015-4ed8-a8fe-f004a8313ac0",
+      "id": "4cb94b2e-985f-4da3-8fd3-420d47ed49c2",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:32:45.881Z",
-      "dealerName": "EnqMain Motors 36096745b689",
+      "createdAt": "2026-10-21T05:27:29.250Z",
+      "dealerName": "EnqMain Motors 446870c02001",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
@@ -52,10 +52,10 @@
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "1a07deea-f21c-45a9-bb01-114949c28020",
+      "id": "b32431cd-dbfc-4df1-b623-da9abc57e5eb",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:32:45.947Z",
-      "dealerName": "EnqMain Motors 36096745b689",
+      "createdAt": "2026-10-21T05:27:29.275Z",
+      "dealerName": "EnqMain Motors 446870c02001",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
@@ -67,7 +67,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "Qctsvt5MjW",
+      "traceId": "xaE3BxoOLs",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -91,7 +91,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "mNJb8wjrhb",
+      "traceId": "CQm2dYfozK",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -110,7 +110,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "H6Vr11ElcP",
+      "traceId": "lNgRzcPMxY",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -129,7 +129,7 @@
       "title": "Listing not available",
       "status": 409,
       "code": "LISTING_NOT_AVAILABLE",
-      "traceId": "DfHeVITlmz",
+      "traceId": "udmLXFGH5w",
       "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
     }
   },
@@ -141,7 +141,7 @@
       "title": "Listing not available",
       "status": 409,
       "code": "LISTING_NOT_AVAILABLE",
-      "traceId": "TuNQLfAqBm",
+      "traceId": "osw96KZXo7",
       "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
     }
   },
@@ -159,19 +159,19 @@
       "title": "Listing reserved",
       "status": 409,
       "code": "LISTING_RESERVED",
-      "traceId": "kuIajN_kR-",
+      "traceId": "gzqfaxvnu2",
       "detail": "This car is reserved for another buyer, so the dealership is not taking enquiries about it for now."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/25681fff-09cf-44f8-bbaa-c5f1c681477f/mark-sold",
+    "req": "POST /v1/dealer/vehicles/6ca73919-9e79-458b-a3fc-acd82e5e1a06/mark-sold",
     "status": 200,
     "body": {
-      "id": "25681fff-09cf-44f8-bbaa-c5f1c681477f",
+      "id": "6ca73919-9e79-458b-a3fc-acd82e5e1a06",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN90EG4217",
-      "registrationDisplay": "TN 90 EG 4217",
-      "rtoCode": "TN90",
+      "registrationNumber": "TN39NN9008",
+      "registrationDisplay": "TN 39 NN 9008",
+      "rtoCode": "TN39",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -193,16 +193,16 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "8d714e91-7dcc-423a-8d43-95cab6508f98",
+        "id": "a3fbde68-784e-4b2b-baa7-6e171638e7ea",
         "status": "SOLD",
         "statusLabel": "Sold",
         "statusTone": "accent",
         "reason": null,
-        "submittedAt": "2026-10-20T15:32:46.254Z",
-        "publishedAt": "2026-10-20T15:32:47.124Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-c9ec7812",
+        "submittedAt": "2026-10-21T05:27:29.410Z",
+        "publishedAt": "2026-10-21T05:27:29.830Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-aeee8f0f",
         "reservedAt": null,
-        "soldAt": "2026-10-20T15:32:47.208Z",
+        "soldAt": "2026-10-21T05:27:29.879Z",
         "withdrawnAt": null,
         "withdrawal": null,
         "canEdit": false,
@@ -211,33 +211,32 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:32:46.188Z",
-      "updatedAt": "2026-10-20T15:32:47.209Z"
+      "createdAt": "2026-10-21T05:27:29.376Z",
+      "updatedAt": "2026-10-21T05:27:29.879Z"
     }
-  },
-  {
-    "req": "POST /v1/enquiries",
-    "status": 409,
-    "body": {
-      "type": "https://dealers-drive.com/errors/listing-not-available",
-      "title": "Listing not available",
-      "status": 409,
-      "code": "LISTING_NOT_AVAILABLE",
-      "traceId": "kxIxcxF9D8",
-      "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
-    }
-  },
-  {
-    "enquiriesForListing": 0
   },
   {
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "a5be528a-868e-4e94-a0b8-58de9bcad824",
+      "id": "3358539a-b1aa-43dd-8107-eb4c7a6dd007",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:32:47.260Z",
-      "dealerName": "EnqMain Motors 36096745b689",
+      "createdAt": "2026-10-21T05:27:29.866Z",
+      "dealerName": "EnqMain Motors 446870c02001",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "enquiriesForListing": 1
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "571ef927-2db3-4920-877e-910234a0c50d",
+      "status": "NEW",
+      "createdAt": "2026-10-21T05:27:29.911Z",
+      "dealerName": "EnqMain Motors 446870c02001",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
@@ -249,7 +248,7 @@
       "title": "Enquiry already open",
       "status": 409,
       "code": "ENQUIRY_ALREADY_OPEN",
-      "traceId": "oa3R5_7UE1",
+      "traceId": "DmW2GLuz2N",
       "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
     }
   },
@@ -261,7 +260,7 @@
       "title": "Enquiry already open",
       "status": 409,
       "code": "ENQUIRY_ALREADY_OPEN",
-      "traceId": "aqF_hI14D1",
+      "traceId": "acFclx5yR5",
       "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
     }
   },
@@ -274,17 +273,17 @@
     "body": {
       "data": [
         {
-          "id": "8938e1ed-8ed0-4d9d-9fac-f5aebdeddbdc",
+          "id": "e9ef5d46-4480-4388-a4e2-539203b3c834",
           "status": "SENT",
           "statusLabel": "Sent",
           "statusTone": "accent",
           "message": "Interested in this Creta",
-          "createdAt": "2026-10-20T15:32:45.787Z",
-          "createdLabel": "20 Oct 2026",
-          "dealerName": "EnqMain Motors 36096745b689",
+          "createdAt": "2026-10-21T05:27:29.209Z",
+          "createdLabel": "21 Oct 2026",
+          "dealerName": "EnqMain Motors 446870c02001",
           "vehicle": {
             "title": "2023 Hyundai Creta SX(O)",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         }
       ],
@@ -300,13 +299,13 @@
     "body": {
       "data": [
         {
-          "id": "a5be528a-868e-4e94-a0b8-58de9bcad824",
+          "id": "571ef927-2db3-4920-877e-910234a0c50d",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "first",
-          "createdAt": "2026-10-20T15:32:47.260Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.911Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -315,26 +314,54 @@
           "customer": {
             "name": "Dup Buyer",
             "initials": "DB",
-            "phone": "+••••••••0976",
-            "phoneDisplay": "+91 96003 60976",
-            "callHref": "tel:+919600360976"
+            "phone": "+••••••••6879",
+            "phoneDisplay": "+91 96004 46879",
+            "callHref": "tel:+919600446879"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         },
         {
-          "id": "1a07deea-f21c-45a9-bb01-114949c28020",
+          "id": "3358539a-b1aa-43dd-8107-eb4c7a6dd007",
+          "status": "NEW",
+          "statusLabel": "New",
+          "statusTone": "accent",
+          "message": "racing the sale",
+          "createdAt": "2026-10-21T05:27:29.866Z",
+          "createdLabel": "21 Oct 2026",
+          "timeAgoLabel": "just now",
+          "contactedAt": null,
+          "closedAt": null,
+          "contactedBy": null,
+          "closedBy": null,
+          "customer": {
+            "name": "Race Buyer",
+            "initials": "RB",
+            "phone": "+••••••••6878",
+            "phoneDisplay": "+91 96004 46878",
+            "callHref": "tel:+919600446878"
+          },
+          "vehicle": {
+            "id": "6ca73919-9e79-458b-a3fc-acd82e5e1a06",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 39 NN 9008",
+            "listingStatus": "SOLD",
+            "href": null
+          }
+        },
+        {
+          "id": "b32431cd-dbfc-4df1-b623-da9abc57e5eb",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "Can I see service records and is price negotiable?",
-          "createdAt": "2026-10-20T15:32:45.947Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.275Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -343,26 +370,26 @@
           "customer": {
             "name": "With Message Buyer",
             "initials": "WM",
-            "phone": "+••••••••0970",
-            "phoneDisplay": "+91 96003 60970",
-            "callHref": "tel:+919600360970"
+            "phone": "+••••••••6873",
+            "phoneDisplay": "+91 96004 46873",
+            "callHref": "tel:+919600446873"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         },
         {
-          "id": "93481cb8-e015-4ed8-a8fe-f004a8313ac0",
+          "id": "4cb94b2e-985f-4da3-8fd3-420d47ed49c2",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": null,
-          "createdAt": "2026-10-20T15:32:45.881Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.250Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -371,26 +398,26 @@
           "customer": {
             "name": "No Message Buyer",
             "initials": "NM",
-            "phone": "+••••••••0969",
-            "phoneDisplay": "+91 96003 60969",
-            "callHref": "tel:+919600360969"
+            "phone": "+••••••••6872",
+            "phoneDisplay": "+91 96004 46872",
+            "callHref": "tel:+919600446872"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         },
         {
-          "id": "8938e1ed-8ed0-4d9d-9fac-f5aebdeddbdc",
+          "id": "e9ef5d46-4480-4388-a4e2-539203b3c834",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "Interested in this Creta",
-          "createdAt": "2026-10-20T15:32:45.787Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.209Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -399,16 +426,16 @@
           "customer": {
             "name": "Enq Buyer",
             "initials": "EB",
-            "phone": "+••••••••0967",
-            "phoneDisplay": "+91 96003 60967",
-            "callHref": "tel:+919600360967"
+            "phone": "+••••••••6870",
+            "phoneDisplay": "+91 96004 46870",
+            "callHref": "tel:+919600446870"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         }
       ],
@@ -417,8 +444,8 @@
         "hasMore": false
       },
       "counts": {
-        "ALL": 4,
-        "NEW": 4,
+        "ALL": 5,
+        "NEW": 5,
         "CONTACTED": 0,
         "CLOSED": 0,
         "SPAM": 0
@@ -431,135 +458,135 @@
     "body": {
       "data": [
         {
-          "id": "a5be528a-868e-4e94-a0b8-58de9bcad824",
+          "id": "571ef927-2db3-4920-877e-910234a0c50d",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "first",
-          "createdAt": "2026-10-20T15:32:47.260Z",
-          "createdLabel": "20 Oct 2026, 21:02",
+          "createdAt": "2026-10-21T05:27:29.911Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "f64acf5a-eb65-45b3-8a07-57e6433022ee",
+            "id": "3def9fef-7f43-4c5c-9e35-30f6888ae456",
             "name": "Dup Buyer",
-            "phoneDisplay": "+91 96003 60976"
+            "phoneDisplay": "+91 96004 46879"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "be48332e-b5a6-42a6-b77c-d9d480c914cf",
+            "listingId": "35e41a37-1450-487e-a13c-63c38d8e2b0b",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "1a07deea-f21c-45a9-bb01-114949c28020",
+          "id": "3358539a-b1aa-43dd-8107-eb4c7a6dd007",
+          "status": "NEW",
+          "statusLabel": "New",
+          "statusTone": "accent",
+          "messagePreview": "racing the sale",
+          "createdAt": "2026-10-21T05:27:29.866Z",
+          "createdLabel": "21 Oct 2026, 10:57",
+          "customer": {
+            "id": "92938a6f-0156-4f0f-a5f2-aaa8436be61c",
+            "name": "Race Buyer",
+            "phoneDisplay": "+91 96004 46878"
+          },
+          "dealer": {
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
+          },
+          "vehicle": {
+            "listingId": "a3fbde68-784e-4b2b-baa7-6e171638e7ea",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 39 NN 9008",
+            "listingStatus": "SOLD",
+            "listingStatusLabel": "Sold",
+            "listingStatusTone": "accent"
+          }
+        },
+        {
+          "id": "b32431cd-dbfc-4df1-b623-da9abc57e5eb",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Can I see service records and is price negotiable?",
-          "createdAt": "2026-10-20T15:32:45.947Z",
-          "createdLabel": "20 Oct 2026, 21:02",
+          "createdAt": "2026-10-21T05:27:29.275Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "77b8511a-696e-41d9-acf1-e356249c92ef",
+            "id": "fdcbd2b4-8f3e-4337-94b7-1a909cd5f48f",
             "name": "With Message Buyer",
-            "phoneDisplay": "+91 96003 60970"
+            "phoneDisplay": "+91 96004 46873"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "be48332e-b5a6-42a6-b77c-d9d480c914cf",
+            "listingId": "35e41a37-1450-487e-a13c-63c38d8e2b0b",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "93481cb8-e015-4ed8-a8fe-f004a8313ac0",
+          "id": "4cb94b2e-985f-4da3-8fd3-420d47ed49c2",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": null,
-          "createdAt": "2026-10-20T15:32:45.881Z",
-          "createdLabel": "20 Oct 2026, 21:02",
+          "createdAt": "2026-10-21T05:27:29.250Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "70cffc26-9fd5-460a-b098-c46984703b78",
+            "id": "b8141ea5-29a5-4600-9d9e-b0deb813e213",
             "name": "No Message Buyer",
-            "phoneDisplay": "+91 96003 60969"
+            "phoneDisplay": "+91 96004 46872"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "be48332e-b5a6-42a6-b77c-d9d480c914cf",
+            "listingId": "35e41a37-1450-487e-a13c-63c38d8e2b0b",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8938e1ed-8ed0-4d9d-9fac-f5aebdeddbdc",
+          "id": "e9ef5d46-4480-4388-a4e2-539203b3c834",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Interested in this Creta",
-          "createdAt": "2026-10-20T15:32:45.787Z",
-          "createdLabel": "20 Oct 2026, 21:02",
+          "createdAt": "2026-10-21T05:27:29.209Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "c39689dc-cc9d-4748-9bb5-c5aa8c52a618",
+            "id": "5d0a1f7f-b220-45b4-b1eb-68a7f1c7527c",
             "name": "Enq Buyer",
-            "phoneDisplay": "+91 96003 60967"
+            "phoneDisplay": "+91 96004 46870"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "be48332e-b5a6-42a6-b77c-d9d480c914cf",
+            "listingId": "35e41a37-1450-487e-a13c-63c38d8e2b0b",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
-            "listingStatus": "ACTIVE",
-            "listingStatusLabel": "Active",
-            "listingStatusTone": "ok"
-          }
-        },
-        {
-          "id": "880a0959-0049-4ff4-ba9a-6e914ad3ef04",
-          "status": "NEW",
-          "statusLabel": "New",
-          "statusTone": "accent",
-          "messagePreview": "Interested in this car please",
-          "createdAt": "2026-10-20T15:32:33.625Z",
-          "createdLabel": "20 Oct 2026, 21:02",
-          "customer": {
-            "id": "5053c2ea-78a4-4ff1-89c6-cf4fa3024e1e",
-            "name": "Account Cust",
-            "phoneDisplay": "+91 96003 49643"
-          },
-          "dealer": {
-            "id": "aeaf1011-c651-40e2-9d9a-9a74130ede21",
-            "name": "CustDealer5 Motors 349652ea224f",
-            "slug": "custdealer5-motors-349652ea224f-vellore-tamil-nadu"
-          },
-          "vehicle": {
-            "listingId": "8a5f6772-c1d3-48df-9087-230aa66648ad",
-            "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YJ 5861",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
@@ -567,33 +594,33 @@
         }
       ],
       "page": {
-        "nextCursor": null,
-        "hasMore": false
+        "nextCursor": "MjAyNi0xMC0yMVQwNDo1OTozOC4zNTBafDg0MDkwYTMxLTg0MWYtNDFiZC05NmM1LTJiZGY0YjdlNmQ2Yg",
+        "hasMore": true
       },
       "counts": {
-        "ALL": 6,
-        "NEW": 6,
-        "CONTACTED": 0,
-        "CLOSED": 0,
-        "SPAM": 0
+        "ALL": 194,
+        "NEW": 152,
+        "CONTACTED": 25,
+        "CLOSED": 16,
+        "SPAM": 1
       },
       "dealer": null
     }
   },
   {
-    "inboxId": "a5be528a-868e-4e94-a0b8-58de9bcad824",
-    "adminId": "a5be528a-868e-4e94-a0b8-58de9bcad824",
+    "inboxId": "571ef927-2db3-4920-877e-910234a0c50d",
+    "adminId": "571ef927-2db3-4920-877e-910234a0c50d",
     "sameCustomerPhone": true
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/a5be528a-868e-4e94-a0b8-58de9bcad824",
+    "req": "PATCH /v1/dealer/enquiries/571ef927-2db3-4920-877e-910234a0c50d",
     "status": 404,
     "body": {
       "type": "https://dealers-drive.com/errors/enquiry-not-found",
       "title": "Not found",
       "status": 404,
       "code": "ENQUIRY_NOT_FOUND",
-      "traceId": "zXRD3gB0Lj",
+      "traceId": "dHyME6BWon",
       "detail": "That enquiry is not in your inbox."
     }
   },
@@ -614,13 +641,13 @@
     "body": {
       "data": [
         {
-          "id": "ff559dd7-d7b6-4d74-95e6-ca2c6090a1af",
+          "id": "26f4d875-5b65-49ec-b930-f58d552cd9ad",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "Life Initial enquiry",
-          "createdAt": "2026-10-20T15:32:48.968Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:30.658Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -629,26 +656,26 @@
           "customer": {
             "name": "Life Initial",
             "initials": "LI",
-            "phone": "+••••••••0978",
-            "phoneDisplay": "+91 96003 60978",
-            "callHref": "tel:+919600360978"
+            "phone": "+••••••••6881",
+            "phoneDisplay": "+91 96004 46881",
+            "callHref": "tel:+919600446881"
           },
           "vehicle": {
-            "id": "24d37de3-5f8c-476d-9f11-ec43c718f0e2",
+            "id": "9861caef-9cf8-4ce7-a26e-d8d7bfcee83f",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 85 MD 6886",
+            "registrationDisplay": "TN 31 TJ 9313",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-d594402f"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-73435eab"
           }
         },
         {
-          "id": "a5be528a-868e-4e94-a0b8-58de9bcad824",
+          "id": "571ef927-2db3-4920-877e-910234a0c50d",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "first",
-          "createdAt": "2026-10-20T15:32:47.260Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.911Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -657,26 +684,54 @@
           "customer": {
             "name": "Dup Buyer",
             "initials": "DB",
-            "phone": "+••••••••0976",
-            "phoneDisplay": "+91 96003 60976",
-            "callHref": "tel:+919600360976"
+            "phone": "+••••••••6879",
+            "phoneDisplay": "+91 96004 46879",
+            "callHref": "tel:+919600446879"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         },
         {
-          "id": "1a07deea-f21c-45a9-bb01-114949c28020",
+          "id": "3358539a-b1aa-43dd-8107-eb4c7a6dd007",
+          "status": "NEW",
+          "statusLabel": "New",
+          "statusTone": "accent",
+          "message": "racing the sale",
+          "createdAt": "2026-10-21T05:27:29.866Z",
+          "createdLabel": "21 Oct 2026",
+          "timeAgoLabel": "just now",
+          "contactedAt": null,
+          "closedAt": null,
+          "contactedBy": null,
+          "closedBy": null,
+          "customer": {
+            "name": "Race Buyer",
+            "initials": "RB",
+            "phone": "+••••••••6878",
+            "phoneDisplay": "+91 96004 46878",
+            "callHref": "tel:+919600446878"
+          },
+          "vehicle": {
+            "id": "6ca73919-9e79-458b-a3fc-acd82e5e1a06",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 39 NN 9008",
+            "listingStatus": "SOLD",
+            "href": null
+          }
+        },
+        {
+          "id": "b32431cd-dbfc-4df1-b623-da9abc57e5eb",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": "Can I see service records and is price negotiable?",
-          "createdAt": "2026-10-20T15:32:45.947Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.275Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -685,26 +740,26 @@
           "customer": {
             "name": "With Message Buyer",
             "initials": "WM",
-            "phone": "+••••••••0970",
-            "phoneDisplay": "+91 96003 60970",
-            "callHref": "tel:+919600360970"
+            "phone": "+••••••••6873",
+            "phoneDisplay": "+91 96004 46873",
+            "callHref": "tel:+919600446873"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         },
         {
-          "id": "93481cb8-e015-4ed8-a8fe-f004a8313ac0",
+          "id": "4cb94b2e-985f-4da3-8fd3-420d47ed49c2",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "message": null,
-          "createdAt": "2026-10-20T15:32:45.881Z",
-          "createdLabel": "20 Oct 2026",
+          "createdAt": "2026-10-21T05:27:29.250Z",
+          "createdLabel": "21 Oct 2026",
           "timeAgoLabel": "just now",
           "contactedAt": null,
           "closedAt": null,
@@ -713,44 +768,16 @@
           "customer": {
             "name": "No Message Buyer",
             "initials": "NM",
-            "phone": "+••••••••0969",
-            "phoneDisplay": "+91 96003 60969",
-            "callHref": "tel:+919600360969"
+            "phone": "+••••••••6872",
+            "phoneDisplay": "+91 96004 46872",
+            "callHref": "tel:+919600446872"
           },
           "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
+            "id": "173294c9-c5d2-4ae9-9290-35ecf3c38815",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
+            "registrationDisplay": "TN 60 JR 9575",
             "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
-          }
-        },
-        {
-          "id": "8938e1ed-8ed0-4d9d-9fac-f5aebdeddbdc",
-          "status": "NEW",
-          "statusLabel": "New",
-          "statusTone": "accent",
-          "message": "Interested in this Creta",
-          "createdAt": "2026-10-20T15:32:45.787Z",
-          "createdLabel": "20 Oct 2026",
-          "timeAgoLabel": "just now",
-          "contactedAt": null,
-          "closedAt": null,
-          "contactedBy": null,
-          "closedBy": null,
-          "customer": {
-            "name": "Enq Buyer",
-            "initials": "EB",
-            "phone": "+••••••••0967",
-            "phoneDisplay": "+91 96003 60967",
-            "callHref": "tel:+919600360967"
-          },
-          "vehicle": {
-            "id": "23d6b1ab-a069-42a9-a959-c80c5ecc2892",
-            "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 12 YT 2913",
-            "listingStatus": "ACTIVE",
-            "href": "/car/2023-hyundai-creta-sx-o-vellore-9a1da552"
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-c6f0ddca"
           }
         }
       ],
@@ -759,8 +786,8 @@
         "hasMore": false
       },
       "counts": {
-        "ALL": 5,
-        "NEW": 5,
+        "ALL": 6,
+        "NEW": 6,
         "CONTACTED": 0,
         "CLOSED": 0,
         "SPAM": 0
@@ -768,37 +795,37 @@
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/cf344aa2-79eb-43dc-99e6-bd4df252fba9",
+    "req": "PATCH /v1/dealer/enquiries/af1c5030-610e-425c-8dd0-3d89907c18df",
     "status": 200,
     "body": {
-      "id": "cf344aa2-79eb-43dc-99e6-bd4df252fba9",
+      "id": "af1c5030-610e-425c-8dd0-3d89907c18df",
       "status": "CONTACTED",
       "statusLabel": "Contacted",
       "statusTone": "ok",
       "message": "Staff Contact enquiry",
-      "createdAt": "2026-10-20T15:32:50.087Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:31.103Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:50.117Z",
+      "contactedAt": "2026-10-21T05:27:31.119Z",
       "closedAt": null,
       "contactedBy": {
         "name": "Enq Staff",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": null,
       "customer": {
         "name": "Staff Contact",
         "initials": "SC",
-        "phone": "+••••••••0979",
-        "phoneDisplay": "+91 96003 60979",
-        "callHref": "tel:+919600360979"
+        "phone": "+••••••••6882",
+        "phoneDisplay": "+91 96004 46882",
+        "callHref": "tel:+919600446882"
       },
       "vehicle": {
-        "id": "68dbae6c-ce6c-4ead-978c-953252b7a638",
+        "id": "1cad3c25-7b39-4757-8ea0-768669f08108",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 78 JG 4812",
+        "registrationDisplay": "TN 48 PU 3484",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-782b52f0"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-b276d16b"
       }
     }
   },
@@ -807,14 +834,14 @@
     "contactedBy": true
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/489ee929-de9d-4f04-8180-69aee006d958",
+    "req": "PATCH /v1/dealer/enquiries/548694d2-9efe-4328-b09c-124b63174f34",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/enquiry-action-forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "ENQUIRY_ACTION_FORBIDDEN",
-      "traceId": "Vh3huhqNvc",
+      "traceId": "-WGGfCEWUJ",
       "detail": "Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.",
       "enquiryStatus": "CONTACTED",
       "permission": "enquiry:close"
@@ -824,75 +851,75 @@
     "status": "CONTACTED"
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/91af2da2-cae6-49a2-9c5b-3e356a1abf9b",
+    "req": "PATCH /v1/dealer/enquiries/3aab8e72-4fc5-403d-a8a0-871e03b26e7c",
     "status": 200,
     "body": {
-      "id": "91af2da2-cae6-49a2-9c5b-3e356a1abf9b",
+      "id": "3aab8e72-4fc5-403d-a8a0-871e03b26e7c",
       "status": "CONTACTED",
       "statusLabel": "Contacted",
       "statusTone": "ok",
       "message": "Mgr Contact enquiry",
-      "createdAt": "2026-10-20T15:32:52.210Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:32.135Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:52.231Z",
+      "contactedAt": "2026-10-21T05:27:32.149Z",
       "closedAt": null,
       "contactedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": null,
       "customer": {
         "name": "Mgr Contact",
         "initials": "MC",
-        "phone": "+••••••••0981",
-        "phoneDisplay": "+91 96003 60981",
-        "callHref": "tel:+919600360981"
+        "phone": "+••••••••6884",
+        "phoneDisplay": "+91 96004 46884",
+        "callHref": "tel:+919600446884"
       },
       "vehicle": {
-        "id": "d0042065-4165-4858-ae5f-15662d6b0076",
+        "id": "888db21e-6e48-4100-bc04-598ae6121ef6",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 64 JG 5836",
+        "registrationDisplay": "TN 86 UL 3809",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-c4a9ce00"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-64656192"
       }
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/3ca8f009-ef5d-44f9-8149-907c31228972",
+    "req": "PATCH /v1/dealer/enquiries/1f34b161-d1b6-40aa-a661-3976c1837c0b",
     "status": 200,
     "body": {
-      "id": "3ca8f009-ef5d-44f9-8149-907c31228972",
+      "id": "1f34b161-d1b6-40aa-a661-3976c1837c0b",
       "status": "CLOSED",
       "statusLabel": "Closed",
       "statusTone": "neutral",
       "message": "Mgr Close enquiry",
-      "createdAt": "2026-10-20T15:32:53.313Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:32.615Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:53.335Z",
-      "closedAt": "2026-10-20T15:32:53.374Z",
+      "contactedAt": "2026-10-21T05:27:32.627Z",
+      "closedAt": "2026-10-21T05:27:32.640Z",
       "contactedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "customer": {
         "name": "Mgr Close",
         "initials": "MC",
-        "phone": "+••••••••0982",
-        "phoneDisplay": "+91 96003 60982",
-        "callHref": "tel:+919600360982"
+        "phone": "+••••••••6885",
+        "phoneDisplay": "+91 96004 46885",
+        "callHref": "tel:+919600446885"
       },
       "vehicle": {
-        "id": "3120a2dc-fdbc-40b6-86cd-ac060bed866d",
+        "id": "2013e7dc-f68c-403d-b06a-1a9276691c46",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 82 FJ 4249",
+        "registrationDisplay": "TN 73 WC 4562",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-b20adf8a"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-f5fd283b"
       }
     }
   },
@@ -901,110 +928,110 @@
     "closedBy": true
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/b273afd3-18f0-4466-95a0-4e928c4e7efe",
+    "req": "PATCH /v1/dealer/enquiries/62a83ef5-2dc4-4595-8491-acab9e762572",
     "status": 200,
     "body": {
-      "id": "b273afd3-18f0-4466-95a0-4e928c4e7efe",
+      "id": "62a83ef5-2dc4-4595-8491-acab9e762572",
       "status": "CONTACTED",
       "statusLabel": "Contacted",
       "statusTone": "ok",
       "message": "Owner All enquiry",
-      "createdAt": "2026-10-20T15:32:54.252Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:33.156Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:54.270Z",
+      "contactedAt": "2026-10-21T05:27:33.171Z",
       "closedAt": null,
       "contactedBy": {
         "name": "EnqMain Owner",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": null,
       "customer": {
         "name": "Owner All",
         "initials": "OA",
-        "phone": "+••••••••0983",
-        "phoneDisplay": "+91 96003 60983",
-        "callHref": "tel:+919600360983"
+        "phone": "+••••••••6886",
+        "phoneDisplay": "+91 96004 46886",
+        "callHref": "tel:+919600446886"
       },
       "vehicle": {
-        "id": "6d992685-d708-4a0a-87c6-284b2271154e",
+        "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 47 NE 8763",
+        "registrationDisplay": "TN 67 PC 4793",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-cb3c3d7d"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-5ca26e96"
       }
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/b273afd3-18f0-4466-95a0-4e928c4e7efe",
+    "req": "PATCH /v1/dealer/enquiries/62a83ef5-2dc4-4595-8491-acab9e762572",
     "status": 200,
     "body": {
-      "id": "b273afd3-18f0-4466-95a0-4e928c4e7efe",
+      "id": "62a83ef5-2dc4-4595-8491-acab9e762572",
       "status": "CLOSED",
       "statusLabel": "Closed",
       "statusTone": "neutral",
       "message": "Owner All enquiry",
-      "createdAt": "2026-10-20T15:32:54.252Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:33.156Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:54.270Z",
-      "closedAt": "2026-10-20T15:32:54.287Z",
+      "contactedAt": "2026-10-21T05:27:33.171Z",
+      "closedAt": "2026-10-21T05:27:33.184Z",
       "contactedBy": {
         "name": "EnqMain Owner",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": {
         "name": "EnqMain Owner",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "customer": {
         "name": "Owner All",
         "initials": "OA",
-        "phone": "+••••••••0983",
-        "phoneDisplay": "+91 96003 60983",
-        "callHref": "tel:+919600360983"
+        "phone": "+••••••••6886",
+        "phoneDisplay": "+91 96004 46886",
+        "callHref": "tel:+919600446886"
       },
       "vehicle": {
-        "id": "6d992685-d708-4a0a-87c6-284b2271154e",
+        "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 47 NE 8763",
+        "registrationDisplay": "TN 67 PC 4793",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-cb3c3d7d"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-5ca26e96"
       }
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/b273afd3-18f0-4466-95a0-4e928c4e7efe",
+    "req": "PATCH /v1/dealer/enquiries/62a83ef5-2dc4-4595-8491-acab9e762572",
     "status": 200,
     "body": {
-      "id": "b273afd3-18f0-4466-95a0-4e928c4e7efe",
+      "id": "62a83ef5-2dc4-4595-8491-acab9e762572",
       "status": "SPAM",
       "statusLabel": "Spam",
       "statusTone": "err",
       "message": "Owner All enquiry",
-      "createdAt": "2026-10-20T15:32:54.252Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:33.156Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:54.270Z",
+      "contactedAt": "2026-10-21T05:27:33.171Z",
       "closedAt": null,
       "contactedBy": {
         "name": "EnqMain Owner",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": null,
       "customer": {
         "name": "Owner All",
         "initials": "OA",
-        "phone": "+••••••••0983",
-        "phoneDisplay": "+91 96003 60983",
-        "callHref": "tel:+919600360983"
+        "phone": "+••••••••6886",
+        "phoneDisplay": "+91 96004 46886",
+        "callHref": "tel:+919600446886"
       },
       "vehicle": {
-        "id": "6d992685-d708-4a0a-87c6-284b2271154e",
+        "id": "35931c66-6658-4316-b145-8f6cbacfaa8d",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 47 NE 8763",
+        "registrationDisplay": "TN 67 PC 4793",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-cb3c3d7d"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-5ca26e96"
       }
     }
   },
@@ -1017,28 +1044,28 @@
     "closedBy": true
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/cd85d51d-55ba-4a32-a7ad-79c50bead101",
+    "req": "PATCH /v1/dealer/enquiries/b4c2ceb3-b150-4340-9c3d-8aac1bcfbf2f",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/enquiry-action-forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "ENQUIRY_ACTION_FORBIDDEN",
-      "traceId": "8Yn_bGzFHa",
+      "traceId": "wMAsdFHhqr",
       "detail": "Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.",
       "enquiryStatus": "NEW",
       "permission": "enquiry:close"
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/cd85d51d-55ba-4a32-a7ad-79c50bead101",
+    "req": "PATCH /v1/dealer/enquiries/b4c2ceb3-b150-4340-9c3d-8aac1bcfbf2f",
     "status": 400,
     "body": {
       "type": "https://dealers-drive.com/errors/validation-failed",
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "KLzVqzvZ1I",
+      "traceId": "0iExkM45r0",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -1050,89 +1077,89 @@
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/96d6c364-e39c-44d8-a60b-931c99950edc",
+    "req": "PATCH /v1/dealer/enquiries/e8a64d09-7ee9-4360-b329-b3da56f6ebb1",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/enquiry-action-forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "ENQUIRY_ACTION_FORBIDDEN",
-      "traceId": "IswHenkOdD",
+      "traceId": "Ytwto17cuW",
       "detail": "Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.",
       "enquiryStatus": "NEW",
       "permission": "enquiry:close"
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/38821eec-bddb-4ba9-b536-8f90b5ee7f63",
+    "req": "PATCH /v1/dealer/enquiries/f1ccc320-a2d7-4c01-b1ca-3ec959b5e3d2",
     "status": 200,
     "body": {
-      "id": "38821eec-bddb-4ba9-b536-8f90b5ee7f63",
+      "id": "f1ccc320-a2d7-4c01-b1ca-3ec959b5e3d2",
       "status": "CONTACTED",
       "statusLabel": "Contacted",
       "statusTone": "ok",
       "message": "Concurrent Enq enquiry",
-      "createdAt": "2026-10-20T15:32:58.845Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:35.737Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:58.875Z",
+      "contactedAt": "2026-10-21T05:27:35.749Z",
       "closedAt": null,
       "contactedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": null,
       "customer": {
         "name": "Concurrent Enq",
         "initials": "CE",
-        "phone": "+••••••••0988",
-        "phoneDisplay": "+91 96003 60988",
-        "callHref": "tel:+919600360988"
+        "phone": "+••••••••6891",
+        "phoneDisplay": "+91 96004 46891",
+        "callHref": "tel:+919600446891"
       },
       "vehicle": {
-        "id": "b461ab5f-1897-42f7-abd3-7df692694cad",
+        "id": "129e5ce0-a300-4578-bae7-bb507a5483fb",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 45 LR 8997",
+        "registrationDisplay": "TN 98 NB 7132",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-511f036c"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-8bf4bc87"
       }
     }
   },
   {
-    "req": "PATCH /v1/dealer/enquiries/38821eec-bddb-4ba9-b536-8f90b5ee7f63",
+    "req": "PATCH /v1/dealer/enquiries/f1ccc320-a2d7-4c01-b1ca-3ec959b5e3d2",
     "status": 200,
     "body": {
-      "id": "38821eec-bddb-4ba9-b536-8f90b5ee7f63",
+      "id": "f1ccc320-a2d7-4c01-b1ca-3ec959b5e3d2",
       "status": "CLOSED",
       "statusLabel": "Closed",
       "statusTone": "neutral",
       "message": "Concurrent Enq enquiry",
-      "createdAt": "2026-10-20T15:32:58.845Z",
-      "createdLabel": "20 Oct 2026",
+      "createdAt": "2026-10-21T05:27:35.737Z",
+      "createdLabel": "21 Oct 2026",
       "timeAgoLabel": "just now",
-      "contactedAt": "2026-10-20T15:32:58.875Z",
-      "closedAt": "2026-10-20T15:32:58.906Z",
+      "contactedAt": "2026-10-21T05:27:35.749Z",
+      "closedAt": "2026-10-21T05:27:35.755Z",
       "contactedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "closedBy": {
         "name": "Enq Manager",
-        "atLabel": "20 Oct 2026, 21:02"
+        "atLabel": "21 Oct 2026, 10:57"
       },
       "customer": {
         "name": "Concurrent Enq",
         "initials": "CE",
-        "phone": "+••••••••0988",
-        "phoneDisplay": "+91 96003 60988",
-        "callHref": "tel:+919600360988"
+        "phone": "+••••••••6891",
+        "phoneDisplay": "+91 96004 46891",
+        "callHref": "tel:+919600446891"
       },
       "vehicle": {
-        "id": "b461ab5f-1897-42f7-abd3-7df692694cad",
+        "id": "129e5ce0-a300-4578-bae7-bb507a5483fb",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 45 LR 8997",
+        "registrationDisplay": "TN 98 NB 7132",
         "listingStatus": "ACTIVE",
-        "href": "/car/2023-hyundai-creta-sx-o-vellore-511f036c"
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-8bf4bc87"
       }
     }
   },
@@ -1183,135 +1210,135 @@
     "body": {
       "data": [
         {
-          "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+          "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Attrib Enq enquiry",
-          "createdAt": "2026-10-20T15:33:09.081Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.813Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+            "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96003 61001"
+            "phoneDisplay": "+91 96004 46904"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+            "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 83 MB 8446",
+            "registrationDisplay": "TN 36 KV 9550",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "9fd7c9df-ef9c-4068-a68b-c8f3a882b31a",
+          "id": "5ffcecb3-4a7b-444b-9ca6-1cde66b35b71",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist TmpHandled enquiry",
-          "createdAt": "2026-10-20T15:33:08.060Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.303Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "af73ab6b-1aa8-4a5b-b03a-88ff436dd838",
+            "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96003 60999"
+            "phoneDisplay": "+91 96004 46902"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "f355eeb1-c049-4e6b-8053-ba10d6d64bc2",
+            "listingId": "a2dddc48-f49b-4780-9f9e-1b77d57c7453",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 56 NA 2787",
+            "registrationDisplay": "TN 23 DT 4010",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8f3c34de-8f72-44d6-8b95-740ff3fe14c6",
+          "id": "593484e9-a2c0-46e7-a2ec-566ae327a20f",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist MemberRemove enquiry",
-          "createdAt": "2026-10-20T15:33:06.899Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.783Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "86060399-3c6c-4ea8-951c-467a1ecf4729",
+            "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96003 60997"
+            "phoneDisplay": "+91 96004 46900"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "b75bb04e-2003-4eb8-b910-f93ce704b29c",
+            "listingId": "30bf4d72-5487-43e2-813c-1a0c349af969",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 88 NJ 2848",
+            "registrationDisplay": "TN 78 KZ 2195",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "259ac3c9-af88-4d64-8028-4232c1d21ad3",
+          "id": "d114e55b-3500-4115-865a-5035603b47c6",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "before suspension",
-          "createdAt": "2026-10-20T15:33:05.895Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.283Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "91e18d63-8e6c-482e-b877-2dc86ed91691",
+            "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96003 60996"
+            "phoneDisplay": "+91 96004 46899"
           },
           "dealer": {
-            "id": "83b82100-c45a-489b-827c-72eac8053f15",
-            "name": "EnqSuspDealer Motors 36100448377d",
-            "slug": "enqsuspdealer-motors-36100448377d-vellore-tamil-nadu"
+            "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
+            "name": "EnqSuspDealer Motors 446907c506a0",
+            "slug": "enqsuspdealer-motors-446907c506a0-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "d780ad98-9b3f-486d-ac95-58da54147e97",
+            "listingId": "594a515a-dfce-482f-85d9-91d23bf38522",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 79 RV 2767",
+            "registrationDisplay": "TN 56 XC 5965",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
@@ -1319,15 +1346,15 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMjo1MC4wODdafGNmMzQ0YWEyLTc5ZWItNDNkYy05OWU2LWJkNGRmMjUyZmJhOQ",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozMS4xMDNafGFmMWM1MDMwLTYxMGUtNDI1Yy04ZGQwLTNkODk5MDdjMThkZg",
         "hasMore": true
       },
       "counts": {
-        "ALL": 27,
-        "NEW": 14,
-        "CONTACTED": 8,
-        "CLOSED": 4,
-        "SPAM": 1
+        "ALL": 215,
+        "NEW": 160,
+        "CONTACTED": 33,
+        "CLOSED": 20,
+        "SPAM": 2
       },
       "dealer": null
     }
@@ -1336,41 +1363,41 @@
     "distinctDealers": 2
   },
   {
-    "req": "GET /v1/admin/enquiries/14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+    "req": "GET /v1/admin/enquiries/abb28a38-21c1-4f4a-9436-35273521c70d",
     "status": 200,
     "body": {
-      "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+      "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
       "status": "CONTACTED",
       "statusLabel": "Contacted",
       "statusTone": "ok",
       "customerStatusLabel": "Contacted",
       "message": "Attrib Enq enquiry",
-      "createdAt": "2026-10-20T15:33:09.081Z",
-      "createdLabel": "20 Oct 2026, 21:03",
-      "contactedLabel": "20 Oct 2026, 21:03",
+      "createdAt": "2026-10-21T05:27:40.813Z",
+      "createdLabel": "21 Oct 2026, 10:57",
+      "contactedLabel": "21 Oct 2026, 10:57",
       "closedLabel": null,
       "customer": {
-        "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+        "id": "0220ee5e-7880-4272-bcf0-87559517777d",
         "name": "Attrib Enq",
-        "phone": "+••••••••1001",
-        "phoneDisplay": "+91 96003 61001",
+        "phone": "+••••••••6904",
+        "phoneDisplay": "+91 96004 46904",
         "phoneVerified": true,
-        "memberSinceLabel": "20 Oct 2026"
+        "memberSinceLabel": "21 Oct 2026"
       },
       "dealer": {
-        "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-        "name": "EnqMain Motors 36096745b689",
-        "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu",
+        "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+        "name": "EnqMain Motors 446870c02001",
+        "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96003 60964",
-        "adminHref": "/admin/dealers/fcfa26b3-34e7-49f3-a657-4e5967ad83e0"
+        "phoneDisplay": "+91 96004 46867",
+        "adminHref": "/admin/dealers/a0a69ff8-ba0e-4ef2-bf69-a690a0f08174"
       },
       "vehicle": {
-        "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+        "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 83 MB 8446",
+        "registrationDisplay": "TN 36 KV 9550",
         "listingStatus": "ACTIVE",
         "listingStatusLabel": "Active",
         "listingStatusTone": "ok",
@@ -1378,8 +1405,8 @@
           "url": "<redacted>",
           "alt": "Photograph of the 2023 Hyundai Creta SX(O)"
         },
-        "publicHref": "/car/2023-hyundai-creta-sx-o-vellore-0c2052f5",
-        "adminHref": "/admin/listings/31f999e3-da75-4098-a536-ed7120d5a205"
+        "publicHref": "/car/2023-hyundai-creta-sx-o-vellore-b44506cb",
+        "adminHref": "/admin/listings/96abf56e-233f-49dc-9e68-f54f6be39532"
       },
       "history": [
         {
@@ -1388,8 +1415,8 @@
           "actor": "Customer",
           "fromStatus": null,
           "toStatus": "NEW",
-          "at": "2026-10-20T15:33:09.083Z",
-          "atLabel": "20 Oct 2026, 21:03"
+          "at": "2026-10-21T05:27:40.814Z",
+          "atLabel": "21 Oct 2026, 10:57"
         },
         {
           "action": "enquiry.contacted",
@@ -1397,8 +1424,8 @@
           "actor": "Dealer",
           "fromStatus": "NEW",
           "toStatus": "CONTACTED",
-          "at": "2026-10-20T15:33:09.104Z",
-          "atLabel": "20 Oct 2026, 21:03"
+          "at": "2026-10-21T05:27:40.828Z",
+          "atLabel": "21 Oct 2026, 10:57"
         }
       ],
       "supportTickets": []
@@ -1410,135 +1437,135 @@
     "body": {
       "data": [
         {
-          "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+          "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Attrib Enq enquiry",
-          "createdAt": "2026-10-20T15:33:09.081Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.813Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+            "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96003 61001"
+            "phoneDisplay": "+91 96004 46904"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+            "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 83 MB 8446",
+            "registrationDisplay": "TN 36 KV 9550",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "9fd7c9df-ef9c-4068-a68b-c8f3a882b31a",
+          "id": "5ffcecb3-4a7b-444b-9ca6-1cde66b35b71",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist TmpHandled enquiry",
-          "createdAt": "2026-10-20T15:33:08.060Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.303Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "af73ab6b-1aa8-4a5b-b03a-88ff436dd838",
+            "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96003 60999"
+            "phoneDisplay": "+91 96004 46902"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "f355eeb1-c049-4e6b-8053-ba10d6d64bc2",
+            "listingId": "a2dddc48-f49b-4780-9f9e-1b77d57c7453",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 56 NA 2787",
+            "registrationDisplay": "TN 23 DT 4010",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8f3c34de-8f72-44d6-8b95-740ff3fe14c6",
+          "id": "593484e9-a2c0-46e7-a2ec-566ae327a20f",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist MemberRemove enquiry",
-          "createdAt": "2026-10-20T15:33:06.899Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.783Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "86060399-3c6c-4ea8-951c-467a1ecf4729",
+            "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96003 60997"
+            "phoneDisplay": "+91 96004 46900"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "b75bb04e-2003-4eb8-b910-f93ce704b29c",
+            "listingId": "30bf4d72-5487-43e2-813c-1a0c349af969",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 88 NJ 2848",
+            "registrationDisplay": "TN 78 KZ 2195",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "259ac3c9-af88-4d64-8028-4232c1d21ad3",
+          "id": "d114e55b-3500-4115-865a-5035603b47c6",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "before suspension",
-          "createdAt": "2026-10-20T15:33:05.895Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.283Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "91e18d63-8e6c-482e-b877-2dc86ed91691",
+            "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96003 60996"
+            "phoneDisplay": "+91 96004 46899"
           },
           "dealer": {
-            "id": "83b82100-c45a-489b-827c-72eac8053f15",
-            "name": "EnqSuspDealer Motors 36100448377d",
-            "slug": "enqsuspdealer-motors-36100448377d-vellore-tamil-nadu"
+            "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
+            "name": "EnqSuspDealer Motors 446907c506a0",
+            "slug": "enqsuspdealer-motors-446907c506a0-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "d780ad98-9b3f-486d-ac95-58da54147e97",
+            "listingId": "594a515a-dfce-482f-85d9-91d23bf38522",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 79 RV 2767",
+            "registrationDisplay": "TN 56 XC 5965",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
@@ -1546,15 +1573,15 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzowNC42NTBafDMzZWVkYzA1LWY0YjQtNGI4OC1hNjYzLTIzNWVkZDg1ZGQ5Zg",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozOC42ODBafDYxNGMyMDAzLTNlMTQtNDVjZi1hMmQ1LTA0ZDAxZjhjMjM4OQ",
         "hasMore": true
       },
       "counts": {
-        "ALL": 27,
-        "NEW": 14,
-        "CONTACTED": 8,
-        "CLOSED": 4,
-        "SPAM": 1
+        "ALL": 215,
+        "NEW": 160,
+        "CONTACTED": 33,
+        "CLOSED": 20,
+        "SPAM": 2
       },
       "dealer": null
     }
@@ -1565,135 +1592,135 @@
     "body": {
       "data": [
         {
-          "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+          "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Attrib Enq enquiry",
-          "createdAt": "2026-10-20T15:33:09.081Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.813Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+            "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96003 61001"
+            "phoneDisplay": "+91 96004 46904"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+            "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 83 MB 8446",
+            "registrationDisplay": "TN 36 KV 9550",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "9fd7c9df-ef9c-4068-a68b-c8f3a882b31a",
+          "id": "5ffcecb3-4a7b-444b-9ca6-1cde66b35b71",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist TmpHandled enquiry",
-          "createdAt": "2026-10-20T15:33:08.060Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.303Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "af73ab6b-1aa8-4a5b-b03a-88ff436dd838",
+            "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96003 60999"
+            "phoneDisplay": "+91 96004 46902"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "f355eeb1-c049-4e6b-8053-ba10d6d64bc2",
+            "listingId": "a2dddc48-f49b-4780-9f9e-1b77d57c7453",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 56 NA 2787",
+            "registrationDisplay": "TN 23 DT 4010",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8f3c34de-8f72-44d6-8b95-740ff3fe14c6",
+          "id": "593484e9-a2c0-46e7-a2ec-566ae327a20f",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist MemberRemove enquiry",
-          "createdAt": "2026-10-20T15:33:06.899Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.783Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "86060399-3c6c-4ea8-951c-467a1ecf4729",
+            "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96003 60997"
+            "phoneDisplay": "+91 96004 46900"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "b75bb04e-2003-4eb8-b910-f93ce704b29c",
+            "listingId": "30bf4d72-5487-43e2-813c-1a0c349af969",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 88 NJ 2848",
+            "registrationDisplay": "TN 78 KZ 2195",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "259ac3c9-af88-4d64-8028-4232c1d21ad3",
+          "id": "d114e55b-3500-4115-865a-5035603b47c6",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "before suspension",
-          "createdAt": "2026-10-20T15:33:05.895Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.283Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "91e18d63-8e6c-482e-b877-2dc86ed91691",
+            "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96003 60996"
+            "phoneDisplay": "+91 96004 46899"
           },
           "dealer": {
-            "id": "83b82100-c45a-489b-827c-72eac8053f15",
-            "name": "EnqSuspDealer Motors 36100448377d",
-            "slug": "enqsuspdealer-motors-36100448377d-vellore-tamil-nadu"
+            "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
+            "name": "EnqSuspDealer Motors 446907c506a0",
+            "slug": "enqsuspdealer-motors-446907c506a0-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "d780ad98-9b3f-486d-ac95-58da54147e97",
+            "listingId": "594a515a-dfce-482f-85d9-91d23bf38522",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 79 RV 2767",
+            "registrationDisplay": "TN 56 XC 5965",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
@@ -1701,15 +1728,15 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzowNC42NTBafDMzZWVkYzA1LWY0YjQtNGI4OC1hNjYzLTIzNWVkZDg1ZGQ5Zg",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozOC42ODBafDYxNGMyMDAzLTNlMTQtNDVjZi1hMmQ1LTA0ZDAxZjhjMjM4OQ",
         "hasMore": true
       },
       "counts": {
-        "ALL": 27,
-        "NEW": 14,
-        "CONTACTED": 8,
-        "CLOSED": 4,
-        "SPAM": 1
+        "ALL": 215,
+        "NEW": 160,
+        "CONTACTED": 33,
+        "CLOSED": 20,
+        "SPAM": 2
       },
       "dealer": null
     }
@@ -1720,135 +1747,135 @@
     "body": {
       "data": [
         {
-          "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+          "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Attrib Enq enquiry",
-          "createdAt": "2026-10-20T15:33:09.081Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.813Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+            "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96003 61001"
+            "phoneDisplay": "+91 96004 46904"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+            "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 83 MB 8446",
+            "registrationDisplay": "TN 36 KV 9550",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "9fd7c9df-ef9c-4068-a68b-c8f3a882b31a",
+          "id": "5ffcecb3-4a7b-444b-9ca6-1cde66b35b71",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist TmpHandled enquiry",
-          "createdAt": "2026-10-20T15:33:08.060Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.303Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "af73ab6b-1aa8-4a5b-b03a-88ff436dd838",
+            "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96003 60999"
+            "phoneDisplay": "+91 96004 46902"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "f355eeb1-c049-4e6b-8053-ba10d6d64bc2",
+            "listingId": "a2dddc48-f49b-4780-9f9e-1b77d57c7453",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 56 NA 2787",
+            "registrationDisplay": "TN 23 DT 4010",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8f3c34de-8f72-44d6-8b95-740ff3fe14c6",
+          "id": "593484e9-a2c0-46e7-a2ec-566ae327a20f",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist MemberRemove enquiry",
-          "createdAt": "2026-10-20T15:33:06.899Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.783Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "86060399-3c6c-4ea8-951c-467a1ecf4729",
+            "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96003 60997"
+            "phoneDisplay": "+91 96004 46900"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "b75bb04e-2003-4eb8-b910-f93ce704b29c",
+            "listingId": "30bf4d72-5487-43e2-813c-1a0c349af969",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 88 NJ 2848",
+            "registrationDisplay": "TN 78 KZ 2195",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "259ac3c9-af88-4d64-8028-4232c1d21ad3",
+          "id": "d114e55b-3500-4115-865a-5035603b47c6",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "before suspension",
-          "createdAt": "2026-10-20T15:33:05.895Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.283Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "91e18d63-8e6c-482e-b877-2dc86ed91691",
+            "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96003 60996"
+            "phoneDisplay": "+91 96004 46899"
           },
           "dealer": {
-            "id": "83b82100-c45a-489b-827c-72eac8053f15",
-            "name": "EnqSuspDealer Motors 36100448377d",
-            "slug": "enqsuspdealer-motors-36100448377d-vellore-tamil-nadu"
+            "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
+            "name": "EnqSuspDealer Motors 446907c506a0",
+            "slug": "enqsuspdealer-motors-446907c506a0-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "d780ad98-9b3f-486d-ac95-58da54147e97",
+            "listingId": "594a515a-dfce-482f-85d9-91d23bf38522",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 79 RV 2767",
+            "registrationDisplay": "TN 56 XC 5965",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
@@ -1856,15 +1883,15 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzowNC42NTBafDMzZWVkYzA1LWY0YjQtNGI4OC1hNjYzLTIzNWVkZDg1ZGQ5Zg",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozOC42ODBafDYxNGMyMDAzLTNlMTQtNDVjZi1hMmQ1LTA0ZDAxZjhjMjM4OQ",
         "hasMore": true
       },
       "counts": {
-        "ALL": 27,
-        "NEW": 14,
-        "CONTACTED": 8,
-        "CLOSED": 4,
-        "SPAM": 1
+        "ALL": 215,
+        "NEW": 160,
+        "CONTACTED": 33,
+        "CLOSED": 20,
+        "SPAM": 2
       },
       "dealer": null
     }
@@ -1875,135 +1902,135 @@
     "body": {
       "data": [
         {
-          "id": "259ac3c9-af88-4d64-8028-4232c1d21ad3",
+          "id": "d114e55b-3500-4115-865a-5035603b47c6",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "before suspension",
-          "createdAt": "2026-10-20T15:33:05.895Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.283Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "91e18d63-8e6c-482e-b877-2dc86ed91691",
+            "id": "d131fb05-c98d-4811-8dcc-6b46f72626ee",
             "name": "Susp Hist Buyer",
-            "phoneDisplay": "+91 96003 60996"
+            "phoneDisplay": "+91 96004 46899"
           },
           "dealer": {
-            "id": "83b82100-c45a-489b-827c-72eac8053f15",
-            "name": "EnqSuspDealer Motors 36100448377d",
-            "slug": "enqsuspdealer-motors-36100448377d-vellore-tamil-nadu"
+            "id": "85610cdb-1cba-4516-a263-7c193d13b04a",
+            "name": "EnqSuspDealer Motors 446907c506a0",
+            "slug": "enqsuspdealer-motors-446907c506a0-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "d780ad98-9b3f-486d-ac95-58da54147e97",
+            "listingId": "594a515a-dfce-482f-85d9-91d23bf38522",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 79 RV 2767",
+            "registrationDisplay": "TN 56 XC 5965",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
           }
         },
         {
-          "id": "7c881001-61b6-4188-a324-37fd212016f0",
+          "id": "7917d621-9f25-42b9-8830-40a6ef4d260e",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist Reserved enquiry",
-          "createdAt": "2026-10-20T15:33:03.706Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.230Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "54e0a688-606b-453e-bf0c-c7e86d69c9e5",
+            "id": "4a978782-b807-41ed-8876-b9736a7ca36b",
             "name": "Hist Reserved",
-            "phoneDisplay": "+91 96003 60993"
+            "phoneDisplay": "+91 96004 46896"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "7a253e22-cdbe-469a-b9d3-b4159a96fe01",
+            "listingId": "07337420-4f08-4324-b5e8-c2985b492c15",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 25 JS 6963",
+            "registrationDisplay": "TN 48 AS 7819",
             "listingStatus": "RESERVED",
             "listingStatusLabel": "Reserved",
             "listingStatusTone": "warn"
           }
         },
         {
-          "id": "5f07c545-c028-4dd1-902a-bbc8986168d4",
+          "id": "fc294f05-c6f0-4c74-9452-5255fbbc09eb",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist Withdrawn enquiry",
-          "createdAt": "2026-10-20T15:33:02.639Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:37.718Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "6d4906ff-7ca7-4c39-a9af-13a4faa86b7e",
+            "id": "0c8572bc-144e-4081-b5df-73812720776d",
             "name": "Hist Withdrawn",
-            "phoneDisplay": "+91 96003 60992"
+            "phoneDisplay": "+91 96004 46895"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "5c0bef05-c50c-44c6-b296-38033a27bfd0",
+            "listingId": "31b0f9f1-7357-46e3-8afb-07de5b141008",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 73 EN 8259",
+            "registrationDisplay": "TN 45 UJ 9350",
             "listingStatus": "WITHDRAWN",
             "listingStatusLabel": "Withdrawn",
             "listingStatusTone": "neutral"
           }
         },
         {
-          "id": "12937c41-a388-4dcc-a389-9c43725f207f",
+          "id": "d692eb66-5227-4ca6-95e0-f0110ce028f4",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist Sold enquiry",
-          "createdAt": "2026-10-20T15:33:01.735Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:37.191Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "985e1dae-7e8d-4208-be90-813d73d4ad9f",
+            "id": "295c5f59-2f69-4710-993b-684ef93bc0d8",
             "name": "Hist Sold",
-            "phoneDisplay": "+91 96003 60991"
+            "phoneDisplay": "+91 96004 46894"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "6b672b30-f7b3-4b5e-b827-815c990574eb",
+            "listingId": "def70f73-8ef5-4387-b126-2904893fc730",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 24 XA 1836",
+            "registrationDisplay": "TN 38 AC 9770",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
@@ -2011,154 +2038,154 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzowMS43MzVafDEyOTM3YzQxLWEzODgtNGRjYy1hMzg5LTljNDM3MjVmMjA3Zg",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozNy4xOTFafGQ2OTJlYjY2LTUyMjctNGNhNi05NWUwLWYwMTEwY2UwMjhmNA",
         "hasMore": true
       },
       "counts": {
-        "ALL": 27,
-        "NEW": 14,
-        "CONTACTED": 8,
-        "CLOSED": 4,
-        "SPAM": 1
+        "ALL": 215,
+        "NEW": 160,
+        "CONTACTED": 33,
+        "CLOSED": 20,
+        "SPAM": 2
       },
       "dealer": null
     }
   },
   {
-    "req": "GET /v1/admin/enquiries?q=360967&limit=5",
+    "req": "GET /v1/admin/enquiries?q=446870&limit=5",
     "status": 200,
     "body": {
       "data": [
         {
-          "id": "14adae1d-a927-4bbf-8690-4fbfa18ad26a",
+          "id": "abb28a38-21c1-4f4a-9436-35273521c70d",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Attrib Enq enquiry",
-          "createdAt": "2026-10-20T15:33:09.081Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.813Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "1cc7d662-d10f-4e61-be14-9bb56072993e",
+            "id": "0220ee5e-7880-4272-bcf0-87559517777d",
             "name": "Attrib Enq",
-            "phoneDisplay": "+91 96003 61001"
+            "phoneDisplay": "+91 96004 46904"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "31f999e3-da75-4098-a536-ed7120d5a205",
+            "listingId": "96abf56e-233f-49dc-9e68-f54f6be39532",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 83 MB 8446",
+            "registrationDisplay": "TN 36 KV 9550",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "9fd7c9df-ef9c-4068-a68b-c8f3a882b31a",
+          "id": "5ffcecb3-4a7b-444b-9ca6-1cde66b35b71",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist TmpHandled enquiry",
-          "createdAt": "2026-10-20T15:33:08.060Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:40.303Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "af73ab6b-1aa8-4a5b-b03a-88ff436dd838",
+            "id": "4340093d-6db4-4e9e-a8f1-4115c7a82cf1",
             "name": "Hist TmpHandled",
-            "phoneDisplay": "+91 96003 60999"
+            "phoneDisplay": "+91 96004 46902"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "f355eeb1-c049-4e6b-8053-ba10d6d64bc2",
+            "listingId": "a2dddc48-f49b-4780-9f9e-1b77d57c7453",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 56 NA 2787",
+            "registrationDisplay": "TN 23 DT 4010",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "8f3c34de-8f72-44d6-8b95-740ff3fe14c6",
+          "id": "593484e9-a2c0-46e7-a2ec-566ae327a20f",
           "status": "CONTACTED",
           "statusLabel": "Contacted",
           "statusTone": "ok",
           "messagePreview": "Hist MemberRemove enquiry",
-          "createdAt": "2026-10-20T15:33:06.899Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:39.783Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "86060399-3c6c-4ea8-951c-467a1ecf4729",
+            "id": "fe32cd8f-caff-4a11-a811-e0476e7cc567",
             "name": "Hist MemberRemove",
-            "phoneDisplay": "+91 96003 60997"
+            "phoneDisplay": "+91 96004 46900"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "b75bb04e-2003-4eb8-b910-f93ce704b29c",
+            "listingId": "30bf4d72-5487-43e2-813c-1a0c349af969",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 88 NJ 2848",
+            "registrationDisplay": "TN 78 KZ 2195",
             "listingStatus": "ACTIVE",
             "listingStatusLabel": "Active",
             "listingStatusTone": "ok"
           }
         },
         {
-          "id": "33eedc05-f4b4-4b88-a663-235edd85dd9f",
+          "id": "614c2003-3e14-45cf-a2d5-04d01f8c2389",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist NonPublic enquiry",
-          "createdAt": "2026-10-20T15:33:04.650Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.680Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "a039f175-0cf2-4a05-b110-934fa0e1019f",
+            "id": "dde02755-98d3-4b74-b18a-115c376a8d5e",
             "name": "Hist NonPublic",
-            "phoneDisplay": "+91 96003 60994"
+            "phoneDisplay": "+91 96004 46897"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "3d7e3b63-4ee0-46d1-bfd0-88e7ce709b3a",
+            "listingId": "2b971ffc-3508-4644-9fae-dc21bec10c8e",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 98 SK 8924",
+            "registrationDisplay": "TN 71 YS 1827",
             "listingStatus": "SOLD",
             "listingStatusLabel": "Sold",
             "listingStatusTone": "accent"
           }
         },
         {
-          "id": "7c881001-61b6-4188-a324-37fd212016f0",
+          "id": "7917d621-9f25-42b9-8830-40a6ef4d260e",
           "status": "NEW",
           "statusLabel": "New",
           "statusTone": "accent",
           "messagePreview": "Hist Reserved enquiry",
-          "createdAt": "2026-10-20T15:33:03.706Z",
-          "createdLabel": "20 Oct 2026, 21:03",
+          "createdAt": "2026-10-21T05:27:38.230Z",
+          "createdLabel": "21 Oct 2026, 10:57",
           "customer": {
-            "id": "54e0a688-606b-453e-bf0c-c7e86d69c9e5",
+            "id": "4a978782-b807-41ed-8876-b9736a7ca36b",
             "name": "Hist Reserved",
-            "phoneDisplay": "+91 96003 60993"
+            "phoneDisplay": "+91 96004 46896"
           },
           "dealer": {
-            "id": "fcfa26b3-34e7-49f3-a657-4e5967ad83e0",
-            "name": "EnqMain Motors 36096745b689",
-            "slug": "enqmain-motors-36096745b689-vellore-tamil-nadu"
+            "id": "a0a69ff8-ba0e-4ef2-bf69-a690a0f08174",
+            "name": "EnqMain Motors 446870c02001",
+            "slug": "enqmain-motors-446870c02001-vellore-tamil-nadu"
           },
           "vehicle": {
-            "listingId": "7a253e22-cdbe-469a-b9d3-b4159a96fe01",
+            "listingId": "07337420-4f08-4324-b5e8-c2985b492c15",
             "title": "2023 Hyundai Creta SX(O)",
-            "registrationDisplay": "TN 25 JS 6963",
+            "registrationDisplay": "TN 48 AS 7819",
             "listingStatus": "RESERVED",
             "listingStatusLabel": "Reserved",
             "listingStatusTone": "warn"
@@ -2166,12 +2193,12 @@
         }
       ],
       "page": {
-        "nextCursor": "MjAyNi0xMC0yMFQxNTozMzowMy43MDZafDdjODgxMDAxLTYxYjYtNDE4OC1hMzI0LTM3ZmQyMTIwMTZmMA",
+        "nextCursor": "MjAyNi0xMC0yMVQwNToyNzozOC4yMzBafDc5MTdkNjIxLTlmMjUtNDJiOS04ODMwLTQwYTZlZjRkMjYwZQ",
         "hasMore": true
       },
       "counts": {
-        "ALL": 24,
-        "NEW": 11,
+        "ALL": 25,
+        "NEW": 12,
         "CONTACTED": 8,
         "CLOSED": 4,
         "SPAM": 1
@@ -2187,7 +2214,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "xSvRslh4if",
+      "traceId": "p5vadlTE4K",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -2206,7 +2233,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "7pCMFysfSB",
+      "traceId": "5nG5ObWPMA",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -2218,7 +2245,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "PZ2w4wj52w",
+      "traceId": "xsu602yP6F",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -2230,7 +2257,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "Ou9tcEPi13",
+      "traceId": "sl-r4LUrpi",
       "detail": "Sign in to the admin console to do that."
     }
   }

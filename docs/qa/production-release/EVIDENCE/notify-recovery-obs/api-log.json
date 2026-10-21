@@ -19,16 +19,16 @@
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "d44e468b-20e1-4293-bdb7-3e9e5771a7c4",
+      "id": "8125fd1a-2140-4dcd-8143-1b6158a56eef",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:46:03.379Z",
-      "dealerName": "Notify5 Motors 160789c7377f",
+      "createdAt": "2026-10-21T05:28:43.328Z",
+      "dealerName": "Notify5 Motors 52130120ef38",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
   {
-    "deliveriesBefore": 1055,
-    "deliveriesAfter": 1055
+    "deliveriesBefore": 7271,
+    "deliveriesAfter": 7271
   },
   {
     "deadApi": "ECONNREFUSED"
@@ -40,10 +40,10 @@
     "req": "POST /v1/enquiries",
     "status": 201,
     "body": {
-      "id": "47326f67-2337-474e-8963-c4e7f994b73c",
+      "id": "9b274481-9841-4859-91ed-0f45052b9cd4",
       "status": "NEW",
-      "createdAt": "2026-10-20T15:46:04.437Z",
-      "dealerName": "Rec3 Motors 160794bb4825",
+      "createdAt": "2026-10-21T05:28:44.044Z",
+      "dealerName": "Rec3 Motors 52130646e7d2",
       "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
@@ -55,7 +55,7 @@
       "title": "Enquiry already open",
       "status": 409,
       "code": "ENQUIRY_ALREADY_OPEN",
-      "traceId": "EM1xkmqiIM",
+      "traceId": "UdvMCqBYR3",
       "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
     }
   },
@@ -68,10 +68,10 @@
     "prodSuppressesDetail": true
   },
   {
-    "req": "POST /v1/admin/listings/9c06bca0-5db4-4c04-aa45-61ae80bdaafd/images/presign",
+    "req": "POST /v1/admin/listings/faa9e5d6-2182-4e18-be89-a227ab7a5aa0/images/presign",
     "status": 201,
     "body": {
-      "mediaId": "9da7b99c-e4f5-4c8b-a6b7-d010ff2a9347",
+      "mediaId": "04fcaaf7-62fa-4696-9860-a6f3bdc2cbc2",
       "uploadUrl": "<redacted>",
       "method": "PUT",
       "headers": {
@@ -83,14 +83,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/listings/9c06bca0-5db4-4c04-aa45-61ae80bdaafd/images/9da7b99c-e4f5-4c8b-a6b7-d010ff2a9347/commit",
+    "req": "POST /v1/admin/listings/faa9e5d6-2182-4e18-be89-a227ab7a5aa0/images/04fcaaf7-62fa-4696-9860-a6f3bdc2cbc2/commit",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/upload-missing",
       "title": "Upload missing",
       "status": 422,
       "code": "UPLOAD_MISSING",
-      "traceId": "Oe-Yf0nhYk",
+      "traceId": "H4x3zHl9oo",
       "detail": "The upload did not complete. Try again."
     }
   },
@@ -105,7 +105,7 @@
       "title": "Phone verification failed",
       "status": 422,
       "code": "PHONE_VERIFICATION_FAILED",
-      "traceId": "kyxHVVTMLG",
+      "traceId": "RliuwdG9vf",
       "detail": "That code could not be verified. Request a new one and try again.",
       "errors": [
         {
@@ -132,14 +132,14 @@
     "note": "browser refresh recovery is a web-layer concern"
   },
   {
-    "req": "POST /v1/dealer/vehicles/e55af0fd-b435-4089-b38b-a37620f934e6/mark-sold",
+    "req": "POST /v1/dealer/vehicles/1cffe722-939b-4ef7-a678-c579927e8ff0/mark-sold",
     "status": 200,
     "body": {
-      "id": "e55af0fd-b435-4089-b38b-a37620f934e6",
+      "id": "1cffe722-939b-4ef7-a678-c579927e8ff0",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN64VG6929",
-      "registrationDisplay": "TN 64 VG 6929",
-      "rtoCode": "TN64",
+      "registrationNumber": "TN67HP8769",
+      "registrationDisplay": "TN 67 HP 8769",
+      "rtoCode": "TN67",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -161,16 +161,16 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "c9cbe526-b225-4f82-8d17-53184d0e8e06",
+        "id": "fb0e0429-bbc3-4ade-ad95-da01d2982882",
         "status": "SOLD",
         "statusLabel": "Sold",
         "statusTone": "accent",
         "reason": null,
-        "submittedAt": "2026-10-20T15:46:05.546Z",
-        "publishedAt": "2026-10-20T15:46:06.176Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-b07e27a9",
+        "submittedAt": "2026-10-21T05:28:44.723Z",
+        "publishedAt": "2026-10-21T05:28:45.120Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-069eb939",
         "reservedAt": null,
-        "soldAt": "2026-10-20T15:46:06.235Z",
+        "soldAt": "2026-10-21T05:28:45.144Z",
         "withdrawnAt": null,
         "withdrawal": null,
         "canEdit": false,
@@ -179,19 +179,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:46:05.483Z",
-      "updatedAt": "2026-10-20T15:46:06.237Z"
+      "createdAt": "2026-10-21T05:28:44.688Z",
+      "updatedAt": "2026-10-21T05:28:45.145Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/e55af0fd-b435-4089-b38b-a37620f934e6/mark-sold",
+    "req": "POST /v1/dealer/vehicles/1cffe722-939b-4ef7-a678-c579927e8ff0/mark-sold",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-sellable",
       "title": "Listing not sellable",
       "status": 409,
       "code": "LISTING_NOT_SELLABLE",
-      "traceId": "PQ06vwAx0X",
+      "traceId": "twjgTvoaVp",
       "detail": "Only a car that is on sale or reserved can be marked sold.",
       "listingStatus": "SOLD"
     }
@@ -200,27 +200,14 @@
     "status": "SOLD"
   },
   {
-    "req": "POST /v1/dealer/vehicles/10412782-e7e0-4e5b-a050-0c86a4202db6/reserve",
-    "status": 409,
-    "body": {
-      "type": "https://dealers-drive.com/errors/listing-not-reservable",
-      "title": "Listing not reservable",
-      "status": 409,
-      "code": "LISTING_NOT_RESERVABLE",
-      "traceId": "wAkWTQCepN",
-      "detail": "Only a car that is on sale can be reserved.",
-      "listingStatus": "RESERVED"
-    }
-  },
-  {
-    "req": "POST /v1/dealer/vehicles/10412782-e7e0-4e5b-a050-0c86a4202db6/reserve",
+    "req": "POST /v1/dealer/vehicles/54b8588c-0519-4b22-af68-353debebcbe6/reserve",
     "status": 200,
     "body": {
-      "id": "10412782-e7e0-4e5b-a050-0c86a4202db6",
+      "id": "54b8588c-0519-4b22-af68-353debebcbe6",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN61EY7652",
-      "registrationDisplay": "TN 61 EY 7652",
-      "rtoCode": "TN61",
+      "registrationNumber": "TN87EB2639",
+      "registrationDisplay": "TN 87 EB 2639",
+      "rtoCode": "TN87",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -242,15 +229,15 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "fdd1a06e-dcf5-484a-8e07-1e7c878386f6",
+        "id": "3fb85aee-d834-48cf-a6ae-bf9b77cf9155",
         "status": "RESERVED",
         "statusLabel": "Reserved",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:46:06.608Z",
-        "publishedAt": "2026-10-20T15:46:07.234Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-cf37b963",
-        "reservedAt": "2026-10-20T15:46:07.272Z",
+        "submittedAt": "2026-10-21T05:28:45.358Z",
+        "publishedAt": "2026-10-21T05:28:45.748Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-0de9f27f",
+        "reservedAt": "2026-10-21T05:28:45.774Z",
         "soldAt": null,
         "withdrawnAt": null,
         "withdrawal": null,
@@ -260,12 +247,36 @@
         "actions": ["markSold", "requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:46:06.550Z",
-      "updatedAt": "2026-10-20T15:46:06.602Z"
+      "createdAt": "2026-10-21T05:28:45.320Z",
+      "updatedAt": "2026-10-21T05:28:45.356Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/54b8588c-0519-4b22-af68-353debebcbe6/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "fuJBtXW42O",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "RESERVED"
     }
   },
   {
     "status": "RESERVED"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "df3b331b-3e83-4567-a8ec-e5ac90fa4a0f",
+      "status": "NEW",
+      "createdAt": "2026-10-21T05:28:46.456Z",
+      "dealerName": "Rec12 Motors 52132728d55f",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
   },
   {
     "req": "POST /v1/enquiries",
@@ -275,32 +286,21 @@
       "title": "Enquiry already open",
       "status": 409,
       "code": "ENQUIRY_ALREADY_OPEN",
-      "traceId": "YrHqBvzy2_",
+      "traceId": "GOZPP2S_4x",
       "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
-    }
-  },
-  {
-    "req": "POST /v1/enquiries",
-    "status": 201,
-    "body": {
-      "id": "d935a6be-2ae1-482f-bd1f-7a179cc7af0e",
-      "status": "NEW",
-      "createdAt": "2026-10-20T15:46:08.291Z",
-      "dealerName": "Rec12 Motors 160815ba7f8d",
-      "vehicleTitle": "2023 Hyundai Creta SX(O)"
     }
   },
   {
     "rows": 1
   },
   {
-    "dealers": 369,
-    "listings": 613,
+    "dealers": 690,
+    "listings": 978,
     "ready": 200
   },
   {
-    "xRequestId": "79K1tQC0iw",
-    "xTraceId": "79K1tQC0iw"
+    "xRequestId": "HhFuMVeBZ-",
+    "xTraceId": "HhFuMVeBZ-"
   },
   {
     "req": "GET /v1/dealer/dashboard",
@@ -310,7 +310,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "vL6MYfBvPi",
+      "traceId": "FVw8jII-Tb",
       "detail": "You must be signed in to do that."
     }
   },
@@ -322,7 +322,7 @@
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "YkFnmZ1jN_",
+      "traceId": "SLRSidVF8y",
       "detail": "Sign in to the admin console to do that."
     }
   },
@@ -330,7 +330,7 @@
     "suspendAudit": {
       "action": "dealer.suspended",
       "actorType": "ADMIN",
-      "traceId": "bMK6sQ4gaF"
+      "traceId": "Fe_tW56Eid"
     }
   },
   {
@@ -391,7 +391,7 @@
         "cache": "postgres",
         "storage": "local"
       },
-      "uptimeSeconds": 943
+      "uptimeSeconds": 2436
     }
   },
   {

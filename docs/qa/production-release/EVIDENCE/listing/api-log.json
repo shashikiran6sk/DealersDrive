@@ -3,11 +3,11 @@
     "req": "POST /v1/dealer/vehicles",
     "status": 201,
     "body": {
-      "id": "b56a64af-2b9a-4b50-a8c3-0e3217b3fad0",
-      "title": "TN 37 PX 5167",
-      "registrationNumber": "TN37PX5167",
-      "registrationDisplay": "TN 37 PX 5167",
-      "rtoCode": "TN37",
+      "id": "41fa667d-d61f-4511-b59f-18e098b49311",
+      "title": "TN 39 YD 4396",
+      "registrationNumber": "TN39YD4396",
+      "registrationDisplay": "TN 39 YD 4396",
+      "rtoCode": "TN39",
       "make": null,
       "model": null,
       "variant": null,
@@ -50,7 +50,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "038e8de8-2c7e-4a4d-9836-24ee821d9b89",
+        "id": "5003b678-1d2f-44c4-8e96-9976c6686c2b",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -68,19 +68,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.430Z",
-      "updatedAt": "2026-10-20T15:33:30.430Z"
+      "createdAt": "2026-10-21T05:31:37.795Z",
+      "updatedAt": "2026-10-21T05:31:37.795Z"
     }
   },
   {
     "req": "POST /v1/dealer/vehicles",
     "status": 201,
     "body": {
-      "id": "23f11a58-f01d-450e-b739-e7888c9f4609",
-      "title": "TN 53 XW 1453",
-      "registrationNumber": "TN53XW1453",
-      "registrationDisplay": "TN 53 XW 1453",
-      "rtoCode": "TN53",
+      "id": "b5a8da30-2fe0-41dc-a776-2f4c7f12ee31",
+      "title": "TN 88 KW 9457",
+      "registrationNumber": "TN88KW9457",
+      "registrationDisplay": "TN 88 KW 9457",
+      "rtoCode": "TN88",
       "make": null,
       "model": null,
       "variant": null,
@@ -123,7 +123,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "d8c48fc4-86e6-4065-a092-46768efe04f2",
+        "id": "0acb96e5-d11a-4fc9-af96-b008f654c42c",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -141,19 +141,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.457Z",
-      "updatedAt": "2026-10-20T15:33:30.457Z"
+      "createdAt": "2026-10-21T05:31:37.812Z",
+      "updatedAt": "2026-10-21T05:31:37.812Z"
     }
   },
   {
     "req": "POST /v1/dealer/vehicles",
     "status": 201,
     "body": {
-      "id": "1741dc56-b0dd-4e08-a9d3-eb0c2c6314e4",
-      "title": "TN 72 VM 9217",
-      "registrationNumber": "TN72VM9217",
-      "registrationDisplay": "TN 72 VM 9217",
-      "rtoCode": "TN72",
+      "id": "27f9340e-cfc3-4527-9132-ad2d3028d74f",
+      "title": "TN 62 XD 2747",
+      "registrationNumber": "TN62XD2747",
+      "registrationDisplay": "TN 62 XD 2747",
+      "rtoCode": "TN62",
       "make": null,
       "model": null,
       "variant": null,
@@ -196,7 +196,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "9d777c40-7203-42ff-913e-78af5d3eaf3c",
+        "id": "44d477f5-5d25-43a4-b2e4-cf57a8c43ad6",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -214,8 +214,8 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.477Z",
-      "updatedAt": "2026-10-20T15:33:30.477Z"
+      "createdAt": "2026-10-21T05:31:37.827Z",
+      "updatedAt": "2026-10-21T05:31:37.827Z"
     }
   },
   {
@@ -225,14 +225,14 @@
     "actorRecorded": true
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/1741dc56-b0dd-4e08-a9d3-eb0c2c6314e4",
+    "req": "PATCH /v1/dealer/vehicles/27f9340e-cfc3-4527-9132-ad2d3028d74f",
     "status": 200,
     "body": {
-      "id": "1741dc56-b0dd-4e08-a9d3-eb0c2c6314e4",
+      "id": "27f9340e-cfc3-4527-9132-ad2d3028d74f",
       "title": "Maruti Suzuki Swift",
-      "registrationNumber": "TN72VM9217",
-      "registrationDisplay": "TN 72 VM 9217",
-      "rtoCode": "TN72",
+      "registrationNumber": "TN62XD2747",
+      "registrationDisplay": "TN 62 XD 2747",
+      "rtoCode": "TN62",
       "make": "Maruti Suzuki",
       "model": "Swift",
       "variant": null,
@@ -275,7 +275,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "9d777c40-7203-42ff-913e-78af5d3eaf3c",
+        "id": "44d477f5-5d25-43a4-b2e4-cf57a8c43ad6",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -293,19 +293,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.477Z",
-      "updatedAt": "2026-10-20T15:33:30.508Z"
+      "createdAt": "2026-10-21T05:31:37.827Z",
+      "updatedAt": "2026-10-21T05:31:37.850Z"
     }
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/5eae45bf-d271-4354-bcbf-36755f1e5f71",
+    "req": "PATCH /v1/dealer/vehicles/f4cfa6a2-a5fd-44ae-89b6-63c2f3ffdb8c",
     "status": 200,
     "body": {
-      "id": "5eae45bf-d271-4354-bcbf-36755f1e5f71",
+      "id": "f4cfa6a2-a5fd-44ae-89b6-63c2f3ffdb8c",
       "title": "Honda",
-      "registrationNumber": "TN88EP8346",
-      "registrationDisplay": "TN 88 EP 8346",
-      "rtoCode": "TN88",
+      "registrationNumber": "TN52ED9355",
+      "registrationDisplay": "TN 52 ED 9355",
+      "rtoCode": "TN52",
       "make": "Honda",
       "model": null,
       "variant": null,
@@ -348,7 +348,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "67fb9c6c-f1ac-437a-993c-953ca6d10bab",
+        "id": "12226a51-c406-40ac-aa7a-e9e75ce01fe9",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -366,19 +366,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.528Z",
-      "updatedAt": "2026-10-20T15:33:30.554Z"
+      "createdAt": "2026-10-21T05:31:37.863Z",
+      "updatedAt": "2026-10-21T05:31:37.879Z"
     }
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/0d311f69-ac41-4242-97d3-e2c132837b96",
+    "req": "PATCH /v1/dealer/vehicles/486c647c-4aa1-415d-a49b-4352e845cf02",
     "status": 200,
     "body": {
-      "id": "0d311f69-ac41-4242-97d3-e2c132837b96",
+      "id": "486c647c-4aa1-415d-a49b-4352e845cf02",
       "title": "Tata",
-      "registrationNumber": "TN41TY1226",
-      "registrationDisplay": "TN 41 TY 1226",
-      "rtoCode": "TN41",
+      "registrationNumber": "TN72PB1699",
+      "registrationDisplay": "TN 72 PB 1699",
+      "rtoCode": "TN72",
       "make": "Tata",
       "model": null,
       "variant": null,
@@ -421,7 +421,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "6451a212-f727-4f27-9a8a-efe550823c3e",
+        "id": "6e419473-9f6f-4f2e-b760-7bb081e95e93",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -439,19 +439,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.577Z",
-      "updatedAt": "2026-10-20T15:33:30.609Z"
+      "createdAt": "2026-10-21T05:31:37.892Z",
+      "updatedAt": "2026-10-21T05:31:37.911Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/1a8b968d-5e67-47c0-beb2-bd8c686d1f65/submit",
+    "req": "POST /v1/dealer/vehicles/d4d91d02-5b74-479c-9e13-1050accdf19e/submit",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/vehicle-incomplete",
       "title": "Vehicle incomplete",
       "status": 422,
       "code": "VEHICLE_INCOMPLETE",
-      "traceId": "zNcZJQeXel",
+      "traceId": "VB2rFEdRBG",
       "detail": "A few details are still missing. Fill them in, then submit the vehicle again.",
       "errors": [
         {
@@ -483,14 +483,14 @@
     }
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/f533bfce-42a4-40ee-9762-3701145929cc",
+    "req": "PATCH /v1/dealer/vehicles/5cee09f7-c01a-4884-8a2b-67510fff95e4",
     "status": 400,
     "body": {
       "type": "https://dealers-drive.com/errors/validation-failed",
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "ts164As8ya",
+      "traceId": "bSEcDax1Mr",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -524,7 +524,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "smpWaMARIR",
+      "traceId": "P8ALO4joj9",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -543,7 +543,7 @@
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "J_pKaaoGd9",
+      "traceId": "cdWViQHhE2",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -558,14 +558,14 @@
     "dealerId": false
   },
   {
-    "req": "POST /v1/dealer/vehicles/b268875c-81d7-4ccf-abaf-9eb365a6a807/submit",
+    "req": "POST /v1/dealer/vehicles/6443637d-fbe5-47a9-9c0a-e7d24a3104fe/submit",
     "status": 200,
     "body": {
-      "id": "b268875c-81d7-4ccf-abaf-9eb365a6a807",
+      "id": "6443637d-fbe5-47a9-9c0a-e7d24a3104fe",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN38HT2937",
-      "registrationDisplay": "TN 38 HT 2937",
-      "rtoCode": "TN38",
+      "registrationNumber": "TN10BK7878",
+      "registrationDisplay": "TN 10 BK 7878",
+      "rtoCode": "TN10",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -587,12 +587,12 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "52e1736d-bd28-483a-8d70-01704226a41f",
+        "id": "4be16b14-f33c-49f1-8de3-ea91c49423a0",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:30.762Z",
+        "submittedAt": "2026-10-21T05:31:38.042Z",
         "publishedAt": null,
         "slug": null,
         "reservedAt": null,
@@ -605,19 +605,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.714Z",
-      "updatedAt": "2026-10-20T15:33:30.735Z"
+      "createdAt": "2026-10-21T05:31:37.998Z",
+      "updatedAt": "2026-10-21T05:31:38.016Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/b268875c-81d7-4ccf-abaf-9eb365a6a807/submit",
+    "req": "POST /v1/dealer/vehicles/6443637d-fbe5-47a9-9c0a-e7d24a3104fe/submit",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-submittable",
       "title": "Listing not submittable",
       "status": 409,
       "code": "LISTING_NOT_SUBMITTABLE",
-      "traceId": "WiC4HcGGSO",
+      "traceId": "XuMZ5vpvW3",
       "detail": "Only a draft can be submitted for review.",
       "listingStatus": "PENDING_REVIEW"
     }
@@ -626,14 +626,14 @@
     "listingRows": 1
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/f1c72029-229c-4a65-a8f0-24098cdf7373",
+    "req": "PATCH /v1/dealer/vehicles/9104898e-acf4-4c16-bc96-b26271833b58",
     "status": 200,
     "body": {
-      "id": "f1c72029-229c-4a65-a8f0-24098cdf7373",
-      "title": "TN 80 KV 6591",
-      "registrationNumber": "TN80KV6591",
-      "registrationDisplay": "TN 80 KV 6591",
-      "rtoCode": "TN80",
+      "id": "9104898e-acf4-4c16-bc96-b26271833b58",
+      "title": "TN 88 HB 3768",
+      "registrationNumber": "TN88HB3768",
+      "registrationDisplay": "TN 88 HB 3768",
+      "rtoCode": "TN88",
       "make": null,
       "model": null,
       "variant": null,
@@ -676,7 +676,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "7af610b5-4938-4091-816a-a0893c64099b",
+        "id": "025fe111-bfbf-4c10-a87b-5411f9134015",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -694,19 +694,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.797Z",
-      "updatedAt": "2026-10-20T15:33:30.833Z"
+      "createdAt": "2026-10-21T05:31:38.071Z",
+      "updatedAt": "2026-10-21T05:31:38.089Z"
     }
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/f1c72029-229c-4a65-a8f0-24098cdf7373",
+    "req": "PATCH /v1/dealer/vehicles/9104898e-acf4-4c16-bc96-b26271833b58",
     "status": 200,
     "body": {
-      "id": "f1c72029-229c-4a65-a8f0-24098cdf7373",
-      "title": "TN 80 KV 6591",
-      "registrationNumber": "TN80KV6591",
-      "registrationDisplay": "TN 80 KV 6591",
-      "rtoCode": "TN80",
+      "id": "9104898e-acf4-4c16-bc96-b26271833b58",
+      "title": "TN 88 HB 3768",
+      "registrationNumber": "TN88HB3768",
+      "registrationDisplay": "TN 88 HB 3768",
+      "rtoCode": "TN88",
       "make": null,
       "model": null,
       "variant": null,
@@ -749,7 +749,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "7af610b5-4938-4091-816a-a0893c64099b",
+        "id": "025fe111-bfbf-4c10-a87b-5411f9134015",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -767,22 +767,22 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.797Z",
-      "updatedAt": "2026-10-20T15:33:30.845Z"
+      "createdAt": "2026-10-21T05:31:38.071Z",
+      "updatedAt": "2026-10-21T05:31:38.097Z"
     }
   },
   {
     "finalKm": 20000
   },
   {
-    "req": "GET /v1/dealer/vehicles/87536068-274e-406f-9ccd-39cde974d35e",
+    "req": "GET /v1/dealer/vehicles/03f80ccb-c4a4-4d96-af22-5de5725063c8",
     "status": 200,
     "body": {
-      "id": "87536068-274e-406f-9ccd-39cde974d35e",
+      "id": "03f80ccb-c4a4-4d96-af22-5de5725063c8",
       "title": "Kia Seltos",
-      "registrationNumber": "TN19ZR9607",
-      "registrationDisplay": "TN 19 ZR 9607",
-      "rtoCode": "TN19",
+      "registrationNumber": "TN17YB7893",
+      "registrationDisplay": "TN 17 YB 7893",
+      "rtoCode": "TN17",
       "make": "Kia",
       "model": "Seltos",
       "variant": null,
@@ -825,7 +825,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "4f4fe5c6-efc3-4eb3-9a35-a8df4d84b398",
+        "id": "db883cf1-18a5-498a-b8e8-c3d0b73d4f41",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -843,17 +843,17 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:30.862Z",
-      "updatedAt": "2026-10-20T15:33:30.909Z"
+      "createdAt": "2026-10-21T05:31:38.116Z",
+      "updatedAt": "2026-10-21T05:31:38.140Z"
     }
   },
   {
-    "req": "POST /v1/admin/listings/c3c56087-de13-437f-be71-927815ee9a17/images/2d579453-1b73-418d-bba6-c3cddbf54ac0/commit",
+    "req": "POST /v1/admin/listings/de3f097c-0d4b-4aba-a2ee-aae4f291310c/images/23b1c29c-913b-45ad-9438-f043d7ef2008/commit",
     "status": 200,
     "body": {
       "items": [
         {
-          "mediaId": "2d579453-1b73-418d-bba6-c3cddbf54ac0",
+          "mediaId": "23b1c29c-913b-45ad-9438-f043d7ef2008",
           "position": 0,
           "isPrimary": true,
           "url": "<redacted>",
@@ -862,7 +862,7 @@
           "bytes": 11518,
           "width": 1600,
           "height": 1200,
-          "uploadedAt": "2026-10-20T15:33:31.133Z"
+          "uploadedAt": "2026-10-21T05:31:38.272Z"
         }
       ],
       "min": 6,
@@ -874,62 +874,62 @@
     "linkedVehicle": true
   },
   {
-    "req": "GET /v1/dealer/vehicles/2d9d288f-22ac-4892-b5c0-37cb49bc104e",
+    "req": "GET /v1/dealer/vehicles/b1e727d4-17c1-41d5-a85c-b29c9663bdfc",
     "status": 404,
     "body": {
       "type": "https://dealers-drive.com/errors/vehicle-not-found",
       "title": "Not found",
       "status": 404,
       "code": "VEHICLE_NOT_FOUND",
-      "traceId": "jmiysLsEa7",
+      "traceId": "-ngFkuSAqV",
       "detail": "That vehicle does not exist."
     }
   },
   {
-    "req": "PATCH /v1/dealer/vehicles/2d9d288f-22ac-4892-b5c0-37cb49bc104e",
+    "req": "PATCH /v1/dealer/vehicles/b1e727d4-17c1-41d5-a85c-b29c9663bdfc",
     "status": 404,
     "body": {
       "type": "https://dealers-drive.com/errors/vehicle-not-found",
       "title": "Not found",
       "status": 404,
       "code": "VEHICLE_NOT_FOUND",
-      "traceId": "-sVki1nRq_",
+      "traceId": "Umbrg4A4Tl",
       "detail": "That vehicle does not exist."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/865f90f3-8134-4c7f-8479-4aede388b8ea/submit",
+    "req": "POST /v1/dealer/vehicles/448a1ca9-4525-414b-a854-7919b53ec822/submit",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "YlgYAokICv",
+      "traceId": "RRzPDM9oii",
       "detail": "This action needs the listing:submit permission."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/e306503e-0454-4a39-bb63-318998b0c56e/submit",
+    "req": "POST /v1/dealer/vehicles/1cc64224-089e-4f72-8ae6-254dfce28d7c/submit",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "0AJgbvy8u7",
+      "traceId": "1KzxQ8TUWq",
       "detail": "This action needs the listing:submit permission."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/4a2cadcd-19f5-4712-9d1a-d4a430df8a7c/submit",
+    "req": "POST /v1/dealer/vehicles/b46d1b5d-8b5f-41df-9d98-b6550178801b/submit",
     "status": 200,
     "body": {
-      "id": "4a2cadcd-19f5-4712-9d1a-d4a430df8a7c",
+      "id": "b46d1b5d-8b5f-41df-9d98-b6550178801b",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN40DY9668",
-      "registrationDisplay": "TN 40 DY 9668",
-      "rtoCode": "TN40",
+      "registrationNumber": "TN27HJ8744",
+      "registrationDisplay": "TN 27 HJ 8744",
+      "rtoCode": "TN27",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -951,12 +951,12 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "49201bfe-1983-40c9-9026-46be923246b7",
+        "id": "63331edb-6565-4d17-bd95-d7b263b1dd62",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:31.450Z",
+        "submittedAt": "2026-10-21T05:31:38.485Z",
         "publishedAt": null,
         "slug": null,
         "reservedAt": null,
@@ -969,22 +969,22 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:31.392Z",
-      "updatedAt": "2026-10-20T15:33:31.419Z"
+      "createdAt": "2026-10-21T05:31:38.435Z",
+      "updatedAt": "2026-10-21T05:31:38.460Z"
     }
   },
   {
-    "listingId": "3b9b122b-058f-4852-9a2d-dc291e1e0e9f"
+    "listingId": "8ec9c168-3882-434f-9c9f-f83fc65b40e5"
   },
   {
-    "req": "POST /v1/dealer/vehicles/f9f2544e-0e4e-4f15-8d71-63b9d1eea7b5/submit",
+    "req": "POST /v1/dealer/vehicles/373545eb-f868-41a5-8633-572d1319ea47/submit",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/vehicle-incomplete",
       "title": "Vehicle incomplete",
       "status": 422,
       "code": "VEHICLE_INCOMPLETE",
-      "traceId": "LmXawjC72l",
+      "traceId": "f-4QruVlAs",
       "detail": "A few details are still missing. Fill them in, then submit the vehicle again.",
       "errors": [
         {
@@ -1023,32 +1023,32 @@
     "vdp": 404
   },
   {
-    "queueCount": 18,
-    "pages": 1,
+    "queueCount": 66,
+    "pages": 2,
     "seesListing": true
   },
   {
-    "req": "GET /v1/admin/listings/49201bfe-1983-40c9-9026-46be923246b7",
+    "req": "GET /v1/admin/listings/63331edb-6565-4d17-bd95-d7b263b1dd62",
     "status": 200,
     "body": {
       "listing": {
-        "id": "49201bfe-1983-40c9-9026-46be923246b7",
-        "vehicleId": "4a2cadcd-19f5-4712-9d1a-d4a430df8a7c",
+        "id": "63331edb-6565-4d17-bd95-d7b263b1dd62",
+        "vehicleId": "b46d1b5d-8b5f-41df-9d98-b6550178801b",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 40 DY 9668",
+        "registrationDisplay": "TN 27 HJ 8744",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "dealer": {
-          "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-          "name": "ListA Motors 409457ffec59",
-          "slug": "lista-motors-409457ffec59-vellore-tamil-nadu"
+          "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+          "name": "ListA Motors 69720431b441",
+          "slug": "lista-motors-69720431b441-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:33:31.450Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:31:38.485Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": "just now",
         "resubmission": false,
         "photography": {
@@ -1062,14 +1062,14 @@
         "publishedAt": null
       },
       "dealer": {
-        "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 09454"
+        "phoneDisplay": "+91 96006 97201"
       },
       "sections": [
         {
@@ -1078,11 +1078,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 40 DY 9668"
+              "value": "TN 27 HJ 8744"
             },
             {
               "label": "RTO",
-              "value": "TN40"
+              "value": "TN27"
             },
             {
               "label": "Registration year",
@@ -1216,8 +1216,8 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:33:31.452Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:38.487Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [
@@ -1251,10 +1251,10 @@
     "status": "ACTIVE"
   },
   {
-    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-74069d0c",
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-1a9aa974",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-74069d0c",
+      "slug": "2023-hyundai-creta-sx-o-vellore-1a9aa974",
       "availability": "AVAILABLE",
       "title": "2023 Hyundai Creta SX(O)",
       "year": 2023,
@@ -1307,7 +1307,7 @@
         }
       ],
       "primaryIndex": 0,
-      "publishedLabel": "Listed 20 Oct 2026",
+      "publishedLabel": "Listed 21 Oct 2026",
       "facts": {
         "make": "Hyundai",
         "model": "Creta",
@@ -1321,8 +1321,8 @@
         "pricePaise": 145000000
       },
       "dealer": {
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "initials": "LM",
         "isVerified": false,
         "location": "Vellore",
@@ -1333,27 +1333,27 @@
     }
   },
   {
-    "req": "POST /v1/admin/listings/2825713f-3026-40ae-b819-ad753218ec5d/reject",
+    "req": "POST /v1/admin/listings/0bda7788-c782-4030-a04a-d17eb6147a5d/reject",
     "status": 200,
     "body": {
       "listing": {
-        "id": "2825713f-3026-40ae-b819-ad753218ec5d",
-        "vehicleId": "0234add3-be13-43af-a9d7-5b47490cd041",
+        "id": "0bda7788-c782-4030-a04a-d17eb6147a5d",
+        "vehicleId": "ed921d16-d193-47b6-9dab-12029b6b0031",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 26 UX 4013",
+        "registrationDisplay": "TN 24 HC 7189",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "REJECTED",
         "statusLabel": "Rejected",
         "statusTone": "err",
         "dealer": {
-          "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-          "name": "ListA Motors 409457ffec59",
-          "slug": "lista-motors-409457ffec59-vellore-tamil-nadu"
+          "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+          "name": "ListA Motors 69720431b441",
+          "slug": "lista-motors-69720431b441-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:33:32.691Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:31:39.309Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": null,
         "resubmission": false,
         "photography": {
@@ -1367,14 +1367,14 @@
         "publishedAt": null
       },
       "dealer": {
-        "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 09454"
+        "phoneDisplay": "+91 96006 97201"
       },
       "sections": [
         {
@@ -1383,11 +1383,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 26 UX 4013"
+              "value": "TN 24 HC 7189"
             },
             {
               "label": "RTO",
-              "value": "TN26"
+              "value": "TN24"
             },
             {
               "label": "Registration year",
@@ -1521,16 +1521,16 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:33:32.692Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:39.311Z",
+          "atLabel": "21 Oct 2026"
         },
         {
           "action": "listing.rejected",
           "label": "Rejected",
           "actor": "Dealers-Drive",
           "reason": "Photos do not match the described vehicle",
-          "at": "2026-10-20T15:33:32.709Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:39.323Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [],
@@ -1554,14 +1554,14 @@
     "vdp": 404
   },
   {
-    "req": "GET /v1/dealer/vehicles/0234add3-be13-43af-a9d7-5b47490cd041",
+    "req": "GET /v1/dealer/vehicles/ed921d16-d193-47b6-9dab-12029b6b0031",
     "status": 200,
     "body": {
-      "id": "0234add3-be13-43af-a9d7-5b47490cd041",
+      "id": "ed921d16-d193-47b6-9dab-12029b6b0031",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN26UX4013",
-      "registrationDisplay": "TN 26 UX 4013",
-      "rtoCode": "TN26",
+      "registrationNumber": "TN24HC7189",
+      "registrationDisplay": "TN 24 HC 7189",
+      "rtoCode": "TN24",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -1583,12 +1583,12 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "2825713f-3026-40ae-b819-ad753218ec5d",
+        "id": "0bda7788-c782-4030-a04a-d17eb6147a5d",
         "status": "REJECTED",
         "statusLabel": "Rejected",
         "statusTone": "err",
         "reason": "Photos do not match the described vehicle",
-        "submittedAt": "2026-10-20T15:33:32.691Z",
+        "submittedAt": "2026-10-21T05:31:39.309Z",
         "publishedAt": null,
         "slug": null,
         "reservedAt": null,
@@ -1601,22 +1601,22 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:32.628Z",
-      "updatedAt": "2026-10-20T15:33:32.708Z"
+      "createdAt": "2026-10-21T05:31:39.266Z",
+      "updatedAt": "2026-10-21T05:31:39.322Z"
     }
   },
   {
     "afterRequestChanges": "CHANGES_REQUESTED"
   },
   {
-    "req": "POST /v1/dealer/vehicles/e1387259-5767-4930-b24f-1596a371ed40/submit",
+    "req": "POST /v1/dealer/vehicles/4c4fb5fa-f73d-4609-afe1-d0680e5245d7/submit",
     "status": 200,
     "body": {
-      "id": "e1387259-5767-4930-b24f-1596a371ed40",
+      "id": "4c4fb5fa-f73d-4609-afe1-d0680e5245d7",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN52SE3841",
-      "registrationDisplay": "TN 52 SE 3841",
-      "rtoCode": "TN52",
+      "registrationNumber": "TN26LR8646",
+      "registrationDisplay": "TN 26 LR 8646",
+      "rtoCode": "TN26",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -1638,12 +1638,12 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "fce3a013-334b-4cd4-8c07-4d691d89cd87",
+        "id": "d846c8ad-423d-4519-a7e6-c6344af399d6",
         "status": "PENDING_REVIEW",
         "statusLabel": "Pending review",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:32.935Z",
+        "submittedAt": "2026-10-21T05:31:39.446Z",
         "publishedAt": null,
         "slug": null,
         "reservedAt": null,
@@ -1656,35 +1656,35 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:32.748Z",
-      "updatedAt": "2026-10-20T15:33:32.900Z"
+      "createdAt": "2026-10-21T05:31:39.351Z",
+      "updatedAt": "2026-10-21T05:31:39.427Z"
     }
   },
   {
     "afterResubmit": "PENDING_REVIEW"
   },
   {
-    "req": "POST /v1/admin/listings/8027de80-fcbb-4ec7-b2a3-ab17b83112c2/approve",
+    "req": "POST /v1/admin/listings/07915c28-7ea5-4c59-b750-884b1e59d654/approve",
     "status": 200,
     "body": {
       "listing": {
-        "id": "8027de80-fcbb-4ec7-b2a3-ab17b83112c2",
-        "vehicleId": "bf6573a8-da7c-463e-93bb-5eadbd906bda",
+        "id": "07915c28-7ea5-4c59-b750-884b1e59d654",
+        "vehicleId": "a935dd26-f2aa-4896-9274-6dedf70d6216",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 11 MW 8678",
+        "registrationDisplay": "TN 54 EV 4463",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "dealer": {
-          "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-          "name": "ListA Motors 409457ffec59",
-          "slug": "lista-motors-409457ffec59-vellore-tamil-nadu"
+          "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+          "name": "ListA Motors 69720431b441",
+          "slug": "lista-motors-69720431b441-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:33:33.012Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:31:39.510Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": null,
         "resubmission": false,
         "photography": {
@@ -1695,17 +1695,17 @@
         "imageCount": 6,
         "reason": null,
         "submissionCount": 1,
-        "publishedAt": "2026-10-20T15:33:33.710Z"
+        "publishedAt": "2026-10-21T05:31:39.979Z"
       },
       "dealer": {
-        "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 09454"
+        "phoneDisplay": "+91 96006 97201"
       },
       "sections": [
         {
@@ -1714,11 +1714,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 11 MW 8678"
+              "value": "TN 54 EV 4463"
             },
             {
               "label": "RTO",
-              "value": "TN11"
+              "value": "TN54"
             },
             {
               "label": "Registration year",
@@ -1806,7 +1806,7 @@
       "images": {
         "items": [
           {
-            "mediaId": "dae23da5-64fc-41e1-855c-746efa7b6fcb",
+            "mediaId": "87163633-8fab-4aec-8b67-2036411327d5",
             "position": 0,
             "isPrimary": true,
             "url": "<redacted>",
@@ -1815,10 +1815,10 @@
             "bytes": 11518,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:33.255Z"
+            "uploadedAt": "2026-10-21T05:31:39.685Z"
           },
           {
-            "mediaId": "41d3f94c-bb9b-4083-b035-7fc1125e3ab4",
+            "mediaId": "3bdfd2cb-5325-46a5-853e-13c6c7dad48b",
             "position": 1,
             "isPrimary": false,
             "url": "<redacted>",
@@ -1827,10 +1827,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:33.354Z"
+            "uploadedAt": "2026-10-21T05:31:39.751Z"
           },
           {
-            "mediaId": "208886f9-7069-401f-9260-165bdc68c341",
+            "mediaId": "8aa38303-f918-42c3-89b5-db009bb79bc2",
             "position": 2,
             "isPrimary": false,
             "url": "<redacted>",
@@ -1839,10 +1839,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:33.447Z"
+            "uploadedAt": "2026-10-21T05:31:39.805Z"
           },
           {
-            "mediaId": "17e4de13-1402-4cde-835f-64d561d5dd19",
+            "mediaId": "b3387aa2-0a7a-4609-866a-2a757e710f8a",
             "position": 3,
             "isPrimary": false,
             "url": "<redacted>",
@@ -1851,10 +1851,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:33.535Z"
+            "uploadedAt": "2026-10-21T05:31:39.864Z"
           },
           {
-            "mediaId": "d382898d-c716-4683-a2d1-7fc1a3751107",
+            "mediaId": "b954e123-9279-4c12-9d0c-55c693114cbe",
             "position": 4,
             "isPrimary": false,
             "url": "<redacted>",
@@ -1863,7 +1863,7 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:33.617Z"
+            "uploadedAt": "2026-10-21T05:31:39.907Z"
           }
         ],
         "min": 6,
@@ -1876,35 +1876,35 @@
           "label": "Registration checked",
           "hint": "The plate on the car matches the number entered and the RC.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.030Z"
+          "checkedAt": "2026-10-21T05:31:39.521Z"
         },
         {
           "key": "MAKE_MODEL",
           "label": "Make and model checked",
           "hint": "The car is the make and model entered.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.053Z"
+          "checkedAt": "2026-10-21T05:31:39.543Z"
         },
         {
           "key": "VARIANT",
           "label": "Variant checked",
           "hint": "The trim on the car matches, or none was entered and none is claimed.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.081Z"
+          "checkedAt": "2026-10-21T05:31:39.557Z"
         },
         {
           "key": "YEAR",
           "label": "Year checked",
           "hint": "Manufacturing and registration years match the RC.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.103Z"
+          "checkedAt": "2026-10-21T05:31:39.570Z"
         },
         {
           "key": "ODOMETER",
           "label": "Odometer checked",
           "hint": "The reading on the dashboard matches the kilometres entered.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.125Z"
+          "checkedAt": "2026-10-21T05:31:39.584Z"
         }
       ],
       "history": [
@@ -1913,16 +1913,16 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:33:33.013Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:39.511Z",
+          "atLabel": "21 Oct 2026"
         },
         {
           "action": "listing.approved",
           "label": "Approved and published",
           "actor": "Dealers-Drive",
           "reason": null,
-          "at": "2026-10-20T15:33:33.711Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:39.980Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [],
@@ -1940,14 +1940,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/listings/8027de80-fcbb-4ec7-b2a3-ab17b83112c2/approve",
+    "req": "POST /v1/admin/listings/07915c28-7ea5-4c59-b750-884b1e59d654/approve",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-approvable",
       "title": "Listing not approvable",
       "status": 409,
       "code": "LISTING_NOT_APPROVABLE",
-      "traceId": "PFWMdIRvYi",
+      "traceId": "08wAFkH4ZO",
       "detail": "Only a listing waiting for review can be approved.",
       "listingStatus": "ACTIVE"
     }
@@ -1956,40 +1956,27 @@
     "status": "ACTIVE"
   },
   {
-    "req": "POST /v1/admin/listings/da0a9a36-1816-4dc8-b668-7f204f431bbe/approve",
-    "status": 409,
-    "body": {
-      "type": "https://dealers-drive.com/errors/listing-not-approvable",
-      "title": "Listing not approvable",
-      "status": 409,
-      "code": "LISTING_NOT_APPROVABLE",
-      "traceId": "PjpDpRKmQm",
-      "detail": "Only a listing waiting for review can be approved.",
-      "listingStatus": "REJECTED"
-    }
-  },
-  {
-    "req": "POST /v1/admin/listings/da0a9a36-1816-4dc8-b668-7f204f431bbe/reject",
+    "req": "POST /v1/admin/listings/a8e92cfa-0df5-423d-820b-f7011db0d5e6/approve",
     "status": 200,
     "body": {
       "listing": {
-        "id": "da0a9a36-1816-4dc8-b668-7f204f431bbe",
-        "vehicleId": "90c0ceb7-6958-415d-aaf9-7b27f5c79b69",
+        "id": "a8e92cfa-0df5-423d-820b-f7011db0d5e6",
+        "vehicleId": "77d52921-f2bc-43fa-81ab-e710619d8e10",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 89 EC 1108",
+        "registrationDisplay": "TN 21 CS 6222",
         "summary": "Petrol · Automatic · 22,400 km",
         "priceLabel": "₹14,50,000",
-        "status": "REJECTED",
-        "statusLabel": "Rejected",
-        "statusTone": "err",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
         "dealer": {
-          "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-          "name": "ListA Motors 409457ffec59",
-          "slug": "lista-motors-409457ffec59-vellore-tamil-nadu"
+          "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+          "name": "ListA Motors 69720431b441",
+          "slug": "lista-motors-69720431b441-vellore-tamil-nadu"
         },
         "location": "Vellore",
-        "submittedAt": "2026-10-20T15:33:33.812Z",
-        "submittedLabel": "20 Oct 2026",
+        "submittedAt": "2026-10-21T05:31:40.039Z",
+        "submittedLabel": "21 Oct 2026",
         "waitingLabel": null,
         "resubmission": false,
         "photography": {
@@ -1998,19 +1985,19 @@
           "tone": "neutral"
         },
         "imageCount": 6,
-        "reason": "Racing the approval with a rejection",
+        "reason": null,
         "submissionCount": 1,
-        "publishedAt": null
+        "publishedAt": "2026-10-21T05:31:40.493Z"
       },
       "dealer": {
-        "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
         "location": "Vellore",
-        "phoneDisplay": "+91 96004 09454"
+        "phoneDisplay": "+91 96006 97201"
       },
       "sections": [
         {
@@ -2019,11 +2006,11 @@
           "rows": [
             {
               "label": "Registration number",
-              "value": "TN 89 EC 1108"
+              "value": "TN 21 CS 6222"
             },
             {
               "label": "RTO",
-              "value": "TN89"
+              "value": "TN21"
             },
             {
               "label": "Registration year",
@@ -2111,7 +2098,7 @@
       "images": {
         "items": [
           {
-            "mediaId": "66218df1-7e31-4864-bc92-ca0b57ba3b52",
+            "mediaId": "0e4ffe80-1065-4b5d-bcda-0105078fd9b9",
             "position": 0,
             "isPrimary": true,
             "url": "<redacted>",
@@ -2120,10 +2107,10 @@
             "bytes": 11518,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:34.096Z"
+            "uploadedAt": "2026-10-21T05:31:40.190Z"
           },
           {
-            "mediaId": "87bc1d53-7a3a-49a2-9161-10a32501d862",
+            "mediaId": "dd064a05-42b5-4d43-9564-b48a1191d291",
             "position": 1,
             "isPrimary": false,
             "url": "<redacted>",
@@ -2132,10 +2119,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:34.170Z"
+            "uploadedAt": "2026-10-21T05:31:40.248Z"
           },
           {
-            "mediaId": "79aaacef-d3b5-4941-a17c-e516acdeff70",
+            "mediaId": "2e86706a-08dd-488f-bb9f-7403db098021",
             "position": 2,
             "isPrimary": false,
             "url": "<redacted>",
@@ -2144,10 +2131,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:34.249Z"
+            "uploadedAt": "2026-10-21T05:31:40.307Z"
           },
           {
-            "mediaId": "8a7d6f39-2f93-487d-b2dc-a897b8d50c62",
+            "mediaId": "b84528bb-d6eb-4a04-816f-78516b695d1b",
             "position": 3,
             "isPrimary": false,
             "url": "<redacted>",
@@ -2156,10 +2143,10 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:34.330Z"
+            "uploadedAt": "2026-10-21T05:31:40.363Z"
           },
           {
-            "mediaId": "5090dc07-68d2-433c-b22c-815e9d1898d3",
+            "mediaId": "4202f89c-52a9-44b0-927b-0490191e75d0",
             "position": 4,
             "isPrimary": false,
             "url": "<redacted>",
@@ -2168,7 +2155,7 @@
             "bytes": 11519,
             "width": 1600,
             "height": 1200,
-            "uploadedAt": "2026-10-20T15:33:34.422Z"
+            "uploadedAt": "2026-10-21T05:31:40.432Z"
           }
         ],
         "min": 6,
@@ -2181,35 +2168,35 @@
           "label": "Registration checked",
           "hint": "The plate on the car matches the number entered and the RC.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.837Z"
+          "checkedAt": "2026-10-21T05:31:40.052Z"
         },
         {
           "key": "MAKE_MODEL",
           "label": "Make and model checked",
           "hint": "The car is the make and model entered.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.862Z"
+          "checkedAt": "2026-10-21T05:31:40.065Z"
         },
         {
           "key": "VARIANT",
           "label": "Variant checked",
           "hint": "The trim on the car matches, or none was entered and none is claimed.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.885Z"
+          "checkedAt": "2026-10-21T05:31:40.079Z"
         },
         {
           "key": "YEAR",
           "label": "Year checked",
           "hint": "Manufacturing and registration years match the RC.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.909Z"
+          "checkedAt": "2026-10-21T05:31:40.094Z"
         },
         {
           "key": "ODOMETER",
           "label": "Odometer checked",
           "hint": "The reading on the dashboard matches the kilometres entered.",
           "checked": true,
-          "checkedAt": "2026-10-20T15:33:33.931Z"
+          "checkedAt": "2026-10-21T05:31:40.108Z"
         }
       ],
       "history": [
@@ -2218,16 +2205,16 @@
           "label": "Submitted for review",
           "actor": "Dealer",
           "reason": null,
-          "at": "2026-10-20T15:33:33.814Z",
-          "atLabel": "20 Oct 2026"
+          "at": "2026-10-21T05:31:40.041Z",
+          "atLabel": "21 Oct 2026"
         },
         {
-          "action": "listing.rejected",
-          "label": "Rejected",
+          "action": "listing.approved",
+          "label": "Approved and published",
           "actor": "Dealers-Drive",
-          "reason": "Racing the approval with a rejection",
-          "at": "2026-10-20T15:33:34.520Z",
-          "atLabel": "20 Oct 2026"
+          "reason": null,
+          "at": "2026-10-21T05:31:40.494Z",
+          "atLabel": "21 Oct 2026"
         }
       ],
       "blockers": [],
@@ -2245,12 +2232,25 @@
     }
   },
   {
-    "final": "REJECTED"
+    "req": "POST /v1/admin/listings/a8e92cfa-0df5-423d-820b-f7011db0d5e6/reject",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reviewable",
+      "title": "Listing not reviewable",
+      "status": 409,
+      "code": "LISTING_NOT_REVIEWABLE",
+      "traceId": "XuRY9ZJt8j",
+      "detail": "Only a listing waiting for review can be rejected.",
+      "listingStatus": "ACTIVE"
+    }
+  },
+  {
+    "final": "ACTIVE"
   },
   {
     "actions": [
       "listing.check_set",
-      "listing.check_set",
+      "listing.submitted",
       "listing.check_set",
       "listing.check_set",
       "listing.check_set"
@@ -2260,11 +2260,11 @@
     "req": "POST /v1/dealer/vehicles",
     "status": 201,
     "body": {
-      "id": "a50ab9b6-664c-40c2-8f28-bc8f9b226795",
-      "title": "TN 73 HH 1552",
-      "registrationNumber": "TN73HH1552",
-      "registrationDisplay": "TN 73 HH 1552",
-      "rtoCode": "TN73",
+      "id": "a711ad79-0fbb-4933-ab15-8b52a61ef17b",
+      "title": "TN 34 NV 3551",
+      "registrationNumber": "TN34NV3551",
+      "registrationDisplay": "TN 34 NV 3551",
+      "rtoCode": "TN34",
       "make": null,
       "model": null,
       "variant": null,
@@ -2307,7 +2307,7 @@
       ],
       "complete": false,
       "listing": {
-        "id": "3f717c9c-5946-457f-96c3-72263bdbf001",
+        "id": "3c5e9090-3cc8-4e5a-9b39-d27ae551a517",
         "status": "DRAFT",
         "statusLabel": "Draft",
         "statusTone": "neutral",
@@ -2325,17 +2325,17 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:34.550Z",
-      "updatedAt": "2026-10-20T15:33:34.550Z"
+      "createdAt": "2026-10-21T05:31:40.518Z",
+      "updatedAt": "2026-10-21T05:31:40.518Z"
     }
   },
   {
-    "req": "POST /v1/admin/listings/04fbc3e2-0f3b-4e91-a5e2-a080b83c1f76/images/428f8d24-5843-4588-bfe3-573689be23be/commit",
+    "req": "POST /v1/admin/listings/c03ee0ce-63a4-474a-8ccd-a2043b760d8e/images/02d7a2b9-f092-4d0d-8997-8a640c23b406/commit",
     "status": 200,
     "body": {
       "items": [
         {
-          "mediaId": "428f8d24-5843-4588-bfe3-573689be23be",
+          "mediaId": "02d7a2b9-f092-4d0d-8997-8a640c23b406",
           "position": 0,
           "isPrimary": true,
           "url": "<redacted>",
@@ -2344,7 +2344,7 @@
           "bytes": 11518,
           "width": 1600,
           "height": 1200,
-          "uploadedAt": "2026-10-20T15:33:34.714Z"
+          "uploadedAt": "2026-10-21T05:31:40.639Z"
         }
       ],
       "min": 6,
@@ -2356,22 +2356,25 @@
     "linked": true
   },
   {
-    "imageRows": 14,
-    "lastCommit": 200,
-    "lastPresign": 201
+    "imageRows": 20,
+    "first20": [200, 200, 200, 200, 200],
+    "twentyFirst": "presign 409 VEHICLE_IMAGES_FULL"
   },
   {
-    "reorderStatus": 400
+    "reorder": 200,
+    "applied": true,
+    "partialOrder": 422,
+    "emptyOrder": 400
   },
   {
-    "req": "POST /v1/admin/listings/60d309b7-cc16-447e-94a6-a7c4403941fd/images/presign",
+    "req": "POST /v1/admin/listings/c139e46d-3d1c-4e0b-bf72-c1ccf7833641/images/presign",
     "status": 400,
     "body": {
       "type": "https://dealers-drive.com/errors/validation-failed",
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "BijkKhY9KM",
+      "traceId": "KpWCoKtEsD",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -2383,14 +2386,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/listings/60d309b7-cc16-447e-94a6-a7c4403941fd/images/presign",
+    "req": "POST /v1/admin/listings/c139e46d-3d1c-4e0b-bf72-c1ccf7833641/images/presign",
     "status": 400,
     "body": {
       "type": "https://dealers-drive.com/errors/validation-failed",
       "title": "Validation failed",
       "status": 400,
       "code": "VALIDATION_FAILED",
-      "traceId": "_uOJ45yJsM",
+      "traceId": "_5e9BfL_91",
       "detail": "The request did not match the expected shape.",
       "errors": [
         {
@@ -2402,7 +2405,7 @@
     }
   },
   {
-    "req": "DELETE /v1/admin/listings/741b761a-78b2-4352-b503-7a5d08b46f3d/images/a28a5d95-bcba-4e7f-97a0-ca1ea75a6c46",
+    "req": "DELETE /v1/admin/listings/8997bbd8-1ee7-4db0-a519-d387049b4487/images/6a9254c4-da4d-48a2-b835-75fca03b31b7",
     "status": 200,
     "body": {
       "items": [],
@@ -2415,10 +2418,10 @@
     "remaining": 0
   },
   {
-    "req": "POST /v1/admin/listings/8003c8eb-a664-41a6-ac98-06e17cd737dd/images/presign",
+    "req": "POST /v1/admin/listings/1c8fbe17-2672-46d0-b7d0-37cf8db6a0a5/images/presign",
     "status": 201,
     "body": {
-      "mediaId": "287c0004-04aa-4606-ba16-228c4daab0d5",
+      "mediaId": "887e0b0a-4137-4d48-9e98-f45710cb56d1",
       "uploadUrl": "<redacted>",
       "method": "PUT",
       "headers": {
@@ -2430,14 +2433,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/listings/8003c8eb-a664-41a6-ac98-06e17cd737dd/images/287c0004-04aa-4606-ba16-228c4daab0d5/commit",
+    "req": "POST /v1/admin/listings/1c8fbe17-2672-46d0-b7d0-37cf8db6a0a5/images/887e0b0a-4137-4d48-9e98-f45710cb56d1/commit",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/upload-missing",
       "title": "Upload missing",
       "status": 422,
       "code": "UPLOAD_MISSING",
-      "traceId": "0EJQtM3xuB",
+      "traceId": "1hB0S9CJz9",
       "detail": "The upload did not complete. Try again."
     }
   },
@@ -2462,36 +2465,36 @@
     "note": "ordered gallery provided by API; interaction verified in Agent UAT"
   },
   {
-    "req": "DELETE /v1/admin/listings/be49210b-6703-47fc-9ca1-ee02be783bbd/images/ee923701-429a-498e-9dee-93ef7e0da14d",
+    "req": "DELETE /v1/admin/listings/a7feadb4-b407-4cc6-babc-9edb5cd14245/images/8b85d8f6-7563-4e6f-9164-8ee004898263",
     "status": 401,
     "body": {
       "type": "https://dealers-drive.com/errors/not-authenticated",
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "tDiWrmwdOr",
+      "traceId": "HNgLjj-XPw",
       "detail": "Sign in to the admin console to do that."
     }
   },
   {
-    "req": "POST /v1/admin/listings/be49210b-6703-47fc-9ca1-ee02be783bbd/images/presign",
+    "req": "POST /v1/admin/listings/a7feadb4-b407-4cc6-babc-9edb5cd14245/images/presign",
     "status": 401,
     "body": {
       "type": "https://dealers-drive.com/errors/not-authenticated",
       "title": "Authentication required",
       "status": 401,
       "code": "NOT_AUTHENTICATED",
-      "traceId": "ohnHBCht8h",
+      "traceId": "AIBH4v8asO",
       "detail": "Sign in to the admin console to do that."
     }
   },
   {
-    "req": "GET /v1/dealers/lista-motors-409457ffec59-vellore-tamil-nadu",
+    "req": "GET /v1/dealers/lista-motors-69720431b441-vellore-tamil-nadu",
     "status": 200,
     "body": {
-      "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
-      "brandName": "ListA Motors 409457ffec59",
-      "legalName": "ListA Motors 409457ffec59",
+      "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
+      "brandName": "ListA Motors 69720431b441",
+      "legalName": "ListA Motors 69720431b441",
       "initials": "LM",
       "isVerified": false,
       "tagline": "Quality used cars from ListA",
@@ -2511,7 +2514,7 @@
         {
           "key": "cars",
           "label": "Cars available",
-          "value": "3"
+          "value": "4"
         },
         {
           "key": "years",
@@ -2538,7 +2541,7 @@
         {
           "key": "gstin",
           "label": "GSTIN",
-          "value": "33JZSCJ5656D1Z3",
+          "value": "33TYHCD2107N1Z3",
           "mono": true
         }
       ],
@@ -2546,24 +2549,24 @@
       "coverUrl": null,
       "portfolio": [],
       "seo": {
-        "canonical": "http://localhost:3000/dealers/lista-motors-409457ffec59-vellore-tamil-nadu",
+        "canonical": "http://localhost:3000/dealers/lista-motors-69720431b441-vellore-tamil-nadu",
         "isIndexable": true,
-        "title": "ListA Motors 409457ffec59 — Used Car Dealer in Vellore | Dealers-Drive"
+        "title": "ListA Motors 69720431b441 — Used Car Dealer in Vellore | Dealers-Drive"
       }
     }
   },
   {
-    "availableActive": 3
+    "availableActive": 4
   },
   {
-    "req": "POST /v1/dealer/vehicles/211131eb-3fcd-4b0a-b078-b7e2820b889c/reserve",
+    "req": "POST /v1/dealer/vehicles/ce38da44-713c-47e3-a087-bcc26295facd/reserve",
     "status": 200,
     "body": {
-      "id": "211131eb-3fcd-4b0a-b078-b7e2820b889c",
+      "id": "ce38da44-713c-47e3-a087-bcc26295facd",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN98WB9123",
-      "registrationDisplay": "TN 98 WB 9123",
-      "rtoCode": "TN98",
+      "registrationNumber": "TN77RH6308",
+      "registrationDisplay": "TN 77 RH 6308",
+      "rtoCode": "TN77",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -2585,15 +2588,15 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "7ec38296-d893-4f82-9df4-40488e06151c",
+        "id": "882c25ff-89af-4d7c-bbf7-be2fa82dbba1",
         "status": "RESERVED",
         "statusLabel": "Reserved",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:37.075Z",
-        "publishedAt": "2026-10-20T15:33:37.909Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-cea5eaee",
-        "reservedAt": "2026-10-20T15:33:38.030Z",
+        "submittedAt": "2026-10-21T05:31:42.493Z",
+        "publishedAt": "2026-10-21T05:31:42.912Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-ab5c2306",
+        "reservedAt": "2026-10-21T05:31:42.983Z",
         "soldAt": null,
         "withdrawnAt": null,
         "withdrawal": null,
@@ -2603,22 +2606,22 @@
         "actions": ["markSold", "requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:37.010Z",
-      "updatedAt": "2026-10-20T15:33:37.072Z"
+      "createdAt": "2026-10-21T05:31:42.456Z",
+      "updatedAt": "2026-10-21T05:31:42.491Z"
     }
   },
   {
     "status": "RESERVED"
   },
   {
-    "req": "POST /v1/dealer/vehicles/af1aec83-a12b-44fc-9e5c-a7c1f761343f/reserve",
+    "req": "POST /v1/dealer/vehicles/482613d4-6e7e-4417-a865-a364f26dc87d/reserve",
     "status": 200,
     "body": {
-      "id": "af1aec83-a12b-44fc-9e5c-a7c1f761343f",
+      "id": "482613d4-6e7e-4417-a865-a364f26dc87d",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN73AT3523",
-      "registrationDisplay": "TN 73 AT 3523",
-      "rtoCode": "TN73",
+      "registrationNumber": "TN48PS1254",
+      "registrationDisplay": "TN 48 PS 1254",
+      "rtoCode": "TN48",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -2640,15 +2643,15 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "f031f8f6-e64c-49c9-badd-986bf4cf6a68",
+        "id": "7f71458c-a740-45c0-8841-25124b3c8a46",
         "status": "RESERVED",
         "statusLabel": "Reserved",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:38.117Z",
-        "publishedAt": "2026-10-20T15:33:38.946Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-0df2c6c9",
-        "reservedAt": "2026-10-20T15:33:38.995Z",
+        "submittedAt": "2026-10-21T05:31:43.033Z",
+        "publishedAt": "2026-10-21T05:31:43.430Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-80040b82",
+        "reservedAt": "2026-10-21T05:31:43.451Z",
         "soldAt": null,
         "withdrawnAt": null,
         "withdrawal": null,
@@ -2658,27 +2661,27 @@
         "actions": ["markSold", "requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:38.059Z",
-      "updatedAt": "2026-10-20T15:33:38.115Z"
+      "createdAt": "2026-10-21T05:31:42.997Z",
+      "updatedAt": "2026-10-21T05:31:43.030Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/5318dce9-885d-4e71-8668-396bcd663479/reserve",
+    "req": "POST /v1/dealer/vehicles/24422b05-375d-4079-bb41-8d669f3ee535/reserve",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "5FdFSZBZUD",
+      "traceId": "04YhKrDmgf",
       "detail": "This action needs the listing:reserve permission."
     }
   },
   {
-    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-cea5eaee",
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-ab5c2306",
     "status": 200,
     "body": {
-      "slug": "2023-hyundai-creta-sx-o-vellore-cea5eaee",
+      "slug": "2023-hyundai-creta-sx-o-vellore-ab5c2306",
       "availability": "RESERVED",
       "title": "2023 Hyundai Creta SX(O)",
       "year": 2023,
@@ -2731,7 +2734,7 @@
         }
       ],
       "primaryIndex": 0,
-      "publishedLabel": "Listed 20 Oct 2026",
+      "publishedLabel": "Listed 21 Oct 2026",
       "facts": {
         "make": "Hyundai",
         "model": "Creta",
@@ -2745,8 +2748,8 @@
         "pricePaise": 145000000
       },
       "dealer": {
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu",
         "initials": "LM",
         "isVerified": false,
         "location": "Vellore",
@@ -2767,19 +2770,19 @@
       "title": "Listing reserved",
       "status": 409,
       "code": "LISTING_RESERVED",
-      "traceId": "XtJ8o2DjQz",
+      "traceId": "Mb1zkCmom8",
       "detail": "This car is reserved for another buyer, so the dealership is not taking enquiries about it for now."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/211131eb-3fcd-4b0a-b078-b7e2820b889c/request-reactivation",
+    "req": "POST /v1/dealer/vehicles/ce38da44-713c-47e3-a087-bcc26295facd/request-reactivation",
     "status": 200,
     "body": {
-      "id": "211131eb-3fcd-4b0a-b078-b7e2820b889c",
+      "id": "ce38da44-713c-47e3-a087-bcc26295facd",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN98WB9123",
-      "registrationDisplay": "TN 98 WB 9123",
-      "rtoCode": "TN98",
+      "registrationNumber": "TN77RH6308",
+      "registrationDisplay": "TN 77 RH 6308",
+      "rtoCode": "TN77",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -2801,15 +2804,15 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "7ec38296-d893-4f82-9df4-40488e06151c",
+        "id": "882c25ff-89af-4d7c-bbf7-be2fa82dbba1",
         "status": "RESERVED",
         "statusLabel": "Reserved",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:37.075Z",
-        "publishedAt": "2026-10-20T15:33:37.909Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-cea5eaee",
-        "reservedAt": "2026-10-20T15:33:38.030Z",
+        "submittedAt": "2026-10-21T05:31:42.493Z",
+        "publishedAt": "2026-10-21T05:31:42.912Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-ab5c2306",
+        "reservedAt": "2026-10-21T05:31:42.983Z",
         "soldAt": null,
         "withdrawnAt": null,
         "withdrawal": null,
@@ -2818,26 +2821,26 @@
         "canDelete": false,
         "actions": ["markSold"],
         "reactivation": {
-          "id": "e269b29d-60c2-47f3-b2f6-943031738865",
+          "id": "285b9828-c770-433a-b3a4-8ffdb21229ce",
           "status": "PENDING",
           "statusLabel": "Reactivation pending approval",
           "statusTone": "warn",
           "fromStatus": "RESERVED",
           "reason": "Buyer backed out",
-          "requestedAt": "2026-10-20T15:33:40.000Z",
+          "requestedAt": "2026-10-21T05:31:43.964Z",
           "reviewedAt": null,
           "adminNote": null
         }
       },
-      "createdAt": "2026-10-20T15:33:37.010Z",
-      "updatedAt": "2026-10-20T15:33:37.072Z"
+      "createdAt": "2026-10-21T05:31:42.456Z",
+      "updatedAt": "2026-10-21T05:31:42.491Z"
     }
   },
   {
-    "req": "POST /v1/admin/reactivation-requests/e269b29d-60c2-47f3-b2f6-943031738865/approve",
+    "req": "POST /v1/admin/reactivation-requests/285b9828-c770-433a-b3a4-8ffdb21229ce/approve",
     "status": 200,
     "body": {
-      "id": "e269b29d-60c2-47f3-b2f6-943031738865",
+      "id": "285b9828-c770-433a-b3a4-8ffdb21229ce",
       "status": "APPROVED",
       "statusLabel": "Reactivation approved",
       "statusTone": "ok",
@@ -2846,24 +2849,24 @@
       "toStatus": "ACTIVE",
       "toStatusLabel": "Active",
       "reason": "Buyer backed out",
-      "requestedAt": "2026-10-20T15:33:40.000Z",
-      "requestedLabel": "20 Oct 2026",
-      "reviewedAt": "2026-10-20T15:33:40.034Z",
+      "requestedAt": "2026-10-21T05:31:43.964Z",
+      "requestedLabel": "21 Oct 2026",
+      "reviewedAt": "2026-10-21T05:31:43.978Z",
       "adminNote": null,
       "listing": {
-        "id": "7ec38296-d893-4f82-9df4-40488e06151c",
-        "vehicleId": "211131eb-3fcd-4b0a-b078-b7e2820b889c",
+        "id": "882c25ff-89af-4d7c-bbf7-be2fa82dbba1",
+        "vehicleId": "ce38da44-713c-47e3-a087-bcc26295facd",
         "title": "2023 Hyundai Creta SX(O)",
-        "registrationDisplay": "TN 98 WB 9123",
+        "registrationDisplay": "TN 77 RH 6308",
         "status": "ACTIVE",
         "statusLabel": "Active",
         "statusTone": "ok",
-        "slug": "2023-hyundai-creta-sx-o-vellore-cea5eaee"
+        "slug": "2023-hyundai-creta-sx-o-vellore-ab5c2306"
       },
       "dealer": {
-        "id": "f32db42d-822d-4301-9123-a9a663eb84a0",
-        "name": "ListA Motors 409457ffec59",
-        "slug": "lista-motors-409457ffec59-vellore-tamil-nadu"
+        "id": "e605a474-9807-4334-8771-5576e9df0d4f",
+        "name": "ListA Motors 69720431b441",
+        "slug": "lista-motors-69720431b441-vellore-tamil-nadu"
       },
       "current": false
     }
@@ -2872,14 +2875,14 @@
     "status": "ACTIVE"
   },
   {
-    "req": "POST /v1/dealer/vehicles/cc4f82fa-1e99-4ee5-a181-f564b10571d1/mark-sold",
+    "req": "POST /v1/dealer/vehicles/20aaeef1-c53a-4679-87e2-8acd9da66978/mark-sold",
     "status": 200,
     "body": {
-      "id": "cc4f82fa-1e99-4ee5-a181-f564b10571d1",
+      "id": "20aaeef1-c53a-4679-87e2-8acd9da66978",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN92AX1879",
-      "registrationDisplay": "TN 92 AX 1879",
-      "rtoCode": "TN92",
+      "registrationNumber": "TN13HF4675",
+      "registrationDisplay": "TN 13 HF 4675",
+      "rtoCode": "TN13",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -2901,16 +2904,16 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "445f5f87-f2ff-4840-95a8-48f954e7640c",
+        "id": "fbb9d5ec-e778-4b81-aecb-74e72e6681e4",
         "status": "SOLD",
         "statusLabel": "Sold",
         "statusTone": "accent",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:40.140Z",
-        "publishedAt": "2026-10-20T15:33:40.901Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-45d9ce3e",
+        "submittedAt": "2026-10-21T05:31:44.042Z",
+        "publishedAt": "2026-10-21T05:31:44.497Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-fcc43dd1",
         "reservedAt": null,
-        "soldAt": "2026-10-20T15:33:40.940Z",
+        "soldAt": "2026-10-21T05:31:44.520Z",
         "withdrawnAt": null,
         "withdrawal": null,
         "canEdit": false,
@@ -2919,22 +2922,22 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:40.090Z",
-      "updatedAt": "2026-10-20T15:33:40.941Z"
+      "createdAt": "2026-10-21T05:31:44.003Z",
+      "updatedAt": "2026-10-21T05:31:44.521Z"
     }
   },
   {
     "status": "SOLD"
   },
   {
-    "req": "POST /v1/dealer/vehicles/09a9234d-19a4-48e1-989a-e6337787d684/mark-sold",
+    "req": "POST /v1/dealer/vehicles/9f69963d-47e4-46bc-b894-7e35b1daba5a/mark-sold",
     "status": 200,
     "body": {
-      "id": "09a9234d-19a4-48e1-989a-e6337787d684",
+      "id": "9f69963d-47e4-46bc-b894-7e35b1daba5a",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN26HJ3959",
-      "registrationDisplay": "TN 26 HJ 3959",
-      "rtoCode": "TN26",
+      "registrationNumber": "TN13MC3057",
+      "registrationDisplay": "TN 13 MC 3057",
+      "rtoCode": "TN13",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -2956,16 +2959,16 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "33f82664-82de-4d09-af59-25fecf2e6919",
+        "id": "8cb095ff-c3cb-4114-bb68-3ce1233499a7",
         "status": "SOLD",
         "statusLabel": "Sold",
         "statusTone": "accent",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:41.038Z",
-        "publishedAt": "2026-10-20T15:33:41.762Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-7c9d056f",
+        "submittedAt": "2026-10-21T05:31:44.582Z",
+        "publishedAt": "2026-10-21T05:31:44.999Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-64e8a2f2",
         "reservedAt": null,
-        "soldAt": "2026-10-20T15:33:41.802Z",
+        "soldAt": "2026-10-21T05:31:45.022Z",
         "withdrawnAt": null,
         "withdrawal": null,
         "canEdit": false,
@@ -2974,19 +2977,19 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:40.973Z",
-      "updatedAt": "2026-10-20T15:33:41.804Z"
+      "createdAt": "2026-10-21T05:31:44.537Z",
+      "updatedAt": "2026-10-21T05:31:45.023Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/ceec66f5-2a54-48a1-b52c-55930267f9b8/mark-sold",
+    "req": "POST /v1/dealer/vehicles/45844649-331e-4f85-9c60-1135c05b74ab/mark-sold",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "nXTfDe9UDa",
+      "traceId": "jN-btfyMLF",
       "detail": "This action needs the listing:sell permission."
     }
   },
@@ -2998,7 +3001,7 @@
     "inPortfolio": false
   },
   {
-    "activeAvailable": 5
+    "activeAvailable": 6
   },
   {
     "dbStatus": "SOLD",
@@ -3011,14 +3014,14 @@
     "inHistory": true
   },
   {
-    "req": "POST /v1/dealer/vehicles/5e75d6cf-83c2-4415-b900-8c9a4220945b/withdraw",
+    "req": "POST /v1/dealer/vehicles/235cd4e3-05af-43c8-b2c9-27c168e5ae13/withdraw",
     "status": 200,
     "body": {
-      "id": "5e75d6cf-83c2-4415-b900-8c9a4220945b",
+      "id": "235cd4e3-05af-43c8-b2c9-27c168e5ae13",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN69NB8612",
-      "registrationDisplay": "TN 69 NB 8612",
-      "rtoCode": "TN69",
+      "registrationNumber": "TN35VB4570",
+      "registrationDisplay": "TN 35 VB 4570",
+      "rtoCode": "TN35",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -3040,17 +3043,17 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "8e89b9c1-21cd-44e4-8eab-af31c5959d56",
+        "id": "e3611db6-b955-4d37-9362-e339ea2a0e3b",
         "status": "WITHDRAWN",
         "statusLabel": "Withdrawn",
         "statusTone": "neutral",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:45.693Z",
-        "publishedAt": "2026-10-20T15:33:46.479Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-5c9b3f13",
+        "submittedAt": "2026-10-21T05:31:47.180Z",
+        "publishedAt": "2026-10-21T05:31:47.662Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-5f7c4f1e",
         "reservedAt": null,
         "soldAt": null,
-        "withdrawnAt": "2026-10-20T15:33:46.523Z",
+        "withdrawnAt": "2026-10-21T05:31:47.690Z",
         "withdrawal": {
           "reason": "NO_LONGER_FOR_SALE",
           "reasonLabel": "No longer for sale",
@@ -3062,22 +3065,22 @@
         "actions": ["requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:45.621Z",
-      "updatedAt": "2026-10-20T15:33:45.687Z"
+      "createdAt": "2026-10-21T05:31:47.146Z",
+      "updatedAt": "2026-10-21T05:31:47.178Z"
     }
   },
   {
     "status": "WITHDRAWN"
   },
   {
-    "req": "POST /v1/dealer/vehicles/a29eabb5-aa61-41b3-aa84-116fcab35b84/withdraw",
+    "req": "POST /v1/dealer/vehicles/ab92bf13-5765-4e68-9c4c-32c14fc003dc/withdraw",
     "status": 200,
     "body": {
-      "id": "a29eabb5-aa61-41b3-aa84-116fcab35b84",
+      "id": "ab92bf13-5765-4e68-9c4c-32c14fc003dc",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN66RK5615",
-      "registrationDisplay": "TN 66 RK 5615",
-      "rtoCode": "TN66",
+      "registrationNumber": "TN67HH3078",
+      "registrationDisplay": "TN 67 HH 3078",
+      "rtoCode": "TN67",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -3099,17 +3102,17 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "e3d0b45b-fb20-481a-b70e-346803baf072",
+        "id": "31a3e9fc-b40d-4bd7-8988-98fa7375dd8a",
         "status": "WITHDRAWN",
         "statusLabel": "Withdrawn",
         "statusTone": "neutral",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:46.611Z",
-        "publishedAt": "2026-10-20T15:33:47.448Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-f2bf9c51",
+        "submittedAt": "2026-10-21T05:31:47.748Z",
+        "publishedAt": "2026-10-21T05:31:48.145Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-463f02dc",
         "reservedAt": null,
         "soldAt": null,
-        "withdrawnAt": "2026-10-20T15:33:47.496Z",
+        "withdrawnAt": "2026-10-21T05:31:48.171Z",
         "withdrawal": {
           "reason": "VEHICLE_ISSUE",
           "reasonLabel": "Issue with the vehicle",
@@ -3121,19 +3124,19 @@
         "actions": ["requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:46.552Z",
-      "updatedAt": "2026-10-20T15:33:46.607Z"
+      "createdAt": "2026-10-21T05:31:47.706Z",
+      "updatedAt": "2026-10-21T05:31:47.745Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/cde2750e-f7b8-425d-b13e-c6df409bdfa8/withdraw",
+    "req": "POST /v1/dealer/vehicles/2f33b461-3673-4b80-97a9-f783a162fcb0/withdraw",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "bBBSic5KHI",
+      "traceId": "U1pfHMXFFu",
       "detail": "This action needs the listing:withdraw permission."
     }
   },
@@ -3148,52 +3151,52 @@
     "enquiryExists": true
   },
   {
-    "req": "POST /v1/dealer/vehicles/90d75fc1-22a1-406c-b73d-771abd87d726/reserve",
+    "req": "POST /v1/dealer/vehicles/57c7b4b0-0ece-423e-9e38-f734a45ae55d/reserve",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-reservable",
       "title": "Listing not reservable",
       "status": 409,
       "code": "LISTING_NOT_RESERVABLE",
-      "traceId": "PThRq8QBkP",
+      "traceId": "Gh8I-ADE9R",
       "detail": "Only a car that is on sale can be reserved.",
       "listingStatus": "SOLD"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/90d75fc1-22a1-406c-b73d-771abd87d726/withdraw",
+    "req": "POST /v1/dealer/vehicles/57c7b4b0-0ece-423e-9e38-f734a45ae55d/withdraw",
     "status": 409,
     "body": {
       "type": "https://dealers-drive.com/errors/listing-not-withdrawable",
       "title": "Listing not withdrawable",
       "status": 409,
       "code": "LISTING_NOT_WITHDRAWABLE",
-      "traceId": "oSAW7857xn",
+      "traceId": "DCcfb5ZsEE",
       "detail": "Only a car that is on sale can be withdrawn.",
       "listingStatus": "SOLD"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/41bcc626-dc63-4f2d-8906-ce64b26a796f/mark-sold",
+    "req": "POST /v1/dealer/vehicles/10e7d6b7-50cb-4c5b-9fef-527e456c3478/mark-sold",
     "status": 403,
     "body": {
       "type": "https://dealers-drive.com/errors/forbidden",
       "title": "Forbidden",
       "status": 403,
       "code": "FORBIDDEN",
-      "traceId": "QZTGNtcl7N",
+      "traceId": "JXcRdK1Jog",
       "detail": "This action needs the listing:sell permission."
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/402c374e-7430-4d51-8a91-4ca893ef62e2/reserve",
+    "req": "POST /v1/dealer/vehicles/c78c7969-ea03-4243-b042-63531b4a37d4/reserve",
     "status": 200,
     "body": {
-      "id": "402c374e-7430-4d51-8a91-4ca893ef62e2",
+      "id": "c78c7969-ea03-4243-b042-63531b4a37d4",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN11CG5550",
-      "registrationDisplay": "TN 11 CG 5550",
-      "rtoCode": "TN11",
+      "registrationNumber": "TN20SU2145",
+      "registrationDisplay": "TN 20 SU 2145",
+      "rtoCode": "TN20",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -3215,15 +3218,15 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "f2ab3a86-e8c6-469b-a7b3-c4a9e5e94176",
+        "id": "8384b108-1a43-468f-82c1-7c0c8f530e18",
         "status": "RESERVED",
         "statusLabel": "Reserved",
         "statusTone": "warn",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:51.428Z",
-        "publishedAt": "2026-10-20T15:33:52.159Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-4d14ba3b",
-        "reservedAt": "2026-10-20T15:33:52.203Z",
+        "submittedAt": "2026-10-21T05:31:50.282Z",
+        "publishedAt": "2026-10-21T05:31:50.644Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-6a3c025a",
+        "reservedAt": "2026-10-21T05:31:50.666Z",
         "soldAt": null,
         "withdrawnAt": null,
         "withdrawal": null,
@@ -3233,19 +3236,19 @@
         "actions": ["markSold", "requestReactivation"],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:51.360Z",
-      "updatedAt": "2026-10-20T15:33:51.425Z"
+      "createdAt": "2026-10-21T05:31:50.250Z",
+      "updatedAt": "2026-10-21T05:31:50.280Z"
     }
   },
   {
-    "req": "POST /v1/dealer/vehicles/402c374e-7430-4d51-8a91-4ca893ef62e2/mark-sold",
+    "req": "POST /v1/dealer/vehicles/c78c7969-ea03-4243-b042-63531b4a37d4/mark-sold",
     "status": 200,
     "body": {
-      "id": "402c374e-7430-4d51-8a91-4ca893ef62e2",
+      "id": "c78c7969-ea03-4243-b042-63531b4a37d4",
       "title": "2023 Hyundai Creta SX(O)",
-      "registrationNumber": "TN11CG5550",
-      "registrationDisplay": "TN 11 CG 5550",
-      "rtoCode": "TN11",
+      "registrationNumber": "TN20SU2145",
+      "registrationDisplay": "TN 20 SU 2145",
+      "rtoCode": "TN20",
       "make": "Hyundai",
       "model": "Creta",
       "variant": "SX(O)",
@@ -3267,16 +3270,16 @@
       "issues": [],
       "complete": true,
       "listing": {
-        "id": "f2ab3a86-e8c6-469b-a7b3-c4a9e5e94176",
+        "id": "8384b108-1a43-468f-82c1-7c0c8f530e18",
         "status": "SOLD",
         "statusLabel": "Sold",
         "statusTone": "accent",
         "reason": null,
-        "submittedAt": "2026-10-20T15:33:51.428Z",
-        "publishedAt": "2026-10-20T15:33:52.159Z",
-        "slug": "2023-hyundai-creta-sx-o-vellore-4d14ba3b",
-        "reservedAt": "2026-10-20T15:33:52.203Z",
-        "soldAt": "2026-10-20T15:33:52.232Z",
+        "submittedAt": "2026-10-21T05:31:50.282Z",
+        "publishedAt": "2026-10-21T05:31:50.644Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-6a3c025a",
+        "reservedAt": "2026-10-21T05:31:50.666Z",
+        "soldAt": "2026-10-21T05:31:50.676Z",
         "withdrawnAt": null,
         "withdrawal": null,
         "canEdit": false,
@@ -3285,8 +3288,8 @@
         "actions": [],
         "reactivation": null
       },
-      "createdAt": "2026-10-20T15:33:51.360Z",
-      "updatedAt": "2026-10-20T15:33:52.235Z"
+      "createdAt": "2026-10-21T05:31:50.250Z",
+      "updatedAt": "2026-10-21T05:31:50.677Z"
     }
   },
   {

@@ -168,7 +168,7 @@ await h.check(r, 'AUTH-014', async () => {
   const t = await B.post('/v1/support/tickets', {
     category: 'OTHER',
     subject: 'B ticket',
-    message: 'B private message body here',
+    description: 'B private message body here',
   });
   const ticketId = t.json?.id ?? t.json?.ticket?.id;
   const cross = ticketId ? await A.get(`/v1/support/tickets/${ticketId}`) : { status: 'n/a' };
@@ -177,7 +177,8 @@ await h.check(r, 'AUTH-014', async () => {
   r.ev({ ticketCreate: t.status }, cross, {
     aSeesOwnOnly: !JSON.stringify(aEnq.json).includes('B private'),
   });
-  return (ticketId ? cross.status === 404 || cross.status === 403 : true) &&
+  return ticketId &&
+    (cross.status === 404 || cross.status === 403) &&
     !JSON.stringify(aEnq.json).includes('B private')
     ? {
         layers: ['API', 'SECURITY'],

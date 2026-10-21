@@ -3,21 +3,21 @@
     "req": "PATCH /v1/dealer",
     "status": 200,
     "body": {
-      "id": "6b92d1dd-a4e3-40c7-970d-4c0617ac31f6",
-      "slug": "profiletwice-motors-24307077c7b6-vellore-tamil-nadu",
+      "id": "aa805328-6966-4cce-9f31-b2ffedd642ed",
+      "slug": "profiletwice-motors-591113356f67-vellore-tamil-nadu",
       "status": "ACTIVE",
       "statusLabel": "Approved",
       "statusReason": null,
-      "brandName": "ProfileTwice Motors 24307077c7b6",
-      "legalName": "ProfileTwice Motors 24307077c7b6",
+      "brandName": "ProfileTwice Motors 591113356f67",
+      "legalName": "ProfileTwice Motors 591113356f67",
       "tagline": "Quality used cars from ProfileTwice",
-      "gstin": "33XRZCT2996M1Z2",
+      "gstin": "33YFCCV2732V1Z8",
       "pan": null,
       "contact": {
         "fullName": "ProfileTwice Owner",
-        "phone": "+••••••••3067",
-        "phoneDisplay": "+91 96002 43067",
-        "email": "profiletwice.243068bf098d@example.test",
+        "phone": "+••••••••1110",
+        "phoneDisplay": "+91 96005 91110",
+        "email": "profiletwice.59111139c16c@example.test",
         "landline": null
       },
       "address": {
@@ -37,16 +37,16 @@
       "creditBalance": 0,
       "creditsHeld": 0,
       "activeListings": 0,
-      "approvedAt": "2026-10-20T15:47:23.868Z",
-      "createdAt": "2026-10-20T15:47:23.627Z",
+      "approvedAt": "2026-10-21T05:29:51.666Z",
+      "createdAt": "2026-10-21T05:29:51.511Z",
       "profileChange": {
-        "id": "93483f27-a109-4681-8cb6-27fe612ce565",
+        "id": "a8035955-cc4d-4abd-85b8-554bb032dd55",
         "status": "PENDING",
         "statusLabel": "Waiting for review",
         "tagline": "First edit waiting for moderation review",
         "taglineChanged": true,
         "specialities": [],
-        "submittedAtLabel": "20 Oct 2026",
+        "submittedAtLabel": "21 Oct 2026",
         "reviewedAtLabel": null,
         "decisionReason": null
       }
@@ -60,7 +60,7 @@
       "title": "Profile edit pending",
       "status": 409,
       "code": "PROFILE_EDIT_PENDING",
-      "traceId": "3LvHf81LfZ",
+      "traceId": "NOzv2DjlfX",
       "detail": "You already have a change waiting for review. Cancel it first if you want to write something different."
     }
   },
@@ -68,33 +68,33 @@
     "pending": ["PENDING"]
   },
   {
-    "req": "POST /v1/admin/dealers/1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6/suspend",
+    "req": "POST /v1/admin/dealers/f548b4c4-ab07-4649-aa46-9ee7c2127194/suspend",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "lQKztuDSGH",
+      "traceId": "8JgO3EKAyI",
       "detail": "Only an active dealership can be suspended."
     }
   },
   {
-    "req": "POST /v1/admin/dealers/1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6/close",
+    "req": "POST /v1/admin/dealers/f548b4c4-ab07-4649-aa46-9ee7c2127194/close",
     "status": 200,
     "body": {
-      "id": "1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6",
+      "id": "f548b4c4-ab07-4649-aa46-9ee7c2127194",
       "status": "CLOSED",
       "statusLabel": "Closed",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:47:24.084Z"
+      "notifiedAt": "2026-10-21T05:29:51.823Z"
     }
   },
   {
     "closeRoutes": ["/v1/admin/dealers/{id}/close"],
-    "closedDealers": 2,
+    "closedDealers": 6,
     "dealer": "CLOSED"
   },
   {
@@ -130,16 +130,16 @@
     ]
   },
   {
-    "req": "POST /v1/admin/dealers/a077b01d-72c3-4214-b6c3-469e6489218e/suspend",
+    "req": "POST /v1/admin/dealers/779c3dd5-0a48-47ce-8884-4accc71a9c12/suspend",
     "status": 200,
     "body": {
-      "id": "a077b01d-72c3-4214-b6c3-469e6489218e",
+      "id": "779c3dd5-0a48-47ce-8884-4accc71a9c12",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:48:01.034Z"
+      "notifiedAt": "2026-10-21T05:30:25.941Z"
     }
   },
   {

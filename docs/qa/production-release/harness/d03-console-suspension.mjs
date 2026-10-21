@@ -13,7 +13,7 @@ await h.check(r, 'BUG-NEW-010-console-timing', async () => {
   await w.approveDealer(admin, D.dealerId);
   const car = await w.published(D, admin);
   // A page counts as gone when it no longer serves the listing/dealer: HTTP 404, or a
-  // not-found document (the soft-404 of BUG-003) whose <title> is the not-found title.
+  // not-found document (the soft-404 of BUG-101) whose <title> is the not-found title.
   const status = async (p) => {
     const res = await fetch(`${b.WEB}${p}`, { redirect: 'manual' });
     const html = await res.text();

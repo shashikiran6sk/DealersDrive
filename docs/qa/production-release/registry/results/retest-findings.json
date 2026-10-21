@@ -7,7 +7,7 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:47:23.952Z"
+    "at": "2026-10-21T05:29:51.719Z"
   },
   "ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:47:24.123Z"
+    "at": "2026-10-21T05:29:51.852Z"
   },
   "BUG-NEW-006 onboarding account overflow on mobile": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:47:28.771Z"
+    "at": "2026-10-21T05:29:54.245Z"
   },
   "BUG-NEW-008 local private PDF served as image/jpeg": {
     "status": "PASS",
@@ -37,7 +37,7 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:47:29.044Z"
+    "at": "2026-10-21T05:29:54.409Z"
   },
   "BUG-NEW-010 warmed car page survives dealer suspension": {
     "status": "FAIL",
@@ -47,7 +47,7 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:49:07.356Z"
+    "at": "2026-10-21T05:31:31.743Z"
   },
   "BUG-NEW-011 media width contract vs documentation": {
     "status": "PASS",
@@ -57,6 +57,6 @@
     "bug": null,
     "auth": null,
     "area": "retest-findings",
-    "at": "2026-10-20T15:49:07.457Z"
+    "at": "2026-10-21T05:31:31.836Z"
   }
 }

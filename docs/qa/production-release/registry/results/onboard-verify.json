@@ -7,7 +7,7 @@
     "bug": null,
     "auth": "FAKE-OTP",
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:20.304Z"
+    "at": "2026-10-21T05:27:41.294Z"
   },
   "ONBOARD-002": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:20.688Z"
+    "at": "2026-10-21T05:27:41.456Z"
   },
   "ONBOARD-003": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": "FAKE-OTP",
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:20.722Z"
+    "at": "2026-10-21T05:27:41.474Z"
   },
   "ONBOARD-004": {
     "status": "PASS",
@@ -37,7 +37,7 @@
     "bug": null,
     "auth": "SIM-GOOGLE",
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:20.832Z"
+    "at": "2026-10-21T05:27:41.537Z"
   },
   "ONBOARD-005": {
     "status": "PASS",
@@ -47,17 +47,17 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:20.869Z"
+    "at": "2026-10-21T05:27:41.557Z"
   },
   "ONBOARD-006": {
     "status": "PASS",
-    "layers": ["API"],
-    "note": "partial onboarding persists and resumes step by step (business step completes once GSTIN+PAN saved)",
+    "layers": ["API", "DATABASE"],
+    "note": "partial onboarding persists across a new sign-in: one document saved, documents step incomplete; the second completes it",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.005Z"
+    "at": "2026-10-21T05:27:41.703Z"
   },
   "ONBOARD-007": {
     "status": "PASS",
@@ -67,7 +67,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.206Z"
+    "at": "2026-10-21T05:27:41.820Z"
   },
   "ONBOARD-008": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.398Z"
+    "at": "2026-10-21T05:27:41.945Z"
   },
   "ONBOARD-009": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.439Z"
+    "at": "2026-10-21T05:27:41.977Z"
   },
   "ONBOARD-010": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.564Z"
+    "at": "2026-10-21T05:27:42.030Z"
   },
   "ONBOARD-011": {
     "status": "PASS",
@@ -107,7 +107,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.729Z"
+    "at": "2026-10-21T05:27:42.149Z"
   },
   "ONBOARD-012": {
     "status": "PASS",
@@ -117,7 +117,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:21.907Z"
+    "at": "2026-10-21T05:27:42.243Z"
   },
   "ONBOARD-013": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:22.222Z"
+    "at": "2026-10-21T05:27:42.430Z"
   },
   "ONBOARD-014": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:22.460Z"
+    "at": "2026-10-21T05:27:42.538Z"
   },
   "ONBOARD-015": {
     "status": "PASS",
@@ -147,7 +147,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:22.657Z"
+    "at": "2026-10-21T05:27:42.648Z"
   },
   "ONBOARD-016": {
     "status": "PASS",
@@ -157,7 +157,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:22.742Z"
+    "at": "2026-10-21T05:27:42.709Z"
   },
   "ONBOARD-017": {
     "status": "PASS",
@@ -167,7 +167,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.010Z"
+    "at": "2026-10-21T05:27:42.878Z"
   },
   "ONBOARD-018": {
     "status": "PASS",
@@ -177,7 +177,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.060Z"
+    "at": "2026-10-21T05:27:42.910Z"
   },
   "VERIFY-001": {
     "status": "PASS",
@@ -187,7 +187,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.288Z"
+    "at": "2026-10-21T05:27:43.042Z"
   },
   "VERIFY-002": {
     "status": "PASS",
@@ -197,7 +197,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.326Z"
+    "at": "2026-10-21T05:27:43.056Z"
   },
   "VERIFY-003": {
     "status": "PASS",
@@ -207,7 +207,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.390Z"
+    "at": "2026-10-21T05:27:43.095Z"
   },
   "VERIFY-004": {
     "status": "PASS",
@@ -217,7 +217,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.392Z"
+    "at": "2026-10-21T05:27:43.096Z"
   },
   "VERIFY-005": {
     "status": "PASS",
@@ -227,7 +227,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.505Z"
+    "at": "2026-10-21T05:27:43.156Z"
   },
   "VERIFY-006": {
     "status": "PASS",
@@ -237,7 +237,7 @@
     "bug": null,
     "auth": "SIM-SESSION",
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.707Z"
+    "at": "2026-10-21T05:27:43.296Z"
   },
   "VERIFY-007": {
     "status": "PASS",
@@ -247,7 +247,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:23.892Z"
+    "at": "2026-10-21T05:27:43.435Z"
   },
   "VERIFY-008": {
     "status": "PASS",
@@ -257,7 +257,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.118Z"
+    "at": "2026-10-21T05:27:43.591Z"
   },
   "VERIFY-009": {
     "status": "PASS",
@@ -267,7 +267,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.338Z"
+    "at": "2026-10-21T05:27:43.732Z"
   },
   "VERIFY-010": {
     "status": "PASS",
@@ -277,7 +277,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.606Z"
+    "at": "2026-10-21T05:27:43.869Z"
   },
   "VERIFY-011": {
     "status": "PASS",
@@ -287,7 +287,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.712Z"
+    "at": "2026-10-21T05:27:43.921Z"
   },
   "VERIFY-012": {
     "status": "PASS",
@@ -297,7 +297,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.972Z"
+    "at": "2026-10-21T05:27:44.073Z"
   },
   "VERIFY-013": {
     "status": "PASS",
@@ -307,7 +307,7 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:24.977Z"
+    "at": "2026-10-21T05:27:44.077Z"
   },
   "VERIFY-014": {
     "status": "PASS",
@@ -317,6 +317,6 @@
     "bug": null,
     "auth": null,
     "area": "onboard-verify",
-    "at": "2026-10-20T15:41:25.918Z"
+    "at": "2026-10-21T05:27:44.566Z"
   }
 }

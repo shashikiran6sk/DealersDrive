@@ -1,28 +1,28 @@
 [
   {
-    "req": "POST /v1/admin/dealers/5f42c521-6f3f-4ca4-8ce3-5764f31aca15/suspend",
+    "req": "POST /v1/admin/dealers/cb2457a8-7c29-4949-b695-a092cea6aa7e/suspend",
     "status": 200,
     "body": {
-      "id": "5f42c521-6f3f-4ca4-8ce3-5764f31aca15",
+      "id": "cb2457a8-7c29-4949-b695-a092cea6aa7e",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:51:02.792Z"
+      "notifiedAt": "2026-10-21T05:29:39.470Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/5f42c521-6f3f-4ca4-8ce3-5764f31aca15/reinstate",
+    "req": "POST /v1/admin/dealers/cb2457a8-7c29-4949-b695-a092cea6aa7e/reinstate",
     "status": 200,
     "body": {
-      "id": "5f42c521-6f3f-4ca4-8ce3-5764f31aca15",
+      "id": "cb2457a8-7c29-4949-b695-a092cea6aa7e",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:51:02.847Z"
+      "notifiedAt": "2026-10-21T05:29:39.509Z"
     }
   },
   {

@@ -50,14 +50,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/8afa1fec-10fb-4f3c-9edb-24b220e6265b/approve",
+    "req": "POST /v1/admin/dealers/7bf47e2e-5cd9-4c2f-b47a-65104cd58420/approve",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/not-under-review",
       "title": "Not under review",
       "status": 422,
       "code": "NOT_UNDER_REVIEW",
-      "traceId": "kInOIa1hO9",
+      "traceId": "yE9kvU45-w",
       "detail": "Only a submitted application can be approved."
     }
   },
@@ -74,27 +74,27 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/57712cf7-f3c0-43f7-9dcb-e32cfad7ff96/suspend",
+    "req": "POST /v1/admin/dealers/bcc8e926-096e-4b92-be6c-82c71fc0e8c1/suspend",
     "status": 200,
     "body": {
-      "id": "57712cf7-f3c0-43f7-9dcb-e32cfad7ff96",
+      "id": "bcc8e926-096e-4b92-be6c-82c71fc0e8c1",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:44:09.587Z"
+      "notifiedAt": "2026-10-21T05:27:15.848Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/57712cf7-f3c0-43f7-9dcb-e32cfad7ff96/approve",
+    "req": "POST /v1/admin/dealers/bcc8e926-096e-4b92-be6c-82c71fc0e8c1/approve",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/not-under-review",
       "title": "Not under review",
       "status": 422,
       "code": "NOT_UNDER_REVIEW",
-      "traceId": "eERCH-0sC5",
+      "traceId": "DLgKUqYtcI",
       "detail": "Only a submitted application can be approved."
     }
   },
@@ -110,14 +110,14 @@
     ]
   },
   {
-    "req": "POST /v1/admin/dealers/5a061bf1-709d-4c81-880a-3be528920615/reinstate",
+    "req": "POST /v1/admin/dealers/ecabfa1a-ed98-4082-b012-7e3f3ea2a116/reinstate",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "a6nJwQWj8x",
+      "traceId": "ES9qJ_T6UO",
       "detail": "Only a suspended dealership can be reinstated."
     }
   },
@@ -132,14 +132,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/d141a839-9f98-477c-8792-d71558c4c576/suspend",
+    "req": "POST /v1/admin/dealers/fcda5b98-cf40-41a7-bca9-763f56aa84a0/suspend",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "8UXWE5ElW2",
+      "traceId": "-iv-v4j-HD",
       "detail": "Only an active dealership can be suspended."
     }
   },
@@ -149,14 +149,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/d141a839-9f98-477c-8792-d71558c4c576/reinstate",
+    "req": "POST /v1/admin/dealers/fcda5b98-cf40-41a7-bca9-763f56aa84a0/reinstate",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "sokb7xxaMv",
+      "traceId": "1knRPSDgw0",
       "detail": "Only a suspended dealership can be reinstated."
     }
   },
@@ -167,14 +167,14 @@
     }
   },
   {
-    "req": "POST /v1/admin/dealers/0e6d9e61-e1b5-4acc-9feb-a9910c055d20/reinstate",
+    "req": "POST /v1/admin/dealers/87b80a29-7656-4e9c-958d-918ff5f281bd/reinstate",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "LjI1pNPprx",
+      "traceId": "yBW0d37iBt",
       "detail": "Only a suspended dealership can be reinstated."
     }
   },
@@ -202,7 +202,7 @@
       "title": "Document locked",
       "status": 409,
       "code": "DOCUMENT_LOCKED",
-      "traceId": "0_j1PN-k13",
+      "traceId": "pWmef81e5U",
       "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
     }
   },
@@ -230,7 +230,7 @@
       "title": "Document locked",
       "status": 409,
       "code": "DOCUMENT_LOCKED",
-      "traceId": "EocvzcfXnl",
+      "traceId": "2BuiItmPIR",
       "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
     }
   },
@@ -242,7 +242,7 @@
       "title": "Not found",
       "status": 404,
       "code": "NOT_FOUND",
-      "traceId": "HOXYpi5GsV",
+      "traceId": "qO24Qecsht",
       "detail": "That document does not exist."
     }
   },
@@ -270,7 +270,7 @@
       "title": "Document locked",
       "status": 409,
       "code": "DOCUMENT_LOCKED",
-      "traceId": "jifTR9-qiy",
+      "traceId": "r77wdPuqwa",
       "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
     }
   },
@@ -282,7 +282,7 @@
       "title": "Document locked",
       "status": 409,
       "code": "DOCUMENT_LOCKED",
-      "traceId": "PWosoX1Tu5",
+      "traceId": "36zOf2UW0e",
       "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
     }
   },
@@ -310,7 +310,7 @@
       "title": "Not found",
       "status": 404,
       "code": "NOT_FOUND",
-      "traceId": "xW_Hcqz36Z",
+      "traceId": "8-fQ8j0Hj5",
       "detail": "No route matches POST /v1/dealer/yard-photo/presign."
     }
   },
@@ -318,7 +318,7 @@
     "req": "POST /v1/dealer/portfolio/commit",
     "status": 201,
     "body": {
-      "id": "10c35b8e-82a0-4e6c-bdd3-83fe8ba49542",
+      "id": "ffb4e945-f737-4adf-952d-b7bb4af362d6",
       "status": "PENDING",
       "statusLabel": "Awaiting review — not public yet",
       "previewUrl": "<redacted>",
@@ -326,7 +326,7 @@
       "replacesId": null,
       "position": 0,
       "rejectionReason": null,
-      "submittedAt": "2026-10-20T15:44:10.019Z",
+      "submittedAt": "2026-10-21T05:27:16.144Z",
       "reviewedAt": null
     }
   },

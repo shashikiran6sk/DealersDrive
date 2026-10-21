@@ -7,7 +7,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.174Z"
+    "at": "2026-10-21T05:28:53.160Z"
   },
   "SUPPORT-DISC-002": {
     "status": "PASS",
@@ -17,7 +17,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.332Z"
+    "at": "2026-10-21T05:28:53.239Z"
   },
   "SUPPORT-DISC-003": {
     "status": "PASS",
@@ -27,7 +27,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.531Z"
+    "at": "2026-10-21T05:28:53.376Z"
   },
   "SUPPORT-DISC-004": {
     "status": "PASS",
@@ -37,7 +37,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.564Z"
+    "at": "2026-10-21T05:28:53.401Z"
   },
   "SUPPORT-DISC-005": {
     "status": "PASS",
@@ -47,7 +47,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.699Z"
+    "at": "2026-10-21T05:28:53.500Z"
   },
   "SUPPORT-DISC-006": {
     "status": "PASS",
@@ -57,7 +57,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.762Z"
+    "at": "2026-10-21T05:28:53.562Z"
   },
   "SUPPORT-DISC-007": {
     "status": "PASS",
@@ -67,7 +67,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:11.796Z"
+    "at": "2026-10-21T05:28:53.596Z"
   },
   "ADMIN-RBAC-DISC-001": {
     "status": "PASS",
@@ -77,7 +77,7 @@
     "bug": null,
     "auth": "SIM-ADMIT",
     "area": "delta",
-    "at": "2026-10-20T15:36:11.998Z"
+    "at": "2026-10-21T05:28:53.760Z"
   },
   "ADMIN-RBAC-DISC-002": {
     "status": "PASS",
@@ -87,7 +87,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.075Z"
+    "at": "2026-10-21T05:28:53.833Z"
   },
   "ADMIN-RBAC-DISC-003": {
     "status": "PASS",
@@ -97,7 +97,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.130Z"
+    "at": "2026-10-21T05:28:53.878Z"
   },
   "ADMIN-SESSION-DISC-001": {
     "status": "PASS",
@@ -107,7 +107,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.150Z"
+    "at": "2026-10-21T05:28:53.891Z"
   },
   "ADMIN-SESSION-DISC-002": {
     "status": "PASS",
@@ -117,7 +117,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.195Z"
+    "at": "2026-10-21T05:28:53.920Z"
   },
   "SALES-DISC-001": {
     "status": "PASS",
@@ -127,7 +127,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.234Z"
+    "at": "2026-10-21T05:28:53.946Z"
   },
   "SALES-DISC-002": {
     "status": "PASS",
@@ -137,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.243Z"
+    "at": "2026-10-21T05:28:53.951Z"
   },
   "VERIFY-DISC-001": {
     "status": "PASS",
@@ -147,7 +147,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.648Z"
+    "at": "2026-10-21T05:28:54.253Z"
   },
   "VERIFY-DISC-002": {
     "status": "PASS",
@@ -157,7 +157,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:12.853Z"
+    "at": "2026-10-21T05:28:54.481Z"
   },
   "VERIFY-DISC-003": {
     "status": "PASS",
@@ -167,7 +167,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:13.245Z"
+    "at": "2026-10-21T05:28:54.790Z"
   },
   "PORTFOLIO-DISC-001": {
     "status": "PASS",
@@ -177,7 +177,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:13.461Z"
+    "at": "2026-10-21T05:28:54.909Z"
   },
   "PORTFOLIO-DISC-002": {
     "status": "PASS",
@@ -187,7 +187,7 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:13.844Z"
+    "at": "2026-10-21T05:28:55.227Z"
   },
   "DOC-DISC-001": {
     "status": "PASS",
@@ -197,26 +197,26 @@
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:14.041Z"
+    "at": "2026-10-21T05:28:55.372Z"
   },
   "NOTIFY-DISC-001": {
-    "status": "BLOCKED",
-    "layers": ["API"],
-    "note": "no console-mailer line for the enquiry within 20 s; privacy not judged",
+    "status": "PASS",
+    "layers": ["API", "NOTIFY"],
+    "note": "7299 console emails across 21 templates (183 dealer enquiry alerts): no enquiry or support email carries a mobile number",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:34.574Z"
+    "at": "2026-10-21T05:28:55.557Z"
   },
   "AUTH-DISC-002": {
     "status": "FAIL",
     "layers": ["API"],
     "note": "/v1/auth/me reports emailVerified:true for a user with no email address",
     "evidence": [],
-    "bug": "BUG-002",
+    "bug": "BUG-102",
     "auth": null,
     "area": "delta",
-    "at": "2026-10-20T15:36:34.618Z"
+    "at": "2026-10-21T05:28:55.592Z"
   }
 }

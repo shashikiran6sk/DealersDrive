@@ -1,53 +1,53 @@
 [
   {
-    "req": "POST /v1/admin/dealers/b00eb169-169f-4474-8aa1-eef7b45f3739/approve",
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/approve",
     "status": 200,
     "body": {
-      "id": "b00eb169-169f-4474-8aa1-eef7b45f3739",
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:46:32.400Z"
+      "notifiedAt": "2026-10-21T05:29:03.243Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/b00eb169-169f-4474-8aa1-eef7b45f3739/suspend",
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/suspend",
     "status": 200,
     "body": {
-      "id": "b00eb169-169f-4474-8aa1-eef7b45f3739",
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
       "status": "SUSPENDED",
       "statusLabel": "Suspended",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:46:32.422Z"
+      "notifiedAt": "2026-10-21T05:29:03.254Z"
     }
   },
   {
-    "req": "POST /v1/admin/dealers/b00eb169-169f-4474-8aa1-eef7b45f3739/suspend",
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/suspend",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
       "title": "Invalid dealer transition",
       "status": 422,
       "code": "INVALID_DEALER_TRANSITION",
-      "traceId": "xP4cj2-Y28",
+      "traceId": "PLTWs_AXbd",
       "detail": "Only an active dealership can be suspended."
     }
   },
   {
-    "req": "POST /v1/admin/dealers/b00eb169-169f-4474-8aa1-eef7b45f3739/reinstate",
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/reinstate",
     "status": 200,
     "body": {
-      "id": "b00eb169-169f-4474-8aa1-eef7b45f3739",
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
       "status": "ACTIVE",
       "statusLabel": "Active",
       "creditsGranted": 0,
       "creditBalance": 0,
       "listingsAffected": 0,
-      "notifiedAt": "2026-10-20T15:46:32.455Z"
+      "notifiedAt": "2026-10-21T05:29:03.276Z"
     }
   },
   {
@@ -68,14 +68,14 @@
     ]
   },
   {
-    "req": "POST /v1/admin/dealers/9e7e6335-1c04-4f89-981a-98a35416e337/approve",
+    "req": "POST /v1/admin/dealers/9707f227-92de-4835-9244-af207dbb212b/approve",
     "status": 422,
     "body": {
       "type": "https://dealers-drive.com/errors/documents-not-verified",
       "title": "Documents not verified",
       "status": 422,
       "code": "DOCUMENTS_NOT_VERIFIED",
-      "traceId": "HkBlPtjtAu",
+      "traceId": "Sz4UjSigSR",
       "detail": "Verify the applicable uploaded business documents before approving this dealership."
     }
   },

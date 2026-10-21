@@ -432,35 +432,61 @@ await h.check(r, 'MEDIA-002', async () => {
     : { status: 'FAIL', note: 'mislinked' };
 });
 await h.check(r, 'MEDIA-003', async () => {
-  // Max image count (serve already needs 6). Try to exceed the cap.
+  // The cap is VEHICLE_IMAGE_MAX (20, contracts/moderation.ts): twenty attach, the 21st is refused.
   const s = await w.submitted(owner);
-  let last;
-  for (let i = 0; i < 14; i += 1) last = await w.addImage(admin, s.listingId, i + 1);
+  const results = [];
+  for (let i = 0; i < 21; i += 1) {
+    const x = await w.addImage(admin, s.listingId, i + 1);
+    results.push(x.commit?.status ?? `presign ${x.presign?.status} ${x.presign?.json?.code ?? ''}`);
+  }
   const count = await h.one(`SELECT count(*)::int n FROM vehicle_media WHERE "vehicleId"=$1`, [
     s.vehicleId,
   ]);
-  r.ev({ imageRows: count.n, lastCommit: last.commit?.status, lastPresign: last.presign?.status });
-  return count.n <= 20
+  const first20ok = results.slice(0, 20).every((x) => x === 200 || x === 201);
+  const overflowRefused = !(results[20] === 200 || results[20] === 201);
+  r.ev({ imageRows: count.n, first20: results.slice(0, 20), twentyFirst: results[20] });
+  return first20ok && overflowRefused && count.n === 20
     ? {
         layers: ['API', 'DATABASE'],
-        note: `image count capped/handled: ${count.n} rows after 14 attempts (last presign ${last.presign?.status}, commit ${last.commit?.status})`,
+        note: `the maximum of 20 images attaches; the 21st is refused (${results[20]}); 20 rows`,
       }
-    : { status: 'FAIL', note: `rows ${count.n}` };
+    : { status: 'FAIL', note: `rows ${count.n}; 21st ${results[20]}; first20ok ${first20ok}` };
 });
 await h.check(r, 'MEDIA-004', async () => {
   const s = await w.submitted(owner);
-  await w.addImage(admin, s.listingId, 1);
-  await w.addImage(admin, s.listingId, 2);
-  const list = await admin.get(`/v1/admin/listings/${s.listingId}`);
-  const ids = JSON.stringify(list.json).match(/[0-9a-f-]{36}/g) ?? [];
-  const order = await admin.put(`/v1/admin/listings/${s.listingId}/images/order`, { mediaIds: [] });
-  r.ev({ reorderStatus: order.status });
-  return [200, 400, 422].includes(order.status)
+  for (let i = 1; i <= 3; i += 1) await w.addImage(admin, s.listingId, i);
+  const before = await h.q(
+    `SELECT "mediaId", position, "isPrimary" FROM vehicle_media WHERE "vehicleId"=$1 ORDER BY position`,
+    [s.vehicleId],
+  );
+  const reversed = before.map((x) => x.mediaId).reverse();
+  const order = await admin.put(`/v1/admin/listings/${s.listingId}/images/order`, {
+    mediaIds: reversed,
+  });
+  const after = await h.q(
+    `SELECT "mediaId", position FROM vehicle_media WHERE "vehicleId"=$1 ORDER BY position`,
+    [s.vehicleId],
+  );
+  const notPermutation = await admin.put(`/v1/admin/listings/${s.listingId}/images/order`, {
+    mediaIds: reversed.slice(0, 2),
+  });
+  const empty = await admin.put(`/v1/admin/listings/${s.listingId}/images/order`, { mediaIds: [] });
+  const applied = JSON.stringify(after.map((x) => x.mediaId)) === JSON.stringify(reversed);
+  r.ev({
+    reorder: order.status,
+    applied,
+    partialOrder: notPermutation.status,
+    emptyOrder: empty.status,
+  });
+  return order.status === 200 && applied && notPermutation.status >= 400 && empty.status >= 400
     ? {
-        layers: ['API'],
-        note: `image ordering endpoint responds (${order.status}); empty order rejected or no-op`,
+        layers: ['API', 'DATABASE'],
+        note: `reversing three images is stored in that order; a partial (${notPermutation.status}) or empty (${empty.status}) order is refused`,
       }
-    : { status: 'FAIL', note: `status ${order.status}` };
+    : {
+        status: 'FAIL',
+        note: `reorder ${order.status} applied ${applied} partial ${notPermutation.status} empty ${empty.status}`,
+      };
 });
 await h.check(r, 'MEDIA-005', async () => {
   const s = await w.submitted(owner);

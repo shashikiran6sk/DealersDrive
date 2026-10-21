@@ -1,0 +1,27 @@
+Logical backup/restore drill — 2026-10-21T04:55:18Z
+pg_dump -Fc dealersdrive_cert (1.98 MB) → pg_restore --no-owner into dealersdrive_restore; dump 0 s, restore 1 s; pg_restore errors: none
+Comparison (compare.sql) source vs restored: IDENTICAL
+
+users|835
+dealers|498
+dealers_by_status|498
+members|619
+owner_active|494
+invitations|135
+listings|776
+enquiries|157
+saved|18
+documents|988
+audit|9986
+sessions|780
+admin_members|18
+tickets|12
+migrations|56
+31eb9a74428f4beeb71d893a6e8d01e3
+c3c39e7b2988a8d9bdb2d03aab4759ef
+ecbeed132c60a7b6d45315c4e773b739
+16641427c4fb6f73f2014188e8cc9fd3
+
+Unvalidated foreign keys after restore: 0
+API booted against the restored DB (port 4006): /health/ready ok; /v1/vehicles total 503 = source 503; /v1/dealers 358 vs source 359 — the source gained one dealer from the concurrently running b02 campaign after the dump.
+Scope: a logical dump of the production schema on PostgreSQL 16. The managed-database snapshot/PITR procedure (DEPLOY-009) was not exercised.

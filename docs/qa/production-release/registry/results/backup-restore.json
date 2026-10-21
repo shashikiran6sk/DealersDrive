@@ -1,0 +1,12 @@
+{
+  "DEPLOY-010": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "pg_dump → pg_restore into a fresh database: 17 counts and relationship hashes identical, 0 unvalidated FKs. Logical drill only — the managed snapshot/PITR path is DEPLOY-009 (BLOCKED).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "backup-restore",
+    "at": "2026-10-21T05:52:14.220Z"
+  }
+}
