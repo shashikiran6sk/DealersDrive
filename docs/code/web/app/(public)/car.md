@@ -2,6 +2,37 @@
 
 Parent: [web](../../README.md)
 
+## `apps/web/src/app/(public)/car/[slug]/`
+
+### Why the car page has no `loading.tsx` (BUG-101)
+
+R101 gave this route a `loading.tsx`, and with it the page answered **HTTP 200**
+for a car that does not exist and for an API outage. A loading component is a
+Suspense boundary around the page, so Next flushes the layout and the skeleton —
+and with them the status line — before the page has asked the API anything. The
+`notFound()` and the thrown outage that follow can only swap the streamed content
+for the not-found or error UI; the status is already sent. Crawlers saw a soft
+404 on every removed car and a 200 on every outage.
+
+Measured against a production build of Next.js 15.5.27 (`next dev` answers 404
+either way, so the bug only shows in a build):
+
+| `/car/…`                          | with `loading.tsx` | without |
+| --------------------------------- | -----------------: | ------: |
+| a public car                      |                200 |     200 |
+| an unknown or non-public slug     |                200 |     404 |
+| a cold page while the API is down |                200 |     500 |
+
+Without the file the not-found page still renders "Page not found" and the error
+boundary still renders "Something went wrong" with its retry, both `noindex`.
+
+What the boundary bought was instant feedback on a click (R101, see
+[vehicle-page-loading](../../components/vehicle/vehicle-page-loading.md)). That
+feedback now comes from the link that was clicked — `VehicleCard`'s
+`LinkPendingIndicator` — the same answer F114 gave the dealership page
+([`dealers/[slug]`](dealers/[slug].md)). Do not add a `loading.tsx` here again
+without re-checking the status codes against a production build.
+
 ## `apps/web/src/app/(public)/car/[slug]/page.tsx`
 
 ### `export default async function VehiclePage(...)`
