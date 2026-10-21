@@ -1,0 +1,12 @@
+{
+  "BUG-NEW-010-timing": {
+    "status": "FAIL",
+    "layers": ["BROWSER", "API"],
+    "note": "API 404 at once; warmed car page 404 after 71 s, dealer page after >600 s (out-of-band suspension; console path is immediate, #243)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "stale-suspension",
+    "at": "2026-10-20T16:05:17.963Z"
+  }
+}

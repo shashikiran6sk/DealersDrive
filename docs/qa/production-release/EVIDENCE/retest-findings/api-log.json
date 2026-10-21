@@ -1,0 +1,160 @@
+[
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "6b92d1dd-a4e3-40c7-970d-4c0617ac31f6",
+      "slug": "profiletwice-motors-24307077c7b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "ProfileTwice Motors 24307077c7b6",
+      "legalName": "ProfileTwice Motors 24307077c7b6",
+      "tagline": "Quality used cars from ProfileTwice",
+      "gstin": "33XRZCT2996M1Z2",
+      "pan": null,
+      "contact": {
+        "fullName": "ProfileTwice Owner",
+        "phone": "+••••••••3067",
+        "phoneDisplay": "+91 96002 43067",
+        "email": "profiletwice.243068bf098d@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:47:23.868Z",
+      "createdAt": "2026-10-20T15:47:23.627Z",
+      "profileChange": {
+        "id": "93483f27-a109-4681-8cb6-27fe612ce565",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": "First edit waiting for moderation review",
+        "taglineChanged": true,
+        "specialities": [],
+        "submittedAtLabel": "20 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-edit-pending",
+      "title": "Profile edit pending",
+      "status": 409,
+      "code": "PROFILE_EDIT_PENDING",
+      "traceId": "3LvHf81LfZ",
+      "detail": "You already have a change waiting for review. Cancel it first if you want to write something different."
+    }
+  },
+  {
+    "pending": ["PENDING"]
+  },
+  {
+    "req": "POST /v1/admin/dealers/1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "lQKztuDSGH",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6/close",
+    "status": 200,
+    "body": {
+      "id": "1dc5968e-d931-4b45-9fbc-1dbb9f36d3e6",
+      "status": "CLOSED",
+      "statusLabel": "Closed",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-20T15:47:24.084Z"
+    }
+  },
+  {
+    "closeRoutes": ["/v1/admin/dealers/{id}/close"],
+    "closedDealers": 2,
+    "dealer": "CLOSED"
+  },
+  {
+    "out": [
+      {
+        "width": 320,
+        "status": 200,
+        "url": "<redacted>",
+        "overflow": 0,
+        "h1": "Create your account"
+      },
+      {
+        "width": 390,
+        "status": 200,
+        "url": "<redacted>",
+        "overflow": 0,
+        "h1": "Create your account"
+      }
+    ]
+  },
+  {
+    "results": [
+      {
+        "status": 200,
+        "type": "application/pdf",
+        "isPdf": true
+      },
+      {
+        "status": 200,
+        "type": "application/pdf",
+        "isPdf": true
+      }
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/a077b01d-72c3-4214-b6c3-469e6489218e/suspend",
+    "status": 200,
+    "body": {
+      "id": "a077b01d-72c3-4214-b6c3-469e6489218e",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-20T15:48:01.034Z"
+    }
+  },
+  {
+    "api": 404,
+    "webImmediately": 200,
+    "webAfter65s": 200,
+    "webAfter65sSecond": 200
+  },
+  {
+    "widths": {
+      "320": 200,
+      "500": 200,
+      "4000": 200,
+      "4001": 404
+    },
+    "docSaysFixed": false
+  }
+]

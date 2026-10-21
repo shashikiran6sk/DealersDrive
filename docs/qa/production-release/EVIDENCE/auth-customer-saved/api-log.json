@@ -1,0 +1,1030 @@
+[
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 200,
+    "body": {
+      "status": "NAME_REQUIRED",
+      "customer": null,
+      "signUpToken": "<redacted>",
+      "expiresAt": "2026-10-20T15:42:29.820Z",
+      "phoneDisplay": "+91 96003 49630"
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-up/customer",
+    "status": 201,
+    "body": {
+      "customer": {
+        "id": "623a3c95-effc-402f-934f-ba5919c685b9",
+        "fullName": "New Customer",
+        "phone": "+••••••••9630",
+        "phoneDisplay": "+91 96003 49630"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "623a3c95-effc-402f-934f-ba5919c685b9",
+        "fullName": "New Customer",
+        "phone": "+••••••••9630",
+        "phoneDisplay": "+91 96003 49630"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 200,
+    "body": {
+      "status": "SIGNED_IN",
+      "customer": {
+        "id": "01e0a032-5770-4b19-b878-23a39ca7f10d",
+        "fullName": "Existing Cust",
+        "phone": "+••••••••9631",
+        "phoneDisplay": "+91 96003 49631"
+      },
+      "signUpToken": null,
+      "expiresAt": null,
+      "phoneDisplay": "+91 96003 49631"
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/phone-verification-failed",
+      "title": "Phone verification failed",
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "traceId": "LuqAOtsms9",
+      "detail": "That code could not be verified. Request a new one and try again.",
+      "errors": [
+        {
+          "field": "body.accessToken",
+          "code": "PHONE_VERIFICATION_FAILED",
+          "message": "Not verified."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 200,
+    "body": {
+      "status": "NAME_REQUIRED",
+      "customer": null,
+      "signUpToken": "<redacted>",
+      "expiresAt": "2026-10-20T15:42:30.030Z",
+      "phoneDisplay": "+91 96003 49633"
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/phone-verification-failed",
+      "title": "Phone verification failed",
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "traceId": "QzEjk_qXt0",
+      "detail": "That code has already been used. Request a new one and try again.",
+      "errors": [
+        {
+          "field": "body.accessToken",
+          "code": "PHONE_VERIFICATION_FAILED",
+          "message": "Already used."
+        }
+      ]
+    }
+  },
+  {
+    "usersForNumber": 0
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 200,
+    "body": {
+      "status": "NAME_REQUIRED",
+      "customer": null,
+      "signUpToken": "<redacted>",
+      "expiresAt": "2026-10-20T15:42:30.059Z",
+      "phoneDisplay": "+91 96003 49635"
+    }
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 200,
+    "body": {
+      "status": "NAME_REQUIRED",
+      "customer": null,
+      "signUpToken": "<redacted>",
+      "expiresAt": "2026-10-20T15:42:30.081Z",
+      "phoneDisplay": "+91 96003 49636"
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "343427e5-6887-4776-9eef-4931c5720565",
+        "fullName": "Logout Cust",
+        "phone": "+••••••••9637",
+        "phoneDisplay": "+91 96003 49637"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/auth/customer/logout",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "JFrQibwkfv",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "sessionRevoked": true
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "s8MnAMka3U",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "ticketCreate": 400
+  },
+  {
+    "status": "n/a"
+  },
+  {
+    "aSeesOwnOnly": true
+  },
+  {
+    "setCookie": "<redacted>"
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "5053c2ea-78a4-4ff1-89c6-cf4fa3024e1e",
+        "fullName": "Account Cust",
+        "phone": "+••••••••9643",
+        "phoneDisplay": "+91 96003 49643"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/enquiries",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "POST /v1/auth/customer/logout",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "GET /v1/vehicles?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-0f84219d",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "IdorDealer Motors 349645679dc9",
+            "slug": "idordealer-motors-349645679dc9-vellore-tamil-nadu",
+            "initials": "IM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-61997788",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PubVis Motors 327700de063d",
+            "slug": "pubvis-motors-327700de063d-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2022-maruti-suzuki-brezza-zxi-mangalagiri-2419104e",
+          "availability": "AVAILABLE",
+          "title": "2022 Maruti Suzuki Brezza ZXi+",
+          "year": 2022,
+          "priceLabel": "₹5,95,000",
+          "metaLabel": "54,900 km · Petrol · Automatic · Mangalagiri",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Capital Region Motors",
+            "slug": "capital-region-motors-pvt-ltd-mangalagiri-guntur-andhra-pradesh",
+            "initials": "CR",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2022-tata-altroz-xz-anekal-cf74b84f",
+          "availability": "AVAILABLE",
+          "title": "2022 Tata Altroz XZ",
+          "year": 2022,
+          "priceLabel": "₹7,05,000",
+          "metaLabel": "52,200 km · CNG · Manual · Anekal",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Attibele Highway Cars",
+            "slug": "attibele-highway-cars-pvt-ltd-anekal-bengaluru-urban-karnataka",
+            "initials": "AH",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2016-maruti-suzuki-wagon-r-lxi-katpadi-00810cc2",
+          "availability": "AVAILABLE",
+          "title": "2016 Maruti Suzuki Wagon R LXi",
+          "year": 2016,
+          "priceLabel": "₹2,75,000",
+          "metaLabel": "1,29,500 km · Petrol · Manual · Katpadi",
+          "image": null,
+          "imageCount": 0,
+          "dealer": {
+            "name": "Sri Balaji Cars",
+            "slug": "sri-balaji-cars-and-credits-katpadi-vellore-tamil-nadu",
+            "initials": "SB",
+            "isVerified": false
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 5,
+        "total": 275,
+        "totalPages": 55
+      },
+      "available": 262,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 47
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 29
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 138
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 136
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 109
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 56
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 119
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 52
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 60
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 79
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "xEMoR0GxMY",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "5053c2ea-78a4-4ff1-89c6-cf4fa3024e1e",
+        "fullName": "Account Cust",
+        "phone": "+••••••••9643",
+        "phoneDisplay": "+91 96003 49643"
+      }
+    }
+  },
+  {
+    "enquiriesStillListed": 1
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "8e2ac679-f03c-4a5d-abc5-7411bf423344",
+        "fullName": "Dual Role Person",
+        "phone": "+••••••••9647",
+        "phoneDisplay": "+91 96003 49647"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "21d53866-1e2a-4e8b-aece-22f1788805e3",
+        "fullName": "ToRevoke Person",
+        "phone": "+••••••••9649",
+        "phoneDisplay": "+91 96003 49649"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "customerSeat": "ACTIVE",
+    "userStatus": "ACTIVE",
+    "dealerConsole": 401
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "78483263-e1f2-4f66-a9a0-e6bf826414d8",
+        "fullName": "Suspended Co Member",
+        "phone": "+••••••••9651",
+        "phoneDisplay": "+91 96003 49651"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "dealerConsole": 401
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+      "saved": true
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-20T15:32:39.435Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "_p12j5devs",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "req": "DELETE /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0890dd9a",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+      "saved": false
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles/slugs",
+    "status": 200,
+    "body": {
+      "slugs": []
+    }
+  },
+  {
+    "rows": 1
+  },
+  {
+    "before": {
+      "slugs": ["2023-hyundai-creta-sx-o-vellore-0890dd9a"]
+    },
+    "after": {
+      "slugs": ["2023-hyundai-creta-sx-o-vellore-0890dd9a"]
+    }
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-d452caa0",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+      "saved": true
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-20T15:32:39.588Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "availability": "RESERVED",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        },
+        {
+          "savedAt": "2026-10-20T15:32:39.495Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-8ca4a3a9",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-saveable",
+      "title": "Listing not saveable",
+      "status": 409,
+      "code": "LISTING_NOT_SAVEABLE",
+      "traceId": "dNtoO2XCzd",
+      "detail": "This car is no longer on the marketplace, so it cannot be saved. Cars you saved before it left stay in your list."
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-20T15:32:39.588Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "availability": "RESERVED",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        },
+        {
+          "savedAt": "2026-10-20T15:32:39.495Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-8f11a2c3",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-saveable",
+      "title": "Listing not saveable",
+      "status": 409,
+      "code": "LISTING_NOT_SAVEABLE",
+      "traceId": "I2RgXPwwh8",
+      "detail": "This car is no longer on the marketplace, so it cannot be saved. Cars you saved before it left stay in your list."
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-20T15:32:39.588Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "availability": "RESERVED",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        },
+        {
+          "savedAt": "2026-10-20T15:32:39.495Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-20T15:32:40.618Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0e5986b9",
+            "availability": "UNAVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": null,
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        },
+        {
+          "savedAt": "2026-10-20T15:32:39.588Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-d452caa0",
+            "availability": "RESERVED",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        },
+        {
+          "savedAt": "2026-10-20T15:32:39.495Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-0890dd9a",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "SavedDealer Motors 349671ba2368",
+              "slug": "saveddealer-motors-349671ba2368-vellore-tamil-nadu",
+              "initials": "SM",
+              "isVerified": false
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "savedRows": 3
+  },
+  {
+    "req": "GET /v1/saved-vehicles/slugs",
+    "status": 200,
+    "body": {
+      "slugs": []
+    }
+  }
+]

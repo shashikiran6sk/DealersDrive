@@ -1,0 +1,12 @@
+{
+  "BUG-NEW-010-console-timing": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API"],
+    "note": "console suspension (DB SUSPENDED, API 404); warmed car page 404 after 0.1 s, dealer page after 0.1 s; first samples 0.1s car 404 dealer 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "console-suspension",
+    "at": "2026-10-20T15:55:10.756Z"
+  }
+}

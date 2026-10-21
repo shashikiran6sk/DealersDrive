@@ -1,0 +1,26 @@
+[
+  {
+    "removed": 204,
+    "memberAfterRemoval": "REMOVED"
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/1962f86a-ea37-4b21-a101-0437e433ff9e",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "gjbNWcyXq-",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "enquiryAfter": {
+      "status": "NEW"
+    }
+  },
+  {
+    "nextRequest": 401
+  }
+]

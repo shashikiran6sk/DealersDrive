@@ -1,0 +1,122 @@
+{
+  "SEC-DISC-001a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.256Z"
+  },
+  "SEC-DISC-001b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged GET /private → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.262Z"
+  },
+  "SEC-DISC-001c": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.265Z"
+  },
+  "LIFE-DISC-001a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.371Z"
+  },
+  "LIFE-DISC-001b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.607Z"
+  },
+  "LIFE-DISC-002a": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused: 422 INVALID_DEALER_TRANSITION",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.800Z"
+  },
+  "LIFE-DISC-002b": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspend 422/DRAFT, reinstate 422/DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.882Z"
+  },
+  "LIFE-DISC-002c": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "refused 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.894Z"
+  },
+  "API-DISC-001": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer: business-identity presign 409 DOCUMENT_LOCKED; rows VERIFIED and files intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.910Z"
+  },
+  "API-DISC-002": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "personal-identity presign 409 DOCUMENT_LOCKED; a blind commit 404; nothing changed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.934Z"
+  },
+  "API-DISC-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "STORAGE"],
+    "note": "ACTIVE dealer: DELETE of either reviewed category 409 DOCUMENT_LOCKED; rows and files intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:09.960Z"
+  },
+  "API-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "no unmoderated yard-photo route (404); a new portfolio photo is PENDING and absent from the public page until reviewed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-20T15:44:10.037Z"
+  }
+}

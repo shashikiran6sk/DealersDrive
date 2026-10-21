@@ -1,0 +1,12 @@
+{
+  "BUG-NEW-012-queued-enquiry-close-after-removal": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "queued close → 401, enquiry NEW, member REMOVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-new012",
+    "at": "2026-10-20T15:49:09.646Z"
+  }
+}

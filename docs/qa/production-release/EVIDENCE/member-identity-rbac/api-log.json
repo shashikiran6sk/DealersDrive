@@ -1,0 +1,2779 @@
+[
+  {
+    "ownerRole": "OWNER"
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 201,
+    "body": {
+      "id": "1c90f45d-cea0-41b9-adb2-7f2ca5f5334e",
+      "phoneDisplay": "+91 96008 86038",
+      "role": "MANAGER",
+      "roleLabel": "Manager",
+      "status": "PENDING",
+      "statusLabel": "Waiting for sign-in",
+      "invitedAt": "2026-10-20T15:41:28.338Z",
+      "expiresAt": "2026-10-27T15:41:28.332Z",
+      "expiresLabel": "27 Oct 2026"
+    }
+  },
+  {
+    "req": "POST /v1/invitations/1c90f45d-cea0-41b9-adb2-7f2ca5f5334e/accept",
+    "status": 200,
+    "body": {
+      "membershipId": "d14d8455-ea64-42c7-b5cc-17679e5461ae",
+      "dealer": {
+        "brandName": "RbacA Motors 8860362b47b6"
+      },
+      "role": "MANAGER",
+      "roleLabel": "Manager"
+    }
+  },
+  {
+    "role": "MANAGER"
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 201,
+    "body": {
+      "id": "2c81bbb7-f40c-4b7b-92ca-8b5771921c7d",
+      "phoneDisplay": "+91 96008 86039",
+      "role": "STAFF",
+      "roleLabel": "Staff",
+      "status": "PENDING",
+      "statusLabel": "Waiting for sign-in",
+      "invitedAt": "2026-10-20T15:41:28.404Z",
+      "expiresAt": "2026-10-27T15:41:28.399Z",
+      "expiresLabel": "27 Oct 2026"
+    }
+  },
+  {
+    "req": "POST /v1/invitations/2c81bbb7-f40c-4b7b-92ca-8b5771921c7d/accept",
+    "status": 200,
+    "body": {
+      "membershipId": "f79ed3ed-76b2-4434-97ad-ef90ef2b64ed",
+      "dealer": {
+        "brandName": "RbacA Motors 8860362b47b6"
+      },
+      "role": "STAFF",
+      "roleLabel": "Staff"
+    }
+  },
+  {
+    "role": "STAFF"
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 201,
+    "body": {
+      "id": "5387de85-f154-41cc-a151-9be1bd767408",
+      "phoneDisplay": "+91 96008 86040",
+      "role": "STAFF",
+      "roleLabel": "Staff",
+      "status": "PENDING",
+      "statusLabel": "Waiting for sign-in",
+      "invitedAt": "2026-10-20T15:41:28.438Z",
+      "expiresAt": "2026-10-27T15:41:28.433Z",
+      "expiresLabel": "27 Oct 2026"
+    }
+  },
+  {
+    "invitationRow": "PENDING"
+  },
+  {
+    "usersBefore": 1,
+    "usersAfter": 1
+  },
+  {
+    "req": "POST /v1/invitations/b26b0c5a-21e4-4c18-84ef-99e06bbc2c30/accept",
+    "status": 200,
+    "body": {
+      "membershipId": "2a0075f4-fa99-4f86-945a-1b99bb1d4072",
+      "dealer": {
+        "brandName": "RbacA Motors 8860362b47b6"
+      },
+      "role": "STAFF",
+      "roleLabel": "Staff"
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 200,
+    "body": {
+      "greeting": "Good evening, Member",
+      "subline": "Here is what happened across your inventory in the last 7 days.",
+      "stats": [
+        {
+          "key": "activeListings",
+          "label": "Active listings",
+          "value": 1,
+          "valueLabel": "1",
+          "delta": "+1 this week",
+          "deltaTone": "ok"
+        },
+        {
+          "key": "credits",
+          "label": "Available credits",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "0 used this month",
+          "deltaTone": "neutral"
+        },
+        {
+          "key": "newEnquiries",
+          "label": "New enquiries",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "First week of enquiries",
+          "deltaTone": "ok"
+        },
+        {
+          "key": "views",
+          "label": "Vehicle views",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "No data for last week",
+          "deltaTone": "ok"
+        }
+      ],
+      "viewsChart": {
+        "title": "Views this week",
+        "totalLabel": "0 total",
+        "max": 1,
+        "series": [
+          {
+            "day": "Wed",
+            "date": "2026-10-14",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Thu",
+            "date": "2026-10-15",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Fri",
+            "date": "2026-10-16",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Sat",
+            "date": "2026-10-17",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Sun",
+            "date": "2026-10-18",
+            "views": 0,
+            "heightPct": 0
+          }
+        ]
+      },
+      "recentEnquiries": [],
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "listingStats": [
+        {
+          "key": "ACTIVE",
+          "label": "Active listings",
+          "value": 1,
+          "href": "/dealer/inventory?status=ACTIVE",
+          "tone": "ok"
+        },
+        {
+          "key": "RESERVED",
+          "label": "Reserved",
+          "value": 0,
+          "href": "/dealer/inventory?status=RESERVED",
+          "tone": "warn"
+        },
+        {
+          "key": "PENDING_REVIEW",
+          "label": "Pending review",
+          "value": 0,
+          "href": "/dealer/inventory?status=PENDING_REVIEW",
+          "tone": "warn"
+        },
+        {
+          "key": "CHANGES_REQUESTED",
+          "label": "Changes requested",
+          "value": 0,
+          "href": "/dealer/inventory?status=CHANGES_REQUESTED",
+          "tone": "warn"
+        },
+        {
+          "key": "SOLD",
+          "label": "Sold",
+          "value": 0,
+          "href": "/dealer/inventory?status=SOLD",
+          "tone": "accent"
+        }
+      ],
+      "alerts": []
+    }
+  },
+  {
+    "joinedDealer": true
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/member-already-exists",
+      "title": "Member already exists",
+      "status": 409,
+      "code": "MEMBER_ALREADY_EXISTS",
+      "traceId": "Rt1nryYlTP",
+      "detail": "That number already belongs to a member of this dealership."
+    }
+  },
+  {
+    "status": 409
+  },
+  {
+    "memberRows": 1
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 201,
+    "body": {
+      "id": "db112cf9-1c75-4532-831f-f6734f1590f1",
+      "phoneDisplay": "+91 96008 86045",
+      "role": "STAFF",
+      "roleLabel": "Staff",
+      "status": "PENDING",
+      "statusLabel": "Waiting for sign-in",
+      "invitedAt": "2026-10-20T15:41:28.733Z",
+      "expiresAt": "2026-10-27T15:41:28.728Z",
+      "expiresLabel": "27 Oct 2026"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 201,
+    "body": {
+      "id": "db112cf9-1c75-4532-831f-f6734f1590f1",
+      "phoneDisplay": "+91 96008 86045",
+      "role": "MANAGER",
+      "roleLabel": "Manager",
+      "status": "PENDING",
+      "statusLabel": "Waiting for sign-in",
+      "invitedAt": "2026-10-20T15:41:28.733Z",
+      "expiresAt": "2026-10-27T15:41:28.744Z",
+      "expiresLabel": "27 Oct 2026"
+    }
+  },
+  {
+    "pendingRows": 1
+  },
+  {
+    "req": "POST /v1/invitations/ea47666f-e022-4459-b530-4027d98e947a/accept",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invitation-expired",
+      "title": "Invitation expired",
+      "status": 409,
+      "code": "INVITATION_EXPIRED",
+      "traceId": "B1WfJsMV16",
+      "detail": "This invitation has expired. Ask the dealership to invite your number again."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/invitations/47fd0be0-76d9-4243-b1ba-ca89df60bb98",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "POST /v1/invitations/47fd0be0-76d9-4243-b1ba-ca89df60bb98/accept",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invitation-closed",
+      "title": "Invitation closed",
+      "status": 409,
+      "code": "INVITATION_CLOSED",
+      "traceId": "J2rvvIUR2a",
+      "detail": "The dealership withdrew this invitation.",
+      "invitationStatus": "REVOKED"
+    }
+  },
+  {
+    "req": "POST /v1/invitations/93d21991-7552-4ff3-ad0c-c1f464986d82/accept",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invitation-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "INVITATION_NOT_FOUND",
+      "traceId": "fm4kE4cjDM",
+      "detail": "There is no invitation waiting there."
+    }
+  },
+  {
+    "req": "POST /v1/invitations/7db8a133-79da-4159-8b99-fe384088a410/accept",
+    "status": 200,
+    "body": {
+      "membershipId": "546171f5-fc9f-4b1c-9712-29785329bb74",
+      "dealer": {
+        "brandName": "RbacA Motors 8860362b47b6"
+      },
+      "role": "STAFF",
+      "roleLabel": "Staff"
+    }
+  },
+  {
+    "req": "POST /v1/invitations/7db8a133-79da-4159-8b99-fe384088a410/accept",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invitation-closed",
+      "title": "Invitation closed",
+      "status": 409,
+      "code": "INVITATION_CLOSED",
+      "traceId": "KOshZmO30m",
+      "detail": "This invitation has already been accepted.",
+      "invitationStatus": "ACCEPTED"
+    }
+  },
+  {
+    "memberRows": 1
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/184b06c2-129f-43e2-8fd7-dedce1a6fbda",
+    "status": 200,
+    "body": {
+      "id": "184b06c2-129f-43e2-8fd7-dedce1a6fbda",
+      "name": "A Manager",
+      "initials": "AM",
+      "phoneDisplay": "+91 96008 86034",
+      "email": null,
+      "role": "STAFF",
+      "roleLabel": "Staff",
+      "joinedAt": "2026-10-20T15:41:26.473Z",
+      "joinedLabel": "20 Oct 2026",
+      "isYou": false,
+      "manageable": true
+    }
+  },
+  {
+    "role": "STAFF"
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/f7ad6f7c-e96c-4070-b3ad-55e3ba44a185",
+    "status": 200,
+    "body": {
+      "id": "f7ad6f7c-e96c-4070-b3ad-55e3ba44a185",
+      "name": "A Staff",
+      "initials": "AS",
+      "phoneDisplay": "+91 96008 86035",
+      "email": null,
+      "role": "MANAGER",
+      "roleLabel": "Manager",
+      "joinedAt": "2026-10-20T15:41:26.532Z",
+      "joinedLabel": "20 Oct 2026",
+      "isYou": false,
+      "manageable": true
+    }
+  },
+  {
+    "role": "MANAGER"
+  },
+  {
+    "createDraftBefore": 201
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/be839d9b-44a9-4618-8428-1d7d369d3e19/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "iwNW_MXE1l",
+      "detail": "This action needs the listing:submit permission."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/29eaaeb2-329f-4cf4-8852-1d110ee37c02",
+    "status": 204,
+    "body": null
+  },
+  {
+    "status": "REMOVED",
+    "removedAt": true
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "CZuVmGVm7N",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "latalRHu2K",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "sessionRevoked": false,
+    "dealerConsole": 401,
+    "customerMe": 200
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "0f67cf8c-6d81-4ef4-85db-108b1593f946",
+        "fullName": "Still Customer",
+        "phone": "+••••••••6055",
+        "phoneDisplay": "+91 96008 86055"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-563c6ec8",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "RbacB Motors 886042b798fb",
+            "slug": "rbacb-motors-886042b798fb-vellore-tamil-nadu",
+            "initials": "RM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-0878688e",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "RbacA Motors 8860362b47b6",
+            "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+            "initials": "RM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-464fa1cb",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "VerifyApp Motors 8801400615ed",
+            "slug": "verifyapp-motors-8801400615ed-vellore-tamil-nadu",
+            "initials": "VM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-9f2431d9",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "DeltaA Motors 569618dd701c",
+            "slug": "deltaa-motors-569618dd701c-vellore-tamil-nadu",
+            "initials": "DM",
+            "isVerified": false
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-7e37f46d",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "ConcEnq Motors 492750778d01",
+            "slug": "concenq-motors-492750778d01-vellore-tamil-nadu",
+            "initials": "CM",
+            "isVerified": false
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 5,
+        "total": 361,
+        "totalPages": 73
+      },
+      "available": 339,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 124
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 29
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 215
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 213
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 186
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 133
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 196
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 129
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 137
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 156
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "PUT /v1/saved-vehicles/2023-hyundai-creta-sx-o-vellore-0878688e",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-0878688e",
+      "saved": true
+    }
+  },
+  {
+    "req": "GET /v1/saved-vehicles/slugs",
+    "status": 200,
+    "body": {
+      "slugs": ["2023-hyundai-creta-sx-o-vellore-0878688e"]
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "6f3414da-60af-446a-a9b2-251f6e34d70d",
+      "status": "NEW",
+      "createdAt": "2026-10-20T15:41:29.956Z",
+      "dealerName": "RbacB Motors 886042b798fb",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "GET /v1/enquiries",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "6f3414da-60af-446a-a9b2-251f6e34d70d",
+          "status": "SENT",
+          "statusLabel": "Sent",
+          "statusTone": "accent",
+          "message": "personal enquiry before removal",
+          "createdAt": "2026-10-20T15:41:29.956Z",
+          "createdLabel": "20 Oct 2026",
+          "dealerName": "RbacB Motors 886042b798fb",
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-563c6ec8"
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "p8Ow2CQfWc",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "draftDealer": true
+  },
+  {
+    "vehicleStillExists": true
+  },
+  {
+    "enquiryExists": true,
+    "contactedByPreserved": true
+  },
+  {
+    "listingsBefore": 6,
+    "listingsAfter": 6
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "JawjyC5GRw",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/f7ad6f7c-e96c-4070-b3ad-55e3ba44a185",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "ara37ImxeZ",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/f7ad6f7c-e96c-4070-b3ad-55e3ba44a185",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "m9OaUipS8f",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "hNkfJgnoOj",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/team",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "rfCO96vrBm",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/4c62bbd9-a094-412f-8953-7e55cc601497",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/owner-locked",
+      "title": "Owner locked",
+      "status": 409,
+      "code": "OWNER_LOCKED",
+      "traceId": "bx3Wwt9pyI",
+      "detail": "The owner’s place cannot be changed here. Contact support if the dealership has changed hands."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/4c62bbd9-a094-412f-8953-7e55cc601497",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/owner-locked",
+      "title": "Owner locked",
+      "status": 409,
+      "code": "OWNER_LOCKED",
+      "traceId": "HLJPp7ihmE",
+      "detail": "The owner’s place cannot be changed here. Contact support if the dealership has changed hands."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/184b06c2-129f-43e2-8fd7-dedce1a6fbda",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "R-QAOqsH4g",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/184b06c2-129f-43e2-8fd7-dedce1a6fbda",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "eUb7tiEjcx",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+      "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacA Motors 8860362b47b6",
+      "legalName": "RbacA Motors 8860362b47b6",
+      "tagline": "Quality used cars from RbacA",
+      "gstin": "33ULACM8397P1Z5",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacA Owner",
+        "phone": "+••••••••6033",
+        "phoneDisplay": "+91 96008 86033",
+        "email": "rbaca.88603442b6f8@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.412Z",
+      "createdAt": "2026-10-20T15:41:26.260Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/auth/workspaces",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "membershipId": "4c62bbd9-a094-412f-8953-7e55cc601497",
+          "dealer": {
+            "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+            "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+            "brandName": "RbacA Motors 8860362b47b6",
+            "status": "ACTIVE"
+          },
+          "role": "OWNER",
+          "roleLabel": "Owner",
+          "enterable": true,
+          "current": true
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+      "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacA Motors 8860362b47b6",
+      "legalName": "RbacA Motors 8860362b47b6",
+      "tagline": "Quality used cars from RbacA",
+      "gstin": "33ULACM8397P1Z5",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacA Owner",
+        "phone": "+••••••••6033",
+        "phoneDisplay": "+91 96008 86033",
+        "email": "rbaca.88603442b6f8@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.412Z",
+      "createdAt": "2026-10-20T15:41:26.260Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/auth/me",
+    "status": 200,
+    "body": {
+      "next": "DASHBOARD",
+      "identity": null,
+      "user": {
+        "id": "946aaafc-9267-473f-af20-3e4f09d956ee",
+        "fullName": "A Manager",
+        "phone": "+••••••••6034",
+        "phoneDisplay": "+91 96008 86034",
+        "phoneVerified": true,
+        "email": null,
+        "emailVerified": false
+      },
+      "dealer": {
+        "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+        "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+        "brandName": "RbacA Motors 8860362b47b6",
+        "status": "ACTIVE",
+        "statusLabel": "Approved",
+        "isVerified": false,
+        "creditBalance": 0,
+        "creditsHeld": 0
+      },
+      "role": "MANAGER",
+      "permissions": [
+        "vehicle:read",
+        "vehicle:write",
+        "vehicle:delete",
+        "listing:submit",
+        "listing:reserve"
+      ],
+      "counts": {
+        "newEnquiries": 0,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+      "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacA Motors 8860362b47b6",
+      "legalName": "RbacA Motors 8860362b47b6",
+      "tagline": "Quality used cars from RbacA",
+      "gstin": "33ULACM8397P1Z5",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacA Owner",
+        "phone": "+••••••••6033",
+        "phoneDisplay": "+91 96008 86033",
+        "email": "rbaca.88603442b6f8@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.412Z",
+      "createdAt": "2026-10-20T15:41:26.260Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/auth/me",
+    "status": 200,
+    "body": {
+      "next": "DASHBOARD",
+      "identity": null,
+      "user": {
+        "id": "17de5fc5-606b-4aa1-8168-bd63b92498e5",
+        "fullName": "A Staff",
+        "phone": "+••••••••6035",
+        "phoneDisplay": "+91 96008 86035",
+        "phoneVerified": true,
+        "email": null,
+        "emailVerified": false
+      },
+      "dealer": {
+        "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+        "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+        "brandName": "RbacA Motors 8860362b47b6",
+        "status": "ACTIVE",
+        "statusLabel": "Approved",
+        "isVerified": false,
+        "creditBalance": 0,
+        "creditsHeld": 0
+      },
+      "role": "STAFF",
+      "permissions": ["vehicle:read", "vehicle:write", "enquiry:read", "enquiry:contact"],
+      "counts": {
+        "newEnquiries": 0,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "1NiqnJUqR6",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/auth/workspaces",
+    "status": 200,
+    "body": {
+      "data": []
+    }
+  },
+  {
+    "customerMe": 200,
+    "dealerConsole": 200,
+    "sameCookie": true
+  },
+  {
+    "usersForPhone": 1
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "312c8608-5bcc-4a20-8269-7e004bd884f2",
+      "status": "NEW",
+      "createdAt": "2026-10-20T15:41:31.690Z",
+      "dealerName": "RbacB Motors 886042b798fb",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "customerIsOwnerUser": true
+  },
+  {
+    "dealerId": true
+  },
+  {
+    "before": 200,
+    "after": 401
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "8bcf8810-9075-4fc7-a829-4fa9eb65221c",
+        "fullName": "Revoke Keeps Customer",
+        "phone": "+••••••••6070",
+        "phoneDisplay": "+91 96008 86070"
+      }
+    }
+  },
+  {
+    "dealerConsole": 401,
+    "customerMe": 200
+  },
+  {
+    "req": "GET /v1/auth/workspaces",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "membershipId": "00d52044-47b8-4010-9a4b-34eaf8fe93df",
+          "dealer": {
+            "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+            "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+            "brandName": "RbacA Motors 8860362b47b6",
+            "status": "ACTIVE"
+          },
+          "role": "STAFF",
+          "roleLabel": "Staff",
+          "enterable": true,
+          "current": true
+        },
+        {
+          "membershipId": "09037fa9-ffac-4f43-a2c0-9a952ad75c42",
+          "dealer": {
+            "id": "95d0480e-d5d7-473a-a7d2-d41d4d521c9b",
+            "slug": "rbacb-motors-886042b798fb-vellore-tamil-nadu",
+            "brandName": "RbacB Motors 886042b798fb",
+            "status": "ACTIVE"
+          },
+          "role": "MANAGER",
+          "roleLabel": "Manager",
+          "enterable": true,
+          "current": false
+        }
+      ]
+    }
+  },
+  {
+    "req": "PUT /v1/auth/workspaces/current",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "membershipId": "00d52044-47b8-4010-9a4b-34eaf8fe93df",
+          "dealer": {
+            "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+            "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+            "brandName": "RbacA Motors 8860362b47b6",
+            "status": "ACTIVE"
+          },
+          "role": "STAFF",
+          "roleLabel": "Staff",
+          "enterable": true,
+          "current": false
+        },
+        {
+          "membershipId": "09037fa9-ffac-4f43-a2c0-9a952ad75c42",
+          "dealer": {
+            "id": "95d0480e-d5d7-473a-a7d2-d41d4d521c9b",
+            "slug": "rbacb-motors-886042b798fb-vellore-tamil-nadu",
+            "brandName": "RbacB Motors 886042b798fb",
+            "status": "ACTIVE"
+          },
+          "role": "MANAGER",
+          "roleLabel": "Manager",
+          "enterable": true,
+          "current": true
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "95d0480e-d5d7-473a-a7d2-d41d4d521c9b",
+      "slug": "rbacb-motors-886042b798fb-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacB Motors 886042b798fb",
+      "legalName": "RbacB Motors 886042b798fb",
+      "tagline": "Quality used cars from RbacB",
+      "gstin": "33ZWSCX8599W1Z0",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacB Owner",
+        "phone": "+••••••••6036",
+        "phoneDisplay": "+91 96008 86036",
+        "email": "rbacb.886040186531@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.761Z",
+      "createdAt": "2026-10-20T15:41:26.591Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/auth/me",
+    "status": 200,
+    "body": {
+      "next": "DASHBOARD",
+      "identity": null,
+      "user": {
+        "id": "35f8867b-8658-49e9-8b1c-179bbd157fc8",
+        "fullName": "Multi Member",
+        "phone": "+••••••••6073",
+        "phoneDisplay": "+91 96008 86073",
+        "phoneVerified": true,
+        "email": null,
+        "emailVerified": false
+      },
+      "dealer": {
+        "id": "95d0480e-d5d7-473a-a7d2-d41d4d521c9b",
+        "slug": "rbacb-motors-886042b798fb-vellore-tamil-nadu",
+        "brandName": "RbacB Motors 886042b798fb",
+        "status": "ACTIVE",
+        "statusLabel": "Approved",
+        "isVerified": false,
+        "creditBalance": 0,
+        "creditsHeld": 0
+      },
+      "role": "MANAGER",
+      "permissions": [
+        "vehicle:read",
+        "vehicle:write",
+        "vehicle:delete",
+        "listing:submit",
+        "listing:reserve"
+      ],
+      "counts": {
+        "newEnquiries": 2,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "req": "PUT /v1/auth/workspaces/current",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/workspace-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "WORKSPACE_NOT_FOUND",
+      "traceId": "tLXvK4GyiE",
+      "detail": "You are not a member of that dealership."
+    }
+  },
+  {
+    "req": "PUT /v1/auth/workspaces/current",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/workspace-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "WORKSPACE_NOT_FOUND",
+      "traceId": "zFHylTSJg6",
+      "detail": "You are not a member of that dealership."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "a229f387-3850-4e2c-a452-fa056061f1b6",
+          "title": "TN 22 BK 1889",
+          "registrationDisplay": "TN 22 BK 1889",
+          "summary": "",
+          "priceLabel": null,
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "reason": null,
+          "complete": false,
+          "slug": null,
+          "actions": [],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-20T15:41:31.712Z",
+          "updatedLabel": "20 Oct 2026"
+        },
+        {
+          "id": "97f9474e-50cd-4a6e-8593-5702ac841780",
+          "title": "2023 Hyundai Creta SX(O)",
+          "registrationDisplay": "TN 65 YF 7619",
+          "summary": "Petrol · Automatic · 22,400 km",
+          "priceLabel": "₹14,50,000",
+          "status": "ACTIVE",
+          "statusLabel": "Active",
+          "statusTone": "ok",
+          "reason": null,
+          "complete": true,
+          "slug": "2023-hyundai-creta-sx-o-vellore-bdf55c29",
+          "actions": ["reserve", "markSold", "withdraw"],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-20T15:41:30.421Z",
+          "updatedLabel": "20 Oct 2026"
+        },
+        {
+          "id": "53ae1eca-dd85-433d-8806-f7cf4dbadba3",
+          "title": "TN 60 YK 2376",
+          "registrationDisplay": "TN 60 YK 2376",
+          "summary": "",
+          "priceLabel": null,
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "reason": null,
+          "complete": false,
+          "slug": null,
+          "actions": [],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-20T15:41:30.261Z",
+          "updatedLabel": "20 Oct 2026"
+        },
+        {
+          "id": "624a9b95-1bd3-4d36-8cdb-ae9eaa731228",
+          "title": "TN 59 KH 4389",
+          "registrationDisplay": "TN 59 KH 4389",
+          "summary": "",
+          "priceLabel": null,
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "reason": null,
+          "complete": false,
+          "slug": null,
+          "actions": [],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-20T15:41:30.132Z",
+          "updatedLabel": "20 Oct 2026"
+        },
+        {
+          "id": "be839d9b-44a9-4618-8428-1d7d369d3e19",
+          "title": "2023 Hyundai Creta SX(O)",
+          "registrationDisplay": "TN 14 BV 7308",
+          "summary": "Petrol · Automatic · 22,400 km",
+          "priceLabel": "₹14,50,000",
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "reason": null,
+          "complete": true,
+          "slug": null,
+          "actions": [],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-20T15:41:29.211Z",
+          "updatedLabel": "20 Oct 2026"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      },
+      "counts": {
+        "ALL": 7,
+        "DRAFT": 5,
+        "ACTIVE": 2
+      }
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/06f93270-ab33-463e-ab37-e5874ee90742/reserve",
+    "status": 200,
+    "body": {
+      "id": "06f93270-ab33-463e-ab37-e5874ee90742",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN74KS6437",
+      "registrationDisplay": "TN 74 KS 6437",
+      "rtoCode": "TN74",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "da8cb692-fdb8-4240-a892-64ec4a5e1b01",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-20T15:41:26.825Z",
+        "publishedAt": "2026-10-20T15:41:27.493Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-0878688e",
+        "reservedAt": "2026-10-20T15:41:32.528Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:26.779Z",
+      "updatedAt": "2026-10-20T15:41:26.823Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+      "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacA Motors 8860362b47b6",
+      "legalName": "RbacA Motors 8860362b47b6",
+      "tagline": "Quality used cars from RbacA",
+      "gstin": "33ULACM8397P1Z5",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacA Owner",
+        "phone": "+••••••••6033",
+        "phoneDisplay": "+91 96008 86033",
+        "email": "rbaca.88603442b6f8@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.412Z",
+      "createdAt": "2026-10-20T15:41:26.260Z",
+      "profileChange": {
+        "id": "a1d8dfd7-dfd1-488a-9c92-c445519daca3",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": "An updated tagline for the dealership profile",
+        "taglineChanged": true,
+        "specialities": [],
+        "submittedAtLabel": "20 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/documents",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "10a05b23-6c19-44dc-852c-3c66be08ac06",
+          "category": "BUSINESS_IDENTITY",
+          "categoryLabel": "Business Identity Proof",
+          "type": "GST_CERTIFICATE",
+          "label": "GST Registration Certificate",
+          "status": "VERIFIED",
+          "statusLabel": "Verified",
+          "fileName": "gst_certificate.pdf",
+          "mimeType": "application/pdf",
+          "bytes": 193,
+          "description": null,
+          "uploadedAt": "2026-10-20T15:41:26.340Z",
+          "reviewedAt": "2026-10-20T15:41:26.391Z",
+          "rejectionReason": null,
+          "submissionCount": 1,
+          "action": "Replace"
+        },
+        {
+          "id": "fe51710a-ce2e-4c25-9754-dcc7c318a5cc",
+          "category": "PERSONAL_IDENTITY",
+          "categoryLabel": "Personal Identity Proof",
+          "type": "PAN_CARD",
+          "label": "PAN Card",
+          "status": "VERIFIED",
+          "statusLabel": "Verified",
+          "fileName": "pan_card.pdf",
+          "mimeType": "application/pdf",
+          "bytes": 193,
+          "description": null,
+          "uploadedAt": "2026-10-20T15:41:26.308Z",
+          "reviewedAt": "2026-10-20T15:41:26.377Z",
+          "rejectionReason": null,
+          "submissionCount": 1,
+          "action": "Replace"
+        }
+      ],
+      "slots": [
+        {
+          "category": "PERSONAL_IDENTITY",
+          "label": "Personal Identity Proof",
+          "types": [
+            {
+              "type": "AADHAAR",
+              "label": "Aadhaar Card (Voluntary)",
+              "hint": "Voluntary. Upload a masked Aadhaar showing only the last four digits. Any other listed proof works instead."
+            },
+            {
+              "type": "PAN_CARD",
+              "label": "PAN Card",
+              "hint": null
+            },
+            {
+              "type": "VOTER_ID",
+              "label": "Voter ID Card",
+              "hint": null
+            },
+            {
+              "type": "DRIVING_LICENCE",
+              "label": "Driving Licence",
+              "hint": null
+            },
+            {
+              "type": "PASSPORT",
+              "label": "Passport",
+              "hint": null
+            }
+          ],
+          "document": {
+            "id": "fe51710a-ce2e-4c25-9754-dcc7c318a5cc",
+            "category": "PERSONAL_IDENTITY",
+            "categoryLabel": "Personal Identity Proof",
+            "type": "PAN_CARD",
+            "label": "PAN Card",
+            "status": "VERIFIED",
+            "statusLabel": "Verified",
+            "fileName": "pan_card.pdf",
+            "mimeType": "application/pdf",
+            "bytes": 193,
+            "description": null,
+            "uploadedAt": "2026-10-20T15:41:26.308Z",
+            "reviewedAt": "2026-10-20T15:41:26.377Z",
+            "rejectionReason": null,
+            "submissionCount": 1,
+            "action": "Replace"
+          }
+        },
+        {
+          "category": "BUSINESS_IDENTITY",
+          "label": "Business Identity Proof",
+          "types": [
+            {
+              "type": "SHOP_ESTABLISHMENT",
+              "label": "Shop & Establishment Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "GST_CERTIFICATE",
+              "label": "GST Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "UDYAM",
+              "label": "Udyam Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "TRADE_LICENSE",
+              "label": "Trade Licence",
+              "hint": null
+            },
+            {
+              "type": "BUSINESS_REGISTRATION",
+              "label": "Business Registration / Incorporation Certificate",
+              "hint": null
+            }
+          ],
+          "document": {
+            "id": "10a05b23-6c19-44dc-852c-3c66be08ac06",
+            "category": "BUSINESS_IDENTITY",
+            "categoryLabel": "Business Identity Proof",
+            "type": "GST_CERTIFICATE",
+            "label": "GST Registration Certificate",
+            "status": "VERIFIED",
+            "statusLabel": "Verified",
+            "fileName": "gst_certificate.pdf",
+            "mimeType": "application/pdf",
+            "bytes": 193,
+            "description": null,
+            "uploadedAt": "2026-10-20T15:41:26.340Z",
+            "reviewedAt": "2026-10-20T15:41:26.391Z",
+            "rejectionReason": null,
+            "submissionCount": 1,
+            "action": "Replace"
+          }
+        }
+      ],
+      "requirementMet": true,
+      "gaps": [],
+      "allVerified": true
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/b6b8c30e-e686-46ae-aad2-da851ec2309f",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "g3cFsM0vH9",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/b6b8c30e-e686-46ae-aad2-da851ec2309f",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "xJnMobQur5",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/95d0480e-d5d7-473a-a7d2-d41d4d521c9b/approve",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "ETaL2FZUwv",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "SL4mTSbjBK",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "d5f521d8-a0da-48ea-ad0f-30d6326e717d",
+      "title": "TN 77 EJ 1598",
+      "registrationNumber": "TN77EJ1598",
+      "registrationDisplay": "TN 77 EJ 1598",
+      "rtoCode": "TN77",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "57667cec-5205-4bd4-baa3-ffae529f2cc2",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:32.704Z",
+      "updatedAt": "2026-10-20T15:41:32.704Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/d5f521d8-a0da-48ea-ad0f-30d6326e717d",
+    "status": 200,
+    "body": {
+      "id": "d5f521d8-a0da-48ea-ad0f-30d6326e717d",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN77EJ1598",
+      "registrationDisplay": "TN 77 EJ 1598",
+      "rtoCode": "TN77",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "57667cec-5205-4bd4-baa3-ffae529f2cc2",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": true,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:32.704Z",
+      "updatedAt": "2026-10-20T15:41:32.729Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/317e1c9c-b12f-4964-b035-ad88bfad4f51/submit",
+    "status": 200,
+    "body": {
+      "id": "317e1c9c-b12f-4964-b035-ad88bfad4f51",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN72ZW4558",
+      "registrationDisplay": "TN 72 ZW 4558",
+      "rtoCode": "TN72",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "af75b520-6688-4a3e-a937-d641a82718c2",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-20T15:41:32.798Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:32.747Z",
+      "updatedAt": "2026-10-20T15:41:32.770Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/fbefbb99-58ee-4bce-bc9e-049d503007a4/reserve",
+    "status": 200,
+    "body": {
+      "id": "fbefbb99-58ee-4bce-bc9e-049d503007a4",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN22BC5449",
+      "registrationDisplay": "TN 22 BC 5449",
+      "rtoCode": "TN22",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "e4728e22-0bc9-4f15-8012-d18d0b5f3c56",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-20T15:41:32.860Z",
+        "publishedAt": "2026-10-20T15:41:33.528Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-e22a9ee7",
+        "reservedAt": "2026-10-20T15:41:33.564Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:32.815Z",
+      "updatedAt": "2026-10-20T15:41:32.858Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/ae1ff692-543e-4789-b7e0-56d95e81c751",
+    "status": 200,
+    "body": {
+      "id": "ae1ff692-543e-4789-b7e0-56d95e81c751",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "mgr will contact",
+      "createdAt": "2026-10-20T15:41:34.361Z",
+      "createdLabel": "20 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-20T15:41:34.381Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "A Manager",
+        "atLabel": "20 Oct 2026, 21:11"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Mgr Contact Buyer",
+        "initials": "MC",
+        "phone": "+••••••••6075",
+        "phoneDisplay": "+91 96008 86075",
+        "callHref": "tel:+919600886075"
+      },
+      "vehicle": {
+        "id": "7e051ad4-a79a-45a6-9efc-002a72bc9702",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 26 UG 7808",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-9bead884"
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/a0e2d2c8-dc09-4c1c-b2c5-985b2d4c8ffe",
+    "status": 200,
+    "body": {
+      "id": "a0e2d2c8-dc09-4c1c-b2c5-985b2d4c8ffe",
+      "status": "CLOSED",
+      "statusLabel": "Closed",
+      "statusTone": "neutral",
+      "message": "mgr will close",
+      "createdAt": "2026-10-20T15:41:35.256Z",
+      "createdLabel": "20 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-20T15:41:35.273Z",
+      "closedAt": "2026-10-20T15:41:35.295Z",
+      "contactedBy": {
+        "name": "A Manager",
+        "atLabel": "20 Oct 2026, 21:11"
+      },
+      "closedBy": {
+        "name": "A Manager",
+        "atLabel": "20 Oct 2026, 21:11"
+      },
+      "customer": {
+        "name": "Mgr Close Buyer",
+        "initials": "MC",
+        "phone": "+••••••••6076",
+        "phoneDisplay": "+91 96008 86076",
+        "callHref": "tel:+919600886076"
+      },
+      "vehicle": {
+        "id": "10aa437a-29bb-419a-8042-5be24c1b0268",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 35 SM 6776",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-9246c76b"
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "KIWt9woeV6",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/documents",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "6_rvTCzVle",
+      "detail": "This action needs the document:upload permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "nxENaXTDjs",
+      "detail": "This action needs the document:upload permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "oplpOgjgaX",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "51fXaf4dYt",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/b6b8c30e-e686-46ae-aad2-da851ec2309f",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "PKKGKc1mrt",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "52bf1b46-a0c3-42d0-8625-e83343bcf4f6",
+      "title": "TN 89 ZN 5088",
+      "registrationNumber": "TN89ZN5088",
+      "registrationDisplay": "TN 89 ZN 5088",
+      "rtoCode": "TN89",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "9bfe5c51-7c61-46bf-901b-46607464d2a2",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:35.384Z",
+      "updatedAt": "2026-10-20T15:41:35.384Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/52bf1b46-a0c3-42d0-8625-e83343bcf4f6",
+    "status": 200,
+    "body": {
+      "id": "52bf1b46-a0c3-42d0-8625-e83343bcf4f6",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN89ZN5088",
+      "registrationDisplay": "TN 89 ZN 5088",
+      "rtoCode": "TN89",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "9bfe5c51-7c61-46bf-901b-46607464d2a2",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:35.384Z",
+      "updatedAt": "2026-10-20T15:41:35.411Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/52bf1b46-a0c3-42d0-8625-e83343bcf4f6/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "KGCtdQoYFI",
+      "detail": "This action needs the listing:submit permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9fb612bc-6635-4956-933a-8d47fa1ed121/reserve",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "RUpds_0J9k",
+      "detail": "This action needs the listing:reserve permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9fb612bc-6635-4956-933a-8d47fa1ed121/mark-sold",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "xQQkau3vYX",
+      "detail": "This action needs the listing:sell permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9fb612bc-6635-4956-933a-8d47fa1ed121/withdraw",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "JIVeCcUdbh",
+      "detail": "This action needs the listing:withdraw permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/enquiries",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "a0e2d2c8-dc09-4c1c-b2c5-985b2d4c8ffe",
+          "status": "CLOSED",
+          "statusLabel": "Closed",
+          "statusTone": "neutral",
+          "message": "mgr will close",
+          "createdAt": "2026-10-20T15:41:35.256Z",
+          "createdLabel": "20 Oct 2026",
+          "timeAgoLabel": "just now",
+          "contactedAt": "2026-10-20T15:41:35.273Z",
+          "closedAt": "2026-10-20T15:41:35.295Z",
+          "contactedBy": {
+            "name": "A Manager",
+            "atLabel": "20 Oct 2026, 21:11"
+          },
+          "closedBy": {
+            "name": "A Manager",
+            "atLabel": "20 Oct 2026, 21:11"
+          },
+          "customer": {
+            "name": "Mgr Close Buyer",
+            "initials": "MC",
+            "phone": "+••••••••6076",
+            "phoneDisplay": "+91 96008 86076",
+            "callHref": "tel:+919600886076"
+          },
+          "vehicle": {
+            "id": "10aa437a-29bb-419a-8042-5be24c1b0268",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 35 SM 6776",
+            "listingStatus": "ACTIVE",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-9246c76b"
+          }
+        },
+        {
+          "id": "ae1ff692-543e-4789-b7e0-56d95e81c751",
+          "status": "CONTACTED",
+          "statusLabel": "Contacted",
+          "statusTone": "ok",
+          "message": "mgr will contact",
+          "createdAt": "2026-10-20T15:41:34.361Z",
+          "createdLabel": "20 Oct 2026",
+          "timeAgoLabel": "just now",
+          "contactedAt": "2026-10-20T15:41:34.381Z",
+          "closedAt": null,
+          "contactedBy": {
+            "name": "A Manager",
+            "atLabel": "20 Oct 2026, 21:11"
+          },
+          "closedBy": null,
+          "customer": {
+            "name": "Mgr Contact Buyer",
+            "initials": "MC",
+            "phone": "+••••••••6075",
+            "phoneDisplay": "+91 96008 86075",
+            "callHref": "tel:+919600886075"
+          },
+          "vehicle": {
+            "id": "7e051ad4-a79a-45a6-9efc-002a72bc9702",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 26 UG 7808",
+            "listingStatus": "ACTIVE",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-9bead884"
+          }
+        },
+        {
+          "id": "d05996e7-af74-4d6e-9974-8ebbddf7c976",
+          "status": "CONTACTED",
+          "statusLabel": "Contacted",
+          "statusTone": "ok",
+          "message": "to be handled",
+          "createdAt": "2026-10-20T15:41:31.220Z",
+          "createdLabel": "20 Oct 2026",
+          "timeAgoLabel": "just now",
+          "contactedAt": "2026-10-20T15:41:31.238Z",
+          "closedAt": null,
+          "contactedBy": {
+            "name": "Enq Not Deleted",
+            "atLabel": "20 Oct 2026, 21:11"
+          },
+          "closedBy": null,
+          "customer": {
+            "name": "Buyer For Attrib",
+            "initials": "BF",
+            "phone": "+••••••••6064",
+            "phoneDisplay": "+91 96008 86064",
+            "callHref": "tel:+919600886064"
+          },
+          "vehicle": {
+            "id": "97f9474e-50cd-4a6e-8593-5702ac841780",
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 65 YF 7619",
+            "listingStatus": "ACTIVE",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-bdf55c29"
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      },
+      "counts": {
+        "ALL": 3,
+        "NEW": 0,
+        "CONTACTED": 2,
+        "CLOSED": 1,
+        "SPAM": 0
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/dd9110e3-1e3f-4bf3-8168-1017f5864270",
+    "status": 200,
+    "body": {
+      "id": "dd9110e3-1e3f-4bf3-8168-1017f5864270",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "staff will contact",
+      "createdAt": "2026-10-20T15:41:36.963Z",
+      "createdLabel": "20 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-20T15:41:36.988Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "A Staff",
+        "atLabel": "20 Oct 2026, 21:11"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Staff Contact Buyer",
+        "initials": "SC",
+        "phone": "+••••••••6078",
+        "phoneDisplay": "+91 96008 86078",
+        "callHref": "tel:+919600886078"
+      },
+      "vehicle": {
+        "id": "a80dbcec-3720-4890-8998-176a30d455cb",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 61 RD 5977",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-66dc3301"
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/480e6162-22fb-4517-9561-6c8aba5dac2a",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/enquiry-action-forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "ENQUIRY_ACTION_FORBIDDEN",
+      "traceId": "bmxRTA619R",
+      "detail": "Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.",
+      "enquiryStatus": "CONTACTED",
+      "permission": "enquiry:close"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "FsETbC03r0",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/documents",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "K4eZJlzXZV",
+      "detail": "This action needs the document:upload permission."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/team",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "gTBTgClSHX",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "cy3U-66ptH",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/b6b8c30e-e686-46ae-aad2-da851ec2309f",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "gGJnTKRHHK",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "03fd0777-5e0d-4c37-89df-ce96fef8765e",
+      "slug": "rbaca-motors-8860362b47b6-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "RbacA Motors 8860362b47b6",
+      "legalName": "RbacA Motors 8860362b47b6",
+      "tagline": "Quality used cars from RbacA",
+      "gstin": "33ULACM8397P1Z5",
+      "pan": null,
+      "contact": {
+        "fullName": "RbacA Owner",
+        "phone": "+••••••••6033",
+        "phoneDisplay": "+91 96008 86033",
+        "email": "rbaca.88603442b6f8@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-20T15:41:26.412Z",
+      "createdAt": "2026-10-20T15:41:26.260Z",
+      "profileChange": {
+        "id": "cb64d6b8-b605-420b-9d50-40f40b729e19",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": "OWNER updates permitted profile info here",
+        "taglineChanged": true,
+        "specialities": [],
+        "submittedAtLabel": "20 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "A24nlngnj2",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "Yae7zHon44",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-edit-pending",
+      "title": "Profile edit pending",
+      "status": 409,
+      "code": "PROFILE_EDIT_PENDING",
+      "traceId": "krnVCFzCXo",
+      "detail": "You already have a change waiting for review. Cancel it first if you want to write something different."
+    }
+  },
+  {
+    "profileChange": "PENDING",
+    "approve": 200
+  },
+  {
+    "publicTaglinePresent": false
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "Y-oA5yCQ5H",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.gstin",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`gstin` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "DYT6_Anq4X",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.establishedYear",
+          "code": "TOO_SMALL",
+          "message": "Enter a year from 1900 onwards."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "KGASwzcInY",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.tagline",
+          "code": "TOO_BIG",
+          "message": "Keep it to one line — 200 characters at most."
+        }
+      ]
+    }
+  },
+  {
+    "keyScopedToDealer": true
+  },
+  {
+    "actions": [
+      "dealer.profile_change.approved",
+      "dealer.profile_change.submitted",
+      "dealer.profile_change.withdrawn",
+      "dealer.profile_change.submitted"
+    ]
+  }
+]

@@ -1,0 +1,992 @@
+[
+  {
+    "req": "GET /v1/auth/me",
+    "status": 200,
+    "body": {
+      "next": "ONBOARDING",
+      "identity": null,
+      "user": {
+        "id": "ff83b6a5-7405-4f37-a0d6-596581aeaa25",
+        "fullName": null,
+        "phone": "+••••••••0065",
+        "phoneDisplay": "+91 96008 80065",
+        "phoneVerified": true,
+        "email": null,
+        "emailVerified": true
+      },
+      "dealer": null,
+      "role": null,
+      "permissions": [],
+      "counts": {
+        "newEnquiries": 0,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "req": "POST /v1/auth/onboarding",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/dealer-already-exists",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "DEALER_ALREADY_EXISTS",
+      "traceId": "Y1MZG8Qy2L",
+      "detail": "This account already manages a dealership."
+    }
+  },
+  {
+    "dealershipsForUser": 1
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/dealer",
+    "status": 200,
+    "body": {
+      "next": "ONBOARDING",
+      "returnTo": "/dealer/onboarding"
+    }
+  },
+  {
+    "phoneVerified": true
+  },
+  {
+    "req": "POST /v1/auth/onboarding",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/onboarding-identity-incomplete",
+      "title": "Onboarding identity incomplete",
+      "status": 422,
+      "code": "ONBOARDING_IDENTITY_INCOMPLETE",
+      "traceId": "r7KflqirnC",
+      "detail": "Link your Google account before continuing — your dealership needs both a verified mobile number and a Google account.",
+      "errors": [
+        {
+          "field": "identity.google",
+          "code": "ONBOARDING_IDENTITY_INCOMPLETE",
+          "message": "Link your Google account."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/auth/onboarding",
+    "status": 201,
+    "body": {
+      "next": "ONBOARDING",
+      "identity": {
+        "provider": "GOOGLE",
+        "email": "gl.8800743be2e3@example.test",
+        "name": null,
+        "pictureUrl": null
+      },
+      "user": {
+        "id": "2ec73070-f1d2-41bc-8da2-f085f8fd7637",
+        "fullName": "Google Link Owner",
+        "phone": "+••••••••0068",
+        "phoneDisplay": "+91 96008 80068",
+        "phoneVerified": true,
+        "email": "gl.8800743be2e3@example.test",
+        "emailVerified": true
+      },
+      "dealer": {
+        "id": "2b914f41-f388-4f9b-bcd9-03f49aac93f2",
+        "slug": "gl-88007602f129-vellore-tamil-nadu",
+        "brandName": "GL 88007602f129",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "isVerified": false,
+        "creditBalance": 0,
+        "creditsHeld": 0
+      },
+      "role": "OWNER",
+      "permissions": [
+        "vehicle:read",
+        "vehicle:write",
+        "vehicle:delete",
+        "listing:submit",
+        "listing:reserve"
+      ],
+      "counts": {
+        "newEnquiries": 0,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "usersForPhone": 1,
+    "identitiesForUser": 1
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": false,
+      "canSubmit": false,
+      "percent": 50,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": false,
+          "missing": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"]
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": false,
+      "canSubmit": false,
+      "percent": 50,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": false,
+          "missing": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"]
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": true,
+      "canSubmit": true,
+      "percent": 75,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/auth/me",
+    "status": 200,
+    "body": {
+      "next": "ONBOARDING",
+      "identity": {
+        "provider": "GOOGLE",
+        "email": "logoutstate.880089759139@example.test",
+        "name": null,
+        "pictureUrl": null
+      },
+      "user": {
+        "id": "2166ea29-425f-44d4-8196-e006bace3a50",
+        "fullName": "LogoutState Owner",
+        "phone": "+••••••••0072",
+        "phoneDisplay": "+91 96008 80072",
+        "phoneVerified": true,
+        "email": "logoutstate.880089759139@example.test",
+        "emailVerified": true
+      },
+      "dealer": {
+        "id": "09ad78a3-c996-447d-9f68-d0154458911a",
+        "slug": "logoutstate-motors-880091410b09-vellore-tamil-nadu",
+        "brandName": "LogoutState Motors 880091410b09",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "isVerified": false,
+        "creditBalance": 0,
+        "creditsHeld": 0
+      },
+      "role": "OWNER",
+      "permissions": [
+        "vehicle:read",
+        "vehicle:write",
+        "vehicle:delete",
+        "listing:submit",
+        "listing:reserve"
+      ],
+      "counts": {
+        "newEnquiries": 0,
+        "pendingListings": 0
+      }
+    }
+  },
+  {
+    "req": "POST /v1/auth/onboarding",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "ZusTYHL-1T",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.fullName",
+          "code": "TOO_SMALL",
+          "message": "Tell us your name."
+        },
+        {
+          "field": "body.legalName",
+          "code": "INVALID_TYPE",
+          "message": "Invalid input: expected string, received undefined"
+        },
+        {
+          "field": "body.addressLine",
+          "code": "INVALID_TYPE",
+          "message": "Invalid input: expected string, received undefined"
+        },
+        {
+          "field": "body.city",
+          "code": "INVALID_TYPE",
+          "message": "Invalid input: expected string, received undefined"
+        },
+        {
+          "field": "body.district",
+          "code": "INVALID_TYPE",
+          "message": "Invalid input: expected string, received undefined"
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/submit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-incomplete",
+      "title": "Profile incomplete",
+      "status": 422,
+      "code": "PROFILE_INCOMPLETE",
+      "traceId": "2pMjzImDVw",
+      "detail": "Some details are still missing.",
+      "errors": [
+        {
+          "field": "PERSONAL_IDENTITY",
+          "code": "REQUIRED",
+          "message": "PERSONAL_IDENTITY is required."
+        },
+        {
+          "field": "BUSINESS_IDENTITY",
+          "code": "REQUIRED",
+          "message": "BUSINESS_IDENTITY is required."
+        }
+      ]
+    }
+  },
+  {
+    "dealerStatus": "DRAFT"
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "81wykXcQ-y",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.category",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"PERSONAL_IDENTITY\"|\"BUSINESS_IDENTITY\""
+        },
+        {
+          "field": "body.bytes",
+          "code": "TOO_BIG",
+          "message": "Keep the file under 5 MB."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "3PELJDY9pJ",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.category",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"PERSONAL_IDENTITY\"|\"BUSINESS_IDENTITY\""
+        },
+        {
+          "field": "body.mimeType",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"application/pdf\"|\"image/jpeg\"|\"image/png\""
+        }
+      ]
+    }
+  },
+  {
+    "documentsForDealer": 2
+  },
+  {
+    "req": "GET /v1/dealer/documents",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "5fc7c42b-6afb-406e-82f3-6920d0fac21c",
+          "category": "BUSINESS_IDENTITY",
+          "categoryLabel": "Business Identity Proof",
+          "type": "GST_CERTIFICATE",
+          "label": "GST Registration Certificate",
+          "status": "UPLOADED",
+          "statusLabel": "Submitted · awaiting review",
+          "fileName": "gst_certificate.pdf",
+          "mimeType": "application/pdf",
+          "bytes": 193,
+          "description": null,
+          "uploadedAt": "2026-10-20T15:41:22.043Z",
+          "reviewedAt": null,
+          "rejectionReason": null,
+          "submissionCount": 1,
+          "action": "Replace"
+        },
+        {
+          "id": "8ffa8670-2eb8-4b24-9f1a-6921e28d988c",
+          "category": "PERSONAL_IDENTITY",
+          "categoryLabel": "Personal Identity Proof",
+          "type": "PAN_CARD",
+          "label": "PAN Card",
+          "status": "UPLOADED",
+          "statusLabel": "Submitted · awaiting review",
+          "fileName": "pan_card.pdf",
+          "mimeType": "application/pdf",
+          "bytes": 193,
+          "description": null,
+          "uploadedAt": "2026-10-20T15:41:22.011Z",
+          "reviewedAt": null,
+          "rejectionReason": null,
+          "submissionCount": 1,
+          "action": "Replace"
+        }
+      ],
+      "slots": [
+        {
+          "category": "PERSONAL_IDENTITY",
+          "label": "Personal Identity Proof",
+          "types": [
+            {
+              "type": "AADHAAR",
+              "label": "Aadhaar Card (Voluntary)",
+              "hint": "Voluntary. Upload a masked Aadhaar showing only the last four digits. Any other listed proof works instead."
+            },
+            {
+              "type": "PAN_CARD",
+              "label": "PAN Card",
+              "hint": null
+            },
+            {
+              "type": "VOTER_ID",
+              "label": "Voter ID Card",
+              "hint": null
+            },
+            {
+              "type": "DRIVING_LICENCE",
+              "label": "Driving Licence",
+              "hint": null
+            },
+            {
+              "type": "PASSPORT",
+              "label": "Passport",
+              "hint": null
+            }
+          ],
+          "document": {
+            "id": "8ffa8670-2eb8-4b24-9f1a-6921e28d988c",
+            "category": "PERSONAL_IDENTITY",
+            "categoryLabel": "Personal Identity Proof",
+            "type": "PAN_CARD",
+            "label": "PAN Card",
+            "status": "UPLOADED",
+            "statusLabel": "Submitted · awaiting review",
+            "fileName": "pan_card.pdf",
+            "mimeType": "application/pdf",
+            "bytes": 193,
+            "description": null,
+            "uploadedAt": "2026-10-20T15:41:22.011Z",
+            "reviewedAt": null,
+            "rejectionReason": null,
+            "submissionCount": 1,
+            "action": "Replace"
+          }
+        },
+        {
+          "category": "BUSINESS_IDENTITY",
+          "label": "Business Identity Proof",
+          "types": [
+            {
+              "type": "SHOP_ESTABLISHMENT",
+              "label": "Shop & Establishment Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "GST_CERTIFICATE",
+              "label": "GST Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "UDYAM",
+              "label": "Udyam Registration Certificate",
+              "hint": null
+            },
+            {
+              "type": "TRADE_LICENSE",
+              "label": "Trade Licence",
+              "hint": null
+            },
+            {
+              "type": "BUSINESS_REGISTRATION",
+              "label": "Business Registration / Incorporation Certificate",
+              "hint": null
+            }
+          ],
+          "document": {
+            "id": "5fc7c42b-6afb-406e-82f3-6920d0fac21c",
+            "category": "BUSINESS_IDENTITY",
+            "categoryLabel": "Business Identity Proof",
+            "type": "GST_CERTIFICATE",
+            "label": "GST Registration Certificate",
+            "status": "UPLOADED",
+            "statusLabel": "Submitted · awaiting review",
+            "fileName": "gst_certificate.pdf",
+            "mimeType": "application/pdf",
+            "bytes": 193,
+            "description": null,
+            "uploadedAt": "2026-10-20T15:41:22.043Z",
+            "reviewedAt": null,
+            "rejectionReason": null,
+            "submissionCount": 1,
+            "action": "Replace"
+          }
+        }
+      ],
+      "requirementMet": true,
+      "gaps": [],
+      "allVerified": false
+    }
+  },
+  {
+    "bDocLeakedToA": false
+  },
+  {
+    "status": "PENDING_APPROVAL"
+  },
+  {
+    "req": "POST /v1/admin/dealers/4dc44898-148e-4d2d-96d5-eb98d277ecdb/approve",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "4PvL-NSbCG",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/submit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-incomplete",
+      "title": "Profile incomplete",
+      "status": 422,
+      "code": "PROFILE_INCOMPLETE",
+      "traceId": "rgF0O3adiG",
+      "detail": "Some details are still missing.",
+      "errors": [
+        {
+          "field": "PERSONAL_IDENTITY",
+          "code": "REQUIRED",
+          "message": "PERSONAL_IDENTITY is required."
+        },
+        {
+          "field": "BUSINESS_IDENTITY",
+          "code": "REQUIRED",
+          "message": "BUSINESS_IDENTITY is required."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "0d482933-4bc3-4a5e-8529-a5c0d1e180b6",
+      "title": "TN 48 XC 6783",
+      "registrationNumber": "TN48XC6783",
+      "registrationDisplay": "TN 48 XC 6783",
+      "rtoCode": "TN48",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "85ef608d-9341-47c4-9b8f-a3df66731ced",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:22.963Z",
+      "updatedAt": "2026-10-20T15:41:22.963Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/0d482933-4bc3-4a5e-8529-a5c0d1e180b6/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/dealer-not-active",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "DEALER_NOT_ACTIVE",
+      "traceId": "MT8UrzDlfG",
+      "detail": "Your dealership is not active yet. Listings can be published once our team approves it."
+    }
+  },
+  {
+    "secondLinkRefusedByUniqueIndex": true
+  },
+  {
+    "pendingCount": 19,
+    "seesSubmitted": true
+  },
+  {
+    "req": "GET /v1/admin/dealers/c0b0163a-05e5-4ff8-adc6-ab3f4a3a30a5",
+    "status": 200,
+    "body": {
+      "id": "c0b0163a-05e5-4ff8-adc6-ab3f4a3a30a5",
+      "slug": "verifyapp-motors-8801400615ed-vellore-tamil-nadu",
+      "brandName": "VerifyApp Motors 8801400615ed",
+      "legalName": "VerifyApp Motors 8801400615ed",
+      "initials": "VM",
+      "status": "PENDING_APPROVAL",
+      "statusLabel": "Pending",
+      "statusTone": "warn",
+      "statusReason": null,
+      "gstin": "33EHJCY8743R1Z1",
+      "pan": null,
+      "city": "Vellore",
+      "district": "Vellore",
+      "state": "Tamil Nadu",
+      "locationReviewRequired": false,
+      "addressLine": "12 Main Road",
+      "pincode": "632001",
+      "mapsUrl": "<redacted>",
+      "onboarding": {
+        "source": "SELF",
+        "sourceLabel": "Self-onboarded",
+        "assistedBy": null,
+        "phoneVerified": true,
+        "phoneLabel": "Verified",
+        "emailVerified": true,
+        "emailLabel": "Verified",
+        "claimed": true,
+        "reviewerIsAssistant": false
+      },
+      "contactName": "VerifyApp Owner",
+      "contactPhone": "+919600880085",
+      "contactPhoneDisplay": "+91 96008 80085",
+      "contactEmail": "verifyapp.880138ced57b@example.test",
+      "landline": null,
+      "tagline": "Quality used cars from VerifyApp",
+      "specialities": ["SUVs", "Sedans"],
+      "joinedLabel": "20 Oct 2026",
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "counts": {
+        "vehicles": 0,
+        "active": 0,
+        "pending": 0,
+        "enquiries": 0
+      },
+      "documents": [
+        {
+          "id": "3cf1db24-8f72-4b23-8867-2e07f1fed5f7",
+          "category": "BUSINESS_IDENTITY",
+          "categoryLabel": "Business Identity Proof",
+          "type": "GST_CERTIFICATE",
+          "label": "GST Registration Certificate",
+          "status": "UPLOADED",
+          "fileName": "gst_certificate.pdf",
+          "mimeType": "application/pdf",
+          "description": null,
+          "bytes": 193,
+          "uploadedAt": "2026-10-20T15:41:23.229Z",
+          "reviewedAt": null,
+          "submissionCount": 1,
+          "viewUrl": "<redacted>",
+          "viewUrlExpiresAt": "<redacted>",
+          "rejectionReason": null
+        },
+        {
+          "id": "208e7ce3-2ffd-4297-b69d-546c1c0554ec",
+          "category": "PERSONAL_IDENTITY",
+          "categoryLabel": "Personal Identity Proof",
+          "type": "PAN_CARD",
+          "label": "PAN Card",
+          "status": "UPLOADED",
+          "fileName": "pan_card.pdf",
+          "mimeType": "application/pdf",
+          "description": null,
+          "bytes": 193,
+          "uploadedAt": "2026-10-20T15:41:23.185Z",
+          "reviewedAt": null,
+          "submissionCount": 1,
+          "viewUrl": "<redacted>",
+          "viewUrlExpiresAt": "<redacted>",
+          "rejectionReason": null
+        }
+      ],
+      "allDocumentsVerified": false,
+      "activation": {
+        "method": null,
+        "methodLabel": null,
+        "overriddenAt": null,
+        "overriddenBy": null,
+        "justification": null,
+        "outstanding": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"]
+      },
+      "documentGaps": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"],
+      "documentHistory": [
+        {
+          "at": "2026-10-20T15:41:23.234Z",
+          "action": "SUBMITTED",
+          "category": "BUSINESS_IDENTITY",
+          "type": "GST_CERTIFICATE",
+          "reason": null,
+          "actorType": "DEALER"
+        },
+        {
+          "at": "2026-10-20T15:41:23.187Z",
+          "action": "SUBMITTED",
+          "category": "PERSONAL_IDENTITY",
+          "type": "PAN_CARD",
+          "reason": null,
+          "actorType": "DEALER"
+        }
+      ],
+      "profileChange": null,
+      "portfolio": [],
+      "yardVisitCount": 0,
+      "recentLedger": [],
+      "actions": {
+        "canApprove": false,
+        "canReject": true,
+        "canRequestChanges": true,
+        "canClose": true,
+        "canSuspend": false,
+        "canReinstate": false,
+        "canGrantCredits": true,
+        "canEdit": true,
+        "canOverrideActivation": true,
+        "overrideBlockedReason": null,
+        "canRevokeOverride": false
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/c0b0163a-05e5-4ff8-adc6-ab3f4a3a30a5/approve",
+    "status": 200,
+    "body": {
+      "id": "c0b0163a-05e5-4ff8-adc6-ab3f4a3a30a5",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-20T15:41:23.388Z"
+    }
+  },
+  {
+    "status": "ACTIVE",
+    "approvedAt": true
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f109b21f-5fa8-4d75-baf3-fdb7ffa59598/submit",
+    "status": 200,
+    "body": {
+      "id": "f109b21f-5fa8-4d75-baf3-fdb7ffa59598",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN38AF6885",
+      "registrationDisplay": "TN 38 AF 6885",
+      "rtoCode": "TN38",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "1a8411d5-3e00-41e5-8712-9e956201510b",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-20T15:41:23.486Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-20T15:41:23.406Z",
+      "updatedAt": "2026-10-20T15:41:23.432Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/d7d48360-10ae-4beb-9171-46da7a4d80ed/reject",
+    "status": 200,
+    "body": {
+      "id": "d7d48360-10ae-4beb-9171-46da7a4d80ed",
+      "brandName": "RejectMe Motors 880144ec48c2",
+      "documentsDeleted": 2,
+      "objectsDeleted": 2,
+      "reason": "Documents illegible, rejecting application",
+      "purgedAt": "2026-10-20T15:41:23.685Z"
+    }
+  },
+  {
+    "dealerRowAfter": "DELETED"
+  },
+  {
+    "dealerRow": "DELETED",
+    "ownerNext": "ONBOARDING"
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "feUGMkNSVh",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "C09TYHBqaY",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/78e27ad2-aba4-4428-b04d-9633c4463c27/request-changes",
+    "status": 200,
+    "body": {
+      "id": "78e27ad2-aba4-4428-b04d-9633c4463c27",
+      "status": "DRAFT",
+      "statusLabel": "Draft",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-20T15:41:24.309Z"
+    }
+  },
+  {
+    "afterRequestChanges": "DRAFT",
+    "resubmit": 200
+  },
+  {
+    "status": "PENDING_APPROVAL"
+  },
+  {
+    "req": "POST /v1/admin/dealers/f52c568f-3c37-4d47-8d3d-ec73faf81083/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "MRZqCOCYlD",
+      "detail": "Only a submitted application can be approved."
+    }
+  },
+  {
+    "before": "DRAFT",
+    "gstin": null,
+    "pan": null,
+    "after": "DRAFT"
+  },
+  {
+    "req": "POST /v1/admin/dealers/657120ae-1911-4689-8393-d56244f17282/approve",
+    "status": 200,
+    "body": {
+      "id": "657120ae-1911-4689-8393-d56244f17282",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-20T15:41:24.964Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/657120ae-1911-4689-8393-d56244f17282/request-changes",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "zfBdagvR2i",
+      "detail": "Only an application waiting for a decision can be sent back."
+    }
+  },
+  {
+    "final": "ACTIVE"
+  },
+  {
+    "actions": [
+      "dealer.onboarding.created",
+      "dealer.submitted",
+      "dealer.documents.viewed",
+      "dealer.approved"
+    ]
+  },
+  {
+    "beforeInSearch": 200,
+    "whileSuspended": 404,
+    "listingRowStatus": "ACTIVE",
+    "afterReinstate": 200
+  }
+]

@@ -1,0 +1,224 @@
+[
+  {
+    "fixture": [
+      {
+        "id": "4d6abd0e-9aa8-4c36-a01f-46b6872cfbf1",
+        "slug": "2023-hyundai-creta-sx-o-vellore-e3ce9fe0",
+        "status": "WITHDRAWN"
+      },
+      {
+        "id": "1d0c04a3-0754-4102-9f2d-67dff71a992a",
+        "slug": "2023-hyundai-creta-sx-o-vellore-e2e887d1",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "b3202468-62bb-4c29-b77c-24d42dfd1583",
+        "slug": "2023-hyundai-creta-sx-o-vellore-92787457",
+        "status": "SOLD"
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "h1": "Find your next car",
+    "cards": 16,
+    "url": "<redacted>",
+    "shot": "screenshots/PUBLIC-001-home-desktop.png"
+  },
+  {
+    "url": "<redacted>",
+    "kept": "Creta",
+    "results": 24,
+    "shot": "screenshots/PUBLIC-002-search-results.png"
+  },
+  {
+    "before": {
+      "url": "<redacted>",
+      "cards": 24
+    },
+    "after": {
+      "url": "<redacted>",
+      "cards": 24
+    }
+  },
+  {
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "header": true,
+    "shot": "screenshots/PUBLIC-021-404.png"
+  },
+  {
+    "out": [
+      {
+        "vp": "desktop",
+        "p": "/",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/cars",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/car/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      },
+      {
+        "vp": "desktop",
+        "p": "/dealers/:slug",
+        "status": 200,
+        "overflow": 0,
+        "header": true
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "canonical": "https://www.dealers-drive.com/",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Browse used cars from independent dealers on Dealers-Drive. Search by brand, model and district, and enquire directly with the dealership advertising the car.",
+    "types": ["Organization", "WebSite"],
+    "ogTitle": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+    "ogImage": "https://www.dealers-drive.com/og/dealersdrive-v2.png"
+  },
+  {
+    "base": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["index, follow, max-image-preview:large"]
+    },
+    "narrowed": {
+      "c": "https://www.dealers-drive.com/cars",
+      "r": ["noindex, follow"]
+    },
+    "page2": {
+      "s": 200,
+      "c": "https://www.dealers-drive.com/cars?page=2",
+      "r": ["index, follow, max-image-preview:large"]
+    }
+  },
+  {
+    "status": 200,
+    "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/car/2023-hyundai-creta-sx-o-vellore-e2e887d1",
+    "robots": ["index, follow, max-image-preview:large"],
+    "types": ["Car", "BreadcrumbList"],
+    "ogImage": true
+  },
+  {
+    "status": 200,
+    "title": "SeoMotors Motors 7186718c09ad — Used Car Dealer in Vellore | Dealers-Drive",
+    "canonical": "https://www.dealers-drive.com/dealers/seomotors-motors-7186718c09ad-vellore-tamil-nadu",
+    "robots": ["index, follow, max-image-preview:large"],
+    "description": "Quality used cars from SeoMotors SeoMotors Motors 7186718c09ad is an independent used-car dealer in Vellore, Tamil Nadu. Browse the cars it has available and enquire directly on Dealers-Drive."
+  },
+  {
+    "apiIncludesLive": true,
+    "apiIncludesSold": false,
+    "apiIncludesWithdrawn": false,
+    "status": 200,
+    "total": 680,
+    "cars": 436,
+    "dealers": 216,
+    "badCars": [],
+    "soldInMap": 0,
+    "badDealers": [],
+    "foreign": [],
+    "privateUrls": [],
+    "includesLive": true,
+    "includesWithdrawn": false,
+    "includesSold": false
+  },
+  {
+    "sold": {
+      "status": 200,
+      "robots": ["noindex", "noindex"],
+      "canonical": null
+    },
+    "withdrawn": {
+      "status": 200,
+      "robots": ["noindex", "noindex"]
+    },
+    "privatePages": [
+      {
+        "p": "/login",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/saved",
+        "status": 200,
+        "robots": [],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/enquiries",
+        "status": 200,
+        "robots": [],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealer",
+        "status": 200,
+        "robots": ["noindex, follow"],
+        "url": "<redacted>"
+      },
+      {
+        "p": "/admin",
+        "status": 200,
+        "robots": ["noindex, nofollow"],
+        "url": "<redacted>"
+      }
+    ]
+  },
+  {
+    "prod": "User-Agent: *\nAllow: /\nDisallow: /api/\nDisallow: /v1/\n\nSitemap: https://www.dealers-drive.com/sitemap.xml\n",
+    "local": "User-Agent: *\nDisallow: /\n\n"
+  },
+  {
+    "icons": {
+      "/favicon.ico": 200,
+      "/icon.png": 200,
+      "/apple-icon.png": 200
+    },
+    "linkIcons": ["/favicon.ico", "/icon.png?189909e0a1837296", "/apple-icon.png?f60137a01ceccb7d"],
+    "homeOg": {
+      "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+      "image": "https://www.dealers-drive.com/og/dealersdrive-v2.png"
+    },
+    "carOg": {
+      "title": "2023 Hyundai Creta SX(O) in Vellore | Dealers-Drive",
+      "image": "http://localhost:4000/media/by-media/ed30354e-bcb3-45eb-89fa-ece5e1fcb676/1024.webp",
+      "fetch": 200
+    }
+  },
+  {
+    "status": 404,
+    "h1": "Page not found",
+    "robots": ["noindex", "noindex, nofollow"],
+    "title": "Page not found | Dealers-Drive"
+  },
+  {
+    "status": 200,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false,
+    "shot": "screenshots/SEO-010-outage.png"
+  }
+]
