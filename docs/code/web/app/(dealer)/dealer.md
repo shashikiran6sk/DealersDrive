@@ -43,16 +43,15 @@ wizard — an authenticated console must be `noindex` from the day it exists.
 
 Sidebar — 214px, white, right divider.
 
-### `</Blueprint>`
+### No listing-credits panel or top-bar balance (UPD-4, BUG-110)
 
-── Reconstruction slice ──────────────────────────────────────────
-The baseline's `Buy credits` button links to `/dealer/billing`,
-which arrives with **F051**. The balance itself is real — it is on
-`DealerProfile` and this layout already has it — so the panel stays
-and the button is what waits, rather than the whole card. A dealer
-reading their own balance is the panel's first job; buying is the
-second, and a button onto a 404 does neither.
-─────────────────────────────────────────────────────────────────
+The sidebar used to end in a "Listing credits" panel and the top bar said
+"14 credits". Billing (F050–F054) has not shipped: there is no way to buy a
+credit and publishing does not spend one, so a new dealer read "0 credits" as
+the thing stopping them. The product owner decided (2026-10-21) to hide credits
+until billing exists. Both come back with the billing pages; `creditBalance`
+and `creditsHeld` stay on `DealerProfile`, and the admin dealer pages still
+show them.
 
 ### `<header className="sticky top-0 z-[15] flex h-[58px] flex-none items-center gap-3 border-b border-(--color-divider) bg-w`
 
