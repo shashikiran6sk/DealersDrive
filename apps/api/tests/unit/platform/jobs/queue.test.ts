@@ -23,6 +23,7 @@ const boss = {
   created: [] as string[],
   workers: [] as {
     name: string;
+    options: unknown;
     handler: (jobs: { data: Record<string, unknown> }[]) => Promise<void>;
   }[],
   schedules: [] as { name: string; cron: string; data: unknown; options: unknown }[],
@@ -53,8 +54,12 @@ vi.mock('pg-boss', () => ({
       return Promise.resolve('job-id');
     }
 
-    work(name: string, handler: (jobs: { data: Record<string, unknown> }[]) => Promise<void>) {
-      boss.workers.push({ name, handler });
+    work(
+      name: string,
+      options: unknown,
+      handler: (jobs: { data: Record<string, unknown> }[]) => Promise<void>,
+    ) {
+      boss.workers.push({ name, options, handler });
       return Promise.resolve('worker-id');
     }
 
@@ -206,6 +211,25 @@ describe('createQueue with JOBS_ENABLED=true', () => {
     await queue.start();
 
     expect(boss.workers).toHaveLength(1);
+  });
+
+  it('polls the e-mail queue every half second, one job at a time (BUG-104)', async () => {
+    const { queue } = await pgBossQueue();
+
+    await queue.work('notification.email', async () => undefined);
+    await queue.work('media.process', async () => undefined);
+    await queue.start();
+
+    // pg-boss's default 2 s poll with one job per fetch capped e-mail at 30 a
+    // minute. A batch would be faster but a batch fails as a whole, so one
+    // provider error would resend every message already sent in it.
+    expect(boss.workers).toEqual([
+      expect.objectContaining({
+        name: 'notification.email',
+        options: { pollingIntervalSeconds: 0.5 },
+      }),
+      expect.objectContaining({ name: 'media.process', options: {} }),
+    ]);
   });
 
   it('runs the handler once per job in a delivered batch', async () => {
