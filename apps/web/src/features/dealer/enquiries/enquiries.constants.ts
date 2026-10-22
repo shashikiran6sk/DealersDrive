@@ -26,8 +26,8 @@ export const ENQUIRY_MOVES: Record<EnquiryStatus, { to: EnquiryStatus; label: st
     { to: 'CLOSED', label: 'Close' },
     { to: 'SPAM', label: 'Spam' },
   ],
-  CLOSED: [{ to: 'NEW', label: 'Reopen' }],
-  SPAM: [{ to: 'NEW', label: 'Not spam' }],
+  CLOSED: [],
+  SPAM: [],
 };
 
 export const ENQUIRIES_TEXT = {

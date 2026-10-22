@@ -38,8 +38,8 @@ rather than leaving a blank line.
 ### `export function EnquiryStatusActions(...)`
 
 The moves that make sense from where an enquiry is (`ENQUIRY_MOVES`): a new one
-can be marked contacted, closed or spammed; a contacted one closed or spammed;
-a closed one reopened; a spammed one marked not spam. These are exactly
+can be marked contacted, closed or spammed; a contacted one closed or spammed; a closed or spammed one is final and
+shows no buttons. These are exactly
 `ENQUIRY_TRANSITIONS` in contracts, which the API enforces (UPD-2), and a test
 holds the two lists together. All buttons disable while one is in flight.
 On success the Server Action's `revalidatePath` redraws the page, so the card

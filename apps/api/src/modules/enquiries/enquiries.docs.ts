@@ -150,21 +150,20 @@ export const enquiriesDocs: ModuleDocs = {
       tag: DOC_TAGS.enquiries,
       summary: 'Move an enquiry to another tab',
       description:
-        'Mark contacted, close, mark as spam, or reopen as new.\n\n' +
+        'Mark contacted, close, or mark as spam.\n\n' +
         '**Allowed moves (UPD-2).** NEW → CONTACTED, CLOSED or SPAM; CONTACTED → CLOSED or ' +
-        'SPAM; CLOSED → NEW (reopen); SPAM → NEW (not spam). Any other move is ' +
-        '`409 ENQUIRY_INVALID_TRANSITION` with `enquiryStatus` and `requestedStatus`; a mistaken ' +
-        'Close or Spam is undone by reopening it as NEW. Reopening while the same customer has ' +
-        'a newer open enquiry on the same car is `409 ENQUIRY_ALREADY_OPEN` with ' +
-        '`openEnquiryId`.\n\n' +
+        'SPAM. CLOSED and SPAM are final: there is no reopen. Any other move is ' +
+        '`409 ENQUIRY_INVALID_TRANSITION` with `enquiryStatus` and `requestedStatus`. A ' +
+        'customer whose enquiry was closed may send a new one about the same car; one marked ' +
+        'spam may not.\n\n' +
         '**By role (R92).** Every member may move a new enquiry to CONTACTED ' +
-        '(`enquiry:contact`). Closing, marking spam, reopening, or moving a closed enquiry back ' +
+        '(`enquiry:contact`). Closing or marking spam ' +
         'needs `enquiry:close` — OWNER and MANAGER — and STAFF get a 403 ' +
         '`ENQUIRY_ACTION_FORBIDDEN`. Another dealership’s enquiry is a 404 whatever the role. ' +
         'The member who first marks it contacted and the member who closes it are recorded.\n\n' +
         '`contactedAt` is set ' +
         'the first time an enquiry is marked contacted and kept after; `closedAt` is set on ' +
-        'close and cleared when it is reopened.\n\n' +
+        'close.\n\n' +
         'Setting the status it already has changes nothing and records nothing. A change is ' +
         'audited as `enquiry.contacted`, `enquiry.closed`, `enquiry.spam` or ' +
         '`enquiry.reopened`, against the dealership, with the status before and after.\n\n' +

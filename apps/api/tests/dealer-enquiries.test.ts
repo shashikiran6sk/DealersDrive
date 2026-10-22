@@ -280,7 +280,7 @@ describe('moving an enquiry between tabs', () => {
     });
   });
 
-  it('closes it, and reopening clears the close but keeps the first contact', async () => {
+  it('closes it, keeping the first contact, and a closed enquiry cannot be reopened', async () => {
     const { slug } = await car(a);
     const id = await enquire((await customer('Close Me')).agent, slug);
 
@@ -289,18 +289,12 @@ describe('moving an enquiry between tabs', () => {
     expect(closed.body.closedAt).toEqual(expect.any(String));
     expect(closed.body.contactedAt).toBe(contacted.body.contactedAt);
 
-    const reopened = await setStatus(a, id, 'NEW').expect(200);
-    expect(reopened.body).toMatchObject({
-      status: 'NEW',
-      closedAt: null,
-      contactedAt: contacted.body.contactedAt,
-    });
+    await setStatus(a, id, 'NEW').expect(409);
 
     expect((await auditRows(id)).map((entry) => entry.action)).toEqual([
       'enquiry.created',
       'enquiry.contacted',
       'enquiry.closed',
-      'enquiry.reopened',
     ]);
   });
 
@@ -375,19 +369,17 @@ describe('moving an enquiry between tabs', () => {
 });
 
 /**
- * UPD-2 — the moves the inbox offers are the only moves there are: forward from
- * NEW, and back to NEW to undo a Close or a Spam.
+ * UPD-2 — the moves the inbox offers are the only moves there are: forward
+ * from NEW, and CLOSED and SPAM are final.
  */
 describe('which moves an enquiry may make', () => {
   async function at(status: 'NEW' | 'CONTACTED' | 'CLOSED' | 'SPAM', name: string) {
-    const { slug, listingId } = await car(a);
+    const { slug } = await car(a);
     const buyer = await customer(name);
     const id = await enquire(buyer.agent, slug);
-    if (status === 'CONTACTED' || status === 'CLOSED') {
-      await setStatus(a, id, 'CONTACTED').expect(200);
-    }
+    if (status === 'CONTACTED') await setStatus(a, id, 'CONTACTED').expect(200);
     if (status === 'CLOSED' || status === 'SPAM') await setStatus(a, id, status).expect(200);
-    return { id, slug, listingId, buyer };
+    return { id, slug, buyer };
   }
 
   it.each([
@@ -396,8 +388,6 @@ describe('which moves an enquiry may make', () => {
     ['NEW', 'SPAM'],
     ['CONTACTED', 'CLOSED'],
     ['CONTACTED', 'SPAM'],
-    ['CLOSED', 'NEW'],
-    ['SPAM', 'NEW'],
   ] as const)('allows %s → %s', async (from, to) => {
     const { id } = await at(from, `Allowed ${from} ${to}`);
     const { body } = await setStatus(a, id, to).expect(200);
@@ -406,8 +396,10 @@ describe('which moves an enquiry may make', () => {
 
   it.each([
     ['CONTACTED', 'NEW'],
+    ['CLOSED', 'NEW'],
     ['CLOSED', 'CONTACTED'],
     ['CLOSED', 'SPAM'],
+    ['SPAM', 'NEW'],
     ['SPAM', 'CONTACTED'],
     ['SPAM', 'CLOSED'],
   ] as const)('refuses %s → %s with 409, and changes and records nothing', async (from, to) => {
@@ -426,25 +418,12 @@ describe('which moves an enquiry may make', () => {
     expect(await auditRows(id)).toHaveLength(audits);
   });
 
-  it('refuses to reopen a closed enquiry while the customer has a newer open one on the car', async () => {
+  it('lets the customer enquire again once their enquiry is closed, as a new enquiry', async () => {
     const { id, slug, buyer } = await at('CLOSED', 'Asked Twice');
-    const newer = await enquire(buyer.agent, slug);
 
-    const res = await setStatus(a, id, 'NEW').expect(409);
+    const again = await enquire(buyer.agent, slug);
 
-    expect(res.body).toMatchObject({ code: 'ENQUIRY_ALREADY_OPEN', openEnquiryId: newer });
+    expect(again).not.toBe(id);
     expect((await h.prisma.enquiry.findUniqueOrThrow({ where: { id } })).status).toBe('CLOSED');
-    const open = await h.prisma.enquiry.count({
-      where: { customerId: buyer.id, status: { in: ['NEW', 'CONTACTED', 'SPAM'] } },
-    });
-    expect(open).toBe(1);
-  });
-
-  it('reopens it once the newer one is closed too', async () => {
-    const { id, slug, buyer } = await at('CLOSED', 'Asked Twice Then Closed');
-    const newer = await enquire(buyer.agent, slug);
-    await setStatus(a, newer, 'CLOSED').expect(200);
-
-    await setStatus(a, id, 'NEW').expect(200);
   });
 });

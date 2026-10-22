@@ -188,8 +188,6 @@ describe('an enquiry', () => {
   it.each([
     ['NEW', ['Mark contacted', 'Close', 'Spam']],
     ['CONTACTED', ['Close', 'Spam']],
-    ['CLOSED', ['Reopen']],
-    ['SPAM', ['Not spam']],
   ] as const)('offers the moves that make sense from %s', async (status, labels) => {
     apiGetParsed.mockResolvedValue(inbox({ data: [{ ...RAVI, status }] }));
     render(await page({ status }));
@@ -197,6 +195,16 @@ describe('an enquiry', () => {
     const group = within(screen.getByRole('group', { name: 'Actions for Ravi Kumar’s enquiry' }));
     expect(group.getAllByRole('button').map((button) => button.textContent)).toEqual([...labels]);
   });
+
+  it.each(['CLOSED', 'SPAM'] as const)(
+    'offers no move from %s — it is final (UPD-2)',
+    async (status) => {
+      apiGetParsed.mockResolvedValue(inbox({ data: [{ ...RAVI, status }] }));
+      render(await page({ status }));
+
+      expect(screen.queryByRole('group', { name: 'Actions for Ravi Kumar’s enquiry' })).toBeNull();
+    },
+  );
 
   it('sends the move for this enquiry, and nothing about the customer', async () => {
     const user = userEvent.setup();

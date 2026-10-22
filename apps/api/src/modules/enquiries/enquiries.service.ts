@@ -43,7 +43,6 @@ import {
   ALREADY_OPEN,
   ENQUIRY_INVALID_TRANSITION,
   ENQUIRY_NOT_FOUND,
-  ENQUIRY_REOPEN_CONFLICT,
   ENQUIRY_TRANSITION_FORBIDDEN,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
@@ -205,13 +204,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
         const current = await tx.enquiry.findUniqueOrThrow({
           where: { id: enquiryId },
-          select: {
-            status: true,
-            contactedAt: true,
-            contactedById: true,
-            customerId: true,
-            listingId: true,
-          },
+          select: { status: true, contactedAt: true, contactedById: true },
         });
         if (current.status === input.status) {
           return toDealerEnquiry(
@@ -230,23 +223,6 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           throw new ConflictError('ENQUIRY_INVALID_TRANSITION', ENQUIRY_INVALID_TRANSITION, {
             extra: { enquiryStatus: current.status, requestedStatus: input.status },
           });
-        }
-        if (input.status === 'NEW') {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`enquiry:${current.customerId}:${current.listingId}`}))`;
-          const open = await tx.enquiry.findFirst({
-            where: {
-              id: { not: enquiryId },
-              customerId: current.customerId,
-              listingId: current.listingId,
-              status: { in: [...BLOCKING_STATUSES] },
-            },
-            select: { id: true },
-          });
-          if (open) {
-            throw new ConflictError('ENQUIRY_ALREADY_OPEN', ENQUIRY_REOPEN_CONFLICT, {
-              extra: { openEnquiryId: open.id },
-            });
-          }
         }
 
         const updated = await tx.enquiry.update({

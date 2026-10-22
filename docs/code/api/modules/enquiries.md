@@ -170,23 +170,23 @@ the second sees the first's status and, if it asked for the same one, changes
 nothing. Without the lock both read `NEW` and both write an audit row.
 
 **The moves are `ENQUIRY_TRANSITIONS` (UPD-2).** Until UPD-2 any status could
-follow any other. The certification found two problems with that: an OWNER or
-MANAGER could pull a contacted enquiry back to NEW, so the inbox claimed nobody
-had called a customer somebody had called, and a reopen skipped the one-open-
-enquiry rule `create` enforces. The API now accepts exactly the moves the inbox
-offers — forward from NEW, and back to NEW to undo a Close or a Spam — and
-refuses the rest with `409 ENQUIRY_INVALID_TRANSITION`, after the role check, so
-a STAFF member still learns first that the move is not theirs to make. A move to
-the status an enquiry already has returns it unchanged and audits nothing, so a
+follow any other: an OWNER or MANAGER could pull a contacted enquiry back to NEW,
+so the inbox claimed nobody had called a customer somebody had called, and a
+reopen could leave two open enquiries from one customer on one car. The product
+owner decided (2026-10-21) that an enquiry only moves forward — NEW to
+CONTACTED, then CLOSED or SPAM — and that **CLOSED and SPAM are final**. Every
+other move is `409 ENQUIRY_INVALID_TRANSITION`, after the role check, so a STAFF
+member still learns first that the move is not theirs to make. A move to the
+status an enquiry already has returns it unchanged and audits nothing, so a
 double press leaves one record; two different end states pressed at once leave
 one winner and one 409.
 
-**A reopen respects the open-enquiry rule.** Once an enquiry is CLOSED its
-customer may enquire about the car again, so reopening the old one could leave
-two open enquiries from one customer on one car. A move to NEW takes the same
-advisory lock `create` takes for that customer and car, and is a
-`409 ENQUIRY_ALREADY_OPEN` naming the open one (`openEnquiryId`) if there is
-one.
+What "final" costs, deliberately: a mistaken Close cannot be undone, but the
+customer may simply enquire again (CLOSED is not in `BLOCKING_STATUSES`), which
+is a new enquiry with its own history. A mistaken Spam cannot be undone either,
+and SPAM _is_ blocking, so that customer cannot enquire about that car again.
+`enquiry.reopened` stays in `STATUS_AUDIT_ACTIONS` for the rows written before
+UPD-2.
 
 **Authority is read after the lock, not before (BUG-NEW-012).** The
 permissions on the request principal were read when the request arrived. A

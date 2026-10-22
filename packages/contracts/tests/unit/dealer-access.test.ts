@@ -99,7 +99,7 @@ describe('enquiryTransitionPermission', () => {
 });
 
 describe('ENQUIRY_TRANSITIONS (UPD-2)', () => {
-  it('allows exactly the seven inbox moves', () => {
+  it('allows exactly the five forward moves, and nothing out of CLOSED or SPAM', () => {
     const allowed = EnquiryStatus.options.flatMap((from) =>
       EnquiryStatus.options
         .filter((to) => isEnquiryTransition(from, to))
@@ -111,9 +111,9 @@ describe('ENQUIRY_TRANSITIONS (UPD-2)', () => {
       'NEW→SPAM',
       'CONTACTED→CLOSED',
       'CONTACTED→SPAM',
-      'CLOSED→NEW',
-      'SPAM→NEW',
     ]);
+    expect(ENQUIRY_TRANSITIONS.CLOSED).toEqual([]);
+    expect(ENQUIRY_TRANSITIONS.SPAM).toEqual([]);
   });
 
   it('never lists a status as a move to itself', () => {

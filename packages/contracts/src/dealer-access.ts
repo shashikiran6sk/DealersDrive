@@ -96,18 +96,16 @@ export function enquiryTransitionPermission(
  * The status moves an enquiry may make (UPD-2) — the buttons the dealer inbox
  * shows, enforced by the API too.
  *
- * A lead goes forward: NEW to CONTACTED, then CLOSED or SPAM. A mistake is
- * undone one way only, back to NEW — "Reopen" from CLOSED, "Not spam" from
- * SPAM — and worked again from there. Every other move is refused with 409
- * `ENQUIRY_INVALID_TRANSITION`: CONTACTED back to NEW would say nobody called a
- * customer somebody called, and CLOSED or SPAM straight to another end state
- * skips the reopen the audit trail records.
+ * A lead only goes forward: NEW to CONTACTED, then CLOSED or SPAM, and CLOSED
+ * and SPAM are final — there is no reopen. Every other move is refused with 409
+ * `ENQUIRY_INVALID_TRANSITION`. A customer whose enquiry was closed may enquire
+ * about the car again, which starts a new enquiry; one marked spam may not.
  */
 export const ENQUIRY_TRANSITIONS: Record<EnquiryStatus, readonly EnquiryStatus[]> = {
   NEW: ['CONTACTED', 'CLOSED', 'SPAM'],
   CONTACTED: ['CLOSED', 'SPAM'],
-  CLOSED: ['NEW'],
-  SPAM: ['NEW'],
+  CLOSED: [],
+  SPAM: [],
 };
 
 export function isEnquiryTransition(from: EnquiryStatus, to: EnquiryStatus): boolean {
