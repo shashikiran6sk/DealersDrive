@@ -60,12 +60,28 @@ describe('publicConfig', () => {
     expect((await service.publicConfig()).minPhotosPerListing).toBe(8);
   });
 
-  it('carries the support contacts and media origin from the environment', async () => {
+  it('carries the media origin, and the environment support contact until an operator sets one', async () => {
     const publicConfig = await createConfigService({ config: config() }).publicConfig();
 
     expect(publicConfig.mediaBaseUrl).toBe(env.MEDIA_BASE_URL);
     expect(publicConfig.supportEmail).toBe(env.SUPPORT_EMAIL);
     expect(publicConfig.supportPhone).toBe(env.SUPPORT_PHONE);
+  });
+
+  it('reports the customer support contact an operator configured, as the footer shows it (BUG-112)', async () => {
+    const publicConfig = await createConfigService({
+      config: config({
+        'support.customerEmail': 'help@example.org',
+        'support.customerPhone': '+91 98400 12345',
+      }),
+    }).publicConfig();
+
+    expect(publicConfig.supportEmail).toBe('help@example.org');
+    expect(publicConfig.supportPhone).toBe('+91 98400 12345');
+    expect(publicConfig.support.customer).toEqual({
+      email: 'help@example.org',
+      phone: '+91 98400 12345',
+    });
   });
 
   it('reports no captcha site key, because there is no captcha in this build', async () => {

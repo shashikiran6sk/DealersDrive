@@ -13,6 +13,10 @@ The buyer sections, in the header's order. One list rather than three JSX
 blocks, so "does the footer agree with the header" is a question somebody can
 answer by reading eight lines.
 
+**No Saved cars (UPD-3, 2026-10-22).** The product owner removed it for
+everyone: signed out, it led to a loading skeleton and then the login page;
+signed in, the account menu already has it.
+
 ### `export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }]`
 
 One door (**R35**). Since **R63** it opens the unified login on its Dealer tab
@@ -90,3 +94,21 @@ than an absent row.
 
 `rel="noreferrer"` as well as `noopener`: these are the only outbound links on
 a buyer page, and the referring URL can carry a search a buyer ran.
+
+### `supportEmail` / `supportPhone` — the customer support contact (BUG-112)
+
+`PublicShell` passes `config.support.customer`, the contact an operator edits in
+`/admin/config`, and the API reports the same value as `supportEmail` /
+`supportPhone` (`modules/config/config.service.ts`). Before BUG-112 the footer
+read the top-level pair, which the API filled from the `SUPPORT_EMAIL` /
+`SUPPORT_PHONE` environment variables alone: changing the number in
+`/admin/config` changed the Contact page and never the footer. Both now read one
+value, from one cached fetch under one tag, so the admin save that revalidates
+`public-config` updates both.
+
+### `{phoneLabel(supportPhone)}`
+
+`lib/contact-phone.ts`, shared with the Contact page. A bare number (the
+environment default, `+914162248890`) is grouped for reading as
+`+91 41622 48890` (BUG-107); a number an operator typed with their own spacing
+or dashes is shown exactly as typed. `telHref` dials the digits either way.

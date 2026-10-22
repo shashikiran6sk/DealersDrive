@@ -17,8 +17,8 @@ export async function PublicShell({ children }: { children: ReactNode }) {
         <main className="flex-1">{children}</main>
         <CustomerFooter
           social={config.social}
-          supportEmail={config.supportEmail}
-          supportPhone={config.supportPhone}
+          supportEmail={config.support.customer.email}
+          supportPhone={config.support.customer.phone}
         />
       </div>
     </SavedVehiclesProvider>

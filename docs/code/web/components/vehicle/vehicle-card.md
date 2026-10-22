@@ -44,3 +44,10 @@ differs per environment, and F034's derivatives do not exist to build a
 `srcset` from. `priority` loads the first row eagerly and the rest lazily. No
 photograph is an `ImageSlot` that holds the 4:3 band, so a card without one is
 the same height as its neighbours.
+
+**A photograph that fails to load is the same slot (BUG-109).** The API can list
+a photo whose stored object is gone; the card used to show the browser's broken-
+image icon where the gallery already fell back. It is a client component for
+the `onError`, and a `useEffect` also checks `complete && naturalWidth === 0` on
+mount, because an image that failed before hydration fired its `error` event
+before React was listening — the same check `PhotoGallery` makes.
