@@ -16,6 +16,27 @@ export const HANDLED_BY_TEXT = {
   closed: (name: string, at: string) => `Closed by ${name} · ${at}`,
 } as const;
 
+export const FINAL_MOVE_TEXT = {
+  title: {
+    CLOSED: 'Close this enquiry?',
+    SPAM: 'Mark this enquiry as spam?',
+  },
+  description: {
+    CLOSED: (name: string) =>
+      `Closing ${name}’s enquiry is final — it cannot be reopened. If they enquire about this car again, it arrives as a new enquiry.`,
+    SPAM: (name: string) =>
+      `Marking ${name}’s enquiry as spam is final — it cannot be undone, and they will not be able to enquire about this car again.`,
+  },
+  confirm: { CLOSED: 'Close enquiry', SPAM: 'Mark as spam' },
+  cancel: 'Cancel',
+} as const;
+
+export type FinalStatus = keyof typeof FINAL_MOVE_TEXT.confirm;
+
+export function isFinalStatus(status: EnquiryStatus): status is FinalStatus {
+  return status === 'CLOSED' || status === 'SPAM';
+}
+
 export const ENQUIRY_MOVES: Record<EnquiryStatus, { to: EnquiryStatus; label: string }[]> = {
   NEW: [
     { to: 'CONTACTED', label: 'Mark contacted' },

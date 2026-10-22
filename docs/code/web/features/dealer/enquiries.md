@@ -70,3 +70,14 @@ clears `closedById` — and nothing renders until somebody has acted.
 Parses the id and the status with the contracts' `IdParam` and
 `UpdateEnquiryInput` before calling, and sends `{ status }` only. Revalidates
 `/dealer/enquiries` on success and nothing on refusal.
+
+## `apps/web/src/features/dealer/enquiries/final-move-dialog.tsx`
+
+### `export function FinalMoveDialog(...)`
+
+**UPD-2.** Closed and spam are final, so Close and Spam ask first. The product
+owner asked for it once the reopen went (2026-10-22): a mis-click used to be
+undone with Reopen, and now it cannot be. The dialog says which consequence
+applies — a closed customer can enquire again as a new enquiry, a spammed one
+cannot — names the customer, and only the confirm button sends the move.
+Mark contacted stays one click; it is not final.

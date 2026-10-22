@@ -229,10 +229,47 @@ describe('an enquiry', () => {
     render(await page());
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole('button', { name: 'Close enquiry' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'That enquiry is not in your inbox.',
     );
+  });
+
+  it.each([
+    ['Close', 'Close this enquiry?', /cannot be reopened/, 'Close enquiry', 'CLOSED'],
+    ['Spam', 'Mark this enquiry as spam?', /cannot be undone/, 'Mark as spam', 'SPAM'],
+  ] as const)(
+    'asks before %s, because the status is final (UPD-2)',
+    async (button, title, warning, confirm, status) => {
+      const user = userEvent.setup();
+      vi.mocked(setEnquiryStatusAction).mockResolvedValue({ ok: true });
+      apiGetParsed.mockResolvedValue(inbox());
+      render(await page());
+
+      await user.click(screen.getByRole('button', { name: button }));
+      const dialog = within(screen.getByRole('dialog', { name: title }));
+      expect(dialog.getByText(warning)).toBeInTheDocument();
+
+      await user.click(dialog.getByRole('button', { name: 'Cancel' }));
+      expect(setEnquiryStatusAction).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('button', { name: button }));
+      await user.click(screen.getByRole('button', { name: confirm }));
+      expect(setEnquiryStatusAction).toHaveBeenCalledWith(RAVI.id, status);
+    },
+  );
+
+  it('marks an enquiry contacted at once, with no dialog', async () => {
+    const user = userEvent.setup();
+    vi.mocked(setEnquiryStatusAction).mockResolvedValue({ ok: true });
+    apiGetParsed.mockResolvedValue(inbox());
+    render(await page());
+
+    await user.click(screen.getByRole('button', { name: 'Mark contacted' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(setEnquiryStatusAction).toHaveBeenCalledWith(RAVI.id, 'CONTACTED');
   });
 });
 
