@@ -265,11 +265,13 @@ Save button: `♡` / `♥`, `aria-pressed`, labelled per car; `stopPropagation` 
 
 ### 2.9 Gallery — strip
 
-Container `position:relative; padding:0 34px` (`0 52px` mobile). Track `.dd-strip` (`flex; gap:8px; overflow-x:auto; smooth`, scrollbar hidden). Thumb `flex:0 0 108px` (88px mobile), `aspect-ratio:4/3`, 1px divider, **10px radius**.
+Container `position:relative; padding:0 34px` (`0 52px` mobile). Track `.dd-strip` (`flex; gap:8px; overflow-x:auto; smooth`, scrollbar hidden, 4px padding so the selected ring is not clipped). Thumb `flex:0 0 108px` (88px mobile), `aspect-ratio:4/3`, 1px divider, **10px radius**, `cursor:pointer`; hover border `#9a9892`; selected: `#0c0c0b` border plus a 2px `#0c0c0b` ring offset 2px on white, `aria-current`. **A thumbnail selects the photograph shown on the main image; it never opens the lightbox.**
 
-`.dd-arrow`: 34×34 round, `#fff`, 1px divider, `--shadow-sm`, 16px glyph; hover `#efefec`. Hidden or disabled at .45 at either end.
+`.dd-arrow`: 34×34 round, `#fff`, 1px divider, `--shadow-sm`, a 16px black chevron (24-grid stroke, 2.25); hover `#efefec`, pressed `#e4e3df` at scale .95. Hidden or disabled at .45 at either end.
 
-Main image button: full width, `aspect-ratio:4/3`, `.blueprint` (16px radius), `cursor:zoom-in`, white count tag bottom-right. Opens the lightbox.
+Main image arrows ("Previous image" / "Next image"): the same `.dd-arrow` at 40×40 (44×44 below 768), solid `#fff`, 1px `#c9c7c1` border, `0 2px 8px rgb(20 20 18 / .14)`, a 20px black chevron; inset 12px (8px mobile), vertically centred; they wrap, so they never disable. The lightbox draws the same arrows.
+
+Main image button: full width, `aspect-ratio:4/3`, `.blueprint` (16px radius), `cursor:zoom-in`, white count tag bottom-right with a 13px expand icon (`2 / 8 · view all`). Opens the lightbox — the only control that does.
 
 ### 2.10 Gallery — lightbox
 

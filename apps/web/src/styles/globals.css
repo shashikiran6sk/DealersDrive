@@ -377,10 +377,15 @@
     box-shadow: var(--shadow-sm);
     transition:
       background-color 120ms ease-out,
+      border-color 120ms ease-out,
       color 120ms ease-out;
   }
   .dd-arrow:hover:not(:disabled) {
     background: var(--color-neutral-150);
+  }
+  .dd-arrow:active:not(:disabled) {
+    background: var(--color-neutral-300);
+    transform: translateY(-50%) scale(0.95);
   }
   .dd-arrow:disabled {
     opacity: 0.45;

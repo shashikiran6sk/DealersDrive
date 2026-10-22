@@ -1931,3 +1931,20 @@ StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
 gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
 `components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
 (`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
+
+## Car page gallery — thumbnails select, black arrows
+
+| Component        | Source                                                         | Props / states                                                                                                                                                                                                                                                                                         | Consumers                                                   |
+| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `PhotoGallery`   | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`   | a thumbnail selects (`onSelect` → the one index) and never opens the viewer; only the stage does · the position is announced (`Photo 4 of 8`, `aria-live`) · a broken thumbnail is dropped like a broken stage photo, selection kept (`indexAfterRemoval`) · tag with expand icon · + broken thumbnail | `/car/[slug]` (strip); `/dealers/[slug]` hero (arrows only) |
+| `GalleryStrip`   | `apps/web/src/components/ui/photo-gallery/gallery-strip.tsx`   | `photos`, `index`, `onSelect` (was `onOpen`), `onFailed`; thumbnails `Show photo N of M`, pointer cursor, selected accent ring offset 2px                                                                                                                                                              | `PhotoGallery`                                              |
+| `GalleryArrow`   | `apps/web/src/components/ui/photo-gallery/gallery-arrow.tsx`   | stage: 40px (44px below 768) white disc, `#c9c7c1` border, black 20px chevron, inset 12px / 8px; strip: 34px, 16px chevron; hover, pressed (scale .95), focus, disabled (strip only)                                                                                                                   | `PhotoGallery`, `GalleryStrip`, `GalleryViewer`             |
+| `GalleryChevron` | `apps/web/src/components/ui/photo-gallery/gallery-chevron.tsx` | `direction`, `className?` — replaces the `‹ ›` text glyphs                                                                                                                                                                                                                                             | `GalleryArrow`                                              |
+| `ExpandIcon`     | `apps/web/src/components/ui/photo-gallery/expand-icon.tsx`     | none — in the stage's count tag                                                                                                                                                                                                                                                                        | `PhotoGallery`                                              |
+
+**Changed on both pages:** the arrow look is shared, so the dealer hero's
+arrows (which have no strip) change with the car page's. **Unchanged:** the
+viewer's structure, keys, rail and focus return; swipe; the studio filter;
+the API and contracts; the vehicle card. **Tests**
+`components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
+**Sandbox** `Primitives/PhotoGallery` (+ `BrokenThumbnail`).
