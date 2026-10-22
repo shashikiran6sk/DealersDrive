@@ -865,7 +865,7 @@ describe('the inventory (R48)', () => {
     expect(apiGetParsed).toHaveBeenCalledWith(
       expect.anything(),
       '/v1/dealers/sri-lakshmi-motors/vehicles',
-      { revalidate: 60, tags: ['dealer:sri-lakshmi-motors', 'vehicles'] },
+      { revalidate: false },
     );
     const section = within(screen.getByRole('region', { name: 'Inventory' }));
     expect(section.getAllByRole('article')).toHaveLength(3);
