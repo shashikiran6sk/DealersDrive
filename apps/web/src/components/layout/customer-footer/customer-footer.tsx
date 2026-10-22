@@ -1,6 +1,5 @@
-import { formatPhone } from '@dealers-drive/contracts';
-
 import { BrandLockup } from '@/components/brand-logo';
+import { phoneLabel, telHref } from '@/lib/contact-phone';
 
 import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT, SUPPORT_LINKS } from './customer-footer.constants';
 import type { CustomerFooterProps } from './customer-footer.types';
@@ -54,10 +53,10 @@ export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerF
           {supportPhone ? (
             <li>
               <a
-                href={`tel:${supportPhone}`}
+                href={telHref(supportPhone)}
                 className="text-[13px] ink-secondary tnum hover:text-(--color-ink)"
               >
-                {formatPhone(supportPhone)}
+                {phoneLabel(supportPhone)}
               </a>
             </li>
           ) : null}

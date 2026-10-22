@@ -91,9 +91,20 @@ than an absent row.
 `rel="noreferrer"` as well as `noopener`: these are the only outbound links on
 a buyer page, and the referring URL can carry a search a buyer ran.
 
-### `{formatPhone(supportPhone)}`
+### `supportEmail` / `supportPhone` — the customer support contact (BUG-112)
 
-The number is shown grouped (`+91 41622 48890`) and dialled as the API sent it
-(`tel:+914162248890`). It printed raw before BUG-107, the only place on the
-site a phone number did; `formatPhone` from contracts is what every other
-number goes through.
+`PublicShell` passes `config.support.customer`, the contact an operator edits in
+`/admin/config`, and the API reports the same value as `supportEmail` /
+`supportPhone` (`modules/config/config.service.ts`). Before BUG-112 the footer
+read the top-level pair, which the API filled from the `SUPPORT_EMAIL` /
+`SUPPORT_PHONE` environment variables alone: changing the number in
+`/admin/config` changed the Contact page and never the footer. Both now read one
+value, from one cached fetch under one tag, so the admin save that revalidates
+`public-config` updates both.
+
+### `{phoneLabel(supportPhone)}`
+
+`lib/contact-phone.ts`, shared with the Contact page. A bare number (the
+environment default, `+914162248890`) is grouped for reading as
+`+91 41622 48890` (BUG-107); a number an operator typed with their own spacing
+or dashes is shown exactly as typed. `telHref` dials the digits either way.

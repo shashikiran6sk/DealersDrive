@@ -169,6 +169,15 @@ describe('the support contacts', () => {
     expect(columnHrefs('Support')).toEqual(['/contact']);
   });
 
+  it('shows a number exactly as an operator typed it in /admin/config, and dials its digits', () => {
+    renderFooter({ supportPhone: '044-2345-6789' });
+
+    expect(screen.getByRole('link', { name: '044-2345-6789' })).toHaveAttribute(
+      'href',
+      'tel:04423456789',
+    );
+  });
+
   it('shows the number grouped for reading, and dials it unformatted (BUG-107)', () => {
     renderFooter();
 
