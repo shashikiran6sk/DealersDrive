@@ -100,3 +100,7 @@ export function cornerKind(rgba: ArrayLike<number>, edge: number): PhotoKind {
 export function studioFilterId(reactId: string): string {
   return `${STUDIO_BACKDROP.filterIdPrefix}${reactId.replace(/[^A-Za-z0-9_-]/g, '')}`;
 }
+
+export function indexAfterRemoval(index: number, removedAt: number): number {
+  return removedAt < index ? index - 1 : index;
+}
