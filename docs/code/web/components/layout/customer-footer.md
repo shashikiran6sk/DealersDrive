@@ -13,6 +13,10 @@ The buyer sections, in the header's order. One list rather than three JSX
 blocks, so "does the footer agree with the header" is a question somebody can
 answer by reading eight lines.
 
+**No Saved cars (UPD-3, 2026-10-22).** The product owner removed it for
+everyone: signed out, it led to a loading skeleton and then the login page;
+signed in, the account menu already has it.
+
 ### `export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }]`
 
 One door (**R35**). Since **R63** it opens the unified login on its Dealer tab

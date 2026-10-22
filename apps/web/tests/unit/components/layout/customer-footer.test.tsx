@@ -73,10 +73,10 @@ describe('the destinations it claims exist', () => {
    * Careers page to fill a column out. A footer link onto a 404 is the product
    * telling a buyer a page exists and then not having it.
    */
-  it('offers the three buyer sections the header does', () => {
+  it('offers the two public buyer sections, and not Saved cars (UPD-3)', () => {
     renderFooter();
 
-    expect(columnHrefs('Buy a car')).toEqual(['/cars', '/dealers', '/saved']);
+    expect(columnHrefs('Buy a car')).toEqual(['/cars', '/dealers']);
   });
 
   /**
@@ -97,9 +97,7 @@ describe('the destinations it claims exist', () => {
       .map((link) => link.getAttribute('href') ?? '')
       .filter((href) => href.startsWith('/'));
 
-    expect(new Set(routes)).toEqual(
-      new Set(['/cars', '/dealers', '/saved', '/login?as=dealer', '/contact']),
-    );
+    expect(new Set(routes)).toEqual(new Set(['/cars', '/dealers', '/login?as=dealer', '/contact']));
   });
 });
 
