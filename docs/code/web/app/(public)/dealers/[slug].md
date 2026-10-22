@@ -240,6 +240,11 @@ and the links carry `#inventory` so paging lands on the grid, not the
 cover. The filter rail and toolbar (F078/F080) are still deferred with
 search.
 
+The inventory fetch is uncached (`revalidate: false`) for the reason `/cars`
+is (BUG-113): a stale cache entry is served once more after its window on
+Vercel, which showed sold cars on a dealership's page nobody had opened for a
+while. The profile above it keeps its own cache.
+
 ### `function detailRows(dealer: DealerPublicProfile): DetailRow[]`
 
 One list, not a grid and a list (R15).
