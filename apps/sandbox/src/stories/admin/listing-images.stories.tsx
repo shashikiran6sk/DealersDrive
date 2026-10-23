@@ -61,4 +61,8 @@ export const ReadyToApprove: Story = { args: { images: images(8) } };
 
 export const Full: Story = { args: { images: images(20) } };
 
+export const Live: Story = { args: { images: images(8), live: true } };
+
+export const LiveAtMinimum: Story = { args: { images: images(6), live: true } };
+
 export const ReadOnly: Story = { args: { images: images(8, { canEdit: false }) } };

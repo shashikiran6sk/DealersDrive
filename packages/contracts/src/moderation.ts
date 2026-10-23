@@ -237,6 +237,7 @@ export const VehicleImagePresignInput = z
     bytes: z.number().int().min(1).max(IMAGE_MAX_BYTES),
     width: z.number().int().min(1).max(20000).optional(),
     height: z.number().int().min(1).max(20000).optional(),
+    replacesMediaId: z.string().uuid().optional(),
   })
   .strict();
 export type VehicleImagePresignInput = z.infer<typeof VehicleImagePresignInput>;
@@ -245,6 +246,11 @@ export const ListingImageParam = z
   .object({ id: z.string().uuid(), mediaId: z.string().uuid() })
   .strict();
 export type ListingImageParam = z.infer<typeof ListingImageParam>;
+
+export const ReplaceVehicleImageInput = z
+  .object({ replacementMediaId: z.string().uuid() })
+  .strict();
+export type ReplaceVehicleImageInput = z.infer<typeof ReplaceVehicleImageInput>;
 
 /**
  * The gallery order an admin wants (**F035** as reinterpreted by **R45**):

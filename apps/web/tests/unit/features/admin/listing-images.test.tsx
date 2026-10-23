@@ -7,11 +7,14 @@ import { moved } from '@/features/admin/listing-images/utils';
 
 const presign = vi.fn();
 const commit = vi.fn();
+const replace = vi.fn();
+const remove = vi.fn();
 
 vi.mock('@/features/admin/listing-actions', () => ({
   presignListingImageAction: (...args: unknown[]) => presign(...args) as unknown,
   commitListingImageAction: (...args: unknown[]) => commit(...args) as unknown,
-  removeListingImageAction: vi.fn(),
+  removeListingImageAction: (...args: unknown[]) => remove(...args) as unknown,
+  replaceListingImageAction: (...args: unknown[]) => replace(...args) as unknown,
   reorderListingImagesAction: vi.fn(),
   setPrimaryImageAction: vi.fn(),
 }));
@@ -69,12 +72,16 @@ beforeEach(() => {
     },
   });
   commit.mockResolvedValue({ ok: true });
+  replace.mockResolvedValue({ ok: true });
+  remove.mockResolvedValue({ ok: true });
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   presign.mockReset();
   commit.mockReset();
+  replace.mockReset();
+  remove.mockReset();
   fetchMock.mockReset();
 });
 
@@ -148,7 +155,7 @@ describe('the gallery', () => {
   it('is read-only once the listing is out of review', () => {
     render(<ListingImages listingId={LISTING_ID} images={images(3, { canEdit: false })} />);
     expect(
-      screen.queryByRole('button', { name: /Remove|Upload|Move|primary/ }),
+      screen.queryByRole('button', { name: /Remove|Replace|Upload|Move|primary/ }),
     ).not.toBeInTheDocument();
     expect(screen.getByText(/only be changed while the listing is in review/)).toBeInTheDocument();
   });
@@ -229,5 +236,86 @@ describe('moved', () => {
     expect(moved(['a', 'b', 'c'], 2, -1)).toEqual(['a', 'c', 'b']);
     expect(moved(['a', 'b', 'c'], 0, -1)).toBeNull();
     expect(moved(['a', 'b', 'c'], 2, 1)).toBeNull();
+  });
+});
+
+describe('live editing', () => {
+  it('shows live guidance rather than approval instructions', () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(6)} live />);
+    expect(screen.getByText('6 uploaded · 6 minimum · 20 at most')).toBeInTheDocument();
+    expect(screen.getByText(/Changes appear on the live listing/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Replace image 1' })).toBeInTheDocument();
+  });
+
+  it('replaces a photo even when the gallery is full', async () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(20)} live />);
+    fireEvent.click(screen.getByRole('button', { name: 'Replace image 1' }));
+    fireEvent.change(screen.getByLabelText('Choose a replacement image'), {
+      target: { files: [jpeg('new.jpg')] },
+    });
+    await waitFor(() => expect(replace).toHaveBeenCalledTimes(1));
+    expect(presign).toHaveBeenCalledWith(LISTING_ID, {
+      fileName: 'new.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 100,
+      replacesMediaId: image(0).mediaId,
+    });
+    expect(replace).toHaveBeenCalledWith(
+      LISTING_ID,
+      image(0).mediaId,
+      '99999999-9999-4999-8999-999999999999',
+    );
+    expect(commit).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('reports replacement validation errors without removing the old photo', async () => {
+    replace.mockResolvedValue({ ok: false, message: 'The uploaded file is not an image.' });
+    render(<ListingImages listingId={LISTING_ID} images={images(6)} live />);
+    fireEvent.click(screen.getByRole('button', { name: 'Replace image 1' }));
+    fireEvent.change(screen.getByLabelText('Choose a replacement image'), {
+      target: { files: [jpeg('bad.jpg')] },
+    });
+    expect(
+      await screen.findByText('bad.jpg: The uploaded file is not an image.'),
+    ).toBeInTheDocument();
+    expect(remove).not.toHaveBeenCalled();
+    expect(screen.getByAltText('Image 1, the primary image')).toBeInTheDocument();
+  });
+
+  it('shows a refused deletion instead of silently ignoring it', async () => {
+    remove.mockResolvedValue({
+      ok: false,
+      message: 'A live listing must keep at least 6 images. Replace an image instead.',
+    });
+    render(<ListingImages listingId={LISTING_ID} images={images(6)} live />);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove image 1' }));
+    expect(
+      await screen.findByText(/A live listing must keep at least 6 images/),
+    ).toBeInTheDocument();
+    const form = remove.mock.calls[0]![0] as FormData;
+    expect(form.get('mediaId')).toBe(image(0).mediaId);
+    expect(form.get('listingId')).toBe(LISTING_ID);
+  });
+
+  it('hides editing controls during a replacement upload', async () => {
+    let finish!: (value: unknown) => void;
+    replace.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    render(<ListingImages listingId={LISTING_ID} images={images(20)} live />);
+    fireEvent.click(screen.getByRole('button', { name: 'Replace image 1' }));
+    fireEvent.change(screen.getByLabelText('Choose a replacement image'), {
+      target: { files: [jpeg('new.jpg')] },
+    });
+    await waitFor(() => expect(replace).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole('button', { name: 'Remove image 1' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Uploading 1 of 1');
+    finish({ ok: true });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Remove image 1' })).toBeInTheDocument(),
+    );
   });
 });

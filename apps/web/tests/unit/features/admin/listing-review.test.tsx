@@ -473,7 +473,7 @@ describe('the image actions', () => {
     expect(apiSend).toHaveBeenCalledTimes(1);
   });
 
-  it('removes an image and refreshes, and fails loudly if the API is unreachable', async () => {
+  it('removes an image and refreshes, and reports errors if the API is unreachable', async () => {
     const form = new FormData();
     form.set('listingId', ID);
     form.set('mediaId', MEDIA);
@@ -483,7 +483,10 @@ describe('the image actions', () => {
     expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
 
     apiSend.mockRejectedValueOnce(new Error('down'));
-    await expect(removeListingImageAction(form)).rejects.toThrow(/unavailable/);
+    await expect(removeListingImageAction(form)).resolves.toEqual({
+      ok: false,
+      message: 'The API is unavailable. Try again shortly.',
+    });
 
     const { ApiError } = await import('@/lib/api');
     apiSend.mockRejectedValueOnce(

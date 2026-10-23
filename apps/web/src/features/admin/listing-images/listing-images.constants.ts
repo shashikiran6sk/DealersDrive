@@ -17,7 +17,18 @@ export const LISTING_IMAGES_TEXT = {
     `${missing} more ${missing === 1 ? 'image is' : 'images are'} needed before this listing can be approved.`,
   empty:
     'Dealers-Drive photographs the car after submission; upload the processed StudioCar images here.',
-  closed: 'Images can only be changed while the listing is in review.',
+  closed:
+    'Images can only be changed while the listing is in review, waiting for changes, live or reserved.',
+  liveCount: (count: number, min: number, max: number) =>
+    `${count} uploaded · ${min} minimum · ${max} at most`,
+  liveHint: (min: number) =>
+    `Changes appear on the live listing. Keep at least ${min} images; use Replace to change a photo without removing it first.`,
+  replace: 'Replace',
+  replaceLabel: (position: number) => `Replace image ${position + 1}`,
+  replaceInputLabel: 'Choose a replacement image',
+  removeFailed: 'The image could not be removed. Try again.',
+  replaced: 'Image replaced.',
+  removed: 'Image removed.',
   upload: 'Upload images',
   uploading: (done: number, total: number) => `Uploading ${done + 1} of ${total}…`,
   inputLabel: 'Choose processed images to upload',
