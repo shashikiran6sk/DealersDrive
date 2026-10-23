@@ -65,7 +65,6 @@ const DEALER: DealerPublicProfile = {
     { key: 'cars', label: 'Cars available', value: '0' },
     { key: 'years', label: 'Years operating', value: '27' },
     { key: 'location', label: 'Location', value: 'Vellore' },
-    { key: 'response', label: 'Response time', value: 'New dealer' },
   ],
   contact: [
     { key: 'city', label: 'City', value: 'Vellore, Tamil Nadu' },
@@ -189,7 +188,7 @@ describe('the dealership it shows', () => {
 
     expect(screen.getByText('Cars available')).toBeInTheDocument();
     expect(screen.getByText('27')).toBeInTheDocument();
-    expect(screen.getByText('New dealer')).toBeInTheDocument();
+    expect(screen.queryByText('Response time')).not.toBeInTheDocument();
   });
 
   /**
@@ -230,7 +229,7 @@ describe('the dealership it shows', () => {
   it('shows an em dash for a stat the API sent empty', async () => {
     serve({
       ...DEALER,
-      stats: DEALER.stats.map((s) => (s.key === 'response' ? { ...s, value: '' } : s)),
+      stats: DEALER.stats.map((s) => (s.key === 'cars' ? { ...s, value: '' } : s)),
     });
     render(await DealerPortfolioPage({ params, searchParams }));
 

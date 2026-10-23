@@ -12,6 +12,64 @@ export const moderationDocs: ModuleDocs = {
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
+      method: 'patch',
+      path: '/v1/admin/listings/:id/vehicle',
+      operationId: 'updateAdminListingVehicle',
+      tag: DOC_TAGS.moderation,
+      summary: 'Edit vehicle details',
+      description:
+        'Edit vehicle details while PENDING_REVIEW, CHANGES_REQUESTED, ACTIVE or RESERVED. Active/reserved vehicles must remain complete. Uses expectedUpdatedAt to reject stale edits. Review edits clear verification checks; publication and public URL are preserved. Audit-logged with before/after values.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'AdminUpdateVehicleInput',
+        example: {
+          expectedUpdatedAt: '2026-10-23T10:00:00.000Z',
+          details: { insuranceType: 'LIVE' },
+        },
+      },
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/reserve',
+      operationId: 'reserveAdminListing',
+      tag: DOC_TAGS.moderation,
+      summary: 'Mark listing reserved',
+      description:
+        'ACTIVE → RESERVED. Preserves registration ownership, stamps reservedAt and records the admin in audit history.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/mark-sold',
+      operationId: 'markAdminListingSold',
+      tag: DOC_TAGS.moderation,
+      summary: 'Mark listing sold',
+      description:
+        'ACTIVE or RESERVED → SOLD. Stamps soldAt, releases the registration and cancels pending reactivation requests. Audit-logged.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
+    {
       method: 'get',
       path: '/v1/admin/listings',
       operationId: 'listAdminListings',

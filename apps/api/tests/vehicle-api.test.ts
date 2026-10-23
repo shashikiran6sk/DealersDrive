@@ -155,8 +155,7 @@ describe('saving wizard steps', () => {
         kilometersDriven: 18_000,
         ownerCount: 1,
         color: 'RED',
-        insuranceType: 'COMPREHENSIVE',
-        insuranceValidUntil: '2027-06-30',
+        insuranceType: 'LIVE',
         pricePaise: 98_500_000,
         negotiability: 'SLIGHTLY',
         description: 'Single owner, full service history.',
@@ -168,7 +167,6 @@ describe('saving wizard steps', () => {
       issues: [],
       pricePaise: 98_500_000,
       priceLabel: '₹9,85,000',
-      insuranceValidUntil: '2027-06-30',
       summary: 'Diesel · Manual · 18,000 km',
     });
   });

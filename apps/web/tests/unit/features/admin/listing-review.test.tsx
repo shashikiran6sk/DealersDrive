@@ -1,9 +1,11 @@
 import type { AdminListingDetail } from '@dealers-drive/contracts';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminListingPage from '@/app/(admin)/admin/listings/[id]/page';
 import {
+  updateListingVehicleAction,
+  changeListingAvailabilityAction,
   approveListingAction,
   commitListingImageAction,
   presignListingImageAction,
@@ -34,6 +36,32 @@ const ID = '11111111-1111-4111-8111-111111111111';
 
 function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListingDetail {
   return {
+    vehicle: {
+      id: '22222222-2222-4222-8222-222222222222',
+      title: '2023 Hyundai Creta SX(O)',
+      registrationNumber: 'KA01AB1234',
+      registrationDisplay: 'KA 01 AB 1234',
+      rtoCode: 'KA01',
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX(O)',
+      manufacturingYear: 2023,
+      registrationYear: 2023,
+      fuelType: 'PETROL',
+      transmission: 'AUTOMATIC',
+      bodyType: 'SUV',
+      kilometersDriven: 22400,
+      ownerCount: 1,
+      color: 'WHITE',
+      insuranceType: 'NONE',
+      pricePaise: 145000000,
+      priceLabel: '₹14,50,000',
+      negotiability: 'FIXED',
+      description: 'Single owner.',
+      summary: 'Petrol · Automatic · 22,400 km',
+      createdAt: '2026-09-01T00:00:00.000Z',
+      updatedAt: '2026-09-26T10:00:00.000Z',
+    },
     listing: {
       id: ID,
       vehicleId: '22222222-2222-4222-8222-222222222222',
@@ -149,7 +177,15 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
     ],
     blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
     assisted: { createdBy: null, submittedBy: null, reviewerIsAssistant: false },
-    actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
+    actions: {
+      canEdit: true,
+      canReserve: false,
+      canMarkSold: false,
+      canVerify: true,
+      canRequestChanges: true,
+      canReject: true,
+      canApprove: false,
+    },
     ...overrides,
   };
 }
@@ -250,6 +286,9 @@ describe('the review screen', () => {
       <ListingReview
         detail={reviewDetail({
           actions: {
+            canEdit: false,
+            canReserve: false,
+            canMarkSold: false,
             canVerify: false,
             canRequestChanges: false,
             canReject: false,
@@ -564,5 +603,152 @@ describe('a listing Sales prepared (R114)', () => {
     expect(screen.getByText('Prepared by Dealers-Drive Sales: Arun')).toBeInTheDocument();
     expect(screen.getByText('Submitted by Dealers-Drive Sales: Arun')).toBeInTheDocument();
     expect(screen.getByText(/another reviewer has to decide/)).toBeInTheDocument();
+  });
+});
+
+function activeDetail(): AdminListingDetail {
+  const detail = reviewDetail();
+  return {
+    ...detail,
+    listing: { ...detail.listing, status: 'ACTIVE', statusLabel: 'Active' },
+    actions: {
+      ...detail.actions,
+      canEdit: true,
+      canReserve: true,
+      canMarkSold: true,
+      canVerify: false,
+      canApprove: false,
+      canReject: false,
+      canRequestChanges: false,
+    },
+  };
+}
+
+describe('admin listing management', () => {
+  it('saves active insurance changes without a date and refreshes public and dealer views', async () => {
+    const detail = activeDetail();
+    apiSend.mockResolvedValue(detail);
+    render(<ListingReview detail={detail} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit details' }));
+    const insurance = screen.getByRole('combobox', { name: 'Insurance' });
+    expect(
+      within(insurance)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Choose…', 'None', 'Live']);
+    expect(screen.queryByLabelText('Insurance valid until')).not.toBeInTheDocument();
+    fireEvent.change(insurance, { target: { value: 'LIVE' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
+    await waitFor(() =>
+      expect(apiSend).toHaveBeenCalledWith(
+        'PATCH',
+        `/v1/admin/listings/${ID}/vehicle`,
+        expect.objectContaining({
+          expectedUpdatedAt: detail.vehicle.updatedAt,
+          details: expect.objectContaining({
+            insuranceType: 'LIVE',
+            pricePaise: 145000000,
+          }) as unknown,
+        }),
+      ),
+    );
+    expect(screen.getByText('Vehicle details saved.')).toBeInTheDocument();
+    expect(revalidations.tags).toEqual(
+      expect.arrayContaining(['vehicles', 'dealers', 'dealer:sri']),
+    );
+    expect(revalidations.paths).toContain(`/dealer/vehicles/${detail.listing.vehicleId}`);
+  });
+  it('keeps edited values and the original version after a stale-save refusal', async () => {
+    const { ApiError } = await import('@/lib/api');
+    const detail = activeDetail();
+    apiSend.mockRejectedValue(
+      new ApiError({
+        type: 'x',
+        title: 'Vehicle changed',
+        detail: 'Reload the page before saving.',
+        status: 409,
+        code: 'VEHICLE_CHANGED',
+      }),
+    );
+    const view = render(<ListingReview detail={detail} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit details' }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'Insurance' }), {
+      target: { value: 'LIVE' },
+    });
+    view.rerender(
+      <ListingReview
+        detail={{
+          ...detail,
+          vehicle: { ...detail.vehicle, updatedAt: '2026-10-23T11:00:00.000Z' },
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
+    await screen.findByText('Reload the page before saving.');
+    expect(screen.getByRole('combobox', { name: 'Insurance' })).toHaveValue('LIVE');
+    expect(apiSend.mock.calls[0]?.[2] as unknown).toMatchObject({
+      expectedUpdatedAt: detail.vehicle.updatedAt,
+    });
+    expect(revalidations.tags).toEqual([]);
+  });
+  it.each(['reserve', 'mark-sold'] as const)(
+    'requires confirmation for %s and refreshes after success',
+    async (action) => {
+      apiSend.mockResolvedValue(activeDetail());
+      render(<ListingReview detail={activeDetail()} />);
+      fireEvent.click(
+        screen.getByRole('button', { name: action === 'reserve' ? 'Mark reserved' : 'Mark sold' }),
+      );
+      expect(apiSend).not.toHaveBeenCalled();
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: action === 'reserve' ? 'Confirm reservation' : 'Confirm sold',
+        }),
+      );
+      await waitFor(() =>
+        expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/${action}`),
+      );
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(revalidations.tags).toContain('vehicles');
+    },
+  );
+  it('cancels a reservation without writing anything and restores keyboard focus', async () => {
+    render(<ListingReview detail={activeDetail()} />);
+    const trigger = screen.getByRole('button', { name: 'Mark reserved' });
+    fireEvent.click(trigger);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(apiSend).not.toHaveBeenCalled();
+  });
+  it('validates ids, versions and protected fields before calling the API', async () => {
+    expect((await updateListingVehicleAction('bad', {})).ok).toBe(false);
+    expect(
+      (
+        await updateListingVehicleAction(ID, {
+          details: { insuranceValidUntil: '2027-01-01' },
+          expectedUpdatedAt: activeDetail().vehicle.updatedAt,
+        })
+      ).ok,
+    ).toBe(false);
+    expect((await changeListingAvailabilityAction('bad', 'reserve')).ok).toBe(false);
+    expect(apiSend).not.toHaveBeenCalled();
+  });
+  it('shows API field errors beside the edited values', async () => {
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValue(
+      new ApiError({
+        type: 'x',
+        title: 'Incomplete',
+        status: 422,
+        code: 'VEHICLE_INCOMPLETE',
+        errors: [
+          { field: 'body.details.pricePaise', code: 'REQUIRED', message: 'Check the price.' },
+        ],
+      }),
+    );
+    render(<ListingReview detail={activeDetail()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit details' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
+    expect(await screen.findByText('Check the price.')).toBeInTheDocument();
   });
 });

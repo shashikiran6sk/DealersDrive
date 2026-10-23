@@ -1,6 +1,7 @@
 export interface ListingActionResult {
   ok: boolean;
   message?: string;
+  errors?: Record<string, string>;
 }
 
 export const listingActionsStub: { calls: Record<string, string>[] } = { calls: [] };
@@ -136,5 +137,20 @@ export async function rejectReactivationAction(
   _note: string,
 ): Promise<ListingActionResult> {
   await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}
+
+export async function updateListingVehicleAction(
+  _listingId: string,
+  _input: unknown,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { ok: true };
+}
+export async function changeListingAvailabilityAction(
+  _listingId: string,
+  _action: 'reserve' | 'mark-sold',
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
   return { ok: true };
 }

@@ -748,6 +748,7 @@ model Vehicle {
   /// read by nothing public.
   legacyColor         String?
   insuranceType       InsuranceType?
+  /// Historical expiry retained for migration review; no longer exposed or writable.
   insuranceValidUntil DateTime?      @db.Date
 
   /// Money is BigInt paise (rule 3). `64500000` is ₹6,45,000.
@@ -1302,9 +1303,8 @@ enum VehicleColor {
 }
 
 enum InsuranceType {
-  COMPREHENSIVE
-  THIRD_PARTY
   NONE
+  LIVE
 }
 
 enum PriceNegotiability {

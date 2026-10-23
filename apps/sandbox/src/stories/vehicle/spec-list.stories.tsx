@@ -24,7 +24,6 @@ const meta = {
       { label: 'Transmission', value: 'Automatic' },
       { label: 'Kilometres driven', value: '22,400 km' },
       { label: 'Owners', value: '1st owner' },
-      { label: 'Insurance valid until', value: '31 Mar 2027' },
     ],
   },
 } satisfies Meta<typeof SpecList>;
