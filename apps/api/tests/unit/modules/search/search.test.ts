@@ -196,6 +196,7 @@ describe('toPublicVehicleDetail', () => {
     expect(toPublicVehicleDetail(detailRow()).dealer).toEqual({
       name: 'Sri Lakshmi Motors',
       slug: 'sri',
+      canCall: false,
       initials: 'SL',
       isVerified: true,
       location: 'Katpadi, Vellore',

@@ -380,7 +380,7 @@ not clients, so they must not move when the API version does.
   \`listing.status = APPROVED\` **and** \`dealer.status = ACTIVE\`. Anything else is a 404 to a
   buyer, and every count in the public API is derived from the same rows.
 - **A dealer's phone number appears in exactly one response**, from
-  \`POST /v1/vehicles/{id}/reveal-contact\` — not yet built.
+  \`POST /v1/vehicles/{slug}/reveal-contact\` — requires verified-mobile login.
 
 ### This document covers what is built, and only that
 

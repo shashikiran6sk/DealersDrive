@@ -229,6 +229,7 @@ export default async function DealerPortfolioPage({
               </div>
             ))}
           </dl>
+          <p className="mt-2 text-[11px] ink-secondary">{DEALER_PAGE_TEXT.responseTimeNote}</p>
 
           {dealer.services.length > 0 ? (
             <div className="mt-auto flex flex-wrap gap-[6px] border-t border-(--color-divider) pt-[10px]">

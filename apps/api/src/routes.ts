@@ -1,3 +1,4 @@
+import { createContactRevealsRouter } from './modules/enquiries/contact-reveals.routes.js';
 import {
   createPublicServiceLocationsRouter,
   createAdminServiceLocationsRouter,
@@ -87,6 +88,13 @@ export function createRoutes(container: Container): Router {
     '/invitations',
     container.guards.requireCustomer,
     createInvitationsRouter(container.invitations),
+  );
+  v1.use(
+    createContactRevealsRouter(
+      container.enquiries,
+      container.rateLimit,
+      container.guards.requireCustomer,
+    ),
   );
   v1.use(
     '/enquiries',

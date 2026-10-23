@@ -134,7 +134,28 @@ export function DealerProfileForm({
           <LockedField id="contactFullName" label="Contact name" value={dealer.contact.fullName} />
           <LockedField id="contactEmail" label="Email" value={dealer.contact.email} />
           <LockedField id="contactPhone" label="Mobile" value={dealer.contact.phoneDisplay} mono />
-          <LockedField id="contactLandline" label="Landline" value={dealer.contact.landline} mono />
+          <Field
+            id="customerContactNumber"
+            label={PROFILE_FORM_TEXT.customerContactLabel}
+            hint={
+              waiting ? PROFILE_FORM_TEXT.taglineHintWaiting : PROFILE_FORM_TEXT.customerContactHint
+            }
+            error={errors.contactLandline}
+          >
+            <Input
+              id="customerContactNumber"
+              {...(locked ? {} : { name: 'customerContactNumber' })}
+              type="tel"
+              maxLength={24}
+              disabled={locked}
+              defaultValue={
+                waiting?.landlineChanged
+                  ? (waiting.landline ?? '')
+                  : (dealer.contact.landline ?? '')
+              }
+              {...invalidProps('customerContactNumber', errors.contactLandline)}
+            />
+          </Field>
         </div>
       </section>
 

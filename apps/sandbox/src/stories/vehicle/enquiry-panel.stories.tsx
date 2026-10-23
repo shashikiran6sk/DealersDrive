@@ -50,6 +50,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Idle: Story = {};
+export const Choices: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getAllByRole('button', { name: 'Enquire now' })[0]!,
+    );
+  },
+};
+export const CallbackOnly: Story = { args: { canCall: false } };
+export const CallDealer: Story = { args: { autoOpen: true, autoAction: 'call' } };
 
 export const SignedOut: Story = {
   beforeEach: () => {

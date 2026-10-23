@@ -355,11 +355,11 @@ function locationLabel(city: string, state: string, years: number): string {
 }
 
 function responseLabel(medianMins: number | null): string {
-  if (medianMins === null) return 'New dealer';
+  if (medianMins === null) return 'Not enough response data';
   if (medianMins < 60) return '< 1 hr';
   if (medianMins < 120) return '< 2 hrs';
-  if (medianMins < 60 * 24) return `< ${Math.ceil(medianMins / 60)} hrs`;
-  return '> 1 day';
+  if (medianMins < 60 * 24) return `About ${Math.ceil(medianMins / 60)} hrs`;
+  return '1 day or more';
 }
 
 function humanHours(range: string): string {

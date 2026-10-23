@@ -28,6 +28,7 @@ export const JOB_NAMES = [
   'notification.email',
   'listings.expire-sweep',
   'counters.reconcile',
+  'dealers.response-times',
   'cache.sweep-counters',
   'rc.sweep-lookups',
 ] as const;

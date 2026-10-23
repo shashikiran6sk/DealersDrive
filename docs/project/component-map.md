@@ -1931,3 +1931,7 @@ StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
 gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
 `components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
 (`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
+
+### Dealer customer contact
+
+The existing EnquiryPanel now renders contact choices, Call dealer with authenticated number reveal and copy, and the existing callback form. Its new props are canCall and autoAction; consumers are the vehicle page, login return wrapper and sandbox. DealerProfileForm offers customer contact proposals, ReviewPanel shows pending number/removal, and ProfileChangeReview compares approved and proposed contact numbers. Existing components and Button/Banner/Input primitives are reused. See [dealer customer contact](dealer-customer-contact.md).

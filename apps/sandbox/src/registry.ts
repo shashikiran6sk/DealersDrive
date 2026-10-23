@@ -1961,7 +1961,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'The VDP dealership card: logo tile, name, town, verified plate and a link to the portfolio. No phone and no enquiry CTA — the reveal route and enquiries are deferred.',
+      'The VDP dealership card: logo tile, name, town, verified plate and a link to the portfolio. Customer contact is offered separately through authenticated call or callback actions.',
     aliases: ['DealerCard', 'SellerCard', 'SoldBy'],
     features: ['F082'],
     props: ['dealer'],
@@ -2264,10 +2264,19 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'Enquire now on the vehicle page (R65). Asks who is signed in only when pressed, so the page stays static: an anonymous visitor goes to the Customer tab and comes back with ?enquire=1; a customer gets the form. Pins a bottom bar on mobile.',
-    aliases: ['Enquire', 'EnquireNow', 'ContactDealer', 'LeadForm', 'EnquiryCta', 'enquiry-panel'],
+      'Enquire now on the vehicle page offers Call dealer or Request a callback. Both require verified-mobile login, returning to the selected action; only the call action reveals the approved number. The mobile bottom button scrolls the selected panel into view.',
+    aliases: [
+      'Enquire',
+      'EnquireNow',
+      'ContactDealer',
+      'CallDealer',
+      'RequestCallback',
+      'LeadForm',
+      'EnquiryCta',
+      'enquiry-panel',
+    ],
     features: ['R65', 'R64'],
-    props: ['listingSlug', 'dealerName', 'autoOpen'],
+    props: ['listingSlug', 'dealerName', 'autoOpen', 'autoAction', 'canCall'],
     states: [
       'idle, requires-login hint (R68)',
       'idle, signed in',

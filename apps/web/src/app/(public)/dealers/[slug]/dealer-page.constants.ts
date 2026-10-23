@@ -6,6 +6,8 @@ export interface DealerDescriptionInput {
 }
 
 export const DEALER_PAGE_TEXT = {
+  responseTimeNote:
+    'Response time is based on when the dealer marks enquiries as contacted. Actual callback times may vary.',
   notFoundTitle: 'Dealership not found',
   inventoryUnavailableTitle: 'We couldn’t load this dealership’s cars right now',
   inventoryUnavailableMessage: 'The dealership’s details are above. Please try again for its cars.',

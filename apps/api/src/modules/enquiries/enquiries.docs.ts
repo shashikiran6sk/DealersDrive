@@ -19,6 +19,26 @@ export const enquiriesDocs: ModuleDocs = {
     'dealership’s inbox stays the only place its status moves.',
   operations: [
     {
+      method: 'post',
+      path: '/v1/vehicles/:slug/reveal-contact',
+      operationId: 'revealDealerContact',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Reveal the approved customer contact number',
+      description:
+        'Requires a verified-mobile customer session. Available listings of active dealerships only. Returns the explicitly confirmed and admin-approved customer contact number, never the login mobile as a fallback. Rate-limited to 10 per customer and 30 per IP per hour. Records a contact-reveal audit event, without creating a callback enquiry or asserting that a call connected. Responses are no-store.',
+      audience: 'customer',
+      params: 'VehicleSlugParam',
+      requestBody: { schema: 'RevealContactInput' },
+      responses: [
+        {
+          status: 200,
+          description: 'The approved dealer number and telephone link.',
+          schema: 'RevealDealerContact',
+        },
+      ],
+      errors: [400, 401, 404, 409, 422, 429],
+    },
+    {
       method: 'get',
       path: '/v1/enquiries',
       operationId: 'listMyEnquiries',

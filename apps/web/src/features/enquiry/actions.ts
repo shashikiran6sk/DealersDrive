@@ -1,6 +1,12 @@
 'use server';
 
-import { CreateEnquiryInput, CustomerSession, type EnquiryReceipt } from '@dealers-drive/contracts';
+import {
+  CreateEnquiryInput,
+  CustomerSession,
+  VehicleSlugParam,
+  RevealDealerContact,
+  type EnquiryReceipt,
+} from '@dealers-drive/contracts';
 
 import { cookies } from 'next/headers';
 
@@ -57,6 +63,37 @@ export async function sendEnquiryAction(
         status: 'refused',
         code: error.code,
         message: error.userMessage(ENQUIRY_ACTION_TEXT.failed),
+      };
+    }
+    return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_ACTION_TEXT.unavailable };
+  }
+}
+
+export type RevealContactState =
+  | { status: 'revealed'; contact: RevealDealerContact }
+  | { status: 'signed-out' }
+  | { status: 'refused'; code: string; message: string };
+
+export async function revealContactAction(listingSlug: string): Promise<RevealContactState> {
+  const parsed = VehicleSlugParam.safeParse({ slug: listingSlug });
+  if (!parsed.success)
+    return { status: 'refused', code: 'INVALID', message: ENQUIRY_ACTION_TEXT.invalid };
+  try {
+    const contact = RevealDealerContact.parse(
+      await apiSend(
+        'POST',
+        `/v1/vehicles/${encodeURIComponent(parsed.data.slug)}/reveal-contact`,
+        {},
+      ),
+    );
+    return { status: 'revealed', contact };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) return { status: 'signed-out' };
+      return {
+        status: 'refused',
+        code: error.code,
+        message: error.userMessage(ENQUIRY_ACTION_TEXT.unavailable),
       };
     }
     return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_ACTION_TEXT.unavailable };

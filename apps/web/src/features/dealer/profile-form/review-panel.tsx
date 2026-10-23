@@ -37,6 +37,14 @@ export function ReviewPanel({ change }: { change: DealerProfileChange | null }) 
             </dd>
           </div>
         ) : null}
+        {change.landlineChanged ? (
+          <div>
+            <dt className="ink-muted">{PROFILE_FORM_TEXT.newContact}</dt>
+            <dd className="mt-[2px] font-mono">
+              {change.landline ?? PROFILE_FORM_TEXT.removeContact}
+            </dd>
+          </div>
+        ) : null}
         {change.specialities.length > 0 ? (
           <div>
             <dt className="ink-muted">{PROFILE_FORM_TEXT.newServices}</dt>

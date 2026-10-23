@@ -5,9 +5,11 @@ export const EMPTY_VALUE = '—';
 export const PROFILE_CHANGE_TEXT = {
   heading: 'Proposed change to their public page',
   intro:
-    'The dealer edited how their dealership describes itself. Buyers are still seeing the current version. Check it for phone numbers, links and anything the platform would not want to be repeating on their behalf.',
+    'Customers still see the approved details. Check marketing text for contact details or links. For a customer contact number change, confirm that it belongs to the dealership and is suitable for customer calls.',
   taglineLabel: 'Tagline',
   servicesLabel: 'Services',
+  contactLabel: 'Customer contact number',
+  removeContact: 'Remove customer calling',
   liveNow: 'Live now',
   proposed: 'Proposed',
   unchanged: 'unchanged',

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { RevealDealerContact } from '@dealers-drive/contracts';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -9,6 +10,7 @@ import { Banner } from '@/components/ui/primitives';
 import {
   enquiryCustomerAction,
   sendEnquiryAction,
+  revealContactAction,
   type EnquiryCustomer,
   type SendEnquiryState,
 } from '@/features/enquiry/actions';
@@ -17,35 +19,72 @@ import { EnquiryForm } from './enquiry-form';
 import { ENQUIRY_PANEL_TEXT, loginHref, MY_ENQUIRIES_HREF } from './enquiry-panel.constants';
 import type { EnquiryPanelProps, EnquiryPanelStage } from './enquiry-panel.types';
 
-export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: EnquiryPanelProps) {
+export function EnquiryPanel({
+  listingSlug,
+  dealerName,
+  autoOpen = false,
+  autoAction = 'callback',
+  canCall = true,
+}: EnquiryPanelProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [stage, setStage] = useState<EnquiryPanelStage>(autoOpen ? 'checking' : 'idle');
   const [customer, setCustomer] = useState<EnquiryCustomer | null>(null);
+  const [contact, setContact] = useState<RevealDealerContact | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [callUnavailable, setCallUnavailable] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const autoOpened = useRef(false);
 
-  const open = useCallback(async () => {
-    setStage('checking');
-    setNotice(null);
-    let signedIn: EnquiryCustomer | null;
-    try {
-      signedIn = await enquiryCustomerAction();
-    } catch {
-      setNotice(ENQUIRY_PANEL_TEXT.openFailed);
-      setStage('idle');
-      return;
-    }
-    if (!signedIn) {
-      router.push(loginHref(pathname));
-      return;
-    }
-    setCustomer(signedIn);
-    setStage('form');
-  }, [pathname, router]);
+  const open = useCallback(
+    async (action: 'call' | 'callback' = 'callback') => {
+      setStage('checking');
+      setNotice(null);
+      let signedIn: EnquiryCustomer | null;
+      try {
+        signedIn = await enquiryCustomerAction();
+      } catch {
+        setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+        setStage('idle');
+        return;
+      }
+      if (!signedIn) {
+        router.push(loginHref(pathname, action));
+        return;
+      }
+      setCustomer(signedIn);
+      if (action === 'call') {
+        try {
+          const result = await revealContactAction(listingSlug);
+          if (result.status === 'signed-out') {
+            router.push(loginHref(pathname, 'call'));
+            return;
+          }
+          if (result.status === 'revealed') {
+            setContact(result.contact);
+            setStage('call');
+            return;
+          }
+          setNotice(result.message);
+          if (result.code === 'CONTACT_UNAVAILABLE') setCallUnavailable(true);
+          setStage(result.code === 'LISTING_NOT_AVAILABLE' ? 'gone' : 'choices');
+        } catch {
+          setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+          setStage('choices');
+        }
+        return;
+      }
+      setStage('form');
+    },
+    [pathname, router, listingSlug],
+  );
 
   useEffect(() => {
+    if (stage === 'choices' || stage === 'call') {
+      panel.current?.scrollIntoView({ block: 'center' });
+      return;
+    }
     if (stage !== 'form') return;
     panel.current
       ?.querySelector<HTMLTextAreaElement>('textarea[name="message"]')
@@ -55,8 +94,8 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
   useEffect(() => {
     if (!autoOpen || autoOpened.current) return;
     autoOpened.current = true;
-    void open();
-  }, [autoOpen, open]);
+    void open(autoAction);
+  }, [autoOpen, autoAction, open]);
 
   useEffect(() => {
     if (autoOpen) return;
@@ -95,6 +134,15 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     return result;
   }
 
+  const callingAvailable = canCall && !callUnavailable;
+  const requiresLogin = callingAvailable
+    ? ENQUIRY_PANEL_TEXT.requiresLogin
+    : ENQUIRY_PANEL_TEXT.callbackRequiresLogin;
+  function begin(): void {
+    if (callingAvailable) setStage('choices');
+    else void open('callback');
+  }
+
   return (
     <div ref={panel} className="flex flex-col gap-[10px]" aria-live="polite">
       {stage === 'idle' && notice ? (
@@ -113,14 +161,14 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             loading={stage === 'checking'}
             aria-label={stage === 'checking' ? ENQUIRY_PANEL_TEXT.loading : undefined}
             onClick={() => {
-              void open();
+              begin();
             }}
           >
-            {ENQUIRY_PANEL_TEXT.enquire}
+            {callingAvailable ? ENQUIRY_PANEL_TEXT.enquire : ENQUIRY_PANEL_TEXT.callback}
           </Button>
           {customer ? null : (
             <p className="m-0 text-center text-[12px] ink-secondary max-lg:hidden">
-              {ENQUIRY_PANEL_TEXT.requiresLogin}
+              {requiresLogin}
             </p>
           )}
           <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] max-lg:pb-[max(10px,env(safe-area-inset-bottom))] shadow-(--shadow-lg) lg:hidden">
@@ -131,27 +179,84 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
               className="min-h-[44px]"
               loading={stage === 'checking'}
               onClick={() => {
-                void open();
+                begin();
               }}
             >
-              {ENQUIRY_PANEL_TEXT.enquire}
+              {callingAvailable ? ENQUIRY_PANEL_TEXT.enquire : ENQUIRY_PANEL_TEXT.callback}
             </Button>
             {customer ? null : (
-              <p className="m-0 mt-[4px] text-center text-[11px] ink-secondary">
-                {ENQUIRY_PANEL_TEXT.requiresLogin}
-              </p>
+              <p className="m-0 mt-[4px] text-center text-[11px] ink-secondary">{requiresLogin}</p>
             )}
           </div>
         </>
       ) : null}
 
+      {stage === 'choices' ? (
+        <section className="card gap-3 p-4" aria-label={ENQUIRY_PANEL_TEXT.choose}>
+          <h2 className="text-[17px]">{ENQUIRY_PANEL_TEXT.choose}</h2>
+          {notice ? <Banner tone="warn">{notice}</Banner> : null}
+          {canCall && !callUnavailable ? (
+            <div className="flex flex-col gap-1">
+              <Button
+                block
+                variant="secondary"
+                onClick={() => {
+                  void open('call');
+                }}
+              >
+                {ENQUIRY_PANEL_TEXT.call}
+              </Button>
+              <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callIntro}</p>
+            </div>
+          ) : null}
+          <Button
+            block
+            variant="primary"
+            onClick={() => {
+              void open('callback');
+            }}
+          >
+            {ENQUIRY_PANEL_TEXT.callback}
+          </Button>
+          <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callbackIntro}</p>
+          {!customer ? <p className="text-[12px] ink-secondary">{requiresLogin}</p> : null}
+        </section>
+      ) : null}
+      {stage === 'call' && contact ? (
+        <section className="card gap-3 p-4">
+          <h2 className="text-[17px]">{ENQUIRY_PANEL_TEXT.call}</h2>
+          <a href={contact.callHref} className="btn btn-primary min-h-[44px] font-mono">
+            {contact.phoneDisplay}
+          </a>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void (async () => {
+                try {
+                  await navigator.clipboard.writeText(contact.phone);
+                  setCopied(ENQUIRY_PANEL_TEXT.copied);
+                } catch {
+                  setCopied(ENQUIRY_PANEL_TEXT.copyFailed);
+                }
+              })();
+            }}
+          >
+            {ENQUIRY_PANEL_TEXT.copy}
+          </Button>
+          {copied ? <p className="text-[12px]">{copied}</p> : null}
+          <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callingNote}</p>
+          <Button variant="ghost" onClick={() => setStage('choices')}>
+            {ENQUIRY_PANEL_TEXT.back}
+          </Button>
+        </section>
+      ) : null}
       {stage === 'form' && customer ? (
         <EnquiryForm
           customer={customer}
           dealerName={dealerName}
           onSend={send}
           onCancel={() => {
-            setStage('idle');
+            setStage('choices');
           }}
         />
       ) : null}
@@ -174,6 +279,11 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
         </Banner>
       ) : null}
 
+      {stage === 'already' || stage === 'sent' ? (
+        <Button variant="ghost" onClick={() => setStage('choices')}>
+          {ENQUIRY_PANEL_TEXT.back}
+        </Button>
+      ) : null}
       {stage === 'gone' ? (
         <Banner tone="err" title={ENQUIRY_PANEL_TEXT.unavailableTitle}>
           {notice}

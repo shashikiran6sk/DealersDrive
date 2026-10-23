@@ -62,6 +62,15 @@ export function ProfileChangeReview({ change }: { change: AdminProfileChange }) 
             render={(value) => <span className="text-[13px]">{value}</span>}
           />
         </ReviewRow>
+        <ReviewRow label={PROFILE_CHANGE_TEXT.contactLabel}>
+          <Comparison
+            live={change.liveLandline ?? EMPTY_VALUE}
+            proposed={
+              change.landlineChanged ? (change.landline ?? PROFILE_CHANGE_TEXT.removeContact) : null
+            }
+            render={(value) => <span className="font-mono text-[13px]">{value}</span>}
+          />
+        </ReviewRow>
         <ReviewRow label={PROFILE_CHANGE_TEXT.servicesLabel}>
           <Comparison
             live={change.liveSpecialities}

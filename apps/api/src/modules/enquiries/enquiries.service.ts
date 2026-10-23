@@ -1,5 +1,8 @@
+import { lockDealerResponseTime, refreshDealerResponseTime } from './enquiry-response-time.js';
 import {
   enquiryTransitionPermission,
+  normaliseDealerContact,
+  type RevealDealerContact,
   formatRegistration,
   vehicleTitle,
   type CreateEnquiryInput,
@@ -40,6 +43,7 @@ import {
 } from './enquiries.mapper.js';
 import {
   ALREADY_OPEN,
+  CONTACT_UNAVAILABLE,
   ENQUIRY_NOT_FOUND,
   ENQUIRY_TRANSITION_FORBIDDEN,
   LISTING_NOT_AVAILABLE,
@@ -193,6 +197,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       input: UpdateEnquiryInput,
     ): Promise<DealerEnquiry> {
       return withTransaction(prisma, async (tx) => {
+        await lockDealerResponseTime(tx, actor.dealerId);
         const locked = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id" FROM "enquiries"
           WHERE "id" = ${enquiryId}::uuid AND "dealerId" = ${actor.dealerId}::uuid
@@ -235,7 +240,53 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           after: { status: input.status },
         });
 
+        await refreshDealerResponseTime(tx, actor.dealerId);
         return toDealerEnquiry(updated);
+      });
+    },
+
+    async revealContact(customer: CustomerPrincipal, slug: string): Promise<RevealDealerContact> {
+      return withTransaction(prisma, async (tx) => {
+        const listing = await tx.listing.findFirst({
+          where: { slug },
+          select: { id: true, dealerId: true },
+        });
+        if (!listing) throw new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
+        await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
+        await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${listing.dealerId}::uuid FOR SHARE`;
+        const available = await tx.listing.findFirst({
+          where: { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: listing.id },
+          select: {
+            id: true,
+            dealerId: true,
+            dealer: { select: { brandName: true, landline: true, landlineApprovedAt: true } },
+          },
+        });
+        if (!available) throw new ConflictError('LISTING_NOT_AVAILABLE', LISTING_NOT_AVAILABLE);
+        const own = await tx.dealerMember.count({
+          where: { userId: customer.userId, dealerId: available.dealerId, status: 'ACTIVE' },
+        });
+        if (own > 0) throw new DomainError('ENQUIRY_OWN_LISTING', OWN_LISTING);
+        const phone =
+          available.dealer.landlineApprovedAt && available.dealer.landline
+            ? normaliseDealerContact(available.dealer.landline)
+            : null;
+        if (!phone) throw new NotFoundError(CONTACT_UNAVAILABLE, { code: 'CONTACT_UNAVAILABLE' });
+        await audit.record(tx, {
+          actorType: 'CUSTOMER',
+          actorId: customer.userId,
+          dealerId: available.dealerId,
+          action: 'dealer.contact_revealed',
+          entityType: 'Listing',
+          entityId: available.id,
+          after: { listingId: available.id, channel: 'CALL' },
+        });
+        return {
+          phone,
+          phoneDisplay: `+91 ${phone.slice(3)}`,
+          callHref: `tel:${phone}`,
+          dealerName: available.dealer.brandName,
+        };
       });
     },
 

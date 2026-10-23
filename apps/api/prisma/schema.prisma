@@ -367,6 +367,8 @@ model Dealer {
   /// Dealers-Drive to create and submit this profile on their behalf.
   assistedConsentAt        DateTime?
   landline                 String?
+  landlineConfirmedAt      DateTime?
+  landlineApprovedAt       DateTime?
   workingHours             Json?
   establishedYear          Int?
   specialities             String[]
@@ -584,6 +586,8 @@ model DealerProfileChange {
   tagline        String?
   taglineChanged Boolean  @default(false)
   specialities   String[]
+  landline       String?
+  landlineChanged Boolean @default(false)
 
   /// Who typed it. `dealerId` says whose profile; this says whose hands.
   submittedBy    String?   @db.Uuid

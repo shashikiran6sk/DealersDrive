@@ -1,3 +1,4 @@
+import { DealerContactInput } from './dealer-contact.js';
 import { DealerDocCategory, SelectableDocCategory } from './dealer-documents.js';
 import { OptionalGstin } from './dealer-gstin.js';
 import { DealerTaglineInput } from './dealer-tagline.js';
@@ -74,6 +75,8 @@ export const DealerProfileChange = z.object({
   statusLabel: z.string(),
   tagline: z.string().nullable(),
   taglineChanged: z.boolean().optional(),
+  landline: z.string().nullable().optional(),
+  landlineChanged: z.boolean().optional(),
   specialities: z.array(z.string()),
   submittedAtLabel: z.string(),
   reviewedAtLabel: z.string().nullable(),
@@ -100,6 +103,7 @@ export const DealerProfile = z.object({
     phoneDisplay: z.string(),
     email: z.string().nullable(),
     landline: z.string().nullable(),
+    landlineApproved: z.boolean().optional(),
   }),
   address: z.object({
     line: z.string().nullable(),
@@ -245,7 +249,7 @@ export const UpdateDealerInput = z
           .optional(),
         /** The same rule the onboarding form applies, from the same schema. */
         phone: IndianMobile.optional(),
-        landline: z.string().trim().max(24).optional(),
+        landline: DealerContactInput.optional(),
       })
       .strict()
       .optional(),
@@ -348,7 +352,7 @@ export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
  * number, a rival's name or a WhatsApp handle into an integer bounded by 1900
  * and 2100. The other two are the only prose a dealer writes that a buyer
  * reads, which makes them the only place either could reach a public page
- * without passing `POST /v1/vehicles/:id/reveal-contact` — the one route
+ * without passing `POST /v1/vehicles/:slug/reveal-contact` — the one route
  * allowed to hand a number out, rate-limited twice over and logged (rule 7).
  *
  * This is why the moderation lives in `dealers.service.selfUpdate` and not
@@ -372,10 +376,13 @@ export const DealerOnboardingInput = UpdateDealerInput.omit({ gstin: true, pan: 
 export type DealerOnboardingInput = z.infer<typeof DealerOnboardingInput>;
 
 export const DealerSelfUpdateInput = UpdateDealerInput.pick({
+  contact: true,
   establishedYear: true,
   tagline: true,
   specialities: true,
-}).strict();
+})
+  .extend({ contact: z.object({ landline: DealerContactInput.optional() }).strict().optional() })
+  .strict();
 export type DealerSelfUpdateInput = z.infer<typeof DealerSelfUpdateInput>;
 
 // ─────────── C3 completeness ───────────────────────────────────────────────

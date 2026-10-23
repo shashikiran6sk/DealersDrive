@@ -12,7 +12,13 @@ export interface AssistedField {
 
 export const CONTACT_FIELDS: readonly AssistedField[] = [
   { name: 'contactName', label: 'Contact person', required: true, autoComplete: 'off' },
-  { name: 'landline', label: 'Landline', hint: 'optional', type: 'tel', required: false },
+  {
+    name: 'landline',
+    label: 'Customer contact number',
+    hint: 'optional — confirm dealer consent to share with signed-in customers after approval',
+    type: 'tel',
+    required: false,
+  },
 ];
 
 export const BUSINESS_FIELDS: readonly AssistedField[] = [
