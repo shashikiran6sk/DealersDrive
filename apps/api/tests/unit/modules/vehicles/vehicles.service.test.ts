@@ -149,11 +149,11 @@ describe('update', () => {
     expect(repo.heldRegistration).not.toHaveBeenCalled();
   });
 
-  it('converts money to BigInt and the insurance date to a calendar date', async () => {
+  it('converts money to BigInt and saves the manual insurance status', async () => {
     const { service, repo } = setup();
     await service.update(ACTOR, ID, {
       pricePaise: 145_000_000,
-      insuranceValidUntil: '2027-03-31',
+      insuranceType: 'LIVE',
       description: '',
     });
     expect(repo.updateOwned).toHaveBeenCalledWith(
@@ -161,20 +161,20 @@ describe('update', () => {
       ID,
       {
         pricePaise: 145_000_000n,
-        insuranceValidUntil: new Date('2027-03-31T00:00:00Z'),
+        insuranceType: 'LIVE',
         description: null,
       },
       expect.anything(),
     );
   });
 
-  it('clears money and the date with null', async () => {
+  it('clears money and optional fields with null', async () => {
     const { service, repo } = setup();
-    await service.update(ACTOR, ID, { pricePaise: null, insuranceValidUntil: null, model: null });
+    await service.update(ACTOR, ID, { pricePaise: null, model: null });
     expect(repo.updateOwned).toHaveBeenCalledWith(
       ACTOR.dealerId,
       ID,
-      { pricePaise: null, insuranceValidUntil: null, model: null },
+      { pricePaise: null, model: null },
       expect.anything(),
     );
   });

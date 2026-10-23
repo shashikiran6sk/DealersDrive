@@ -87,7 +87,7 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
   reserve: {
     from: ['ACTIVE'],
     to: 'RESERVED',
-    actors: ['DEALER'],
+    actors: ['DEALER', 'ADMIN'],
     action: 'listing.reserved',
     needsReason: false,
   },
@@ -101,7 +101,7 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
   markSold: {
     from: ['ACTIVE', 'RESERVED'],
     to: 'SOLD',
-    actors: ['DEALER'],
+    actors: ['DEALER', 'ADMIN'],
     action: 'listing.marked_sold',
     needsReason: false,
   },

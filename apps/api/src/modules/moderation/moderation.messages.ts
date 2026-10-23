@@ -1,4 +1,5 @@
 export const HISTORY_LABELS: Record<string, string> = {
+  'listing.details_updated': 'Vehicle details updated',
   'listing.submitted': 'Submitted for review',
   'listing.resubmitted': 'Resubmitted after changes',
   'listing.changes_requested': 'Changes requested',

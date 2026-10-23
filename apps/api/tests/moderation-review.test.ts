@@ -68,6 +68,9 @@ describe('the review screen', () => {
       'Submitted for review',
     ]);
     expect(body.actions).toEqual({
+      canEdit: true,
+      canReserve: false,
+      canMarkSold: false,
       canVerify: true,
       canRequestChanges: true,
       canReject: true,

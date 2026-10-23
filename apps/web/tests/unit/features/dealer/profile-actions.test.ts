@@ -194,7 +194,7 @@ describe('a complete save', () => {
     const body = bodyOf(calls[0]);
 
     expect(body.tagline).toBeNull();
-    expect(body).not.toHaveProperty('establishedYear');
+    expect(body.establishedYear).toBeNull();
     // And what was answered still goes.
     expect(body.specialities).toEqual(['Hatchbacks', 'RC transfer', 'Exchange']);
   });

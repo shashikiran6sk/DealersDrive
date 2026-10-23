@@ -1931,3 +1931,7 @@ StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
 gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
 `components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
 (`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
+
+### Admin listing management
+
+`ListingReview` now includes `ListingVehicleEditor` and `AvailabilityPanel` in its folder. Both receive `AdminListingDetail`, use server-computed capability flags, and are exercised in `Admin/ListingReview` (Active and review states). The editor reuses RegistrationStep, BasicsStep, DetailsStep and PricingStep; all step forms accept their shared vehicle field shape. Availability dialogs preserve focus, show failures, and disable duplicate submissions. Insurance choices are None/Live throughout the shared forms; no date field is rendered.

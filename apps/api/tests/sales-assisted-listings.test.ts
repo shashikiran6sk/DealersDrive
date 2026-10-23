@@ -292,6 +292,9 @@ describe('review', () => {
       const detail = await sales.get(`/v1/admin/listings/${listingId}`).expect(200);
       expect(detail.body.assisted.reviewerIsAssistant).toBe(true);
       expect(detail.body.actions).toEqual({
+        canEdit: false,
+        canReserve: false,
+        canMarkSold: false,
         canVerify: false,
         canRequestChanges: false,
         canReject: false,

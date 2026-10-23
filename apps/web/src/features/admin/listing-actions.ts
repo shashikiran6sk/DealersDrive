@@ -1,6 +1,7 @@
 'use server';
 
 import {
+  AdminUpdateVehicleInput,
   IdParam,
   ListingCheckKey,
   ListingImageParam,
@@ -23,6 +24,7 @@ import { revalidatePublicDealer, revalidatePublicVehicles, vehicleTag } from '@/
 export interface ListingActionResult {
   ok: boolean;
   message?: string;
+  errors?: Record<string, string>;
 }
 
 export type ImagePresignResult =
@@ -309,4 +311,74 @@ export async function setPrimaryImageAction(formData: FormData): Promise<void> {
   }
   revalidatePath(reviewPath(params.data.id));
   revalidatePublicVehicles();
+}
+
+function refreshListing(detail: AdminListingDetail): void {
+  revalidatePath(reviewPath(detail.listing.id));
+  revalidatePath('/admin/listings');
+  revalidatePath('/dealer/vehicles');
+  revalidatePath(`/dealer/vehicles/${detail.listing.vehicleId}`);
+  revalidatePublicVehicles();
+  revalidatePublicDealer(detail.dealer.slug);
+}
+
+export async function updateListingVehicleAction(
+  listingId: string,
+  input: unknown,
+): Promise<ListingActionResult> {
+  const id = IdParam.safeParse({ id: listingId });
+  const parsed = AdminUpdateVehicleInput.safeParse(input);
+  if (!id.success || !parsed.success) {
+    return {
+      ok: false,
+      message: 'Check the vehicle details.',
+      errors: Object.fromEntries(
+        (parsed.error?.issues ?? []).map((issue) => [
+          issue.path.join('.').replace(/^details\./, ''),
+          issue.message,
+        ]),
+      ),
+    };
+  }
+  try {
+    refreshListing(
+      await apiSend<AdminListingDetail>(
+        'PATCH',
+        `/v1/admin/listings/${id.data.id}/vehicle`,
+        parsed.data,
+      ),
+    );
+    return { ok: true };
+  } catch (error) {
+    return {
+      ...failure(error),
+      ...(error instanceof ApiError
+        ? {
+            errors: Object.fromEntries(
+              Object.entries(error.fieldErrors()).map(([field, message]) => [
+                field.replace(/^(body\.)?details\./, '').replace(/^body\./, ''),
+                message,
+              ]),
+            ),
+          }
+        : {}),
+    };
+  }
+}
+
+export async function changeListingAvailabilityAction(
+  listingId: string,
+  action: 'reserve' | 'mark-sold',
+): Promise<ListingActionResult> {
+  const id = IdParam.safeParse({ id: listingId });
+  if (!id.success || !['reserve', 'mark-sold'].includes(action))
+    return { ok: false, message: 'Reload the listing and try again.' };
+  try {
+    refreshListing(
+      await apiSend<AdminListingDetail>('POST', `/v1/admin/listings/${id.data.id}/${action}`),
+    );
+    return { ok: true };
+  } catch (error) {
+    return failure(error);
+  }
 }
