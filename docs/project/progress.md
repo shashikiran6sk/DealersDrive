@@ -304,3 +304,5 @@ Tracked here too, because they gate UI features rather than following them.
 - [ ] S5 — `@storybook/addon-vitest` wired
 - [ ] S6 — the five missing primitives
 - [ ] S7 — feature components
+
+- [x] R119 — Dealer customer contact and measured response times · approved mobile/landline call reveal behind verified-mobile login, callback choice, owner proposals through admin review, legacy number confirmation, 90-day median of first Contacted timestamps with five-sample minimum and daily expiry; see `dealer-customer-contact.md`.

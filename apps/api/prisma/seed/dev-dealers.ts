@@ -94,7 +94,7 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     workingHours: dealer.workingHours,
     establishedYear: dealer.establishedYear,
     specialities: dealer.specialities,
-    medianResponseMins: dealer.medianResponseMins,
+    medianResponseMins: null,
   };
 
   /*

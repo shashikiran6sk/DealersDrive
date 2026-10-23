@@ -21,7 +21,7 @@ export const FIELDS = [
   { key: 'contactName', label: 'Contact', path: 'contact.fullName', mono: false },
   { key: 'contactPhone', label: 'Phone', path: 'contact.phone', mono: true },
   { key: 'contactEmail', label: 'Email', path: 'contact.email', mono: false },
-  { key: 'landline', label: 'Landline', path: 'contact.landline', mono: true },
+  { key: 'landline', label: 'Customer contact number', path: 'contact.landline', mono: true },
   { key: 'tagline', label: 'Tagline', path: 'tagline', mono: false, wide: true },
   {
     key: 'specialities',
@@ -44,5 +44,5 @@ export const DEALER_EDITOR_TEXT = {
   saveFailed: 'Those changes did not save.',
   listHint: 'comma separated, up to 12',
   partialNote:
-    'Only the fields you change are sent. Leaving one blank clears it where the dealer is allowed to have it blank, and is refused where they are not.',
+    'Only changed fields are sent. Changing a customer contact number hides calling until the dealer confirms it and a contact change is approved. Blank clears optional fields.',
 } as const;

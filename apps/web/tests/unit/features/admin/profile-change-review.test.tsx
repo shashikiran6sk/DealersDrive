@@ -81,7 +81,7 @@ describe('the profile-change review card', () => {
   it('reads a field the edit does not touch as unchanged, not as cleared', () => {
     render(<ProfileChangeReview change={{ ...CHANGE, specialities: [] }} />);
 
-    expect(screen.getByText('unchanged')).toBeInTheDocument();
+    expect(screen.getAllByText('unchanged')).toHaveLength(2);
     // The live services are still shown — they are what would survive the
     // approval, and a blank row here is the failure being guarded against.
     expect(screen.getByText('RC transfer')).toBeInTheDocument();

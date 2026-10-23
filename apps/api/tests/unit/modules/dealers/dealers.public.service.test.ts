@@ -1142,17 +1142,17 @@ describe('profile', () => {
 
   describe('the response-time ladder', () => {
     it.each([
-      [null, 'New dealer'],
+      [null, 'Not enough response data'],
       [5, '< 1 hr'],
       [59, '< 1 hr'],
       [60, '< 2 hrs'],
       [119, '< 2 hrs'],
-      [120, '< 2 hrs'],
-      [121, '< 3 hrs'],
-      [600, '< 10 hrs'],
-      [1_439, '< 24 hrs'],
-      [1_440, '> 1 day'],
-      [10_000, '> 1 day'],
+      [120, 'About 2 hrs'],
+      [121, 'About 3 hrs'],
+      [600, 'About 10 hrs'],
+      [1_439, 'About 24 hrs'],
+      [1_440, '1 day or more'],
+      [10_000, '1 day or more'],
     ])('reports %s minutes as "%s"', async (minutes, expected) => {
       const h = setup({ profile: publicDealer({ medianResponseMins: minutes }) });
 

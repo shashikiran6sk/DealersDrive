@@ -590,7 +590,7 @@ export const adminDocs: ModuleDocs = {
       tag: DOC_TAGS.admin,
       summary: 'Profile edits waiting for a decision',
       description:
-        'The queue a dealer’s own words wait in (**R34**), **oldest first** — this ' +
+        'The queue for profile text and customer contact number changes, **oldest first** — this ' +
         'is work, and the dealership that has been waiting longest is the one owed an ' +
         'answer.\n\n' +
         'Every row carries what is **live** beside what is **proposed**, because the ' +
@@ -598,9 +598,7 @@ export const adminDocs: ModuleDocs = {
         'the two differ whenever the edit is a small correction to a line already approved. ' +
         'A reviewer holding the old value in their head is one who approves a number ' +
         'appended to a sentence they half-remember.\n\n' +
-        '`tagline: null` and `specialities: []` on the proposed side mean *this request does ' +
-        'not touch that field* — unambiguous because neither can be emptied by a ' +
-        'dealer: the floors are ten characters and one entry.\n\n' +
+        '`taglineChanged` and `landlineChanged` distinguish removal (null with the flag) from omission. Empty `specialities` means unchanged. Contact approval publishes the confirmed number without resetting business verification.\n\n' +
         'Capped at 100. A backlog longer than that is an operational problem rather than a ' +
         'pagination one.',
       audience: 'admin',

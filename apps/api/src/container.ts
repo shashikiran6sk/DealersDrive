@@ -1,3 +1,4 @@
+import { refreshAllDealerResponseTimes } from './modules/enquiries/enquiry-response-time.js';
 import {
   createServiceLocationsService,
   type ServiceLocationsService,
@@ -355,6 +356,10 @@ export async function startBackground(container: Container): Promise<void> {
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
+  await container.queue.work('dealers.response-times', () =>
+    refreshAllDealerResponseTimes(container.prisma),
+  );
+  if (env.JOBS_ENABLED) await container.queue.schedule('dealers.response-times', '0 3 * * *');
   container.outbox.start();
 
   logger.info(

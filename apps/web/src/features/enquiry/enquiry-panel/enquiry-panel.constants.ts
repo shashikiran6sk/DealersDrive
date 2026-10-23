@@ -4,7 +4,19 @@ export const ENQUIRY_MESSAGE_MAX = 1000;
 
 export const ENQUIRY_PANEL_TEXT = {
   enquire: 'Enquire now',
-  requiresLogin: 'Requires login with your mobile number',
+  requiresLogin: 'Both options require login with your mobile number',
+  callbackRequiresLogin: 'Requires login with your mobile number',
+  call: 'Call dealer',
+  callIntro: 'Speak directly with the dealership.',
+  callback: 'Request a callback',
+  callbackIntro: 'Send an enquiry and ask the dealer to call your verified mobile.',
+  choose: 'How would you like to contact the dealer?',
+  back: 'Back to contact options',
+  copy: 'Copy number',
+  copied: 'Number copied',
+  copyFailed: 'Could not copy. Select the number to copy it.',
+  callingNote:
+    'Calling opens your phone app. A callback enquiry is sent only when you request one.',
   heading: 'Interested in this vehicle?',
   nameLabel: 'Name',
   mobileLabel: 'Mobile',
@@ -30,7 +42,7 @@ export const ENQUIRY_PANEL_TEXT = {
 
 export const MY_ENQUIRIES_HREF = '/enquiries';
 
-export function loginHref(pathname: string): string {
-  const back = `${pathname}?${ENQUIRE_PARAM}=1`;
+export function loginHref(pathname: string, action: 'call' | 'callback' = 'callback'): string {
+  const back = `${pathname}?${ENQUIRE_PARAM}=${action === 'call' ? 'call' : '1'}`;
   return `/login?returnTo=${encodeURIComponent(back)}`;
 }

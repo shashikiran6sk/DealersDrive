@@ -1625,3 +1625,7 @@ console and profile, which a manual activation with no document verified made
 plainly untrue — and Dealer Verified is a separate review with its own badge.
 ACTIVE now reads "Approved", and "Dealer Verified" only when that review has
 granted it.
+
+## Customer contact approval
+
+The customer contact workflow extends the historical landline field. Owners may propose it alongside marketing edits; the live value stays unchanged until approval. Confirmation and approval timestamps deliberately start empty for legacy rows. Standard application approval only enables a number confirmed under the new onboarding wording. Post-activation changes use the profile queue, including explicit removal and reconfirming an existing value. The account mobile remains locked and is never a customer-contact fallback. See [customer contact policy](../../../project/dealer-customer-contact.md).

@@ -111,7 +111,17 @@ describe('an approved car', () => {
       ].sort(),
     );
     expect(Object.keys(body.dealer).sort()).toEqual(
-      ['city', 'district', 'initials', 'isVerified', 'location', 'name', 'slug', 'state'].sort(),
+      [
+        'canCall',
+        'city',
+        'district',
+        'initials',
+        'isVerified',
+        'location',
+        'name',
+        'slug',
+        'state',
+      ].sort(),
     );
     expect(text).not.toContain(live.listingId);
     expect(text).not.toContain(live.vehicleId);

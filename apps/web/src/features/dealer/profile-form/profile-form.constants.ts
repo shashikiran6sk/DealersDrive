@@ -10,12 +10,17 @@ export const PROFILE_FORM_TEXT = {
   ownerOnly:
     'Only the owner can change the dealership’s profile, documents and team. You can see it here.',
   savedPending:
-    'Saved. Your line and services go to us for a quick check before they appear on your public page — everything else is already live.',
+    'Saved. Your proposed profile and customer contact changes are waiting for admin approval. Customers keep seeing the approved details until then.',
   saved: 'Your profile has been saved.',
   invalidYear: 'Enter a valid year.',
 
   dealershipHeading: 'Dealership',
   contactHeading: 'Contact',
+  customerContactLabel: 'Customer contact number — mobile or landline',
+  customerContactHint:
+    'Optional. Saving confirms this number may be shared with signed-in customers after admin approval. Include the STD code for a landline. Leave blank to request removal.',
+  newContact: 'Proposed customer contact number',
+  removeContact: 'Remove the call option after approval',
   addressHeading: 'Address',
   taxHeading: 'Tax identifiers',
 
@@ -32,25 +37,26 @@ export const PROFILE_FORM_TEXT = {
   servicesPlaceholder: 'In-house workshop',
 
   contactNote:
-    'These are how buyers and we reach a business that has been verified. Contact support to change any of them.',
+    'Your account mobile and email identify you. Contact support to change them. The customer contact number below is separate and changes require admin approval.',
   addressNote:
     'Your business address and contact identity need review when they change. Contact support to update them. Yard ownership and photographs do not determine Dealer Verified status.',
   taxNote:
     'Verified during onboarding. Contact support to change either — a silent edit would invalidate the verification your buyers rely on.',
 
   save: 'Save changes',
-  saveNote: 'Changes appear on your public dealership page immediately.',
+  saveNote:
+    'Profile and customer contact changes require review; the established year updates immediately.',
 
   rejectedTitle: 'Your last change was not published',
   rejectedNote:
     'Your public page is unchanged. Edit the boxes below and save again — there is nothing else you need to do.',
   waitingTitle: 'Waiting for a quick check',
   waitingIntro: (submittedAtLabel: string) =>
-    `You changed how your dealership describes itself on ${submittedAtLabel}. We read these before they go on your public page — buyers see the current version until then.`,
+    `You requested profile or customer contact changes on ${submittedAtLabel}. Customers see the current approved details until review is complete.`,
   newLine: 'Your new line',
   newServices: 'Your new services',
   cancelChange: 'Cancel this change',
-  cancelNote: 'Your previous wording comes back and the boxes below unlock.',
+  cancelNote: 'Your approved details stay in use and the boxes below unlock.',
 
   mapPlace:
     'This link names your dealership, so your public page shows your Google listing on the map — your name, your address and your rating.',

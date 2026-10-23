@@ -186,11 +186,19 @@ function toAdminProfileChange(
     status: ProfileChangeStatus;
     tagline: string | null;
     taglineChanged?: boolean;
+    landline?: string | null;
+    landlineChanged?: boolean;
     specialities: string[];
     createdAt: Date;
     decisionReason: string | null;
   },
-  dealer: { slug: string; brandName: string; tagline: string | null; specialities: string[] },
+  dealer: {
+    slug: string;
+    brandName: string;
+    tagline: string | null;
+    specialities: string[];
+    landline?: string | null;
+  },
   now: Date = new Date(),
 ): AdminProfileChange {
   return {
@@ -205,6 +213,9 @@ function toAdminProfileChange(
     tagline: row.tagline,
     taglineChanged: row.taglineChanged || row.tagline !== null,
     specialities: row.specialities,
+    landline: row.landline ?? null,
+    landlineChanged: row.landlineChanged ?? false,
+    liveLandline: dealer.landline ?? null,
     liveTagline: dealer.tagline,
     liveSpecialities: distinctServices(dealer.specialities),
     submittedAt: row.createdAt.toISOString(),
@@ -676,6 +687,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           data: {
             status: 'ACTIVE',
             approvedAt: new Date(),
+            landlineApprovedAt: dealer.landline && dealer.landlineConfirmedAt ? new Date() : null,
             statusReason: null,
             activationMethod: 'STANDARD',
           },
@@ -1273,6 +1285,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
           tx,
         );
+        if (current.landlineChanged) {
+          await tx.dealer.update({
+            where: { id: current.dealerId },
+            data: {
+              landline: current.landline,
+              landlineConfirmedAt: current.landline ? current.createdAt : null,
+              landlineApprovedAt: current.landline ? new Date() : null,
+            },
+          });
+        }
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: { status: 'APPROVED', reviewedBy: admin.userId, reviewedAt: new Date() },
@@ -1286,10 +1308,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'DealerProfileChange',
           entityId: changeId,
           before: {
+            landline: current.dealer.landline,
             tagline: current.dealer.tagline,
             specialities: current.dealer.specialities,
           },
           after: {
+            landline: current.landline,
+            landlineChanged: current.landlineChanged,
             tagline: current.tagline,
             taglineChanged: current.taglineChanged || current.tagline !== null,
             specialities: current.specialities,

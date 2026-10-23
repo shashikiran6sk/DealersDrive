@@ -45,7 +45,11 @@ import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
+import {
+  assertPhoneVerified,
+  authorizeDealerWrite,
+  type DealerPrincipal,
+} from '../auth/auth.facade.js';
 import { documentKey } from './dealer-storage-keys.js';
 import { normaliseDealerEmail } from './dealer-email-identity.js';
 import {
@@ -145,6 +149,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         phoneDisplay: formatPhone(dealer.contactPhone ?? owner?.user.phone ?? ''),
         email: owner?.user.email ?? dealer.contactEmail,
         landline: dealer.landline,
+        landlineApproved: dealer.landlineApprovedAt != null,
       },
       address: {
         line: dealer.addressLine,
@@ -189,6 +194,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       tagline: row.tagline,
       taglineChanged: row.taglineChanged || row.tagline !== null,
       specialities: row.specialities,
+      landline: row.landline,
+      landlineChanged: row.landlineChanged,
       submittedAtLabel: formatDate(row.createdAt),
       reviewedAtLabel: row.reviewedAt ? formatDate(row.reviewedAt) : null,
       decisionReason: row.decisionReason,
@@ -363,7 +370,15 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     ): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId);
 
-      if (dealer.status !== 'ACTIVE') return this.update(dealerId, input);
+      if (dealer.status !== 'ACTIVE') {
+        if (input.contact !== undefined && dealer.status !== 'DRAFT') {
+          throw new ConflictError(
+            'PROFILE_LOCKED',
+            'Contact changes are available after the dealership is approved.',
+          );
+        }
+        return this.update(dealerId, input, undefined, input.contact !== undefined);
+      }
 
       if (input.establishedYear !== undefined) {
         await this.update(dealerId, { establishedYear: input.establishedYear });
@@ -379,7 +394,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? []
           : typedServices;
 
-      if (!taglineChanged && specialities.length === 0) {
+      const proposedLandline = input.contact?.landline;
+      const landlineChanged =
+        proposedLandline !== undefined &&
+        (proposedLandline !== dealer.landline ||
+          (proposedLandline !== null && !dealer.landlineApprovedAt));
+      if (!taglineChanged && specialities.length === 0 && !landlineChanged) {
         return toProfile(await requireDealer(dealerId));
       }
 
@@ -392,8 +412,34 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       }
 
       await withTransaction(prisma, async (tx) => {
+        await repo.lockStatus(dealerId, tx);
+        const current = await requireDealer(dealerId, tx);
+        if (landlineChanged) {
+          if (!actorUserId)
+            throw new ConflictError(
+              'PROFILE_LOCKED',
+              'Sign in as the owner to change the customer contact number.',
+            );
+          await authorizeDealerWrite(tx, { dealerId, userId: actorUserId }, 'dealer:update', true);
+        }
+        if (current.status !== 'ACTIVE')
+          throw new ConflictError('PROFILE_LOCKED', 'The dealership is no longer active.');
+        if (current.profileEdits.some((change) => change.status === 'PENDING')) {
+          throw new ConflictError(
+            'PROFILE_EDIT_PENDING',
+            'You already have a change waiting for review. Cancel it first.',
+          );
+        }
         const saved = await tx.dealerProfileChange.create({
-          data: { dealerId, tagline, taglineChanged, specialities, submittedBy: actorUserId },
+          data: {
+            dealerId,
+            tagline,
+            taglineChanged,
+            specialities,
+            landline: proposedLandline ?? null,
+            landlineChanged,
+            submittedBy: actorUserId,
+          },
         });
 
         await audit.record(tx, {
@@ -403,8 +449,18 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           action: 'dealer.profile_change.submitted',
           entityType: 'DealerProfileChange',
           entityId: saved.id,
-          before: { tagline: dealer.tagline, specialities: dealer.specialities },
-          after: { tagline, taglineChanged, specialities },
+          before: {
+            tagline: dealer.tagline,
+            specialities: dealer.specialities,
+            landline: dealer.landline,
+          },
+          after: {
+            tagline,
+            taglineChanged,
+            specialities,
+            landline: proposedLandline ?? null,
+            landlineChanged,
+          },
         });
 
         await enqueueOutbox(tx, {
@@ -448,7 +504,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           action: 'dealer.profile_change.withdrawn',
           entityType: 'DealerProfileChange',
           entityId: pending.id,
-          before: { tagline: pending.tagline, specialities: pending.specialities },
+          before: {
+            tagline: pending.tagline,
+            specialities: pending.specialities,
+            landline: pending.landline,
+            landlineChanged: pending.landlineChanged,
+          },
           after: null,
         });
       });
@@ -587,7 +648,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
               ? {}
               : { contactEmailVerifiedAt: null }),
             ...(phone === undefined ? {} : { contactPhone: phone }),
-            ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
+            ...(input.contact?.landline === undefined
+              ? {}
+              : {
+                  landline: input.contact.landline,
+                  landlineConfirmedAt: input.contact.landline ? new Date() : null,
+                  landlineApprovedAt: null,
+                }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
             ...(city === undefined ? {} : { city }),
             ...(district === undefined ? {} : { district }),

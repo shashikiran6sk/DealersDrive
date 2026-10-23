@@ -585,6 +585,7 @@ export function createSalesService({
               contactEmail: email,
               contactEmailVerifiedAt: new Date(tickets.email.provenAt),
               landline: input.landline ?? null,
+              landlineConfirmedAt: input.landline ? new Date() : null,
               tagline: input.tagline,
               specialities: input.specialities,
               onboardingSource: 'ASSISTED',

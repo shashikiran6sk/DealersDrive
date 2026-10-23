@@ -143,7 +143,6 @@ describe('what the form offers', () => {
     ['contact name', /contact name/i],
     ['email', /^email/i],
     ['mobile', /^mobile/i],
-    ['landline', /^landline/i],
     ['street address', /street address/i],
     ['city', /^city/i],
     ['district', /^district/i],
@@ -169,7 +168,7 @@ describe('what the form offers', () => {
 
     expect(
       [...container.querySelectorAll('input[name]')].map((input) => input.getAttribute('name')),
-    ).toEqual(['establishedYear', 'tagline', 'specialities']);
+    ).toEqual(['establishedYear', 'tagline', 'specialities', 'customerContactNumber']);
   });
 
   /** The three that are still the dealer's own. */
@@ -200,7 +199,7 @@ describe('what the form offers', () => {
   it('says why the locked sections are locked', () => {
     render(<DealerProfileForm dealer={DEALER} />);
 
-    expect(screen.getByText(/contact support to change any of them/i)).toBeInTheDocument();
+    expect(screen.getByText(/contact support to change them/i)).toBeInTheDocument();
     expect(
       screen.getByText(/yard ownership and photographs do not determine Dealer Verified status/i),
     ).toBeInTheDocument();
@@ -424,7 +423,7 @@ describe('an edit waiting for review', () => {
     expect(within(proposed as HTMLElement).getByText('SUVs')).toBeInTheDocument();
     // The live line is still on the screen, in the box, so the dealer can see
     // both. What buyers see is the point of the whole panel.
-    expect(screen.getByText(/buyers see the current version/i)).toBeInTheDocument();
+    expect(screen.getByText(/customers see the current approved details/i)).toBeInTheDocument();
   });
 
   /**
@@ -499,7 +498,7 @@ describe('an edit waiting for review', () => {
   it('says what cancelling will do', () => {
     render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
 
-    expect(screen.getByText(/previous wording comes back/i)).toBeInTheDocument();
+    expect(screen.getByText(/approved details stay in use/i)).toBeInTheDocument();
   });
 
   it('surfaces a failed cancel rather than looking like it worked', async () => {
@@ -589,7 +588,7 @@ describe('an edit waiting for review', () => {
 
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
-    expect(await screen.findByText(/go to us for a quick check/i)).toBeInTheDocument();
+    expect(await screen.findByText(/waiting for admin approval/i)).toBeInTheDocument();
   });
 });
 

@@ -386,6 +386,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
               contactPhone: phone,
               contactEmail: email,
               landline: input.landline ?? null,
+              landlineConfirmedAt: input.landline ? new Date() : null,
               tagline: input.tagline,
               specialities: input.specialities,
             },

@@ -214,6 +214,9 @@ export const AdminProfileChange = z.object({
   /** A null tagline is a removal only when taglineChanged is true. */
   tagline: z.string().nullable(),
   taglineChanged: z.boolean().optional(),
+  landline: z.string().nullable().optional(),
+  landlineChanged: z.boolean().optional(),
+  liveLandline: z.string().nullable().optional(),
   specialities: z.array(z.string()),
   /** What buyers see right now, and will keep seeing unless this is approved. */
   liveTagline: z.string().nullable(),
