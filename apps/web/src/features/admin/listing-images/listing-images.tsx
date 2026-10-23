@@ -4,23 +4,63 @@ import { IMAGE_MIME_TYPES } from '@dealers-drive/contracts';
 import { useRef, useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
+import { removeListingImageAction } from '@/features/admin/listing-actions';
 
 import { ImageTile } from './image-tile';
 import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 import type { ListingImagesProps, UploadProgress } from './listing-images.types';
 import { moved, uploadOne } from './utils';
 
-export function ListingImages({ listingId, images }: ListingImagesProps) {
+export function ListingImages({ listingId, images, live = false }: ListingImagesProps) {
   const input = useRef<HTMLInputElement>(null);
+  const replacementInput = useRef<HTMLInputElement>(null);
+  const replacementTarget = useRef<string | null>(null);
+  const [removing, setRemoving] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const count = images.items.length;
   const order = images.items.map((image) => image.mediaId);
   const room = Math.max(images.max - count, 0);
   const missing = Math.max(images.min - count, 0);
+  const busy = removing || progress !== null;
+
+  async function replace(file: File): Promise<void> {
+    const target = replacementTarget.current;
+    if (!target) return;
+    setErrors([]);
+    setNotice(null);
+    setProgress({ done: 0, total: 1 });
+    try {
+      const problem = await uploadOne(listingId, file, target);
+      setErrors(problem ? [problem] : []);
+      if (!problem) setNotice(LISTING_IMAGES_TEXT.replaced);
+    } finally {
+      setProgress(null);
+      replacementTarget.current = null;
+    }
+  }
+
+  async function remove(mediaId: string): Promise<void> {
+    setRemoving(true);
+    setErrors([]);
+    setNotice(null);
+    try {
+      const form = new FormData();
+      form.set('listingId', listingId);
+      form.set('mediaId', mediaId);
+      const result = await removeListingImageAction(form);
+      if (!result.ok) setErrors([result.message ?? LISTING_IMAGES_TEXT.removeFailed]);
+      else setNotice(LISTING_IMAGES_TEXT.removed);
+    } finally {
+      setRemoving(false);
+    }
+  }
 
   async function upload(files: File[]): Promise<void> {
+    setErrors([]);
+    setNotice(null);
     const accepted = files.slice(0, room);
     const problems: string[] = files.length > room ? [LISTING_IMAGES_TEXT.tooMany(room)] : [];
 
@@ -39,14 +79,20 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-[14px] font-medium">{LISTING_IMAGES_TEXT.heading}</h3>
         <span className="text-[12px] ink-subtle tnum">
-          {LISTING_IMAGES_TEXT.count(count, images.min, images.max)}
+          {live
+            ? LISTING_IMAGES_TEXT.liveCount(count, images.min, images.max)
+            : LISTING_IMAGES_TEXT.count(count, images.min, images.max)}
         </span>
       </div>
 
-      {missing > 0 && images.canEdit ? (
+      {missing > 0 && images.canEdit && !live ? (
         <p className="text-[12px] text-(--color-warn)">
           {LISTING_IMAGES_TEXT.belowMinimum(missing)}
         </p>
+      ) : null}
+
+      {live && images.canEdit ? (
+        <p className="text-[12px] ink-subtle">{LISTING_IMAGES_TEXT.liveHint(images.min)}</p>
       ) : null}
 
       {errors.length > 0 ? (
@@ -68,7 +114,14 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
               key={image.mediaId}
               listingId={listingId}
               image={image}
-              editable={images.canEdit && progress === null}
+              editable={images.canEdit && !busy}
+              onReplace={() => {
+                replacementTarget.current = image.mediaId;
+                replacementInput.current?.click();
+              }}
+              onRemove={() => {
+                void remove(image.mediaId);
+              }}
               earlier={moved(order, index, -1)}
               later={moved(order, index, 1)}
             />
@@ -79,9 +132,23 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
       {images.canEdit ? (
         <>
           <input
+            ref={replacementInput}
+            type="file"
+            className="sr-only"
+            accept={IMAGE_MIME_TYPES.join(',')}
+            aria-label={LISTING_IMAGES_TEXT.replaceInputLabel}
+            disabled={busy}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (file) void replace(file);
+            }}
+          />
+          <input
             ref={input}
             type="file"
             multiple
+            disabled={busy}
             className="sr-only"
             accept={IMAGE_MIME_TYPES.join(',')}
             aria-label={LISTING_IMAGES_TEXT.inputLabel}
@@ -97,7 +164,7 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
             <button
               type="button"
               className="btn btn-secondary self-start text-[12px]"
-              disabled={progress !== null}
+              disabled={busy}
               onClick={() => input.current?.click()}
             >
               {progress
@@ -109,6 +176,16 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
       ) : (
         <p className="text-[12px] ink-subtle">{LISTING_IMAGES_TEXT.closed}</p>
       )}
+      {progress ? (
+        <p role="status" className="text-[12px] ink-subtle">
+          {LISTING_IMAGES_TEXT.uploading(progress.done, progress.total)}
+        </p>
+      ) : null}
+      {notice ? (
+        <p role="status" className="text-[12px] ink-subtle">
+          {notice}
+        </p>
+      ) : null}
     </div>
   );
 }

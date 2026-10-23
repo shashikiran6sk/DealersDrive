@@ -54,7 +54,7 @@ export type ImagePresignResult =
 
 export async function presignListingImageAction(
   _listingId: string,
-  file: { fileName: string; mimeType: string; bytes: number },
+  file: { fileName: string; mimeType: string; bytes: number; replacesMediaId?: string },
 ): Promise<ImagePresignResult> {
   await new Promise((resolve) => setTimeout(resolve, 300));
   if (file.fileName.includes('fail')) {
@@ -80,13 +80,24 @@ export async function commitListingImageAction(
   return { ok: true };
 }
 
-export async function removeListingImageAction(formData: FormData): Promise<void> {
+export async function replaceListingImageAction(
+  listingId: string,
+  mediaId: string,
+  replacementMediaId: string,
+): Promise<ListingActionResult> {
+  listingActionsStub.calls.push({ listingId, mediaId, replacementMediaId });
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { ok: true };
+}
+
+export async function removeListingImageAction(formData: FormData): Promise<ListingActionResult> {
   const values: Record<string, string> = {};
   for (const [key, value] of formData.entries()) {
     if (typeof value === 'string') values[key] = value;
   }
   listingActionsStub.calls.push(values);
   await new Promise((resolve) => setTimeout(resolve, 300));
+  return { ok: true };
 }
 
 export async function reorderListingImagesAction(formData: FormData): Promise<void> {
