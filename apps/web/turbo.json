@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["APP_ENV", "API_BASE_URL", "API_ORIGIN", "WEB_BASE_URL"]
+      "env": ["APP_ENV", "API_BASE_URL", "API_ORIGIN", "WEB_BASE_URL", "LEGAL_V1_PREVIEW"]
     }
   }
 }

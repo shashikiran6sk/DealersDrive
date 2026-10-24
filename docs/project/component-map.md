@@ -1935,3 +1935,16 @@ gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
 ### Admin listing management
 
 `ListingReview` now includes `ListingVehicleEditor` and `AvailabilityPanel` in its folder. Both receive `AdminListingDetail`, use server-computed capability flags, and are exercised in `Admin/ListingReview` (Active and review states). The editor reuses RegistrationStep, BasicsStep, DetailsStep and PricingStep; all step forms accept their shared vehicle field shape. Availability dialogs preserve focus, show failures, and disable duplicate submissions. Insurance choices are None/Live throughout the shared forms; no date field is rendered.
+
+## Legal V1 additions
+
+| Component     | Source                                                           | Props                      | Sandbox states                   |
+| ------------- | ---------------------------------------------------------------- | -------------------------- | -------------------------------- |
+| LegalCheck    | apps/web/src/components/forms/legal-check/legal-check.tsx        | disabled                   | unchecked, disabled              |
+| LegalDocument | apps/web/src/components/layout/legal-document/legal-document.tsx | document                   | Terms, Privacy                   |
+| LegalGate     | apps/web/src/features/legal/legal-gate/legal-gate.tsx            | scope, returnTo, canAccept | customer, dealer, owner required |
+
+OnboardingWizard adds optional legalRequired (default false), passed only to its
+existing ReviewStep. Existing stories/consumers retain their behavior. New review
+stories cover missing and recorded acceptance. CustomerFooter adds legalVisible;
+PublicShell supplies publication visibility, while sandbox previews show both links.

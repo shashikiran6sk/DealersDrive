@@ -1,3 +1,4 @@
+import { requireCustomerLegal } from '@/lib/legal';
 import { SavedVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -22,6 +23,7 @@ export default async function SavedCarsPage({
 }: {
   searchParams: Promise<SearchParamsInput>;
 }) {
+  await requireCustomerLegal('/saved');
   const params = await searchParams;
   const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
 

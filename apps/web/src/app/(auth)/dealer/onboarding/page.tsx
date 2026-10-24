@@ -1,3 +1,5 @@
+import { LegalGate } from '@/features/legal/legal-gate';
+import { legalStatus } from '@/lib/legal';
 import type {
   AuthProvidersResponse,
   AuthSession,
@@ -34,7 +36,7 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([
+  const [documents, dealer, completeness, phoneWidget, googleLinkUrl, legal] = await Promise.all([
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -46,8 +48,16 @@ export default async function OnboardingPage({
       : Promise.resolve(null),
     phoneWidgetOrNull(),
     session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
+    legalStatus('DEALER'),
   ]);
 
+  if (session.dealer?.status === 'PENDING_APPROVAL' && legal?.enabled && !legal.accepted) {
+    return (
+      <AuthShell>
+        <LegalGate scope="DEALER" returnTo="/dealer/onboarding" canAccept={legal.canAccept} />
+      </AuthShell>
+    );
+  }
   const params = await searchParams;
   const requested = Number(params.step ?? NaN);
 
@@ -59,6 +69,7 @@ export default async function OnboardingPage({
   return (
     <AuthShell>
       <OnboardingWizard
+        legalRequired={Boolean(legal?.enabled && !legal.accepted)}
         step={step}
         session={session}
         documents={documents?.data ?? []}

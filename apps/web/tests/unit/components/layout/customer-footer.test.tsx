@@ -98,7 +98,15 @@ describe('the destinations it claims exist', () => {
       .filter((href) => href.startsWith('/'));
 
     expect(new Set(routes)).toEqual(
-      new Set(['/cars', '/dealers', '/saved', '/login?as=dealer', '/contact']),
+      new Set([
+        '/cars',
+        '/dealers',
+        '/saved',
+        '/login?as=dealer',
+        '/contact',
+        '/terms',
+        '/privacy',
+      ]),
     );
   });
 });
