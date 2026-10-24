@@ -433,3 +433,6 @@ export const EveryStep: Story = {
     </div>
   ),
 };
+
+export const ReviewLegalRequired: Story = { args: { ...Review.args, legalRequired: true } };
+export const ReviewLegalAccepted: Story = { args: { ...Review.args, legalRequired: false } };

@@ -1,3 +1,4 @@
+import { requireCustomerLegal } from '@/lib/legal';
 import { CustomerEnquiriesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -24,6 +25,7 @@ export default async function MyEnquiriesPage({
 }: {
   searchParams: Promise<SearchParamsInput>;
 }) {
+  await requireCustomerLegal('/enquiries');
   const params = await searchParams;
   const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
 

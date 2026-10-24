@@ -1,3 +1,8 @@
+import {
+  acceptDealerPolicies,
+  legalEnabled,
+  requireDealerAcceptance,
+} from '../legal/legal.facade.js';
 import { withDealerRegistrationConflict } from './dealer-registration-conflict.js';
 import { invalidateDealerVerification } from './dealer-verification.js';
 import { DEALER_VERIFICATION_LABELS, isDealerVerified } from '@dealers-drive/contracts';
@@ -687,6 +692,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async submitForVerification(
       dealerId: string,
       actor: SubmissionActor = { type: 'DEALER', id: null },
+      legal?: { accepted?: true; principal: DealerPrincipal },
     ): Promise<DealerSubmitResponse> {
       const dealer = await requireDealer(dealerId);
       assertSubmittable(dealer.status);
@@ -708,6 +714,19 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
+        if (legalEnabled() && legal?.accepted === true) {
+          if (
+            legal.principal.dealerId !== dealerId ||
+            legal.principal.userId !== actor.id ||
+            actor.type !== 'DEALER'
+          )
+            throw new DomainError(
+              'LEGAL_OWNER_REQUIRED',
+              'Only the authenticated owner may accept.',
+            );
+          await acceptDealerPolicies(tx, legal.principal);
+        }
+        await requireDealerAcceptance(tx, dealerId);
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,

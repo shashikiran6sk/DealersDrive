@@ -9,6 +9,7 @@ export interface GoogleEntry {
 }
 
 export interface CustomerLoginProps {
+  legalEnabled?: boolean;
   widget: PhoneOtpWidget | null;
   returnTo: string;
 }

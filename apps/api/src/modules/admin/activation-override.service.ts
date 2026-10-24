@@ -1,3 +1,4 @@
+import { requireDealerAcceptance } from '../legal/legal.facade.js';
 import {
   DEALER_ACTIVATION_METHOD_LABELS,
   MANUAL_ACTIVATION_DISCLAIMER_VERSION,
@@ -134,6 +135,7 @@ export function createActivationOverrideService({
         });
         if (blocked) throw new ConflictError('ACTIVATION_OVERRIDE_BLOCKED', blocked);
 
+        await requireDealerAcceptance(tx, dealerId);
         const now = new Date();
         const updated = await tx.dealer.update({
           where: { id: dealerId },
