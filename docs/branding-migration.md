@@ -129,6 +129,18 @@ Original full-size source rasters and temporary test harnesses/logs are outside
 the production tree. Review the PR's CI result before merging; deployment and
 post-deployment public URL/cache checks remain release-owner actions.
 
+**Follow-up — the favicon in search results.** Keeping the conventional
+`favicon.ico` URL turned out to be the gap: after release, Google kept showing
+the old `DD` lettering, because the page still linked `/favicon.ico`, the URL
+it had cached the old mark under. The other link was `icon.png` at 512px,
+which is not the square multiple of 48px that Google uses. The favicon now
+follows the same rule as the other assets: versioned URLs declared in root
+metadata (`favicon-v2.ico`, `dd-favicon-v2-48/96.png`, `dd-icon-v2-192.png`,
+`dd-apple-icon-v2-180.png`), with no icon files left in `src/app/`.
+`/favicon.ico` still serves the new mark from `public/`, but is no longer
+linked. The `src/app/` icon rows in the inventories above and the file list
+below describe the release as it shipped; see `docs/seo.md` for the current set.
+
 ## Validation commands and results
 
 | Command / check                                                                                                      | Result                                                                                                                                                                                                    |

@@ -730,8 +730,32 @@ default is inherited by the not-found page, which then carried Next's
 `noindex` beside an `index, follow`. Outside production it is the net under
 any page that forgot.
 
-No `icons`: `app/favicon.ico`, `app/icon.png` and `app/apple-icon.png` are the
-declaration, and a second one is how a page ends up with two favicons.
+`icons` is the one declaration of the favicon, from `SITE_ICONS` in
+`seo.constants.ts`. There are no icon files in `app/` any more, and there must
+not be: Next always adds a `<link>` for `app/favicon.ico`, whatever the
+metadata says, so one would put an unversioned favicon back beside these.
+
+### `seo.constants.ts` — `SITE_ICONS`
+
+**The favicon lives at versioned URLs.** After the rebrand (#311) Google kept
+showing the old `DD` lettering in search results: the page still linked
+`/favicon.ico`, the URL Google had cached the old image under, so a re-crawl
+of the homepage found nothing that looked new. A new mark gets a new URL —
+`favicon-v2.ico`, `dd-favicon-v2-*.png`, `dd-apple-icon-v2-180.png` — the same
+way the manifest icons, the organization logo and the social image already do.
+The next new mark is `v3`, not a new image under these names.
+
+**Sizes are multiples of 48.** Google only uses a favicon that is a square
+multiple of 48px, so the list offers 48, 96 and 192 alongside the `.ico`,
+whose `sizes` names all three of its frames (16, 32, 48). Next used to declare
+the `.ico` as `16x16` and `app/icon.png` was 512px, so neither of the old
+links met that rule.
+
+`/favicon.ico` itself still exists, in `public/` with the same bytes as
+`favicon-v2.ico`, because browsers and crawlers request it by habit without
+reading the page. It is only no longer linked.
+`scripts/verify-brand-assets.mjs` checks the two files match, and checks every
+favicon size for transparent rounded corners, centring and padding.
 
 ### `json-ld.ts` — `export function serializeJsonLd(document)`
 
