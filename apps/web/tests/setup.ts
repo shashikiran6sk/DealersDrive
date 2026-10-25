@@ -152,11 +152,12 @@ vi.mock('next/image', () => ({
   },
 }));
 
-/** jsdom implements neither, and the gallery calls both. */
+/** jsdom implements none of these, and the gallery calls them all. */
 beforeEach(() => {
   linkStatus.pending = false;
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.scrollTo = vi.fn();
+  Element.prototype.setPointerCapture = vi.fn();
 
   navigationState.pathname = '/';
   navigationState.searchParams = new URLSearchParams();
