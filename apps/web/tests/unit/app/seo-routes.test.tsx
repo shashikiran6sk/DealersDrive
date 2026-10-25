@@ -6,6 +6,9 @@ import {
   type PublicVehiclesResponse,
   type VehicleCardDto,
 } from '@dealers-drive/contracts';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -142,10 +145,19 @@ describe('the root layout', () => {
   });
 
   /**
-   * `app/favicon.ico`, `app/icon.png` and `app/apple-icon.png` are the icons;
-   * Next writes their `<link>` tags. Declaring `icons` here as well is how a
-   * page ends up with two favicons that disagree.
+   * The icons are declared in `rootMetadata()` at versioned URLs. An icon file
+   * in `app/` would bring back an unversioned `<link>` beside them — Next
+   * always links `app/favicon.ico`, whatever the metadata declares — and that
+   * is the URL search engines had cached the old mark under.
    */
+  it('declares the icons itself, with no icon file in app/ for Next to link', () => {
+    const app = resolve(process.cwd(), 'src/app');
+    for (const name of ['favicon.ico', 'icon.png', 'icon.svg', 'apple-icon.png']) {
+      expect(existsSync(resolve(app, name)), name).toBe(false);
+    }
+    expect(rootMetadata().icons).toBeDefined();
+  });
+
   /**
    * Every public page states its own robots. A default here would be inherited
    * by the not-found page too, which then carried Next's `noindex` beside an
@@ -157,10 +169,6 @@ describe('the root layout', () => {
 
     vi.stubEnv('APP_ENV', 'preview');
     expect(rootMetadata().robots).toEqual({ index: false, follow: false });
-  });
-
-  it('declares no icons of its own — the app-directory files are the only source', () => {
-    expect(rootMetadata()).not.toHaveProperty('icons');
   });
 });
 
