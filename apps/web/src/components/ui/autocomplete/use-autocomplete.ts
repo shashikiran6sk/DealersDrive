@@ -105,9 +105,21 @@ export function useAutocomplete<T>({
   const activeItem = activeIndex >= 0 ? items[activeIndex] : undefined;
 
   const optionId = (item: T) => `${listId}-opt-${sourceRef.current.keyOf(item)}`;
+  const activeOptionId = activeItem === undefined ? undefined : optionId(activeItem);
+
+  const movedByKey = useRef(false);
+
+  useEffect(() => {
+    const scroll = movedByKey.current;
+    movedByKey.current = false;
+    if (scroll && activeOptionId) {
+      document.getElementById(activeOptionId)?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [activeOptionId]);
 
   function move(delta: number): void {
     if (items.length === 0) return;
+    movedByKey.current = true;
     setHighlighted((current) => (current + delta + items.length) % items.length);
     setOpen(true);
   }
@@ -169,7 +181,7 @@ export function useAutocomplete<T>({
       'aria-autocomplete': 'list',
       'aria-expanded': open && search.length >= SUGGEST_MIN_CHARS,
       'aria-controls': listId,
-      'aria-activedescendant': activeItem === undefined ? undefined : optionId(activeItem),
+      'aria-activedescendant': activeOptionId,
       onChange: (event) => {
         const next = event.target.value;
         setValue(next);
@@ -186,7 +198,7 @@ export function useAutocomplete<T>({
       id: optionId(item),
       role: 'option',
       'aria-selected': index === activeIndex,
-      onMouseEnter: () => setHighlighted(index),
+      onMouseMove: () => setHighlighted(index),
       onMouseDown: (event) => event.preventDefault(),
       onClick: () => choose(item),
     }),
