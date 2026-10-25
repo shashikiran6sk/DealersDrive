@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 
 import { AuthShell } from '@/components/auth/auth-shell';
 import { OnboardingWizard, type OnboardingStep } from '@/features/auth/onboarding-wizard';
-import { ApiError, apiGet } from '@/lib/api';
+import { ApiError, apiGet, qs } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -36,7 +36,20 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  const [documents, dealer, completeness, phoneWidget, googleLinkUrl, legal] = await Promise.all([
+  const [params, legal] = await Promise.all([searchParams, legalStatus('DEALER')]);
+  if (session.dealer && legal?.enabled && !legal.accepted) {
+    return (
+      <AuthShell>
+        <LegalGate
+          scope="DEALER"
+          returnTo={`${LINK_RETURN_TO}${qs({ step: params.step, error: params.error })}`}
+          canAccept={legal.canAccept}
+        />
+      </AuthShell>
+    );
+  }
+
+  const [documents, dealer, completeness, phoneWidget, googleLinkUrl] = await Promise.all([
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -48,17 +61,7 @@ export default async function OnboardingPage({
       : Promise.resolve(null),
     phoneWidgetOrNull(),
     session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
-    legalStatus('DEALER'),
   ]);
-
-  if (session.dealer?.status === 'PENDING_APPROVAL' && legal?.enabled && !legal.accepted) {
-    return (
-      <AuthShell>
-        <LegalGate scope="DEALER" returnTo="/dealer/onboarding" canAccept={legal.canAccept} />
-      </AuthShell>
-    );
-  }
-  const params = await searchParams;
   const requested = Number(params.step ?? NaN);
 
   const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : 0;

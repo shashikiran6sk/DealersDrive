@@ -202,6 +202,9 @@ describe('dealer owner acceptance and preserved onboarding', () => {
   });
   it('prevents administrative activation of an assisted or self-onboarded dealer without owner agreement', async () => {
     const d = await marketplaceFixtures(h, 'legal-activation').dealership('DRAFT');
+    const uploadedDocuments = { dealerId: d.dealerId, fileName: { not: null } };
+    const before = await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } });
+    expect(await h.prisma.dealerDocument.count({ where: uploadedDocuments })).toBe(0);
     h.google.claims = {
       subject: `legal-activation-admin-${randomUUID()}`,
       email: env.adminAllowlist[0]!,
@@ -219,11 +222,18 @@ describe('dealer owner acceptance and preserved onboarding', () => {
       .send(body)
       .expect(403);
     expect(blocked.body.code).toBe('LEGAL_ACCEPTANCE_REQUIRED');
+    expect(blocked.body.detail).toContain('The dealership owner must sign in through Dealer Login');
     expect((await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).status).toBe(
       'DRAFT',
     );
     await accept(d.agent, 'DEALER').expect(200);
+    expect(await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).toEqual(before);
     await admin.post(`/v1/admin/dealers/${d.dealerId}/activation-override`).send(body).expect(200);
+    expect(await h.prisma.dealerDocument.count({ where: uploadedDocuments })).toBe(0);
+    expect(await h.prisma.dealer.findUniqueOrThrow({ where: { id: d.dealerId } })).toMatchObject({
+      status: 'ACTIVE',
+      activationMethod: 'MANUAL_OVERRIDE',
+    });
   });
   it('does not let staff forge owner acceptance, or acceptance bypass suspension', async () => {
     const fixtures = marketplaceFixtures(h, 'legal-staff');

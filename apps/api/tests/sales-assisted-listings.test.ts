@@ -1,6 +1,6 @@
 import { ListingCheckKey } from '@dealers-drive/contracts';
 import type request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { env } from '../src/config/env.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
@@ -19,6 +19,7 @@ let sales: request.Agent;
 let otherSales: request.Agent;
 let moderator: request.Agent;
 let salesMemberId: string;
+let salesClaims: ReturnType<typeof createFakeGoogle>['claims'];
 let counter = 0;
 let plate = 1000;
 
@@ -34,6 +35,7 @@ beforeAll(async () => {
   await h.signInAdmin(superAdmin);
   const salesEmail = nextEmail('listing.rep');
   sales = await member(salesEmail, 'SALES_REP');
+  salesClaims = { ...h.google.claims };
   otherSales = await member(nextEmail('other.listing.rep'), 'SALES_REP');
   moderator = await member(nextEmail('listing.mod'), 'MODERATOR');
   salesMemberId = (
@@ -117,6 +119,60 @@ async function draft(dealerId: string, agent: request.Agent = sales) {
 }
 
 describe('drafts', () => {
+  it('keeps an AdminMember sales draft across login and submits only after owner acceptance', async () => {
+    vi.stubEnv('LEGAL_V1_PREVIEW', 'true');
+    try {
+      const dealerId = await assistedDealer();
+      await approveDealer(dealerId);
+      const vehicleId = await draft(dealerId);
+      const path = `/v1/sales/dealers/${dealerId}/vehicles/${vehicleId}/submit`;
+      const before = await h.prisma.vehicle.findUniqueOrThrow({
+        where: { id: vehicleId },
+        include: { listing: true },
+      });
+      const blocked = await sales.post(path).expect(403);
+      expect(blocked.body.code).toBe('LEGAL_ACCEPTANCE_REQUIRED');
+      expect(blocked.body.detail).toContain(
+        'The dealership owner must sign in through Dealer Login',
+      );
+      expect(blocked.body.detail).toContain('Sales representatives cannot accept');
+      h.google.claims = salesClaims;
+      await h.signInAdmin(sales);
+      await sales.post(path).expect(403);
+      await sales.post('/v1/legal/accept').send({ scope: 'DEALER', accepted: true }).expect(401);
+      expect(await h.prisma.legalAcceptance.count({ where: { dealerId } })).toBe(0);
+      expect(
+        await h.prisma.vehicle.findUniqueOrThrow({
+          where: { id: vehicleId },
+          include: { listing: true },
+        }),
+      ).toEqual(before);
+      const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+      const phone = dealer.contactPhone!.slice(-10);
+      const owner = h.agent();
+      await owner
+        .post('/v1/auth/sign-in/phone/dealer')
+        .send({
+          phone,
+          accessToken: `dev-otp:91${phone}:${env.PHONE_OTP_DEV_CODE}:owner-accept-${counter}`,
+        })
+        .expect(200);
+      expect((await owner.get('/v1/legal/status?scope=DEALER').expect(200)).body).toMatchObject({
+        accepted: false,
+        canAccept: true,
+      });
+      await owner.post('/v1/legal/accept').send({ scope: 'DEALER', accepted: true }).expect(200);
+      expect((await sales.post(path).expect(200)).body.listing.status).toBe('PENDING_REVIEW');
+      const member = await h.prisma.dealerMember.findFirstOrThrow({
+        where: { dealerId, role: 'OWNER' },
+      });
+      const receipt = await h.prisma.legalAcceptance.findFirstOrThrow({ where: { dealerId } });
+      expect(receipt.userId).toBe(member.userId);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('can be prepared before the dealership is approved, attributed to the member', async () => {
     const dealerId = await assistedDealer();
     const vehicleId = await draft(dealerId);
