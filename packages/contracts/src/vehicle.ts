@@ -100,7 +100,6 @@ export const VehicleFieldSchemas = {
     .max(VEHICLE_LIMITS.maxOwners, 'Check the number of owners.'),
   color: VehicleColor,
   insuranceType: InsuranceType,
-  insuranceValidUntil: z.iso.date('Enter a date as YYYY-MM-DD.'),
   pricePaise: z
     .number()
     .int()
@@ -131,7 +130,7 @@ export const REQUIRED_VEHICLE_FIELDS = [
 export type RequiredVehicleField = (typeof REQUIRED_VEHICLE_FIELDS)[number];
 
 export const VEHICLE_FIELD_LABELS: Record<
-  RequiredVehicleField | 'variant' | 'registrationYear' | 'insuranceValidUntil' | 'description',
+  RequiredVehicleField | 'variant' | 'registrationYear' | 'description',
   string
 > = {
   registrationNumber: 'Registration number',
@@ -147,7 +146,6 @@ export const VEHICLE_FIELD_LABELS: Record<
   ownerCount: 'Owners',
   color: 'Colour',
   insuranceType: 'Insurance',
-  insuranceValidUntil: 'Insurance valid until',
   pricePaise: 'Price',
   description: 'Description',
 };
@@ -166,7 +164,6 @@ export interface VehicleCompletenessInput {
   ownerCount: number | null;
   color: string | null;
   insuranceType: string | null;
-  insuranceValidUntil: string | Date | null;
   pricePaise: number | bigint | null;
 }
 
@@ -182,10 +179,8 @@ export interface VehicleIssue {
  * offer a Submit the server would refuse — or refuse one it would accept. An
  * empty array is the only answer that means "complete".
  *
- * Beyond presence it checks the two rules that span fields: a car cannot be
- * registered before it was built, and insurance other than `NONE` needs the date
- * it runs to, because "comprehensive, expired in 2019" is the thing a buyer
- * actually needs to know.
+ * Beyond presence it checks that registration does not precede manufacture.
+ * Insurance is a manually maintained None/Live status; no expiry date is collected.
  */
 export function vehicleIssues(vehicle: VehicleCompletenessInput): VehicleIssue[] {
   const issues: VehicleIssue[] = [];
@@ -205,17 +200,6 @@ export function vehicleIssues(vehicle: VehicleCompletenessInput): VehicleIssue[]
     issues.push({
       field: 'registrationYear',
       message: 'The car cannot be registered before it was manufactured.',
-    });
-  }
-
-  if (
-    vehicle.insuranceType !== null &&
-    vehicle.insuranceType !== 'NONE' &&
-    vehicle.insuranceValidUntil === null
-  ) {
-    issues.push({
-      field: 'insuranceValidUntil',
-      message: 'Enter the date the insurance is valid until.',
     });
   }
 
@@ -305,7 +289,6 @@ export const UpdateVehicleInput = z
     ownerCount: VehicleFieldSchemas.ownerCount.nullable().optional(),
     color: VehicleFieldSchemas.color.nullable().optional(),
     insuranceType: VehicleFieldSchemas.insuranceType.nullable().optional(),
-    insuranceValidUntil: VehicleFieldSchemas.insuranceValidUntil.nullable().optional(),
     pricePaise: VehicleFieldSchemas.pricePaise.nullable().optional(),
     negotiability: VehicleFieldSchemas.negotiability.nullable().optional(),
     description: VehicleFieldSchemas.description.nullable().optional(),
@@ -361,7 +344,6 @@ export const DealerVehicle = z.object({
   ownerCount: z.number().int().nullable(),
   color: VehicleColor.nullable(),
   insuranceType: InsuranceType.nullable(),
-  insuranceValidUntil: z.string().nullable(),
   pricePaise: z.number().int().nullable(),
   priceLabel: z.string().nullable(),
   negotiability: PriceNegotiability.nullable(),

@@ -1,7 +1,5 @@
-import type { DealerVehicle } from '@dealers-drive/contracts';
-
 import { WIZARD_STEPS, STEP_FIELDS, FORM_FIELD_OF } from './vehicle-wizard.constants';
-import type { WizardScope, WizardStep } from './vehicle-wizard.types';
+import type { VehicleFormValues, WizardScope, WizardStep } from './vehicle-wizard.types';
 
 export function isWizardStep(value: unknown): value is WizardStep {
   return typeof value === 'string' && WIZARD_STEPS.some((step) => step === value);
@@ -54,7 +52,7 @@ export function editPath(
   return `${base}/edit?step=${step}${extra}`;
 }
 
-export function storedValue(vehicle: DealerVehicle | null, field: string): string {
+export function storedValue(vehicle: VehicleFormValues | null, field: string): string {
   if (!vehicle) return '';
   if (field === 'priceRupees') return paiseToRupeesText(vehicle.pricePaise);
   if (field === 'registrationNumber') return vehicle.registrationDisplay;
@@ -65,7 +63,7 @@ export function storedValue(vehicle: DealerVehicle | null, field: string): strin
 
 export function formValue(
   values: Record<string, string>,
-  vehicle: DealerVehicle | null,
+  vehicle: VehicleFormValues | null,
   field: string,
 ): string {
   return values[field] ?? storedValue(vehicle, field);

@@ -3,6 +3,7 @@ import type { AdminVehicleImages } from '@dealers-drive/contracts';
 export interface ListingImagesProps {
   listingId: string;
   images: AdminVehicleImages;
+  live?: boolean;
 }
 
 export interface UploadProgress {

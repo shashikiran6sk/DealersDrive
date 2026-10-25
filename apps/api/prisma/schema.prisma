@@ -59,6 +59,7 @@ model User {
   roles                UserRole[]
   enquiries            Enquiry[]
   savedVehicles        SavedVehicle[]
+  legalAcceptances     LegalAcceptance[]
 
   enquiriesContacted Enquiry[] @relation("EnquiryContactedBy")
   enquiriesClosed    Enquiry[] @relation("EnquiryClosedBy")
@@ -748,6 +749,7 @@ model Vehicle {
   /// read by nothing public.
   legacyColor         String?
   insuranceType       InsuranceType?
+  /// Historical expiry retained for migration review; no longer exposed or writable.
   insuranceValidUntil DateTime?      @db.Date
 
   /// Money is BigInt paise (rule 3). `64500000` is ₹6,45,000.
@@ -1302,9 +1304,8 @@ enum VehicleColor {
 }
 
 enum InsuranceType {
-  COMPREHENSIVE
-  THIRD_PARTY
   NONE
+  LIVE
 }
 
 enum PriceNegotiability {
@@ -1672,4 +1673,19 @@ model AdminOtpRedemption {
   challenge AdminOtpChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
 
   @@map("admin_otp_redemptions")
+}
+
+model LegalAcceptance {
+  id             String   @id @default(uuid()) @db.Uuid
+  subjectKey     String
+  userId         String   @db.Uuid
+  dealerId       String?  @db.Uuid
+  termsVersion   String
+  privacyVersion String
+  acceptedAt     DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([subjectKey, termsVersion, privacyVersion])
+  @@index([userId])
+  @@map("legal_acceptances")
 }

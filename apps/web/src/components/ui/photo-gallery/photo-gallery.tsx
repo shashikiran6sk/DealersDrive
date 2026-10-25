@@ -104,7 +104,7 @@ export function PhotoGallery({
   return (
     <section aria-label={PHOTO_GALLERY_TEXT.label} className="min-w-0">
       {variant === 'studio' ? <StudioWhiteFilter id={filterId} /> : null}
-      <div {...swipe} className="relative touch-pan-y">
+      <div {...swipe} className="relative touch-pan-y touch-pinch-zoom">
         <button
           type="button"
           onClick={(event) => openAt(current, event.currentTarget)}

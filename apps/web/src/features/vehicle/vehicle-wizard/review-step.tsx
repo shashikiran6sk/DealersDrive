@@ -6,7 +6,6 @@ import {
   NEGOTIABILITY_LABELS,
   TRANSMISSION_LABELS,
   VEHICLE_COLOR_LABELS,
-  formatDate,
   formatKm,
   ownerLabel,
 } from '@dealers-drive/contracts';
@@ -77,10 +76,6 @@ function sections(vehicle: DealerVehicle): { step: WizardStep; rows: Row[] }[] {
         {
           label: FIELD_LABELS.insuranceType,
           value: vehicle.insuranceType ? INSURANCE_LABELS[vehicle.insuranceType] : null,
-        },
-        {
-          label: FIELD_LABELS.insuranceValidUntil,
-          value: vehicle.insuranceValidUntil ? formatDate(vehicle.insuranceValidUntil) : null,
         },
       ],
     },

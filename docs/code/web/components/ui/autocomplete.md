@@ -44,6 +44,14 @@ A convenience for a pointer; Escape plus select-all is the
 
 keyboard's way to the same place.
 
+### `max-h-[min(360px,60vh)] list-none overflow-y-auto overscroll-contain`
+
+The rows scroll inside the panel; the group heading above them does not. A
+full answer is eight rows, roughly 450 px, and on a phone a box that starts
+mid-screen would otherwise push its last rows off the bottom of the viewport.
+`overscroll-contain` keeps a flick at the end of the list from scrolling the
+page behind it.
+
 ### `<div {...autocomplete.listProps} className="px-[12px] py-[14px] text-[13px]">`
 
 One row, saying which of the three non-list states this is. It still
@@ -235,6 +243,23 @@ undefined rather than accidentally meaningful.
 ### `setHighlighted((current) => (current + delta + items.length) % items.length)`
 
 Wraps, as the UI reference does: past the last row is the first one.
+
+### `const movedByKey = useRef(false)`
+
+The list scrolls inside the panel, so a row arrowed to can be out of sight;
+the effect on `activeOptionId` brings it into view with `block: 'nearest'`.
+Only for the keys: hovering also moves the highlight, and scrolling a
+half-visible row under the pointer would slide the next row beneath it and
+chase the highlight down the list.
+
+### `onMouseMove: () => setHighlighted(index)`
+
+`mousemove`, not `mouseenter`. When the arrows scroll the list — or the page,
+on a short screen — the rows slide under a pointer that has not moved, and the
+browser fires `mouseenter` on whichever row arrives there. On `mouseenter` that
+row took the highlight back from the keyboard: ↑ from the first row landed on
+the third. A pointer that has not moved sends no `mousemove`, so the highlight
+follows the hand only when the hand moves.
 
 ### `if (open && activeItem !== undefined)`
 

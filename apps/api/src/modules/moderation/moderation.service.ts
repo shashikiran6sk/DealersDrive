@@ -1,5 +1,6 @@
 import type {
   AdminListingDetail,
+  AdminUpdateVehicleInput,
   AdminListingQuery,
   AdminListingsResponse,
   AdminReactivationQuery,
@@ -16,6 +17,7 @@ import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError, ForbiddenError, NotFoundError, errorCode } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
+import type { VehiclesService } from '../vehicles/vehicles.facade.js';
 import type { VehicleImagesService } from '../vehicle-images/vehicle-images.facade.js';
 import {
   LISTING_NOT_FOUND,
@@ -27,6 +29,7 @@ import {
   lockListing,
   transition,
 } from '../listings/listings.facade.js';
+import { legalEnabled, hasDealerAcceptance } from '../legal/legal.facade.js';
 import { approvalBlockers } from './moderation.approval.js';
 import {
   PHOTOGRAPHY_OPEN_STATUSES,
@@ -51,6 +54,7 @@ export interface ModerationDeps {
   prisma: PrismaClient;
   repo: ModerationRepository;
   audit: AuditService;
+  vehicles: Pick<VehiclesService, 'adminUpdate'>;
   images: Pick<VehicleImagesService, 'images' | 'minimum'>;
 }
 
@@ -62,15 +66,23 @@ function reactivationNotFound(): NotFoundError {
   return new NotFoundError(REACTIVATION_NOT_FOUND, { code: 'REACTIVATION_NOT_FOUND' });
 }
 
-export function createModerationService({ prisma, repo, audit, images }: ModerationDeps) {
+export function createModerationService({ prisma, repo, audit, images, vehicles }: ModerationDeps) {
   async function detail(listingId: string, viewer?: AdminPrincipal): Promise<AdminListingDetail> {
     const listing = await repo.detail(listingId);
     if (!listing) throw notFound();
-    const [history, gallery] = await Promise.all([
+    const [history, gallery, dealerPoliciesAccepted] = await Promise.all([
       repo.history(listingId, Object.keys(HISTORY_LABELS)),
       images.images(listing.vehicleId, listing.status),
+      !legalEnabled() || hasDealerAcceptance(prisma, listing.dealerId),
     ]);
-    return toAdminListingDetail(listing, history, gallery, new Date(), viewer?.memberId ?? null);
+    return toAdminListingDetail(
+      listing,
+      history,
+      gallery,
+      new Date(),
+      viewer?.memberId ?? null,
+      dealerPoliciesAccepted,
+    );
   }
 
   async function assertNotAssistant(tx: Tx, listing: Listing, admin: AdminPrincipal) {
@@ -147,6 +159,21 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
 
   return {
     detail,
+
+    async updateVehicle(admin: AdminPrincipal, listingId: string, input: AdminUpdateVehicleInput) {
+      await vehicles.adminUpdate(admin, listingId, input);
+      return detail(listingId, admin);
+    },
+
+    async lifecycle(admin: AdminPrincipal, listingId: string, event: 'reserve' | 'markSold') {
+      await withTransaction(prisma, async (tx) => {
+        const listing = await lockListing(tx, listingId);
+        if (!listing) throw notFound();
+        await assertNotAssistant(tx, listing, admin);
+        await transition(tx, audit, listing, event, { type: 'ADMIN', id: admin.userId });
+      });
+      return detail(listingId, admin);
+    },
 
     async reactivations(query: AdminReactivationQuery): Promise<AdminReactivationsResponse> {
       const status = query.status ?? 'PENDING';
@@ -226,7 +253,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
           after: { status: input.status, listingId },
         });
       });
-      return detail(listingId);
+      return detail(listingId, admin);
     },
 
     async approve(admin: AdminPrincipal, listingId: string): Promise<AdminListingDetail> {
@@ -304,7 +331,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
         });
       });
 
-      return detail(listingId);
+      return detail(listingId, admin);
     },
 
     async listings(query: AdminListingQuery): Promise<AdminListingsResponse> {

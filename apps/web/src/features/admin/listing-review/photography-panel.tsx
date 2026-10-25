@@ -1,6 +1,7 @@
 import {
   PHOTOGRAPHY_STATUS_LABELS,
   PhotographyStatus,
+  isListingPubliclyVisible,
   type AdminListingDetail,
 } from '@dealers-drive/contracts';
 
@@ -61,7 +62,11 @@ export function PhotographyPanel({ detail }: { detail: AdminListingDetail }) {
         </form>
       ) : null}
 
-      <ListingImages listingId={listing.id} images={detail.images} />
+      <ListingImages
+        listingId={listing.id}
+        images={detail.images}
+        live={isListingPubliclyVisible(listing.status)}
+      />
     </section>
   );
 }

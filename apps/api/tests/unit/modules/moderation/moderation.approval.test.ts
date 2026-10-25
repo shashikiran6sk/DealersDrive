@@ -21,7 +21,7 @@ const COMPLETE = {
   color: 'WHITE',
   pricePaise: 145_000_000n,
   city: 'Vellore',
-  insuranceType: 'COMPREHENSIVE',
+  insuranceType: 'LIVE',
   priceNegotiability: 'FIXED',
 } as unknown as Vehicle;
 
