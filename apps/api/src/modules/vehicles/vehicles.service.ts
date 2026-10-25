@@ -1,4 +1,3 @@
-import { requireDealerAcceptance } from '../legal/legal.facade.js';
 import {
   ADMIN_EDITABLE_LISTING_STATUSES,
   LIFECYCLE_ACTION_PERMISSION,
@@ -642,7 +641,6 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           const vehicle = await requireAssistedVehicle(actor, vehicleId, tx);
           if (!listing) throw notFound();
           const permissions = await authorizeAssisted(tx, actor, true);
-          await requireDealerAcceptance(tx, actor.dealerId);
 
           const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
           assertTransition(listing.status, event, 'SALES');

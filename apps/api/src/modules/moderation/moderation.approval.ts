@@ -11,6 +11,7 @@ import { BLOCKER_MESSAGES } from './moderation.messages.js';
 
 export interface ApprovalState {
   dealerStatus: DealerStatus;
+  dealerPoliciesAccepted?: boolean;
   dealerCity: string | null;
   vehicle: Vehicle;
   checkedKeys: readonly string[];
@@ -27,6 +28,12 @@ export function approvalBlockers(state: ApprovalState): ApprovalBlocker[] {
   }
   if (vehicleIssues(completenessOf(state.vehicle)).length > 0) {
     blockers.push({ code: 'VEHICLE_INCOMPLETE', message: BLOCKER_MESSAGES.VEHICLE_INCOMPLETE });
+  }
+  if (state.dealerPoliciesAccepted === false) {
+    blockers.push({
+      code: 'DEALER_TERMS_NOT_ACCEPTED',
+      message: BLOCKER_MESSAGES.DEALER_TERMS_NOT_ACCEPTED,
+    });
   }
   const missing = ListingCheckKey.options.filter((key) => !state.checkedKeys.includes(key));
   if (missing.length > 0) {

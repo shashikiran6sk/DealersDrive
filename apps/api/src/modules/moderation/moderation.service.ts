@@ -29,6 +29,7 @@ import {
   lockListing,
   transition,
 } from '../listings/listings.facade.js';
+import { legalEnabled, hasDealerAcceptance } from '../legal/legal.facade.js';
 import { approvalBlockers } from './moderation.approval.js';
 import {
   PHOTOGRAPHY_OPEN_STATUSES,
@@ -69,11 +70,19 @@ export function createModerationService({ prisma, repo, audit, images, vehicles 
   async function detail(listingId: string, viewer?: AdminPrincipal): Promise<AdminListingDetail> {
     const listing = await repo.detail(listingId);
     if (!listing) throw notFound();
-    const [history, gallery] = await Promise.all([
+    const [history, gallery, dealerPoliciesAccepted] = await Promise.all([
       repo.history(listingId, Object.keys(HISTORY_LABELS)),
       images.images(listing.vehicleId, listing.status),
+      !legalEnabled() || hasDealerAcceptance(prisma, listing.dealerId),
     ]);
-    return toAdminListingDetail(listing, history, gallery, new Date(), viewer?.memberId ?? null);
+    return toAdminListingDetail(
+      listing,
+      history,
+      gallery,
+      new Date(),
+      viewer?.memberId ?? null,
+      dealerPoliciesAccepted,
+    );
   }
 
   async function assertNotAssistant(tx: Tx, listing: Listing, admin: AdminPrincipal) {

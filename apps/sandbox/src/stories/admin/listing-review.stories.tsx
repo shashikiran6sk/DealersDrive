@@ -320,3 +320,20 @@ export const Reserved: Story = {
     },
   },
 };
+
+export const AwaitingDealerAcceptance: Story = {
+  args: {
+    detail: {
+      ...DETAIL,
+      blockers: [
+        ...DETAIL.blockers,
+        {
+          code: 'DEALER_TERMS_NOT_ACCEPTED',
+          message:
+            'The dealership owner must sign in through Dealer Login and accept the Terms & Conditions and Privacy Policy before this listing can be published.',
+        },
+      ],
+      actions: { ...DETAIL.actions, canApprove: false },
+    },
+  },
+};

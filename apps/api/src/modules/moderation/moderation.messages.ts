@@ -37,6 +37,8 @@ export const APPROVAL_BLOCKED = 'This listing is not ready to approve yet.';
 
 export const BLOCKER_MESSAGES = {
   DEALER_NOT_ACTIVE: 'The dealership is not active, so nothing of theirs can go live.',
+  DEALER_TERMS_NOT_ACCEPTED:
+    'The dealership owner must sign in through Dealer Login and accept the Terms & Conditions and Privacy Policy before this listing can be published.',
   VEHICLE_INCOMPLETE: 'The vehicle details are incomplete.',
   CHECKS_INCOMPLETE: (missing: number) =>
     `${missing} verification ${missing === 1 ? 'check is' : 'checks are'} still unticked.`,

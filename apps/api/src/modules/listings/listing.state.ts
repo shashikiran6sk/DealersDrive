@@ -1,3 +1,4 @@
+import { requireDealerAcceptance } from '../legal/legal.facade.js';
 import type { Listing, ListingStatus, WithdrawalReason } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
@@ -218,6 +219,7 @@ export async function transition(
   options: TransitionOptions = {},
 ): Promise<Listing> {
   const to = assertTransition(listing.status, event, actor.type);
+  if (to === 'ACTIVE') await requireDealerAcceptance(tx, listing.dealerId);
   const rule = LISTING_TRANSITIONS[event];
   const reason = options.reason?.trim() ?? null;
   if (rule.needsReason && !reason) throw new DomainError('REASON_REQUIRED', REASON_REQUIRED);
