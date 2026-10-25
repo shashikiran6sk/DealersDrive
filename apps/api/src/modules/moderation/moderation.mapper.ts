@@ -217,6 +217,7 @@ export function toAdminListingDetail(
   images: AdminVehicleImages,
   now: Date = new Date(),
   viewerMemberId: string | null = null,
+  dealerPoliciesAccepted = true,
 ): AdminListingDetail {
   const assistant =
     viewerMemberId !== null &&
@@ -227,6 +228,7 @@ export function toAdminListingDetail(
   const blockers = reviewing
     ? approvalBlockers({
         dealerStatus: listing.dealer.status,
+        dealerPoliciesAccepted,
         dealerCity: listing.dealer.city,
         vehicle: listing.vehicle,
         checkedKeys: listing.checks.map((check) => check.key),

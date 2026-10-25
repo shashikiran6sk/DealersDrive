@@ -182,12 +182,19 @@ await evaluate(
   "document.querySelector('input[name=accepted]').click(); document.querySelector('input[name=accepted]').form.requestSubmit()",
 );
 await until(
-  "!document.querySelector('input[name=accepted]') && document.body?.innerText?.includes('review')",
+  "Boolean(Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Submit for verification'))",
 );
 assert(
   (await request(fixtures.draft, '/v1/legal/status?scope=DEALER')).body.accepted,
-  'dealer owner agreement committed by final submit',
+  'dealer owner agreement recorded independently of document submission',
 );
+await until(
+  "Boolean(Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Submit for verification'))",
+);
+await evaluate(
+  "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Submit for verification').click()",
+);
+await until("document.body?.innerText?.includes('Under review')");
 assert(
   (await request(fixtures.draft, '/v1/dealer')).body.status === 'PENDING_APPROVAL',
   'dealer onboarding state transitioned without repeating onboarding',

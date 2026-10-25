@@ -1,4 +1,3 @@
-import { requireDealerAcceptance } from '../legal/legal.facade.js';
 import {
   activationState,
   createActivationOverrideService,
@@ -672,7 +671,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }
 
-        await requireDealerAcceptance(tx, dealerId);
         const updated = await tx.dealer.update({
           where: { id: dealerId },
           data: {

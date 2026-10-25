@@ -726,7 +726,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             );
           await acceptDealerPolicies(tx, legal.principal);
         }
-        await requireDealerAcceptance(tx, dealerId);
+        if (actor.type === 'DEALER') await requireDealerAcceptance(tx, dealerId);
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await audit.record(tx, {
           actorType: actor.type,

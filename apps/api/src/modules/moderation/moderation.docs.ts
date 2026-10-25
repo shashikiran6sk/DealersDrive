@@ -9,6 +9,7 @@ export const moderationDocs: ModuleDocs = {
     'orders the processed images, verifies the details and decides. Every route here is ' +
     'admin-only and requires `admin:listing:moderate` (MODERATOR, SUPER_ADMIN); a dealer ' +
     'session is refused at the mount, whatever it holds.\n\n' +
+    'Publication, relisting and reactivation require the dealership owner’s current policy acceptance. Administrative dealership approval alone never records agreement. ' +
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
@@ -218,6 +219,7 @@ export const moderationDocs: ModuleDocs = {
         'guard runs under the listing\u2019s row lock, so an image removed or a check undone ' +
         'a moment earlier is seen:\n\n' +
         '- the dealership is `ACTIVE`;\n' +
+        '- its owner has accepted the current Terms and Privacy Policy;\n' +
         '- the vehicle data is complete;\n' +
         '- every verification check is ticked;\n' +
         '- at least `listing.minPhotos` images are attached (platform config, default 6);\n' +

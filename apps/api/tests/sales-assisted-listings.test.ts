@@ -1,6 +1,6 @@
 import { ListingCheckKey } from '@dealers-drive/contracts';
 import type request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { env } from '../src/config/env.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
@@ -19,6 +19,7 @@ let sales: request.Agent;
 let otherSales: request.Agent;
 let moderator: request.Agent;
 let salesMemberId: string;
+let salesClaims: ReturnType<typeof createFakeGoogle>['claims'];
 let counter = 0;
 let plate = 1000;
 
@@ -34,6 +35,7 @@ beforeAll(async () => {
   await h.signInAdmin(superAdmin);
   const salesEmail = nextEmail('listing.rep');
   sales = await member(salesEmail, 'SALES_REP');
+  salesClaims = { ...h.google.claims };
   otherSales = await member(nextEmail('other.listing.rep'), 'SALES_REP');
   moderator = await member(nextEmail('listing.mod'), 'MODERATOR');
   salesMemberId = (
@@ -117,6 +119,129 @@ async function draft(dealerId: string, agent: request.Agent = sales) {
 }
 
 describe('drafts', () => {
+  it('allows staff submission before dealer agreement but holds admin publication until the owner accepts', async () => {
+    vi.stubEnv('LEGAL_V1_PREVIEW', 'true');
+    try {
+      const dealerId = await assistedDealer();
+      await superAdmin
+        .post(`/v1/admin/dealers/${dealerId}/activation-override`)
+        .send({
+          justification: 'The dealer will supply documents later; this is a synthetic local test.',
+          acknowledgedDisclaimer: 'manual-activation-2026-10-12',
+        })
+        .expect(200);
+      expect(await h.prisma.legalAcceptance.count({ where: { dealerId } })).toBe(0);
+      const vehicleId = await draft(dealerId);
+      h.google.claims = salesClaims;
+      await h.signInAdmin(sales);
+      const submitted = await sales
+        .post(`/v1/sales/dealers/${dealerId}/vehicles/${vehicleId}/submit`)
+        .expect(200);
+      const listingId = submitted.body.listing.id as string;
+      expect(submitted.body.listing.status).toBe('PENDING_REVIEW');
+      await sales.post('/v1/legal/accept').send({ scope: 'DEALER', accepted: true }).expect(401);
+      await tickAll(listingId);
+      await seedImages(h.prisma, { vehicleId, dealerId }, 6);
+      const detail = await moderator.get(`/v1/admin/listings/${listingId}`).expect(200);
+      expect(detail.body.actions.canApprove).toBe(false);
+      expect(detail.body.blockers).toEqual(
+        expect.arrayContaining([expect.objectContaining({ code: 'DEALER_TERMS_NOT_ACCEPTED' })]),
+      );
+      const before = await h.prisma.listing.findUniqueOrThrow({ where: { id: listingId } });
+      const blocked = await moderator
+        .post(`/v1/admin/listings/${listingId}/approve`)
+        .send({})
+        .expect(409);
+      expect(blocked.body.blockers).toEqual(
+        expect.arrayContaining([expect.objectContaining({ code: 'DEALER_TERMS_NOT_ACCEPTED' })]),
+      );
+      expect(await h.prisma.listing.findUniqueOrThrow({ where: { id: listingId } })).toEqual(
+        before,
+      );
+      expect(await h.prisma.legalAcceptance.count({ where: { dealerId } })).toBe(0);
+      const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+      const phone = dealer.contactPhone!.slice(-10);
+      const owner = h.agent();
+      await owner
+        .post('/v1/auth/sign-in/phone/dealer')
+        .send({
+          phone,
+          accessToken: `dev-otp:91${phone}:${env.PHONE_OTP_DEV_CODE}:owner-accept-${counter}`,
+        })
+        .expect(200);
+      expect((await owner.get('/v1/legal/status?scope=DEALER').expect(200)).body).toMatchObject({
+        accepted: false,
+        canAccept: true,
+      });
+      await owner.post('/v1/legal/accept').send({ scope: 'DEALER', accepted: true }).expect(200);
+      const ready = await moderator.get(`/v1/admin/listings/${listingId}`).expect(200);
+      expect(ready.body.actions.canApprove).toBe(true);
+      expect(
+        (await moderator.post(`/v1/admin/listings/${listingId}/approve`).send({}).expect(200)).body
+          .listing.status,
+      ).toBe('ACTIVE');
+      const member = await h.prisma.dealerMember.findFirstOrThrow({
+        where: { dealerId, role: 'OWNER' },
+      });
+      expect(
+        (await h.prisma.legalAcceptance.findFirstOrThrow({ where: { dealerId } })).userId,
+      ).toBe(member.userId);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each(['RESERVED', 'WITHDRAWN'] as const)(
+    'also holds %s reactivation until owner acceptance',
+    async (fromStatus) => {
+      vi.stubEnv('LEGAL_V1_PREVIEW', 'true');
+      try {
+        const dealerId = await assistedDealer();
+        await approveDealer(dealerId);
+        const vehicleId = await draft(dealerId);
+        const listing = await h.prisma.listing.findUniqueOrThrow({ where: { vehicleId } });
+        await h.prisma.listing.update({ where: { id: listing.id }, data: { status: fromStatus } });
+        const member = await h.prisma.dealerMember.findFirstOrThrow({
+          where: { dealerId, role: 'OWNER' },
+        });
+        const pending = await h.prisma.listingReactivationRequest.create({
+          data: { listingId: listing.id, dealerId, fromStatus, requestedBy: member.userId },
+        });
+        const path = `/v1/admin/reactivation-requests/${pending.id}/approve`;
+        expect((await moderator.post(path).send({}).expect(403)).body.code).toBe(
+          'LEGAL_ACCEPTANCE_REQUIRED',
+        );
+        expect(
+          (
+            await h.prisma.listingReactivationRequest.findUniqueOrThrow({
+              where: { id: pending.id },
+            })
+          ).status,
+        ).toBe('PENDING');
+        expect(
+          (await h.prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).status,
+        ).toBe(fromStatus);
+        const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+        const phone = dealer.contactPhone!.slice(-10);
+        const owner = h.agent();
+        await owner
+          .post('/v1/auth/sign-in/phone/dealer')
+          .send({
+            phone,
+            accessToken: `dev-otp:91${phone}:${env.PHONE_OTP_DEV_CODE}:reactivation-owner-${counter}`,
+          })
+          .expect(200);
+        await owner.post('/v1/legal/accept').send({ scope: 'DEALER', accepted: true }).expect(200);
+        await moderator.post(path).send({}).expect(200);
+        expect(
+          (await h.prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).status,
+        ).toBe('ACTIVE');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    },
+  );
+
   it('can be prepared before the dealership is approved, attributed to the member', async () => {
     const dealerId = await assistedDealer();
     const vehicleId = await draft(dealerId);

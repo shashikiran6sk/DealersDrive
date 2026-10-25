@@ -12,6 +12,7 @@ import { env } from '../../config/env.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import { authorizeDealerWrite } from '../auth/auth.facade.js';
 import type { CustomerPrincipal, DealerPrincipal, PendingPrincipal } from '../auth/auth.facade.js';
+import { DEALER_OWNER_ACCEPTANCE_REQUIRED } from './legal.messages.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 export type LegalPerson = CustomerPrincipal | DealerPrincipal | PendingPrincipal;
@@ -42,7 +43,8 @@ export async function hasDealerAcceptance(db: Db, dealerId: string): Promise<boo
 }
 
 export async function requireDealerAcceptance(db: Db, dealerId: string): Promise<void> {
-  if (legalEnabled() && !(await hasDealerAcceptance(db, dealerId))) throw legalRequired();
+  if (legalEnabled() && !(await hasDealerAcceptance(db, dealerId)))
+    throw new ForbiddenError(DEALER_OWNER_ACCEPTANCE_REQUIRED, { code: LEGAL_REQUIRED });
 }
 
 async function hasPersonalAcceptance(db: Db, userId: string): Promise<boolean> {

@@ -22,6 +22,7 @@ import TermsPage, { generateMetadata as termsMetadata } from '@/app/(public)/ter
 import PrivacyPage, { generateMetadata as privacyMetadata } from '@/app/(public)/privacy/page';
 import LoginPage from '@/app/(auth)/login/page';
 import DealerLayout from '@/app/(dealer)/dealer/layout';
+import OnboardingPage from '@/app/(auth)/dealer/onboarding/page';
 
 const api = vi.hoisted(() => ({ send: vi.fn(), parsed: vi.fn(), get: vi.fn() }));
 vi.mock('@/lib/api', async (importOriginal) => ({
@@ -148,6 +149,22 @@ describe('server actions and one-time routing', () => {
     expect(screen.getByRole('checkbox')).not.toBeChecked();
     expect(screen.queryByText('Console contents')).not.toBeInTheDocument();
   });
+});
+
+describe('dealer acceptance before documents', () => {
+  it.each(['DRAFT', 'PENDING_APPROVAL'])(
+    'lets a %s owner agree without loading document prerequisites',
+    async (dealerStatus) => {
+      enabled();
+      api.get.mockResolvedValue({ dealer: { status: dealerStatus } });
+      api.parsed.mockResolvedValue(status());
+      render(await OnboardingPage({ searchParams: Promise.resolve({ step: '3' }) }));
+      expect(screen.getByRole('checkbox', { name: LEGAL_CHECKBOX_TEXT })).not.toBeChecked();
+      expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+      expect(api.get).toHaveBeenCalledTimes(1);
+      expect(api.get).toHaveBeenCalledWith('/v1/auth/me', { revalidate: false });
+    },
+  );
 });
 
 describe('two public legal documents', () => {

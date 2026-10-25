@@ -305,6 +305,7 @@ export type AdminVehicleImages = z.infer<typeof AdminVehicleImages>;
  */
 export const ApprovalBlockerCode = z.enum([
   'DEALER_NOT_ACTIVE',
+  'DEALER_TERMS_NOT_ACCEPTED',
   'VEHICLE_INCOMPLETE',
   'CHECKS_INCOMPLETE',
   'TOO_FEW_IMAGES',
