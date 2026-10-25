@@ -22,7 +22,13 @@ export const PHOTO_GALLERY_TEXT = {
   railLabel: 'All photos',
   railCell: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
   count: (index: number, total: number) => `${index + 1} / ${total}`,
+  zoomControls: 'Zoom',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
 } as const;
+
+export const ZOOM_IN_GLYPH = '+';
+export const ZOOM_OUT_GLYPH = '−';
 
 export const PREVIOUS_GLYPH = '‹';
 export const NEXT_GLYPH = '›';
@@ -32,6 +38,27 @@ export const RAIL_NUMBER_DIGITS = 2;
 
 export const SWIPE_THRESHOLD_PX = 40;
 export const SWIPE_CLICK_GUARD_MS = 500;
+
+export const ZOOM = {
+  min: 1,
+  max: 4,
+  step: 1.5,
+  doubleTap: 2.5,
+  settleBelow: 1.05,
+  wheelSensitivity: 0.002,
+  pinchWheelSensitivity: 0.01,
+  wheelLinePx: 16,
+  wheelPagePx: 800,
+  keyPanPx: 80,
+  tapSlopPx: 10,
+  tapMs: 300,
+  doubleTapMs: 300,
+  doubleTapSlopPx: 30,
+} as const;
+
+export const ZOOM_IN_KEYS: readonly string[] = ['+', '='];
+export const ZOOM_OUT_KEYS: readonly string[] = ['-', '_'];
+export const ZOOM_RESET_KEY = '0';
 
 export const DEFAULT_STAGE_CLASS = 'aspect-[4/3]';
 
