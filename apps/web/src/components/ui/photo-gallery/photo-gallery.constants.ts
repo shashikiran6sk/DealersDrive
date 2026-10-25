@@ -11,7 +11,7 @@ export const PHOTO_GALLERY_TEXT = {
     total === 1
       ? `View the photo of ${title}`
       : `View all ${countLabel(total, 'photo')} of ${title}`,
-  openThumb: (index: number, total: number) => `Open photo ${index + 1} of ${total}`,
+  showThumb: (index: number, total: number) => `Show photo ${index + 1} of ${total}`,
   scrollLeft: 'Scroll photos left',
   scrollRight: 'Scroll photos right',
   previous: 'Previous photo',
@@ -22,6 +22,7 @@ export const PHOTO_GALLERY_TEXT = {
   railLabel: 'All photos',
   railCell: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
   count: (index: number, total: number) => `${index + 1} / ${total}`,
+  position: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
   zoomControls: 'Zoom',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
@@ -29,9 +30,6 @@ export const PHOTO_GALLERY_TEXT = {
 
 export const ZOOM_IN_GLYPH = '+';
 export const ZOOM_OUT_GLYPH = '−';
-
-export const PREVIOUS_GLYPH = '‹';
-export const NEXT_GLYPH = '›';
 
 export const STRIP_SCROLL_PX = 240;
 export const RAIL_NUMBER_DIGITS = 2;

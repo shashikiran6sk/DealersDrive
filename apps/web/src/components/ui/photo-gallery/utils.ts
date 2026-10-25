@@ -118,6 +118,10 @@ export function studioFilterId(reactId: string): string {
   return `${STUDIO_BACKDROP.filterIdPrefix}${reactId.replace(/[^A-Za-z0-9_-]/g, '')}`;
 }
 
+export function indexAfterRemoval(index: number, removedAt: number): number {
+  return removedAt < index ? index - 1 : index;
+}
+
 export const UNZOOMED: ZoomView = Object.freeze({ scale: ZOOM.min, x: 0, y: 0 });
 
 export function isZoomed(view: ZoomView): boolean {

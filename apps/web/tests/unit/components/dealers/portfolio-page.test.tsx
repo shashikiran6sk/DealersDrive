@@ -720,7 +720,7 @@ describe('the photo gallery in the hero', () => {
       'Sri Lakshmi Motors — The yard on Katpadi Road',
     );
     expect(within(stage).getByText('1 / 3 · view all')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Open photo/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Show photo/ })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Next image' }));
     expect(within(heroButton()).getByRole('img')).toHaveAttribute(

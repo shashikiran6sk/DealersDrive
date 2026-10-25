@@ -145,6 +145,12 @@ export const BrokenPhotoFallsBack: Story = {
   decorators: EmptyWideHero.decorators,
 };
 
+export const BrokenThumbnail: Story = {
+  args: {
+    photos: images(6).map((photo, index) => (index === 2 ? { ...photo, url: BROKEN_URL } : photo)),
+  },
+};
+
 export const FallbackImageFails: Story = {
   args: {
     ...EmptyWideHero.args,
