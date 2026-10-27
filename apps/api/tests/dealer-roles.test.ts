@@ -224,12 +224,7 @@ describe('enquiries, by role', () => {
       closedAt: expect.any(Date),
     });
 
-    await setEnquiry(a, id, 'NEW').expect(200);
-    expect(await h.prisma.enquiry.findUniqueOrThrow({ where: { id } })).toMatchObject({
-      closedById: null,
-      closedAt: null,
-      contactedById: aStaff.userId,
-    });
+    await setEnquiry(a, id, 'NEW').expect(409);
   });
 
   it('lets STAFF set a status the enquiry already has — a no-op', async () => {
