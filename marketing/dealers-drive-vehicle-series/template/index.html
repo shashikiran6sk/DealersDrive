@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dealers-Drive / Vehicle films</title>
+    <style>
+      @font-face {
+        font-family: Manrope;
+        src: url('../assets/brand/manrope.woff2');
+        font-weight: 200 800;
+        font-display: block;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #f6f6f4;
+      }
+      body {
+        font-family: Manrope, Arial, sans-serif;
+      }
+      #stage {
+        position: absolute;
+        overflow: hidden;
+        isolation: isolate;
+      }
+      .layer {
+        position: absolute;
+      }
+      .title {
+        white-space: nowrap;
+        font-weight: 800;
+        line-height: 0.96;
+        letter-spacing: -0.065em;
+      }
+      .label {
+        font-size: 20px;
+        line-height: 1.45;
+        letter-spacing: 0.16em;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .detail {
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.4;
+      }
+      .mask {
+        overflow: hidden;
+        position: absolute;
+      }
+      .photo {
+        position: absolute;
+        overflow: hidden;
+        border-radius: 22px;
+        transform-origin: center;
+        background: #fff;
+        backface-visibility: hidden;
+      }
+      .photo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .photo img.interior {
+        object-fit: contain;
+        background: #161817;
+      }
+      .line {
+        height: 1px;
+        background: currentColor;
+        opacity: 0.2;
+      }
+      .pill {
+        border: 1px solid #8885;
+        border-radius: 100px;
+        padding: 12px 22px;
+        font-size: 22px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .brand img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .number {
+        font-variant-numeric: tabular-nums;
+      }
+      .outline {
+        color: transparent;
+        -webkit-text-stroke: 1px #b4b5af;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="stage"></main>
+    <script src="motion.js"></script>
+  </body>
+</html>
