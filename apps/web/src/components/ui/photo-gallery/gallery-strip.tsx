@@ -12,10 +12,11 @@ import { revealOffset, stripEdges } from './utils';
 export interface GalleryStripProps {
   photos: readonly GalleryPhoto[];
   index: number;
-  onOpen: (index: number, opener: HTMLElement) => void;
+  onSelect: (index: number) => void;
+  onFailed: (url: string) => void;
 }
 
-export function GalleryStrip({ photos, index, onOpen }: GalleryStripProps) {
+export function GalleryStrip({ photos, index, onSelect, onFailed }: GalleryStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const shownRef = useRef(index);
@@ -57,24 +58,30 @@ export function GalleryStrip({ photos, index, onOpen }: GalleryStripProps) {
         disabled={edges.atStart}
       />
 
-      <div ref={trackRef} className="dd-strip" onScroll={measure}>
+      <div ref={trackRef} className="dd-strip p-1" onScroll={measure}>
         {photos.map((photo, cell) => (
           <button
             key={photo.url}
             ref={cell === index ? activeRef : undefined}
             type="button"
-            onClick={(event) => onOpen(cell, event.currentTarget)}
-            aria-label={PHOTO_GALLERY_TEXT.openThumb(cell, photos.length)}
+            onClick={() => onSelect(cell)}
+            aria-label={PHOTO_GALLERY_TEXT.showThumb(cell, photos.length)}
             aria-current={cell === index || undefined}
             className={cn(
-              'relative aspect-[4/3] flex-[0_0_108px] cursor-zoom-in overflow-hidden rounded-[10px] border bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) max-sm:flex-[0_0_88px]',
+              'relative aspect-[4/3] flex-[0_0_108px] cursor-pointer overflow-hidden rounded-[10px] border bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) max-sm:flex-[0_0_88px]',
               cell === index
-                ? 'border-(--color-accent) ring-1 ring-(--color-accent)'
-                : 'border-(--color-divider)',
+                ? 'border-(--color-accent) ring-2 ring-(--color-accent) ring-offset-2 ring-offset-white'
+                : 'border-(--color-divider) hover:border-(--color-neutral-500)',
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img
+              src={photo.url}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+              onError={() => onFailed(photo.url)}
+            />
           </button>
         ))}
       </div>

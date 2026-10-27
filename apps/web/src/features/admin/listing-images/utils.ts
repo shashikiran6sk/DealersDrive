@@ -3,6 +3,7 @@ import type { PresignResponse } from '@dealers-drive/contracts';
 import {
   commitListingImageAction,
   presignListingImageAction,
+  replaceListingImageAction,
 } from '@/features/admin/listing-actions';
 import { failureMessage, fileRejection, putToStorage } from '@/lib/upload';
 
@@ -18,7 +19,11 @@ export function moved(order: string[], index: number, delta: -1 | 1): string[] |
   return next;
 }
 
-export async function uploadOne(listingId: string, file: File): Promise<string | null> {
+export async function uploadOne(
+  listingId: string,
+  file: File,
+  replacesMediaId?: string,
+): Promise<string | null> {
   const rejection = fileRejection(file, IMAGE_RULE);
   if (rejection) return LISTING_IMAGES_TEXT.fileRefused(file.name, rejection);
 
@@ -26,6 +31,7 @@ export async function uploadOne(listingId: string, file: File): Promise<string |
     fileName: file.name,
     mimeType: file.type,
     bytes: file.size,
+    ...(replacesMediaId ? { replacesMediaId } : {}),
   });
   if (!presigned.ok) return LISTING_IMAGES_TEXT.fileFailed(file.name, presigned.message);
 
@@ -42,7 +48,9 @@ export async function uploadOne(listingId: string, file: File): Promise<string |
     );
   }
 
-  const committed = await commitListingImageAction(listingId, upload.mediaId);
+  const committed = replacesMediaId
+    ? await replaceListingImageAction(listingId, replacesMediaId, upload.mediaId)
+    : await commitListingImageAction(listingId, upload.mediaId);
   if (!committed.ok) {
     return LISTING_IMAGES_TEXT.fileFailed(file.name, committed.message ?? '');
   }

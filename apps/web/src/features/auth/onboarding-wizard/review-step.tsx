@@ -1,5 +1,7 @@
 'use client';
 
+import { LegalCheck } from '@/components/forms/legal-check';
+
 import type { AuthSession, CompletenessResponse } from '@dealers-drive/contracts';
 import { useActionState } from 'react';
 
@@ -10,13 +12,14 @@ import { ONBOARDING_PATH, ONBOARDING_TEXT } from './onboarding-wizard.constants'
 import { outstandingLabels } from './utils';
 
 export interface ReviewStepProps {
+  legalRequired?: boolean;
   session: AuthSession;
   completeness: CompletenessResponse | null;
 }
 
-export function ReviewStep({ session, completeness }: ReviewStepProps) {
+export function ReviewStep({ session, completeness, legalRequired = false }: ReviewStepProps) {
   const [state, submit, pending] = useActionState<ActionState, FormData>(
-    async () => submitForVerificationAction(),
+    async (_previous, form) => submitForVerificationAction(form),
     {},
   );
   const submitted = session.dealer?.status === 'PENDING_APPROVAL';
@@ -52,7 +55,12 @@ export function ReviewStep({ session, completeness }: ReviewStepProps) {
         <p className="mt-[8px] text-[14px] leading-[1.6] ink-body">{ONBOARDING_TEXT.prepareNote}</p>
       </Blueprint>
 
-      <form action={submit} className="flex gap-[8px]">
+      <form action={submit} className="flex flex-wrap gap-[8px]">
+        {!submitted && legalRequired ? (
+          <div className="w-full mb-4">
+            <LegalCheck disabled={pending} />
+          </div>
+        ) : null}
         {submitted ? (
           <a href={ONBOARDING_PATH.dashboard} className="btn btn-primary h-[42px] flex-1">
             {ONBOARDING_TEXT.goToDashboard}

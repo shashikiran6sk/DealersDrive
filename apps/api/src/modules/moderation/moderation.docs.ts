@@ -9,8 +9,67 @@ export const moderationDocs: ModuleDocs = {
     'orders the processed images, verifies the details and decides. Every route here is ' +
     'admin-only and requires `admin:listing:moderate` (MODERATOR, SUPER_ADMIN); a dealer ' +
     'session is refused at the mount, whatever it holds.\n\n' +
+    'Publication, relisting and reactivation require the dealership owner’s current policy acceptance. Administrative dealership approval alone never records agreement. ' +
     'Every response here is `Cache-Control: no-store`.',
   operations: [
+    {
+      method: 'patch',
+      path: '/v1/admin/listings/:id/vehicle',
+      operationId: 'updateAdminListingVehicle',
+      tag: DOC_TAGS.moderation,
+      summary: 'Edit vehicle details',
+      description:
+        'Edit vehicle details while PENDING_REVIEW, CHANGES_REQUESTED, ACTIVE or RESERVED. Active/reserved vehicles must remain complete. Uses expectedUpdatedAt to reject stale edits. Review edits clear verification checks; publication and public URL are preserved. Audit-logged with before/after values.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'AdminUpdateVehicleInput',
+        example: {
+          expectedUpdatedAt: '2026-10-23T10:00:00.000Z',
+          details: { insuranceType: 'LIVE' },
+        },
+      },
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/reserve',
+      operationId: 'reserveAdminListing',
+      tag: DOC_TAGS.moderation,
+      summary: 'Mark listing reserved',
+      description:
+        'ACTIVE → RESERVED. Preserves registration ownership, stamps reservedAt and records the admin in audit history.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/mark-sold',
+      operationId: 'markAdminListingSold',
+      tag: DOC_TAGS.moderation,
+      summary: 'Mark listing sold',
+      description:
+        'ACTIVE or RESERVED → SOLD. Stamps soldAt, releases the registration and cancels pending reactivation requests. Audit-logged.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The updated listing.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+
     {
       method: 'get',
       path: '/v1/admin/listings',
@@ -160,6 +219,7 @@ export const moderationDocs: ModuleDocs = {
         'guard runs under the listing\u2019s row lock, so an image removed or a check undone ' +
         'a moment earlier is seen:\n\n' +
         '- the dealership is `ACTIVE`;\n' +
+        '- its owner has accepted the current Terms and Privacy Policy;\n' +
         '- the vehicle data is complete;\n' +
         '- every verification check is ticked;\n' +
         '- at least `listing.minPhotos` images are attached (platform config, default 6);\n' +

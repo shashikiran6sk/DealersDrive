@@ -26,8 +26,10 @@ const tile = async (size, maskable = false, rounded = false) => {
 };
 
 for (const [path, size, maskable, rounded] of [
-  ['apps/web/src/app/icon.png', 512, false, true],
-  ['apps/web/src/app/apple-icon.png', 180, false],
+  // Favicon sizes are square multiples of 48, the only ones search engines use.
+  ['apps/web/public/brand/dd-favicon-v2-48.png', 48, false, true],
+  ['apps/web/public/brand/dd-favicon-v2-96.png', 96, false, true],
+  ['apps/web/public/brand/dd-apple-icon-v2-180.png', 180, false],
   ['apps/web/public/brand/dd-icon-v2-192.png', 192, false],
   ['apps/web/public/brand/dd-icon-v2-512.png', 512, false],
   ['apps/web/public/brand/dd-icon-v2-maskable-512.png', 512, true],
@@ -56,7 +58,10 @@ for (const [index, size] of sizes.entries()) {
   header.writeUInt32LE(offset, entry + 12);
   offset += frame.length;
 }
-await writeFile(new URL('apps/web/src/app/favicon.ico', root), Buffer.concat([header, ...frames]));
+// favicon.ico is the address clients request unprompted; the page links only the v2 copy.
+for (const path of ['apps/web/public/favicon-v2.ico', 'apps/web/public/favicon.ico']) {
+  await writeFile(new URL(path, root), Buffer.concat([header, ...frames]));
+}
 
 for (const color of ['black', 'white']) {
   for (const name of ['dd-icon', 'dealersdrive-wordmark']) {

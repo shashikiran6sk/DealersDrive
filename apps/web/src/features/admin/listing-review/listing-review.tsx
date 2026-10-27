@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Banner, StatusTag } from '@/components/ui/primitives';
 
+import { ListingVehicleEditor } from './listing-vehicle-editor';
+import { AvailabilityPanel } from './availability-panel';
 import { CheckRow } from './check-row';
 import { DecisionPanel } from './decision-panel';
 import { PhotographyPanel } from './photography-panel';
@@ -96,6 +98,8 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
             </Link>
           </section>
 
+          <ListingVehicleEditor detail={detail} />
+
           {detail.sections.map((section) => (
             <ReviewSection key={section.key} section={section} />
           ))}
@@ -111,6 +115,7 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-5">
+          <AvailabilityPanel detail={detail} />
           <DecisionPanel detail={detail} />
 
           <PhotographyPanel detail={detail} />

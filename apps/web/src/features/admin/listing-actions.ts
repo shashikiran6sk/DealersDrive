@@ -1,12 +1,14 @@
 'use server';
 
 import {
+  AdminUpdateVehicleInput,
   IdParam,
   ListingCheckKey,
   ListingImageParam,
   NoteInput,
   ReasonInput,
   ReorderImagesInput,
+  ReplaceVehicleImageInput,
   SetPhotographyInput,
   VehicleImagePresignInput,
   type AdminListingDetail,
@@ -22,6 +24,7 @@ import { revalidatePublicDealer, revalidatePublicVehicles, vehicleTag } from '@/
 export interface ListingActionResult {
   ok: boolean;
   message?: string;
+  errors?: Record<string, string>;
 }
 
 export type ImagePresignResult =
@@ -187,7 +190,7 @@ function failure(error: unknown): { ok: false; message: string } {
 
 export async function presignListingImageAction(
   listingId: string,
-  file: { fileName: string; mimeType: string; bytes: number },
+  file: { fileName: string; mimeType: string; bytes: number; replacesMediaId?: string },
 ): Promise<ImagePresignResult> {
   const parsed = VehicleImagePresignInput.safeParse(file);
   if (!parsed.success) return { ok: false, message: IMAGE_REFUSED };
@@ -221,15 +224,39 @@ export async function commitListingImageAction(
   }
   revalidatePath(reviewPath(params.data.id));
   revalidatePath('/admin/listings');
+  revalidatePublicVehicles();
   return { ok: true };
 }
 
-export async function removeListingImageAction(formData: FormData): Promise<void> {
+export async function replaceListingImageAction(
+  listingId: string,
+  mediaId: string,
+  replacementMediaId: string,
+): Promise<ListingActionResult> {
+  const params = ListingImageParam.safeParse({ id: listingId, mediaId });
+  const body = ReplaceVehicleImageInput.safeParse({ replacementMediaId });
+  if (!params.success || !body.success) return { ok: false, message: IMAGE_REFUSED };
+  try {
+    await apiSend<AdminVehicleImages>(
+      'POST',
+      `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}/replace`,
+      body.data,
+    );
+  } catch (error) {
+    return failure(error);
+  }
+  revalidatePath(reviewPath(params.data.id));
+  revalidatePath('/admin/listings');
+  revalidatePublicVehicles();
+  return { ok: true };
+}
+
+export async function removeListingImageAction(formData: FormData): Promise<ListingActionResult> {
   const params = ListingImageParam.safeParse({
     id: formData.get('listingId'),
     mediaId: formData.get('mediaId'),
   });
-  if (!params.success) return;
+  if (!params.success) return { ok: false, message: IMAGE_REFUSED };
 
   try {
     await apiSend<AdminVehicleImages>(
@@ -237,10 +264,12 @@ export async function removeListingImageAction(formData: FormData): Promise<void
       `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}`,
     );
   } catch (error) {
-    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+    return failure(error);
   }
   revalidatePath(reviewPath(params.data.id));
   revalidatePath('/admin/listings');
+  revalidatePublicVehicles();
+  return { ok: true };
 }
 
 export async function reorderListingImagesAction(formData: FormData): Promise<void> {
@@ -262,6 +291,7 @@ export async function reorderListingImagesAction(formData: FormData): Promise<vo
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(params.data));
+  revalidatePublicVehicles();
 }
 
 export async function setPrimaryImageAction(formData: FormData): Promise<void> {
@@ -280,4 +310,75 @@ export async function setPrimaryImageAction(formData: FormData): Promise<void> {
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(params.data.id));
+  revalidatePublicVehicles();
+}
+
+function refreshListing(detail: AdminListingDetail): void {
+  revalidatePath(reviewPath(detail.listing.id));
+  revalidatePath('/admin/listings');
+  revalidatePath('/dealer/vehicles');
+  revalidatePath(`/dealer/vehicles/${detail.listing.vehicleId}`);
+  revalidatePublicVehicles();
+  revalidatePublicDealer(detail.dealer.slug);
+}
+
+export async function updateListingVehicleAction(
+  listingId: string,
+  input: unknown,
+): Promise<ListingActionResult> {
+  const id = IdParam.safeParse({ id: listingId });
+  const parsed = AdminUpdateVehicleInput.safeParse(input);
+  if (!id.success || !parsed.success) {
+    return {
+      ok: false,
+      message: 'Check the vehicle details.',
+      errors: Object.fromEntries(
+        (parsed.error?.issues ?? []).map((issue) => [
+          issue.path.join('.').replace(/^details\./, ''),
+          issue.message,
+        ]),
+      ),
+    };
+  }
+  try {
+    refreshListing(
+      await apiSend<AdminListingDetail>(
+        'PATCH',
+        `/v1/admin/listings/${id.data.id}/vehicle`,
+        parsed.data,
+      ),
+    );
+    return { ok: true };
+  } catch (error) {
+    return {
+      ...failure(error),
+      ...(error instanceof ApiError
+        ? {
+            errors: Object.fromEntries(
+              Object.entries(error.fieldErrors()).map(([field, message]) => [
+                field.replace(/^(body\.)?details\./, '').replace(/^body\./, ''),
+                message,
+              ]),
+            ),
+          }
+        : {}),
+    };
+  }
+}
+
+export async function changeListingAvailabilityAction(
+  listingId: string,
+  action: 'reserve' | 'mark-sold',
+): Promise<ListingActionResult> {
+  const id = IdParam.safeParse({ id: listingId });
+  if (!id.success || !['reserve', 'mark-sold'].includes(action))
+    return { ok: false, message: 'Reload the listing and try again.' };
+  try {
+    refreshListing(
+      await apiSend<AdminListingDetail>('POST', `/v1/admin/listings/${id.data.id}/${action}`),
+    );
+    return { ok: true };
+  } catch (error) {
+    return failure(error);
+  }
 }

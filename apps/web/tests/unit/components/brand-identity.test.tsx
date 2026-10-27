@@ -48,9 +48,17 @@ describe('approved identity', () => {
     ).toContain('PASS:');
   });
 
-  it('uses versioned SEO and installation images without conflicting favicon metadata', () => {
+  it('uses versioned favicon, SEO and installation images', () => {
     const metadata = rootMetadata();
-    expect(metadata).not.toHaveProperty('icons');
+    expect(metadata.icons).toEqual({
+      icon: [
+        { url: '/favicon-v2.ico', sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
+        { url: '/brand/dd-favicon-v2-48.png', sizes: '48x48', type: 'image/png' },
+        { url: '/brand/dd-favicon-v2-96.png', sizes: '96x96', type: 'image/png' },
+        { url: '/brand/dd-icon-v2-192.png', sizes: '192x192', type: 'image/png' },
+      ],
+      apple: [{ url: '/brand/dd-apple-icon-v2-180.png', sizes: '180x180', type: 'image/png' }],
+    });
     expect(JSON.stringify(metadata.openGraph)).toContain(DEFAULT_SOCIAL_IMAGE.path);
     expect(JSON.stringify(metadata.twitter)).toContain(DEFAULT_SOCIAL_IMAGE.path);
     expect(

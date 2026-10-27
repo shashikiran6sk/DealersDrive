@@ -21,7 +21,7 @@ vehicle's object impossible rather than merely checked.
 
 ### `async presign(listingId, input)`
 
-Refuses a listing that is not in review (`409 IMAGES_CLOSED`) and a vehicle
+Refuses a listing that is outside review, requested changes, live or reserved (`409 IMAGES_CLOSED`) and a vehicle
 that already carries `VEHICLE_IMAGE_MAX` images (`409 VEHICLE_IMAGES_FULL`)
 before creating anything. The `media` row records `ownerType VEHICLE`,
 `uploadedByAdmin`, and the listing's `dealerId` — the vehicle's tenant, so a
@@ -44,7 +44,7 @@ A failed check marks the row `FAILED` and deletes the object, so a refused
 file is not left in the bucket.
 
 The attach itself is under the listing's row lock, re-checking that the listing
-is still in review and the gallery has room. The row moves `PENDING → READY`
+is still editable and the gallery has room. The row moves `PENDING → READY`
 with a conditional `updateMany`: when two commits of the same upload race, the
 second finds nothing to claim and returns the gallery unchanged, so the image
 is attached exactly once and both callers see success. An already-attached
@@ -58,7 +58,10 @@ primary.
 Deletes the attachment, marks the media `ORPHAN`, renumbers what is left to
 `0…n-1`, and — if the primary went — makes the new first image primary, all in
 one transaction under the listing lock. The object is deleted after commit: a
-rollback never leaves a row pointing at a deleted file.
+rollback never leaves a row pointing at a deleted file. Live and reserved listings
+must retain the configured `listing.minPhotos`; deletion below that is
+`409 VEHICLE_IMAGES_MINIMUM`. Original and variant keys are also queued in the
+transactional outbox for retryable cleanup if immediate storage deletion fails.
 
 ### `async reorder(admin, listingId, input)`
 
@@ -84,8 +87,9 @@ with no audit row, so a double-click does not write history twice.
 
 ### `export const IMAGE_OPEN_STATUSES`
 
-`PENDING_REVIEW` and `CHANGES_REQUESTED`, the same window as the photography
-status. A live, sold, rejected or removed listing's gallery is history.
+`PENDING_REVIEW`, `CHANGES_REQUESTED`, `ACTIVE` and `RESERVED`. This policy is
+separate from photography workflow status. Draft, sold, rejected and withdrawn
+listings remain locked. Every mutation still requires `admin:media:upload`.
 
 ### `async images(vehicleId, status)`
 
@@ -103,3 +107,16 @@ Positions are unique per vehicle by a `DEFERRABLE INITIALLY DEFERRED`
 constraint, so rows can pass through each other while the transaction shifts
 them and the constraint is checked once, at commit. At most one primary per
 vehicle is a partial unique index; the service always clears before it sets.
+
+### Replacing an image
+
+Presign accepts an optional `replacesMediaId`, verified against this vehicle's
+attachments, to allow staging a replacement even at capacity. After upload,
+`POST /v1/admin/listings/:id/images/:mediaId/replace` accepts
+`replacementMediaId`. It uses the same byte and ownership checks as commit.
+Under the listing lock it checks the target again, swaps the attachment's media
+ID while preserving position and primary status, marks the old media ORPHAN,
+and records `vehicle.image_replaced` with both IDs. Failed validation leaves
+the original in place; concurrent replacements of a stale target are refused.
+Retries of a successfully attached upload do not swap or audit again. Storage
+cleanup happens after commit and is backed by the outbox.

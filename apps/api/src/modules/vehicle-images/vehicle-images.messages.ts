@@ -1,5 +1,8 @@
 export const IMAGES_CLOSED =
-  'Images can only be changed while the listing is in review or waiting for changes.';
+  'Images can only be changed while the listing is in review, waiting for changes, live or reserved.';
+
+export const IMAGES_MINIMUM = (min: number): string =>
+  `A live listing must keep at least ${min} images. Replace an image instead.`;
 
 export const IMAGES_FULL = (max: number): string =>
   `A vehicle can carry at most ${max} images. Remove one before adding another.`;
