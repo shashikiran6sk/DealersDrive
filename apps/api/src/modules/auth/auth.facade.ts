@@ -3,6 +3,7 @@ export type {
   CustomerPrincipal,
   DealerPrincipal,
   Principal,
+  PendingPrincipal,
   SessionResolver,
 } from './session.port.js';
 export { permissionsForAdminRole, permissionsForRole } from './session.port.js';

@@ -4,6 +4,8 @@ import { SavedState, SavedVehicleSlugs, VehicleSlugParam } from '@dealers-drive/
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
+import { LEGAL_REQUIRED } from '@dealers-drive/contracts';
+
 import { ApiError, apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 import { SAVED_ACTION_TEXT, SAVED_PATH } from './saved.constants';
@@ -42,7 +44,7 @@ export async function setSavedAction(slug: string, saved: boolean): Promise<SetS
     return { status: 'ok', saved: result.saved };
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 401) return { status: 'signed-out' };
+      if (error.status === 401 || error.code === LEGAL_REQUIRED) return { status: 'signed-out' };
       return { status: 'refused', message: error.userMessage(SAVED_ACTION_TEXT.failed) };
     }
     return { status: 'refused', message: SAVED_ACTION_TEXT.unavailable };

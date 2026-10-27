@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { screen, userEvent, within } from 'storybook/test';
 
 import { PUBLIC_PORTFOLIO } from '../../mocks/portfolio';
 
@@ -26,6 +27,13 @@ const STUDIO_PHOTOS: GalleryPhoto[] = [
   studioPhoto('Front+three-quarter', '1868x1444'),
   { url: '/images/home-hero.webp', alt: `${STUDIO_TITLE}, a photograph off the studio backdrop` },
 ];
+
+async function openZoomed(canvasElement: HTMLElement, presses: number) {
+  await userEvent.click(within(canvasElement).getByRole('button', { name: /^View all/ }));
+  const dialog = await screen.findByRole('dialog');
+  const zoomIn = within(dialog).getByRole('button', { name: 'Zoom in' });
+  for (let press = 0; press < presses; press += 1) await userEvent.click(zoomIn);
+}
 
 function images(count: number, size = '1200x900'): GalleryPhoto[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -137,6 +145,12 @@ export const BrokenPhotoFallsBack: Story = {
   decorators: EmptyWideHero.decorators,
 };
 
+export const BrokenThumbnail: Story = {
+  args: {
+    photos: images(6).map((photo, index) => (index === 2 ? { ...photo, url: BROKEN_URL } : photo)),
+  },
+};
+
 export const FallbackImageFails: Story = {
   args: {
     ...EmptyWideHero.args,
@@ -172,4 +186,15 @@ export const StudioBackdropPhone: Story = {
   ...StudioBackdrop,
   parameters: Phone.parameters,
   decorators: Phone.decorators,
+};
+
+export const ViewerZoomed: Story = {
+  play: async ({ canvasElement }) => {
+    await openZoomed(canvasElement, 2);
+  },
+};
+
+export const ViewerZoomedPhone: Story = {
+  ...Phone,
+  play: ViewerZoomed.play,
 };

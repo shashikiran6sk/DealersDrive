@@ -24,8 +24,7 @@ function vehicle(overrides: Partial<DealerVehicle> = {}): DealerVehicle {
     kilometersDriven: 22_400,
     ownerCount: 1,
     color: 'WHITE',
-    insuranceType: 'COMPREHENSIVE',
-    insuranceValidUntil: '2027-03-31',
+    insuranceType: 'LIVE',
     pricePaise: 145_000_000,
     priceLabel: '₹14,50,000',
     negotiability: 'FIXED',
@@ -173,8 +172,8 @@ describe('the review step', () => {
           issues: [
             { field: 'pricePaise', message: 'Price is required.' },
             {
-              field: 'insuranceValidUntil',
-              message: 'Enter the date the insurance is valid until.',
+              field: 'insuranceType',
+              message: 'Insurance is required.',
             },
           ],
         })}

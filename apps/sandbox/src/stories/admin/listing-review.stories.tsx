@@ -24,6 +24,32 @@ const CHECKS: AdminListingDetail['checks'] = [
 }));
 
 const DETAIL: AdminListingDetail = {
+  vehicle: {
+    id: '22222222-2222-4222-8222-222222222222',
+    title: '2023 Hyundai Creta SX(O)',
+    registrationNumber: 'KA01AB1234',
+    registrationDisplay: 'KA 01 AB 1234',
+    rtoCode: 'KA01',
+    make: 'Hyundai',
+    model: 'Creta',
+    variant: 'SX(O)',
+    manufacturingYear: 2023,
+    registrationYear: 2023,
+    fuelType: 'PETROL',
+    transmission: 'AUTOMATIC',
+    bodyType: 'SUV',
+    kilometersDriven: 22400,
+    ownerCount: 1,
+    color: 'WHITE',
+    insuranceType: 'NONE',
+    pricePaise: 145000000,
+    priceLabel: '₹14,50,000',
+    negotiability: 'FIXED',
+    description: 'Single owner.',
+    summary: 'Petrol · Automatic · 22,400 km',
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt: '2026-09-26T10:00:00.000Z',
+  },
   listing: {
     id: '11111111-1111-4111-8111-111111111111',
     vehicleId: '22222222-2222-4222-8222-222222222222',
@@ -86,8 +112,7 @@ const DETAIL: AdminListingDetail = {
         { label: 'Kilometres driven', value: '22,400 km' },
         { label: 'Owners', value: 'First owner' },
         { label: 'Colour', value: 'White' },
-        { label: 'Insurance', value: 'Comprehensive' },
-        { label: 'Insurance valid until', value: '31 Mar 2027' },
+        { label: 'Insurance', value: 'None' },
       ],
     },
     {
@@ -153,7 +178,15 @@ const DETAIL: AdminListingDetail = {
   ],
   blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
   assisted: { createdBy: null, submittedBy: null, reviewerIsAssistant: false },
-  actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
+  actions: {
+    canEdit: true,
+    canReserve: false,
+    canMarkSold: false,
+    canVerify: true,
+    canRequestChanges: true,
+    canReject: true,
+    canApprove: false,
+  },
 };
 
 const meta = {
@@ -212,7 +245,7 @@ export const Resubmission: Story = {
   },
 };
 
-export const ReadOnly: Story = {
+export const Active: Story = {
   args: {
     detail: {
       ...DETAIL,
@@ -226,7 +259,15 @@ export const ReadOnly: Story = {
       blockers: [],
       images: { ...DETAIL.images, canEdit: false },
       photography: { ...DETAIL.photography, canUpdate: false },
-      actions: { canVerify: false, canRequestChanges: false, canReject: false, canApprove: false },
+      actions: {
+        canEdit: true,
+        canReserve: true,
+        canMarkSold: true,
+        canVerify: false,
+        canRequestChanges: false,
+        canReject: false,
+        canApprove: false,
+      },
     },
   },
 };
@@ -241,7 +282,58 @@ export const PreparedBySales: Story = {
         submittedBy: { name: 'Arun (Field Sales)', email: 'arun.sales@dealers-drive.in' },
         reviewerIsAssistant: true,
       },
-      actions: { canVerify: false, canRequestChanges: false, canReject: false, canApprove: false },
+      actions: {
+        canEdit: false,
+        canReserve: false,
+        canMarkSold: false,
+        canVerify: false,
+        canRequestChanges: false,
+        canReject: false,
+        canApprove: false,
+      },
+    },
+  },
+};
+
+export const Reserved: Story = {
+  args: {
+    detail: {
+      ...DETAIL,
+      listing: {
+        ...DETAIL.listing,
+        status: 'RESERVED',
+        statusLabel: 'Reserved',
+        statusTone: 'warn',
+        waitingLabel: null,
+      },
+      blockers: [],
+      actions: {
+        ...DETAIL.actions,
+        canEdit: true,
+        canReserve: false,
+        canMarkSold: true,
+        canVerify: false,
+        canApprove: false,
+        canReject: false,
+        canRequestChanges: false,
+      },
+    },
+  },
+};
+
+export const AwaitingDealerAcceptance: Story = {
+  args: {
+    detail: {
+      ...DETAIL,
+      blockers: [
+        ...DETAIL.blockers,
+        {
+          code: 'DEALER_TERMS_NOT_ACCEPTED',
+          message:
+            'The dealership owner must sign in through Dealer Login and accept the Terms & Conditions and Privacy Policy before this listing can be published.',
+        },
+      ],
+      actions: { ...DETAIL.actions, canApprove: false },
     },
   },
 };

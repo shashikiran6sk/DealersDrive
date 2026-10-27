@@ -10,13 +10,13 @@ import { CustomerNameStep } from './customer-name-step';
 import { LOGIN_TEXT } from './login.constants';
 import type { CustomerLoginProps } from './login.types';
 
-export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
+export function CustomerLogin({ widget, returnTo, legalEnabled = false }: CustomerLoginProps) {
   const router = useRouter();
   const [phoneDisplay, setPhoneDisplay] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   function finish(): void {
-    router.replace(returnTo);
+    router.replace(legalEnabled ? `/login?returnTo=${encodeURIComponent(returnTo)}` : returnTo);
     router.refresh();
   }
 

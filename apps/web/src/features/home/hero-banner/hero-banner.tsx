@@ -6,7 +6,7 @@ export function HeroBanner({ image, children }: HeroBannerProps) {
   return (
     <section
       data-slot="hero-banner"
-      className="relative isolate border-b border-(--color-divider) bg-(--color-accent-900) text-white"
+      className="relative isolate z-10 border-b border-(--color-divider) bg-(--color-accent-900) text-white"
     >
       <div
         aria-hidden={image ? undefined : true}

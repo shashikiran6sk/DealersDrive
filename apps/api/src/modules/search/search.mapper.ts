@@ -74,10 +74,6 @@ export function specsOf(vehicle: DetailRow['vehicle']): Spec[] {
       VEHICLE_FIELD_LABELS.insuranceType,
       vehicle.insuranceType && INSURANCE_LABELS[vehicle.insuranceType],
     ),
-    ...spec(
-      VEHICLE_FIELD_LABELS.insuranceValidUntil,
-      vehicle.insuranceValidUntil && formatDate(vehicle.insuranceValidUntil),
-    ),
   ];
 }
 

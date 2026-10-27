@@ -170,6 +170,7 @@ describe('the service', () => {
       },
       prisma: {} as never,
       audit: { record: vi.fn(), recordDetached: vi.fn() },
+      vehicles: { adminUpdate: vi.fn() },
       images: { images: vi.fn(), minimum: vi.fn() },
     });
     const response = await service.listings({ limit: 1 });
@@ -193,6 +194,9 @@ describe('the router', () => {
     expect(signaturesOf(router)).toEqual([
       'GET /listings',
       'GET /listings/:id',
+      'POST /listings/:id/mark-sold',
+      'POST /listings/:id/reserve',
+      'PATCH /listings/:id/vehicle',
       'PUT /listings/:id/checks/:key',
       'PUT /listings/:id/photography',
       'POST /listings/:id/request-changes',
