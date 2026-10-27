@@ -18,4 +18,4 @@ Read it through `validated<T>(req, 'body')`.
 Who is making this request, resolved from the session by
 `requireDealer` / `requireAdmin`. It is the only source of `dealerId`
 in the entire API — a controller that reads one from the body, the
-query or the path is a bug (CLAUDE.md rule 1).
+query or the path is a bug (AGENTS.md rule 1).

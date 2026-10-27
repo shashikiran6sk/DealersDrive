@@ -15,7 +15,7 @@ BFF for the dealer typeahead (**R43**) — `GET /api/search/dealers?search=…`.
 
 The browser cannot call the API directly. Doing so would need the API's
 origin in the bundle, which means a `NEXT_PUBLIC_*` variable, which means the
-build is no longer promotable between environments (CLAUDE.md rule 9,
+build is no longer promotable between environments (AGENTS.md rule 9,
 ARCHITECTURE §15.3). Every other browser-initiated call in the product goes
 through `/api/*` for the same reason, and this is one of the two things a
 typeahead is: a request that genuinely cannot be expressed as a navigation.

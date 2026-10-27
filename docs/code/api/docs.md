@@ -130,7 +130,7 @@ the `cities` table: a dealership's city is text it typed, so there is no
 list to serve.
 
 **Each feature adds its own line here**, in the same PR as its routes. See
-the API-documentation rule in CLAUDE.md §4.
+the API-documentation rule in AGENTS.md §4.
 
 ### `const RAW_BINARY = '__raw_binary__'`
 

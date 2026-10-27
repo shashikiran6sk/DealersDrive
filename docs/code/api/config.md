@@ -93,7 +93,7 @@ warning on every boot so it can never be mistaken for the norm.
 
 ### `DEV_DEALER_SLUG: z`
 
-Local development identity (CLAUDE.md §5, §17), used only when
+Local development identity (the original agent manual, §5 and §17 — docs/original-spec/AGENTS.md on the docs branch), used only when
 `AUTH_MODE=dev`. Production auth replaces the resolver, not these values —
 nothing downstream of `resolvePrincipal` knows the difference, and no route
 ever reads an identity from a client.
@@ -158,7 +158,7 @@ verifier) and nothing else. Session tokens are random, not signed.
 
 ### `SESSION_COOKIE_DOMAIN: optional(z.string().min(1))`
 
-Empty in every environment, and that is the design (docs/DEPLOYMENT.md §F4).
+Empty in every environment, and that is the design (docs/original-spec/DEPLOYMENT.md §F4 on the docs branch).
 
 Each environment serves the web app and the API on a single origin, so the
 cookie is already shared where it needs to be. A parent-domain cookie

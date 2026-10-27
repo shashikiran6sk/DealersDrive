@@ -39,7 +39,7 @@ regexes = [
   # none of this — so a genuine token committed to a test is still caught.
   #
   # It is needed because the scan covers **history** and the commit that
-  # introduced these literals cannot be rewritten (CLAUDE.md: never rewrite Git
+  # introduced these literals cannot be rewritten (AGENTS.md: never rewrite Git
   # history). The current tree builds the same strings at runtime with
   # `Buffer.from(…).toString('base64url')` precisely so that no new literal is
   # added — see `jwtShaped()` in `dealer-onboarding.test.ts` and
@@ -53,7 +53,7 @@ regexes = [
   #
   # It is here for the same reason the JWT entry above is: the scan covers
   # **history**, and the commit that introduced the literal cannot be rewritten
-  # (CLAUDE.md: never rewrite Git history). **The current tree does not contain
+  # (AGENTS.md: never rewrite Git history). **The current tree does not contain
   # it** — the three sites now read `example-widget-token`, which is a
   # placeholder to a scanner and to a person alike, and is the shape any future
   # fixture should take. A real widget token committed to the same files is

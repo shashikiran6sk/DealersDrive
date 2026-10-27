@@ -295,7 +295,7 @@ export function dealerSlug(parts: {
 /**
  * `" VELLORE "` -> `"Vellore"`, `"tamil  nadu"` -> `"Tamil Nadu"`.
  *
- * The guard rail that free-text city and state need. CLAUDE.md §5 records the
+ * The guard rail that free-text city and state need. AGENTS.md §5 records the
  * risk in the vehicle catalogue's own words — without a lookup table,
  * `Maruti`, `Maruti Suzuki` and `MARUTI SUZUKI INDIA LTD` become three facets
  * of one brand — and a locality typed by five thousand dealers fragments the

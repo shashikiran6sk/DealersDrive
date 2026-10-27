@@ -116,7 +116,7 @@ real. Nothing on this page needs changing when those models land — which is
 the point of the numbers being the API's.
 
 The two panels are their own file rather than private functions here, so both
-can have a sandbox entry (CLAUDE.md §6). See `dashboard-panels.tsx`.
+can have a sandbox entry (AGENTS.md §6). See `dashboard-panels.tsx`.
 ────────────────────────────────────────────────────────────────────────────
 
 ## `apps/web/src/app/(dealer)/dealer/enquiries/page.tsx`

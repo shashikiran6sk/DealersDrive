@@ -208,7 +208,7 @@ provided; schema removal/retention is a separately reviewed operation.
 
 ## Verification and screenshots
 
-Results and local evidence are recorded in `docs/testing/legal-v1/RESULTS.md`.
+Results and local evidence are recorded in `docs/testing/legal-v1/RESULTS.md` on the `docs` branch.
 Screenshots show the confirmed V1 text and synthetic/local account data. They are
 engineering review evidence, not proof of production configuration or final legal
 approval. Real provider/device UAT remains a release-owner task; automated auth

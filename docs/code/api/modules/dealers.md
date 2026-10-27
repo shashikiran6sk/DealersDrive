@@ -1598,7 +1598,7 @@ is no owner account yet to read them from.
 
 ### `function gstinOnCommit(`
 
-Owner decision (2026-10-12, `docs/project/optional-gstin.md`): the GSTIN is
+Owner decision (2026-10-12, `docs/project/optional-gstin.md` on the `docs` branch): the GSTIN is
 not a field the dealer types on its own. It arrives with the GST certificate,
 and committing a business proof decides it — the certificate's box, or nothing
 for any other proof. That keeps the GSTIN on file and the document a reviewer
