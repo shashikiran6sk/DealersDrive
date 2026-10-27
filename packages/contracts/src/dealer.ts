@@ -208,6 +208,7 @@ export const UpdateDealerInput = z
       .refine((year) => year <= new Date().getFullYear(), {
         message: 'Established year cannot be in the future.',
       })
+      .nullable()
       .optional(),
     /**
      * The same floor of one that `OnboardingInput` applies (**R26**): present

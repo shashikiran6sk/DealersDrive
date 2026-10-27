@@ -61,3 +61,11 @@ A confirmation, because approval publishes and freezes the gallery and the
 checklist. No reason is asked for: the decision is recorded in the audit log
 with who and when, and there is nothing to tell the dealer beyond "live". A
 refusal (someone removed an image in another tab) is shown in the dialog.
+
+## Editing and availability
+
+Moderators and super admins can edit listing details while Pending Review, Changes Requested, Active or Reserved. The editor reuses the vehicle wizard fields, including the None/Live insurance choice, and requires the vehicle timestamp read when editing began. A stale save returns a conflict and preserves the typed values. Active and Reserved vehicles must remain complete; valid edits keep publication and the public URL. Edits in review clear verification checks. The API records before/after values in listing history.
+
+Active listings offer Mark reserved and Mark sold; Reserved listings offer Mark sold. Each action has a confirmation dialog. The existing transition service stamps dates, releases sold registrations, and cancels obsolete reactivation requests. Sales assistants cannot edit or decide listings they prepared or submitted after moving into a reviewer role.
+
+Successful mutations invalidate public vehicle and dealer caches and refresh admin and dealer inventory pages. `AdminListingDetail.vehicle` supplies typed field values; its action flags control the editor and availability panel. The Active Storybook scenario exercises both components.

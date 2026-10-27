@@ -6,6 +6,7 @@ import type {
   ReactivationRequestStatus,
 } from '@prisma/client';
 
+import { legalEnabled, hasDealerAcceptance } from '../legal/legal.facade.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import type { ApprovalState } from './moderation.approval.js';
 
@@ -198,6 +199,7 @@ export async function approvalStateOf(
 
   return {
     dealerStatus: dealer.status,
+    dealerPoliciesAccepted: !legalEnabled() || (await hasDealerAcceptance(tx, listing.dealerId)),
     dealerCity: dealer.city,
     vehicle,
     checkedKeys: checks.map((check) => check.key),

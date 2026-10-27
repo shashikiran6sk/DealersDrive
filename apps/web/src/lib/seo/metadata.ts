@@ -5,6 +5,7 @@ import {
   DEFAULT_SOCIAL_IMAGE,
   HOME_TITLE,
   SITE_DESCRIPTION,
+  SITE_ICONS,
   SITE_LOCALE,
   SITE_NAME,
   TITLE_SEPARATOR,
@@ -50,6 +51,7 @@ export function rootMetadata(): Metadata {
     description: SITE_DESCRIPTION,
     creator: SITE_NAME,
     publisher: SITE_NAME,
+    icons: { icon: [...SITE_ICONS.icon], apple: [...SITE_ICONS.apple] },
     ...(indexingEnabled() ? {} : { robots: robotsFor({ index: false, follow: false }) }),
     openGraph: {
       type: 'website',

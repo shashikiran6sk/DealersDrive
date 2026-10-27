@@ -83,7 +83,7 @@ describe('approving a listing that is ready', () => {
     expect(approved.body.listing).toMatchObject({ status: 'ACTIVE', statusLabel: 'Active' });
     expect(approved.body.listing.publishedAt).toEqual(expect.any(String));
     expect(approved.body.actions).toMatchObject({ canApprove: false, canReject: false });
-    expect(approved.body.images.canEdit).toBe(false);
+    expect(approved.body.images.canEdit).toBe(true);
 
     const row = await h.prisma.listing.findUniqueOrThrow({ where: { id: listingId } });
     expect(row.status).toBe('ACTIVE');

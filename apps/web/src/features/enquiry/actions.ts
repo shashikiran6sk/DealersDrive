@@ -4,6 +4,8 @@ import { CreateEnquiryInput, CustomerSession, type EnquiryReceipt } from '@deale
 
 import { cookies } from 'next/headers';
 
+import { LEGAL_REQUIRED } from '@dealers-drive/contracts';
+
 import { ApiError, apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 import { ENQUIRY_ACTION_TEXT } from './actions.constants';
@@ -52,7 +54,7 @@ export async function sendEnquiryAction(
     return { status: 'sent', receipt };
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 401) return { status: 'signed-out' };
+      if (error.status === 401 || error.code === LEGAL_REQUIRED) return { status: 'signed-out' };
       return {
         status: 'refused',
         code: error.code,

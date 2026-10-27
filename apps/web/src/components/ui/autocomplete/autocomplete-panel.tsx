@@ -91,7 +91,10 @@ export function AutocompletePanel<T>({
                 </span>
                 <span className="text-[10.5px] ink-subtle tnum">{countLabel}</span>
               </div>
-              <ul className="list-none" {...autocomplete.listProps}>
+              <ul
+                className="max-h-[min(360px,60vh)] list-none overflow-y-auto overscroll-contain"
+                {...autocomplete.listProps}
+              >
                 {children(autocomplete)}
               </ul>
             </>

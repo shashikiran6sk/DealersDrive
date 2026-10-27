@@ -1,3 +1,5 @@
+import { LegalGate } from '@/features/legal/legal-gate';
+import { legalGateEnabled, legalStatus } from '@/lib/legal';
 import type { AuthProvidersResponse, PhoneOtpWidget } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -35,6 +37,21 @@ export default async function LoginPage({
     if (session) redirect(destinationFor(session));
   }
 
+  if (audience === 'customer') {
+    const status = await legalStatus('CUSTOMER');
+    if (status?.enabled) {
+      const returnTo = safeReturnPath(requested, '/');
+      if (status.accepted) redirect(returnTo);
+      return (
+        <EntryShell>
+          <AuthShell eyebrow={LOGIN_EYEBROW}>
+            <LegalGate scope="CUSTOMER" returnTo={returnTo} />
+          </AuthShell>
+        </EntryShell>
+      );
+    }
+  }
+
   const [providers, widget] = await Promise.all([
     apiGet<AuthProvidersResponse>('/v1/auth/providers', { revalidate: false }),
     signInWidget(),
@@ -51,7 +68,13 @@ export default async function LoginPage({
         <AuthHeading title={LOGIN_TEXT.title} visuallyHidden />
         <LoginTabs
           initial={audience}
-          customer={<CustomerLogin widget={widget} returnTo={safeReturnPath(requested, '/')} />}
+          customer={
+            <CustomerLogin
+              legalEnabled={legalGateEnabled()}
+              widget={widget}
+              returnTo={safeReturnPath(requested, '/')}
+            />
+          }
           dealer={
             <DealerLogin
               widget={widget}

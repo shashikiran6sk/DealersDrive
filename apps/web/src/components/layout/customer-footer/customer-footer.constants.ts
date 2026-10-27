@@ -10,6 +10,9 @@ export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'D
 export const SUPPORT_LINKS: FooterLink[] = [{ href: '/contact', label: 'Contact & support' }];
 
 export const FOOTER_TEXT = {
+  legalLabel: 'Legal policies',
+  terms: 'Terms & Conditions',
+  privacy: 'Privacy Policy',
   brand: 'Dealers-Drive',
   trust:
     'The Dealer Verified badge follows a business and representative review. Dealers are responsible for their listings, prices and vehicle documentation.',

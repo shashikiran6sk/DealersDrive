@@ -1,4 +1,6 @@
 import {
+  ADMIN_EDITABLE_LISTING_STATUSES,
+  AdminVehicleDetails,
   BODY_TYPE_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
@@ -34,7 +36,7 @@ import {
   type PhotographyStatus,
 } from '@dealers-drive/contracts';
 
-import { completenessOf } from '../vehicles/vehicles.facade.js';
+import { toDealerVehicle, completenessOf } from '../vehicles/vehicles.facade.js';
 import { approvalBlockers } from './moderation.approval.js';
 import { ACTOR_LABELS, HISTORY_LABELS, SECTION_TITLES } from './moderation.messages.js';
 import type { DetailRow, HistoryRow, QueueRow, ReactivationRow } from './moderation.repository.js';
@@ -171,10 +173,6 @@ export function sectionsOf(vehicle: DetailRow['vehicle']): AdminListingDetail['s
           VEHICLE_FIELD_LABELS.insuranceType,
           vehicle.insuranceType && INSURANCE_LABELS[vehicle.insuranceType],
         ),
-        row(
-          VEHICLE_FIELD_LABELS.insuranceValidUntil,
-          vehicle.insuranceValidUntil && formatDate(vehicle.insuranceValidUntil),
-        ),
       ],
     },
     {
@@ -219,6 +217,7 @@ export function toAdminListingDetail(
   images: AdminVehicleImages,
   now: Date = new Date(),
   viewerMemberId: string | null = null,
+  dealerPoliciesAccepted = true,
 ): AdminListingDetail {
   const assistant =
     viewerMemberId !== null &&
@@ -229,6 +228,7 @@ export function toAdminListingDetail(
   const blockers = reviewing
     ? approvalBlockers({
         dealerStatus: listing.dealer.status,
+        dealerPoliciesAccepted,
         dealerCity: listing.dealer.city,
         vehicle: listing.vehicle,
         checkedKeys: listing.checks.map((check) => check.key),
@@ -255,6 +255,7 @@ export function toAdminListingDetail(
       location: locationOf(listing.dealer),
       phoneDisplay: listing.dealer.contactPhone ? formatPhone(listing.dealer.contactPhone) : null,
     },
+    vehicle: AdminVehicleDetails.parse(toDealerVehicle({ ...listing.vehicle, listing })),
     sections: sectionsOf(listing.vehicle),
     description: listing.vehicle.description,
     issues: vehicleIssues(completenessOf(listing.vehicle)),
@@ -280,6 +281,9 @@ export function toAdminListingDetail(
       reviewerIsAssistant: assistant,
     },
     actions: {
+      canEdit: !assistant && ADMIN_EDITABLE_LISTING_STATUSES.includes(listing.status),
+      canReserve: !assistant && listing.status === 'ACTIVE',
+      canMarkSold: !assistant && (listing.status === 'ACTIVE' || listing.status === 'RESERVED'),
       canVerify: reviewing,
       canRequestChanges: reviewing,
       canReject: reviewing,

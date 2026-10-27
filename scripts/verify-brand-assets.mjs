@@ -71,8 +71,6 @@ for (const path of [
   ...(await readdir(brand))
     .filter((name) => name.endsWith('.png'))
     .map((name) => `apps/web/public/brand/${name}`),
-  'apps/web/src/app/icon.png',
-  'apps/web/src/app/apple-icon.png',
   'apps/web/public/og/dealersdrive-v2.png',
   'apps/web/public/og/dealers-drive.png',
 ]) {
@@ -80,22 +78,52 @@ for (const path of [
     .raw()
     .toBuffer();
 }
-const ico = await readFile(new URL('apps/web/src/app/favicon.ico', root));
+
+// Search engines take a favicon only at a multiple of 48px square.
+for (const [path, size] of [
+  ['apps/web/public/brand/dd-icon-v2-192.png', 192],
+  ['apps/web/public/brand/dd-apple-icon-v2-180.png', 180],
+]) {
+  const meta = await sharp(await readFile(new URL(path, root))).metadata();
+  assert.deepEqual([meta.width, meta.height], [size, size], `${path} must be ${size}px square`);
+}
+
+const ico = await readFile(new URL('apps/web/public/favicon-v2.ico', root));
+assert.deepEqual(
+  await readFile(new URL('apps/web/public/favicon.ico', root)),
+  ico,
+  '/favicon.ico must serve the same mark as /favicon-v2.ico',
+);
 assert.equal(ico.readUInt16LE(2), 1);
 assert.equal(ico.readUInt16LE(4), 3);
+const favicons = [];
 for (let index = 0; index < 3; index++) {
   const entry = 6 + index * 16;
   const size = [16, 32, 48][index];
   assert.equal(ico[entry], size);
-  const frame = ico.subarray(
-    ico.readUInt32LE(entry + 12),
-    ico.readUInt32LE(entry + 12) + ico.readUInt32LE(entry + 8),
-  );
+  favicons.push([
+    `favicon-v2.ico ${size}px`,
+    size,
+    ico.subarray(
+      ico.readUInt32LE(entry + 12),
+      ico.readUInt32LE(entry + 12) + ico.readUInt32LE(entry + 8),
+    ),
+  ]);
+}
+for (const size of [48, 96]) {
+  favicons.push([
+    `dd-favicon-v2-${size}.png`,
+    size,
+    await readFile(new URL(`apps/web/public/brand/dd-favicon-v2-${size}.png`, root)),
+  ]);
+}
+for (const [label, size, frame] of favicons) {
   const { data, info } = await sharp(frame)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
-  assert.equal(info.width, size);
+  assert.equal(info.width, size, `${label} width`);
+  assert.equal(info.height, size, `${label} height`);
   assert.equal(data[3], 0, 'rounded favicon corners must be transparent');
   const topCenter = Math.floor(size / 2) * 4;
   assert.deepEqual([...data.subarray(topCenter, topCenter + 4)], [0, 0, 0, 255]);

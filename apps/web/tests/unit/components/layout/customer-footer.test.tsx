@@ -97,7 +97,9 @@ describe('the destinations it claims exist', () => {
       .map((link) => link.getAttribute('href') ?? '')
       .filter((href) => href.startsWith('/'));
 
-    expect(new Set(routes)).toEqual(new Set(['/cars', '/dealers', '/login?as=dealer', '/contact']));
+    expect(new Set(routes)).toEqual(
+      new Set(['/cars', '/dealers', '/login?as=dealer', '/contact', '/terms', '/privacy']),
+    );
   });
 });
 

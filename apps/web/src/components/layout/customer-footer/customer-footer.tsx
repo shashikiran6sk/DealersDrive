@@ -7,7 +7,12 @@ import { FooterColumn } from './footer-column';
 import { FooterLinkItem } from './footer-link-item';
 import { SocialRow } from './social-row';
 
-export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerFooterProps) {
+export function CustomerFooter({
+  social,
+  supportEmail,
+  supportPhone,
+  legalVisible = true,
+}: CustomerFooterProps) {
   return (
     <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 max-sm:grid-cols-2 max-sm:gap-6 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
@@ -67,6 +72,23 @@ export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerF
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-5 text-[12px] ink-muted sm:px-6 lg:px-10">
           <span className="tnum">{FOOTER_TEXT.copyright(new Date().getFullYear())}</span>
           <span>{FOOTER_TEXT.disclaimer}</span>
+          {legalVisible ? (
+            <nav aria-label={FOOTER_TEXT.legalLabel} className="flex items-center gap-2">
+              <a
+                href="/terms"
+                className="inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                {FOOTER_TEXT.terms}
+              </a>
+              <span aria-hidden="true">|</span>
+              <a
+                href="/privacy"
+                className="inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                {FOOTER_TEXT.privacy}
+              </a>
+            </nav>
+          ) : null}
         </div>
       </div>
     </footer>
