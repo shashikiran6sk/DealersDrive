@@ -7,7 +7,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
 import staticFfmpeg from 'ffmpeg-static';
-import { SETTINGS, PromoError, sha, fingerprint } from './core.mjs';
+import { SETTINGS, PromoError, sha, fingerprint, parseLoudness } from './core.mjs';
 const require = createRequire(import.meta.url);
 const ffmpeg = process.env.PROMO_FFMPEG || staticFfmpeg;
 const audioTasks = new Map();
@@ -396,7 +396,7 @@ export async function verify(file, format) {
     'null',
     '-',
   ]);
-  const loudness = JSON.parse(a.err.slice(a.err.lastIndexOf('{')));
+  const loudness = parseLoudness(a.err);
   if (
     Number(loudness.input_tp) > -0.8 ||
     Number(loudness.input_i) < -17 ||

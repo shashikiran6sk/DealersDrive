@@ -9,10 +9,21 @@ import {
   inputKey,
   renderVehicle,
   mediaUrl,
+  parseLoudness,
 } from '../src/core.mjs';
 import { get } from '../src/source.mjs';
 import { validResult } from '../src/workflow.mjs';
 import { vehicle, url } from './fixtures.mjs';
+test('audio checks read loudness JSON with Linux FFmpeg summary lines after it', () => {
+  const report = { input_i: '-13.89', input_tp: '-1.32', input_lra: '1.2' };
+  const log =
+    '[Parsed_loudnorm] ' +
+    JSON.stringify(report) +
+    '\n[out#0/null @ 0x1234] video:0KiB audio:15008KiB\n';
+  assert.deepEqual(parseLoudness(log), report);
+  assert.throws(() => parseLoudness('no measurement'));
+  assert.throws(() => parseLoudness('{"input_i":"-inf","input_tp":"-inf","input_lra":"0"}'));
+});
 test('canonical URL intake normalizes tracking, commas, newlines and duplicate links', () => {
   assert.deepEqual(
     parseUrls([

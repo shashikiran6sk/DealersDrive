@@ -24,6 +24,14 @@ export function stable(value) {
   return value;
 }
 export const fingerprint = (value) => sha(JSON.stringify(stable(value)));
+export function parseLoudness(log) {
+  const blocks = [...log.matchAll(/\{\s*"input_i"\s*:[\s\S]*?\}/g)];
+  if (!blocks.length) throw new PromoError('VERIFY', 'FFmpeg did not report audio loudness.');
+  const result = JSON.parse(blocks.at(-1)[0]);
+  if (!['input_i', 'input_tp', 'input_lra'].every((k) => Number.isFinite(Number(result[k]))))
+    throw new PromoError('VERIFY', 'Invalid or silent audio loudness report.');
+  return result;
+}
 export function canonicalUrl(input) {
   if (/\/(?:\.|%2e){1,2}(?:\/|$)/i.test(input.split(/[?#]/)[0]))
     throw new PromoError('INVALID_URL', 'Use a direct vehicle listing URL without dot segments.');
