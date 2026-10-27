@@ -242,7 +242,7 @@ export const salesDocs: ModuleDocs = {
       tag: DOC_TAGS.sales,
       summary: 'Submit for verification',
       description:
-        "Moves the draft to `PENDING_APPROVAL` through the **same** submission the dealer's own onboarding uses: the same completeness rules, the same `DealerApplied` event (and so the same emails), audited as `dealer.submitted` with this member as actor. The member cannot approve it \u2014 no Sales role holds a reviewer permission, and a reviewer who assisted a dealership is refused its decisions.",
+        "Moves the draft to `PENDING_APPROVAL` through the **same** submission the dealer's own onboarding uses: the same completeness rules, the same `DealerApplied` event (and so the same emails), audited as `dealer.submitted` with this member as actor. Owner policy acceptance is not required or recorded for this staff submission; it is required before listing publication. The member cannot approve it \u2014 no Sales role holds a reviewer permission, and a reviewer who assisted a dealership is refused its decisions.",
       audience: 'admin',
       permission: 'sales:dealer:submit',
       params: 'IdParam',
@@ -321,7 +321,7 @@ export const salesDocs: ModuleDocs = {
       tag: DOC_TAGS.sales,
       summary: 'Submit a prepared listing for review',
       description:
-        'Only once the dealership is approved (`409 DEALER_NOT_APPROVED`) and the vehicle is complete (`422 VEHICLE_INCOMPLETE`). Enters the ordinary moderation queue as a `SALES` submission; `listings.submittedByMemberId` records who, and the reviewer sees it.',
+        'Only once the dealership is approved (`409 DEALER_NOT_APPROVED`) and the vehicle is complete (`422 VEHICLE_INCOMPLETE`). Policy acceptance is not required for this internal submission; admin publication remains blocked until the dealership owner accepts. Enters the ordinary moderation queue as a `SALES` submission; `listings.submittedByMemberId` records who, and the reviewer sees it.',
       audience: 'admin',
       permission: 'sales:listing:submit',
       params: 'SalesVehicleParam',

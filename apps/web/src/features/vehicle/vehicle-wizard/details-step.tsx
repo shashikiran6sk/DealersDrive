@@ -79,20 +79,6 @@ export function DetailsStep({ vehicle, errors, values }: StepProps) {
           ))}
         </Select>
       </StepField>
-      <StepField
-        name="insuranceValidUntil"
-        errors={errors}
-        hint={VEHICLE_WIZARD_TEXT.insuranceDateHint}
-      >
-        <Input
-          id="insuranceValidUntil"
-          name="insuranceValidUntil"
-          type="date"
-          defaultValue={value('insuranceValidUntil')}
-          className="tnum"
-          {...invalidProps('insuranceValidUntil', errors.insuranceValidUntil)}
-        />
-      </StepField>
     </div>
   );
 }

@@ -5,12 +5,16 @@ import { useEffect } from 'react';
 import { BrandLogo } from '@/components/brand-logo';
 import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
+import { cn } from '@/lib/cn';
+
 import { GalleryArrow } from './gallery-arrow';
 import { GalleryRail } from './gallery-rail';
+import { GalleryZoomControls } from './gallery-zoom-controls';
 import { PHOTO_GALLERY_TEXT } from './photo-gallery.constants';
 import type { GalleryPhoto, GalleryStep } from './photo-gallery.types';
 import { useSwipe } from './use-swipe';
-import { arrowStep, captionOf } from './utils';
+import { useZoom } from './use-zoom';
+import { arrowPan, arrowStep, captionOf, hasModifier, zoomKey, zoomTransform } from './utils';
 
 export interface GalleryViewerProps {
   title: string;
@@ -35,19 +39,34 @@ export function GalleryViewer({
 }: GalleryViewerProps) {
   const current = photos[index];
   const several = photos.length > 1;
-  const swipe = useSwipe(onStep, several);
+  const zoom = useZoom(`${open}:${current?.url ?? ''}`);
+  const { zoomed, act, pan } = zoom;
+  const swipe = useSwipe(onStep, several && !zoomed);
 
   useEffect(() => {
-    if (!open || !several) return;
+    if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
-      const delta = arrowStep(event.key);
+      if (hasModifier(event)) return;
+      const action = zoomKey(event.key);
+      if (action !== null) {
+        event.preventDefault();
+        act(action);
+        return;
+      }
+      const offset = zoomed ? arrowPan(event.key) : null;
+      if (offset !== null) {
+        event.preventDefault();
+        pan(offset);
+        return;
+      }
+      const delta = several ? arrowStep(event.key) : null;
       if (delta === null) return;
       event.preventDefault();
       onStep(delta);
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [open, several, onStep]);
+  }, [open, several, onStep, zoomed, act, pan]);
 
   return (
     <Dialog
@@ -83,12 +102,30 @@ export function GalleryViewer({
           />
         ) : null}
 
-        <div className="aspect-[4/3] max-h-full w-[min(100%,1100px,calc((100dvh_-_94px)*4/3))] max-w-full border border-white/15 bg-[#151a23]">
+        <div
+          ref={zoom.frameRef}
+          {...zoom.handlers}
+          className={cn(
+            'aspect-[4/3] max-h-full w-[min(100%,1100px,calc((100dvh_-_94px)*4/3))] max-w-full touch-none overflow-hidden border border-white/15 bg-[#151a23] select-none',
+            zoomed ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in',
+          )}
+        >
           {current ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={current.url} alt={current.alt} className="h-full w-full object-contain" />
+            <img
+              src={current.url}
+              alt={current.alt}
+              draggable={false}
+              style={{ transform: zoomTransform(zoom.view) }}
+              className={cn(
+                'h-full w-full object-contain will-change-transform',
+                zoom.smooth && 'transition-transform duration-200 ease-out',
+              )}
+            />
           ) : null}
         </div>
+
+        <GalleryZoomControls scale={zoom.view.scale} onZoom={act} />
 
         {several ? (
           <GalleryArrow

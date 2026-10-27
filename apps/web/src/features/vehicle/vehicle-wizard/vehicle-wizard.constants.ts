@@ -36,7 +36,7 @@ export const STEP_FIELDS: Record<Exclude<WizardStep, 'review'>, readonly string[
     'transmission',
     'bodyType',
   ],
-  details: ['kilometersDriven', 'ownerCount', 'color', 'insuranceType', 'insuranceValidUntil'],
+  details: ['kilometersDriven', 'ownerCount', 'color', 'insuranceType'],
   pricing: ['priceRupees', 'negotiability', 'description'],
 };
 
@@ -73,7 +73,6 @@ export const VEHICLE_WIZARD_TEXT = {
   registrationYearHint: 'optional',
   choose: 'Choose…',
   kmPlaceholder: '22,400',
-  insuranceDateHint: 'not needed without insurance',
   pricePlaceholder: '14,50,000',
   priceHint: 'in rupees',
   descriptionHint: 'optional',
@@ -127,7 +126,6 @@ export const FIELD_LABELS: Record<string, string> = {
   ownerCount: 'Owners',
   color: 'Colour',
   insuranceType: 'Insurance',
-  insuranceValidUntil: 'Insurance valid until',
   priceRupees: 'Price',
   negotiability: 'Price is',
   description: 'Description',

@@ -25,7 +25,11 @@ export function useSwipe(onStep: (delta: GalleryStep) => void, enabled: boolean)
   const onPointerDown = useCallback(
     (event: PointerEvent<HTMLElement>) => {
       guardUntilRef.current = 0;
-      if (!enabled || event.pointerType === 'mouse' || startRef.current) return;
+      if (startRef.current) {
+        if (startRef.current.pointerId !== event.pointerId) startRef.current = null;
+        return;
+      }
+      if (!enabled || event.pointerType === 'mouse') return;
       startRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
     },
     [enabled],

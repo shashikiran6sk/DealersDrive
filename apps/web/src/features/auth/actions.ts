@@ -134,9 +134,13 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
   redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
 }
 
-export async function submitForVerificationAction(): Promise<ActionState> {
+export async function submitForVerificationAction(form?: FormData): Promise<ActionState> {
   try {
-    await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
+    await apiSend<DealerSubmitResponse>(
+      'POST',
+      '/v1/dealer/submit',
+      form?.get('accepted') === 'true' ? { accepted: true } : {},
+    );
   } catch (error) {
     if (error instanceof ApiError) {
       return { message: error.userMessage('That could not be submitted yet.') };

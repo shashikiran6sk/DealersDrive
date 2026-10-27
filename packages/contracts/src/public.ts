@@ -179,7 +179,7 @@ export const DealerCard = z.object({
   initials: z.string(),
   city: z.string(),
   state: z.string(),
-  yearsOperating: z.number().int(),
+  yearsOperating: z.number().int().nullable(),
   /** Already reads "Vellore, Tamil Nadu · 7 years" — one line, composed once. */
   yearsLabel: z.string(),
   tagline: z.string().nullable(),

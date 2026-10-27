@@ -194,7 +194,6 @@ describe('saveVehicleStepAction', () => {
         ownerCount: '1',
         color: 'RED',
         insuranceType: 'NONE',
-        insuranceValidUntil: '',
         intent: 'continue',
       }),
     );

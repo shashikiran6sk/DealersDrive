@@ -1,0 +1,42 @@
+[
+  {
+    "name": "publication-blocked",
+    "width": 375,
+    "title": "2023 Hyundai Creta SX(O)",
+    "overflow": false,
+    "checkbox": null,
+    "links": [],
+    "ownerAcceptanceBlocker": true,
+    "publishButtonEnabled": false
+  },
+  {
+    "name": "publication-blocked",
+    "width": 768,
+    "title": "2023 Hyundai Creta SX(O)",
+    "overflow": false,
+    "checkbox": null,
+    "links": [],
+    "ownerAcceptanceBlocker": true,
+    "publishButtonEnabled": false
+  },
+  {
+    "name": "publication-blocked",
+    "width": 1024,
+    "title": "2023 Hyundai Creta SX(O)",
+    "overflow": false,
+    "checkbox": null,
+    "links": [],
+    "ownerAcceptanceBlocker": true,
+    "publishButtonEnabled": false
+  },
+  {
+    "name": "publication-blocked",
+    "width": 1280,
+    "title": "2023 Hyundai Creta SX(O)",
+    "overflow": false,
+    "checkbox": null,
+    "links": [],
+    "ownerAcceptanceBlocker": true,
+    "publishButtonEnabled": false
+  }
+]

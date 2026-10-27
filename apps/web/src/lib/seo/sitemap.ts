@@ -1,3 +1,4 @@
+import { legalPagesVisible } from '../legal';
 import type {
   PublicLocations,
   PublicSitemapResponse,
@@ -39,6 +40,7 @@ export function buildSitemap(
 ): MetadataRoute.Sitemap {
   return [
     ...STATIC_SITEMAP_PATHS.map((path) => entry(path)),
+    ...(legalPagesVisible() ? ['/terms', '/privacy'].map((path) => entry(path)) : []),
     ...districtRows(locations),
     ...entityRows(pages.dealers, dealerPath),
     ...entityRows(pages.vehicles, vehiclePath),
