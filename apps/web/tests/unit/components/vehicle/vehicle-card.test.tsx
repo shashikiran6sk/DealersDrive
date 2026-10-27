@@ -194,13 +194,15 @@ describe('VehicleCard', () => {
 });
 
 describe('/cars', () => {
+  // BUG-113: search results are never cached. On Vercel a cached entry past its
+  // window is served once more while it refreshes, so a district nobody had
+  // opened for two weeks showed cars sold in between.
   it('reads the first page and renders a card for each car with the count', async () => {
     serve(response([card(), card({ slug: 'b', title: '2021 Tata Nexon' })]));
     render(await CarsPage({ searchParams: Promise.resolve({}) }));
 
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles', {
-      revalidate: 60,
-      tags: ['vehicles'],
+      revalidate: false,
     });
     expect(screen.getByRole('heading', { level: 1, name: 'Used cars' })).toBeInTheDocument();
     expect(screen.getByText('2 cars available')).toBeInTheDocument();
@@ -213,8 +215,7 @@ describe('/cars', () => {
     render(await CarsPage({ searchParams: Promise.resolve({ page: '2' }) }));
 
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles?page=2', {
-      revalidate: 60,
-      tags: ['vehicles'],
+      revalidate: false,
     });
     const nav = within(screen.getByRole('navigation', { name: 'Pagination' }));
     expect(nav.getByRole('link', { name: '← Previous' })).toHaveAttribute('href', '/cars');

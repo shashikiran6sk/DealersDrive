@@ -12,9 +12,18 @@ F076/F078/F080 and deferred — so the page takes one query parameter, `page`,
 and ignores anything that is not a positive integer rather than passing it to
 the API.
 
-The response is parsed with `PublicVehiclesResponse` (`apiGetParsed`), and the
-fetch is tagged `vehicles` so an approval in the admin console revalidates it
-at once rather than after the minute's cache.
+The response is parsed with `PublicVehiclesResponse` (`apiGetParsed`).
+
+**The results are never cached (BUG-113).** They were cached for 60 s under the
+`vehicles` tag. On Vercel a data-cache entry past its window is served once more
+while it refreshes in the background, so a URL nobody had opened for a while —
+`/cars?district=ranipet` — answered with whatever it last saw: two-week-old
+results with cars sold since, every one a broken photo and a not-found click,
+gone on the next refresh. A tag revalidation only helps the changes that go
+through a web server action; an expiry sweep or any API-side change never sends
+one. The page is `force-dynamic` already and every filter combination is its own
+key, so the cache was saving little; `revalidate: false` asks the API every
+time.
 
 It is indexable now that it lists real cars; it replaced a coming-soon page.
 
