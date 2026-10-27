@@ -83,6 +83,7 @@ export type HeroImageConfig = z.infer<typeof HeroImageConfig>;
 export const PublicConfig = z.object({
   mediaBaseUrl: z.string(),
   captchaSiteKey: z.string().nullable(),
+  /** The customer support contact — always `support.customer`, kept for the footer and JSON-LD. */
   supportEmail: z.string(),
   supportPhone: z.string(),
   minPhotosPerListing: z.number().int(),

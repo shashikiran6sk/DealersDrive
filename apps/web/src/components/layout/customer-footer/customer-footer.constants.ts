@@ -3,7 +3,6 @@ import type { FooterLink } from './customer-footer.types';
 export const BUYER_LINKS: FooterLink[] = [
   { href: '/cars', label: 'Buy cars' },
   { href: '/dealers', label: 'Dealer directory' },
-  { href: '/saved', label: 'Saved cars' },
 ];
 
 export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }];

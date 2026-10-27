@@ -4,7 +4,7 @@ import {
   type PublicVehiclesResponse,
   type VehicleCardDto,
 } from '@dealers-drive/contracts';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import CarsPage from '@/app/(public)/cars/page';
@@ -117,6 +117,17 @@ describe('VehicleCard', () => {
   it('holds the image band with a labelled slot when there is no photograph', () => {
     render(<VehicleCard vehicle={card({ image: null })} />);
     expect(screen.getByRole('img', { name: 'Photographs coming soon' })).toBeInTheDocument();
+  });
+
+  it('falls back to the labelled slot when the photograph fails to load (BUG-109)', () => {
+    render(<VehicleCard vehicle={card()} />);
+    fireEvent.error(
+      screen.getByRole('img', { name: '2023 Hyundai Creta SX(O), the primary photograph' }),
+    );
+    expect(screen.getByRole('img', { name: 'Photographs coming soon' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('img', { name: '2023 Hyundai Creta SX(O), the primary photograph' }),
+    ).toBeNull();
   });
 
   it('says the price is on request rather than printing nothing, and drops a missing year', () => {
