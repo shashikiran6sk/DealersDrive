@@ -10,17 +10,13 @@ import { redirect } from 'next/navigation';
 
 import { ApiError, apiSend } from '@/lib/api';
 
-import {
-  NUMBER_FIELDS,
-  STEP_FIELDS,
-  VEHICLE_WIZARD_TEXT,
-} from './vehicle-wizard/vehicle-wizard.constants';
+import { STEP_FIELDS, VEHICLE_WIZARD_TEXT } from './vehicle-wizard/vehicle-wizard.constants';
+import { payloadFor } from './vehicle-wizard/form-payload';
 import type { WizardIntent, WizardScope, WizardState } from './vehicle-wizard/vehicle-wizard.types';
 import {
   editPath,
   formField,
   isWizardStep,
-  rupeesToPaise,
   stepAfter,
   stepBefore,
   stepOfField,
@@ -95,24 +91,6 @@ export async function createVehicleAction(
   }
 
   redirect(editPath(created.id, 'basics', '', scope));
-}
-
-function payloadFor(fields: readonly string[], formData: FormData): Record<string, unknown> {
-  const payload: Record<string, unknown> = {};
-  for (const field of fields) {
-    const raw = text(formData, field).trim();
-    if (field === 'priceRupees') {
-      payload.pricePaise = rupeesToPaise(raw);
-    } else if (field === 'registrationNumber') {
-      payload.registrationNumber = raw;
-    } else if (NUMBER_FIELDS.has(field)) {
-      const digits = raw.replace(/[,\s]/g, '');
-      payload[field] = digits === '' ? null : /^\d+$/.test(digits) ? Number(digits) : Number.NaN;
-    } else {
-      payload[field] = raw === '' ? null : raw;
-    }
-  }
-  return payload;
 }
 
 export async function saveVehicleStepAction(

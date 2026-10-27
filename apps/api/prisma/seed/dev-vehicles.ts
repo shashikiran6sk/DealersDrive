@@ -65,7 +65,7 @@ async function writeVehicle(car: DevVehicle, dealerId: string): Promise<void> {
     kilometersDriven: car.kilometersDriven,
     ownerCount: car.ownerCount,
     color: car.color,
-    insuranceType: 'COMPREHENSIVE' as const,
+    insuranceType: 'LIVE' as const,
     pricePaise: car.pricePaise,
     negotiability: 'SLIGHTLY' as const,
     description: `${car.make} ${car.model} ${car.variant}, kept at ${car.city}.`,

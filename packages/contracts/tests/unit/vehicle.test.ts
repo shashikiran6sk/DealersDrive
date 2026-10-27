@@ -31,8 +31,7 @@ function complete(overrides: Partial<VehicleCompletenessInput> = {}): VehicleCom
     kilometersDriven: 22_400,
     ownerCount: 1,
     color: 'WHITE',
-    insuranceType: 'COMPREHENSIVE',
-    insuranceValidUntil: '2027-03-31',
+    insuranceType: 'LIVE',
     pricePaise: 145_000_000,
     ...overrides,
   };
@@ -94,9 +93,11 @@ describe('VehicleFieldSchemas', () => {
     );
   });
 
-  it('takes the insurance date as an ISO calendar date', () => {
-    expect(VehicleFieldSchemas.insuranceValidUntil.safeParse('2027-03-31').success).toBe(true);
-    expect(VehicleFieldSchemas.insuranceValidUntil.safeParse('31/03/2027').success).toBe(false);
+  it('accepts only None and Live, and refuses the removed date', () => {
+    expect(VehicleFieldSchemas.insuranceType.safeParse('NONE').success).toBe(true);
+    expect(VehicleFieldSchemas.insuranceType.safeParse('LIVE').success).toBe(true);
+    expect(VehicleFieldSchemas.insuranceType.safeParse('COMPREHENSIVE').success).toBe(false);
+    expect(UpdateVehicleInput.safeParse({ insuranceValidUntil: '2027-03-31' }).success).toBe(false);
   });
 
   it('has no field for an image, a status or a dealer', () => {
@@ -133,13 +134,12 @@ describe('vehicleIssues', () => {
     expect(issues.map((issue) => issue.field)).toEqual(['registrationYear']);
   });
 
-  it('asks for the insurance date unless there is no insurance', () => {
-    expect(vehicleIssues(complete({ insuranceValidUntil: null }))[0]?.field).toBe(
-      'insuranceValidUntil',
-    );
-    expect(vehicleIssues(complete({ insuranceType: 'NONE', insuranceValidUntil: null }))).toEqual(
-      [],
-    );
+  it('accepts either insurance status without a date and requires confirmation when unknown', () => {
+    expect(vehicleIssues(complete({ insuranceType: 'LIVE' }))).toEqual([]);
+    expect(vehicleIssues(complete({ insuranceType: 'NONE' }))).toEqual([]);
+    expect(vehicleIssues(complete({ insuranceType: null }))).toEqual([
+      { field: 'insuranceType', message: 'Insurance is required.' },
+    ]);
   });
 
   it('labels every required field', () => {

@@ -1,4 +1,6 @@
-import type { DealerProfile } from '@dealers-drive/contracts';
+import { LegalGate } from '@/features/legal/legal-gate';
+import { legalStatus } from '@/lib/legal';
+import type { AuthSession, DealerProfile } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -35,10 +37,17 @@ export const metadata: Metadata = {
 };
 
 export default async function DealerLayout({ children }: { children: ReactNode }) {
-  const [{ dealer, permissions }, account] = await Promise.all([
-    requireDealer(),
-    customerAccountAction(),
-  ]);
+  const [session, account] = await Promise.all([currentSession(), customerAccountAction()]);
+  if (!session) redirect((await hasSession()) ? DEALER_LOGIN_HREF : SESSION_EXPIRED_HREF);
+  if (session.next === 'ONBOARDING') redirect('/dealer/onboarding');
+  const status = await legalStatus('DEALER');
+  if (status?.enabled && !status.accepted)
+    return (
+      <main>
+        <LegalGate scope="DEALER" returnTo="/dealer" canAccept={status.canAccept} />
+      </main>
+    );
+  const { dealer, permissions } = await requireDealer(session);
   const nav = consoleNavFor(permissions);
   const navigation = <ConsoleNav items={nav} footer={<ConsoleUtilities account={account} />} />;
 
@@ -109,13 +118,9 @@ export default async function DealerLayout({ children }: { children: ReactNode }
   );
 }
 
-async function requireDealer(): Promise<{ dealer: DealerProfile; permissions: string[] }> {
-  const session = await currentSession();
-  if (!session) {
-    redirect((await hasSession()) ? DEALER_LOGIN_HREF : SESSION_EXPIRED_HREF);
-  }
-  if (session.next === 'ONBOARDING') redirect('/dealer/onboarding');
-
+async function requireDealer(
+  session: AuthSession,
+): Promise<{ dealer: DealerProfile; permissions: string[] }> {
   const dealer = await apiGet<DealerProfile>('/v1/dealer', { revalidate: false });
   return { dealer, permissions: session.permissions };
 }

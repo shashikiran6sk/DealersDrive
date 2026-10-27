@@ -56,7 +56,7 @@ export interface UseAutocomplete<T> {
     id: string;
     role: 'option';
     'aria-selected': boolean;
-    onMouseEnter: () => void;
+    onMouseMove: () => void;
     onMouseDown: (event: { preventDefault: () => void }) => void;
     onClick: () => void;
   };

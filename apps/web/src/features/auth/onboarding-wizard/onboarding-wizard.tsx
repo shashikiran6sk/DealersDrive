@@ -33,6 +33,7 @@ import { ReviewStep } from './review-step';
 import { localDigits, outstandingLabels, validateAccount } from './utils';
 
 export interface OnboardingWizardProps {
+  legalRequired?: boolean;
   step: OnboardingStep;
   session: AuthSession;
   documents: DealerDocumentDto[];
@@ -45,6 +46,7 @@ export interface OnboardingWizardProps {
 
 export function OnboardingWizard({
   step,
+  legalRequired = false,
   session,
   documents,
   dealer,
@@ -207,7 +209,9 @@ export function OnboardingWizard({
         />
       ) : null}
 
-      {current === 3 ? <ReviewStep session={session} completeness={completeness} /> : null}
+      {current === 3 ? (
+        <ReviewStep legalRequired={legalRequired} session={session} completeness={completeness} />
+      ) : null}
     </div>
   );
 }

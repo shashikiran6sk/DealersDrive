@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import {
   VEHICLE_IMAGE_MAX,
+  isListingPubliclyVisible,
   type AdminVehicleImages,
   type PresignResponse,
   type ReorderImagesInput,
@@ -9,10 +10,12 @@ import {
 } from '@dealers-drive/contracts';
 import type { Listing, ListingStatus, PrismaClient } from '@prisma/client';
 
+import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import {
   IMAGE_EXTENSIONS,
@@ -20,6 +23,7 @@ import {
   type SniffedImageType,
 } from '../../platform/media/sniff.js';
 import { UPLOAD_INCOMPLETE, UPLOAD_NOT_FOUND } from '../../platform/messages.js';
+import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import { LISTING_NOT_FOUND, lockListing } from '../listings/listings.facade.js';
@@ -28,6 +32,7 @@ import {
   IMAGE_NOT_FOUND,
   IMAGES_CLOSED,
   IMAGES_FULL,
+  IMAGES_MINIMUM,
   ORDER_MISMATCH,
   UPLOAD_MISMATCH,
   UPLOAD_NOT_IMAGE,
@@ -44,6 +49,8 @@ export interface VehicleImagesDeps {
 export const IMAGE_OPEN_STATUSES: readonly ListingStatus[] = [
   'PENDING_REVIEW',
   'CHANGES_REQUESTED',
+  'ACTIVE',
+  'RESERVED',
 ];
 
 export const IMAGE_PREVIEW_TTL_SECONDS = 15 * 60;
@@ -86,7 +93,29 @@ function assertRoom(count: number): void {
   }
 }
 
+function mediaKeys(media: { storageKey: string; variants: unknown }): string[] {
+  const variants = media.variants;
+  return [
+    media.storageKey,
+    ...(variants && typeof variants === 'object'
+      ? Object.values(variants).filter((key): key is string => typeof key === 'string')
+      : []),
+  ];
+}
+
 export function createVehicleImagesService({ prisma, storage, audit, config }: VehicleImagesDeps) {
+  async function queueCleanup(tx: Tx, admin: AdminPrincipal, listing: Listing, keys: string[]) {
+    if (keys.length === 0) return;
+    await enqueueOutbox(tx, {
+      type: 'StorageObjectsDelete',
+      aggregateType: 'Vehicle',
+      aggregateId: listing.vehicleId,
+      dealerId: listing.dealerId,
+      actor: { type: 'ADMIN', id: admin.userId },
+      traceId: getContext()?.traceId ?? 'vehicle-images',
+      payload: { keys },
+    });
+  }
   async function images(vehicleId: string, status: ListingStatus): Promise<AdminVehicleImages> {
     const [rows, min] = await Promise.all([
       imagesOf(prisma, vehicleId),
@@ -131,7 +160,14 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
     async presign(listingId: string, input: VehicleImagePresignInput): Promise<PresignResponse> {
       const listing = await listingOf(listingId);
       assertOpen(listing);
-      assertRoom(await imageCount(prisma, listing.vehicleId));
+      if (input.replacesMediaId) {
+        const rows = await imagesOf(prisma, listing.vehicleId);
+        if (!rows.some((row) => row.mediaId === input.replacesMediaId)) {
+          throw new NotFoundError(IMAGE_NOT_FOUND, { code: 'IMAGE_NOT_FOUND' });
+        }
+      } else {
+        assertRoom(await imageCount(prisma, listing.vehicleId));
+      }
 
       const mediaId = randomUUID();
       const key = vehicleImageKey(listing.vehicleId, mediaId, input.mimeType);
@@ -173,6 +209,7 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
       admin: AdminPrincipal,
       listingId: string,
       mediaId: string,
+      replacesMediaId?: string,
     ): Promise<AdminVehicleImages> {
       const listing = await listingOf(listingId);
       assertOpen(listing);
@@ -206,39 +243,71 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
         throw new DomainError('UPLOAD_NOT_IMAGE', UPLOAD_NOT_IMAGE);
       }
 
-      const status = await withTransaction(prisma, async (tx) => {
+      const { status, removedKeys } = await withTransaction(prisma, async (tx) => {
         const locked = await lockedOpen(tx, listingId);
+        const current = await tx.media.findUniqueOrThrow({
+          where: { id: media.id },
+          include: { attachment: true },
+        });
+        if (current.attachment) return { status: locked.status, removedKeys: [] };
+        if (current.status !== 'PENDING') throw uploadNotFound();
+        const rows = await imagesOf(tx, locked.vehicleId);
+        const target = replacesMediaId
+          ? rows.find((row) => row.mediaId === replacesMediaId)
+          : undefined;
+        if (replacesMediaId && !target) {
+          throw new NotFoundError(IMAGE_NOT_FOUND, { code: 'IMAGE_NOT_FOUND' });
+        }
         const claimed = await tx.media.updateMany({
           where: { id: media.id, status: 'PENDING' },
           data: { status: 'READY' },
         });
-        if (claimed.count === 0) return locked.status;
+        if (claimed.count === 0) return { status: locked.status, removedKeys: [] };
 
-        const count = await imageCount(tx, locked.vehicleId);
-        assertRoom(count);
-        await tx.vehicleMedia.create({
-          data: {
-            vehicleId: locked.vehicleId,
-            mediaId: media.id,
-            position: count,
-            isPrimary: count === 0,
-            source: 'ADMIN_UPLOAD',
-            addedBy: admin.userId,
-          },
-        });
+        const count = rows.length;
+        if (target) {
+          await tx.vehicleMedia.update({
+            where: { id: target.id },
+            data: { mediaId: media.id, addedBy: admin.userId, createdAt: new Date() },
+          });
+          await tx.media.update({ where: { id: target.mediaId }, data: { status: 'ORPHAN' } });
+        } else {
+          assertRoom(count);
+          await tx.vehicleMedia.create({
+            data: {
+              vehicleId: locked.vehicleId,
+              mediaId: media.id,
+              position: count,
+              isPrimary: count === 0,
+              source: 'ADMIN_UPLOAD',
+              addedBy: admin.userId,
+            },
+          });
+        }
 
         await audit.record(tx, {
           actorType: 'ADMIN',
           actorId: admin.userId,
           dealerId: locked.dealerId,
-          action: 'vehicle.image_added',
+          action: target ? 'vehicle.image_replaced' : 'vehicle.image_added',
           entityType: 'Vehicle',
           entityId: locked.vehicleId,
-          after: { listingId, mediaId: media.id, position: count, isPrimary: count === 0 },
+          before: target
+            ? { mediaId: target.mediaId, position: target.position, isPrimary: target.isPrimary }
+            : undefined,
+          after: {
+            listingId,
+            mediaId: media.id,
+            position: target?.position ?? count,
+            isPrimary: target?.isPrimary ?? count === 0,
+          },
         });
-        return locked.status;
+        const removedKeys = target ? mediaKeys(target.media) : [];
+        await queueCleanup(tx, admin, locked, removedKeys);
+        return { status: locked.status, removedKeys };
       });
 
+      await deleteStorageObjects(storage, removedKeys);
       return images(listing.vehicleId, status);
     },
 
@@ -247,11 +316,18 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
       listingId: string,
       mediaId: string,
     ): Promise<AdminVehicleImages> {
+      const minimum = await config.number('listing.minPhotos');
       const { vehicleId, status, storageKey } = await withTransaction(prisma, async (tx) => {
         const listing = await lockedOpen(tx, listingId);
         const rows = await imagesOf(tx, listing.vehicleId);
         const target = rows.find((row) => row.mediaId === mediaId);
         if (!target) throw new NotFoundError(IMAGE_NOT_FOUND, { code: 'IMAGE_NOT_FOUND' });
+
+        if (isListingPubliclyVisible(listing.status) && rows.length - 1 < minimum) {
+          throw new ConflictError('VEHICLE_IMAGES_MINIMUM', IMAGES_MINIMUM(minimum), {
+            extra: { min: minimum },
+          });
+        }
 
         const remaining = rows.filter((row) => row.id !== target.id);
         await tx.vehicleMedia.delete({ where: { id: target.id } });
@@ -276,14 +352,16 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           before: { mediaId, position: target.position, isPrimary: target.isPrimary },
           after: { listingId, primaryMediaId: promoted?.mediaId ?? null },
         });
+        const keys = mediaKeys(target.media);
+        await queueCleanup(tx, admin, listing, keys);
         return {
           vehicleId: listing.vehicleId,
           status: listing.status,
-          storageKey: target.media.storageKey,
+          storageKey: keys,
         };
       });
 
-      await storage.delete(storageKey);
+      await deleteStorageObjects(storage, storageKey);
       return images(vehicleId, status);
     },
 

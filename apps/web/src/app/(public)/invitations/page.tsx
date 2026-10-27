@@ -1,3 +1,4 @@
+import { requireCustomerLegal } from '@/lib/legal';
 import { MyInvitationsResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function InvitationsPage() {
+  await requireCustomerLegal('/invitations');
   let invitations: MyInvitationsResponse;
   try {
     invitations = await apiGetParsed(MyInvitationsResponse, INVITATION_PATHS.mine, {
