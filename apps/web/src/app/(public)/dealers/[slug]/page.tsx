@@ -17,7 +17,7 @@ import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
-import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
+import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
 import { isMissingResource, isServerFailure } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import {
@@ -68,7 +68,7 @@ async function loadInventory(slug: string, params: VehicleSearchParams): Promise
     const inventory = await apiGetParsed(
       PublicVehiclesResponse,
       `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs(params)}`,
-      { revalidate: 60, tags: [dealerTag(slug), VEHICLES_TAG] },
+      { revalidate: false },
     );
     return { status: 'ready', inventory };
   } catch (error) {

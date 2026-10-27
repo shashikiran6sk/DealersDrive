@@ -18,7 +18,6 @@ import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { apiGetParsed, qs } from '@/lib/api';
-import { VEHICLES_TAG } from '@/lib/cache-tags';
 import { getPublicLocations } from '@/lib/locations';
 import {
   BREADCRUMB_TEXT,
@@ -46,10 +45,7 @@ export const dynamic = 'force-dynamic';
 const CARS_PATH = '/cars';
 
 const fetchCars = cache((query: string) =>
-  apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${query}`, {
-    revalidate: 60,
-    tags: [VEHICLES_TAG],
-  }),
+  apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${query}`, { revalidate: false }),
 );
 
 async function loadCars(params: VehicleSearchParams) {
