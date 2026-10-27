@@ -29,7 +29,7 @@ export async function saveDealerProfileAction(
   const year = text('establishedYear');
 
   const parsed = DealerSelfUpdateInput.safeParse({
-    ...(year ? { establishedYear: Number(year) } : {}),
+    ...(formData.has('establishedYear') ? { establishedYear: year ? Number(year) : null } : {}),
     ...(formData.has('tagline') ? { tagline: formData.get('tagline') } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),
   });

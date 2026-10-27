@@ -3,7 +3,13 @@ import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { env } from '../src/config/env.js';
+import { createAuditService } from '../src/platform/audit/audit.service.js';
+import { createMemoryCache } from '../src/platform/cache/memory.adapter.js';
+import { createPlatformConfig } from '../src/platform/config/platform-config.js';
+import { createLocalStorage } from '../src/platform/storage/local.adapter.js';
+import { createVehicleImagesService } from '../src/modules/vehicle-images/vehicle-images.service.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
+import { seedImages } from './images-kit.js';
 import { COMPLETE_VEHICLE, marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
 
 /**
@@ -500,5 +506,341 @@ describe('who may see an image', () => {
       .agent()
       .get(preview.pathname + preview.search)
       .expect(404);
+  });
+});
+
+describe('editing live galleries', () => {
+  async function liveGallery(status: 'ACTIVE' | 'RESERVED' = 'ACTIVE', count = 7) {
+    const listing = await submitted();
+    const ids = await seedImages(
+      h.prisma,
+      { vehicleId: listing.vehicleId, dealerId: a.dealerId },
+      count,
+    );
+    await h.prisma.listing.update({ where: { id: listing.listingId }, data: { status } });
+    return { ...listing, ids };
+  }
+
+  async function stage(listingId: string, replacesMediaId: string, body = JPEG) {
+    const signed = await admin
+      .post(`/v1/admin/listings/${listingId}/images/presign`)
+      .send({
+        fileName: 'replacement.jpg',
+        mimeType: 'image/jpeg',
+        bytes: body.length,
+        replacesMediaId,
+      })
+      .expect(201);
+    await put(signed.body.uploadUrl as string, body);
+    return signed.body.mediaId as string;
+  }
+
+  it.each(['ACTIVE', 'RESERVED'] as const)(
+    'allows upload, removal, reorder and primary selection on %s',
+    async (status) => {
+      const { listingId, ids } = await liveGallery(status);
+      const detail = await admin.get(`/v1/admin/listings/${listingId}`).expect(200);
+      expect(detail.body.images.canEdit).toBe(true);
+      await admin
+        .put(`/v1/admin/listings/${listingId}/images/order`)
+        .send({ mediaIds: [...ids].reverse() })
+        .expect(200);
+      await admin.put(`/v1/admin/listings/${listingId}/images/${ids[1]!}/primary`).expect(200);
+      await admin.delete(`/v1/admin/listings/${listingId}/images/${ids[0]!}`).expect(200);
+      const added = await upload(listingId);
+      expect(added.body.items).toHaveLength(7);
+      const mediaId = added.body.items[6].mediaId as string;
+      await h.agent().get(`/media/by-media/${mediaId}/640.webp`).expect(200);
+      await admin.delete(`/v1/admin/listings/${listingId}/images/${mediaId}`).expect(200);
+      await h.agent().get(`/media/by-media/${mediaId}/640.webp`).expect(404);
+    },
+  );
+
+  it.each(['ACTIVE', 'RESERVED'] as const)('protects the photo minimum on %s', async (status) => {
+    const { listingId, vehicleId, ids } = await liveGallery(status, 6);
+    const refused = await admin
+      .delete(`/v1/admin/listings/${listingId}/images/${ids[0]!}`)
+      .expect(409);
+    expect(refused.body).toMatchObject({ code: 'VEHICLE_IMAGES_MINIMUM', min: 6 });
+    expect(await h.prisma.vehicleMedia.count({ where: { vehicleId } })).toBe(6);
+  });
+
+  it.each([0, 3])(
+    'replaces image %i at capacity, preserving order and primary, and supports retries',
+    async (index) => {
+      const { listingId, vehicleId, ids } = await liveGallery('ACTIVE', VEHICLE_IMAGE_MAX);
+      const oldId = ids[index]!;
+      const newId = await stage(listingId, oldId);
+      const path = `/v1/admin/listings/${listingId}/images/${oldId}/replace`;
+      const responses = await Promise.all([
+        admin.post(path).send({ replacementMediaId: newId }),
+        admin.post(path).send({ replacementMediaId: newId }),
+      ]);
+      expect(responses.map((response) => response.status)).toEqual([200, 200]);
+      const expected = [...ids];
+      expected[index] = newId;
+      const detail = await admin.get(`/v1/admin/listings/${listingId}`).expect(200);
+      expect(detail.body.images.items.map((item: { mediaId: string }) => item.mediaId)).toEqual(
+        expected,
+      );
+      expect(detail.body.images.items[index]).toMatchObject({
+        mediaId: newId,
+        position: index,
+        isPrimary: index === 0,
+      });
+      expect((await h.prisma.media.findUniqueOrThrow({ where: { id: oldId } })).status).toBe(
+        'ORPHAN',
+      );
+      expect(
+        await h.prisma.auditLog.count({
+          where: { entityId: vehicleId, action: 'vehicle.image_replaced' },
+        }),
+      ).toBe(1);
+      const audit = await h.prisma.auditLog.findFirstOrThrow({
+        where: { entityId: vehicleId, action: 'vehicle.image_replaced' },
+      });
+      expect(audit.before).toMatchObject({ mediaId: oldId });
+      expect(audit.after).toMatchObject({ mediaId: newId, listingId });
+      expect(
+        await h.prisma.outboxEvent.count({
+          where: { aggregateId: vehicleId, eventType: 'StorageObjectsDelete' },
+        }),
+      ).toBe(1);
+      await h.agent().get(`/media/by-media/${oldId}/640.webp`).expect(404);
+      await h.agent().get(`/media/by-media/${newId}/640.webp`).expect(200);
+      await admin.post(path).send({ replacementMediaId: newId }).expect(200);
+    },
+  );
+
+  it('can replace at the live minimum without changing the count', async () => {
+    const { listingId, ids } = await liveGallery('RESERVED', 6);
+    const newId = await stage(listingId, ids[0]!);
+    const response = await admin
+      .post(`/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`)
+      .send({ replacementMediaId: newId })
+      .expect(200);
+    expect(response.body.items).toHaveLength(6);
+    expect(response.body.items[0]).toMatchObject({ mediaId: newId, isPrimary: true });
+  });
+
+  it('leaves the original attached when validation fails', async () => {
+    const { listingId, vehicleId, ids } = await liveGallery();
+    const newId = await stage(listingId, ids[0]!, NOT_AN_IMAGE);
+    const response = await admin
+      .post(`/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`)
+      .send({ replacementMediaId: newId })
+      .expect(422);
+    expect(response.body.code).toBe('UPLOAD_NOT_IMAGE');
+    expect(await h.prisma.vehicleMedia.count({ where: { vehicleId, mediaId: ids[0] } })).toBe(1);
+    expect((await h.prisma.media.findUniqueOrThrow({ where: { id: newId } })).status).toBe(
+      'FAILED',
+    );
+    expect(
+      await h.prisma.auditLog.count({
+        where: { entityId: vehicleId, action: 'vehicle.image_replaced' },
+      }),
+    ).toBe(0);
+  });
+
+  it('refuses a missing upload and preserves the original', async () => {
+    const { listingId, ids } = await liveGallery();
+    const signed = await presign(listingId, JPEG);
+    await admin
+      .post(`/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`)
+      .send({ replacementMediaId: signed.mediaId })
+      .expect(422);
+    expect(await h.prisma.vehicleMedia.count({ where: { mediaId: ids[0] } })).toBe(1);
+  });
+
+  it('refuses replacement targets and uploads from another vehicle', async () => {
+    const one = await liveGallery();
+    const other = await liveGallery();
+    await admin
+      .post(`/v1/admin/listings/${one.listingId}/images/presign`)
+      .send({
+        fileName: 'x.jpg',
+        mimeType: 'image/jpeg',
+        bytes: JPEG.length,
+        replacesMediaId: other.ids[0],
+      })
+      .expect(404);
+    const newId = await stage(one.listingId, one.ids[0]!);
+    await admin
+      .post(`/v1/admin/listings/${other.listingId}/images/${other.ids[0]!}/replace`)
+      .send({ replacementMediaId: newId })
+      .expect(404);
+    await admin
+      .post(`/v1/admin/listings/${one.listingId}/images/${other.ids[0]!}/replace`)
+      .send({ replacementMediaId: newId })
+      .expect(404);
+  });
+
+  it('refuses a stale target after another admin replaces it', async () => {
+    const { listingId, vehicleId, ids } = await liveGallery();
+    const first = await stage(listingId, ids[0]!);
+    const second = await stage(listingId, ids[0]!);
+    const path = `/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`;
+    const responses = await Promise.all([
+      admin.post(path).send({ replacementMediaId: first }),
+      admin.post(path).send({ replacementMediaId: second }),
+    ]);
+    expect(responses.map((response) => response.status).sort()).toEqual([200, 404]);
+    expect(await h.prisma.vehicleMedia.count({ where: { vehicleId } })).toBe(7);
+    expect(await h.prisma.vehicleMedia.count({ where: { vehicleId, isPrimary: true } })).toBe(1);
+  });
+
+  it('serializes concurrent deletes at the minimum', async () => {
+    const { listingId, vehicleId, ids } = await liveGallery();
+    const responses = await Promise.all(
+      ids.slice(0, 2).map((id) => admin.delete(`/v1/admin/listings/${listingId}/images/${id}`)),
+    );
+    expect(responses.map((response) => response.status).sort()).toEqual([200, 409]);
+    expect(await h.prisma.vehicleMedia.count({ where: { vehicleId } })).toBe(6);
+  });
+
+  it.each(['DRAFT', 'SOLD', 'WITHDRAWN', 'REJECTED'] as const)(
+    'keeps %s locked, including a staged replacement',
+    async (status) => {
+      const { listingId, ids } = await liveGallery();
+      const newId = await stage(listingId, ids[0]!);
+      await h.prisma.listing.update({ where: { id: listingId }, data: { status } });
+      const replaced = await admin
+        .post(`/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`)
+        .send({ replacementMediaId: newId })
+        .expect(409);
+      expect(replaced.body.code).toBe('IMAGES_CLOSED');
+      await admin.post(`/v1/admin/listings/${listingId}/images/${newId}/commit`).expect(409);
+      await admin.delete(`/v1/admin/listings/${listingId}/images/${ids[0]!}`).expect(409);
+      await admin
+        .put(`/v1/admin/listings/${listingId}/images/order`)
+        .send({ mediaIds: ids })
+        .expect(409);
+      await admin.put(`/v1/admin/listings/${listingId}/images/${ids[0]!}/primary`).expect(409);
+      const detail = await admin.get(`/v1/admin/listings/${listingId}`).expect(200);
+      expect(detail.body.images.canEdit).toBe(false);
+    },
+  );
+
+  it('requires an authorized admin for replacement', async () => {
+    const { listingId, ids } = await liveGallery();
+    const newId = await stage(listingId, ids[0]!);
+    const path = `/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`;
+    await a.agent.post(path).send({ replacementMediaId: newId }).expect(401);
+    await h.prisma.adminMember.updateMany({
+      where: { user: { email: env.adminAllowlist[0] ?? '' } },
+      data: { role: 'SUPPORT' },
+    });
+    try {
+      await admin.post(path).send({ replacementMediaId: newId }).expect(403);
+    } finally {
+      await h.prisma.adminMember.updateMany({
+        where: { user: { email: env.adminAllowlist[0] ?? '' } },
+        data: { role: 'SUPER_ADMIN' },
+      });
+    }
+  });
+
+  it('allows an Operations admin to replace live photos', async () => {
+    const { listingId, ids } = await liveGallery();
+    await h.prisma.adminMember.updateMany({
+      where: { user: { email: env.adminAllowlist[0] ?? '' } },
+      data: { role: 'MODERATOR' },
+    });
+    try {
+      const newId = await stage(listingId, ids[0]!);
+      await admin
+        .post(`/v1/admin/listings/${listingId}/images/${ids[0]!}/replace`)
+        .send({ replacementMediaId: newId })
+        .expect(200);
+    } finally {
+      await h.prisma.adminMember.updateMany({
+        where: { user: { email: env.adminAllowlist[0] ?? '' } },
+        data: { role: 'SUPER_ADMIN' },
+      });
+    }
+  });
+
+  it('keeps a successful replacement visible and queues all files when immediate cleanup fails', async () => {
+    const { listingId, vehicleId, ids } = await liveGallery();
+    const old = await h.prisma.media.findUniqueOrThrow({ where: { id: ids[0] } });
+    const variant = `vehicles/${vehicleId}/old-640.webp`;
+    await h.prisma.media.update({ where: { id: old.id }, data: { variants: { '640': variant } } });
+    const newId = await stage(listingId, old.id);
+    const user = await h.prisma.user.findFirstOrThrow({
+      where: { email: env.adminAllowlist[0] ?? '' },
+    });
+    const attempted: string[] = [];
+    const service = createVehicleImagesService({
+      prisma: h.prisma,
+      audit: createAuditService(h.prisma),
+      config: createPlatformConfig(h.prisma, createMemoryCache()),
+      storage: {
+        ...createLocalStorage(),
+        async delete(key) {
+          attempted.push(key);
+          throw new Error('storage unavailable');
+        },
+      },
+    });
+    const result = await service.commit(
+      {
+        kind: 'ADMIN',
+        userId: user.id,
+        email: env.adminAllowlist[0] ?? '',
+        adminRole: 'SUPER_ADMIN',
+        permissions: [],
+      },
+      listingId,
+      newId,
+      old.id,
+    );
+    expect(result.items[0]?.mediaId).toBe(newId);
+    expect(attempted).toEqual([old.storageKey, variant]);
+    const queued = await h.prisma.outboxEvent.findFirstOrThrow({
+      where: { aggregateId: vehicleId, eventType: 'StorageObjectsDelete' },
+    });
+    expect(queued.publishedAt).toBeNull();
+    expect(queued.payload).toMatchObject({ payload: { keys: [old.storageKey, variant] } });
+    await h.agent().get(`/media/by-media/${newId}/640.webp`).expect(200);
+  });
+
+  it('checks the listing status again if it closes during upload validation', async () => {
+    const { listingId, ids } = await liveGallery();
+    const newId = await stage(listingId, ids[0]!);
+    const user = await h.prisma.user.findFirstOrThrow({
+      where: { email: env.adminAllowlist[0] ?? '' },
+    });
+    const storage = createLocalStorage();
+    const service = createVehicleImagesService({
+      prisma: h.prisma,
+      audit: createAuditService(h.prisma),
+      config: createPlatformConfig(h.prisma, createMemoryCache()),
+      storage: {
+        ...storage,
+        async get(key) {
+          const body = await storage.get(key);
+          await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'SOLD' } });
+          return body;
+        },
+      },
+    });
+    await expect(
+      service.commit(
+        {
+          kind: 'ADMIN',
+          userId: user.id,
+          email: env.adminAllowlist[0] ?? '',
+          adminRole: 'SUPER_ADMIN',
+          permissions: [],
+        },
+        listingId,
+        newId,
+        ids[0],
+      ),
+    ).rejects.toMatchObject({ code: 'IMAGES_CLOSED' });
+    expect(await h.prisma.vehicleMedia.count({ where: { mediaId: ids[0] } })).toBe(1);
+    expect((await h.prisma.media.findUniqueOrThrow({ where: { id: newId } })).status).toBe(
+      'PENDING',
+    );
   });
 });

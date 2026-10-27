@@ -1,3 +1,7 @@
+import { createLegalService } from './modules/legal/legal.service.js';
+import { createLegalRouter } from './modules/legal/legal.routes.js';
+import { customerLegalGate, dealerLegalGate } from './modules/legal/legal.middleware.js';
+import { createCustomerResolver } from './modules/auth/customer-session.js';
 import {
   createPublicServiceLocationsRouter,
   createAdminServiceLocationsRouter,
@@ -57,6 +61,11 @@ export function createRoutes(container: Container): Router {
   }
 
   const v1 = Router();
+  const legal = createLegalService(container.prisma);
+  v1.use(
+    '/legal',
+    createLegalRouter(legal, container.sessions, createCustomerResolver(container.sessionStore)),
+  );
 
   v1.use(createPublicServiceLocationsRouter(container.serviceLocations));
   v1.use(createConfigRouter(container.publicConfig));
@@ -86,16 +95,19 @@ export function createRoutes(container: Container): Router {
   v1.use(
     '/invitations',
     container.guards.requireCustomer,
+    customerLegalGate(legal),
     createInvitationsRouter(container.invitations),
   );
   v1.use(
     '/enquiries',
     container.guards.requireCustomer,
+    customerLegalGate(legal),
     createEnquiriesRouter(container.enquiries, container.rateLimit),
   );
   v1.use(
     '/saved-vehicles',
     container.guards.requireCustomer,
+    customerLegalGate(legal),
     createSavedVehiclesRouter(container.savedVehicles, container.rateLimit),
   );
   v1.use(
@@ -111,6 +123,7 @@ export function createRoutes(container: Container): Router {
 
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
+  dealer.use(dealerLegalGate(legal));
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));

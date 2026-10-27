@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { legalPagesVisible } from '@/lib/legal';
 
 import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
@@ -16,9 +17,10 @@ export async function PublicShell({ children }: { children: ReactNode }) {
         <CustomerHeader locations={locations} account={<HeaderAccount />} />
         <main className="flex-1">{children}</main>
         <CustomerFooter
+          legalVisible={legalPagesVisible()}
           social={config.social}
-          supportEmail={config.supportEmail}
-          supportPhone={config.supportPhone}
+          supportEmail={config.support.customer.email}
+          supportPhone={config.support.customer.phone}
         />
       </div>
     </SavedVehiclesProvider>

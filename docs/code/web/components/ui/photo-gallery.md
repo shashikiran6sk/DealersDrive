@@ -22,14 +22,14 @@ the product is meant to look like.
 
 The gallery starts on `startIndex` — the car page passes the admin's primary
 photograph — and falls back to the first when the index is out of range or not
-a whole number. It opens the viewer on itself; a thumbnail opens it on that
-thumbnail.
+a whole number. It opens the viewer on itself, and only on itself: a thumbnail
+selects, it does not open (see the strip below).
 
 **One `index`, for everything (R87).** The stage shows `photos[index]`, and its
 Previous image / Next image arrows call the same `step` the viewer's arrows,
 ←/→ keys and swipes call — so they wrap exactly as the viewer does, because
 they are the same function. The strip marks `photos[index]` (`aria-current`,
-the accent ring), the viewer opens on it, and whatever the viewer is left on is
+the accent ring) and a click on a thumbnail sets it, the viewer opens on it, and whatever the viewer is left on is
 what the page shows when it closes. There is no second index anywhere to drift
 out of step. The arrows are siblings of the stage's button, not children — a
 button inside a button is invalid, and a click on an arrow must never open the
@@ -53,19 +53,42 @@ proportions — the car keeps 4:3, the dealer hero keeps its 440px / 340px /
 no photographs is laid out exactly as one with them. `emptyLabel` names the
 missing shot in that frame (`ImageSlot`).
 
-Several controls open one dialog, so none of them can be its Radix trigger.
-The gallery remembers which one was pressed and hands focus back to it in
+**Only the stage opens the viewer.** Until the thumbnail change, every strip
+thumbnail opened it too: `GalleryStrip` called `onOpen`, which was `openAt`
+(set the index, then open). That was the wiring, not a click bubbling up — the
+strip is a sibling of the stage, never inside it — so the fix is the wiring:
+the strip now takes `onSelect` (`setIndex`) and nothing it renders can open the
+dialog. A buyer comparing photographs stays on the page, and fullscreen is one
+deliberate press on the photograph itself.
+
+The stage is not the dialog's Radix trigger (the dialog is controlled), so the
+gallery remembers the element that opened it and hands focus back to it in
 `onCloseAutoFocus` — the legacy lightbox's "focus returns to the exact opener".
+Today that element is always the stage button.
+
+**The position is announced.** With several photographs a visually hidden
+`aria-live="polite"` line reads `Photo 4 of 8` and follows the index. The
+stage button's accessible name is the constant "View all 8 photos of …", so
+without it a screen reader would hear nothing when an arrow or a thumbnail
+changes the photograph. Radix hides the page while the viewer is open, so the
+line never talks over the viewer's own caption.
 
 **Loading.** Only the stage photograph is fetched eagerly, and only the one
 the page opens on is `fetchPriority="high"`: it is the largest thing above the
 fold on both pages. After a step the stage asks at normal priority, and every
 thumbnail in the strip and the rail is `loading="lazy"`.
 
-**A broken photograph is skipped, once (R118).** The stage `<img>` reports
-`onError`, and the gallery remembers the URL in a set that only grows; every
-part of it — stage, strip, viewer, counts — works from the photographs that
-have not failed. An image that had already failed before React hydrated fires
+**A broken photograph is skipped, once (R118).** The stage `<img>` and every
+strip thumbnail report `onError`, and the gallery remembers the URL in a set
+that only grows; every part of it — stage, strip, viewer, counts — works from
+the photographs that have not failed. A thumbnail used to show the browser's
+broken-image icon until the stage reached it. Removing a photograph must not
+move the selection, so `markFailed` passes the removed position through
+`indexAfterRemoval`: one before the selected photograph shifts the index down
+by one, so the same photograph stays on the stage; the selected one itself
+leaves the index where it is, so the next photograph takes its place, as the
+stage always did. Two failures inside one render can adjust against the same
+stale list; the worst case is a selection one photograph off, never a crash. An image that had already failed before React hydrated fires
 no `onError`, so an effect also checks `complete && naturalWidth === 0` on the
 stage photograph. With nothing left, the gallery draws `GalleryFallback`.
 
@@ -165,6 +188,17 @@ image is the browser's own image drag.
   (`touch-pan-y`), so the browser keeps the vertical pan and hands the
   horizontal movement to the page. When the browser does take a gesture over
   it sends `pointercancel`, and the swipe is forgotten.
+- **Pinch-zoom still works on the page.** `touch-action: pan-y` on its own
+  also switches off pinch-zoom, so for a long time a pinch over the car
+  photograph did nothing at all — on a phone, the one place a buyer most wants
+  a closer look. The page stage is `touch-pan-y touch-pinch-zoom`
+  (`touch-action: pan-y pinch-zoom`): the browser zooms the whole page, as it
+  does everywhere else, and blocking that was an accessibility fault
+  (WCAG 1.4.4) as much as an annoyance. The viewer's photograph does its own
+  zooming instead — see `use-zoom.ts` below.
+- **A second finger is a pinch, never a swipe.** A second `pointerdown` while
+  a swipe is being tracked forgets the swipe, so the two fingers of a pinch
+  that happen to travel 40px sideways do not also page.
 - **A swipe never opens the viewer.** The stage is a button, and a touch that
   ends on it can still produce a click. After a swipe, a click in the next
   500ms is swallowed in the capture phase, before it reaches the button or an
@@ -175,9 +209,17 @@ image is the browser's own image drag.
 
 ## `apps/web/src/components/ui/photo-gallery/gallery-strip.tsx`
 
-### `export function GalleryStrip({ photos, index, onOpen }: GalleryStripProps)`
+### `export function GalleryStrip({ photos, index, onSelect, onFailed }: GalleryStripProps)`
 
-§2.9's strip. The track is `.dd-strip` — it scrolls on its own, with no
+§2.9's strip. A thumbnail is a button named `Show photo 3 of 8`; pressing it
+(click, Enter or Space) calls `onSelect` and nothing else — the photograph
+changes on the stage, focus stays on the thumbnail, and the viewer stays
+closed. The cursor is a pointer, not the stage's zoom-in. The selected
+thumbnail has the accent border plus a 2px accent ring offset 2px on white,
+so it reads at a glance among photographs that are mostly white; the track's
+4px padding (`p-1`) is there so the ring is not clipped by the scrolling
+track. A hover darkens the border of the others to `--color-neutral-500`. The
+ring is a box-shadow, so it never fights the inset blue focus outline. The track is `.dd-strip` — it scrolls on its own, with no
 scrollbar, and `min-width: 0` keeps it inside the column so the page never
 scrolls sideways. The ‹ › arrows scroll it ±240px and disable at either end,
 measured on scroll and on resize. They are 30px from 768 up and 44px below,
@@ -208,12 +250,92 @@ photograph is `object-contain` inside it: a portrait shot is pillarboxed, never
 cropped or stretched. ← and → page while it is open, wrapping at both ends, and
 so does a swipe on the stage.
 
+**Zoom (`useZoom`).** The frame is `overflow-hidden` and `touch-action: none`
+(`touch-none`), so every touch on the photograph comes to the page as pointer
+events and the browser neither scrolls nor zooms underneath it; the image
+inside is moved by a CSS `transform`. While the photograph is zoomed:
+
+- the swipe is switched off (`useSwipe(onStep, several && !zoomed)`): one
+  finger, or a mouse button, drags the photograph instead;
+- the arrow keys pan by 80px instead of paging — ← shows more of the left, as
+  it would in any image viewer — and the Previous / Next buttons and the rail
+  still page, because they say so;
+- the cursor is `grab` / `grabbing` rather than `zoom-in`.
+
+`+` / `=` and `-` / `_` step the zoom, `0` resets it, and a key with Ctrl, ⌘
+or Alt held is left alone — Ctrl + is the browser's own page zoom, and taking
+it would leave a keyboard user with no way to enlarge the header. The zoom
+resets on every photograph and every opening: the hook is keyed on
+`open:url`, so a buyer who zoomed into a tyre and pressed Next does not land
+on the next photograph at 3x, somewhere in its corner. A single photograph
+zooms too; it just has nothing to page to.
+
 The line under the stage is the photograph's **caption** when it has one, and
 its alt text when it does not (`captionOf`), announced as it changes. A car
 photograph has no caption, so the car page reads exactly as before; a dealer's
 captioned photograph shows the dealer's own words rather than the alt text
 built around them. Captions are typed by dealers, so the line wraps anywhere
 rather than overflowing.
+
+## `apps/web/src/components/ui/photo-gallery/use-zoom.ts`
+
+### `export function useZoom(resetKey): Zoom`
+
+Pinch, double tap, wheel and drag for the viewer's photograph, in pointer
+events and a `translate3d(x, y, 0) scale(s)` on the `<img>` — no library. The
+baseline has none to reuse, and CLAUDE.md §6 rules out adding one, but it is
+also not much code once the maths is pure functions in `utils.ts` and the hook
+only routes events to them.
+
+- **The view is `{ scale, x, y }`**, with `x`/`y` in screen pixels from the
+  frame's centre (the `transform-origin`). `zoomAt` keeps the point under the
+  cursor, the double tap or the pinch still as the scale changes, which is
+  what makes it feel like the photograph is being held rather than scaled
+  from its middle.
+- **1x to 4x, and never off its own edges.** `clampView` limits the pan to
+  `(scale − 1) × size / 2` either way, so a corner of the photograph can reach
+  the frame's edge but no further. At 1x it returns the one frozen
+  `UNZOOMED` object, so a drag across an unzoomed photograph — which is a
+  swipe — sets the same state again and React bails out of the render.
+- **Pinch** is the change in distance between two pointers (the scale) and in
+  their midpoint (the pan), applied move by move. A pinch that ends below
+  1.05x settles back to exactly 1x (`settleView`), because "very slightly
+  zoomed" looks like a bug and switches the swipe off for no visible reason.
+- **Double tap** toggles between 1x and 2.5x at the tap: two taps within
+  300ms and 30px, each under 300ms and 10px of travel. It is read from
+  pointer events for every pointer type — mouse included, as a double click —
+  rather than from `dblclick`, which iOS Safari does not send for a touch, and
+  which Chrome would send _as well_, toggling twice.
+- **Wheel** zooms toward the cursor, `scale × e^(−deltaY × 0.002)`. A
+  trackpad pinch arrives as a wheel event with `ctrlKey` set and small
+  deltas, so it gets five times the sensitivity; line- and page-mode deltas
+  (Firefox) are turned into pixels first. The listener is attached by hand
+  with `passive: false`, through the frame's callback ref, because React's
+  `onWheel` is passive and cannot `preventDefault`, and an un-prevented wheel
+  scrolls the page under the dialog's scroll lock.
+- **The pointer is captured** on `pointerdown`, so a mouse drag that leaves the
+  frame keeps panning, and a mouse `pointerdown` is prevented so the browser
+  starts neither a text selection nor its own image drag (the `<img>` is also
+  `draggable={false}`).
+- **Gestures follow the finger; buttons and keys glide.** `smooth` turns on a
+  200ms `transition-transform` for the buttons, the keys, the double tap and
+  the settle after a gesture, and off for every pointer move and wheel tick,
+  which must track the input exactly.
+- **Reset by key.** A change of `resetKey` puts the view back to `UNZOOMED`
+  during render (the "adjusting state when a prop changes" pattern), so the
+  new photograph's first paint is already at 1x rather than one frame later.
+
+## `apps/web/src/components/ui/photo-gallery/gallery-zoom-controls.tsx`
+
+### `export function GalleryZoomControls({ scale, onZoom }: GalleryZoomControlsProps)`
+
+Zoom out and Zoom in, top right of the viewer's stage, in a group named
+"Zoom". They are the gestures' accessible equivalent — a mouse with no wheel,
+a switch user, anyone who does not know a double tap exists — and they step
+by 1.5x about the centre. Each is disabled at its end (1x, 4x). They are
+`.dd-arrow`s taken out of their absolute centring (`static transform-none`)
+so they share the stage arrows' 38px white-on-90% look, hover, focus ring and
+disabled state, and grow to 44px below 768 like them.
 
 ## `apps/web/src/components/ui/photo-gallery/gallery-rail.tsx`
 
@@ -229,8 +351,35 @@ index changes, however it changed.
 ### `export function GalleryArrow({ direction, label, onClick, placement, disabled }: GalleryArrowProps)`
 
 One `.dd-arrow` for both places §2.9/§2.10 draw it: `strip` at the ends of the
-thumbnail strip, `stage` inset 14px either side of the stage photograph at
-38px on white at 90%. Both grow to 44px below 768.
+thumbnail strip, `stage` inset 12px (8px on a phone) either side of the stage
+photograph and of the viewer's. The stage arrow is a 40px solid white disc
+with a `--color-neutral-400` border and a stronger shadow than `--shadow-sm`,
+holding a black chevron: black alone vanishes on a dark interior shot, and a
+white disc alone vanishes on the white studio page, so it is both. Both
+placements grow to 44px below 768. Hover fills `--color-neutral-150` (and
+darkens the stage border), a press fills `--color-neutral-300` and scales to
+0.95, focus is the product's blue ring, and disabled — only the strip's, at
+either end; the stage arrows wrap — is 0.45.
+
+The glyph was the text `‹ ›`, whose weight and position depended on the font;
+`GalleryChevron` draws it as a 24-grid stroke, 2.25 wide, 20px on the stage
+and 16px on the strip.
+
+## `apps/web/src/components/ui/photo-gallery/gallery-chevron.tsx`
+
+### `export function GalleryChevron({ direction, className }: GalleryChevronProps)`
+
+The arrow's icon, `currentColor`, `aria-hidden` and not focusable: the
+button's `aria-label` is its name.
+
+## `apps/web/src/components/ui/photo-gallery/expand-icon.tsx`
+
+### `export function ExpandIcon()`
+
+Four corner brackets in the stage's count tag (`⤢ 2 / 8 · view all`). On a
+phone there is no zoom-in cursor to say that the photograph opens fullscreen;
+the icon says it inside the same button, so there is no new control and no
+second way in.
 
 ## `apps/web/src/components/ui/photo-gallery/classify-photo.ts`
 

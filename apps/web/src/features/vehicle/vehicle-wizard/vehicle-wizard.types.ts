@@ -1,4 +1,4 @@
-import type { DealerVehicle } from '@dealers-drive/contracts';
+import type { DealerVehicle, UpdateVehicleInput } from '@dealers-drive/contracts';
 
 export type WizardStep = 'registration' | 'basics' | 'details' | 'pricing' | 'review';
 
@@ -12,8 +12,13 @@ export interface WizardState {
   values?: Record<string, string>;
 }
 
+export type VehicleFormValues = Pick<
+  DealerVehicle,
+  keyof UpdateVehicleInput | 'registrationDisplay'
+>;
+
 export interface StepProps {
-  vehicle: DealerVehicle | null;
+  vehicle: VehicleFormValues | null;
   errors: Record<string, string>;
   values: Record<string, string>;
 }

@@ -550,16 +550,11 @@ the district: the selector's list is the platform's coverage, and a district
 that vanished because somebody skipped a form field is a place a buyer can no
 longer reach.
 
-### `function locationLabel(city: string, state: string, years: number): string`
+### `function locationLabel(city: string, state: string, years: number | null): string`
 
 "Vellore, Tamil Nadu · 7 years", and gracefully less when a dealership
 predates one of the fields. The baseline built this inline and produced
 ", Tamil Nadu · 1 years" for a row with no city — a string a buyer sees.
-
-### `function responseLabel(medianMins: number | null): string`
-
-A dealer who never touches their inbox degrades their own public stat.
-That feedback loop is intentional (§14.3).
 
 ### `interface SuggestHit`
 
@@ -1625,3 +1620,5 @@ console and profile, which a manual activation with no document verified made
 plainly untrue — and Dealer Verified is a separate review with its own badge.
 ACTIVE now reads "Approved", and "Dealer Verified" only when that review has
 granted it.
+
+Missing established years are represented as null, with no invented directory age or public portfolio age row. Response-time statistics are omitted from the public profile.

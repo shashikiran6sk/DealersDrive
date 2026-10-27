@@ -11,7 +11,7 @@ export const PHOTO_GALLERY_TEXT = {
     total === 1
       ? `View the photo of ${title}`
       : `View all ${countLabel(total, 'photo')} of ${title}`,
-  openThumb: (index: number, total: number) => `Open photo ${index + 1} of ${total}`,
+  showThumb: (index: number, total: number) => `Show photo ${index + 1} of ${total}`,
   scrollLeft: 'Scroll photos left',
   scrollRight: 'Scroll photos right',
   previous: 'Previous photo',
@@ -22,16 +22,41 @@ export const PHOTO_GALLERY_TEXT = {
   railLabel: 'All photos',
   railCell: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
   count: (index: number, total: number) => `${index + 1} / ${total}`,
+  position: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
+  zoomControls: 'Zoom',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
 } as const;
 
-export const PREVIOUS_GLYPH = '‹';
-export const NEXT_GLYPH = '›';
+export const ZOOM_IN_GLYPH = '+';
+export const ZOOM_OUT_GLYPH = '−';
 
 export const STRIP_SCROLL_PX = 240;
 export const RAIL_NUMBER_DIGITS = 2;
 
 export const SWIPE_THRESHOLD_PX = 40;
 export const SWIPE_CLICK_GUARD_MS = 500;
+
+export const ZOOM = {
+  min: 1,
+  max: 4,
+  step: 1.5,
+  doubleTap: 2.5,
+  settleBelow: 1.05,
+  wheelSensitivity: 0.002,
+  pinchWheelSensitivity: 0.01,
+  wheelLinePx: 16,
+  wheelPagePx: 800,
+  keyPanPx: 80,
+  tapSlopPx: 10,
+  tapMs: 300,
+  doubleTapMs: 300,
+  doubleTapSlopPx: 30,
+} as const;
+
+export const ZOOM_IN_KEYS: readonly string[] = ['+', '='];
+export const ZOOM_OUT_KEYS: readonly string[] = ['-', '_'];
+export const ZOOM_RESET_KEY = '0';
 
 export const DEFAULT_STAGE_CLASS = 'aspect-[4/3]';
 

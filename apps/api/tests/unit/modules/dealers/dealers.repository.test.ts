@@ -238,7 +238,7 @@ describe('listActive', () => {
 
     const dealers = await createDealersRepository(prisma).listActive();
 
-    expect(dealers.map((dealer) => dealer.yearsOperating)).toEqual([17, 1, 1]);
+    expect(dealers.map((dealer) => dealer.yearsOperating)).toEqual([17, 1, null]);
   });
 });
 

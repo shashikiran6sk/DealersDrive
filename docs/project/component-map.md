@@ -1931,3 +1931,51 @@ StudioCar, the thumbnail strip, the viewer, the dealer hero and the mobile
 gallery. **Tests** `components/ui/photo-gallery-studio.test.tsx`,
 `components/ui/classify-photo.test.ts`. **Sandbox** `Primitives/PhotoGallery`
 (`StudioBackdrop`, `StudioBackdropNotStudioFirst`, `StudioBackdropPhone`).
+
+## Zoom in the photo viewer
+
+| Component             | Source                                                               | Props / states                                                                                                                                                                                                                                                                                             | Consumers                        |
+| --------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `PhotoGallery`        | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`         | no new props · the page stage is `touch-action: pan-y pinch-zoom`, so the browser can pinch-zoom the page over it · a second finger cancels a swipe · + viewer zoomed · + viewer zoomed at phone width                                                                                                     | `/car/[slug]`, `/dealers/[slug]` |
+| `GalleryViewer`       | `apps/web/src/components/ui/photo-gallery/gallery-viewer.tsx`        | no new props · the photograph zooms 1x–4x through `useZoom`: pinch, double tap (2.5x at the tap), wheel toward the cursor, `+`/`=` `-`/`_` `0`; drag and the arrow keys pan while zoomed, swipe and ←/→ page only at 1x; Ctrl/⌘/Alt keys left to the browser; resets on every photograph and every opening | `PhotoGallery`                   |
+| `GalleryZoomControls` | `apps/web/src/components/ui/photo-gallery/gallery-zoom-controls.tsx` | `scale`, `onZoom(action)`: Zoom out / Zoom in (`.dd-arrow`, 38px, 44px below 768) in a group named "Zoom", top right of the stage; each disabled at its end                                                                                                                                                | `GalleryViewer`                  |
+
+`useZoom` (`use-zoom.ts`) routes pointer and wheel events to pure functions
+in `utils.ts` (`zoomAt`, `clampView`, `pinchView`, `wheelScale`, …); no
+library. **Unchanged:** the API, contracts, the strip, the rail, captions and
+the studio filter. **Tests** `components/ui/photo-gallery-zoom.test.tsx`.
+**Sandbox** `Primitives/PhotoGallery` (`ViewerZoomed`, `ViewerZoomedPhone`).
+
+### Admin listing management
+
+`ListingReview` now includes `ListingVehicleEditor` and `AvailabilityPanel` in its folder. Both receive `AdminListingDetail`, use server-computed capability flags, and are exercised in `Admin/ListingReview` (Active and review states). The editor reuses RegistrationStep, BasicsStep, DetailsStep and PricingStep; all step forms accept their shared vehicle field shape. Availability dialogs preserve focus, show failures, and disable duplicate submissions. Insurance choices are None/Live throughout the shared forms; no date field is rendered.
+
+## Legal V1 additions
+
+| Component     | Source                                                           | Props                      | Sandbox states                   |
+| ------------- | ---------------------------------------------------------------- | -------------------------- | -------------------------------- |
+| LegalCheck    | apps/web/src/components/forms/legal-check/legal-check.tsx        | disabled                   | unchecked, disabled              |
+| LegalDocument | apps/web/src/components/layout/legal-document/legal-document.tsx | document                   | Terms, Privacy                   |
+| LegalGate     | apps/web/src/features/legal/legal-gate/legal-gate.tsx            | scope, returnTo, canAccept | customer, dealer, owner required |
+
+OnboardingWizard adds optional legalRequired (default false), passed only to its
+existing ReviewStep. Existing stories/consumers retain their behavior. New review
+stories cover missing and recorded acceptance. CustomerFooter adds legalVisible;
+PublicShell supplies publication visibility, while sandbox previews show both links.
+
+## Car page gallery — thumbnails select, black arrows
+
+| Component        | Source                                                         | Props / states                                                                                                                                                                                                                                                                                         | Consumers                                                   |
+| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `PhotoGallery`   | `apps/web/src/components/ui/photo-gallery/photo-gallery.tsx`   | a thumbnail selects (`onSelect` → the one index) and never opens the viewer; only the stage does · the position is announced (`Photo 4 of 8`, `aria-live`) · a broken thumbnail is dropped like a broken stage photo, selection kept (`indexAfterRemoval`) · tag with expand icon · + broken thumbnail | `/car/[slug]` (strip); `/dealers/[slug]` hero (arrows only) |
+| `GalleryStrip`   | `apps/web/src/components/ui/photo-gallery/gallery-strip.tsx`   | `photos`, `index`, `onSelect` (was `onOpen`), `onFailed`; thumbnails `Show photo N of M`, pointer cursor, selected accent ring offset 2px                                                                                                                                                              | `PhotoGallery`                                              |
+| `GalleryArrow`   | `apps/web/src/components/ui/photo-gallery/gallery-arrow.tsx`   | stage: 40px (44px below 768) white disc, `#c9c7c1` border, black 20px chevron, inset 12px / 8px; strip: 34px, 16px chevron; hover, pressed (scale .95), focus, disabled (strip only)                                                                                                                   | `PhotoGallery`, `GalleryStrip`, `GalleryViewer`             |
+| `GalleryChevron` | `apps/web/src/components/ui/photo-gallery/gallery-chevron.tsx` | `direction`, `className?` — replaces the `‹ ›` text glyphs                                                                                                                                                                                                                                             | `GalleryArrow`                                              |
+| `ExpandIcon`     | `apps/web/src/components/ui/photo-gallery/expand-icon.tsx`     | none — in the stage's count tag                                                                                                                                                                                                                                                                        | `PhotoGallery`                                              |
+
+**Changed on both pages:** the arrow look is shared, so the dealer hero's
+arrows (which have no strip) change with the car page's. **Unchanged:** the
+viewer's structure, keys, rail and focus return; swipe; the studio filter;
+the API and contracts; the vehicle card. **Tests**
+`components/ui/photo-gallery.test.tsx`, `components/dealers/portfolio-page.test.tsx`.
+**Sandbox** `Primitives/PhotoGallery` (+ `BrokenThumbnail`).

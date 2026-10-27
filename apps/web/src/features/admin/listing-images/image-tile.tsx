@@ -2,7 +2,6 @@ import type { AdminVehicleImage } from '@dealers-drive/contracts';
 
 import { StatusTag } from '@/components/ui/primitives';
 import {
-  removeListingImageAction,
   reorderListingImagesAction,
   setPrimaryImageAction,
 } from '@/features/admin/listing-actions';
@@ -13,6 +12,8 @@ export interface ImageTileProps {
   listingId: string;
   image: AdminVehicleImage;
   editable: boolean;
+  onReplace: () => void;
+  onRemove: () => void;
   earlier: string[] | null;
   later: string[] | null;
 }
@@ -39,7 +40,15 @@ function MoveButton({
   );
 }
 
-export function ImageTile({ listingId, image, editable, earlier, later }: ImageTileProps) {
+export function ImageTile({
+  listingId,
+  image,
+  editable,
+  earlier,
+  later,
+  onReplace,
+  onRemove,
+}: ImageTileProps) {
   return (
     <li className="flex min-w-0 flex-col gap-[6px] border border-(--color-divider) bg-white p-[6px]">
       <div className="relative">
@@ -98,17 +107,22 @@ export function ImageTile({ listingId, image, editable, earlier, later }: ImageT
               </button>
             </form>
           )}
-          <form action={removeListingImageAction}>
-            <input type="hidden" name="listingId" value={listingId} />
-            <input type="hidden" name="mediaId" value={image.mediaId} />
-            <button
-              type="submit"
-              className="btn btn-ghost text-[11px] text-(--color-err)"
-              aria-label={LISTING_IMAGES_TEXT.removeLabel(image.position)}
-            >
-              {LISTING_IMAGES_TEXT.remove}
-            </button>
-          </form>
+          <button
+            type="button"
+            className="btn btn-ghost text-[11px]"
+            aria-label={LISTING_IMAGES_TEXT.replaceLabel(image.position)}
+            onClick={onReplace}
+          >
+            {LISTING_IMAGES_TEXT.replace}
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost text-[11px] text-(--color-err)"
+            aria-label={LISTING_IMAGES_TEXT.removeLabel(image.position)}
+            onClick={onRemove}
+          >
+            {LISTING_IMAGES_TEXT.remove}
+          </button>
         </div>
       ) : null}
       {image.fileName ? (

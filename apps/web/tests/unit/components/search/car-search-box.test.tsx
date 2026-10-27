@@ -165,6 +165,26 @@ describe('the suggestions', () => {
     expect(screen.getByText('3 matches')).toBeInTheDocument();
   });
 
+  it('scrolls the row an arrow reaches into view, and leaves hovering alone', async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+    const user = userEvent.setup();
+    const { input } = renderBox();
+    await user.type(input, 'cre');
+    await waitFor(() => expect(options()).toHaveLength(3));
+    scrollIntoView.mockClear();
+
+    await user.hover(options()[2] as HTMLElement);
+    expect(options()[2]).toHaveAttribute('aria-selected', 'true');
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    await user.keyboard('{ArrowDown}');
+    expect(options()[0]).toHaveAttribute('aria-selected', 'true');
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(options()[0]);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+    scrollIntoView.mockRestore();
+  });
+
   it('moves with the arrows, wrapping, and takes the highlighted row on Enter', async () => {
     const user = userEvent.setup();
     const { input } = renderBox({ district: 'ranipet', fuel: 'petrol', page: '2' });
