@@ -22,3 +22,11 @@ Enquire button and the dealer card. The page itself also stopped fetching its
 similar cars only after the vehicle: both start together now, and the similar
 cars are asked for again only when the API answered with a different canonical
 slug.
+
+### No route renders it since BUG-101
+
+`app/(public)/car/[slug]/loading.tsx` was removed, because with it a missing car
+answered HTTP 200 instead of 404 and an API outage 200 instead of 500. The
+measurements are in [`app/(public)/car`](<../../app/(public)/car.md>). The
+component, its sandbox story and its skeleton test stay, as `DealerPageLoading`'s
+did after F114.

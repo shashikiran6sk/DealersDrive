@@ -36,9 +36,9 @@ import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-searc
 
 import { DEALER_HERO_STAGE_CLASS, DEALER_PAGE_TEXT } from './dealer-page.constants';
 
-export const revalidate = 600;
+export const revalidate = 60;
 
-const DEALER_CACHE = (slug: string) => ({ revalidate: 600, tags: [dealerTag(slug), DEALERS_TAG] });
+const DEALER_CACHE = (slug: string) => ({ revalidate: 60, tags: [dealerTag(slug), DEALERS_TAG] });
 
 const loadDealer = cache((slug: string): Promise<DealerPublicProfile | null> =>
   cachedLookup(

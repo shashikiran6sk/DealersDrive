@@ -188,8 +188,6 @@ describe('an enquiry', () => {
   it.each([
     ['NEW', ['Mark contacted', 'Close', 'Spam']],
     ['CONTACTED', ['Close', 'Spam']],
-    ['CLOSED', ['Reopen']],
-    ['SPAM', ['Not spam']],
   ] as const)('offers the moves that make sense from %s', async (status, labels) => {
     apiGetParsed.mockResolvedValue(inbox({ data: [{ ...RAVI, status }] }));
     render(await page({ status }));
@@ -197,6 +195,16 @@ describe('an enquiry', () => {
     const group = within(screen.getByRole('group', { name: 'Actions for Ravi Kumar’s enquiry' }));
     expect(group.getAllByRole('button').map((button) => button.textContent)).toEqual([...labels]);
   });
+
+  it.each(['CLOSED', 'SPAM'] as const)(
+    'offers no move from %s — it is final (UPD-2)',
+    async (status) => {
+      apiGetParsed.mockResolvedValue(inbox({ data: [{ ...RAVI, status }] }));
+      render(await page({ status }));
+
+      expect(screen.queryByRole('group', { name: 'Actions for Ravi Kumar’s enquiry' })).toBeNull();
+    },
+  );
 
   it('sends the move for this enquiry, and nothing about the customer', async () => {
     const user = userEvent.setup();
@@ -221,10 +229,47 @@ describe('an enquiry', () => {
     render(await page());
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole('button', { name: 'Close enquiry' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'That enquiry is not in your inbox.',
     );
+  });
+
+  it.each([
+    ['Close', 'Close this enquiry?', /cannot be reopened/, 'Close enquiry', 'CLOSED'],
+    ['Spam', 'Mark this enquiry as spam?', /cannot be undone/, 'Mark as spam', 'SPAM'],
+  ] as const)(
+    'asks before %s, because the status is final (UPD-2)',
+    async (button, title, warning, confirm, status) => {
+      const user = userEvent.setup();
+      vi.mocked(setEnquiryStatusAction).mockResolvedValue({ ok: true });
+      apiGetParsed.mockResolvedValue(inbox());
+      render(await page());
+
+      await user.click(screen.getByRole('button', { name: button }));
+      const dialog = within(screen.getByRole('dialog', { name: title }));
+      expect(dialog.getByText(warning)).toBeInTheDocument();
+
+      await user.click(dialog.getByRole('button', { name: 'Cancel' }));
+      expect(setEnquiryStatusAction).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('button', { name: button }));
+      await user.click(screen.getByRole('button', { name: confirm }));
+      expect(setEnquiryStatusAction).toHaveBeenCalledWith(RAVI.id, status);
+    },
+  );
+
+  it('marks an enquiry contacted at once, with no dialog', async () => {
+    const user = userEvent.setup();
+    vi.mocked(setEnquiryStatusAction).mockResolvedValue({ ok: true });
+    apiGetParsed.mockResolvedValue(inbox());
+    render(await page());
+
+    await user.click(screen.getByRole('button', { name: 'Mark contacted' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(setEnquiryStatusAction).toHaveBeenCalledWith(RAVI.id, 'CONTACTED');
   });
 });
 

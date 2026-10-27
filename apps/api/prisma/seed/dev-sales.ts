@@ -24,6 +24,11 @@ import { assertLocalDatabase } from './dev-guard.js';
  * in review, and an approved one — and the second carries one draft, which is
  * what proves a representative only sees their own.
  *
+ * Each assisted dealership has its OWNER from the start, as `createAssisted`
+ * gives it one (#301): a user on the contact's proved number and address, with
+ * a dealer seat and an OWNER membership. Without one the approved dealership
+ * was ACTIVE with nobody who could sign in to it (BUG-103).
+ *
  * ── What is not here ────────────────────────────────────────────────────────
  * No documents. A document row is an object in the private bucket, and seeding
  * a row whose object does not exist is a reviewer clicking "view" on a 404.
@@ -162,6 +167,26 @@ async function upsertMember(seed: SeedMember): Promise<string> {
   return member.id;
 }
 
+async function upsertOwner(seed: SeedAssisted): Promise<string> {
+  const fields = {
+    fullName: seed.contactName,
+    phone: seed.phone,
+    phoneVerifiedAt: now,
+    emailVerifiedAt: now,
+  };
+  const owner = await prisma.user.upsert({
+    where: { email: seed.email },
+    update: fields,
+    create: { email: seed.email, ...fields },
+  });
+  await prisma.userRole.upsert({
+    where: { userId_role: { userId: owner.id, role: 'DEALER' } },
+    update: {},
+    create: { userId: owner.id, role: 'DEALER' },
+  });
+  return owner.id;
+}
+
 async function seedAssisted(seed: SeedAssisted, memberId: string): Promise<void> {
   const state = 'Tamil Nadu';
   const fields = {
@@ -190,10 +215,16 @@ async function seedAssisted(seed: SeedAssisted, memberId: string): Promise<void>
     district: seed.district,
     state,
   });
-  await prisma.dealer.upsert({
+  const dealer = await prisma.dealer.upsert({
     where: { gstin: seed.gstin },
     update: { slug, ...fields },
     create: { slug, ...fields },
+  });
+  const ownerId = await upsertOwner(seed);
+  await prisma.dealerMember.upsert({
+    where: { dealerId_userId: { dealerId: dealer.id, userId: ownerId } },
+    update: { role: 'OWNER' },
+    create: { dealerId: dealer.id, userId: ownerId, role: 'OWNER', permissions: [] },
   });
 }
 

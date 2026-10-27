@@ -40,6 +40,7 @@ export function createCookieSessionResolver(
         fullName: session.user.fullName,
         phone: session.user.phone,
         phoneVerified: session.user.phoneVerifiedAt !== null,
+        emailVerified: session.user.email !== null && session.user.emailVerifiedAt !== null,
         permissions: [],
       };
     }

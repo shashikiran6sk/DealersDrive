@@ -80,6 +80,7 @@ async function appFor(userId: string | (() => string)) {
       fullName: null,
       phone: null,
       phoneVerified: false,
+      emailVerified: false,
     };
     next();
   });

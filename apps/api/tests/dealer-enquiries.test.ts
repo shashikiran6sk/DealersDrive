@@ -280,7 +280,7 @@ describe('moving an enquiry between tabs', () => {
     });
   });
 
-  it('closes it, and reopening clears the close but keeps the first contact', async () => {
+  it('closes it, keeping the first contact, and a closed enquiry cannot be reopened', async () => {
     const { slug } = await car(a);
     const id = await enquire((await customer('Close Me')).agent, slug);
 
@@ -289,18 +289,12 @@ describe('moving an enquiry between tabs', () => {
     expect(closed.body.closedAt).toEqual(expect.any(String));
     expect(closed.body.contactedAt).toBe(contacted.body.contactedAt);
 
-    const reopened = await setStatus(a, id, 'NEW').expect(200);
-    expect(reopened.body).toMatchObject({
-      status: 'NEW',
-      closedAt: null,
-      contactedAt: contacted.body.contactedAt,
-    });
+    await setStatus(a, id, 'NEW').expect(409);
 
     expect((await auditRows(id)).map((entry) => entry.action)).toEqual([
       'enquiry.created',
       'enquiry.contacted',
       'enquiry.closed',
-      'enquiry.reopened',
     ]);
   });
 
@@ -371,5 +365,65 @@ describe('moving an enquiry between tabs', () => {
 
   it('refuses an id that is not a uuid', async () => {
     await setStatus(a, 'not-an-id', 'CLOSED').expect(400);
+  });
+});
+
+/**
+ * UPD-2 — the moves the inbox offers are the only moves there are: forward
+ * from NEW, and CLOSED and SPAM are final.
+ */
+describe('which moves an enquiry may make', () => {
+  async function at(status: 'NEW' | 'CONTACTED' | 'CLOSED' | 'SPAM', name: string) {
+    const { slug } = await car(a);
+    const buyer = await customer(name);
+    const id = await enquire(buyer.agent, slug);
+    if (status === 'CONTACTED') await setStatus(a, id, 'CONTACTED').expect(200);
+    if (status === 'CLOSED' || status === 'SPAM') await setStatus(a, id, status).expect(200);
+    return { id, slug, buyer };
+  }
+
+  it.each([
+    ['NEW', 'CONTACTED'],
+    ['NEW', 'CLOSED'],
+    ['NEW', 'SPAM'],
+    ['CONTACTED', 'CLOSED'],
+    ['CONTACTED', 'SPAM'],
+  ] as const)('allows %s → %s', async (from, to) => {
+    const { id } = await at(from, `Allowed ${from} ${to}`);
+    const { body } = await setStatus(a, id, to).expect(200);
+    expect(body.status).toBe(to);
+  });
+
+  it.each([
+    ['CONTACTED', 'NEW'],
+    ['CLOSED', 'NEW'],
+    ['CLOSED', 'CONTACTED'],
+    ['CLOSED', 'SPAM'],
+    ['SPAM', 'NEW'],
+    ['SPAM', 'CONTACTED'],
+    ['SPAM', 'CLOSED'],
+  ] as const)('refuses %s → %s with 409, and changes and records nothing', async (from, to) => {
+    const { id } = await at(from, `Refused ${from} ${to}`);
+    const before = await h.prisma.enquiry.findUniqueOrThrow({ where: { id } });
+    const audits = (await auditRows(id)).length;
+
+    const res = await setStatus(a, id, to).expect(409);
+
+    expect(res.body).toMatchObject({
+      code: 'ENQUIRY_INVALID_TRANSITION',
+      enquiryStatus: from,
+      requestedStatus: to,
+    });
+    expect(await h.prisma.enquiry.findUniqueOrThrow({ where: { id } })).toEqual(before);
+    expect(await auditRows(id)).toHaveLength(audits);
+  });
+
+  it('lets the customer enquire again once their enquiry is closed, as a new enquiry', async () => {
+    const { id, slug, buyer } = await at('CLOSED', 'Asked Twice');
+
+    const again = await enquire(buyer.agent, slug);
+
+    expect(again).not.toBe(id);
+    expect((await h.prisma.enquiry.findUniqueOrThrow({ where: { id } })).status).toBe('CLOSED');
   });
 });

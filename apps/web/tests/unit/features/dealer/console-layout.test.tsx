@@ -119,7 +119,7 @@ describe('the console guard', () => {
 });
 
 describe('the console shell', () => {
-  it('names the dealership, shows its status and its balance, and offers sign out', async () => {
+  it('names the dealership, shows its status, and offers sign out', async () => {
     currentSession.mockResolvedValue(session('DASHBOARD'));
     apiGet.mockResolvedValue(DEALER);
 
@@ -128,7 +128,6 @@ describe('the console shell', () => {
     expect(apiGet).toHaveBeenCalledWith('/v1/dealer');
     expect(screen.getByText('Sri Lakshmi Motors')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('14 credits')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
     expect(screen.getByText('the profile screen')).toBeInTheDocument();
   });
@@ -199,21 +198,18 @@ describe('the console shell', () => {
   });
 
   /**
-   * Credits held against cars under review are a *subtraction* from a balance a
-   * dealer would otherwise read as spendable, so the line appears only when
-   * there is something to say.
+   * UPD-4 (BUG-110). Billing (F050–F054) has not shipped, so a balance with no
+   * way to buy or spend it read as a blocker. The console shows no credits until
+   * it does; the balance is still on `DealerProfile` and the admin pages.
    */
-  it('says what is held only when something is held', async () => {
+  it('shows no listing credits while billing is not live', async () => {
     currentSession.mockResolvedValue(session('DASHBOARD'));
-
-    apiGet.mockResolvedValue(DEALER);
-    const { unmount } = render(await layout());
-    expect(screen.queryByText(/held for cars under review/i)).toBeNull();
-    unmount();
-
     apiGet.mockResolvedValue({ ...DEALER, creditsHeld: 3 });
+
     render(await layout());
-    expect(screen.getByText('3 held for cars under review')).toBeInTheDocument();
+
+    expect(screen.queryByText(/credits/i)).toBeNull();
+    expect(screen.queryByText(/held for cars under review/i)).toBeNull();
   });
 
   /**
