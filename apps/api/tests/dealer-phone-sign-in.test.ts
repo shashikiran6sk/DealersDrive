@@ -143,6 +143,20 @@ describe('the destination does not depend on how a dealer signed in', () => {
 
     const me = await agent.get('/v1/auth/me').expect(200);
     expect(me.body).toMatchObject({ next, user: { id: account.userId, phoneVerified: true } });
+    expect(me.body.user.emailVerified).toBe(true);
+  });
+
+  it('reports no verified e-mail for a dealer who has only proved a number (BUG-102)', async () => {
+    const phone = freeNumber();
+    const agent = h.agent();
+
+    await phoneSignIn(agent, phone).expect(200);
+
+    const me = await agent.get('/v1/auth/me').expect(200);
+    expect(me.body).toMatchObject({
+      next: 'ONBOARDING',
+      user: { email: null, emailVerified: false, phoneVerified: true },
+    });
   });
 
   it('refuses a suspended dealership, as Google does', async () => {

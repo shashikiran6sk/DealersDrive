@@ -43,6 +43,25 @@ revoked key — and a sixth attempt is twenty more minutes of pretending
 otherwise. `notification_deliveries` carries the `FAILED` row and the
 provider's own sentence for what happens next.
 
+### `const WORKERS: Partial<Record<JobName, WorkOptions>> =`
+
+How a queue is polled, where pg-boss's default is wrong (**BUG-104**).
+
+The default is one job per fetch and a fetch every two seconds. For e-mail that
+was a ceiling of exactly 30 messages a minute per API task — measured — and an
+admin notification fans out to every permitted Admin Member, so one busy hour of
+dealer submissions queued for longer than it took to happen. A half-second poll
+is 120 a minute (measured against PostgreSQL with the real worker): two sends a
+second, which matches the default per-account API rate Resend published when
+this was written. Check the account's real limit before going faster — past it,
+the extra speed becomes 429s and retries rather than mail.
+
+Not a bigger `batchSize`: a batch succeeds or fails as one, so a provider error
+on the fifth message would retry the four already delivered, and the customer
+gets the same e-mail twice. Not `localConcurrency` either, for the provider-rate
+reason. A queue-depth metric and alert, to see a backlog before customers do,
+is still to be built.
+
 ### `const pending: { name: JobName; handler: (data: Record<string, unknown>) => Promise<void> }[] =`
 
 Handlers registered before `start()`; pg-boss v12 needs the queue to exist.
