@@ -195,7 +195,9 @@ describe('races', () => {
       aManager.agent.patch(`/v1/dealer/enquiries/${id}`).send({ status: 'CLOSED' }),
       a.agent.patch(`/v1/dealer/enquiries/${id}`).send({ status: 'SPAM' }),
     ]);
-    expect(results.map((res) => res.status)).toEqual([200, 200]);
+    // UPD-2: CLOSED and SPAM are both end states, so the second move is refused.
+    expect(results.map((res) => res.status).sort()).toEqual([200, 409]);
+    expect(results.find((res) => res.status === 409)?.body.code).toBe('ENQUIRY_INVALID_TRANSITION');
 
     const stored = await h.prisma.enquiry.findUniqueOrThrow({ where: { id } });
     expect(['CLOSED', 'SPAM']).toContain(stored.status);
@@ -204,7 +206,7 @@ describe('races', () => {
     const audit = await h.prisma.auditLog.count({
       where: { entityId: id, action: { in: ['enquiry.closed', 'enquiry.spam'] } },
     });
-    expect(audit).toBe(2);
+    expect(audit).toBe(1);
   });
 
   it('sells or withdraws a car, never both, when two members try at once', async () => {

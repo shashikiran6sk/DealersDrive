@@ -1,14 +1,19 @@
 'use client';
 
-import { canDealer, enquiryTransitionPermission } from '@dealers-drive/contracts';
+import {
+  canDealer,
+  enquiryTransitionPermission,
+  type EnquiryStatus,
+} from '@dealers-drive/contracts';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { setEnquiryStatusAction } from '@/features/dealer/enquiry-actions';
 import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
-import { ENQUIRIES_TEXT, ENQUIRY_MOVES } from './enquiries.constants';
+import { ENQUIRIES_TEXT, ENQUIRY_MOVES, isFinalStatus } from './enquiries.constants';
 import type { EnquiryStatusActionsProps } from './enquiries.types';
+import { FinalMoveDialog } from './final-move-dialog';
 
 export function EnquiryStatusActions({
   enquiryId,
@@ -26,6 +31,16 @@ export function EnquiryStatusActions({
   );
   if (moves.length === 0) return null;
 
+  function moveTo(to: EnquiryStatus) {
+    setError(null);
+    setMoving(to);
+    startTransition(async () => {
+      const result = await setEnquiryStatusAction(enquiryId, to);
+      if (!result.ok) setError(result.message);
+      setMoving(null);
+    });
+  }
+
   return (
     <div className="ml-auto flex flex-col items-end gap-[4px]">
       <div
@@ -33,26 +48,30 @@ export function EnquiryStatusActions({
         aria-label={ENQUIRIES_TEXT.actionsLabel(customerName)}
         className="flex flex-wrap items-center justify-end gap-[6px]"
       >
-        {moves.map((move) => (
-          <Button
-            key={move.to}
-            variant="ghost"
-            className="min-h-[36px]"
-            disabled={pending}
-            loading={pending && moving === move.to}
-            onClick={() => {
-              setError(null);
-              setMoving(move.to);
-              startTransition(async () => {
-                const result = await setEnquiryStatusAction(enquiryId, move.to);
-                if (!result.ok) setError(result.message);
-                setMoving(null);
-              });
-            }}
-          >
-            {move.label}
-          </Button>
-        ))}
+        {moves.map((move) =>
+          isFinalStatus(move.to) ? (
+            <FinalMoveDialog
+              key={move.to}
+              to={move.to}
+              label={move.label}
+              customerName={customerName}
+              disabled={pending}
+              loading={pending && moving === move.to}
+              onConfirm={() => moveTo(move.to)}
+            />
+          ) : (
+            <Button
+              key={move.to}
+              variant="ghost"
+              className="min-h-[36px]"
+              disabled={pending}
+              loading={pending && moving === move.to}
+              onClick={() => moveTo(move.to)}
+            >
+              {move.label}
+            </Button>
+          ),
+        )}
       </div>
       {error ? (
         <p role="alert" className="m-0 text-right text-[12px] text-(--color-err)">

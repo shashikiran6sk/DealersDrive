@@ -93,6 +93,26 @@ export function enquiryTransitionPermission(
 }
 
 /**
+ * The status moves an enquiry may make (UPD-2) — the buttons the dealer inbox
+ * shows, enforced by the API too.
+ *
+ * A lead only goes forward: NEW to CONTACTED, then CLOSED or SPAM, and CLOSED
+ * and SPAM are final — there is no reopen. Every other move is refused with 409
+ * `ENQUIRY_INVALID_TRANSITION`. A customer whose enquiry was closed may enquire
+ * about the car again, which starts a new enquiry; one marked spam may not.
+ */
+export const ENQUIRY_TRANSITIONS: Record<EnquiryStatus, readonly EnquiryStatus[]> = {
+  NEW: ['CONTACTED', 'CLOSED', 'SPAM'],
+  CONTACTED: ['CLOSED', 'SPAM'],
+  CLOSED: [],
+  SPAM: [],
+};
+
+export function isEnquiryTransition(from: EnquiryStatus, to: EnquiryStatus): boolean {
+  return ENQUIRY_TRANSITIONS[from].includes(to);
+}
+
+/**
  * The permission each lifecycle move needs (**R95**). The API filters the
  * moves it offers a member through this, so a STAFF member's inventory simply
  * has no Reserve button — and the route enforces the same permission if one is
