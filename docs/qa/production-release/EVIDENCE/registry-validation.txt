@@ -1,0 +1,13 @@
+Canonical registry validation
+  Expected canonical count = 556
+  Parsed canonical count   = 556
+  Duplicate IDs            = 0
+  Missing IDs              = 0
+  Out-of-order numbers     = 0
+  Duplicate scenario text  = 7
+  Unparseable lines        = 0
+  Sections                 = 39
+  Sum of declared headers  = 554
+  NOTE header mismatch: ENQ-CREATE declared 17, contains 18 — IDs run to ENQ-CREATE-018
+  NOTE header mismatch: ADMIN-DEALER declared 9, contains 10 — IDs run to ADMIN-DEALER-010
+RESULT: REGISTRY VALID

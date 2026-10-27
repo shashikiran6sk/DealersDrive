@@ -1,0 +1,403 @@
+[
+  {
+    "deliveriesForDealer": 0,
+    "status": null
+  },
+  {
+    "approve": 200,
+    "dealerStatus": "ACTIVE"
+  },
+  {
+    "hasDedupeKey": true,
+    "duplicateDeliveries": 0
+  },
+  {
+    "consoleDriverInUse": true,
+    "prodRequiresResend": true
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "8125fd1a-2140-4dcd-8143-1b6158a56eef",
+      "status": "NEW",
+      "createdAt": "2026-10-21T05:28:43.328Z",
+      "dealerName": "Notify5 Motors 52130120ef38",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "deliveriesBefore": 7271,
+    "deliveriesAfter": 7271
+  },
+  {
+    "deadApi": "ECONNREFUSED"
+  },
+  {
+    "note": "save against a down API cannot return 2xx"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "9b274481-9841-4859-91ed-0f45052b9cd4",
+      "status": "NEW",
+      "createdAt": "2026-10-21T05:28:44.044Z",
+      "dealerName": "Rec3 Motors 52130646e7d2",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/enquiry-already-open",
+      "title": "Enquiry already open",
+      "status": 409,
+      "code": "ENQUIRY_ALREADY_OPEN",
+      "traceId": "UdvMCqBYR3",
+      "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
+    }
+  },
+  {
+    "rows": 1
+  },
+  {
+    "readyStatus": 503,
+    "publicStatus": 500,
+    "prodSuppressesDetail": true
+  },
+  {
+    "req": "POST /v1/admin/listings/faa9e5d6-2182-4e18-be89-a227ab7a5aa0/images/presign",
+    "status": 201,
+    "body": {
+      "mediaId": "04fcaaf7-62fa-4696-9860-a6f3bdc2cbc2",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "image/jpeg",
+        "Content-Length": "1000"
+      },
+      "expiresInSeconds": 900,
+      "maxBytes": 1000
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/faa9e5d6-2182-4e18-be89-a227ab7a5aa0/images/04fcaaf7-62fa-4696-9860-a6f3bdc2cbc2/commit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/upload-missing",
+      "title": "Upload missing",
+      "status": 422,
+      "code": "UPLOAD_MISSING",
+      "traceId": "H4x3zHl9oo",
+      "detail": "The upload did not complete. Try again."
+    }
+  },
+  {
+    "listing": "PENDING_REVIEW"
+  },
+  {
+    "req": "POST /v1/auth/sign-in/phone/customer",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/phone-verification-failed",
+      "title": "Phone verification failed",
+      "status": 422,
+      "code": "PHONE_VERIFICATION_FAILED",
+      "traceId": "RliuwdG9vf",
+      "detail": "That code could not be verified. Request a new one and try again.",
+      "errors": [
+        {
+          "field": "body.accessToken",
+          "code": "PHONE_VERIFICATION_FAILED",
+          "message": "Not verified."
+        }
+      ]
+    }
+  },
+  {
+    "sessions": 0,
+    "users": 0
+  },
+  {
+    "deniedStatus": 302,
+    "bogusStatus": 302
+  },
+  {
+    "approve": 200,
+    "dealer": "ACTIVE"
+  },
+  {
+    "note": "browser refresh recovery is a web-layer concern"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/1cffe722-939b-4ef7-a678-c579927e8ff0/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "1cffe722-939b-4ef7-a678-c579927e8ff0",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN67HP8769",
+      "registrationDisplay": "TN 67 HP 8769",
+      "rtoCode": "TN67",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "fb0e0429-bbc3-4ade-ad95-da01d2982882",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-21T05:28:44.723Z",
+        "publishedAt": "2026-10-21T05:28:45.120Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-069eb939",
+        "reservedAt": null,
+        "soldAt": "2026-10-21T05:28:45.144Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-21T05:28:44.688Z",
+      "updatedAt": "2026-10-21T05:28:45.145Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/1cffe722-939b-4ef7-a678-c579927e8ff0/mark-sold",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-sellable",
+      "title": "Listing not sellable",
+      "status": 409,
+      "code": "LISTING_NOT_SELLABLE",
+      "traceId": "twjgTvoaVp",
+      "detail": "Only a car that is on sale or reserved can be marked sold.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "status": "SOLD"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/54b8588c-0519-4b22-af68-353debebcbe6/reserve",
+    "status": 200,
+    "body": {
+      "id": "54b8588c-0519-4b22-af68-353debebcbe6",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN87EB2639",
+      "registrationDisplay": "TN 87 EB 2639",
+      "rtoCode": "TN87",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "3fb85aee-d834-48cf-a6ae-bf9b77cf9155",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-21T05:28:45.358Z",
+        "publishedAt": "2026-10-21T05:28:45.748Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-0de9f27f",
+        "reservedAt": "2026-10-21T05:28:45.774Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-21T05:28:45.320Z",
+      "updatedAt": "2026-10-21T05:28:45.356Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/54b8588c-0519-4b22-af68-353debebcbe6/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "fuJBtXW42O",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "RESERVED"
+    }
+  },
+  {
+    "status": "RESERVED"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "df3b331b-3e83-4567-a8ec-e5ac90fa4a0f",
+      "status": "NEW",
+      "createdAt": "2026-10-21T05:28:46.456Z",
+      "dealerName": "Rec12 Motors 52132728d55f",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/enquiry-already-open",
+      "title": "Enquiry already open",
+      "status": 409,
+      "code": "ENQUIRY_ALREADY_OPEN",
+      "traceId": "GOZPP2S_4x",
+      "detail": "The dealership already has your details. You can enquire about this car again once they close your enquiry."
+    }
+  },
+  {
+    "rows": 1
+  },
+  {
+    "dealers": 690,
+    "listings": 978,
+    "ready": 200
+  },
+  {
+    "xRequestId": "HhFuMVeBZ-",
+    "xTraceId": "HhFuMVeBZ-"
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "FVw8jII-Tb",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "SLRSidVF8y",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "suspendAudit": {
+      "action": "dealer.suspended",
+      "actorType": "ADMIN",
+      "traceId": "Fe_tW56Eid"
+    }
+  },
+  {
+    "memberActions": ["member.invited", "member.joined", "member.role_changed"]
+  },
+  {
+    "listingActions": [
+      "listing.check_set",
+      "listing.submitted",
+      "listing.approved",
+      "listing.marked_sold"
+    ]
+  },
+  {
+    "enquiryActions": ["enquiry.created", "enquiry.contacted"]
+  },
+  {
+    "adminActions": [
+      "listing.approved",
+      "vehicle.image_added",
+      "listing.check_set",
+      "dealer.approved",
+      "document.verified"
+    ]
+  },
+  {
+    "handlerLogs5xx": true,
+    "dbDownStatus": 500
+  },
+  {
+    "otpTokensInLog": 0,
+    "sessionTokensInLog": false,
+    "passwordsInLog": false
+  },
+  {
+    "req": "GET /health/live",
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  {
+    "req": "GET /health/ready",
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "contracts": "1.0.0",
+      "appEnv": "local",
+      "version": "unknown",
+      "checks": {
+        "queue": "ok",
+        "storage": "ok",
+        "gateway": "ok",
+        "database": "ok",
+        "cache": "ok"
+      },
+      "drivers": {
+        "cache": "postgres",
+        "storage": "local"
+      },
+      "uptimeSeconds": 2436
+    }
+  },
+  {
+    "dbDownReady": 503
+  },
+  {
+    "auditHasTraceId": true
+  }
+]

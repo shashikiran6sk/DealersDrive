@@ -1,0 +1,29 @@
+[
+  {
+    "dumpExit": 0,
+    "restoreExit": 0,
+    "restoreErrors": "",
+    "compared": 17,
+    "differing": [],
+    "restored": {
+      "users": "1380",
+      "dealers": "744",
+      "members": "971",
+      "owners": "740",
+      "invitations": "246",
+      "listings": "1071",
+      "enquiries": "277",
+      "saved": "39",
+      "documents": "1480",
+      "audit": "17143",
+      "admin_members": "46",
+      "tickets": "34",
+      "migrations": "56",
+      "dealers_hash": "8980c6703db1504e96750f408cbf255c",
+      "listings_hash": "6945cf26a79a4155865c35d251f650d7",
+      "members_hash": "7c2d5cca4949e72c5e15c4db30db9789",
+      "enquiries_hash": "0cef71ff0b25b4d7df60c57626c43220"
+    },
+    "unvalidatedForeignKeys": "0"
+  }
+]

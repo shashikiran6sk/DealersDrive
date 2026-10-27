@@ -1,0 +1,7069 @@
+# Feature Map
+
+Derived from the repository at `f05acdc`, then re-sliced to reflect three
+decisions taken during Phase 1 review (see the decision log below).
+
+**97 features across 14 tiers.** Each is intended to be one reviewable PR.
+
+**Confidence** means: how sure the audit is that this feature's boundary is
+correct and that it can be delivered as one self-contained PR.
+
+- **HIGH** — the feature owns its files; the boundary is visible in the tree.
+- **MEDIUM** — real, but interleaved with a neighbour or sharing a file that
+  several features write to.
+- **LOW** — the boundary is a judgement call.
+
+Component vocabulary: **Reused** (exists, unchanged) · **New** (first introduced
+by this PR) · **Modified** (an existing shared component this PR changes) ·
+**Feature-specific** (`features/`, not reusable as-is) · **Shared**
+(`components/`, more than one consumer).
+
+> **On "New".** Every component already exists in the repository. In the
+> reconstructed history "New" means _first enters the tree in this PR_.
+
+---
+
+# Decision log — Phase 1 review
+
+## D1 — The seeded database catalogue is removed
+
+**Decision.** Vehicle make/model/variant will come from the RC lookup or manual
+entry. The catalogue is not carried into the reconstruction.
+
+**What that means concretely.**
+
+| Removed                                                                                                                                                                                                                                                | Kept, relocated, or changed                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `Make`, `Model`, `Variant` Prisma models                                                                                                                                                                                                               | `Vehicle` stores `make`, `model`, `variant` as **normalised strings** |
+| `Color`, `Rto` reference tables                                                                                                                                                                                                                        | colour from RC or free text; `rtoCode` already derived from the plate |
+| `apps/api/src/modules/catalog/**` (5 files)                                                                                                                                                                                                            | `GET /v1/cities` → **F026**; `GET /v1/config/public` → **F029**       |
+| `GET /v1/catalog/bundle`, `GET /v1/catalog/models/:id/variants`                                                                                                                                                                                        | —                                                                     |
+| `apps/api/prisma/seed/catalog/**` (~5,000 LOC)                                                                                                                                                                                                         | `prisma/seed/` keeps only dev bootstrap (**F097**)                    |
+| `apps/web/src/app/api/catalog/models/[id]/variants/route.ts`                                                                                                                                                                                           | —                                                                     |
+| `CatalogBundle` from contracts                                                                                                                                                                                                                         | `RcBasicsMatch` yields strings, not `Uuid`s                           |
+| `City` — **not removed.** Cities are not vehicle-catalogue data. They drive the header city selector, the dealer directory, search filters and dealer profiles, so they become their own small feature, **F026**. ⚠️ **Overturned by D6** — see below. |                                                                       |
+
+**What survives, and why it must.** `apps/api/src/platform/rc/rc-aliases.ts`
+stays. Its own header explains the reason a table is unavoidable: an RC records
+the _manufacturing entity_, not the brand — a Chevrolet Beat's RC says
+`GENERAL MOTORS INDIA PVT LTD`, and Chevrolet appears nowhere in the string.
+`rc-aliases.ts` is a **committed constant, not a database table**, which is
+precisely why it is compatible with this decision: it is reviewable in a diff
+and needs no seed.
+
+`rc-match.ts` survives but changes purpose. Today it is
+_"VAHAN strings → catalogue ids"_. It becomes _VAHAN strings → normalised
+strings_: strip corporate noise, apply `MAKER_ALIASES`, split model from trim,
+emit a canonical `make` / `model` / `variant`. It gets smaller and keeps its
+fixture-table tests.
+
+**⚠️ The risk this creates, stated plainly.** `RcSpecs.makerModel` is documented
+in the source as _"`SWIFT VXI` — model and trim run together, inconsistently."_
+With a catalogue, that string was resolved to a known row. Without one, search
+facets group on whatever string was stored, and `Maruti` / `Maruti Suzuki` /
+`MARUTI SUZUKI INDIA LTD` become three separate facet buckets. Two things follow:
+
+1. **Normalisation moves to write time** (F060) and is now load-bearing.
+   Anything not normalised on the way in is unfixable at query time.
+2. **Manual entry needs a guard rail** — at minimum a free-text field that
+   suggests values already present in the database, so dealers converge on
+   existing spellings rather than inventing new ones (F060).
+
+This is a real product trade-off, not a blocker. It is called out again in the
+risk register in `git-strategy.md`.
+
+**Knock-on effects on the plan.**
+
+- `Combobox` loses its stated justification. Its header comment says it exists
+  because _"the catalogue has 41 makes and 344 models; a `<select>` of 344
+  options is a technically-working control that nobody can use."_ With free-text
+  make/model there may be nothing to filter. **Decide at F060**: drop it, or
+  keep it for city / colour pick-lists and the suggest-existing-values control.
+- `VEHICLE_WIZARD_STEPS.basics.fields` changes from
+  `['makeId','modelId','variantId', …]` to `['make','model','variant', …]`.
+- **The reconstruction is no longer byte-identical to `f05acdc`.** The
+  verification gate in `git-strategy.md` §5 changes from _"the diff must be
+  empty"_ to _"the diff must contain only the sanctioned D1 divergence"_.
+
+## D2 — Much finer feature granularity
+
+27 features became **97**. The driver was that several of the original features
+were three or four PRs wearing one hat. Dealer onboarding is the clearest case:
+
+```text
+BEFORE                              AFTER
+F006 Dealer onboarding &            F036 Dealer entity & tenant isolation
+     document verification          F037 Onboarding shell & step routing
+     (one ~1,200-line PR)           F038 Onboarding — account step
+                                    F039 Onboarding — business details step
+                                    F040 Dealer document model & types
+                                    F041 Onboarding — document upload step
+                                    F042 Onboarding — review & submit step
+                                    F043 Onboarding completeness tracking
+                                    F044 Admin document verification
+                                    F045 Dealer approval, rejection & suspension
+```
+
+The same split was applied throughout: auth became 7 features, media 4, billing
+5, vehicle intake 9, the public marketplace 15.
+
+**Where a feature is still coarse, it says so** and names the seam it could be
+cut along. Two features are deliberately _not_ split — F070 and F072 — because
+splitting them produces multiple PRs fighting over one file for no reviewer
+benefit. Both are flagged in place.
+
+## D3 — CI/CD moves to Tier 3, immediately after the first dealer-facing feature
+
+**Before:** F027, last tier. **After:** F021–F025, immediately after **F018 —
+Dealer sign-in with Google OAuth**.
+
+**Why F018 is the right anchor.** A pipeline that builds an empty skeleton
+proves nothing — it cannot exercise a migration, a real Postgres, an OAuth
+round trip, or a page that renders. F018 is the first commit at which a person
+can open a browser, click a button and be signed in: route + API + database +
+session + UI. That is the first thing CI can meaningfully assert about, and
+every feature after it is protected from the moment it is written.
+
+**Why not earlier.** Putting CI in the init commit means every subsequent PR
+inherits a pipeline nobody has watched go green against real work.
+
+**Split within the tier.** CI and CD are separated, because they earn their
+place at different moments:
+
+- **F021 Docker images** and **F022 CI pipeline** — needed immediately; these
+  are what "CI/CD comes next" means in practice.
+- **F023 Security scanning** — cheap, and cheapest to add before there is much
+  code to scan.
+- **F024 Release & promotion** and **F025 Deployment infrastructure** — still in
+  Tier 3, so a deployable path exists early, but they are the last two and can
+  slip a tier without blocking anything if the AWS account is not ready.
+
+## D4 — The image pipeline moves behind dealer onboarding
+
+**Before:** F034 and F035 sat in Tier 5, immediately after F033, so the whole
+media tier completed before a dealer could be onboarded. **After:** Tier 5 ends
+at F033, and F034/F035 land at the head of Tier 9, immediately before F055.
+
+**Why.** F033 is the presign → commit pipeline and has no UI. Its _first_
+consumer is **F041 — onboarding's KYC document upload step**, so F032 and F033
+are prerequisites _of_ onboarding and must stay ahead of it. F034 and F035 are
+not: derivatives at 320/640/1024/1600 and the position-0-is-primary rule exist
+to serve vehicle galleries. A KYC document is a PDF or a single image that is
+never resized, never reordered and never has a primary. Nothing in Tier 6
+depends on either feature.
+
+Leaving them in place meant two PRs of `sharp` and reordering code standing
+between a signed-in dealer and a dealer who can actually be registered — the
+first end-to-end product capability after F018.
+
+**F-numbers do not change.** F034 and F035 keep their identifiers; only their
+position in the running order moves. Renumbering would invalidate every branch
+name, every `Depends on` line and every cross-reference in this document and in
+`component-map.md`, for no reviewer benefit. Read the tier headings, not the
+numeric sequence, for the order of work.
+
+**Verified against the baseline, not assumed.**
+`legacy/pre-reorg:apps/api/src/modules/dealers/dealers.service.ts` presigns KYC
+documents directly against `StoragePort` — `presignDocument` calls
+`storage.presignPut`, `commitDocument` calls `storage.head`, and the document
+row is written with `mediaId: null`. A dealer document never enters
+`media.service.ts` and never enqueues `media.process`. So the "a committed
+upload stays PENDING until F034" caveat on F033 does not reach onboarding:
+there is no derivative to wait for.
+
+**How strong the F033 → F041 edge really is.** Weaker than the `Depends on`
+line suggests, and worth stating so nobody over-trusts it:
+
+- **F032 is the hard prerequisite.** `dealers.service.ts` takes
+  `storage: StoragePort` and calls `presignPut` / `head` / `delete`. Onboarding
+  cannot upload a document without it. F032 is merged.
+- **`PresignResponse` is a contract-placement dependency.** F041's
+  `presignDocument` is typed `Promise<PresignResponse>`, and F033 introduces
+  that shape as "the first shapes in that module". It landed in F033 because
+  F033 was scheduled first, not because onboarding needs F033's machinery. Move
+  F033 and the type moves with whichever feature lands first.
+- **`PUT /uploads` is not on onboarding's path in the documented setup.**
+  `.env.example` sets `STORAGE_DRIVER=minio`, so the browser PUTs straight to
+  localhost:9000 and never reaches that route. It matters when
+  `STORAGE_DRIVER=local` — the default in the env schema, and what the test
+  suite uses — and not otherwise.
+- **The `vehicle:write` guard on `media.routes.ts` never applies to KYC.**
+  Documents are `document:upload` on `dealers.routes.ts`. Different router,
+  different permission, different service.
+
+None of that changes what D4 moves. It does mean F033 could itself sit after
+Tier 6 if strict "onboarding first" ordering were wanted, with
+`PresignResponse` carried by F041 instead. Left where it is because it is
+already built and reviewed, and because relocating a merged-ready PR to save
+one Zod object is churn without a reviewer benefit.
+
+**Nothing else moves.** F034 still depends on F033, F035 still depends on F034,
+and F062 — vehicle photo upload UI, the feature people usually mean when they
+say "car images" — was always in Tier 9 and stays there.
+
+## D5 — The API reference is written per feature, not at F096
+
+**Decision.** The OpenAPI layer lands now, as **F098**, and every feature that
+mounts a route documents it in the same PR. F096 keeps the Postman collection
+and the generator script.
+
+**Why it could not wait.** F096 sits in Tier 14, behind 96 other features. That
+ordering assumed documentation is a write-up of finished work. It is not: the
+per-module `*.docs.ts` pattern the baseline already uses puts the description of
+an endpoint beside the routes it describes, written by whoever built it, while
+the reasoning is still in their head. Deferring that to Tier 14 means one person
+reconstructing the intent of 73 endpoints from route handlers — which is how a
+reference ends up describing what the code does rather than what it promises.
+
+**What makes it a rule rather than a hope.** `tests/unit/docs/openapi.test.ts`
+walks the assembled Express router and fails in both directions: a mounted route
+with no operation, and an operation with no mounted route. A feature cannot
+merge with an undocumented endpoint, and cannot leave a documented endpoint
+behind when it removes one. The rule is written up in `CLAUDE.md` §4a and in the
+§6 definition of done.
+
+**What F096 keeps.** `docs/postman.ts` (821 lines) and
+`docs/generate-postman.ts` — a different output, a different consumer, and no
+per-feature obligation. It is renamed to reflect that.
+
+**Cost per feature.** An `OperationSpec` is a summary, a description, the
+`audience` and the response list. Response schemas are generated from
+`packages/contracts`, so nothing is transcribed by hand. Roughly fifteen lines
+for an endpoint, written once, by the person who knows the answer.
+
+## D6 — The `cities` table is removed, and a name is unique per city
+
+**Decision.** A dealership's `city` and `state` are free text it types, not a
+foreign key into a reference table. `City`, the `locations` module and
+`GET /v1/cities` are removed. A registered name is unique **within a city**
+rather than globally.
+
+**This overturns half of D1.** D1 kept `City` on the reasoning that cities are
+not vehicle-catalogue data — they drive the header selector, the directory,
+search filters and dealer profiles. That reasoning described what the table was
+_read_ for and missed what it _decided_: it held five towns in one state, and a
+dealership could only exist in one of them. The first onboarding flow made that
+concrete. A dealer in Salem cannot finish the form; a dealer in Bengaluru cannot
+be described by it at all, because `state` is whatever the row says. A table
+that gates who may sign up is catalogue data whatever it is read for.
+
+**What that means concretely.**
+
+| Removed                                                           | Kept, relocated, or changed                                                             |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `City` Prisma model and the `cities` table                        | `Dealer.city` and `Dealer.state` as **normalised strings**                              |
+| `Dealer.cityId` and its foreign key                               | data preserved by the migration — existing rows keep their city by name                 |
+| `apps/api/src/modules/locations/**` (5 files) and its unit tests  | —                                                                                       |
+| `GET /v1/cities`, `locationsDocs`, the `Locations` tag            | —                                                                                       |
+| `CitiesResponse` and `CityRef` from contracts                     | —                                                                                       |
+| `CITIES` from `prisma/seed/data.ts`                               | the seed writes an admin and one dealership; there is no reference data left to seed    |
+| the city dropdown and the disabled State box on onboarding step 2 | two required text inputs                                                                |
+| the global unique on `dealers.legalName`                          | `@@unique([legalName, city])`                                                           |
+| `Dealer.lat` / `Dealer.lng` being written                         | the columns stay; nothing writes them, and geocoding a typed address is its own feature |
+
+**Why the uniqueness rule moved with it.** A global unique on `legalName` is
+wrong in a way that only shows up at scale: "Sri Balaji Motors" is a name three
+unrelated families use in three different towns, and the first to sign up locked
+the other two out of the product. Within one city the same name is a duplicate
+application or an impersonation, and a buyer cannot tell which dealership they
+are calling. Both halves of the pair are typed on step 2, so the check is that
+step's submit — a 409 naming `legalName`, from the database rather than from a
+lookup as the dealer types. A pre-submit check is one two applications can race
+past between the answer and the write, and it would hand anyone with a browser
+a way to enumerate which dealerships exist where.
+
+**⚠️ The risk this creates.** It is D1's risk, in a second column: without a
+lookup table, `vellore`, `Vellore` and `VELLORE ` become three facets of one
+city. The answer is the same one D1 reached for and it is already in place —
+**normalisation at write time**, `normaliseLocality` in
+`packages/contracts/src/common.ts`, applied by `auth.service.onboard` and
+`dealers.service.update`. It settles case and whitespace and nothing else: it
+does not correct spelling, expand abbreviations or transliterate, because each
+of those is a judgement about a place name the dealer knows better than we do.
+The suggest-existing-values guard rail D1 asks for at F060 now has a second
+consumer, and should serve city and state as well as make and model.
+
+**Knock-on effects on the plan.**
+
+- **F026 is withdrawn.** Its entry below says so in place.
+- **F039** no longer fetches `/v1/cities` and renders no city picker.
+- **F076** builds its city facets from the localities dealers actually trade
+  in, counted from `listing_search`, rather than from five seeded rows. The
+  header selector it feeds is a filter over real inventory either way.
+- `Combobox` gains back some of the justification D1 took from it: the
+  suggest-existing-values control for city and state is exactly the case it was
+  written for.
+
+---
+
+## D7 — The front end deploys to Vercel; the API stays on AWS
+
+**Decision.** `apps/web` is built and served by Vercel, one project per
+environment. `apps/api` keeps ECS Fargate behind the ALB. The two tiers stop
+sharing an origin.
+
+**Why.** The single-origin ALB layout costs two always-on Fargate tasks per
+environment to serve a Next.js app that Vercel runs better and cheaper, and the
+public marketplace (F050+) wants an edge cache that ECS cannot give it. Nothing
+in the product required one origin — it was how the deployment happened to be
+shaped.
+
+**What it breaks, and the fix.** Exactly one thing. `dd_session` is host-only
+in every environment _by design_: `SESSION_COOKIE_DOMAIN` is empty so that a
+dev session can never be presented to production. The OAuth callback sets that
+cookie on the API's host and 302s to `WEB_BASE_URL`, so across two origins the
+cookie lands somewhere the web app cannot read. The fix is a Next rewrite of
+`/v1/auth/google/*` to the API origin (`apps/web/next.config.ts`): the browser
+sees one origin, the API's `Set-Cookie` carries no `Domain`, and the cookie is
+assigned to the Vercel host. The API is not modified, the host-only cookie
+survives, and no `NEXT_PUBLIC_*` is introduced.
+
+The alternative — a parent-domain cookie — was rejected: it reverses the
+isolation the empty `SESSION_COOKIE_DOMAIN` exists to provide.
+
+**What it costs.** Build-once-promote-many no longer holds for the web tier.
+Vercel binds a deployment's environment variables at build time, so a dev build
+promoted to production would still call the dev API; production is therefore
+built from the promoted commit rather than moved as an artifact. This is a
+smaller loss than it sounds: the rule existed so that nothing
+environment-specific was baked in, and that is enforced at the source instead —
+Rule 9 bans `NEXT_PUBLIC_*`, `apps/web/src/lib/config.ts` reads every
+environment value from `process.env` on the server, and every data route is
+`force-dynamic`. The guarantee weakens from _same bytes_ to _same commit_, and
+`promote.yml` gained a preflight check that both tiers on dev are serving that
+one commit.
+
+**What still has to happen** (not in the PR that recorded this):
+
+- **Per-IP rate limits collapse to one bucket.** Once the browser never reaches
+  the API directly, every request arrives from Vercel's egress. The reveal and
+  enquiry limiters protect dealer phone numbers and cost real SMS money
+  (invariant 10). `apps/web/src/lib/api.ts` already reserves a `headers` option
+  for forwarding the buyer's IP and nothing uses it. **This blocks F088–F092**,
+  and `app.set('trust proxy', 1)` needs revisiting for the extra hop.
+- **The web tier comes out of `deploy/terraform`** — service, task definition,
+  target group, autoscaling, log group, task role, alarm, and the `web_*`
+  variables — along with `apps/web/Dockerfile` and the ALB's web default action.
+- **Environment values change**: the API's `WEB_ORIGIN`/`WEB_BASE_URL` become
+  the Vercel domain, `API_BASE_URL` and `MEDIA_BASE_URL` the API host, and
+  `GOOGLE_CALLBACK_URL` the web origin's `/v1/auth/google/callback` — which
+  must also be registered in the Google Cloud console.
+- **Preview deployments cannot sign in.** Google requires exact redirect URIs
+  and preview URLs are per-deployment, so previews are public-browsing only and
+  signed-in testing happens on the dev environment.
+- **The API origin becomes directly reachable.** It authenticates every route
+  itself, so this is not a hole, but it is a new public surface worth a WAF
+  rule.
+
+**Managing the two environments.** Each is its own Vercel project with its own
+domain and its own environment variables — total isolation, and no dependency
+on custom environments. `VERCEL_PROJECT_ID` is a GitHub _environment_ secret,
+so a dev deploy structurally cannot reach the production project. Vercel's git
+integration is disabled (`apps/web/vercel.json`); if it were on, a merge would
+ship the front end straight to production, past the `production` environment's
+required reviewers and before migrations had run. Both tiers deploy from the
+one gated job in `_deploy.yml` — a separately-gated web deploy is a second door
+into production. Web rollback is `vercel rollback`, which needs no rebuild; API
+rollback is `promote.yml` with an older SHA.
+
+---
+
+# Feature index
+
+| ID   | Feature                                                 | Layer      | Conf.      |
+| ---- | ------------------------------------------------------- | ---------- | ---------- |
+|      | **TIER 1 — Platform foundations**                       |            |            |
+| F001 | Contracts package foundation                            | Package    | HIGH       |
+| F002 | API server bootstrap & mount table                      | API        | HIGH       |
+| F003 | Error taxonomy & validation middleware                  | API        | HIGH       |
+| F004 | Request context, logging & lifecycle                    | API        | HIGH       |
+| F005 | Database connection & migration harness                 | API        | HIGH       |
+| F006 | Health & readiness probes                               | Full-stack | HIGH       |
+| F007 | Design tokens & base stylesheet                         | Web        | HIGH       |
+| F008 | Web app shell & core libs                               | Web        | HIGH       |
+| F009 | UI primitives — action & identity                       | Web        | HIGH       |
+| F010 | UI primitives — status & feedback                       | Web        | HIGH       |
+| F011 | UI primitives — structure                               | Web        | HIGH       |
+| F012 | UI primitives — states                                  | Web        | HIGH       |
+| F013 | Form primitives                                         | Web        | HIGH       |
+|      | **TIER 2 — Identity & the first dealer-facing surface** |            |            |
+| F014 | User & session data model                               | API        | HIGH       |
+| F015 | Session service & cookies                               | API        | HIGH       |
+| F016 | Auth guards & authorization model                       | API        | HIGH       |
+| F017 | Auth shell UI                                           | Web        | HIGH       |
+| F018 | **Dealer sign-in with Google OAuth**                    | Full-stack | HIGH       |
+| F019 | Admin sign-in (Google + allow-list)                     | Full-stack | HIGH       |
+| F020 | Sign-out & session revocation                           | Full-stack | HIGH       |
+|      | **TIER 3 — CI/CD**                                      |            |            |
+| F021 | Docker images                                           | Infra      | HIGH       |
+| F022 | CI pipeline                                             | Infra      | HIGH       |
+| F023 | Security scanning & dependency automation               | Infra      | HIGH       |
+| F024 | Release & image promotion                               | Infra      | HIGH       |
+| F025 | Deployment infrastructure                               | Infra      | HIGH       |
+|      | **TIER 4 — Platform services**                          |            |            |
+| F026 | City & location reference data ⛔ withdrawn (D6)        | Full-stack | HIGH       |
+| F027 | Rate limiting                                           | API        | HIGH       |
+| F028 | Caching layer                                           | API        | HIGH       |
+| F029 | Platform config & feature flags                         | Full-stack | HIGH       |
+| F030 | Audit log                                               | API        | HIGH       |
+| F031 | Events, outbox & background jobs                        | API        | HIGH       |
+|      | **TIER 5 — Storage & media**                            |            |            |
+| F032 | Storage port & adapters                                 | API        | HIGH       |
+| F033 | Presigned upload & commit                               | Full-stack | HIGH       |
+| F098 | API reference — OpenAPI & Swagger UI · _added, D5_      | API        | HIGH       |
+|      | **TIER 6 — Dealer onboarding**                          |            |            |
+| F036 | Dealer entity & tenant isolation                        | API        | HIGH       |
+| F037 | Onboarding shell & step routing                         | Web        | HIGH       |
+| F038 | Onboarding — account step                               | Full-stack | HIGH       |
+| F039 | Onboarding — business details step                      | Full-stack | HIGH       |
+| F040 | Dealer document model & types                           | API        | HIGH       |
+| F041 | Onboarding — document upload step                       | Full-stack | HIGH       |
+| F042 | Onboarding — review & submit step                       | Full-stack | HIGH       |
+| F043 | Onboarding completeness tracking                        | Full-stack | MEDIUM     |
+| F044 | Admin document verification                             | Full-stack | HIGH       |
+| F045 | Dealer approval, rejection & suspension                 | Full-stack | HIGH       |
+|      | **TIER 7 — Consoles**                                   |            |            |
+| F046 | Dealer profile management                               | Full-stack | HIGH       |
+| F047 | Dealer console shell & navigation                       | Web        | HIGH       |
+| F048 | Dealer dashboard                                        | Full-stack | HIGH       |
+| F049 | Admin console shell & navigation                        | Web        | HIGH       |
+|      | **TIER 8 — Billing & credits**                          |            |            |
+| F050 | Credit ledger & balance                                 | API        | HIGH       |
+| F051 | Credit packs & purchase orders                          | Full-stack | HIGH       |
+| F052 | Payment verification                                    | API        | MEDIUM     |
+| F053 | Invoices & PDF delivery                                 | Full-stack | HIGH       |
+| F054 | Admin credit grants & payments view                     | Full-stack | HIGH       |
+|      | **TIER 9 — Vehicle intake**                             |            |            |
+| F034 | Image derivative pipeline · _moved, D4_                 | API        | HIGH       |
+| F035 | Media ordering & primary photo · _moved, D4_            | Full-stack | HIGH       |
+| F055 | Vehicle data model                                      | API        | HIGH       |
+| F056 | Plate input & normalisation                             | Full-stack | HIGH       |
+| F057 | RC lookup port, mock adapter & caching                  | API        | HIGH       |
+| F058 | Attestr RC adapter                                      | API        | HIGH       |
+| F059 | RC lookup UI & registration step                        | Full-stack | HIGH       |
+| F060 | Vehicle basics — RC-prefilled or manual                 | Full-stack | **MEDIUM** |
+| F061 | Vehicle details                                         | Full-stack | HIGH       |
+| F062 | Vehicle photo upload UI                                 | Web        | HIGH       |
+| F063 | Vehicle wizard shell & step routing                     | Full-stack | MEDIUM     |
+|      | **TIER 10 — Listing lifecycle**                         |            |            |
+| F064 | Listing model & state machine                           | API        | HIGH       |
+| F065 | Listing submission & resubmission                       | Full-stack | HIGH       |
+| F066 | Dealer inventory list                                   | Full-stack | HIGH       |
+| F067 | Mark sold, remove & renew                               | Full-stack | HIGH       |
+| F068 | Vehicle history report                                  | Full-stack | HIGH       |
+|      | **TIER 11 — Moderation**                                |            |            |
+| F069 | Moderation queue                                        | Full-stack | HIGH       |
+| F070 | Listing review & decisions                              | Full-stack | MEDIUM     |
+| F071 | Listing takedown                                        | Full-stack | HIGH       |
+| F072 | Admin platform config editor                            | Full-stack | HIGH       |
+|      | **TIER 12 — Public marketplace**                        |            |            |
+| F073 | Public shell — header & footer                          | Web        | HIGH       |
+| F074 | City selector                                           | Web        | HIGH       |
+| F075 | Vehicle card                                            | Web        | HIGH       |
+| F076 | Search API & facets                                     | API        | **MEDIUM** |
+| F077 | Search results page                                     | Full-stack | HIGH       |
+| F078 | Filter panel                                            | Web        | HIGH       |
+| F079 | Mobile filter sheet                                     | Web        | HIGH       |
+| F080 | Search toolbar & sort                                   | Web        | HIGH       |
+| F081 | Homepage & hero search                                  | Full-stack | HIGH       |
+| F082 | Vehicle detail page                                     | Full-stack | HIGH       |
+| F083 | Vehicle gallery & lightbox                              | Web        | HIGH       |
+| F084 | Similar vehicles                                        | Full-stack | HIGH       |
+| F085 | Dealer directory                                        | Full-stack | HIGH       |
+| F086 | Dealer portfolio                                        | Full-stack | MEDIUM     |
+| F087 | Saved cars                                              | Full-stack | HIGH       |
+|      | **TIER 13 — Enquiries**                                 |            |            |
+| F088 | Enquiry model & submission API                          | Full-stack | HIGH       |
+| F089 | Public enquiry form                                     | Web        | HIGH       |
+| F090 | Contact reveal                                          | Full-stack | HIGH       |
+| F091 | Dealer enquiry inbox                                    | Full-stack | HIGH       |
+| F092 | SMS notifications                                       | API        | HIGH       |
+|      | **TIER 14 — Surface polish**                            |            |            |
+| F093 | Error boundaries & error pages                          | Web        | HIGH       |
+| F094 | Loading & not-found states                              | Web        | HIGH       |
+| F095 | SEO & metadata                                          | Web        | HIGH       |
+| F096 | Postman collection · _reduced, D5_                      | API        | HIGH       |
+| F097 | Seed data & developer bootstrap                         | API        | HIGH       |
+
+---
+
+# TIER 1 — Platform foundations
+
+No user-visible surface. Everything here is a prerequisite for the first
+dealer-facing feature and can be built in parallel.
+
+### F001 — Contracts package foundation
+
+The shared Zod vocabulary: the barrel, primitive schemas and enums. One place a request/response shape is defined; browser and server validate against the same schema.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** —
+- **Backend/Frontend** consumed by both, owned by neither
+- **Files** `packages/contracts/src/{index,common,enums}.ts`, `tsconfig*.json`, `vitest.config.ts`
+- **DB** none — enums mirror Prisma enums by hand
+- **External** `zod@4`
+- **Tests** `packages/contracts/tests/unit/{common,enums}.test.ts`
+- ⚠️ **`tests/unit/index.test.ts` cannot land here.** It walks every export in
+  the barrel and asserts package-wide invariants across all six modules — that
+  more than 40 object schemas exist, that more than 15 input schemas exist,
+  that every one is `.strict()`, that no dealer-facing schema declares
+  `dealerId`. Those assertions are meaningless against two modules and would
+  have to be watered down to pass. It lands with the feature that adds the
+  **last** contracts module (`admin.ts`), where it can assert the whole surface
+  — which is what it is for.
+- **Components** none
+- **Sandbox** none — but this package is the **type source for every sandbox fixture** (`component-sandbox.md` §8)
+
+### F002 — API server bootstrap & mount table
+
+Express 5 app, env parsing, the DI container skeleton, and `routes.ts` — the single mount point that documents the whole authorization model.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F001
+- **Backend** `src/{index,server,routes,container}.ts`, `src/config/env.ts`, `src/types/express.d.ts`
+- **API** mount points only; no routes yet
+- **External** `express@5`, `helmet`, `cors`, `cookie-parser`, `dotenv`
+- **Tests** `tests/unit/{server,routes,container}.test.ts`, `tests/unit/config/env.test.ts`
+- **Components** none · **Sandbox** none
+- ⚠️ `routes.ts` and `container.ts` are touched by **every** API feature after this. See the shared-file risk register.
+
+### F003 — Error taxonomy & validation middleware
+
+The error class hierarchy and the four middleware that turn a thrown error into an HTTP response.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F002, **F004**
+- ⚠️ **Ordering corrected: F004 must land first.** `middleware/error-handler.ts`
+  imports `platform/telemetry/logger.ts` and `middleware/request-context.ts`,
+  both of which F004 owns, while nothing in F004 imports anything of F003's.
+  The dependency runs F003 → F004, not the other way round. The F-numbers are
+  kept as they are — renumbering would invalidate every cross-reference in
+  these documents — so F004 simply merges before F003.
+- **Backend** `src/platform/errors.ts`, `src/middleware/{error-handler,not-found,validate}.ts`
+- **Tests** `tests/errors.test.ts`, `tests/unit/platform/errors.test.ts`, `tests/unit/middleware/{error-handler,not-found,validate}.test.ts`
+- **Components** none · **Sandbox** none
+
+### F004 — Request context, logging & lifecycle
+
+Per-request context, structured pino logging with redaction, and graceful shutdown draining.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F002
+- ⚠️ **Lands before F003**, which depends on this feature's logger and request
+  context. See the note on F003.
+- **Backend** `src/middleware/{request-context,request-logger}.ts`, `src/platform/telemetry/{logger,lifecycle}.ts`
+- **External** `pino`, `nanoid`
+- **Tests** `tests/unit/middleware/{request-context,request-logger}.test.ts`, `tests/unit/platform/telemetry/*.test.ts`
+- **Components** none · **Sandbox** none
+
+### F005 — Database connection & migration harness
+
+Prisma client singleton, the tenant transaction wrapper, and a `schema.prisma` carrying only `datasource` + `generator`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F002
+- **Backend** `src/platform/db/{prisma,tenant-tx}.ts`, `prisma/schema.prisma` (datasource + generator only), `prisma.config.ts`
+- **DB** the connection itself; **no models yet** — each feature adds its own
+- **External** `@prisma/client`, `prisma`, Postgres 16
+- **Tests** `tests/unit/platform/db/{prisma,tenant-tx}.test.ts`, `tests/global-setup.ts`
+- ⚠️ **`tests/harness.ts` cannot land here.** It builds the whole app —
+  `buildContainer`, `createApp`, a memory cache (F028) and a session resolver
+  (F015) — so it arrives with the last of those, not with the database. Only
+  `global-setup.ts`, which runs migrations, belongs to F005.
+- **Components** none · **Sandbox** none
+- ⚠️ `schema.prisma` is the **CRITICAL** shared file — ~25 later features append to it.
+
+### F006 — Health & readiness probes
+
+`/health/live` (is the process serving) and `/health/ready` (can it reach its dependencies), plus the web app's own probe. Outside `/v1` on purpose: infrastructure probes it, not clients.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F003, F005
+- **Backend** `src/modules/health/health.routes.ts`
+- ⚠️ **`health.docs.ts` lands at F096**, which brings `docs/schemas.ts` and
+  `docs/spec.ts` that it imports.
+- ⚠️ **`app/api/health/route.ts` lands after F008**, which brings `lib/config`.
+- ✅ **The cache probe in `/health/ready` was restored at F028**, along with
+  `drivers.cache` and the `is 503 when the cache is down` test.
+  `health.routes.ts` is now byte-identical to the baseline.
+- ⚠️ (historical) **The cache probe in `/health/ready` landed at F028.** The baseline probes
+  `container.cache.ping()` and reports `drivers.cache`; the cache is built at
+  F028. The gap is forced by the tier order, not chosen — F021 puts a
+  HEALTHCHECK in both Dockerfiles at Tier 3, so `/health/ready` must answer
+  before the Tier 4 cache exists. F028 must restore the probe, the
+  `drivers.cache` field and the `is 503 when the cache is down` test.
+- **API** `GET /health/live`, `GET /health/ready`, `GET /api/health`
+- **Tests** `tests/unit/modules/health/health.routes.test.ts`, web `tests/unit/app/api/health.test.ts`
+- **Components** none · **Sandbox** none
+- Needed by **F021** — both Dockerfiles' `HEALTHCHECK` calls it.
+
+### F007 — Design tokens & base stylesheet
+
+`globals.css` `@theme` block (colour ramps, semantic colours, type, spacing, radius, shadow, motion) and `@layer base`. **Not** the component layer — that is F009–F013.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** —
+- **Frontend** `src/styles/globals.css` (`@theme` ~80 lines + `@layer base` ~80 lines), `postcss.config.mjs`
+- **External** `tailwindcss@4`, `@tailwindcss/postcss`
+- **Tests** none (visual)
+- **Components** none · **Sandbox** the token sheet itself — a swatch page is **sandbox step S0** and is how the Tailwind v4 `@theme` pipeline is proven to render identically outside Next
+
+### F008 — Web app shell & core libs
+
+Root layout, fonts, and the four pure helpers every feature uses.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F007
+- **Frontend** `app/layout.tsx`, `lib/{cn,config,api}.ts`, `next.config.ts`
+- ⚠️ **`lib/url.ts` lands with the public search contracts.** It imports
+  `SortOption` and `VehicleQuery` from `packages/contracts/src/public.ts`,
+  which is not part of F001. It belongs with F076/F077.
+- Also picks up `app/api/health/route.ts`, deferred from F006 because it
+  imports `lib/config`.
+- **External** `next@15`, `react@19`, `clsx`, `tailwind-merge`
+- **Tests** `tests/unit/lib/{cn,config,api}.test.ts` ✅ (`url.test.ts` follows `url.ts`)
+- **Components** none · **Sandbox** none
+
+### F009 — UI primitives: action & identity
+
+`Button`, `ButtonLink` and `Plate` — plus the `.btn` and `.dd-plate` CSS layers.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F007, F008
+- **Frontend** `components/ui/button.tsx`, part of `components/ui/primitives.tsx`, `globals.css` `.btn*` + `.dd-plate`
+- **Tests** `tests/unit/components/ui/button.test.tsx` ✅ — the only component test in the repo
+- **Components — New (Primitive)** `Button` (5 variants × 5 sizes × block), `ButtonLink`, `Plate` (4 sizes)
+- **Sandbox** `Button` — every variant × size × `loading` × `disabled` × `block`; `ButtonLink`; `Plate` — `year`/`logo`/`chip`/`marker`
+- ⚠️ The reuse rule must be enforced from this PR onward. In the current codebase `<Button>` appears 29 times against **88** raw `className="btn …"` sites — a 75 % bypass rate.
+
+### F010 — UI primitives: status & feedback
+
+`StatusTag`, `Tag`, `Banner` and the `.tag*` CSS layer.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F009
+- **Frontend** `components/ui/primitives.tsx`, `globals.css` `.tag*`
+- **Tests** none
+- **Components — New (Primitive)** `StatusTag` (5 tones), `Tag` (3 variants), `Banner` (3 tones × title? × children? × action?)
+- **Sandbox** `StatusTag` — one scenario per `StatusTone`, **generated from the contracts enum** so a new tone appears as a missing scenario; `Banner` — all 24 combinations
+- ⚠️ `Banner.tone` and `StatusTone` are two different unions. Documented as D-G in `component-map.md`; do not merge here.
+
+### F011 — UI primitives: structure
+
+`Blueprint`, `Corners`, `StatCard`, `ImageSlot`, `Avatar`, `LogoTile`, and the `.blueprint` / `.card` / `.image-slot` CSS.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F009
+- **Frontend** `components/ui/primitives.tsx`, `globals.css`
+- **Tests** none
+- **Components — New (Primitive)** `Blueprint`, `Corners`, `StatCard`, `ImageSlot`, `Avatar`, `LogoTile`
+- **Sandbox** `Blueprint` — **all four registration marks present** is the one defect DESIGN-SPEC §4.4 names; `Avatar`/`LogoTile` at 20/22/42/44 px with 1–3 letter initials; `StatCard` with a long value
+
+### F012 — UI primitives: states
+
+`EmptyState`, `ErrorState`, `SkeletonLines`, `Stepper` — DESIGN-SPEC §2.16 and §2.20.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F011
+- **Frontend** `components/ui/primitives.tsx`, `globals.css` `.skeleton`
+- **Tests** none
+- **Components — New (Primitive)** `EmptyState`, `ErrorState`, `SkeletonLines`, `Stepper`
+- **Sandbox** each with/without action; long message against the `max-w-[46ch]` clamp; `Stepper` at every position **and out of range**, which currently fills every bar
+
+### F013 — Form primitives
+
+`Field`, `errorId`, `invalidProps` and the `.field` / `.input` CSS. The accessibility contract every form in the product inherits.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F009
+- **Frontend** `components/forms/field.tsx`, `globals.css` `.field`, `.input`
+- **Tests** none directly
+- **Components — New (Shared)** `Field`
+- **Sandbox** `Field` — hint? × error? = 4; **plus a new `Input` primitive** (see below)
+- 💡 **Create `Input` here.** `.input` is applied by hand at **70** call sites with no React wrapper (finding D-B). This is the PR to fix that, before 70 sites exist.
+
+---
+
+# TIER 2 — Identity & the first dealer-facing surface
+
+### F014 — User & session data model
+
+`User`, `Session`, `OAuthIdentity` and their enums. Schema and repository only.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F005
+- **Backend** `prisma/schema.prisma` — `User`, `Session`, `OAuthIdentity`; enums `UserStatus`, `SessionScope`, `OAuthProvider`, `AdminRole`
+- **Contracts** `packages/contracts/src/auth.ts`
+- **Migration** `prisma/migrations/<ts>_identity/`
+- ⚠️ **Migrations diverge from the baseline by design.** The baseline has 8
+  migrations, the first of which creates all 27 models at once — unusable for a
+  feature-by-feature reconstruction. Each feature generates its own instead, so
+  the schema is deployable at every commit. The end state of the _database_ is
+  identical; the migration history is not, and is better for it.
+- ⚠️ **`memberships DealerMember[]` on `User` waits for F036**, which adds the
+  `DealerMember` model.
+- **Tests** `tests/tenant-isolation.test.ts` — cannot land here; it needs
+  dealers, vehicles and listings. It belongs with F036.
+- **Components** none · **Sandbox** none
+
+### F015 — Session service & cookies
+
+✅ **Unblocked.** The blocker recorded here — 88.64 % lines against a 90 % gate,
+because the only thing that covers `session.service.ts`,
+`cookie-session.adapter.ts` and `session.cookie.ts` is `tests/auth.test.ts`,
+which needs F018 — was resolved by option 1: F031, F032 and F036 landed first,
+and F015, F016 and F018 then landed **together**, in one PR, because none of
+the three can reach the gate alone. F017 landed ahead of them, on its own.
+
+Measured after: **96.77 % statements · 91.75 % branches · 98.15 % functions ·
+96.88 % lines**, 695 tests.
+
+Session issue/read/revoke, the cookie adapter, the port, and the dev-session escape hatch behind `AUTH_MODE`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F036
+- **Backend** `modules/auth/{session.service,session.port,session.cookie,cookie-session.adapter,dev-session.adapter,password}.ts`
+- **Frontend** `lib/session.ts`
+- **External** `@node-rs/argon2`
+- **Tests** `tests/unit/modules/auth/{session.port,dev-session.adapter,password}.test.ts`, web `tests/unit/lib/session.test.ts` ✅
+- **Components** none · **Sandbox** none
+- **The dependency on F036 was not listed and should have been.**
+  `session.port.ts` types a `DealerPrincipal` around `DealerMember`, so the
+  dealer models have to exist first.
+- `lib/session.ts` is byte-identical but for `currentAdmin`'s return type: the
+  baseline says `AdminOverview`, from `contracts/src/admin.ts`, which arrives
+  with **F049** alongside the route it describes. `unknown` until then — every
+  caller asks only whether there is one.
+
+### F016 — Auth guards & authorization model
+
+`requireSignedIn`, `requireDealer`, `requireAdmin`, `requirePermission` — and the three mount prefixes that make the authorization model readable in one file.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F015
+- **Backend** `src/middleware/auth.ts`, guard wiring in `routes.ts`
+- **API** `/v1/…` public · `/v1/auth/…` mixed · `/v1/dealer/…` · `/v1/admin/…`
+- **Tests** `tests/auth.test.ts`, `tests/auth-harness.ts`, `tests/unit/middleware/auth.test.ts`, and `tests/unit/routes.test.ts` — which the entry did not name and which is the file that actually proves the boundary
+- **Components** none · **Sandbox** none
+- Router order in `routes.ts` **is** the security boundary — the public auth router must be mounted before the guarded one.
+- **`/v1/dealer` and `/v1/admin` are mounted with their guard and no child
+  routers.** That is deliberate, not a gap: the guard runs on any path under
+  the prefix, so the boundary is real and testable from this feature onward,
+  and every router that later goes under it inherits it rather than
+  re-declaring it. A request to `/v1/dealer` is 401 without a dealer session
+  and 404 with one, which is exactly what `auth.test.ts` asserts.
+- ⚠️ **`tests/unit/routes.test.ts` is sliced.** Every guard question is asked in
+  full. Deferred are the `reached` assertions for paths whose routers do not
+  exist — `/v1/dealer/*` (F046), `PUT /uploads` (F033) — and five of the eight
+  public paths, which belong to F029, F076, F085 and F088 (F026 is withdrawn — D6).
+  `GET /v1/catalog/bundle` is dropped permanently: decision D1 removed it.
+
+### F017 — Auth shell UI
+
+The centred auth layout and heading shared by all three sign-in surfaces.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F011, F012
+- **Frontend** `app/(auth)/layout.tsx`, `components/auth/auth-shell.tsx`
+- **Tests** none
+- **Components — New (Shared)** `AuthShell` (`eyebrow?`), `AuthHeading` (`title`, `children?`) · **Reused** `Plate`, `Blueprint`
+- **Sandbox** `AuthShell` default + custom eyebrow; `AuthHeading` with and without subtitle
+
+### F018 — Dealer sign-in with Google OAuth ⭐
+
+**The first dealer-facing feature — the anchor for D3.** OAuth start/callback, state transaction, identity linking, dealer session issued. The first commit where a person can open a browser and be signed in.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F015, F016, F017, F030, F031, F032, F036
+- **Backend** `modules/auth/{google.provider,oauth.port,oauth-transaction,auth.routes,auth.service,auth.facade}.ts`
+- **Frontend** `app/(auth)/dealer/login/page.tsx`, `components/auth/google-button.tsx`, `features/auth/actions.ts`
+- **API** `GET /v1/auth/providers`, `GET /v1/auth/google/start`, `GET /v1/auth/google/callback`, `GET /v1/auth/me`
+- **DB** `OAuthIdentity`, `User`, `Session`
+- **External** **Google OAuth 2.0** — `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`
+- **Tests** `tests/auth.test.ts`, `tests/unit/modules/auth/{google.provider,oauth-transaction,auth.facade}.test.ts`, web `tests/unit/features/auth/actions.test.ts` ✅
+- **Components — New (Shared)** `GoogleSignInButton` · **Reused** `AuthShell`, `AuthHeading`, `Button`, `Banner`, `Plate`
+- **Sandbox** `GoogleSignInButton` — default / disabled / custom label
+- **`auth.docs.ts` is not here.** It imports `ModuleDocs` from `src/docs/spec.ts`,
+  which is **F096** — the whole OpenAPI layer. It lands there with every other
+  module's docs file. The entry listed it; the entry was wrong.
+- **`dealers.service.ts` lands here, sliced to `session()`.** It is the one
+  method `auth.service.ts` calls and the reason `dealers.facade.ts` re-exports
+  `DealersService` at all. The other 550 lines of that file — the profile, the
+  completeness tracker, the KYC document paths, the dashboard — belong to F040,
+  F043, F046 and F048, and each needs a dependency this feature does not have.
+- **A seed lands here too, sliced from F097.** `tests/global-setup.ts` runs
+  `prisma/seed/index.ts`, so the integration suite cannot start without one.
+  What is here is the three things `auth.test.ts` needs — the five cities, the
+  one admin with a password, and one dealership whose owner has _no_ password
+  so that "a dealer account cannot sign in to the admin console" is testable.
+  The baseline's 837-line seed, most of which writes the catalogue D1 removed,
+  stays with **F097**.
+- ⚠️ **`tests/auth.test.ts` is sliced — three cases.** `GET /v1/dealer` → 200
+  after onboarding becomes → 404-past-the-guard until **F046** mounts the
+  router; the same for `GET /v1/admin/metrics/overview` until **F049**; and
+  `describe('tenant isolation survives real sessions')` is deferred whole to
+  **F066**, which brings `/v1/dealer/vehicles`. Everything else runs — 42
+  integration cases against a real Postgres and a fake Google.
+- ⚠️ **`features/auth/actions.ts` is sliced — two actions.**
+  `saveBusinessIdsAction` parses `UpdateDealerInput` and writes `PATCH
+/v1/dealer` (**F039**); `submitForVerificationAction` posts `POST
+/v1/dealer/submit` (**F042**). Their two `describe` blocks in
+  `actions.test.ts` go with them.
+- ⚠️ **Both login pages inline their `noindex`.** The baseline spreads
+  `seoMetadata({ kind: 'private' })` from `lib/seo.ts`, which is **F095**. A
+  sign-in screen has to be `noindex` from the day it exists, so the literal
+  that function resolves to is written out until F095 replaces it.
+
+### F019 — Admin sign-in
+
+Google sign-in for platform staff, on a separate route with a separate session
+scope, restricted to an allow-list of addresses.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F018
+- **Backend** `modules/auth/auth.routes.ts` (admin paths), `admin-allowlist.ts`, `oauth-transaction.ts` (`audience`)
+- **Frontend** `app/(auth)/admin/login/page.tsx`
+- **API** `GET /v1/auth/admin/google/start`, and the admin half of `GET /v1/auth/google/callback`
+- **Tests** the `describe('the admin console')` block of `tests/auth.test.ts`, plus `tests/unit/modules/auth/admin-allowlist.test.ts`
+- **Components — New (feature-specific)** none · **Reused** `AuthShell`, `GoogleSignInButton`, `Banner`
+- **Sandbox** none — the screen is `AuthShell` + `GoogleSignInButton`, both already there
+- Landed in one PR with F015, F016 and F018: `auth.routes.ts` carries the admin
+  paths in the same file as the dealer ones, and `auth.test.ts` covers all four
+  features at once.
+- **Revised after the reconstruction** — password authentication is gone.
+  `POST /v1/auth/admin/login`, `password.ts`, `AdminLoginInput`,
+  `AdminLoginForm` and `@node-rs/argon2` were all removed; the console is now
+  entered through the same Google flow the dealer console uses, and
+  authorization is `ADMIN_ALLOWLIST` rather than a credential. The entry above
+  describes what is in the tree; the baseline's shape is at the tag.
+
+### F020 — Sign-out & session revocation
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F018, F019
+- **Backend** `modules/auth/auth.routes.ts` — logout paths
+- **Frontend** `features/auth/sign-out.tsx`
+- **API** `POST /v1/auth/logout`, `POST /v1/auth/admin/logout`
+- **Tests** the `describe('sessions and sign-out')` block of `tests/auth.test.ts` — revocation is a row, not a cookie, and only an integration test can say so
+- **Components — New (feature-specific)** `SignOutButton` (`scope: 'dealer'|'admin'`)
+- **Sandbox** `SignOutButton` — both scopes
+- Landed in the same PR, for the same reason as F019.
+
+---
+
+# TIER 3 — CI/CD
+
+**Placed here by decision D3**, immediately after F018. From this point every
+feature lands behind a green pipeline.
+
+### F021 — Docker images
+
+Multi-stage, workspace-aware builds for both apps. The build needs nothing running — no API, no database, no network beyond the registry.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F006, F018
+- **Files** `apps/api/Dockerfile`, `apps/web/Dockerfile`, `.dockerignore`
+- **External** Docker, `node:24-alpine`
+- **Tests** the `docker` CI job builds both from a clean context
+- **Components** none · **Sandbox** none
+- The runner stage uses `pnpm install --frozen-lockfile --prod`, so devDependencies never ship — which is why the sandbox can never reach production.
+- ✅ **Verified at F021.** Both images build from a clean context with
+  `apps/sandbox` present in the workspace and absent from the Dockerfiles'
+  partial manifest copies — `--frozen-lockfile` tolerates it. Each image
+  contains only its own app and no Storybook. That was the open risk in
+  `component-sandbox.md` §11 and `git-strategy.md` §4; it is closed.
+
+### F022 — CI pipeline
+
+`lint · typecheck · test · build` in one job against a real Postgres 16 service. Runs on every PR to `main`, and nowhere else. A fork PR must be able to run it in full holding no credential.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F021
+- **Files** `.github/workflows/ci.yml`
+- **External** GitHub Actions, `postgres:16-alpine`
+- **Components** none · **Sandbox** none
+- ⚠️ **The `push: main` trigger was removed at D7**, along with two jobs.
+  Branch protection is `strict: true`, so the merged tree is the tested tree
+  and the second run proved nothing. It did cover one gap — `enforce_admins`
+  is `false`, so an admin push to `main` is now unverified and `release.yml`
+  deploys it anyway. Turn `enforce_admins` on.
+- ⚠️ **The `docker` and `sandbox` jobs were removed at D7.** The sandbox job
+  was added here at F022 and typechecked the stories — the only place that
+  happened, since the sandbox sits outside `turbo run typecheck` and
+  `turbo run build`. Dropping it means a prop rename that breaks a story is
+  now found by running `pnpm sandbox`, not by CI. The `docker` job went
+  because the web image no longer exists and `release.yml` builds the API
+  image from the same commit minutes later.
+- ⚠️ **The `terraform fmt / validate` job is deferred to F025**, which brings
+  the `deploy/terraform` directory it works in. A job pointing at a missing
+  directory fails on every PR.
+- ⚠️ CI _running_ is not CI _blocking_. Branch protection with required status checks is a repository setting and must be enabled separately — see `git-strategy.md` §1.
+
+### F023 — Security scanning & dependency automation
+
+Secret scanning, SAST and automated dependency PRs.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F022
+- **Files** `.github/workflows/security.yml`, `.github/dependabot.yml`, `.gitleaks.toml`, `.semgrepignore`
+- **Components** none · **Sandbox** none
+- There are currently **11 open Dependabot branches**. Triage them before reconstruction starts (`git-strategy.md` §1).
+
+### F024 — Release & image promotion
+
+Build-once-promote-many: an image is built on `main`, tagged with `GIT_SHA`, and promoted between environments without rebuilding. Nothing environment-specific is baked in.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F021, F022
+- **Files** `.github/workflows/{release,promote,_deploy}.yml`, `deploy/release.sh`, `scripts/smoke.sh`
+- **Components** none · **Sandbox** none
+- ⚠️ **`scripts/smoke.sh` was missing.** `_deploy.yml` has called it since
+  F024 and the file was never brought across from the baseline, so the last
+  step of every deploy would have failed. Written at D7, and it now takes an
+  empty API base URL for the period when only the web tier is deployed.
+- ⚠️ **Reshaped by D7.** Two images, not three; the web tier deploys to Vercel
+  from the same commit; `promote.yml`'s preflight checks that both tiers on
+  dev are serving one commit before asking for an approval. Build-once-promote
+  -many still holds for the API and weakens to _build-per-environment, one
+  commit_ for the web app — see the D7 entry.
+
+### F025 — Deployment infrastructure
+
+Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and systemd alternative path.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F024
+- **Files** `deploy/terraform/**`, `deploy/aws/**`, `deploy/nginx/dealers-drive.conf`, `deploy/systemd/*.service`, `deploy/bootstrap.sh`, `deploy/README.md`
+- ⚠️ **`docs/DEPLOYMENT.md` does not come back.** Only `docs/project`,
+  `docs/screens` and `docs/Dealers-Drive-UI` survive in this repository; the
+  deployment narrative lives in `deploy/README.md`, which does come across.
+  The original stays readable at the baseline.
+- ✅ **Restores the `terraform fmt / validate` CI job** deferred at F022.
+  `ci.yml` is now the baseline plus only the added `sandbox` job.
+- ⚠️ **The baseline's Terraform is not `terraform fmt` clean.** `outputs.tf` and
+  `envs/production.tfvars` fail `fmt -check` on the files as committed, so the
+  baseline's own CI job would have failed the same way. Two whitespace-only
+  hunks were applied at F025 to make the gate pass. `terraform validate`
+  passes on the baseline files unchanged.
+- **Tests** the `terraform` CI job (fmt + validate)
+- **Components** none · **Sandbox** none
+- The **last** item that can slip a tier without blocking anything, if the AWS account is not ready.
+
+---
+
+# TIER 4 — Platform services
+
+### F026 — City & location reference data ⛔ WITHDRAWN
+
+⛔ **Withdrawn by decision D6.** It landed, and then it was removed again: the
+`cities` table, the `locations` module, `GET /v1/cities`, `CitiesResponse` and
+the five seeded rows are all gone. A dealership's city and state are free text
+it types.
+
+**Why, briefly.** D1 kept `City` on the reasoning that cities are not
+vehicle-catalogue data — they drive the header selector, the directory, search
+filters and dealer profiles. That describes what the table was read for and
+misses what it decided: five towns in one state, so a dealer in Salem could not
+finish onboarding and one in Bengaluru could not be described at all. D6 above
+has the full entry.
+
+**What became of each piece.**
+
+- **`City` model, `Dealer.cityId`** → `Dealer.city` and `Dealer.state`, text,
+  normalised on write by `normaliseLocality` in the contracts package. The
+  migration preserves existing rows' cities by name.
+- **`modules/locations/**` and its three unit-test files** → deleted, with the
+  `MODULES`/`TAG_ORDER` entries and the `/v1/cities` route assertions in
+  `tests/unit/routes.test.ts`.
+- **`CitiesResponse`, `CityRef`** → deleted from contracts.
+- **`CityCountsPort` / `emptyIndex`** → deleted. The concern was real and
+  survives without them: **F076** builds city facets from the localities
+  dealers actually trade in, counted from `listing_search`, which is a better
+  list than five seeded rows and needs no port to stand in for it.
+- **`packages/contracts/tests/unit/index.test.ts`, sliced** → _this part
+  stayed._ It has nothing to do with cities; it landed here because F001
+  deferred it, and it holds where it is. The coverage argument in the original
+  entry is unchanged.
+- **`Rto` still does not come across**, for the reason the original entry gave:
+  `rtoCode` is derived from the plate and needs no table.
+- **The sandbox line still belongs to F074.** `CitySelector` is a filter over
+  real inventory; what it filters on is now what dealers typed rather than what
+  was seeded, which changes its data source and not its behaviour.
+
+### F027 — Rate limiting
+
+⚠️ **Pulled forward with F028, ahead of Tier 2** — `auth.routes.ts` (F018)
+takes a `RateLimiter`. `tests/rate-limit.test.ts` is an integration test that
+drives `harness.ts` against vehicle routes; it lands with those, not here.
+Only `tests/unit/middleware/rate-limit.test.ts` belongs to F027.
+
+IP-limited public reads, and per-principal limits on the metered paths. Phone reveals cost an SMS each, so the limiter is a cost control, not just abuse defence.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F003, F028
+- **Backend** `src/middleware/rate-limit.ts`, `lib/client-ip.ts` (web)
+- **Tests** `tests/rate-limit.test.ts`, `tests/unit/middleware/rate-limit.test.ts`, web `tests/unit/lib/client-ip.test.ts` ✅
+- **Components** none · **Sandbox** rate-limited **states** appear in `EnquiryForm` (F089) and `RevealContactButton` (F090)
+
+### F028 — Caching layer
+
+⚠️ **Pulled forward, ahead of Tier 2.** `modules/auth/auth.routes.ts` (F018)
+takes a `RateLimiter`, which is built on `CachePort`. The Tier 2 auth stack
+cannot compile — let alone be covered by `tests/auth.test.ts` — until this
+feature and F027 exist. Discovered while implementing F015: F015 and F016
+together reach only 86.84 % line coverage because the code that covers them is
+the integration suite, which needs F018, which needs this. See the note on
+F015.
+
+A cache port with in-memory and Postgres adapters, plus counters and version keys.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F005
+- **Backend** `src/platform/cache/{cache.port,factory,memory.adapter,postgres.adapter}.ts`
+- **DB** `CacheCounter`, `CacheVersion`
+- **Tests** `tests/cache.test.ts`, `tests/unit/platform/cache/*.test.ts` (4 files)
+- **Components** none · **Sandbox** none
+
+### F029 — Platform config & feature flags
+
+Runtime-editable settings and `feature.*` flags, version-polled so a flip propagates without a redeploy. Every flag must be safe in both positions at all times.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F028
+- **Backend** `src/platform/config/platform-config.ts`, and `modules/config/{config.service,config.routes,config.facade}.ts` — the D1 relocation below
+- **Frontend** `lib/config.ts`
+- **API** `GET /v1/config/public` _(relocated here from the deleted catalog module — D1)_
+- **DB** `PlatformConfig`, `CacheVersion`
+- **Contracts** `packages/contracts/src/public.ts` — `PublicConfig`, the first shape in that module
+- **Tests** `tests/unit/platform/config/platform-config.test.ts`, `tests/unit/modules/config/{config.service,config.routes}.test.ts`, web `tests/unit/lib/config.test.ts` ✅
+- **Components** none · **Sandbox** none — the admin editor UI is **F072**
+- **The relocation needed an address, and the entry did not give it one.**
+  `publicConfig()` and its route live on `catalog.service.ts` and
+  `catalog.routes.ts` in the baseline, both deleted by D1. They move to a small
+  `modules/config/`, body unchanged: the payload reads `PlatformConfig` and
+  `env` and touches no catalogue table, so it never belonged there.
+- **`lib/config.ts` and its test already landed with F008** and are unchanged
+  by this feature. The entry lists them because F029 owns them; nothing here
+  needed to move.
+- `platform-config.ts` is byte-identical to the baseline. It is the file the
+  version-poll design lives in — `CONFIG_VERSION_POLL_MS` against the
+  `CachePort`, inside a 5-minute TTL — and both failure paths are deliberately
+  fail-open, so a cache blip degrades to the TTL rather than to a table scan
+  per read.
+- ⚠️ **`packages/contracts/src/public.ts` starts here, sliced.** The baseline
+  file is ~700 lines describing the whole public surface. Each shape arrives
+  with the feature that first answers with it; `PublicConfig` is the first.
+
+### F030 — Audit log
+
+⚠️ **Pulled forward with F027 and F028, ahead of Tier 2** — `auth.service.ts`
+(F018) takes an `AuditService`, and every sign-in and sign-out is recorded.
+
+Append-only record of every privileged action. Required by F044, F045, F070, F071, F072.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F005
+- **Backend** `src/platform/audit/audit.service.ts`
+- **DB** `AuditLog`
+- **Tests** `tests/unit/platform/audit/audit.service.test.ts`
+- **Components** none · **Sandbox** none
+
+### F031 — Events, outbox & background jobs
+
+⚠️ **Pulled forward, ahead of Tier 2** — `dealers.service.ts` (F036/F040)
+calls `enqueueOutbox`, and F018's `auth.service.ts` needs `DealersService`.
+This is the first of the four features the F015 blocker note names.
+
+Transactional outbox, an event bus, and the pg-boss queue.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F005
+- **Backend** `src/platform/events/{bus,outbox-publisher}.ts`, `src/platform/jobs/queue.ts`
+- **DB** `OutboxEvent`
+- **External** `pg-boss`
+- **Tests** `tests/unit/platform/events/*.test.ts`, `tests/unit/platform/jobs/queue.test.ts`
+- **Components** none · **Sandbox** none
+- ⚠️ **`jobs/handlers.ts` does not land here, and the entry was wrong to say it
+  did.** Its `HandlerDeps` names `SearchRepository`, `MediaService`,
+  `MailerPort`, `SmsPort` and `VehiclesRepository` by direct import: the file
+  cannot compile until F033, F076, F092 and F055 exist, and every one of its
+  subscribers belongs to a feature further down the list. It arrives with the
+  last of them, carrying `registerSchedules` and
+  `tests/unit/platform/jobs/handlers.test.ts` with it. `queue.ts`,
+  `bus.ts` and `outbox-publisher.ts` have no such dependency and are complete
+  here.
+- The pg-boss branch of `createQueue()` is exercised by nothing in the unit
+  suite — `JOBS_ENABLED=false` under test, by design, so the queue a test sees
+  is always `createInlineQueue()`. That is the baseline's arrangement, not a
+  gap this feature introduced.
+
+---
+
+# TIER 5 — Storage & media
+
+**The tier ends at F033** (decision D4). F032 and F033 are prerequisites of
+dealer onboarding — F041 presigns KYC documents through them — so they stay
+here. F034 and F035 serve vehicle galleries and have moved to the head of
+Tier 9.
+
+### F032 — Storage port & adapters
+
+⚠️ **Pulled forward, ahead of Tier 2** — `dealers.service.ts` (F036/F040)
+takes a `StoragePort` for the KYC document paths. The second of the four
+features the F015 blocker note names.
+
+One narrow port; a local filesystem adapter for development and an S3/R2 adapter for everything else.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F002
+- **Backend** `src/platform/storage/{storage.port,factory,local.adapter,s3.adapter}.ts`, `scripts/verify-s3.ts`
+- **External** `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, MinIO locally
+- **Tests** `tests/unit/platform/storage/*.test.ts` (3 files)
+- **Components** none · **Sandbox** none
+- `PUT /uploads` is **not** here. The local adapter presigns a URL that points
+  at it, but the router that serves it is `createStorageRouter` in
+  `modules/media/media.routes.ts` — **F033**. Until that lands, a presigned
+  local URL is well-formed and unroutable, which is exactly what the three unit
+  tests here assert.
+- `ensureBucket()` runs from `startBackground` for every driver but `local`, so
+  a fresh MinIO volume is discovered at boot rather than by the first upload.
+
+### F033 — Presigned upload & commit
+
+Presign → client uploads directly → commit. Bytes never pass through the API.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F031, F032, F016
+- **Backend** `modules/media/{media.routes,media.service,media.facade}.ts`, `src/platform/media/urls.ts`
+- **Frontend** `app/api/dealer/media/presign/route.ts`, `app/api/dealer/media/[id]/route.ts`
+- **API** `POST /v1/dealer/media/presign`, `POST /v1/dealer/media/:id/commit`, `GET|DELETE /v1/dealer/media/:id`, `PUT /uploads`
+- **DB** `Media`; enums `MediaOwner`, `MediaStatus`
+- **Contracts** `packages/contracts/src/dealer.ts` — the C14 block plus `PresignResponse` and `VehicleMediaDto`; the first shapes in that module
+- **Tests** `tests/unit/modules/media/*.test.ts` (3), `tests/unit/platform/media/urls.test.ts`
+- **Components** none yet — the uploader UIs are **F041** and **F062**
+- **Sandbox** none directly; provides the MSW handlers those two features' scenarios need
+- **The entry understated the dependencies.** `media.service.ts` takes a
+  `Queue` (**F031**) as well as a `StoragePort`, and every route is
+  `requirePermission`-guarded (**F016**).
+- **`media.docs.ts` is not here.** It imports `ModuleDocs` from
+  `src/docs/spec.ts` — **F096**, the whole OpenAPI layer — and lands there with
+  every other module's docs file.
+- **`PUT /uploads` closes a restore-ledger row.** F032 landed the adapter that
+  presigns against it; `createStorageRouter` is what serves it, and it is
+  complete here — the HMAC, the expiry, the declared content-type and the
+  declared content-length are all verified before a byte is written, which is
+  what an S3 presigned PUT enforces. It mounts outside `/v1` because it is
+  storage, not API surface.
+- ⚠️ **`media.service.ts` is sliced three ways.** `process()` is **F034** and
+  `reorder()` is **F035**; beyond those, every method that reaches `Vehicle`
+  (**F055**) or `VehicleMedia` (**F035**) is cut back where it does so. Two of
+  those cuts remove a real guard rather than a convenience:
+  - `presign()` no longer enforces `MAX_PHOTOS_PER_VEHICLE`. **Nothing else
+    does**, so until F055 a dealer can presign without limit.
+  - `remove()` no longer refuses to take a live listing below
+    `listing.minPhotos`. That needs `Listing` (**F064**) and brings the
+    `PlatformConfigService` dependency back with it. There is no live listing
+    to empty yet, which is why this is safe now and not later.
+- ⚠️ **A committed upload stays PENDING.** `commit()` enqueues `media.process`
+  and no handler is registered for it until F034, so `status` never reaches
+  READY and `GET /media/:id` answers `url: null`. The poll loop the BFF route
+  drives is correct; there is simply nothing at the other end yet.
+
+### F098 — API reference — OpenAPI & Swagger UI
+
+⚠️ **Added by decision D5**, pulled out of F096 and landed here so that every
+feature from this point documents its own endpoints. Placed in Tier 5 because
+that is where it lands; the F-number is 98 because renumbering is not worth it
+(same principle as D4).
+
+The generated OpenAPI 3.0 document, Swagger UI at `/api/docs`, and the
+per-module `*.docs.ts` pattern every later feature extends.
+
+- **Status** implemented at baseline · **Confidence** HIGH · **Depends on** F001, F002, F016, F033
+- **Backend** `src/docs/{spec,errors,schemas,openapi,docs.routes}.ts`
+- **Module docs** `modules/{auth,health,media}/*.docs.ts` ported; `modules/{locations,config}/*.docs.ts` new under D1
+- **API** `GET /api/docs`, `GET /api/docs/openapi.json`, `GET /api/docs/openapi.yaml`
+- **Env** `DOCS_ENABLED` — already present; on outside production, off inside it and under test
+- **External** `swagger-ui-express`, `yaml`, `@types/swagger-ui-express` — **already in `apps/api/package.json`**, no new dependency
+- **Tests** `tests/unit/docs/openapi.test.ts` — **new, no baseline equivalent**
+- **Components** none · **Sandbox** none
+- **Documents 18 operations across 17 paths**, which is every route currently
+  mounted — verified in both directions by the test, not by inspection.
+- ⚠️ **`INPUT_SCHEMA_NAMES` cut from 42 names to 8.** `buildSchemaCatalogue()`
+  throws when a listed name is not exported by contracts, so the list cannot run
+  ahead of the code. **Every feature that adds a params, query or body schema
+  adds its name here.**
+- ⚠️ **`AUTH_DESCRIPTION` was rewritten, and this is a real divergence.** The
+  baseline text states there is "no signup, no sign-in, no OTP and no JWT" and
+  that the dev resolver reads `DEV_DEALER_SLUG`. That was true of the original
+  build; it is false here — F015, F018 and F019 landed real sessions, and
+  `AUTH_MODE` defaults to `cookie` with `dev` as an opt-in local escape hatch
+  that `env.ts` refuses in production. Publishing the baseline prose would have
+  told every reader that authentication is bypassed. The §8.3 permission tables
+  in that section were checked against `session.port.ts` and are accurate
+  unchanged.
+- **`catalog.docs.ts` does not come across** (D1). Its two surviving operations
+  moved: `GET /v1/cities` to `locations.docs.ts`, `GET /v1/config/public` to
+  `config.docs.ts`, each retagged from `Catalogue`. ⚠️ Decision **D6** then took
+  `locations.docs.ts` with the `cities` table, so `config.docs.ts` is the only
+  one of the two left.
+- **Sliced:** `reorderVehicleMedia` (**F035** — needs `ReorderMediaInput`), and
+  six module docs files whose routes have not landed. `MODULES` carries five
+  entries rather than eleven; **each feature adds its own line.**
+- **Health readiness examples gained `cache`** — the probe was restored at F028
+  and the baseline example predates it.
+- 💡 **Noted, not done: generate the permission tables from `PERMISSIONS` and
+  `ADMIN_PERMISSIONS`.** They are hand-written markdown in `openapi.ts` and
+  currently correct, but they are the one part of this document that can drift.
+  Faithful-port rules kept them as-is; worth doing when the admin tier lands.
+
+---
+
+# TIER 6 — Dealer onboarding
+
+The original single feature, split ten ways (decision D2). F038 → F042 are the
+four wizard steps plus the shell, each independently reviewable.
+
+**This tier now follows F033 directly** (decision D4). It is the first
+end-to-end product capability after F018: a person signs in with Google, and
+comes out the other side as a registered dealer awaiting verification. Nothing
+between F033 and here.
+
+### F036 — Dealer entity & tenant isolation
+
+⚠️ **Pulled forward, ahead of Tier 2** — the third of the four features the
+F015 blocker note names. `session.port.ts` (F015) types a `DealerPrincipal`
+around `DealerMember`, and F018's `auth.service.ts` needs `DealersService`.
+
+The `Dealer` aggregate, membership, and the tenancy rule that every dealer-scoped query is bound to `dealerId`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014
+- **Backend** `modules/dealers/{dealers.repository,dealers.facade}.ts`, `src/platform/db/tenant-tx.ts`
+- **DB** `Dealer`, `DealerMember`; enums `DealerStatus`, `DealerRole`, `MemberStatus`
+- **Tests** `tests/unit/modules/dealers/dealers.repository.test.ts`
+- **Components** none · **Sandbox** none
+- **The stated dependency on F016 was wrong for this slice.** F016 is needed by
+  `dealers.routes.ts`, which is not part of this entry. Nothing here imports a
+  guard, so F036 lands ahead of F015 and F016 rather than behind them — which
+  is what makes the blocker cascade resolvable at all.
+- **`DealerDocument` and `City` arrive here**, ahead of F040 and F026, because
+  `dealerInclude` pulls both relations in. Slicing the include would mean the
+  repository this feature exists to deliver did not match the baseline. F040
+  still brings the document service paths, the API and its tests. ⚠️ `City` was
+  removed again by decision **D6**: `dealerInclude` no longer names it, and
+  `Dealer.city` / `Dealer.state` are text on the row.
+- ⚠️ **Two repository methods are sliced.** `newEnquiryCount` and
+  `pendingListingCount` query `Enquiry` (**F088**) and `Listing` (**F064**).
+  Neither model exists, so both return `0` and carry the baseline body in a
+  comment. With no rows to count zero is the true answer, but it is not the
+  baseline's code: restore both, and the three test cases that assert their
+  `where` clauses, with those two models.
+- **`tests/tenant-isolation.test.ts` is not here.** It is an integration test
+  that seeds dealers, vehicles and listings — F055 and F064. The F014 entry
+  already says so.
+- **`packages/contracts/src/dealer.ts` is not here either.** `DealerProfile`
+  and `UpdateDealerInput` are consumed by `dealers.service.ts`'s `toProfile`
+  and `update`, which belong to F046; landing the module now would be dead
+  code with no test to bring across. It arrives with its first consumer.
+- **`dealers.service.ts` is not here.** It imports `DealerPrincipal` from
+  `auth.facade.ts`, so it cannot precede F015/F016. Its `session()` method —
+  the only one F018 calls — lands with **F018**, along with the
+  `DealersService` re-export from the facade.
+
+### F037 — Onboarding shell & step routing
+
+The wizard frame: which step is current, how a step is reached, and the progress indicator. No step content.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F017, F012, F036
+- **Frontend** `app/(auth)/dealer/onboarding/page.tsx`, the shell portion of `features/auth/onboarding-wizard.tsx`
+- **Contracts** none. `ONBOARDING_STEPS = ['Account','Business','Documents','Review']` is real, but the entry put it in the wrong package — at the baseline it is exported from `features/auth/onboarding-wizard.tsx`, and it belongs there: it is four labels for a `Stepper`, never crosses the wire, and `packages/contracts` is for shapes that do.
+- **Tests** `apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx` — **new, no baseline equivalent**
+- **Components — New (feature-specific)** `OnboardingWizard` shell · **Reused** `AuthShell`, `Stepper`
+- **Sandbox** `OnboardingWizard` shell at each of the 4 steps; `Stepper` at each position
+- **The wizard takes `step` and nothing else.** The other five props on
+  component-map C040 — `session`, `cities`, `documents`, `dealer`,
+  `completeness` — are each read by exactly one step body, so each arrives with
+  the feature that renders it (**F038**, **F039**, **F041**, **F042**). The
+  page's four fetches move with them; only `/v1/auth/me` is needed to place a
+  dealer on a step.
+- ⚠️ **Continue on the Business step is disabled until F039.** On Account it is
+  a local move, but on Business it is the submit that creates the dealership —
+  so it belongs to the form, and the form is F039. F039 replaces this button
+  with its own `type="submit"` and moves the Back/Continue row inside the
+  `<form>`, which is where the baseline has it.
+
+### F038 — Onboarding — account step
+
+Step 1: the signed-in person's name and contact, confirming who is registering.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F037
+- **Backend** `POST /v1/auth/onboarding` (account fields)
+- **Frontend** account step of `features/auth/onboarding-wizard.tsx`, `features/auth/actions.ts`
+- **DB** `User`, `DealerMember`
+- **Components — Reused** `Field`, `Input`, `Button`, `Banner`
+- **Sandbox** step 1 — empty / prefilled from the Google profile / field errors / submitting
+
+### F039 — Onboarding — business details step
+
+Step 2: the dealership's registered name, address, city, state and pincode —
+what buyers see.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F038
+- **Backend** `POST /v1/auth/onboarding` (business fields) — landed with **F018**; and `PATCH /v1/dealer` for the same fields on the way back
+- **Frontend** business step of `features/auth/onboarding-wizard.tsx`
+- **DB** `Dealer`
+- **Components — Reused** `Field`, `Input`, `Button`, `Banner`
+- **Sandbox** step 2 — empty / per-field validation errors / name taken / submitting
+- **One name, not two.** The entry said "trading name, legal name". Dealers
+  filled both in with the same words; `legalName` is the one KYC is checked
+  against, so it is the one asked for, and `brandName` is the server-written
+  display mirror of it. `UpdateDealerInput` does not carry `brandName` at all.
+- **City and state are typed, and F026 is not a dependency any more.** Decision
+  **D6** removed the `cities` table and with it the picker this entry listed.
+  Both fields are required text, normalised on write.
+- **The duplicate-name check lands on this step**, because both halves of the
+  pair it checks — the name and the city — are typed here. It is the submit
+  that asks, and a collision is a 409 naming `legalName`; the step stays put
+  with the message against the field.
+- **GSTIN is not on this step.** The entry said "trading name, city, address,
+  GSTIN, years in business", and at the baseline GSTIN and PAN are on the
+  _Documents_ step, saved by `saveBusinessIdsAction` through `PATCH /v1/dealer`
+  — they sit with the KYC documents they identify. They arrive with **F041**,
+  along with `DealerProfile`, `UpdateDealerInput` and the `/v1/dealer` fetch.
+  "Years in business" (`establishedYear`) is not on either onboarding step; it
+  is a profile field, and it arrives with **F046**.
+- **`dealers.service.ts` is untouched by this feature.** The entry named it,
+  but `POST /v1/auth/onboarding` creates the dealership in `auth.service.ts`,
+  which landed with F018. Nothing on this step reaches the dealers module.
+
+### F040 — Dealer document model & types
+
+The document aggregate and the closed set of KYC document types, with their status machine. Schema and service only — no UI.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F036
+- **Backend** `modules/dealers/dealers.service.ts` (document paths)
+- **API** `GET /v1/dealer/documents`
+- **DB** `DealerDocument`; enums `DealerDocType`, `DocStatus`
+- **Tests** `tests/unit/modules/dealers/dealers.service.test.ts`
+- **Components** none · **Sandbox** none
+
+### F041 — Onboarding — document upload step
+
+Step 3: upload each required KYC document through the presign/commit pipeline. 5 MB cap; PDF, JPEG, PNG only — validated client-side for the message and server-side for real.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F033, F040
+- **Backend** `POST|DELETE /v1/dealer/documents/*`
+- **Frontend** `features/auth/document-uploader.tsx`, `app/api/dealer/documents/presign/route.ts`, `app/api/dealer/documents/[type]/commit/route.ts`
+- **External** S3/R2 presigned PUT
+- **Components — New (feature-specific)** `DocumentUploader` · **Reused** `StatusTag`, `Banner`, `Button`
+- **Sandbox** `DocumentUploader` — empty / uploading / uploaded / verified / rejected / oversize / wrong MIME. **P0** — 7 states, currently no test and no way to see them without a real S3.
+- **This does not use the `Media` pipeline.** `dealers.service.ts` calls
+  `storage.presignPut` / `storage.head` / `storage.delete` directly and writes
+  the document row with `mediaId: null`. It needs F033 for the `PUT /uploads`
+  route that serves a local presigned URL and for `PresignResponse`, but it
+  never enqueues `media.process`, so F034's absence (moved to Tier 9 by D4) has
+  no effect here.
+- **`GET|PATCH /v1/dealer` arrive here, ahead of F046.** The Documents step
+  carries the GSTIN and PAN form — at the baseline they sit beside the KYC
+  documents they identify, not on the Business step — and it saves them through
+  `saveBusinessIdsAction` → `PATCH /v1/dealer`, reading their current values
+  from `GET /v1/dealer`. So `DealerProfile`, `UpdateDealerInput`, `toProfile`
+  and `update` come with their first consumer rather than with F046, which
+  keeps the profile _page_. The F039 entry says the same thing from the other
+  side.
+- **The route-parity harness needed a fix.** `GET /v1/dealer` is the first
+  route mounted at a router's own root, and `openapi.test.ts` (F098) built its
+  path as `/v1/dealer/` — reporting the route as undocumented and the operation
+  as orphaned at once. The walk now trims the trailing slash.
+
+### F042 — Onboarding — review & submit step
+
+Step 4: read-only summary of everything entered, then submit for verification. Moves the dealer to `PENDING_REVIEW`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F039, F041, F043
+- **Backend** `POST /v1/dealer/submit`
+- **Frontend** review step of `features/auth/onboarding-wizard.tsx`
+- **DB** `Dealer.status`
+- **Components — Reused** `Blueprint`, `StatusTag`, `Button`, `Banner`
+- **Sandbox** step 4 — complete / blocked by missing items / submitting / submitted
+
+### F043 — Onboarding completeness tracking
+
+The single derived answer to "what is still missing", used by the wizard to gate `Continue` and by the API to refuse a premature submit.
+
+- **Status** implemented · **Confidence** **MEDIUM** · **Depends on** F039, F041
+- **Backend** `modules/dealers/dealers.service.ts` — completeness derivation
+- **API** `GET /v1/dealer/completeness`
+- **Contracts** `CompletenessResponse`
+- **Components — Reused** `Banner`, `StatusTag`
+- **Sandbox** blocker list — none / one / many
+- ⚠️ **MEDIUM** because completeness is derived from fields owned by F039 and F041, so it cannot be written before both — but the wizard cannot gate correctly without it. Land it with F042 if the split proves awkward.
+- **The split held.** F043 landed after F041 and before F042, carrying the
+  derivation, the endpoint, and the one wizard consumer that is not the review
+  step: the outstanding-items list inside the error banner. F042 brings the
+  other consumer.
+- **`CompletenessBlocker` is not a C3 shape.** The entry named it, but at the
+  baseline it is `{ code, message }` in the C21–C23 block, used by _vehicle_
+  completeness — a different derivation on a different aggregate. It arrives
+  with the vehicle wizard (F060), not here.
+
+### F044 — Admin document verification
+
+The platform side of F041: an admin verifies or rejects each document, with a reason, and every decision is audited.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F040, F030, F049
+- **Backend** `modules/admin/{admin.routes,admin.service,admin.docs}.ts` — document paths
+- **API** `POST /v1/admin/documents/:id/verify`, `POST /v1/admin/documents/:id/reject`
+- **Contracts** `ReasonInput`, `VerifyDocumentResponse`
+- **DB** `DealerDocument.status`, `AuditLog`
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`
+- **Components** none · **Sandbox** none
+- **This feature has no UI at the baseline.** The entry lists four reused
+  components and a "document review row" sandbox scenario, but neither endpoint
+  has a caller: `app/(admin)/admin/dealers/[id]/page.tsx` renders each document
+  as a label, a short-lived `viewUrl` link and a `StatusTag`, with no verify or
+  reject control anywhere. The two endpoints are reachable only through the API
+  reference. That row is page markup rather than a component, and it lands with
+  **F045** along with the page; a console control for these endpoints would be
+  new product work, not a port.
+- **The permission is checked in the service, not the router** (§8.3
+  `admin:document:review`, MODERATOR and SUPER_ADMIN). That is the baseline's
+  choice for the whole admin module and the reason `admin.routes.test.ts`
+  asserts the router carries none: the check sits in the same function that
+  performs the action, so a second caller cannot reach around it, and it stays
+  beside the audit row that justifies it.
+
+### F045 — Dealer approval, rejection & suspension
+
+The dealer status machine on the admin side: approve, reject, suspend, reinstate — each audited, each with a reason where it affects the dealer.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F044
+- **Backend** `modules/admin/{admin.routes,admin.service}.ts` — dealer paths
+- **Frontend** `app/(admin)/admin/dealers/page.tsx`, `app/(admin)/admin/dealers/[id]/page.tsx`, `features/admin/dealer-actions.tsx`
+- **API** `GET /v1/admin/dealers`, `GET /v1/admin/dealers/:id`, `POST .../approve`, `.../reject`, `.../suspend`, `.../reinstate`
+- **DB** `Dealer.status`, `AuditLog`
+- **Contracts** `AdminDealerQuery`, `AdminDealerRow`, `AdminDealersResponse`, `AdminDealerDocument`, `AdminDealerDetail`, `ApproveDealerInput`, `NoteInput`, `DealerModerationResponse`
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`, `packages/contracts/tests/unit/admin.test.ts`, `tests/unit/platform/pagination.test.ts`
+- **Components — New (feature-specific)** `DealerAdminActions` · **New (primitive)** `Table`, `NumericCell` · **Reused** `StatusTag`, `LogoTile`, `Button`, `Banner`, `Field`, `Input`, `EmptyState`
+- **Sandbox** `DealerAdminActions` — one scenario per `DealerStatus` × suspend form × pending × error. **P0.** `Table` — rows / single row / overflow / empty. **P0.**
+- 💡 **Create `Table` here.** `.table` is hand-rolled in 5 pages (finding D-B); this is the first of them in the reconstruction.
+- **The console calls four of the six routes, not six.** `POST /dealers/:id/reject`
+  and `.../reinstate` exist at the baseline and are documented, but nothing in
+  `dealer-actions.tsx` calls either: the component renders an approve control
+  and a suspend control and nothing else. They are reachable through the API
+  reference only — the same situation F044's two document routes are in. A
+  console control for them would be new product work, not a port.
+- **`platform/pagination.ts` arrives here**, with its own test. F045 is its
+  first consumer; the `encodeSeqCursor`/`decodeSeqCursor` half is unused until
+  the credit ledger at **F050**, and the file comes across whole rather than
+  sliced so its diff against the baseline is empty.
+- **The onboarding credit grant does not.** The baseline's `ApproveDealerInput`
+  carries `grantCredits`, seeded through `moveCredits` in the approval
+  transaction. Rule 4 says every credit movement writes a `CreditTransaction`,
+  and neither the model nor `billing.facade.ts` exists until **F050** — so the
+  field is out of the schema, which is `.strict()` and therefore refuses it by
+  name rather than approving and quietly granting nothing. It returns at
+  **F054** with `POST /dealers/:id/credits/grant` and the grant block in
+  `DealerAdminActions`.
+
+---
+
+# TIER 7 — Consoles
+
+### F046 — Dealer profile management
+
+The editable business identity after onboarding: dealership name, tagline, description, services, contact, address, Maps link.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F036, F039, F045
+- **Backend** — ⚠️ **already landed.** `GET /v1/dealer` and `PATCH /v1/dealer` were mounted by **F038/F039**, because the onboarding wizard's `Back` PATCHes the same endpoint. `dealers.service.update` and its docs operation arrived with them, and this feature adds no backend file.
+- **Frontend** `app/(dealer)/dealer/profile/page.tsx`, `features/dealer/{profile-form,profile-actions}.tsx`
+- **API** `GET /v1/dealer/`, `PATCH /v1/dealer/` — both pre-existing
+- **DB** `Dealer`
+- **Tests** `tests/unit/modules/dealers/{dealers.routes,dealers.service}.test.ts` — both present, from F038/F039. `dealers.facade.test.ts` is **not** brought across: it asserts the facade exports nothing at runtime, and this repository's facade exports `documentKey`/`yardPhotoKey` for the admin module (F044). Reinstating it needs the assertion rewritten, which is not this feature's call.
+- **Components — New (feature-specific)** `DealerProfileForm` · **Reused** `Field`, `Input`, `Textarea`, `Banner`, `Button`, `StatusTag`
+- **Sandbox** `DealerProfileForm` — populated / sparse / saved / field refusal / server error / saving. Uses `useActionState`, so the scenario needs a stubbed action (`mocks/dealer-actions.ts`, coupling C-4).
+- ⚠️ **No "Trading name" field.** `brandName` is absent from `UpdateDealerInput` — it is the server-written mirror of `legalName`. The baseline's form edited both.
+- ⚠️ **City, district, state and `mapsUrl` are editable text** (D6, R2, R6); the baseline's city was a disabled box filled in from the `cities` table. The mobile is editable too (R7).
+- ⚠️ **No "View public page →" link yet.** `/dealers/:slug` arrives with **F086**; the link returns with it.
+
+### F047 — Dealer console shell & navigation
+
+The authenticated dealer chrome: sidebar on desktop, bottom tab bar below 768.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F020, F045
+- **Frontend** `app/(dealer)/dealer/layout.tsx`, `components/dealer/console-nav.tsx`
+- **Components — New (Shared)** `ConsoleNav`, `ConsoleTabBar`, `DEALER_NAV` · **Reused** `Plate`, `Blueprint`, `StatusTag`, `SignOutButton`
+- **Tests** `tests/unit/components/dealer/console-nav.test.tsx`, `tests/unit/features/dealer/console-layout.test.tsx`
+- **Sandbox** each with every route active, driven by a **pathname control**; `ConsoleTabBar` at the 375 and 768 viewports — it is `md:hidden` and cannot be seen otherwise
+- ⚠️ **Landed early, out of tier order, as R31** — see `## R31` in REVISIONS.
+  The shell was asked for while `/dealer/profile` was still the segment's only
+  route, so it renders `LANDED_NAV` rather than `DEALER_NAV` and holds back the
+  two controls that point at routes which do not exist. **F048, F050, F051,
+  F056 and F065 each delete their own line** from `NOT_YET_BUILT`; F051 restores
+  the credits panel's `Buy credits` button and F056 the top bar's `Add vehicle`.
+- **The layout is the console's guard, so F046's guard came here.** F046 wrote
+  it on `(dealer)/dealer/profile/page.tsx` with a note saying this feature
+  should lift it; it is on the layout now, and a console page added later
+  inherits it rather than remembering to repeat it.
+
+### F048 — Dealer dashboard
+
+The console landing page: stat cards, recent activity, and the next action.
+**Also lands `/admin`**, and makes both navs honest — see below.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F047
+- **Backend** `modules/dealers/{dealers.routes,dealers.service,dealers.repository,dealers.docs}.ts`
+- **Frontend** `app/(dealer)/dealer/page.tsx`, `app/(admin)/admin/page.tsx`,
+  `components/dealer/{dashboard-panels,console-nav}.tsx`,
+  `components/admin/admin-nav.tsx`
+- **Contracts** `DashboardResponse`
+- **API** `GET /v1/dealer/dashboard` — `Cache-Control: no-store`, no permission
+  (any dealer seat; the tenant scope is the principal's)
+- **DB** reads `Dealer`. `Listing`, `Enquiry`, `ListingViewDaily` and
+  `CreditTransaction` are **sliced** — see below
+- **Tests** `tests/unit/modules/dealers/{dealers.service,dealers.routes}.test.ts`,
+  `tests/dealer-onboarding.test.ts` (four route cases),
+  `apps/web/tests/unit/features/{dealer,admin}/dashboard-page.test.tsx`,
+  `apps/web/tests/unit/components/dealer/console-nav.test.tsx`
+- **Components — New (Shared)** `ViewsChart` (C077), `RecentEnquiries` (C078) ·
+  **Changed** `AdminNav` (C024) takes `items`, `ConsoleTabBar` (C026) ·
+  **Reused** `StatCard`, `Banner`, `Avatar`
+- **Sandbox** `Dealer/DashboardPanels` — an ordinary week / no views at all /
+  one spike / the first day of trading; four leads / none yet / a general
+  enquiry / long names at phone width. `Admin/AdminNav` and
+  `Dealer/ConsoleNav` each gain an _as the console renders it today_ story
+- ⚠️ `StatCard` now has one consumer still; the billing page renders the same
+  block from raw markup. Reuse it in F051 rather than repeating that.
+
+#### `/dealer` was a 404, and it is where the public header points
+
+The buyer header's primary button is a `/dealer` link (**R35**), and the
+`(dealer)` segment had a layout with no page under it. Every visitor who pressed
+`Dealer login` got a 404. The same was true of `/admin`, whose own sidebar's
+first item pointed at it — **F049**'s entry says "no page sits under this layout
+yet" and this is the feature that changes it.
+
+#### The six reads are sliced on the repository, not in the service
+
+`dashboard()` queries four models that do not exist: `ListingViewDaily` and
+`Listing` (**F064**), `Enquiry` (**F088**), `CreditTransaction` (**F050**). Each
+query is held on `dealers.repository.ts` as `viewRollups`,
+`previousWeekViews`, `enquiryCounts`, `recentEnquiries`, `expiringListingCount`
+and `weeklyActivity`, carrying the baseline's query in a comment and the feature
+that restores it — the pattern `newEnquiryCount` and `pendingListingCount`
+already set.
+
+**The derivation is deliberately not sliced.** The greeting, the seven-day
+series, the height scaling and the four delta sentences are the baseline's and
+are tested in full by stubbing those reads. Computing zeros inline in the
+service would have hidden the part a reviewer must check against the baseline,
+and restoring the models would then have meant rewriting code that was never in
+question.
+
+`previousWeekViews` returns `number | null` rather than a number, and the
+distinction is load-bearing: null is "that week has no rows" and zero is a real
+week with no traffic, so flattening them would render a fabricated −100% trend.
+
+#### `AdminNav` renders only the routes that exist
+
+`/admin/listings` (**F069**) and `/admin/payments` (**F053**) were offered from
+F049 until now, so two of five items in a cross-tenant operations console led to
+a 404 — the mistake `console-nav.tsx` was written to avoid on the dealer side.
+`NOT_YET_BUILT` and `LANDED_ADMIN_NAV` apply the same rule, and **F053 and F069
+each delete their own line.** `items` is a prop defaulting to the landed set, so
+the shell needs no knowledge of the slice and the sandbox can still draw the
+console as it will be.
+
+#### The tab bar keeps every console screen reachable
+
+§3.11 gives the bar five items and drops `Dealer profile`, because the credits
+card moves into Billing below 768 and the profile is reached from there. Four of
+those five are still F050/F051/F056/F065, and the sidebar is `hidden md:flex` —
+so applying the rule literally would give a phone one tab and **no way to reach
+`/dealer/profile` at all**.
+
+While the bar is short of its five it therefore also carries the items without a
+`short`. The accommodation removes itself: when the fifth lands, the branch
+yields nothing and the bar is exactly §3.11's.
+
+#### Deliberate differences from the baseline
+
+- `ViewsChart` and `RecentEnquiries` are **their own file**, not private
+  functions inside the page. The baseline has no sandbox; this repository's
+  definition of done says a component with no sandbox entry is not done, and a
+  component cannot have one if it cannot be imported. A hand-rolled bar chart is
+  exactly what gets rebuilt from scratch by the next feature that wants one.
+- `All enquiries →` on the leads panel and `Open queue →` on the admin
+  moderation panel are **held back** — they point at F065 and F069. Each returns
+  with its screen, and a test in each page's file fails when it does.
+- `greeting()`, `startOfDayUtc()` and `startOfMonthUtc()` are the baseline's,
+  moved across with the method that uses them.
+
+### F049 — Admin console shell & navigation
+
+The dark admin chrome and its sidebar.
+
+⚠️ **Pulled forward, ahead of Tier 7** — **F044** depends on it, and F044 is in
+Tier 6. The admin half of onboarding cannot be reviewed without a console to
+review it in.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F019, F020
+- **Backend** `modules/admin/{admin.service,admin.routes,admin.docs}.ts` — the overview path
+- **API** `GET /v1/admin/metrics/overview`
+- **Contracts** `AdminOverview`, and the `packages/contracts/src/admin.ts` module itself
+- **Frontend** `app/(admin)/admin/layout.tsx`, `app/(admin)/error.tsx`, `components/admin/admin-nav.tsx`
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`
+- **Components — New (Shared)** `AdminNav` · **Reused** `SignOutButton`, `StatusTag`
+- **Sandbox** `AdminNav` — every route active, via the pathname control
+- **The layout's guard is a request, so the route comes with it.** The entry
+  listed no backend, but `AdminLayout` awaits
+  `GET /v1/admin/metrics/overview` — that is both the header badge and the
+  authorization check, since a 401 there is what redirects to sign-in. So the
+  admin module, its first route and `AdminOverview` land here rather than at a
+  later metrics feature. `lib/session.ts` has said as much since F019.
+- ⚠️ **`overview()` is sliced.** Five of its counters query `Listing` (F064),
+  `Payment` (F052) and `Enquiry` (F088). None of those models exists, so each
+  reports zero — the true answer with no rows, but not the baseline's code. The
+  gross/net GST split is kept, because that is the part that is expensive to get
+  wrong later.
+- **`Plate` is not used here.** The entry named it; the baseline layout
+  hand-rolls its `DD` badge with a bordered `<span>` rather than rendering
+  `Plate`. Left as the baseline has it — noted as a reuse opportunity, not
+  changed while porting.
+- **No page sat under this layout at first.** `/admin/dealers` and
+  `/admin/dealers/:id` arrived with **F045** and `/admin/config` with F072; the
+  dashboard the sidebar's own first item points at is **F048**, and until it
+  landed `/admin` was a 404 the console linked to. Next emits no route for a
+  layout with no page, so the shell was inert until F045 — which is the correct
+  order: the chrome exists before the first screen that needs it.
+
+---
+
+# TIER 8 — Billing & credits
+
+### F050 — Credit ledger & balance
+
+The append-only credit ledger and the derived balance. Credits gate RC lookups, reports and listing submissions, so this must exist before any of them.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F036
+- **Backend** `modules/billing/credits.service.ts`
+- **API** `GET /v1/dealer/billing/summary`, `GET /v1/dealer/billing/ledger`
+- **DB** `CreditTransaction`; enum `CreditReason`
+- **Tests** `tests/credits.test.ts`, `tests/unit/modules/billing/credits.service.test.ts`
+- **Components — Reused** `StatCard`, `Table`
+- **Sandbox** balance card — zero / low / healthy; ledger table — empty / one page / many
+
+### F051 — Credit packs & purchase orders
+
+The pack catalogue and order creation.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F050
+- **Backend** `modules/billing/{billing.routes,billing.service,billing.facade,billing.docs}.ts`
+- **Frontend** `app/(dealer)/dealer/billing/page.tsx`, `features/billing/{credit-packs,actions}.tsx`
+- **API** `GET /v1/dealer/billing/packs`, `POST /v1/dealer/billing/orders`
+- **DB** `CreditPack`, `Order`; enum `OrderStatus`
+- **Tests** `tests/unit/modules/billing/{billing.routes,billing.service,billing.facade}.test.ts`
+- **Components — New (feature-specific)** `CreditPacks` · **Reused** `Blueprint`, `StatCard`, `Button`, `Banner`
+- **Sandbox** `CreditPacks` — pack list / buying / success with invoice / failure
+
+### F052 — Payment verification
+
+Order verification and the payment provider port. The current provider is `development.provider.ts` — no real gateway is wired.
+
+- **Status** **partially implemented** · **Confidence** MEDIUM · **Depends on** F051
+- **Backend** `src/platform/payments/{payment.port,development.provider}.ts`, `modules/billing/billing.routes.ts` — verify path
+- **API** `POST /v1/dealer/billing/orders/:id/verify`
+- **DB** `Payment`, `WebhookEvent`; enum `PaymentStatus`
+- **Tests** `tests/unit/platform/payments/development.provider.test.ts`
+- **Components** none · **Sandbox** none
+- ⚠️ The only genuinely incomplete feature in the repository. A real gateway adapter is future work; the port is shaped for it.
+
+### F053 — Invoices & PDF delivery
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F052
+- **Backend** `modules/billing/billing.routes.ts` — invoice paths
+- **Frontend** `app/api/dealer/invoices/[id]/route.ts`
+- **API** `GET /v1/dealer/billing/invoices`, `GET /v1/dealer/billing/invoices/:id/pdf`
+- **DB** `Invoice`; enum `InvoiceStatus`
+- **Components — Reused** `Table`, `StatusTag`, `Button`
+
+### F054 — Admin credit grants & payments view
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F050, F049, F030
+- **Backend** `modules/admin/admin.routes.ts` — credits + payments paths
+- **Frontend** `app/(admin)/admin/payments/page.tsx`, grant form in `features/admin/dealer-actions.tsx`
+- **API** `POST /v1/admin/dealers/:id/credits/grant`, `GET /v1/admin/payments`
+- **DB** `CreditTransaction`, `Payment`, `AuditLog`
+- **Components — Modified** `DealerAdminActions` (+ grant form) · **Reused** `Table`, `Field`, `Button`
+- **Sandbox** grant form — default / custom amount / reason / pending / error
+
+---
+
+# TIER 9 — Vehicle intake
+
+**Reshaped by decision D1.** There is no catalogue lookup; make/model/variant
+arrive from the RC or are typed.
+
+**F034 and F035 open this tier** — moved from Tier 5 by decision D4,
+immediately ahead of the first feature that produces a vehicle photo.
+
+### F034 — Image derivative pipeline
+
+⏸ **Deferred by R45.** StudioCar produces the finished image; Dealers-Drive stores and serves it unchanged. The entry below describes the baseline.
+
+⚠️ **Moved here from Tier 5 by decision D4.** It sat immediately after F033;
+nothing in Tier 6 or Tier 7 depends on it, and a KYC document is never resized.
+It lands with the vehicle galleries it exists to serve. The F-number is
+unchanged.
+
+`sharp` derivatives at 320/640/1024/1600, blurhash placeholders, and the `srcset` the front end consumes. The pipeline produces optimal bytes, which is why the app uses a plain `<img>` rather than `next/image`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F033
+- **Backend** `modules/media/media.service.ts` (derivatives), `src/platform/media/urls.ts`
+- **External** `sharp`, `blurhash`
+- **Tests** `tests/unit/modules/media/media.service.test.ts`
+- **Components** none · **Sandbox** the fixture images under `apps/sandbox/public/mock/` come from this pipeline's output shape
+
+### F035 — Media ordering & primary photo
+
+⚠️ **Reinterpreted by R45** — admin image ordering and primary selection, mounted under `/v1/admin`, on the moderation screen. The dealer path below is not built.
+
+⚠️ **Moved here from Tier 5 by decision D4**, with F034. A KYC document set has
+no order and no primary; a vehicle photo set has both. The F-number is
+unchanged.
+
+Reordering, and the rule that position 0 is the primary photo — marked with a `Plate size="marker"`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F034
+- **Backend** `modules/media/media.routes.ts` — order path
+- **API** `PUT /v1/dealer/vehicles/:id/media/order`
+- **DB** `VehicleMedia`
+- **Components — Reused** `Plate` (`size="marker"` — one of the four sanctioned plate placements)
+- **Sandbox** `Plate` marker variant in context
+- ⚠️ **Entry corrected on landing (R45).** Lands in two parts, admin-only, in
+  a new `modules/vehicle-images/` rather than in `media`. First the upload:
+  `vehicle_media` (position, `isPrimary`, `source ADMIN_UPLOAD`, `addedBy`;
+  positions unique per vehicle by a deferrable constraint, one primary by a
+  partial unique index), `POST /v1/admin/listings/:id/images/presign`,
+  `POST …/images/:mediaId/commit` (length and magic-byte verification) and
+  `DELETE …/images/:mediaId` (renumbers, promotes the next primary), with the
+  web `features/admin/listing-images/` (C063b) on the review screen. Then
+  `PUT /v1/admin/listings/:id/images/order` (`ReorderImagesInput`: the whole
+  order, a permutation of what is attached, else `422 IMAGE_ORDER_MISMATCH`)
+  and `PUT …/images/:mediaId/primary`; order and primary are independent, and
+  the web tiles get ← / → and _Make primary_ buttons. No `Plate` marker: the
+  admin gallery shows the primary as a status tag. It does not depend on F034 (deferred by R45:
+  images are served as uploaded). The dealer `/v1/dealer/media/*` routes of
+  F033 are **withdrawn** with it, and `GET /media/by-media/…` serves a vehicle
+  image only while its listing is `ACTIVE`.
+
+### F055 — Vehicle data model
+
+The `Vehicle` aggregate. **Post-D1:** `make`, `model`, `variant` are normalised **strings**, not foreign keys.
+
+- **Status** implemented, **schema changes under D1** · **Confidence** HIGH · **Depends on** F036
+- **Backend** `modules/vehicles/{vehicles.repository,vehicles.facade}.ts`
+- **DB** `Vehicle`; enums `FuelType`, `Transmission`, `BodyType`, `InsuranceType`, `PriceNegotiability`, `VehicleStatus`
+- **Removed under D1** `makeId`, `modelId`, `variantId`, `colorId` FKs → `make`, `model`, `variant`, `color` strings
+- **Tests** `tests/unit/modules/vehicles/vehicles.repository.test.ts`
+- **Components** none · **Sandbox** none
+- ⚠️ **Entry corrected on landing (R45/R46).** The table is `vehicles` with the
+  descriptive columns nullable, because a draft is saved one wizard step at a
+  time; "complete enough to submit" is `vehicleIssues()` in
+  `packages/contracts/src/vehicle.ts`, shared by the wizard and the API. It
+  carries `registrationNumber` (canonical, unseparated), `rtoCode`,
+  `manufacturingYear` and `registrationYear` (the baseline had one `year`),
+  `ownerCount`, `kilometersDriven`, `insuranceValidUntil` and `pricePaise`
+  (BigInt). No `VehicleStatus` — the lifecycle is `Listing`'s (F064, R47) — and
+  no image column (R45). Ranges are CHECK constraints as well as Zod limits.
+  `vehicles.facade.ts` arrives with its first cross-module reader.
+  Integration: `apps/api/tests/vehicles.test.ts`.
+
+### F056 — Plate input & normalisation
+
+The number-plate field and the shared normaliser. `TN 09 BX 1234`, `TN-09-BX-1234` and `tn09bx1234` are all accepted; the value is normalised on the way out. The same `REGISTRATION_NUMBER` schema validates in the browser and in the API.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F013, F001
+- **Frontend** `components/forms/plate-input.tsx` — `PlateInput`, `validatePlate`, `normalisePlate`
+- **Contracts** `REGISTRATION_NUMBER`
+- **Tests** `tests/unit/features/vehicle/plate-input.test.ts` ✅
+- **Components — New (Shared)** `PlateInput`
+- **Sandbox** empty / valid / invalid / disabled / autofocus / all three separator styles
+- ✅ **The model component.** Pure props, no context, validation exported and tested separately, schema shared with the API. Use it as the sandbox's worked example.
+- ⚠️ **Entry corrected on landing (R46).** The parser is
+  `packages/contracts/src/registration.ts` — `parseRegistration`,
+  `normaliseRegistration`, `formatRegistration` and the `RegistrationNumber`
+  schema (not `REGISTRATION_NUMBER`). It reads letter/digit runs rather than
+  one regex: state series with 0–3 series letters (`DL 3C AB` joined to
+  `CAB`), Bharat series, and legacy three-letter plates; it pads the RTO to two
+  digits and the plate number to four, so one car has one canonical form. The
+  component is `components/forms/plate-input/`, uncontrolled for server-action
+  forms, with its test at `apps/web/tests/unit/components/forms/plate-input.test.tsx`.
+  **Duplicate protection:** `vehicles.releasedAt` and the partial unique index
+  `(dealerId, registrationNumber) WHERE releasedAt IS NULL`.
+
+### F057 — RC lookup port, mock adapter & caching
+
+⏸ **Deferred by R46.** No external RC lookup is part of the initial listing workflow.
+
+The port, the mock adapter, plate hashing, and the two-tier cache. The port is also **the privacy boundary**: owner name, address, phone, chassis and engine numbers are dropped by adapters _before_ the domain object is constructed, so personal data never enters the system.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F028, F050
+- **Backend** `src/platform/rc/{rc.port,factory,mock.adapter,plate-hash}.ts`
+- **DB** `RcLookup`
+- **Tests** `tests/unit/platform/rc/mock.adapter.test.ts`
+- **Components** none · **Sandbox** the mock adapter is what lets sandbox scenarios show RC states with no provider
+- `RcSpecs` (immutable, 30-day cache) and `RcRecords` (mutable claims, 24-hour cache) are separate types so the cache physically cannot hold a challan for a month.
+
+### F058 — Attestr RC adapter
+
+⏸ **Deferred by R46.**
+
+The real provider, plus `rc-aliases.ts` and `rc-match.ts`.
+
+- **Status** implemented, **rc-match changes under D1** · **Confidence** HIGH · **Depends on** F057
+- **Backend** `src/platform/rc/{attestr.adapter,rc-aliases,rc-match}.ts`
+- **External** **Attestr**; **billed per call**
+- **Tests** `tests/unit/platform/rc/{attestr.adapter,rc-match}.test.ts` — a fixture table of real maker strings
+- **Components** none · **Sandbox** none
+- **D1 change.** `rc-match.ts` stops resolving to catalogue ids and instead emits normalised strings. `rc-aliases.ts` is **kept unchanged** — it is a committed constant, not a table, and it is the only thing that gets from `GENERAL MOTORS INDIA PVT LTD` to _Chevrolet_.
+
+### F059 — RC lookup UI & registration step
+
+⏸ **Deferred by R46.** The Registration step lands with F063 as a plate field and nothing else.
+
+Type a plate, see what came back, and continue — or fall through to manual entry when the lookup fails.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F056, F057
+- **Frontend** `app/(dealer)/dealer/vehicles/new/page.tsx`, `features/vehicle/{registration-step,rc-summary}.tsx`, `features/vehicle/actions.ts`
+- **API** `POST /v1/dealer/vehicles/lookup`
+- **Components — New (feature-specific)** `RegistrationStep`, `RcSummary` · **Reused** `PlateInput`, `Plate`, `Button`, `Banner`, `StatusTag`
+- **Sandbox** `RegistrationStep` — idle / looking up / found / not found / provider unavailable / rate limited / manual fallback. `RcSummary` — full match / partial / cached / advisories present. **P0.**
+
+### F060 — Vehicle basics — RC-prefilled or manual ⚠️
+
+⚠️ **Revised by R46** — always manual; there is no RC prefill.
+
+Make, model, variant, year, fuel, transmission, body type — prefilled from the RC where available, typed where not.
+
+- **Status** implemented, **materially reshaped by D1** · **Confidence** **MEDIUM** · **Depends on** F055, F059
+- **Frontend** `features/vehicle/{basics-fields,basics-step}.tsx`
+- **Contracts** `VEHICLE_WIZARD_STEPS.basics.fields` changes from `['makeId','modelId','variantId', …]` to `['make','model','variant', …]`
+- **Tests** `tests/unit/features/vehicle/basics-fields.test.ts` ✅ (validation)
+- **Components — New (feature-specific)** `BasicsFields`, `BasicsStep` · **Reused** `Field`, `Input`, `Button`, `Banner`
+- **Sandbox** empty / prefilled from RC / partially prefilled / all-errors / disabled
+- ⚠️ **Entry corrected on landing (R46).** Always manual. `BasicsStep` lives in
+  `features/vehicle/vehicle-wizard/basics-step.tsx` and takes `vehicle`,
+  `errors`, `values` — no `BasicsFields` split and no RC prefill. Both decisions
+  below were taken: make/model are normalised on write (whitespace in contracts,
+  stored spelling adopted in `vehicles.service.ts`), and `Combobox` is replaced
+  by `SuggestInput` (`components/forms/suggest-input/`), a native datalist over
+  `GET /v1/dealer/vehicles/suggestions`. `manufacturingYear` and
+  `registrationYear` replace `year`.
+- ⚠️ **This is where D1's risk lands.** Without a catalogue, make/model are free text, and `RcSpecs.makerModel` is documented as _"model and trim run together, inconsistently."_ Two things must be decided in this PR:
+  1. **Write-time normalisation** — `rc-match`'s normaliser must run on manual input too, or facets (F076) fragment into `Maruti` / `Maruti Suzuki` / `MARUTI SUZUKI INDIA LTD`.
+  2. **Whether `Combobox` survives.** Its stated reason to exist was the 344-model list. The strongest remaining case for it is a _suggest-existing-values_ control that offers make/model strings already in the database, which is also the cheapest guard against fragmentation. Recommended.
+
+### F061 — Vehicle details
+
+KMs, owners, colour, RTO, insurance, location, seats, airbags, features. Eight required fields, several RC-prefilled.
+
+- **Status** implemented, **minor D1 change** · **Confidence** HIGH · **Depends on** F060
+- **Frontend** `features/vehicle/details-fields.tsx` — `DetailsFields`, `detailsFrom`, `validateDetails`, `detailsPatch`
+- **D1 change** `colorId: Uuid` → `color: string`; `rtoCode` unaffected (already derived from the plate)
+- **D6 change** the vehicle's location is text like the dealership's, not a city id. There is no picker to reuse; the suggest-existing-values control D1 asks for at F060 serves this field too
+- **Tests** `tests/unit/features/vehicle/details-fields.test.ts` ✅
+- ⚠️ **Entry corrected on landing (R46).** `details-step.tsx` in the wizard
+  folder: kilometres, owners, colour, insurance type and validity date. No RTO
+  field (derived from the plate), and no vehicle location, seats, airbags or
+  features in this phase — a car is listed at its dealership, whose locality
+  the public card shows.
+- **Components — New (feature-specific)** `DetailsFields` · **Reused** `Field`, `Input`
+- **Sandbox** empty / RC-prefilled / all-errors / disabled
+
+### F062 — Vehicle photo upload UI
+
+⛔ **Withdrawn by R45.** Dealers never upload listing photographs; admins upload the processed StudioCar images (F035 as reinterpreted, F070).
+
+Drag, drop, reorder, delete, and the minimum-photo gate.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F033, F034, F035, F029
+- **Frontend** `features/vehicle/photo-uploader.tsx` (472 lines)
+- **Components — New (feature-specific)** `PhotoUploader` · **Reused** `ImageSlot`, `Plate` (`marker`), `Banner`, `Button`
+- **Sandbox** empty / below minimum / at minimum / uploading / upload error / reordering / primary marker / delete confirm. **P0 — the highest-state component in the dealer console and currently untested.** Scenarios synthesise `File` objects from data URIs; no storage needed.
+
+### F063 — Vehicle wizard shell & step routing
+
+⚠️ **Revised by R45/R46** — Registration → Basics → Details → Pricing → Review. No Photos step, no lookup.
+
+The frame that sequences F059 → F060 → F061 → F062 → review, gated by the API's completeness answer so the front end can never be more permissive than the back end.
+
+- **Status** implemented · **Confidence** MEDIUM · **Depends on** F060, F061, F062
+- **Backend** `modules/vehicles/{vehicles.routes,vehicles.service,vehicles.docs}.ts` — CRUD
+- **Frontend** `app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`, `features/vehicle/{wizard,steps}.tsx`
+- **API** `POST|GET /v1/dealer/vehicles`, `GET|PATCH|DELETE /v1/dealer/vehicles/:id`
+- **Tests** `tests/unit/modules/vehicles/*.test.ts` (4), `tests/unit/features/vehicle/steps.test.ts` ✅
+- **Components — New (feature-specific)** `VehicleWizard` · **Reused** `Stepper`, `Button`, `Banner`, `Field`
+- **Sandbox** one scenario per step × complete / blocked
+- ⚠️ **MEDIUM** — `vehicles.routes.ts` is also written by F065, F067. F063 introduces it; they amend.
+- ⚠️ **Entry corrected on landing (R45/R46).** The API landed first, on its
+  own: `POST /v1/dealer/vehicles` creates a draft from `CreateVehicleInput`
+  (the plate only); `GET|PATCH|DELETE /v1/dealer/vehicles/:id`;
+  `GET /v1/dealer/vehicles/suggestions` is the suggest-existing control F060
+  asks for. `GET /v1/dealer/vehicles` (the list) is **F066**'s. One route per
+  file under `modules/vehicles/routes/`; `vehicles.mapper.ts` owns the dealer
+  DTO. Tests: `tests/unit/modules/vehicles/*.test.ts` and the integration suite
+  `apps/api/tests/vehicle-api.test.ts`, which is the tenant-isolation proof.
+- **Wizard, as landed.** `app/(dealer)/dealer/vehicles/new/page.tsx` and
+  `app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`; `features/vehicle/actions.ts`
+  and `features/vehicle/vehicle-wizard/` (one file per step, `review-step`,
+  `wizard-footer`). The step is a `?step=` query parameter, never client state.
+  Tests: `apps/web/tests/unit/features/vehicle/*.test.ts(x)`.
+
+---
+
+# TIER 10 — Listing lifecycle
+
+### F064 — Listing model & state machine
+
+⚠️ **Revised by R47** — the states are `DRAFT · PENDING_REVIEW · CHANGES_REQUESTED · ACTIVE · REJECTED · SOLD · REMOVED`, with no credit movement.
+
+`Listing.status` is never assigned. Every change goes through `transition()`, which validates the source state **and** the actor's authority. `status` appears in no dealer-writable DTO and every input schema is `.strict()`, so a dealer posting `{"status":"APPROVED"}` gets a 400.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F055
+- **Backend** `modules/listings/{listing.state,listings.facade}.ts`
+- **DB** `Listing`; enum `ListingStatus`
+- **Tests** `tests/listing-lifecycle.test.ts`, `tests/unit/modules/listings/*.test.ts` ✅
+- **Components — Reused** `StatusTag` — the only correct way to render a listing status
+- **Sandbox** `StatusTag` — one scenario per `ListingStatus`/`DisplayStatus`, generated from the enum
+- The best-guarded code in the repository. Treat its invariants as untouchable during reconstruction.
+- ⚠️ **Entry corrected on landing (R47).** `modules/listings/{listing.state,
+listings.repository,listings.facade,listings.messages}.ts`. `Listing` is one
+  per vehicle (`vehicleId` unique), born DRAFT in the transaction that creates
+  the vehicle, with `submittedAt`/`lastSubmittedAt`/`submissionCount`,
+  `publishedAt`, `soldAt`, `removedAt` and the moderator's
+  `decisionReason`/`decidedBy`/`decidedAt`. `transition()` takes the expected
+  status in its `WHERE` (race-safe), writes the audit row in the same
+  transaction and releases the registration on REJECTED/SOLD/REMOVED. Editing a
+  vehicle is allowed only in DRAFT and CHANGES_REQUESTED, under a
+  `FOR UPDATE` lock on the listing (`409 VEHICLE_NOT_EDITABLE`); deleting only in
+  DRAFT. Tests: `tests/unit/modules/listings/listing.state.test.ts` (the full
+  7 × 7 × 2 table) and `apps/api/tests/listing-lifecycle.test.ts` (the race).
+
+### F065 — Listing submission & resubmission
+
+⚠️ **Revised by R47** — no credit is held; F050 is not a dependency.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F064, F063, F050
+- **Backend** `modules/vehicles/vehicles.routes.ts` — submit path
+- **API** `POST /v1/dealer/vehicles/:id/submit`
+- **DB** `Listing.status` → `PENDING_REVIEW`; `CreditTransaction`
+- **Components — Reused** `Button`, `Banner`, `StatusTag`
+- **Sandbox** submit CTA — ready / blocked / insufficient credits / submitting
+- ⚠️ **Entry corrected on landing (R47).** `POST /v1/dealer/vehicles/:id/submit`
+  (`routes/post-vehicle-submit.ts`, `listing:submit` + `requireDealerActive`)
+  handles both submit and resubmit, chosen from the listing's state. No credit
+  movement. Completeness is `vehicleIssues()` under a `FOR UPDATE` lock
+  (`422 VEHICLE_INCOMPLETE`, one error per field). Submitting sets
+  `vehicles.claimedAt`, and a second partial unique index makes a plate unique
+  across dealerships among claimed, unreleased vehicles
+  (`409 DUPLICATE_REGISTRATION`). Web: `submit-row.tsx`, `submitted-panel.tsx`.
+  Tests: `apps/api/tests/listing-submission.test.ts`.
+
+### F066 — Dealer inventory list
+
+The dealer's vehicle table with status, price, views and enquiries per row.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F064, F047
+- **Frontend** `app/(dealer)/dealer/inventory/page.tsx`
+- **API** `GET /v1/dealer/vehicles`
+- **Components — Reused** `Table`, `StatusTag`, `EmptyState`, `Button`
+- **Sandbox** inventory table — empty / one row / many / every status represented
+- ⚠️ **Entry corrected on landing (R47).** `GET /v1/dealer/vehicles` takes
+  `DealerInventoryQuery` (`status`, `q`, cursor) and answers
+  `DealerInventoryResponse` with `counts` per status plus `ALL`. No views,
+  enquiries or expiry columns yet (their features are deferred). Web:
+  `features/dealer/inventory/` (a table on desktop, cards on mobile) and
+  `app/(dealer)/dealer/inventory/page.tsx`. The dashboard (F048) gains
+  `listingStats` — Active, Pending review, Changes requested, Sold — from the
+  same listings, a _Changes requested_ alert and the `+ Add vehicle` CTA.
+  Tests: `apps/api/tests/dealer-inventory.test.ts`.
+
+### F067 — Mark sold, remove & renew
+
+The per-row actions and their confirmation dialogs.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F066
+- **Backend** `modules/vehicles/vehicles.routes.ts` — transition paths
+- **Frontend** `features/vehicle/inventory-actions.tsx`
+- **API** `POST /v1/dealer/vehicles/:id/mark-sold`, `.../remove-listing`, `POST /v1/dealer/listings/:id/renew`
+- **Components — New (feature-specific)** `InventoryActions` · **Reused** `Button`, `Field`, `Banner`, `Dialog`
+- **Sandbox** menu closed / open / mark-sold dialog / remove dialog / pending / error / success notice
+- 💡 **Create `Dialog` here.** `.dialog` CSS exists with zero consumers and Radix is used ad hoc in F070 — pick one and register it (finding D-C).
+
+### F068 — Vehicle history report
+
+⏸ **Deferred by R46** with the RC provider it reads.
+
+The government-records check: RC status, blacklist, challans, insurance and fitness validity — published under a disclaimer, with `UNKNOWN` never collapsed into `CLEAR`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F058, F050
+- **Backend** `modules/reports/{reports.routes,reports.service,reports.repository,reports.facade}.ts`
+- **Frontend** `features/report/{report-panel,report-summary}.tsx`
+- **API** `GET /v1/dealer/vehicles/:id/report`, `POST /v1/dealer/vehicles/:id/report/refresh`
+- **DB** `VehicleReport`; enum `BlacklistStatus`
+- **External** Attestr (shared with F058); **billed per refresh**
+- **Tests** `tests/unit/modules/reports/*.test.ts` (2)
+- **Components — New (feature-specific)** `ReportPanel` (admin, refreshable), `ReportSummary` (public, read-only) · **Reused** `StatusTag`, `Blueprint`, `Banner`, `Button`
+- **Sandbox** both — clear / warning / blacklisted / NOC issued / **records unavailable** / stale; `ReportPanel` also refreshing / refresh error
+- The `records unavailable` scenario is the important one: a provider outage rendering as a clean bill of health on a stolen car is the worst failure this feature can produce.
+
+---
+
+# TIER 11 — Moderation
+
+### F069 — Moderation queue
+
+⚠️ **Revised by R45** — no one-click approve; the queue shows image readiness.
+
+The admin's pending-listing queue with a one-click approve. The one place DESIGN-SPEC §4.7 allows a primary button inside a table row, because approving is the queue's whole purpose.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F064, F049
+- **Backend** `modules/admin/admin.routes.ts` — listing list path
+- **Frontend** `app/(admin)/admin/listings/page.tsx`, `features/admin/queue-actions.tsx`
+- **API** `GET /v1/admin/listings`
+- **Components — New (feature-specific)** `QueueApproveButton` · **Reused** `Table`, `StatusTag`, `Button`, `EmptyState`
+- **Sandbox** `QueueApproveButton` — idle / pending / error; queue table — empty / many
+- ⚠️ **Entry corrected on landing (R45).** No `QueueApproveButton`: approval
+  needs uploaded, ordered images and a primary, so it lives on the review
+  screen (F070). `GET /v1/admin/listings` is in a module of its own,
+  `modules/moderation/`, mounted beside `admin.routes.ts` rather than growing
+  that file, and takes `AdminListingQuery` (`status`, default PENDING_REVIEW;
+  `q`; cursor). The review queue is oldest `lastSubmittedAt` first. The
+  operations overview (`GET /v1/admin/metrics/overview`) now counts the queue,
+  the oldest wait and the active listings, and its panel links here. Web:
+  `features/admin/moderation-queue/`, `app/(admin)/admin/listings/page.tsx`;
+  _Listings_ enters `AdminNav`. Tests: `apps/api/tests/moderation-queue.test.ts`.
+
+### F070 — Listing review & decisions
+
+⚠️ **Revised by R45/R47** — the admin uploads, orders and chooses the primary image here, and approval is guarded.
+
+The full review screen: photos, specs, report, and the approve / reject / request-changes decision with a reason.
+
+- **Status** implemented · **Confidence** MEDIUM · **Depends on** F069, F068, F030
+- **Backend** `modules/admin/{admin.routes,admin.service}.ts` — listing decision paths
+- **Frontend** `app/(admin)/admin/listings/[id]/page.tsx`, `features/admin/{review-actions,moderation-strip}.tsx`
+- **API** `GET /v1/admin/listings/:id`, `POST .../approve`, `.../reject`, `.../request-changes`
+- **DB** `Listing.status`, `AuditLog`
+- **External** `@radix-ui/react-dialog`
+- **Tests** `tests/unit/modules/admin/admin.routes.test.ts`
+- **Components — New (feature-specific)** `ReviewActions`, `ModerationStrip` · **Reused** `ReportPanel`, `StatusTag`, `Button`, `Banner`, `Field`
+- **Sandbox** `ReviewActions` — per listing status × pending × error × each dialog open; `ModerationStrip` — 0 / 1 / 12 photos
+- ⚠️ **Do not split further.** The three decisions share one route file, one service method shape and one dialog component; separate PRs would fight over the same lines for no reviewer benefit.
+- ⚠️ **Entry corrected on landing (R45/R47).** Split after all, because R45
+  put three new things on this screen — the verification checklist, the
+  StudioCar image upload and ordering — and approval now depends on them. It
+  lands in order: `GET /v1/admin/listings/:id` (`AdminListingDetail`) with the
+  checklist `PUT /v1/admin/listings/:id/checks/:key` (`listing_checks`, cleared
+  on resubmission); then request changes and reject; then the images; then the
+  guarded approve. No `ReportPanel` (F068 is deferred by R46). Web:
+  `features/admin/listing-review/`, `app/(admin)/admin/listings/[id]/page.tsx`.
+  Photography status (R45) — `vehicle_photography`, set by
+  `PUT /v1/admin/listings/:id/photography` while in review — lands between the
+  decisions and the images, and shows in the queue row as well.
+  Approval last: `POST /v1/admin/listings/:id/approve`, guarded under the
+  listing lock by `approvalBlockers()` (dealer ACTIVE, data complete, every
+  check, `listing.minPhotos` images, a primary) — `409 LISTING_NOT_READY`
+  with `blockers` otherwise, and the same list on `AdminListingDetail`. The
+  web gets `ApproveDialog` and a blocker list in `DecisionPanel`.
+
+### F071 — Listing takedown
+
+Post-approval removal, kept separate from rejection because it acts on a live listing and has different audit semantics.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F070
+- **Backend** `modules/admin/admin.routes.ts` — takedown path
+- **API** `POST /v1/admin/listings/:id/takedown`
+- **DB** `Listing.status`, `AuditLog`
+- **Components — Modified** `ReviewActions` (+ takedown action)
+- **Sandbox** `ReviewActions` — approved listing with takedown available
+
+### F072 — Admin platform config editor
+
+The UI over F029: edit a setting or flip a flag, with the value type driving the control.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F029, F049, F030
+- **Backend** `modules/admin/{admin.routes,admin.service,admin.docs}.ts` — config paths
+- **Frontend** `app/(admin)/admin/config/page.tsx`, `features/admin/{config-editor,config-actions}.tsx`
+- **API** `GET /v1/admin/config`, `PUT /v1/admin/config/:key`
+- **DB** `PlatformConfig`, `AuditLog`
+- **Components — New (feature-specific)** `ConfigRow` · **Reused** `Button`, `Banner`, `Input`, `Select`, `Textarea`, `Tag`
+- **Sandbox** `ConfigRow` — number / boolean / string-list × clean / dirty / saving / saved / error, **plus the placeholder**
+- ⚠️ **Entry corrected on landing.** Three things in the list above were wrong:
+  - **`GET /v1/admin/audit-logs` is not part of this feature.** The baseline's
+    config _screen_ never rendered an audit view — the endpoint simply sat in
+    the same route file. The "do not split" warning was about that file, and
+    the file is still one file; the audit endpoint lands with the screen that
+    reads it, rather than being mounted here with no caller. An endpoint no
+    client calls is surface with no cover.
+  - **`Field` and `Table` are not reused here.** The baseline's rows write
+    their own `<label>` and are not tabular. `Select` and `Textarea` are, and
+    were missing from the list.
+  - **`readBy` is new on `ConfigEntry`.** `CONFIG_DEFAULTS` holds every knob
+    the product will ever have and most of the code that reads them has not
+    been reconstructed, so the screen marks a key nothing reads as read-only.
+    See the placeholder state in the sandbox.
+- ⚠️ **The `PUT` answers with the whole configuration**, which is what the
+  baseline's own OpenAPI entry says and not what its service returned (it
+  answered `{key, value, previousValue, …}`, a shape no contract described and
+  no caller read). The reference here is generated from contracts, so the two
+  could not both stay.
+- ⚠️ **The declared type is enforced on write** — a 422, as the baseline
+  documents and does not implement. `platform_config.value` is a JSON column:
+  `"18"` where `18` belongs is stored happily and read back as `NaN`.
+- **R42 lands on this screen** — admin access by email, below.
+
+---
+
+# TIER 12 — Public marketplace
+
+### F073 — Public shell — header & footer
+
+The customer chrome: sticky header with logo plate, main nav and saved-cars badge; and the footer.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F009, F011
+- **Frontend** `app/(public)/layout.tsx`, `components/layout/{customer-header,customer-footer}.tsx`
+- **Tests** `apps/web/tests/unit/components/layout/customer-header.test.tsx` — new, with no baseline equivalent; the prefix match and `aria-current` are the only rules here, and both are invisible until they are wrong
+- **Components — New (Shared)** `CustomerHeader`, `CustomerFooter`, `HeaderLink` · **Reused** `Plate`
+- **Sandbox** `CustomerHeader` — each nav item active × mobile/tablet. Needs the **pathname control**; the saved-count states arrive with F087 and the `SavedCarsProvider` decorator.
+- ⚠️ **The header takes no props.** The baseline's `cities: CitiesResponse` is gone with **D6**, and the layout is synchronous as a result: there is no `GET /v1/cities` to fetch and therefore no failure to degrade around. **F074** restores both the chip and the fetch, sourced from the search facets.
+- ⚠️ **No saved-cars badge yet** — **F087**. `Saved cars` is a plain link until the provider exists, so this feature does _not_ need the `SavedCarsProvider` decorator and is not the driving example for it; `VehicleCard` (**F075**) is the first component that cannot render without one.
+- ⚠️ **The nav points at three routes that do not exist yet** — `/cars` (F077), `/dealers` (F085), `/saved` (F087). That is the cost of bringing the shell across before the rooms it frames, and the order Tier 12 chose.
+
+### F074 — City selector
+
+The header's city chip. The only part of the header that reads the query string, kept behind a tight Suspense boundary so the rest of the header stays statically prerenderable.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F073, F076
+- **Frontend** `CitySelector` and `CityChipFallback` in `components/layout/customer-header.tsx`
+- **API** the search facets — ⚠️ **not** `GET /v1/cities`, which decision **D6**
+  removed. The list is the cities dealers actually trade in, counted from
+  `listing_search`, which is what a filter over inventory should offer anyway:
+  a seeded row with nothing behind it was a chip that led to an empty page
+- **Components — New (Shared)** `CitySelector`, `CityChipFallback`
+- **Sandbox** closed / open / long city list / no city selected / fallback
+
+### F075 — Vehicle card
+
+DESIGN-SPEC §2.8, and the product's most important component: 4:3 image, year plate, save button, title, tabular price, meta row, then a 1 px divider and the **dealer strip** — on every card, without exception.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F011, F034
+- **Frontend** `components/vehicle/vehicle-card.tsx` — `VehicleCard`, `VehicleImage`, `VehicleCardSkeleton`
+- **Components — New (Shared)** all three · **Reused** `Avatar`, `ImageSlot`, `Plate`, `Tag`
+- **Sandbox** **P0, the highest-value entry in the sandbox.** 3 variants × sold × saved × image × verified ≈ 48 states, none currently reachable by any test or tool.
+- ⚠️ `variant="list"` delegates to a private `VehicleRow` that re-implements the image block, plate, sold overlay and dealer strip (finding D-E). Two scenarios make that divergence visible; do not refactor during reconstruction.
+- ⚠️ **Entry corrected on landing (R45).** Grid variant only, in
+  `components/vehicle/vehicle-card/` (`VehicleCard`, `VehicleImage`,
+  `DealerStrip`, `VehicleCardSkeleton`), with no save button (F087 deferred) and
+  no sold state (only ACTIVE listings are public). It landed with the public list
+  it renders: `modules/search/` (`search.routes`, `search.service`,
+  `search.repository`, `search.mapper`, `search.docs`), `GET /v1/vehicles`
+  (`PublicVehicleQuery`, `PublicVehiclesResponse`, `VehicleCardDto`) — ACTIVE
+  listings of ACTIVE dealers only, newest first, offset-paged, no facets — and
+  `listings.slug`, minted at first approval, which is the only public
+  identifier. Depends on F070 and F035, not F034. `/cars` renders the grid
+  (F077's page, without filters).
+
+### F076 — Search API & facets ⚠️
+
+Faceted vehicle search: filtering, sorting, pagination and facet counts.
+
+- **Status** implemented, **query changes under D1 and D6** · **Confidence** **MEDIUM** · **Depends on** F064
+- **Backend** `modules/search/{search.routes,search.service,search.repository,search.mapper,search.facade,search.docs}.ts`
+- **API** `GET /v1/vehicles`, `GET /v1/vehicles/facets`
+- **Tests** `tests/unit/modules/search/*.test.ts` (5), `tests/public-visibility.test.ts`
+- **Components** none · **Sandbox** none — it supplies the `FacetsResponse` fixtures F078 and F079 need
+- ⚠️ **D1 impact.** Make/model facets must now group on **denormalised strings** rather than catalogue foreign keys. Unnormalised values fragment the facet list. Depends on F060 getting write-time normalisation right; if it does not, this feature cannot repair it at query time.
+- ⚠️ **D6 impact — the same problem, one column over.** City facets group on
+  `dealer.city`, which is text a dealer typed, and this feature also becomes the
+  **source of the city list** the header selector (F074) offers: `GET /v1/cities`
+  is gone. The write-time normalisation is already in place —
+  `normaliseLocality` in the contracts package, applied by onboarding and by
+  `PATCH /v1/dealer` — so unlike the make/model case the dependency is
+  satisfied rather than pending.
+- ⚠️ **Entry corrected on landing.** No `listing_search` read model and no
+  separate `/facets` route: `GET /v1/vehicles` (and the portfolio's
+  `GET /v1/dealers/:slug/vehicles`, through the same `search()`) answers the
+  page, the total and the facets together — `PublicVehiclesResponse.facets`
+  (`VehicleFacets`). Query grammar in `PublicVehicleQuery` /
+  `DealerVehicleQuery`: CSV slugs for `city`, `dealer`, `brand`, `model`,
+  `fuel`, `transmission`, `bodyType`, `color`, `owners` (`4` = four or more);
+  inclusive `minPrice`/`maxPrice` (paise), `minYear`/`maxYear` (manufacturing
+  year, as the card shows), `minKm`/`maxKm`; `q` over make, model, variant and
+  dealership name; `sort` `newest`·`price_asc`·`price_desc`·`year_desc`·
+  `km_asc`. A floor above its ceiling is a 400. Facets are counted under every
+  filter but their own; brands ignore the model filter; models need a brand;
+  towns need a district; the portfolio gets no towns or dealers. Slugs are
+  resolved to spellings with `slugify`, which merges case variants at read
+  time. New files `search.filters.ts` and `search.facets.ts`; one index,
+  `vehicles(make, model)`. **Tests** `tests/public-vehicle-search.test.ts`
+  (every filter, combinations, facet count = page total, dependent facets,
+  sorts, paging, refusals, the portfolio), `tests/unit/modules/search/
+search.{filters,facets}.test.ts`, contracts `tests/unit/public.test.ts`.
+
+### F077 — Search results page
+
+`/cars` — the grid, the result count, pagination and the applied-filter chips.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F075, F076, F073
+- **Frontend** `app/(public)/cars/page.tsx`
+- **Components — Reused** `VehicleCard`, `VehicleCardSkeleton`, `EmptyState`, `Blueprint`, `Button`
+- **Sandbox** results grid — 0 / 1 / 12 results; loading skeleton row
+
+### F078 — Filter panel
+
+DESIGN-SPEC §3.3 — filters that write to the **URL**, not to a store, so every filter state is server-renderable, shareable, indexable and back-button-correct. Count-0 options render **disabled, never hidden**.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F076
+- **Frontend** `components/search/filter-panel.tsx`
+- **Components — New (Shared)** `FilterPanel` · props `facets`, `params`, `basePath`, `dimZeroRows?`, `groups?`, `onNavigate?`
+- **Sandbox** nothing selected / one group / multiple groups / zero-count options / price range active / portfolio subset. **P0.**
+- ✅ Fully controlled by its `params` prop, so every filter combination is a static scenario. Only `useRouter` needs stubbing.
+- ⚠️ **Entry corrected on landing.** `components/search/filter-panel/` (six
+  files, one component each) plus `AppliedFilters` (C080),
+  `SearchNavigationProvider`/`SearchResultsRegion` (C081) and
+  `lib/vehicle-search.ts` (the baseline's `FACET_ORDER`/`buildSearchUrl`,
+  rebuilt for the F076 grammar). Twelve groups — City / Town, Brand, Model,
+  Price, Year, Kilometers driven, Fuel, Transmission, Body type, Color, Owners,
+  Dealer — and no generic Location. Price and km are counted presets, year two
+  selects. **Count-0 rows are dimmed, not disabled** (§2.4: "still operable");
+  the API lists only values with inventory plus any ticked one, so nothing is
+  hidden that a buyer could need. `/cars` gets the rail (desktop), the chip
+  row and a dimming results region. Tests `tests/unit/lib/vehicle-search.test.ts`,
+  `tests/unit/components/search/{filter-panel,applied-filters}.test.tsx`, and
+  "/cars with filters" in `vehicle-card.test.tsx`.
+
+### F079 — Mobile filter sheet
+
+The bottom sheet below `lg`: backdrop click closes, body scroll locks, and the sticky CTA carries a live result count.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F078
+- **Frontend** `MobileFilterSheet` in `components/search/search-toolbar.tsx`
+- **Components — New (Shared)** `MobileFilterSheet`
+- **Sandbox** closed / open at the 375 and 768 viewports. **P0** — the only mobile-specific component in the product, and today there is no way to see it without resizing a real browser against a real API.
+- ⚠️ **Entry corrected on landing.** `components/search/mobile-filter-sheet/`,
+  on a new `sheet` variant of the `Dialog` primitive rather than the legacy
+  hand-rolled overlay (which had no focus trap). It renders the full
+  `FilterPanel` — every group, not the legacy's budget, fuel and body only —
+  and applies each change at once, so _Show N cars_ is the live total and the
+  CTA only closes. A `framed` prop on `FilterPanel` drops the card and heading
+  inside the sheet. Tests `tests/unit/components/search/mobile-filter-sheet.test.tsx`
+  and the sheet variant in `dialog.test.tsx`.
+
+### F080 — Search toolbar & sort
+
+Free-text field and sort select, both writing to the URL.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F076
+- **Frontend** `SearchToolbar` in `components/search/search-toolbar.tsx`, `lib/url.ts`
+- **Tests** `tests/unit/lib/url.test.ts` ✅
+- **Components — New (Shared)** `SearchToolbar` (`showSearch?`)
+- **Sandbox** with and without the search field; each sort option selected
+- ⚠️ **Entry corrected on landing.** `components/search/search-toolbar/`
+  (`SearchToolbar`, `SearchField`, `SortSelect`); the URL helpers are
+  `lib/vehicle-search.ts` (F078), not `lib/url.ts`. Sorts are the F076
+  vocabulary — `newest` (default, omitted from the URL), `price_asc`,
+  `price_desc`, `year_desc`, `km_asc`; the baseline's `relevance` is gone with
+  its full-text ranking. The search box is debounced (350 ms), replaces the
+  history entry while typing and pushes on Enter. **This lands F077**: `/cars`
+  now has the district, the filters, the chips, search, sort and paging that
+  keeps them all. Tests `tests/unit/components/search/search-toolbar.test.tsx`.
+
+### F081 — Homepage & hero search
+
+DESIGN-SPEC §3.2 — the blueprint search block, body-type tiles and featured rows.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F075, F073
+- **Backend** `modules/search/search.routes.ts` — home path
+- **Frontend** `app/(public)/page.tsx`, `components/search/hero-search.tsx`
+- **API** `GET /v1/home`
+- **Components — New (Shared)** `HeroSearch` · **Reused** `Blueprint`, `VehicleCard`, `Button`
+- **Sandbox** `HeroSearch` — empty / typed / long city name
+
+### F082 — Vehicle detail page
+
+`/car/[slug]` — price block, spec table, dealer strip, report summary and the CTA stack.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F075, F068, F087, F089
+- **Backend** `modules/search/search.routes.ts` — detail path
+- **Frontend** `app/(public)/car/[slug]/page.tsx`, `components/vehicle/vdp-cta.tsx`
+- **API** `GET /v1/vehicles/:idOrSlug`
+- **DB** reads `Vehicle`, `Listing`, `VehicleMedia`, `Media`, `VehicleReport`, `ListingViewDaily`
+- **Components — New (Shared)** `VdpCtaStack` · **Reused** `Blueprint`, `Banner`, `Button`, `ReportSummary`, `EnquiryForm`
+- **Sandbox** `VdpCtaStack` — default / saved / sold
+- ⚠️ `vdp-cta.tsx` is the **only** file under `components/` importing a server action (finding D-5). Its sandbox scenario needs a module stub; do not "fix" the coupling during reconstruction.
+- ⚠️ **Entry corrected on landing (R45).** Scoped to what the listing flow
+  needs: `GET /v1/vehicles/:slug` (`VehicleSlugParam`, `PublicVehicleDetail`)
+  in `modules/search/`, **404 for anything but an ACTIVE listing of an ACTIVE
+  dealership**, the registration shown only as its RTO, no phone; and
+  `app/(public)/car/[slug]/page.tsx` with `VehicleGallery` (C035, thumbnails,
+  no lightbox — F083), `PriceBlock`, `SpecList` and `VdpDealerCard` in
+  `components/vehicle/`. No `VdpCtaStack`, no report, no saved-cars or enquiry:
+  F068, F087, F089 and the reveal route are deferred, so the dependencies on
+  them are dropped. Depends on F075 (the slug).
+
+### F083 — Vehicle gallery & lightbox
+
+DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen lightbox with Escape, arrow paging with wrap, a focus trap, focus returned to the exact opener, and body-scroll lock.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F034, F011
+- **Frontend** `components/vehicle/gallery.tsx`
+- **Components — New (Shared)** `VehicleGallery` · **Reused** `Corners`, `ImageSlot`
+- **Sandbox** 0 / 1 / 2 / 12 photos; strip at start, middle and end; lightbox open at index n; wrap at both ends. **P0.**
+- ⚠️ `apps/web/vitest.config.ts` documents choosing jsdom over happy-dom **specifically so this component's focus management could be asserted on**. That test was never written (finding D-4). This is the clearest single case for the sandbox paying for itself.
+- ⚠️ **Entry corrected on landing (R48).** `components/vehicle/vehicle-gallery/`
+  — `VehicleGallery`, `GalleryViewer`, `GalleryArrow` — with the lightbox on the
+  `Dialog` primitive's new `fullscreen` variant (C070) rather than the legacy
+  hand-rolled overlay. Arrows wrap as the legacy did; ←/→ act while the gallery
+  has focus; the viewer has the counter, Escape, focus trap and return, and a
+  scroll lock. The thumbnail strip and the viewer's rail are dropped (a sideways
+  scroll on the page, and a quarter of a phone's width). Depends on F082, not
+  F034. The focus assertions D-4 asked for are in
+  `tests/unit/components/vehicle/vehicle-gallery.test.tsx`.
+- ⚠️ **Entry corrected again (R49).** The strip and the rail are back, as
+  §2.9/§2.10 and the legacy `gallery.tsx` draw them: a `.blueprint` main image
+  with a "N photos · view all" tag, the 108px strip with ‹ › that scroll ±240px
+  and disable at the ends, and a lightbox with the `DD` chip, title, counter,
+  `Close ✕`, a numbered rail and a 4:3 stage. New files `gallery-strip.tsx` and
+  `gallery-rail.tsx`; the lightbox stays on `Dialog variant="fullscreen"`,
+  which gained `onCloseAutoFocus` so focus returns to the exact opener.
+
+### F084 — Similar vehicles
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F082, F076
+- **Backend** `modules/search/search.routes.ts` — similar path
+- **API** `GET /v1/vehicles/:id/similar`
+- **Components — Reused** `VehicleCard` (`variant="compact"`)
+- **Sandbox** `VehicleCard` compact variant in a row; empty result
+
+### F085 — Dealer directory
+
+`/dealers` — the directory grid with a name search and city chips.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F046, F073
+- **Backend** `modules/dealers/{dealers.public.service,dealers.public.routes,dealers.public.docs}.ts`
+- ⚠️ **The routes are in the dealers module, not the search module.** The
+  baseline mounted `/v1/dealers` and `/v1/dealers/:slug` inside
+  `search.routes.ts`, alongside `/v1/vehicles`, and handed that router a
+  `DealersPublicService`. The search module arrives at **F076**; these two paths
+  call `dealersPublic` and nothing else, so they live beside the service that
+  answers them and F076 has no reason to take them back.
+- ⚠️ **D6 impact.** `listActive` derives `citySlug` from `dealer.city` with
+  `slugify` rather than reading it off a joined `cities` row. The chip links are
+  the same shape they were, and there is no second copy of the name/slug pair to
+  fall out of step with the first — which is what the slug column was for.
+- ⚠️ **Car counts are zero until F076.** The baseline read `search.dealerStats()`,
+  which groups `listing_search` — the read model **F064** creates. This feature
+  declares the shape it needs (`DealerInventoryStats`) and the container passes
+  `noInventoryYet`. Nothing creates a listing yet, so zero is the truth rather
+  than a placeholder, and A8 already specifies that page: a dealership with no
+  live cars still appears, with an em dash. F076 replaces one argument.
+- ⚠️ **`GET /v1/dealers/:slug` lands here, its page at F086.** The feature-map
+  always listed it under F085; the portfolio that renders it is F086.
+- **Frontend** `app/(public)/dealers/page.tsx`, `components/dealers/{dealer-card,directory-filters}.tsx`, `lib/{seo,url}.ts`
+- ⚠️ **`lib/seo.ts` is created here, partially.** It belongs to **F095**, which
+  lands the full §17.2 table. F085 brings the `dealers` and `resolved` cases,
+  because a searchable directory indexable at every `?q=` permutation is exactly
+  the thin-page problem that policy exists to prevent — shipping it and fixing
+  it later would ship the harm. The shape is the baseline's, so F095 extends the
+  same union rather than replacing it. `lib/url.ts` likewise carries only
+  `SearchParamsInput` and `one()`; `FACET_ORDER` and its two walkers arrive with
+  **F077**.
+- **API** `GET /v1/dealers`, `GET /v1/dealers/:slug`
+- **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`, `apps/web/tests/unit/components/dealers/directory.test.tsx`
+- **Components — New (Shared)** `DirectoryCard`, `DirectoryFilters` · **Reused** `Blueprint`, `LogoTile`, `Plate`, `Tag`, `ImageSlot`, `EmptyState`
+- **Sandbox** `DirectoryCard` — default / no live cars / one car / sparse / no tagline / many services / long brand name / unverified / with cover / in the grid. `DirectoryFilters` — default / filtered / searching / both / one city / no cities / many cities
+- ⚠️ The file is `dealer-card.tsx` but the export is `DirectoryCard`; `DealerCard` is a _contracts type_ (finding D-6). The registry's `aliases` field exists for exactly this.
+
+### F086 — Dealer portfolio
+
+`/dealers/[slug]` — one dealer's inventory, filtered.
+
+- **Status** implemented · **Confidence** MEDIUM · **Depends on** F085, F078, F077
+- ⚠️ **This feature lands in two parts, and the split is a dependency, not a
+  choice.** The page has three sections. The **header block** and the **about /
+  contact / location row** are answered entirely by `GET /v1/dealers/:slug`,
+  which **F085** already ships — so they land with the route. The **inventory**
+  cannot: it needs `GET /v1/dealers/:slug/vehicles` and `/facets` (**F076**,
+  over the `listing_search` read model **F064** creates) plus `VehicleCard`
+  (F075), `FilterPanel` (F078), `SearchToolbar` (F080) and `MobileFilterSheet`
+  (F079). Nothing on the platform can create a listing until Tiers 9 and 10, so
+  there is no inventory to filter and no facet to count.
+  **Part 2 is the remaining work on this entry; do not tick it until the grid
+  and the filter rail are on the page.**
+- **Backend** `modules/search/search.routes.ts` — portfolio paths · **part 2**
+- **Frontend** `app/(public)/dealers/[slug]/page.tsx` · **part 1**
+- **API** `GET /v1/dealers/:slug` (F085) · `GET /v1/dealers/:slug/vehicles`, `GET /v1/dealers/:slug/facets` — **part 2**
+- **Tests** `apps/web/tests/unit/components/dealers/portfolio-page.test.tsx`
+- **Components — Modified** `FilterPanel` (+ `groups`, `dimZeroRows`) — **part 2** · **Reused, part 1** `Blueprint`, `LogoTile`, `Plate`, `Tag`, `ImageSlot`, `EmptyState` · **Reused, part 2** `VehicleCard`, `SearchToolbar`, `MobileFilterSheet`, `EnquiryForm`, `VdpCtaStack`
+- **Sandbox** `FilterPanel` with `groups` excluding `dealer` and `dimZeroRows` on — **part 2**. Part 1 introduces no component; every element it renders is an existing primitive with an entry.
+- ⚠️ **No `RevealContactButton` and no `EnquiryForm` in part 1.** The first is
+  **F090** and rides on a vehicle — A7 is vehicle-scoped and is the only route
+  that yields a phone number, so the baseline renders the button only when
+  `inventory.data[0]` exists and an empty yard has never shown it. The second is
+  **F089**; the "Enquire with dealer" button anchors to that form, so both
+  arrive together rather than leaving a button that jumps to nothing.
+- ⚠️ **Part 2 landed.** `DealerInventory` gains `params`, `liveTotal` and
+  `location`: §3.6's "Filter inventory" rail (`FilterPanel` with
+  `PORTFOLIO_FILTER_GROUPS` — no town, no dealer), the mobile sheet, the sort
+  (no search box), the chip row, "n of m cars", and an empty state for "no
+  match" that clears the filters in place. The API side is F076's
+  `GET /v1/dealers/:slug/vehicles` — the marketplace's own `search()` fixed to
+  the dealership, refusing `district`, `city` and `dealer`, with no town or
+  dealer facets — so there is one filtering engine. The location is shown as a
+  line ("Every car here is at …"), never as a control. No `/facets` route: the
+  facets arrive with the page. Tests `portfolio-page.test.tsx` ("filtering the
+  inventory (F086)") and `public-vehicle-search.test.ts`.
+- ⚠️ **No `geo` block in the JSON-LD.** The baseline emitted `GeoCoordinates`
+  from `dealer.address.lat/lng`, which came off the `cities` row **D6** removed
+  — and were the _town's_ coordinates rather than the yard's, so publishing them
+  as the dealership's location was a claim about somewhere else. `mapsUrl` is a
+  share link rather than a coordinate pair and belongs in the anchor, not here.
+- **Get directions comes from `dealer.address.mapsUrl`** (**R6**) — the link the
+  dealer pasted on onboarding step 2, rendered as an anchor and nothing more.
+  Nullable: dealerships created before R6 have none, so the button is absent
+  rather than broken. Do not construct a Maps URL from the address string as a
+  fallback — a typed address is several pins in one district, and the wrong one
+  sends a buyer to somebody else's gate.
+- ✅ **The canonical "existing component + props" precedent.** This feature needed a filter panel without a dealer group and added two props instead of creating `PortfolioFilterPanel`. Cite it when applying the reuse rule.
+
+### F087 — Saved cars
+
+Device-scoped saved cars in `localStorage` — ids only, no buyer accounts — rehydrated into cards through a batch endpoint. A car that has left the catalogue comes back as `unavailable` and is pruned rather than 404-ing the page.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F075
+- **Backend** `modules/search/search.routes.ts` — batch path
+- **Frontend** `features/saved/{saved-store,saved-list}.tsx`, `app/(public)/saved/page.tsx`, `app/api/vehicles/batch/route.ts`
+- **API** `POST /v1/vehicles/batch`
+- **External** browser `localStorage`
+- **Components — New (feature-specific)** `SavedCarsProvider`, `useSavedCars`, `SavedCarsList` · **Modified** `VehicleCard` (`variant="list"`, `showSave`)
+- **Sandbox** `SavedCarsList` — pre-hydration / empty / loading / loaded / some unavailable / fetch error
+- ⚠️ `useSavedCars()` **throws** outside its provider, and five shared components depend on it. The `withSavedCars` decorator is a **hard requirement** of the sandbox (coupling C-1), not a nicety.
+
+---
+
+# TIER 13 — Enquiries
+
+### F088 — Enquiry model & submission API
+
+Buyer anonymity is a product rule (DESIGN-SPEC §4.10): the platform holds the lead, the dealer sees what they need.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F036, F027
+- **Backend** `modules/enquiries/{enquiries.routes,enquiries.service,enquiries.repository,enquiries.facade,enquiries.docs}.ts`
+- **API** `POST /v1/enquiries`
+- **DB** `Enquiry`; enums `EnquirySource`, `EnquiryStatus`
+- **Tests** `tests/unit/modules/enquiries/*.test.ts` (4)
+- **Components** none · **Sandbox** none
+
+### F089 — Public enquiry form
+
+Inline on the VDP and the portfolio — never a modal, because modals lose leads.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F088, F013
+- **Frontend** `features/enquiry/{enquiry-form,actions,shared}.ts(x)`, `app/(public)/enquiry-sent/page.tsx`
+- **Tests** `tests/unit/features/enquiry/{actions,shared}.test.ts` ✅
+- **Components — New (feature-specific)** `EnquiryForm` · **Reused** `Field`, `Input`, `Button`, `Banner`
+- **Sandbox** vehicle source / dealer source / field errors / submitting / rate limited / sent. **P0.**
+
+### F090 — Contact reveal
+
+The dealer's number is never in the page source. It arrives only after a deliberate click, through a Server Action, and the dealer sees the tap in their inbox. Rate-limited because each reveal costs an SMS.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F088, F027, F050
+- **Backend** `modules/enquiries/enquiries.routes.ts` — reveal path
+- **Frontend** `RevealContactButton` in `components/vehicle/vdp-cta.tsx`
+- **API** `POST /v1/vehicles/:id/reveal-contact`
+- **DB** `PhoneReveal`
+- **Tests** `tests/rate-limit.test.ts`
+- **Components — New (Shared)** `RevealContactButton`
+- **Sandbox** idle / pending / revealed with call + WhatsApp links / captcha / error. **P1.**
+
+### F091 — Dealer enquiry inbox
+
+The dealer side: status tabs, counts, and per-enquiry status changes.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F088, F047
+- **Backend** `modules/enquiries/enquiries.routes.ts` — dealer paths
+- **Frontend** `features/enquiries/{inbox,actions}.tsx`, `app/(dealer)/dealer/enquiries/page.tsx`, `features/query/query-provider.tsx`, `app/api/dealer/enquiries/route.ts`
+- **API** `GET /v1/dealer/enquiries`, `GET /v1/dealer/enquiries/counts`, `PATCH /v1/dealer/enquiries/:id`
+- **External** `@tanstack/react-query` — the only feature using it
+- **Tests** `tests/unit/features/enquiries/actions.test.ts` ✅
+- **Components — New (feature-specific)** `EnquiryInbox`, `QueryProvider` · **Reused** `StatusTag`, `EmptyState`, `Button`, `Segmented`
+- **Sandbox** each status tab × empty / loading / loaded / error. Needs the `withQueryClient` decorator (coupling C-2).
+- 💡 **Create `Segmented` here.** `.seg`/`.seg-opt` is hand-rolled here and in F045 (finding D-B).
+
+### F092 — SMS notifications
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F088, F031
+- **Backend** `src/platform/notify/{notify.port,msg91.adapter}.ts`
+- **External** **MSG91**
+- **Tests** `tests/unit/platform/notify/*.test.ts` (2)
+- **Components** none · **Sandbox** none
+
+---
+
+# TIER 14 — Surface polish
+
+### F093 — Error boundaries & error pages
+
+Five Next.js error boundaries — root, global, and one per route group.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F012
+- **Frontend** `app/{error,global-error}.tsx`, `app/({public,dealer,admin})/error.tsx`, `app/(public)/{cars,car/[slug],dealers,dealers/[slug]}/error.tsx`, `lib/{errors,logger,bff}.ts`, the error model in `lib/api.ts`
+- **Components — New** `StatusPage`, `RouteError`, `SectionError`, `RetryButton`, `StatusShell` (C131–C135) · **Reused** `ErrorState`, `ButtonLink`, `Button`, `Plate`
+- **Sandbox** `Errors/StatusPage` — not found / server error / route message / phone width; `Errors/SectionError` — homepage rows / dealer inventory / retry
+- ⚠️ **Not a port.** The baseline is unreachable from this repository's remotes; the design is `docs/errors.md`.
+- ⚠️ **No `console` in production source.** `no-console` is an error for `src/**`; the web app logs through `lib/logger.ts`.
+
+### F094 — Loading & not-found states
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F012, F082
+- **Frontend** `app/(public)/loading.tsx`, `app/(public)/car/[slug]/{loading,not-found}.tsx` — as landed: `app/not-found.tsx` and `app/(public)/not-found.tsx`, and **no** `loading.tsx` above a public page
+- ⚠️ **`loading.tsx` is left out on purpose.** A Suspense boundary above a page streams the shell before its data, and a `notFound()` or failure after that is answered 200 — which would undo the 404/500 semantics F093 and F095 depend on.
+- **Components — Reused** `SkeletonLines`, `VehicleCardSkeleton`, `EmptyState`
+- **Sandbox** skeleton layouts for the grid and the VDP
+
+### F095 — SEO & metadata
+
+Sitemap, robots, canonical URLs and per-page metadata.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F077, F082, F085
+- **Frontend** `app/{sitemap,robots}.ts`, `app/{favicon.ico,icon.png,apple-icon.png}`, `public/og/dealers-drive.png`, `lib/seo/**` (was `lib/seo.ts`), `components/seo/json-ld`, `generateMetadata` in the public routes
+- **API** `GET /v1/sitemap` (search module) · `PublicVehicleDetail` gains `facts` and the dealer's `city`/`district`/`state`
+- **Tests** `apps/web/tests/unit/lib/seo/*.test.ts`, `apps/web/tests/unit/app/seo-routes.test.tsx`, the vehicle and portfolio page tests; `apps/api/tests/public-lifecycle.test.ts` (sitemap × lifecycle)
+- **Components** `JsonLd` (C100) · **Sandbox** none — it draws nothing
+- ⚠️ **Not a port.** The baseline is unreachable from this repository's remotes, and the product has moved past it: R71 made a sold car a 404, so the baseline's "sold > 30 days → noindex" row has nothing to act on. The design is in `docs/seo.md`.
+- ⚠️ **Fixes F085's canonical.** A district page canonicalised to `/dealers?city={district}` — the pre-R22 parameter name — which is a town filter. It is `/dealers?district=` now, and `/cars` shares the same policy.
+- ⚠️ **`htmlLimitedBots: /.*/`** in `next.config.ts`: Next 15 otherwise streams a dynamic page's metadata into `<body>` for Googlebot, where Google ignores the canonical.
+
+### F096 — Postman collection
+
+⚠️ **Reduced by decision D5.** The OpenAPI document, Swagger UI and the
+per-module `*.docs.ts` pattern landed early as **F098**, so that every feature
+documents its own endpoints as it lands rather than one person reconstructing 73
+of them here. What remains is the Postman collection: a different output, a
+different consumer, and no per-feature obligation.
+
+A Postman collection generated from the same OpenAPI document, so a reviewer can
+exercise the API without writing requests by hand.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F098, and every API feature for completeness
+- **Backend** `src/docs/postman.ts`, `src/docs/generate-postman.ts`
+- **Tests** `tests/postman.test.ts`
+- **Components** none · **Sandbox** none
+- **Not here any more:** `src/docs/{spec,errors,schemas,openapi,docs.routes}.ts`
+  and `GET /api/docs` — all F098.
+- By the time this lands the document should already be complete, because every
+  feature added its own operations. If it is not, that is a rule that was not
+  enforced, and the gap is the thing to investigate rather than to backfill
+  silently.
+
+### F097 — Seed data & developer bootstrap
+
+A working local dataset: one admin, a few dealers, some vehicles and listings across every status. **Post-D1 this is small** — the ~5,000-line catalogue seed is gone.
+
+- **Status** implemented, **substantially reduced by D1** · **Confidence** HIGH · **Depends on** every model
+- **Backend** `prisma/seed/{index,bootstrap,data,images}.ts` — **without** `prisma/seed/catalog/**`
+- **Files** `scripts/app-up.sh`, `pnpm app:seed`
+- **Components** none · **Sandbox** the seed's vocabulary — Tamil Nadu cities, `₹` formatting, `TN 09 BX 1234` plates — is what sandbox fixtures should imitate
+
+---
+
+# REVISIONS — product changes after the reconstruction
+
+The 97 features above describe the baseline being re-delivered. **Everything in
+this section is a change to the product itself**, asked for after that work
+started, and it is numbered separately for exactly that reason: an `R` is not a
+slice of the baseline, so a reviewer comparing a feature branch against
+`baseline/pre-reorg-2026-09-02` should expect these hunks and no others.
+
+Each entry says which feature it revises. Where a revision made a feature's own
+entry wrong, that entry was corrected in the same PR rather than being left to
+disagree with the code — F019 is the one that changed beyond recognition.
+
+## R1 — A duplicate phone number returns the wizard to step 1
+
+**Revises F038, F039** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+`POST /v1/auth/onboarding` answers a taken number with a 409 naming `body.phone`
+— and `phone` is typed on step 1 while the submit happens on step 2, so the
+message landed against a fieldset the dealer could not see.
+
+- **Frontend** `features/auth/onboarding-wizard.tsx` — `ACCOUNT_FIELDS`, the one
+  list of step-1 fields, used both by the browser-side gate and by the walk-back
+- **Tests** `tests/unit/features/auth/onboarding-wizard.test.tsx` — returns to
+  Account for a step-1 field, stays on Business for a step-2 one
+- **Sandbox** `OnboardingWizard` → `PhoneAlreadyRegistered`
+- The step is adjusted **during render** on the render that first sees a new
+  action result, not in an effect. An effect commits the error against the
+  hidden fieldset first and moves on the next frame; that gap is visible to a
+  test on a slow machine and to a dealer on a slow phone.
+
+## R2 — District on the business step
+
+**Revises F039, F043, F045** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Schema** `Dealer.district`, `@@index([state, district, city])`
+- **Backend** `OnboardingInput.district`, `UpdateDealerInput.address.district`,
+  `DealerProfile.address.district`, completeness names it
+- **Frontend** the Business step's third locality field
+- **Tests** `tests/dealer-onboarding.test.ts` — required, normalised, renamed
+- Required rather than optional because the admin console filters on it, and a
+  filter that omits the dealerships that skipped the question is a filter that
+  lies. Nullable in the database with **no backfill**: a district guessed from a
+  city name is wrong for exactly the towns that need it.
+
+## R3 — Admin dealer filters by city, district and state
+
+**Revises F045** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Backend** `AdminDealerQuery.{district,state}`, `AdminDealerRow.{district,state}`,
+  `AdminDealerFacets` on `AdminDealersResponse`
+- **API** `GET /v1/admin/dealers?state=&district=&city=`
+- **Frontend** `app/(admin)/admin/dealers/page.tsx` — a plain GET form, so the
+  filter is a URL a moderator can send to a colleague
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts`
+- `facets` is deliberately **not** narrowed by the current filter: choosing a
+  state must not empty the district list and strand the operator.
+
+## R4 — Admin sign-in is Google + an allow-list (D8)
+
+**Revises F019** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+Password authentication is removed. See the F019 entry above for what the
+feature is now, and `CONTEXT.md` §7e for why it is shaped this way.
+
+- **Removed** `POST /v1/auth/admin/login`, `modules/auth/password.ts`,
+  `AdminLoginInput`, `AdminLoginForm` (C042), `users.passwordHash`,
+  `@node-rs/argon2`, `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD`
+- **Added** `ADMIN_ALLOWLIST`, `modules/auth/admin-allowlist.ts`,
+  `GET /v1/auth/admin/google/start`, `OAuthTransaction.audience`
+- **Tests** `tests/auth.test.ts` → `describe('the admin console')`,
+  `tests/unit/modules/auth/admin-allowlist.test.ts`
+- The allow-list is checked when a session is issued **and** in `resolveAdmin`
+  on every request, so removing an address revokes an open console.
+
+## R5 — `deploy-dev` paused
+
+**Revises F024** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Infra** `.github/workflows/release.yml` — the `deploy-dev` job is commented
+  out with the three steps that turn it back on. `_deploy.yml` and `promote.yml`
+  are untouched.
+- Neither target exists yet, and a workflow that goes red for a reason nobody
+  can act on is one people stop reading.
+
+## R6 — The yard on a map
+
+**Revises F039, F043, F086** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+The dealer's own Google Maps share link, asked for on the business step, so the
+public portfolio can offer **Get directions**.
+
+- **Schema** `Dealer.mapsUrl`
+- **Contracts** `GoogleMapsUrl` (host-checked), `OnboardingInput.mapsUrl`,
+  `UpdateDealerInput.address.mapsUrl`, `DealerProfile.address.mapsUrl`,
+  `AdminDealerDetail.mapsUrl`
+- **Frontend** the Business step's Maps field; the admin dealer page links it
+  beside the yard photograph, which is the other half of the same question
+- **Tests** `packages/contracts/tests/unit/common.test.ts` (the host list),
+  `tests/dealer-onboarding.test.ts` → `describe('the yard on a map')`
+- **Consumed by F086**, which renders it as the portfolio's directions link. It
+  is stored **verbatim**, not parsed into `lat`/`lng`: a share link survives the
+  dealer moving the pin, carries the place's name and reviews, and opens the
+  Maps app on a phone.
+- The host check is a **security** boundary, not a data-quality one: a buyer's
+  browser follows this link from a public page, so an arbitrary URL here would
+  be a self-service open redirect wearing a dealership's name. `https` on a
+  Google Maps domain, nothing else.
+
+## R7 — The contact number is editable again
+
+**Revises F038, F046** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Contracts** `UpdateDealerInput.contact.phone`; `IndianMobile` /
+  `isIndianMobile` replace three copies of one regex
+- **Backend** `dealers.service.update` normalises to E.164, checks
+  `users.phone` for a clash, and writes both `users.phone` and
+  `dealers.contactPhone`
+- **Frontend** the phone input is no longer `readOnly` once a dealership exists;
+  the wizard's browser-side check imports the shared predicate
+- **Tests** `tests/dealer-onboarding.test.ts` → `describe('the contact number,
+after onboarding')`, plus the service unit tests
+- The field was read-only on the reasoning that it is the login identity and
+  changing it needs an OTP round-trip. Identity has been a Google account since
+  F018; what this holds is the number a **buyer** is given. The read-only box
+  was a dead end for the one dealer who most needed it — the one told their
+  number belongs to somebody else, sent back to a step where they could not
+  change it.
+- The three regex copies disagreed with the placeholder beside them: the form
+  suggests `98400 12345` and the validator rejected it. One predicate now, in
+  the package both apps import.
+
+## R8 — One folder per dealership, named after the dealership
+
+**Revises F038, F040, F041, F047** · [#75](https://github.com/shashikiran6sk/DealersDrive/pull/75)
+
+- **Contracts** `dealerSlug({ legalName, city, district, state })` —
+  `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`. Consecutive duplicate
+  segments collapse, because a city usually shares its district's name
+- **Backend** `dealer-storage-keys.ts` becomes `dealers/{slug}/documents/{type}/{id}`
+  and `dealers/{slug}/yard/{mediaId}`; `uniqueSlug` takes the address;
+  `repo.slugById` serves the three KYC write paths
+- **Seeds** both derive their slugs; the dev seed's upsert keys on the GSTIN,
+  because a key derived from editable data forks rows instead of updating them
+- **Script** `apps/api/scripts/relocate-dealer-storage.ts` — the one thing
+  permitted to change a slug after registration, because it moves the objects in
+  the same pass
+- **Tests** `common.test.ts` → `describe('dealerSlug')`; the storage keys the
+  dealers and admin service tests assert; `dealer-onboarding.test.ts` now
+  asserts the object exists _before_ it is deleted
+- Two problems, one shape. A dealership's uploads were split across `kyc/{uuid}/`
+  and `dealers/{uuid}/yard/`, so the two halves of one application sat in two
+  trees; and both trees were named after a UUID, so a bucket listing could not be
+  read by a person. One folder per dealership, named after the dealership, fixes
+  both — and the slug was already the portfolio's URL, so it is the identifier
+  that was going to be printed on things anyway.
+- **The slug is assigned once and never recomputed.** KYC keys are derived from
+  it rather than stored, so a slug that moved would orphan the files. A dealer
+  who corrects their town keeps their slug — and their link.
+
+## R9 — The yard photograph reaches the public pages
+
+**Revises F033, F085, F086** · [#76](https://github.com/shashikiran6sk/DealersDrive/pull/76)
+
+- **Backend** `commitYardPhoto` marks the row READY; `repo.readyMediaIds`
+  (one query per directory page) and `repo.markMediaReady`;
+  `listActive` projects `coverMediaId`; `dealers.public.service` fills
+  `coverUrl` — 640px on a card, 1600px on the portfolio
+- **Platform** `mediaUrl` drops the `vehicles/` segment: one handler serves
+  every kind of image, and a cover URL claiming to be a vehicle's is how a
+  second identical delivery route gets written
+- **Frontend** no logic change — both pages already branched on `coverUrl`;
+  the comments saying every card takes the no-cover branch are no longer true
+- **Sandbox** `DirectoryCard` → `WithCover` is a live state rather than a
+  preview of F034
+- **Tests** the public service's cover cases (ready / not ready / absent, and
+  that it asks only about the page); `commitYardPhoto` promotes, and does not
+  promote an upload that never landed; the card's cover branch
+- Nothing consumes the `media.process` job — its worker is **F034** — so every
+  yard photograph ever uploaded sat at PENDING, and `media.serve()` answers
+  only for a READY row. The photograph existed, was HEADed at commit, and was
+  unreachable by any public URL.
+- **This does not stand in for F034.** The object's bytes are confirmed before
+  the row is promoted, and `serve()` already falls back to the original when a
+  row has no variants. F034 adds the renditions and `serve()` prefers them;
+  this path does not change when it lands.
+- `logoUrl` stays null, and not for the same reason: nothing in the product
+  writes `logoMediaId`, so there is no image to address. The initials tile is
+  the design's answer, not a gap.
+
+## R10 — The yard on a map, not only in a link
+
+**Revises F038, F041, F086** · [#77](https://github.com/shashikiran6sk/DealersDrive/pull/77)
+
+- **Contracts** `DealerPublicProfile.address.geo`; `isGoogleMapsUrl` exported as
+  a predicate, because the schema vets what a dealer types and something else
+  has to vet every redirect after it
+- **Platform** `platform/maps/maps-link.ts` — `coordinatesIn` (pure) and
+  `resolveCoordinates` (follows a short link), behind a `MapsPort` so no unit
+  test reaches the internet
+- **Backend** registration and the profile save resolve the pin into the
+  `lat`/`lng` columns **D6** left unwritten; the profile save re-resolves only
+  when the link changed
+- **Frontend** `LocationCard` (new, C068) — the map and "Get directions",
+  extracted out of the portfolio page
+- **Script** `scripts/backfill-dealer-pins.ts` for the rows that predate this
+- **Tests** the parser's shapes, the redirect walk, the host check, and the
+  card's four states
+- The location card had a grey slot where the map should be, because the only
+  thing the API knew about the yard was an opaque URL. **R6** is still right
+  that the link is stored verbatim — it survives the dealer moving their pin
+  and opens the Maps app on a phone — so the coordinates are read out of it _as
+  well_, never instead.
+- **Never geocoded from the address.** A typed address is several pins in one
+  district, and a map confidently centred on the wrong one is worse than no map
+  because it looks authoritative. No pin, no map — the card shows the slot and
+  the directions button still works.
+- **Following the link is an SSRF surface.** The schema checked the first hop
+  and can check nothing after it, so redirects are followed by hand, every hop
+  is re-validated against the same allow-list, the chain is bounded and the
+  timeout is short. A redirect off Google ends the walk instead of being
+  followed.
+- A keyless `output=embed` iframe rather than the Static Maps API: no key in
+  any environment, nothing billed per crawl, and it pans and zooms. The cost is
+  that a visitor to a portfolio is disclosed to Google on load rather than on
+  click, which `loading="lazy"` limits to visitors who scroll to it.
+- `geo` is deliberately **not** published in `AutoDealer` structured data.
+  These are coordinates off a share link, not surveyed: good enough to centre a
+  map a person is looking at, not good enough to assert to a search engine.
+
+## R11 — Districts in the header, and city chips that multi-select
+
+**Revises F085** · [#78](https://github.com/shashikiran6sk/DealersDrive/pull/78)
+
+- **Contracts** `DealerDirectoryQuery.district`; `city` takes a comma-separated
+  list; `LocationChip`; `DealerDirectoryResponse.districts`; `PublicLocations`
+- **Backend** `GET /v1/locations`; `listActive` projects the district;
+  `chipsOf` counts either column; the chips narrow to the chosen district and
+  the districts narrow to nothing
+- **Frontend** `LocationSelector` (new, C069) in the header, the public layout
+  fetching its list, `DirectoryFilters` multi-select with a counted "Clear N
+  towns", `many()` in `lib/url`
+- **Sandbox** `LocationSelector` with its five states; `DirectoryFilters` gains
+  `SeveralTowns` and `WithinADistrict`
+- **Tests** the district filter, multi-city, chip narrowing, place ordering,
+  the locations endpoint, and the selector's keyboard and drop-the-towns
+  behaviour
+- The header had no location control at all — F074 was going to restore the
+  baseline's city switcher off `listing_search` at F076. It does not need to
+  wait: the directory already knows every locality a dealership is in, which is
+  the same source F076 would use and is available now.
+- **Districts rather than cities**, which is a change from the baseline and not
+  only a consequence of **D6** removing the `cities` table. A district is the
+  area somebody drives across, the towns inside give no hint they are related —
+  Arakkonam and Walajapet share one with Arcot and nothing else — and a header
+  dropdown listing every town stops being readable at about thirty. The towns
+  are the chips, narrowed to the district.
+- **The chips are toggles that compose.** A buyer working the Vellore belt
+  wants Katpadi _and_ Vellore, twenty minutes apart; single-select made them run
+  the same search twice. `aria-pressed` already announced a toggle, so this is
+  the behaviour catching up with the announcement — and it needs a counted
+  "Clear N towns", because un-pressing four chips in turn is not an affordance.
+- Changing the district **drops `city` and `page`**: `?district=ranipet&city=katpadi`
+  is an empty page, and letting a buyer navigate into it is worse than deciding
+  for them.
+- `cities` is narrowed by the district and by nothing else, and `districts` by
+  nothing at all. A list that dropped the options you did not choose is a list
+  you cannot get back out of.
+
+## R12 — A write clears the public page it changed
+
+**Revises F041, F046, F049, F085, F086**
+
+- **Frontend** `lib/cache-tags.ts` — `DEALERS_TAG`, `dealerTag(slug)` and the
+  one `revalidatePublicDealer()` every write path calls; the three public
+  fetches tagged; the dealer's profile save, the yard-photo commit and delete,
+  and the eight admin moderation actions all clear what they changed
+- **Tests** the tags a save emits, that a failed save emits none, and the
+  moderation cases — including the one where a caller omits the slug
+- Two ten-minute windows stood between a write and the page a buyer sees:
+  Next's Data Cache at `revalidate: 600`, and `/dealers/[slug]`'s own route
+  cache at the same. Nothing ever invalidated either. A dealer who corrected
+  their Maps link watched their own portfolio and reasonably concluded the save
+  had failed.
+- **The windows are not the bug.** A directory changes at the pace of
+  onboarding and a portfolio at the pace of a dealer editing it, so a shorter
+  TTL would charge every anonymous visitor a round trip to make one dealer's
+  edit land sooner. What was missing is the write path _saying_ the thing
+  changed, which is the one moment that knows.
+- **Tags rather than `revalidatePath`.** The guarantee wanted is that the fetch
+  is re-issued; a tag says so directly, where reasoning about which cache a
+  path expression reaches is how a cache fix ships that does not fix anything.
+- The admin half is the one that was not merely untidy. Public visibility is
+  `dealer.status === 'ACTIVE'` (rule 6), so a **suspension** is the write that
+  takes a dealership off the marketplace — and its portfolio was served from
+  cache for ten minutes afterwards. Rejecting a KYC document reaches the same
+  place, by handing a PENDING_APPROVAL application back to DRAFT.
+- The API's `Cache-Control: public, max-age=300` is a third window and is not a
+  factor: nothing between the Next server and the API caches — an ALB does not
+  — and no browser reaches those routes directly. It becomes one the day a CDN
+  is put in front of the API, and `lib/cache-tags.ts` is where that note lives.
+
+## R13 — Whatever the share panel gives, and the yard at the foot of the header
+
+**Revises F038, F046, F086**
+
+- **Contracts** `common.ts` — `mapsUrlFrom()`, and `GoogleMapsUrl` wrapped in a
+  `preprocess` that unwraps an `<iframe>` before the host check runs
+- **Backend** `platform/maps/maps-link.ts` — `EMBED_PIN`, the pin inside an
+  embed URL's `pb` blob; `dealers.public.service.ts` — `directionsUrl()`
+- **Frontend** the Maps field in `profile-form.tsx` and `onboarding-wizard.tsx`
+  becomes `type="text"`; `dealers/[slug]/page.tsx` — the yard photograph moves
+  below the identity block and the stats, and grows
+- **Tests** the embed URL and the pasted element, both accepted and both still
+  host-checked; the longitude-first blob; the three `directionsUrl` cases
+
+### The paste
+
+Google's Share panel has two tabs, and a dealer will use either. **Send a link**
+gives `maps.app.goo.gl/…`. **Embed a map** gives an `<iframe src="…/maps/embed?pb=…">`
+— the whole element, because that is what "put a map on your website" wants.
+
+What the field did with those was the worst of the three possible answers. The
+element was refused, with a message saying the thing Google had just handed the
+dealer was not a Google Maps link. The embed URL on its own was **accepted** —
+it is on a Google host — and then resolved to no coordinates, because the pin in
+a `pb` blob is written `!2d<lng>!3d<lat>`, longitude first, and nothing looked
+for it. The dealer saw a saved link and no map, with nothing to say why.
+
+Both are read now. The element is unwrapped to its `src` — narrowly, by regex,
+because this is not an HTML parser and must not become one — and the URL that
+comes out faces exactly the same host check as one typed in, so the wrapper buys
+nobody a redirect off Google. The `pb` blob is parsed last, after `!3d…!4d…`, so
+a URL carrying a real marker is never read through the wrong pattern.
+
+`type="url"` had to go with it: native constraint validation refuses an
+`<iframe …>` in the browser, before a server ever sees it.
+
+### The one place a stored link is not returned verbatim
+
+R6 says the portfolio hands back the dealer's own link and never composes one.
+An embed URL breaks the assumption underneath that rule: it draws a fine map,
+but _opened_ it is a bare embedded frame with no place card and no directions,
+which is the one thing the button exists to do. So for that shape alone,
+`directionsUrl()` builds `/maps/dir/?api=1&destination=<lat>,<lng>` from the
+dealership's own pin — the pin that very URL contains.
+
+This is not what R6 forbids. R6 is about not composing a destination out of a
+**typed address**, because "18, Gandhi Road" is four gates in one district.
+These coordinates came from the dealer's link. Any other shape, or no pin at
+all, is still returned exactly as stored.
+
+### The header reads in the wrong order
+
+The yard photograph was a 170px strip above the dealership's name — a banner,
+in the position a logo occupies, glanced past on the way to the text. Below the
+facts it reads the other way round: a buyer arrives with questions the stats
+answer in a line each — how many cars, how long they have traded, which town —
+and _then_ wants to see the place. So the header now ends on the photograph, at
+360px, flush to the divider the info row starts from. The logo tile loses its
+negative top margin, which existed only to overlap the image that was above it.
+
+## R14 — A map of the dealership, not a dot on a map
+
+**Revises F038, F046, F086**
+
+- **Contracts** `public.ts` — `DealerPublicProfile.address.embedUrl`
+- **Database** `dealers.mapsPlaceId`, nullable, not backfilled
+- **Backend** `platform/maps/maps-link.ts` — `MapsPlace`, `placeIdIn()`,
+  `resolvePlace()` and `embedUrlFor()`; `MapsPort.coordinatesFor` becomes
+  `placeFor`; both write paths store the place; `dealers.public.service.ts`
+  composes the embed; `scripts/backfill-dealer-pins.ts` fills the new column
+- **Frontend** `LocationCard` renders `address.embedUrl` and grows to 220px
+- **Sandbox** `LocationCard` gains `PinOnly`; `Default` becomes the place card
+- **Tests** the id in all three of its spellings, the null id, a place found
+  before the pin, a place with no pin, and each of `embedUrlFor`'s answers
+
+### What was wrong with the map
+
+R10 drew the yard with `?q=lat,lng&output=embed`, which is a dot. No name on
+it, nothing to confirm the buyer is looking at the right gate, no rating, and
+no way to start navigating without leaving the page — while the dealership's
+own Google listing has all four and the dealer has already handed us the link
+to it.
+
+The fix is not a bigger frame or an API key. It is that a **place id** — the
+`0x…:0x…` pair Google writes into its own share URLs — asks Google a different
+question. Given one, the same keyless embed returns the place card: the
+dealership's name, its address, its rating and review count, the zoom controls,
+and a directions control inside the map.
+
+### Where the id comes from, in the order it is cheapest
+
+The dealer already pasted it, in most cases, and R13 already stores whatever
+they pasted:
+
+1. **An embed URL** — Share → Embed a map. The id is in the `pb` blob, and the
+   URL is returned untouched, because it is already the map they chose.
+2. **A place URL** — the desktop address bar. The id is in `data=`, and it is
+   read back out **at request time**, which is why the migration backfills
+   nothing: those rows already work.
+3. **A short link** — the phone Share sheet. This is the only shape whose id
+   costs a redirect, so it is the only shape the column exists for. It is
+   written by the same write-time resolve that already fetched the pin, and
+   filled in for existing rows by `maps:backfill`.
+
+A dealership whose link only ever carried coordinates keeps the dot. That is
+not a regression, it is the old behaviour, and it is the honest answer when
+nothing named a place.
+
+### The pin stops being the thing the map needs
+
+Handed an id, Google re-centres the frame on the place's own position and
+ignores the coordinates in the blob — verified against the live endpoint, not
+assumed. So `lat`/`lng` go in as a fallback for the day an id stops resolving,
+rather than as the thing being drawn, and a link that named a place without
+placing it now draws a map where it used to draw nothing.
+
+### Two things a reviewer should look at
+
+- **The seeded dealerships still show the dot**, deliberately. `dev-dealers`
+  composes `?api=1&query=lat,lng` for invented yards, which name no place
+  because they are not places. Only a real dealership can render a place card,
+  which is also why exactly one sandbox story uses a real one.
+- **The place card can carry the business's phone number.** Rule 7 is about
+  what _this_ API returns, and it still returns none — but the frame is
+  Google's, and Google shows what it holds about a public business. It is the
+  same disclosure the "Get directions" button makes one press later, brought
+  forward to the moment a buyer scrolls to the map.
+
+## R15 — One card of details, and a yard photograph that lines up
+
+**Revises F086**
+
+- **Frontend** `dealers/[slug]/page.tsx` — the stats grid is removed and its
+  rows join the contact card through a new `detailRows()`; the yard photograph
+  is inset to the page column and grows to 440px
+- **Tests** the stats read from the details card, the town is not said twice,
+  and an empty stat is an em dash
+
+### Four numbers nobody came for
+
+R13 put the stats between the dealership's name and the yard: four bordered
+cards, each a label and a 28px number. That is the typographic weight a page
+gives a figure a visitor arrived to read — a price, a balance. Nobody arrives
+at a dealership page to read the number 27.
+
+They are facts about the dealership in exactly the register of its GSTIN and
+its opening hours, so they are rows beside them now. The contact card was four
+rows and had room; the header is left doing the one thing only it can do, which
+is say who this is and show the place.
+
+`location` is dropped rather than moved. `contact` already carries a City row
+with the state on it, and the stat is the same town said a second time — a
+duplicate that was invisible while the two lived in different blocks and would
+be conspicuous inside one list. Nothing else is re-derived: both arrays still
+come from A9, and `carCountLabel` still reads the `cars` stat, so the inventory
+heading and the details card cannot disagree.
+
+### The one element on the page that did not line up
+
+Every block on this page is `max-w-[1280px] px-6` — 1280 including a 24px
+gutter. The yard photograph was `max-w-[1280px]` with no gutter, so it alone
+ran 24px past both margins, and the eye reads that as the photograph having
+escaped rather than as the text being indented.
+
+It is inset to the same column now, and it takes back the 80px the stats grid
+was occupying: 440px, 340 below `lg`, 240 below `md`. The frame draws its own
+bottom border again — `border-b-0` existed because the photograph ran flush
+into the header's divider and the two drew one line twice, which the 20px of
+bottom padding ends.
+
+## R16 — The registered name, and a phone row nothing could reveal
+
+**Revises F085 (A9) / F086**
+
+- **API** `dealers.public.service.ts` — the `phone` row leaves `contact`
+- **Contracts** `public.ts` — the `masked` flag leaves the contact row schema,
+  which nothing sets any more
+- **Frontend** `dealers/[slug]/page.tsx` — the registered name leaves the
+  identity block; the `<dd>` loses its masked branch
+- **Docs** `dealers.public.docs.ts` — the tag description described the row
+- **Tests** the registered name is absent from the page and present in the
+  JSON-LD; no phone row and no "Tap to reveal" in the payload or the page
+
+### A line that said the heading again
+
+Under the trading name sat the registered one, in 13px subtle ink. The comment
+beside it argued that the two are what a buyer checks a GSTIN against and that
+a later feature could make them disagree — but `brandName` is written by the
+server from `legalName` in the one place that writes either, and
+`UpdateDealerInput` does not carry `brandName` precisely so that no client can
+make them differ. So the row rendered the heading twice, two lines apart, on
+every dealership on the platform, and read as a rendering fault.
+
+`legalName` stays in the `AutoDealer` structured data, where it is a distinct
+property with a defined meaning and costs a reader nothing. It is not dead
+code: the field is still in the contract, still composed by A9, and still
+consumed by the JSON-LD this page emits. (The admin console shows a registered
+name too, off `DealerAdminDetail` — a different contract, untouched here.)
+
+### An invitation with nothing behind it
+
+The contact card's first row was **Phone · Tap to reveal**, `masked: true`, and
+no digits anywhere in the payload. Rule 7 was never in question here.
+
+What was in question is what a buyer does with it. The reveal is
+`POST /v1/vehicles/:id/reveal-contact` — **A7, vehicle-scoped**, because a
+reveal is charged and logged against a listing. There is no dealership-scoped
+reveal and there is not going to be one, so the row invited an action that no
+control on this page can perform, on a page whose inventory is empty. A person
+taps it, nothing happens, and they conclude the site is broken rather than that
+they misread a static row.
+
+Removing it also simplifies the boundary rather than weakening it: the schema
+now has no phone-shaped field at all, which is a property a reviewer can check
+by reading the type instead of by reasoning about a flag.
+
+`masked` goes with it. It was one optional boolean set in exactly one place,
+and leaving it behind would be an affordance for reintroducing the same row
+without the argument.
+
+## R17 — A directory card that keeps its height
+
+**Revises F085**
+
+- **Frontend** `dealer-card.tsx` — a `min-h` floor and a two-line clamp on the
+  tagline; `dealers/page.tsx` — `grid-auto-rows: 1fr` on the card grid
+- **Sandbox** `directory-card.stories.tsx` — `InTheGrid` becomes the story that
+  shows the fix, with a long tagline and a sparse card side by side; a
+  `LongTagline` story for the clamp
+- **Tests** the floor survives an empty tagline and an empty service row; a
+  200-character tagline is clamped rather than allowed to grow the card
+
+### Two optional fields, one ragged grid
+
+A tagline and a service row are both optional, and a dealership an hour past
+onboarding has neither — so the card was as tall as whatever it had to say.
+Within a row that was invisible, because grid items stretch to the row: the
+damage showed up _between_ rows, as a grid whose rhythm broke wherever a sparse
+dealership happened to land, and as a visibly short card whenever a whole row
+of them was sparse.
+
+The fix is in two halves, deliberately in two places.
+
+**`grid-auto-rows: 1fr` is on the grid**, because equal height is a fact about
+a row and not about a card. Every implicit row takes the height of its tallest
+member, so a dealership with nothing to say is exactly as tall as the one
+beside it that has everything. A card rendered outside a grid — the sandbox
+today, a "similar dealers" strip later — should not be padded to a row it is
+not in, which is why this rule is not on the card.
+
+**`min-h-[294px]` is on the card**, because `1fr` only equalises: a page where
+_every_ dealership is sparse would give a tidy row of stubs. The number is the
+card as it reads with one line of name, two of tagline and one row of tags —
+104 cover + 1 divider + 28 padding + 42 identity + 36 tagline + 22 tags + 31
+footer + 30 of gaps.
+
+### The same failure the other way round
+
+Neither half is safe without a bound on the tagline. The contract allows 200
+characters, and under `1fr` one dealership writing all 200 sets the height of
+every card on the page — a grid of half-empty cards, caused by the rule meant
+to make them consistent. `line-clamp-2` bounds it at the two lines the floor
+already reserves.
+
+Nothing reserves an empty box: a card with no tagline still renders no
+paragraph, and `mt-auto` keeps the footer at the bottom of whatever is left.
+The height is held by the container and the floor, not by placeholder markup —
+which matters for a screen reader, where a reserved empty element is a thing to
+announce and empty space is not.
+
+## R18 — Services are a set, not a list
+
+**Revises F046 / F085 / F086**
+
+- **Contracts** `common.ts` — `distinctServices()`, beside `normaliseLocality`
+- **API** `dealers.service.ts` — collapsed at write time, beside the localities;
+  `dealers.public.service.ts` — collapsed again when composing the card's three
+  and the portfolio's full list, for rows written before this
+- **Frontend** `profile-form.tsx` — the field hint says repeats are merged
+- **Tests** the helper's rules; the write collapses and keeps the dealer's
+  spelling; a stored row with duplicates does not reach either public shape
+
+### What the dealer actually saw
+
+`Services` is one comma-separated box, and typing "Finance, finance" stored two
+entries. Both public pages render a tag per service and key it by the string,
+so React found two children with the same key and said so — in a dev overlay,
+in a box about a page the dealer had just saved. The message named nothing they
+had typed and nothing they could act on.
+
+### Collapsed, not refused
+
+The obvious alternative is a 400 that says "you listed Finance twice", and it
+is the wrong one. A dealer typing the same word twice has made a slip whose
+intent is not in doubt, and the useful answer is the service they meant. That
+is the argument `normaliseLocality` already made for city and state under **D6**
+— the CLAUDE.md §5 risk in miniature, since without a lookup table `Finance`,
+`finance` and `FINANCE` are three facets of one service — so this is the same
+guard rail applied to the other free-text field a dealer types several values
+into, in the same place: at write time, in the package both apps import.
+
+The rules are narrow on purpose. Comparison is case-insensitive with internal
+whitespace collapsed, because that is the difference a typo makes; the first
+spelling wins, so a dealer who wrote `RC Transfer` keeps their capitals; order
+is preserved, because they chose it and the card shows the first three. It does
+not merge synonyms or singularise — `Loan` and `Loans` stay two services,
+because a dealer knows what they offer and a function that guessed would
+eventually be wrong in a way nobody could see.
+
+### Why the service and not the schema
+
+`normaliseLocality` runs in `dealers.service.ts` rather than in a Zod
+`.transform`, and this follows it for a second reason as well: input schemas
+are converted to the OpenAPI document with `z.toJSONSchema`, and a transform
+cannot be represented in JSON Schema at all — it throws. A transform in
+`UpdateDealerInput` would trade a working reference for a tidier schema file.
+
+One consequence is worth naming: the 12-item cap stays over what was **typed**,
+not over what is kept, so thirteen entries with a duplicate among them is still
+a 400. That is a rarer accident than the one this fixes, and moving the cap
+after the collapse would take `maxItems` out of the reference.
+
+### The rows that already hold duplicates
+
+Nothing backfills the column, and the dealership that reported this has one. So
+the public service collapses again on the way out — before the card's
+`slice(0, 3)`, so a dealership whose first four entries are three distinct
+services still fills its card. The write path is where a duplicate stops being
+created; the read path is what stops the existing ones being rendered, and it
+can go once no row holds one.
+
+The dealer's **own** profile read is deliberately not collapsed. That box is
+their stored text, and seeing "Finance, Finance" in it, then watching it become
+one when they save, is the feedback that explains what happened.
+
+## R19 — The district menu, as the baseline drew it — and reachable by keyboard
+
+**Revises R11 / F073**
+
+- **Frontend** `globals.css` — `.dd-nav-item` ported from the baseline;
+  `location-selector.tsx` — the 220px panel, no height cap, and arrow-key
+  navigation over roving focus
+- **Sandbox** `location-selector.stories.tsx` — a `Chosen` story for the
+  highlight the class restores, a decorator that no longer detaches the menu
+  from its button, and a warning on `ManyDistricts`
+- **Tests** eight: opens on the chosen district, arrows move without choosing,
+  the ends do not wrap, Home/End, Enter chooses, focus returns to the button,
+  one tab stop, and `aria-current` on the row
+
+### A class that was used for two revisions before it existed
+
+The dropdown did not look like the design, and the reason was not a value that
+needed tuning. `LocationSelector` landed at **R11** carrying
+`className="dd-nav-item"`; `.dd-nav-item` is defined in the baseline's
+`globals.css` and was never ported. So every option rendered as a bare
+`<button>` — 15px inherited type, no padding, the count jammed against the
+name, no hover — and, worst of the four, **no fill on the district already
+chosen**: `aria-current="true"` had been on that element the whole time with no
+rule to act on it.
+
+The block is checked out of the baseline unchanged. `.dd-nav-item-dark` is
+deliberately left behind: the baseline's admin sidebar used it, ours styles
+itself with utilities and says so in its own docblock, so the variant would be
+dead the moment it landed.
+
+`globals.css` carries an index of which feature introduced which class,
+alongside the rule that a class and its component land together. This is the
+one case where that did not happen, so R19 is on the index — as the exception
+that explains why the rule is written down.
+
+### The arrows, promised twice and implemented never
+
+The baseline's docblock said "Enter/Space opens, arrows move, Esc closes" and
+the baseline implemented Esc and an outside click. This inherited both the
+comment and the gap. `role="listbox"` makes it worse than a missing nicety: the
+role _tells_ a screen reader the arrows work, so the promise was made twice and
+kept neither time.
+
+Focus roves over the real option buttons rather than being tracked with
+`aria-activedescendant`. The options are `<button>`s, so moving real focus is
+what makes Enter, Space and the global `:focus-visible` ring work without
+re-implementing any of them. Arrows move focus and choose nothing — a menu that
+navigated on arrow-down would fire a router push per keystroke — and the ends
+clamp rather than wrap, which is what a listbox does. Choosing hands focus back
+to the trigger, because focus was inside a menu that has just stopped existing.
+
+### The height cap, removed on purpose and worth revisiting
+
+The panel is the baseline's again: 220px rather than 240, and **no
+`max-h-[60vh] overflow-y-auto`**. Removing that is a deliberate trade, made in
+the knowledge of what it costs: past roughly fifteen districts the menu is
+taller than a short viewport and the last rows go under the fold. Tamil Nadu
+has 38 districts, so this is a decision to revisit as the platform spreads —
+one line, back the way it came. The `ManyDistricts` story exists to make the
+cost visible rather than to hide it.
+
+### One thing the sandbox was hiding
+
+The story's decorator was `display: flex` with no `alignItems`, so the
+selector's own `relative` box stretched to the decorator's full height and the
+menu — `top: calc(100% + 6px)` — hung 260px below the button it belongs to. The
+header puts it in a row with `items-center`, so the product never had that gap;
+only the story that was supposed to be verifying it did.
+
+## R20 — A Maps link that names the place
+
+**Revises F046 / R14**
+
+- **Contracts** `common.ts` — `MapKind`; `dealer.ts` — `DealerProfile.address`
+  carries it
+- **API** `maps-link.ts` — `mapKindFor()`, sharing `storedPlaceId()` with
+  `embedUrlFor()`; `dealers.service.ts` — composed onto the profile
+- **Frontend** `profile-form.tsx` — `MapKindNote` under the Maps field
+- **Sandbox** two stories, `MapIsOnlyAPin` and `MapCouldNotBeRead`
+- **Tests** the three answers and the property that ties them to `embedUrlFor`;
+  the profile composes them from the stored row; the note says the right thing
+  in each state and nothing at all before a link exists
+
+### "Why is there no rating on my page?"
+
+The question this answers, and the honest answer is that there is only one
+source of a rating and it is conditional. **R14** made the portfolio's map
+Google's own place card — the dealership's name, its address, its rating and
+review count — but only for a link that carries a **place id**. A link with
+coordinates and no place gets `?q=lat,lng&output=embed`: a correctly-positioned
+dot naming nothing. Both are valid Google Maps links, both are stored verbatim
+(**R6**), and in the dealer's own box they are indistinguishable — a URL either
+way.
+
+It is not an edge case. The Share sheet on a phone hands out the same shape of
+short link whether the dealer opened their _business's card_ first or dropped a
+pin on their street, and nothing afterwards tells them which they did. Every
+dealership on the platform today is in the second state, which is why the map
+has no rating on it.
+
+So the form says which one they have, and — for the one that matters — what to
+do about it: search Maps for the business by name, open its card, Share → Copy
+link. A diagnosis without a remedy would just be a nicer way of saying no.
+
+### Three answers, not a boolean
+
+`NONE` is a real state and not an error: a share link that could not be followed
+to a place _or_ a pin, which is what "Get directions" still works over. The form
+tells "no link yet" from "a link that said nothing" with `mapsUrl`, and says
+nothing at all in the first case — the instructions above the note are the whole
+message for a dealer who has not answered, and a second line telling them an
+empty box is empty is noise.
+
+### One decision, in one place
+
+`mapKindFor` shares `storedPlaceId` with `embedUrlFor` rather than re-deriving
+the answer, and a test asserts the correspondence directly: `NONE` is exactly
+the set of rows `embedUrlFor` returns `null` for. Two implementations of "does
+this link name a place" would eventually disagree, and the failure would be
+worse than saying nothing — a form that reports a Google listing over a page
+drawing a dot.
+
+The kind is composed on the **API**, for the same reason `embedUrl` is: the
+question is about a stored value, and the form would otherwise have to re-parse
+a Maps URL in a second implementation, in another package.
+
+### What this is not
+
+Not a rating of our own, and not the Places API. Storing a rating would mean a
+billed Google key in every environment and a number that goes stale between
+refreshes; the place card is Google's own, current, and free. The rating a buyer
+sees stays Google's, exactly as **R14** left it — this only makes it reachable.
+
+## R21 — The directory card is one fixed size
+
+**Revises R17**
+
+- **Frontend** `dealer-card.tsx` — `CARD_HEIGHT` as a hard height, the name
+  clamped to two lines, the prose in a `flex-1 min-h-0 overflow-hidden` box
+  whose children do not shrink; `dealers/page.tsx` — `grid-auto-rows: 1fr`
+  removed
+- **Sandbox** `SameDataTwice`, which renders the reported comparison and prints
+  each grid's measured card height; `Fullest`, the worst case the number is
+  chosen against
+- **Tests** the same height class in every data state, no floor left behind,
+  and the three bounds that let a constant hold
+
+### R17 answered the wrong question
+
+R17 read "the card shrinks when there is no tagline" as "cards in the directory
+should match each other", and delivered that: a `min-h` floor on the card and
+`grid-auto-rows: 1fr` on the grid, so every row took the height of its tallest
+member.
+
+They did match each other. What they were not was **fixed**. The height they all
+agreed on was the fullest card's, so a dealership writing a longer tagline or
+adding a third service still changed the proportions of every card on the page —
+which is what the report was about, seen from the other side. Two screenshots of
+the same directory minutes apart, one before a dealer filled their profile in
+and one after, had visibly different cards.
+
+The failure is instructive: within a row, cards have always matched, because
+grid stretches items to their row. That made the sparse card look correct in
+every check R17 ran, including its own sandbox story, and hid the fact that the
+row itself was still content-sized.
+
+### A constant, and the three things that let it hold
+
+`CARD_HEIGHT` is `h-[368px]`. For a constant to hold, every variable on the card
+has to be bounded:
+
+- **The name is clamped to two lines.** It is the largest variable on the card —
+  "Sri Venkateswara Automobiles and Finance Private Limited" is four lines at
+  this width — and it was never bounded before.
+- **The tagline stays clamped to two lines**, as R17 left it.
+- **The tagline and the tags sit in a `flex-1 min-h-0 overflow-hidden` box.**
+  That box is where the card's slack lives: a full dealership fills it, a sparse
+  one leaves it empty, and neither changes the card. `min-h-0` is what lets a
+  flex child shrink below its content — without it the box pushes the footer
+  down instead of clipping.
+- **Its children carry `shrink-0`.** A flex child shrinks before its parent
+  clips, and a squeezed tag row cuts the bottom off its second line of chips.
+  They keep their natural height; the box clips instead — which it never has to,
+  because the height is sized for the fullest of them.
+
+### The number is measured, not derived
+
+The arithmetic is in the file to be argued with, but 368 was chosen by
+measuring. The worst case — a two-line name, a two-line tagline, and three
+services wrapping to a second row, all at once — needs 95px in the prose box.
+At **362** it fitted with _zero_ headroom, the last row of tags ending exactly
+on the box's bottom edge. Six pixels are added because line heights round and a
+font substitution moves all of this by one or two, and clipping here is silent:
+what it eats first is half a row of chips.
+
+`Fullest` is the story that holds that, and `SameDataTwice` is the one that
+answers the original report — the same three dealerships twice, sparse and full,
+each grid printing its measured card height. Both read 368px.
+
+### What it costs, plainly
+
+A card with a one-line name and nothing optional filled in now spends about
+140px on white space above its footer. That is not a bug to be fixed later; it
+is what a fixed size _is_. The footer stays pinned to the bottom edge, which is
+what makes the space read as a card with room in it rather than as one cut
+short. A directory reads as a grid, and a grid whose cells change proportion
+with their contents does not.
+
+### And the grid rule goes
+
+`grid-auto-rows: 1fr` came in with R17 to make rows agree. With a hard height on
+the card, equal rows are what the card _produces_ rather than something the grid
+has to arrange, and leaving the rule in place would be a second mechanism for a
+job already done — the kind that survives long enough for someone to change one
+and not the other.
+
+---
+
+# Feature → Component matrix
+
+Only features that touch components appear.
+
+| Feature | Reused                                                                  | New                                                       | Modified                                    |
+| ------- | ----------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
+| F009    | —                                                                       | Button, ButtonLink, Plate                                 | —                                           |
+| F010    | —                                                                       | StatusTag, Tag, Banner                                    | —                                           |
+| F011    | —                                                                       | Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile | —                                           |
+| F012    | Blueprint                                                               | EmptyState, ErrorState, SkeletonLines, Stepper            | —                                           |
+| F013    | —                                                                       | Field, **Input** ⭐                                       | —                                           |
+| F017    | Plate, Blueprint                                                        | AuthShell, AuthHeading                                    | —                                           |
+| F018    | AuthShell, AuthHeading, Button, Banner                                  | GoogleSignInButton                                        | —                                           |
+| F019    | AuthShell, Banner, GoogleSignInButton                                   | —                                                         | —                                           |
+| F020    | Button                                                                  | SignOutButton                                             | —                                           |
+| F026    | Field                                                                   | city picker                                               | —                                           |
+| F035    | —                                                                       | —                                                         | **Plate** (`marker`)                        |
+| F037    | AuthShell, Stepper                                                      | OnboardingWizard (shell)                                  | —                                           |
+| F038    | Field, Input, Button, Banner                                            | —                                                         | OnboardingWizard                            |
+| F039    | Field, Input, Button, Banner                                            | —                                                         | OnboardingWizard                            |
+| F041    | StatusTag, Banner, Button                                               | DocumentUploader                                          | OnboardingWizard                            |
+| F042    | Blueprint, StatusTag, Button, Banner                                    | —                                                         | OnboardingWizard                            |
+| F043    | Banner, StatusTag                                                       | —                                                         | OnboardingWizard                            |
+| F044    | StatusTag, Button, Banner, Field                                        | —                                                         | —                                           |
+| F045    | StatusTag, Button, Banner, Field                                        | DealerAdminActions, **Table** ⭐                          | —                                           |
+| F046    | Field, Input, Banner, Button, **Card** ⭐                               | DealerProfileForm                                         | —                                           |
+| F047    | Plate, SignOutButton                                                    | ConsoleNav, ConsoleTabBar                                 | —                                           |
+| F048    | StatCard, EmptyState, Banner, Button                                    | —                                                         | —                                           |
+| F049    | Plate, SignOutButton                                                    | AdminNav                                                  | —                                           |
+| F050    | StatCard, Table                                                         | —                                                         | —                                           |
+| F051    | Blueprint, StatCard, Button, Banner                                     | CreditPacks                                               | —                                           |
+| F053    | Table, StatusTag, Button                                                | —                                                         | —                                           |
+| F054    | Table, Field, Button                                                    | —                                                         | **DealerAdminActions**                      |
+| F056    | Field, Input                                                            | PlateInput                                                | —                                           |
+| F059    | PlateInput, Plate, Button, Banner, StatusTag                            | RegistrationStep, RcSummary                               | —                                           |
+| F060    | Field, Input, Button, Banner                                            | BasicsFields, BasicsStep                                  | —                                           |
+| F061    | Field, Input, city picker                                               | DetailsFields                                             | —                                           |
+| F062    | ImageSlot, Plate, Banner, Button                                        | PhotoUploader                                             | —                                           |
+| F063    | Stepper, Button, Banner, Field                                          | VehicleWizard                                             | —                                           |
+| F064    | —                                                                       | —                                                         | **StatusTag** (listing tones)               |
+| F065    | Button, Banner, StatusTag                                               | —                                                         | —                                           |
+| F066    | Table, StatusTag, EmptyState, Button                                    | —                                                         | —                                           |
+| F067    | Button, Field, Banner                                                   | InventoryActions, **Dialog** ⭐                           | —                                           |
+| F068    | StatusTag, Blueprint, Banner, Button                                    | ReportPanel, ReportSummary                                | —                                           |
+| F069    | Table, StatusTag, Button, EmptyState                                    | QueueApproveButton                                        | —                                           |
+| F070    | ReportPanel, StatusTag, Button, Banner, Field, Dialog                   | ReviewActions, ModerationStrip                            | —                                           |
+| F071    | —                                                                       | —                                                         | **ReviewActions**                           |
+| F072    | Button, Banner, Field, Input, Table                                     | ConfigRow                                                 | —                                           |
+| F073    | Plate, Button                                                           | CustomerHeader, CustomerFooter                            | —                                           |
+| F074    | —                                                                       | CitySelector, CityChipFallback                            | —                                           |
+| F075    | Avatar, ImageSlot, Plate, Tag                                           | VehicleCard, VehicleImage, VehicleCardSkeleton            | —                                           |
+| F077    | VehicleCard, VehicleCardSkeleton, EmptyState, Blueprint, Button         | —                                                         | —                                           |
+| F078    | —                                                                       | FilterPanel                                               | —                                           |
+| F079    | FilterPanel                                                             | MobileFilterSheet                                         | —                                           |
+| F080    | —                                                                       | SearchToolbar                                             | —                                           |
+| F081    | Blueprint, VehicleCard, Button                                          | HeroSearch                                                | —                                           |
+| F082    | Blueprint, Banner, Button, ReportSummary, EnquiryForm                   | VdpCtaStack                                               | —                                           |
+| F083    | Corners, ImageSlot                                                      | VehicleGallery                                            | —                                           |
+| F084    | —                                                                       | —                                                         | **VehicleCard** (`compact`)                 |
+| F085    | Blueprint, LogoTile, Plate, Tag, ImageSlot                              | DirectoryCard, DirectoryFilters                           | —                                           |
+| F086    | VehicleCard, SearchToolbar, MobileFilterSheet, EnquiryForm, VdpCtaStack | —                                                         | **FilterPanel** (+`groups`, +`dimZeroRows`) |
+| F087    | EmptyState, Button                                                      | SavedCarsProvider, useSavedCars, SavedCarsList            | **VehicleCard** (`list`, `showSave`)        |
+| F089    | Field, Input, Button, Banner                                            | EnquiryForm                                               | —                                           |
+| F090    | Button, Banner                                                          | RevealContactButton                                       | —                                           |
+| F091    | StatusTag, EmptyState, Button                                           | EnquiryInbox, QueryProvider, **Segmented** ⭐             | —                                           |
+| F093    | Blueprint, Button                                                       | —                                                         | —                                           |
+| F094    | SkeletonLines, VehicleCardSkeleton, EmptyState                          | —                                                         | —                                           |
+
+⭐ = one of the five DESIGN-SPEC components that exist only as CSS today
+(finding D-B). Each is created at the first feature that needs it, closing the
+duplication before it starts.
+
+---
+
+# Feature → Sandbox matrix
+
+| Feature | Sandbox entries                                                                         |
+| ------- | --------------------------------------------------------------------------------------- |
+| F007    | design-token swatch page (sandbox step S0)                                              |
+| F009    | Button (all variants × sizes × loading × disabled × block), ButtonLink, Plate (4 sizes) |
+| F010    | StatusTag (per tone, enum-generated), Tag, Banner (24 combinations)                     |
+| F011    | Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile                               |
+| F012    | EmptyState, ErrorState, SkeletonLines, Stepper                                          |
+| F013    | Field (4), **Input**                                                                    |
+| F017    | AuthShell, AuthHeading                                                                  |
+| F018    | GoogleSignInButton                                                                      |
+| F019    | — (revised: the admin screen is `AuthShell` + `GoogleSignInButton`)                     |
+| F020    | SignOutButton                                                                           |
+| F026    | city picker                                                                             |
+| F037    | OnboardingWizard shell (4 steps), Stepper                                               |
+| F038    | Onboarding step 1                                                                       |
+| F039    | Onboarding step 2                                                                       |
+| F041    | DocumentUploader (7 states)                                                             |
+| F042    | Onboarding step 4                                                                       |
+| F043    | completeness blockers                                                                   |
+| F044    | document review row                                                                     |
+| F045    | DealerAdminActions, **Table**                                                           |
+| F046    | DealerProfileForm, **Card**                                                             |
+| F047    | ConsoleNav, ConsoleTabBar (375 / 768)                                                   |
+| F048    | StatCard                                                                                |
+| F049    | AdminNav                                                                                |
+| F050    | balance card, ledger table                                                              |
+| F051    | CreditPacks                                                                             |
+| F053    | invoice table                                                                           |
+| F054    | credit grant form                                                                       |
+| F056    | PlateInput                                                                              |
+| F059    | RegistrationStep, RcSummary                                                             |
+| F060    | BasicsFields, BasicsStep                                                                |
+| F061    | DetailsFields                                                                           |
+| F062    | PhotoUploader (8 states)                                                                |
+| F063    | VehicleWizard                                                                           |
+| F064    | StatusTag (per ListingStatus)                                                           |
+| F065    | submit CTA                                                                              |
+| F066    | inventory table                                                                         |
+| F067    | InventoryActions, **Dialog**                                                            |
+| F068    | ReportSummary, ReportPanel                                                              |
+| F069    | QueueApproveButton, queue table                                                         |
+| F070    | ReviewActions, ModerationStrip                                                          |
+| F071    | ReviewActions (takedown)                                                                |
+| F072    | ConfigRow                                                                               |
+| F073    | CustomerHeader, CustomerFooter                                                          |
+| F074    | CitySelector, CityChipFallback                                                          |
+| F075    | VehicleCard, VehicleImage, VehicleCardSkeleton                                          |
+| F077    | results grid                                                                            |
+| F078    | FilterPanel                                                                             |
+| F079    | MobileFilterSheet (375 / 768)                                                           |
+| F080    | SearchToolbar                                                                           |
+| F081    | HeroSearch                                                                              |
+| F082    | VdpCtaStack                                                                             |
+| F083    | VehicleGallery (0/1/2/12 photos, lightbox)                                              |
+| F084    | VehicleCard compact                                                                     |
+| F085    | DirectoryCard, DirectoryFilters                                                         |
+| F086    | FilterPanel (portfolio subset)                                                          |
+| F087    | SavedCarsList, VehicleCard list                                                         |
+| F089    | EnquiryForm                                                                             |
+| F090    | RevealContactButton                                                                     |
+| F091    | EnquiryInbox, **Segmented**                                                             |
+| F093    | ErrorState                                                                              |
+| F094    | skeleton layouts                                                                        |
+
+Features with no UI: F001–F006, F008, F014–F016, F021–F025, F027, F028, F029,
+F030, F031, F032, F033, F034, F036, F040, F052, F055, F057, F058, F076, F088,
+F092, F095, F096, F097.
+
+---
+
+# Implementation order
+
+Tiers run top to bottom. Within a tier, features can be worked in parallel
+unless a dependency is listed.
+
+```text
+TIER 0   chore: initialize project            ← the ONE direct push to main
+              │
+         PR   chore: component sandbox        ← before F009; the gate must exist
+              │                                  before the first thing that must
+              │                                  pass through it
+TIER 1   F001 F002 F003 F004 F005 F006        platform foundations
+         F007 F008 F009 F010 F011 F012 F013   design system & primitives
+              │
+TIER 2   F014 F015 F016 F017                  identity
+         F018 ⭐ FIRST DEALER-FACING FEATURE
+         F019 F020
+              │
+TIER 3   F021 F022 ⭐ CI/CD LANDS HERE (decision D3)
+         F023 F024 F025
+              │
+TIER 4   F026 F027 F028 F029 F030 F031        platform services
+              │
+TIER 5   F032 F033 F034 F035                  storage & media
+              │
+TIER 6   F036 F037 F038 F039 F040             dealer onboarding
+         F041 F042 F043 F044 F045
+              │
+TIER 7   F046 F047 F048 F049                  consoles
+              │
+TIER 8   F050 F051 F052 F053 F054             billing & credits
+              │
+TIER 9   F055 F056 F057 F058 F059             vehicle intake
+         F060 F061 F062 F063
+              │
+TIER 10  F064 F065 F066 F067 F068             listing lifecycle
+              │
+TIER 11  F069 F070 F071 F072                  moderation
+              │
+TIER 12  F073 F074 F075 F076 F077 F078        public marketplace
+         F079 F080 F081 F082 F083 F084
+         F085 F086 F087
+              │
+TIER 13  F088 F089 F090 F091 F092             enquiries
+              │
+TIER 14  F093 F094 F095 F096 F097             surface polish
+```
+
+## Ordering conflicts worth knowing about
+
+1. **F041 needs F033 (presign).** KYC documents use the same pipeline as vehicle
+   photos. This is why storage (Tier 5) precedes onboarding (Tier 6), even
+   though onboarding feels like it comes first in the product.
+
+2. **F043 straddles F039 and F041.** Completeness is derived from fields both
+   own. If the split proves awkward in practice, fold F043 into F042.
+
+3. **F044/F045 need F049 (admin shell).** The admin console shell is in Tier 7,
+   after the onboarding tier that uses it. Either move F049 up to Tier 6, or
+   land F044/F045 as API-only in Tier 6 with the UI following in Tier 7.
+   **Recommendation: move F049 to Tier 6**, before F044.
+
+4. **F082 ↔ F089.** The VDP renders `EnquiryForm`, and the form exists for the
+   VDP. F089 lands first with a bare harness page; F082 then consumes it.
+
+5. **F073 ↔ F087.** `CustomerHeader` reads `useSavedCars` for its badge. Either
+   F073 ships the header without the badge and F087 adds it, or F087 moves ahead
+   of F073. **Recommendation: F073 ships without the badge**; F087 modifies it.
+   That keeps the saved-cars provider inside the feature that owns it.
+
+6. **F060 → F076.** Post-D1, search facets depend on make/model strings being
+   normalised at write time. F060 must settle normalisation before F076 is
+   built, or the facet fragmentation is unrecoverable.
+
+## R22 — States group the districts, and the menu becomes a dialog
+
+**Revises R11 / R19 / F085**
+
+- **Contracts** `public.ts` — `DistrictChip` (`LocationChip` + a nullable
+  `state`); `PublicLocations.districts` and `DealerDirectoryResponse.districts`
+  carry it
+- **API** `dealers.public.service.ts` — `chipsOf` is generic in the chip rather
+  than in a tuple, with `cityChip` and `districtChip` beside it;
+  `dealers.public.docs.ts` — what `state` is and when it is null
+- **Frontend** `ui/dialog.tsx` — **new** `Dialog` (finding D-C, at its first
+  consumer); `globals.css` — `.dialog` / `.dialog-backdrop` ported, plus the
+  200ms fade; `lib/state-codes.ts` — **new**, a state name to its RTO code;
+  `location-selector.tsx` — the dialog, the state grouping, the search and the
+  state filter
+- **Sandbox** `ui/dialog.stories.tsx` — **new**, four states;
+  `location-selector.stories.tsx` — `ManyStates` and `Untidy` replace the
+  scrolling-column warning; registry C070, and C069's states rewritten
+- **Tests** `location-selector.test.tsx` — **new file**, 24 tests moved out of
+  `customer-header.test.tsx` and rewritten; `dialog.test.tsx` — **new**, the
+  eight-point modal contract; `state-codes.test.ts` — **new**; two API tests for
+  the state on a chip
+
+### The height was the smaller half of the problem
+
+R19 restored the baseline's 220px panel with no height cap and wrote down what
+it cost: _"past roughly fifteen districts the menu is taller than a short
+viewport and the last rows go under the fold. Tamil Nadu has 38, so this is a
+decision to revisit when the platform is in more than a handful of them."_
+
+It is worth revisiting for a second reason the note did not reach. Thirty-eight
+districts in one flat column is not merely tall — it is **ambiguous**. `Vellore`,
+`Bangalore`, `Madurai` in one list asks the reader to already know which state
+each is in, and the reader who would ask that question is exactly the one who
+does not. Capping the height and letting it scroll would have fixed the fold and
+left the ambiguity untouched.
+
+So the shape changed rather than the height: a centred dialog, districts grouped
+under the state they are in.
+
+### The hierarchy is the design, and it has one rule
+
+**A state is a heading. A district is a button.** Everything else follows:
+
+- a state heading is not focusable, has no hover, no cursor change and no
+  pressed styling. A state is not a place this product can be filtered to — the
+  URL takes `?district=` and nothing else — so anything that looked pressable
+  would be an invitation to a dead end;
+- the state filter row at the top of the dialog **filters and never selects**.
+  Pressing `Karnataka` narrows what is on screen; it changes nobody's location.
+  It is drawn only when there are two states or more, because one state to move
+  between is a control taking up room;
+- there is exactly **one** way to select a district. The reference design's
+  "Popular Metropolitan Hubs" strip is not here: it selects the same places a
+  second time, through a card that reads as a city rather than a district, and a
+  second selection model for the same value is how the two come to disagree.
+
+### Search, and the one thing it must not undo
+
+Search filters on the district name _and_ the state name, and switches the body
+to a **flat list in which every row names its state**.
+
+The flat list is the point, not an implementation shortcut. Keeping the grouping
+under a filter would answer "which state is Vellore in" with a heading the
+reader has to look up to, across four one-row groups. A result that reads
+`Vellore` alone is the exact ambiguity this revision removes, so a search that
+reintroduced it would undo the change while appearing to be a feature.
+
+The placeholder says `Search district or state` rather than the reference's
+"city, district, taluk or pincode". The payload is districts and the states they
+are in; a placeholder promising fields the data does not have is a bug report
+waiting to be filed.
+
+### The state had to come from the API
+
+`LocationChip` carried `slug`, `name` and `count`, and there is no rule that
+turns "Vellore" into "Tamil Nadu" without a table — **D6** removed the table.
+Grouping worked out on the client would therefore be a second source of truth
+for a pairing nothing holds.
+
+So `DistrictChip` extends `LocationChip` with `state`, taken from the
+dealership's own `state` column — the same text the portfolio prints under the
+dealership's name. Three properties of that are deliberate:
+
+- **it is nullable**, because the column is. A district whose dealerships never
+  filled the field in is still a district the platform trades in, so it is still
+  offered, under a `State not recorded` heading that sorts last however big it
+  is. Dropping it would delete a place a buyer can reach because somebody
+  skipped a form field;
+- **the chip is still keyed by slug**, exactly as before, so the count and the
+  `?district=` filter it sets go on agreeing (§4.11). Two states with a
+  same-named district would share a chip; that is a property of the slug-only
+  URL scheme, and inventing a second answer to it here would make the count and
+  the filter disagree instead;
+- **`chipsOf` stayed one function.** It is generic in the chip rather than in a
+  tuple, so the district list gets its state through the same counting, ordering
+  and dropping rules as the city chips instead of a second copy of them — which
+  is the reason the two were merged in the first place.
+
+### `Dialog`, and the finding it closes
+
+The dialog is `Dialog` (C070), **new** — and new is the surprising part, because
+`.dialog` and `.dialog-backdrop` have been in `globals.css` throughout with
+**zero consumers**. Component-map finding **D-C**: the baseline draws its one
+real dialog with Radix and keeps 24 lines of CSS describing a component nothing
+renders. Two strategies, one of them dead.
+
+The same document's recommendation was that `Dialog` be among the first shared
+components created, "at the moment its first consumer lands". This is that
+moment, and the resolution is not a choice between the two: Radix underneath,
+`.dialog` on top. One strategy, and the CSS has something rendering it.
+
+Radix rather than a hand-rolled trap because the list a modal has to get right
+is longer than it looks and every item on it is a bug only a keyboard or
+screen-reader user meets: focus in, focus trapped, focus back on the trigger,
+the document behind it inert, the body's scroll locked.
+
+**The trigger is a required prop, and the reason is a real bug.** A modal
+`Content` cancels the focus scope's own restore and focuses _its_ trigger
+instead. A dialog opened by a button Radix does not know about therefore closes
+with focus on `<body>`, and the next Tab starts at the top of the document —
+the same trap R19's Esc handler avoided by hand, reintroduced silently. Passing
+the button through `Dialog` is what makes "focus goes back where it came from"
+true.
+
+§2.14's `min(440px, 100%)` stays the default and is overridden to 880px here.
+440 is the width of a confirmation; a grid of 38 districts is a different
+object, and the override is a Tailwind utility beating a component class rather
+than a new component.
+
+### What did not change, on purpose
+
+**Selection is still immediate.** Choosing a district pushes the URL and closes,
+as the dropdown did; `city` and `page` are still dropped, because
+`?district=ranipet&city=katpadi` is still an empty page. The reference design
+draws a `Confirm selection →` footer and adding one would be new business logic
+in a change about the shape of a list — so the footer carries what _is_ chosen,
+named with its state, and the way back to every district beside it.
+
+**The trigger still reads the district's name.** The header is a 64px row; the
+place to spell out "Vellore, Tamil Nadu" is the dialog's footer, and it does.
+
+### Two things this leaves behind
+
+`.dd-nav-item` now has **no consumer** — it was the menu rows, and there are no
+menu rows. It stays in `globals.css`: it is the class §2.18 defines for a menu
+row, the admin sidebar is its next likely user, and deleting a just-ported block
+to re-port it later is churn. It moves to the dead-code register in
+`component-map.md` in the meantime, which is where the old `.dialog` entry was.
+
+The **arrow-key roving** R19 added went with the `role="listbox"`. That role
+promises the arrows work; a dialog with a search field, filter chips and grouped
+buttons is a document, and Tab is what moves through a document. Announcing a
+listbox and shipping a document would be the same broken promise R19 was written
+to fix, pointing the other way.
+
+## R23 — Select a district, rather than being told you have every one
+
+**Revises R11 / R22 / F085**
+
+- **Frontend** `layout/district-picker.tsx` — **new**, the dialog and
+  `useDistrictSelection` extracted whole from `location-selector.tsx`;
+  `location-selector.tsx` — reduced to the header's trigger, which now reads
+  `Select district`; `customer-header.tsx` — the Suspense fallback's label;
+  `dealers/directory-filters.tsx` — the town chips become a `Select district`
+  button when there is no district; `lib/locations.ts` — **new**, the
+  `/v1/locations` read the layout and the directory now share;
+  `(public)/layout.tsx` and `(public)/dealers/page.tsx` — both call it
+- **Sandbox** `layout/district-picker.stories.tsx` — **new**, the two triggers
+  side by side; `directory-filters.stories.tsx` — `Default` is the new shape and
+  `AppliedTownWithoutADistrict` is added; registry C071, C031's and C069's
+  states rewritten
+- **Tests** `directory.test.tsx` — five new, the chip tests moved inside a
+  district; `location-selector.test.tsx` — the label
+- **No API change, no contract change, no new dependency.**
+
+### The problem was the town chips, not the district menu
+
+R22 made the district dialog scale — grouped by state, searchable, inside a
+panel with a height. What it did not touch is what `/dealers` renders _before_
+a district is chosen, and that is where the directory actually falls over.
+
+`cities` is counted over `inDistrict`, and with no district `inDistrict` is
+every ACTIVE dealership. So the unfiltered directory renders one chip per town
+**on the platform**: forty-four of them against the 120-dealership dev seed,
+five wrapped rows between the description and the first card. It is a control
+nobody reads, in the most valuable space on the page, and it grows with every
+dealership that signs up — the one thing a filter must not do.
+
+### A default district was the obvious fix and it is the wrong one
+
+The tempting version is to pick a district for the visitor. It was worked
+through and rejected on its own numbers.
+
+`chipsOf` orders districts by count and breaks ties with `localeCompare`. The
+seed's distribution is flat — eight districts hold 11 dealerships each — so
+`districts[0]` is not "the busiest district", it is **the one whose name starts
+earliest in the alphabet**. Bengaluru Urban wins on the letter B.
+
+Then consider a buyer in Wayanad. The page's own `<h1>` would tell them they
+are looking at _Dealers in Bengaluru Urban_ — 225km away, across a state
+border, chosen by an alphabetical tie-break. Nothing on the page marks it as a
+guess, so it does not read as one; it reads as the product being confidently
+wrong about where they are. An invitation that gets ignored costs a click. A
+wrong fact stated in a heading costs more than that, and the buyer has no way
+to know it was a guess.
+
+Geolocation would narrow it — Vercel's `x-vercel-ip-*` headers are free at the
+edge, and a district centroid can be computed off the `lat`/`lng` the
+dealerships already carry from R10. That is worth doing and it is not this
+revision: it needs a resolver route, a state-code map, a cookie for the
+visitor's own last choice, and a redirect so one URL keeps meaning one thing.
+None of it is a reason to ship a wrong guess in the meantime.
+
+### And auto-opening the dialog is worse than either
+
+The other tempting version: land on `/dealers`, open the picker immediately,
+make the visitor choose. It removes the guess, and it introduces two faults the
+guess did not have.
+
+`Dialog` is Radix, and its contract is `aria-modal`, the rest of the document
+inert, and the body's scroll locked. Opening it on arrival is therefore an
+**interstitial over the one dealers URL the indexing policy indexes** —
+`indexPolicy` marks `/dealers` `index, follow` and everything filtered
+`noindex`, and `page.tsx` is `force-dynamic` specifically so that page
+server-renders for search. Putting a blocking modal on it undoes the reason it
+is built that way.
+
+The second fault is worse and is not about crawlers. **Wayanad is not in the
+list**, because the platform has no dealerships there — so a visitor who is
+handed a modal with no `All districts` in it faces a list with no correct
+answer and no way past. R22's own rule already says this: _"a selector that
+dropped the options you did not pick is one you cannot get back out of."_
+
+### So: a button, and the results are untouched
+
+No district still means **every dealership**. The grid does not change, the
+count does not change, `/dealers` stays the canonical indexable page, and the
+name search stays platform-wide. What changes is the row that filters them: one
+`Select district` button and one line saying what it is for, in place of
+forty-four chips.
+
+The header's label moves for the same reason. `All districts` is a true
+description of what is on screen and a poor description of what the button is
+_for_ — it states a filter setting where a first-time visitor needs an
+invitation, and it is the only control in the header that offers to narrow the
+platform to somewhere near them. It is not deleted: it is the dialog's footer
+button, where it is the way _back_ and still carries its count.
+
+### An applied town always shows, district or not
+
+The rule is deliberately **not** "chips only inside a district", and this is the
+part worth reading before changing it.
+
+`indexPolicy` names `/dealers?city=vellore` an indexable canonical. That is a
+URL Google is invited to send people to, and it carries a town with **no**
+district. Hiding the row there would apply a filter the visitor can neither see
+nor clear — a worse fault than the wall this revision removes, because the wall
+was at least honest about what it was doing.
+
+So: every **applied** town renders, and the unapplied ones render once a
+district makes them a readable set. `Clear towns` follows the selection rather
+than the district, for the same reason.
+
+### Why the dialog moved files
+
+Two openers is the moment it stops belonging to the header. What is shared is
+not only the markup but the **selection rule** — drop `city`, drop `page`, go to
+`/dealers` from anywhere else — and a second copy of that rule is how the header
+and the directory come to disagree about what choosing a district means.
+`DistrictPicker` owns both and takes its trigger as a render prop;
+`useDistrictSelection` is exported beside it so a third opener inherits the rule
+rather than restating it.
+
+`lib/locations.ts` exists for the same reason one step down. The layout and the
+directory both read `/v1/locations`, and the `revalidate` and cache tag are what
+make the second read a cache hit rather than a second call to the API. Written
+twice they would eventually differ by a digit, and the symptom would be a header
+and a page disagreeing about which districts exist.
+
+### One thing this leaves behind
+
+`generateMetadata` passes `city: district` into `seoMetadata`, so
+`/dealers?district=vellore` currently declares its canonical to be
+`/dealers?city=vellore` — a different filter. It is a pre-existing fault of R11,
+untouched here because R23 does not change which URLs are reachable. It becomes
+load-bearing the moment anything _lands_ a visitor on a district URL, so it is
+the first thing the geolocation revision has to fix: `SeoRoute` needs a
+`district` arm.
+
+## R31 — The dealer console gets its shell, early
+
+**Lands F047** · revises F046
+
+Not a change to the product: **F047, pulled forward out of tier order**, the way
+F049 was pulled forward for F044. It is written up here rather than only in the
+feature entry because what it delivers is not quite what F047 describes, and the
+difference has to be somewhere a reviewer will find it.
+
+- **Frontend** `app/(dealer)/dealer/layout.tsx` — **new**;
+  `components/dealer/console-nav.tsx` — **new**;
+  `app/(dealer)/dealer/profile/page.tsx` — its guard removed, having moved up
+- **Components — New (Shared)** `ConsoleNav` (C025), `ConsoleTabBar` (C026),
+  `DEALER_NAV`, `LANDED_NAV` · **Reused** `Plate`, `Blueprint`, `StatusTag`,
+  `SignOutButton`
+- **Sandbox** `dealer/console-nav.stories.tsx` — **new**, one story per route
+  plus the two the reconstruction adds; registry C025 and C026
+- **Tests** `tests/unit/components/dealer/console-nav.test.tsx` — **new**;
+  `tests/unit/features/dealer/console-layout.test.tsx` — **new**, carrying the
+  three guard cases that were on `profile-page.test.tsx`
+- **No API change, no contract change, no new dependency.**
+
+### The nav could not be ported as-is, and a filter is not the same as a trim
+
+`DEALER_NAV`'s six items point at six routes and one of them exists. Rendering
+the list whole would give a dealer five links that 404 — the console telling
+them a page exists and then not having it, which is worse than a console that
+does not mention it yet.
+
+So the list is ported verbatim and a second constant says which of it is
+reachable:
+
+```ts
+const NOT_YET_BUILT = new Set([...five hrefs...]);
+export const LANDED_NAV = DEALER_NAV.filter((i) => !NOT_YET_BUILT.has(i.href));
+```
+
+A `Set` rather than a shortened `DEALER_NAV`, deliberately. The six items are
+what F047 delivers and what the sandbox renders in full; a reviewer diffing this
+file against the baseline should find the list identical and the omission stated
+separately, rather than having to work out which two facts a single shortened
+array is carrying. Each of **F048, F050, F051, F056 and F065** deletes its own
+line as it lands, and when the set is empty it goes with it.
+
+`ConsoleTabBar` returns `null` on an empty list for the same reason. Every item
+carrying a `short` is one of the five, so `LANDED_NAV` produces no tabs at all —
+and a bar that renders anyway is a blank 56px strip pinned over the bottom of
+every console screen on a phone.
+
+The two controls in the chrome that point at those routes are held back with
+them: the credits panel's `Buy credits` (F051) and the top bar's `Add vehicle`
+(F056). The credits **balance** is not — it is on `DealerProfile`, the layout
+already has it, and a dealer reading their own balance is the panel's first job.
+
+### The guard moved up, as F046 said it should
+
+F046 put `currentSession()` on the profile page with a note: the console shell
+is F047, and **F047 should lift the guard there** once one route stopped being
+the whole segment. That is what happened. Every screen beneath
+`(dealer)/dealer/` now inherits it, so a page added later cannot forget to ask.
+
+It is F046's guard and not the baseline's. The baseline asks `hasSession()` — a
+cookie is present — and catches the 401 from `/v1/dealer`. That is the cheaper
+question and the weaker one: a cookie that exists but no longer works lands on
+onboarding, which bounces it straight back. `currentSession()` costs one call
+and cannot loop, and it is what `(admin)` has been doing since F049.
+
+## R32 — The review screen judges the tagline and the services, not About
+
+**Revises F045 / R25 / R26**
+
+The admin dealer page still carried an **About** box. It was the last surface on
+the platform reading a paragraph the product stopped collecting: **R25** took it
+off the public portfolio, where the tagline replaced it, and **R26** took it off
+onboarding and off the dealer's own profile screen.
+
+So the review screen was showing a moderator prose nobody will ever read, and
+not showing them the sentence that will front the dealership's public page.
+
+- **Contracts** `AdminDealerDetail` — `about` removed, `tagline` and
+  `specialities` added
+- **Backend** `modules/admin/admin.service.ts` — `dealerDetail` maps both, with
+  the services through `distinctServices` (**R18**)
+- **Frontend** `features/admin/dealer-profile-editor.tsx` — the `FIELDS` table's
+  last row becomes two; `multiline` becomes `wide`; `list: true` splits the
+  comma-separated box back into the array the schema wants; `errorFor` matches
+  an index beneath a path
+- **Sandbox** `admin/dealer-profile-editor.stories.tsx`,
+  `admin/dealer-actions.stories.tsx` — the fixtures; registry C062c
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts` — three;
+  `apps/web/tests/unit/features/admin/dealer-profile-editor.test.tsx` — **new**,
+  seven
+- **No route change, no new dependency.**
+
+### Why a moderator may edit them at all
+
+The same reason `About` was editable, and it is not a general "moderators can
+fix typos" argument. These are free text a dealership typed that a **buyer will
+read**, which makes them the two places on the platform where a phone number
+gets smuggled onto a public page. Rule 7 exists to catch that, and this is the
+screen it gets caught on.
+
+### The list is the only field on this card that is not a string
+
+`UpdateDealerInput.specialities` is an array; the box is one comma-separated
+line, the same shape the dealer's own profile form uses, so a moderator and a
+dealer edit the field in the same vocabulary. `list: true` on the `FIELDS` row
+is what tells `patchOf` to split it back apart — without it the patch sends a
+string where the schema wants an array, and `.strict()` answers 400.
+
+`errorFor` grew a prefix match for the same reason. A refusal about one entry
+arrives as `body.specialities.3`, which none of the four exact lookups matched,
+so the one box a moderator had to fix would have been the one box with no
+message on it.
+
+### What is left of `about`
+
+`UpdateDealerInput.about` and the `Dealer.about` column both stay. No screen
+writes the field now, and the docblock says so — but a hundred and twenty
+dealerships wrote into the column before the product stopped asking, and this
+endpoint is the only way left to correct one of those rows. **Dropping the field
+and the column deletes data and wants its own PR**, not a side effect of a
+screen change.
+
+> **It got that PR. See `## R33` below** — the field and the column are gone.
+
+## R33 — The paragraph is dropped, column and all
+
+**Revises R25 / R26 / R32** · ⚠️ **deletes data**
+
+The last of four revisions taking `about` apart. R32 said dropping the field and
+the column wanted its own PR because it deletes data; this is that PR.
+
+- **Schema** `Dealer.about` removed ·
+  `migrations/20260909130000_drop_dealer_about` — `ALTER TABLE "dealers" DROP
+COLUMN "about"`
+- **Contracts** `DealerProfile.about` and `UpdateDealerInput.about` removed
+- **Backend** `dealers.service.ts` — the profile mapper and the update's
+  spread; the completeness note that explained why a filled-in paragraph did
+  not satisfy the tagline
+- **Seed** `dev-dealers.data.ts` — the `about` field and 120 paragraphs;
+  `dev-dealers.ts` — the write
+- **Sandbox** `auth/onboarding-wizard.stories.tsx` —
+  `BusinessWithDescription` becomes `BusinessWithTaglineAndServices`, which is
+  what R26 should have done to it; `dealer/profile-form.stories.tsx` — the
+  fixture
+- **Tests** one integration case retired, with a note in its place saying why
+- **No route change, no new dependency.**
+
+### What was actually deleted
+
+The column held prose a dealership wrote about itself at sign-up. Four
+revisions had already removed every reader:
+
+|         |                                                           |
+| ------- | --------------------------------------------------------- |
+| **R25** | the public portfolio — the tagline opens the page instead |
+| **R26** | onboarding, and the dealer's own profile screen           |
+| **R32** | the admin review screen, the last surface that read it    |
+| **R33** | the field in two contracts, and the column                |
+
+So by R32 the data was reachable by nothing: no screen, no endpoint, no report.
+A nullable column no code path touches is not free — it is a field the next
+person to read the schema has to work out the status of, and "history, kept in
+case" is a status that only ever gets weaker.
+
+**The migration cannot be undone by the application.** The SQL file carries the
+`COPY … TO` line to take a snapshot before it runs, and the deployment that
+applies it should take one.
+
+### Why the replacement is not a shorter version of it
+
+`about` asked for two or three sentences and got one of two things: a paragraph
+nobody read, or twenty characters of "we sell used cars". The form insisted on
+prose, and prose is what a person filling in a sign-up form at the end of a
+working day is least able to produce.
+
+`tagline` is one line, which is a question a dealer can answer. `specialities`
+is a list, which is one they can answer without writing at all. Both are
+required, both are on the public pages, and both are on the admin review screen
+— three things `about` never was.
+
+### The absence is recorded where the field was
+
+`UpdateDealerInput` keeps a comment at the position `about` occupied, naming the
+four revisions. "Why is there no About" is a question this schema will be asked,
+and the answer is worth more than the silence a clean deletion leaves. The same
+note is the migration's own header, which is the other place somebody looks.
+
+### One thing this fixed on the way past
+
+`BusinessWithDescription` in the wizard's stories still described **About your
+dealership** as "the last field on the step and the only multi-line box". R26
+removed that box eight months of revisions ago and left the story compiling
+against a field the form no longer had. It only broke here because the type went
+with the column — which is the argument for deleting a field rather than leaving
+it: a stale story about a removed box is invisible until something stops
+compiling.
+
+## R34 — A dealer's public words are proposed, not published
+
+**Revises F041 / F046 / R26 / R27 / R32**
+
+Until now a verified dealership could put any sentence it liked on its own
+public page, instantly and unread. `tagline` and `specialities` are the only
+free text a dealer writes that a buyer sees — which makes them the only route by
+which a phone number reaches a public page without passing
+`POST /v1/vehicles/:id/reveal-contact`, the one endpoint allowed to hand one
+out, rate-limited twice over and logged as a lead. **Rule 7 had a hole in it.**
+
+- **Schema** `DealerProfileChange`, `ProfileChangeStatus` ·
+  `migrations/20260909160000_dealer_profile_change_review` — the table, the two
+  indexes, the FK, and a **partial unique index** Prisma cannot express
+- **Contracts** `ProfileChangeStatus` + its label/tone tables;
+  `DealerProfileChange` and `DealerProfile.profileChange`; `AdminProfileChange`,
+  `ProfileChangeDecisionResponse`, `AdminProfileChangesResponse`;
+  `AdminDealerDetail.profileChange`, `AdminDealerRow.hasPendingProfileEdit`,
+  `AdminDealerQuery.pendingEdits`
+- **Backend** `dealers.service.{selfUpdate,withdrawProfileChange}` — **new**,
+  and the only behaviour change to a write path;
+  `dealers.repository.dealerInclude` takes the newest edit;
+  `admin.service.{profileChanges,approveProfileChange,rejectProfileChange}`;
+  `DomainEventType` gains `DealerProfileChangeDecided`; `DealersDeps` takes
+  `AuditService`
+- **API** `DELETE /v1/dealer/profile-change`;
+  `GET /v1/admin/profile-changes`,
+  `POST /v1/admin/profile-changes/:id/{approve,reject}`;
+  `GET /v1/admin/dealers?pendingEdits=true`; `PATCH /v1/dealer` changes meaning
+- **Frontend** `features/admin/profile-change-review.tsx` — **new** (C062d);
+  `features/dealer/profile-form.tsx` — `ReviewPanel`, `Cancel this change`, and
+  the two boxes locked on the proposed values while one waits;
+  `features/dealer/profile-actions.ts` — `withdrawProfileChangeAction`;
+  `features/admin/actions.ts` — two actions;
+  `(admin)/admin/dealers/page.tsx` — the badge and the toggle;
+  `(admin)/admin/dealers/[id]/page.tsx` — the card
+- **Sandbox** `admin/profile-change-review.stories.tsx` — **new**, eight
+  states; `mocks/admin-actions.ts` — two stubs; registry C062d
+- **Tests** `dealer-onboarding.test.ts` — twelve integration cases;
+  `profile-change-review.test.tsx` — **new**, five;
+  `profile-form.test.tsx` — six
+- **Docs** `dealers.docs.ts` (`PATCH /v1/dealer` rewritten), `admin.docs.ts`
+  (three operations)
+- **No new dependency.**
+
+### The split is free text against a number
+
+`DealerSelfUpdateInput` carries three fields and they do not all mean the same
+thing. `establishedYear` is an integer bounded by 1900 and 2100: there is no way
+to write a phone number, a rival's name or a WhatsApp handle into it, so it is
+published the moment the dealer saves. The other two are prose, and prose is the
+whole of the risk.
+
+This is why the rule lives in `dealers.service.selfUpdate` and not in the
+schema. A schema says what may be _sent_; it has no access to the dealership's
+status, and "publish now" versus "queue for review" is a question about the row.
+
+### A DRAFT writes straight through, and that is not a hole
+
+Nothing about a non-ACTIVE dealership is public — the directory and the
+portfolio both require `status === 'ACTIVE'` (rule 6) — so there is no page for
+a number to appear on, and the whole application is read by a moderator at
+approval anyway. Queueing an edit to an invisible field would leave a dealership
+waiting for permission to finish an application nobody had started reviewing.
+
+### One request at a time, and the boxes are shut while it waits
+
+A dealership has at most one proposal outstanding. A second edit to either
+sentence while one waits is a **409** — and the profile screen does not offer
+the boxes at all in that state: they are `disabled`, holding the proposed text,
+which makes the refusal the server-side half of a rule the form already states.
+That is the R27 shape, and the `UNIQUE (dealerId) WHERE status = 'PENDING'`
+partial index is the third defence, for two tabs racing.
+
+**Merging was the first design and it was worse.** A request that quietly
+absorbs later edits is one whose text can change _after_ a moderator has started
+reading it: the queue row they opened and the row they approve are then not the
+same words, and nothing tells them so.
+
+### Withdrawing is a button
+
+`DELETE /v1/dealer/profile-change` deletes the waiting request, and the boxes
+unlock on the live values. There is no inference from what the dealer typed.
+
+An earlier version read "the dealer retyped the live value" as a cancellation.
+That was wrong twice over: it made the way out something to be discovered rather
+than pressed, and an edit that happens to restore the live text is still an edit
+rather than a statement of intent to cancel.
+
+What survives from it is much narrower and is not a withdrawal — the service
+asks whether a save _proposes anything at all_, because the form re-sends all
+three fields every time and a dealer correcting only their established year
+would otherwise put a request in front of a moderator asking them to approve the
+status quo. `sameServices` makes that comparison order-insensitive for the same
+reason: the services box is one comma-separated line.
+
+### A refusal writes nothing, which is what makes it safe
+
+The live columns are never touched until an approval, so a refusal is a status
+change on the request and **no write at all** on the dealership. There is
+nothing to restore because nothing was taken away.
+
+The alternative — publish, then roll back on refusal — has a window, however
+short, in which the phone number is on the page. That window is the entire thing
+this revision exists to close.
+
+### What the dealer is told, and why the screen had to change
+
+A dealer presses Save, the page reloads, the tagline box shows the line they
+typed, and their public page shows the old one. Without something on the screen
+saying so, the honest state of the product is invisible: a dealer who cannot see
+their change concludes the save failed, does it again, and emails support.
+
+So `ReviewPanel` says what is waiting, what buyers are still seeing, and — on a
+refusal — the moderator's sentence, verbatim. It also states the way out in
+words, because there is no cancel button to point at.
+
+And the boxes keep the dealer's own words rather than resetting to the live
+value. A form that reverted after every save would look exactly like a save that
+failed, and a dealer correcting one word of a refused line would have to type the
+whole thing again.
+
+### Old beside new, on the reviewer's side
+
+The moderator is not asking _"is this tagline acceptable"_. They are asking _"is
+this **change** acceptable"_, and the two differ whenever the edit is a small
+correction to a line that was already approved. So `AdminProfileChange` carries
+`liveTagline` and `liveSpecialities` alongside the proposal — a card showing only
+the new value makes the reviewer hold the old one in their head, and a reviewer
+doing that is one who approves a number appended to a sentence they
+half-remember.
+
+`null` and `[]` on the proposed side keep their database meaning — _this request
+does not touch that field_ — and render as `unchanged`. A blank row under
+Services would read as _the dealer is clearing their services_, and approving
+that reading approves something nobody asked for.
+
+### What is deliberately not here
+
+**No detection.** Nothing scans the tagline for a phone number. A regex over
+ten-digit strings misses `nine eight four zero zero` and teaches a moderator to
+trust the absence of a flag, which is worse than no flag at all. The card's job
+is to put the sentence in front of a person at a size they will read.
+
+**No notification to the dealer.** `DealerProfileChangeDecided` goes on the
+outbox and nothing consumes it yet; the dealer learns the outcome next time they
+open their profile screen. An email belongs with the notification feature that
+owns templates and delivery, not bolted onto this one.
+
+**No SLA and no auto-approve.** A queue nobody works is a product that has
+quietly stopped letting dealers edit their own pages, and the honest answer to
+that is staffing rather than a timer that publishes unread text. The waiting
+time is on every row of the queue and on the review card so that the backlog is
+visible rather than inferred.
+
+---
+
+## R35 — One door for a dealership, not two
+
+**Revises F073 / DESIGN-SPEC §3.1**
+
+The buyer header carried two buttons — `Dealer login` and `List your cars` —
+and both were `<Link href="/dealer">`. The console already resolves the session
+and decides between _sign in_ and _finish onboarding_ on its own, which is why
+one href was ever enough. The second button did not add a destination; it added
+a question with one answer, in the busiest 200px of the page.
+
+- **Frontend** `components/layout/customer-header.tsx` — the `List your cars`
+  link is gone; the surviving link takes `btn-primary` and loses
+  `hidden sm:inline-flex`
+- **Sandbox** `layout/customer-header.stories.tsx` — prose only; the `Mobile`
+  and `Tablet` stories now show the row they describe
+- **Tests** `customer-header.test.tsx` — `the two dealer doors` becomes
+  `the dealer door`, and gains a case that counts the `/dealer` links
+- **Docs** `DESIGN-SPEC.md` §3.1
+- **No contract, route, schema or migration.** Nothing outside the header
+  referred to the removed button.
+
+### Why the survivor is primary, and why it stopped hiding
+
+The removed button was the `btn-primary` of the pair; the one that remains was
+`btn-secondary` with a transparent border **and** `hidden sm:inline-flex` —
+invisible below 640px. That was affordable when a second button stood next to
+it and carried the small screen alone. With one button left, keeping the old
+classes would have deleted the dealer entrance from every phone, which is the
+larger share of the traffic. So it inherits both the weight and the visibility
+of the button it replaced.
+
+### The label is `Dealer login`, not `List your cars`
+
+`List your cars` describes what a dealership eventually does; `Dealer login`
+describes what the button does when pressed. A returning dealer with fifty
+cars already listed is the more common presser of it, and the console tells a
+first-time visitor what to do next anyway.
+
+### What was deliberately left alone
+
+The footer's `For dealers` link also points at `/dealer`. It is a nav link in a
+list of four destinations rather than a call to action beside another call to
+action, and removing it would leave the foot of the page with no route to the
+console at all.
+
+---
+
+## R36 — The contact's job title is not a field
+
+**Revises F038 / F041 / F046 · ⚠️ deletes data**
+
+Onboarding step 1 asked three questions and one of them had no reader. **Role**
+— optional, free text, placeholder "Proprietor" — collected what the person
+filling the form called themselves and then did nothing with it. It was never
+on the directory, never on a portfolio, never a filter, never part of a KYC
+decision. On the dealer's own profile screen it was a `LockedField`: a value
+shown back, uneditable, to the one person who had already typed it.
+
+- **Schema** `User.roleTitle` dropped ·
+  `migrations/20260910170000_drop_user_role_title`
+- **Contracts** `OnboardingInput.roleTitle`, `AuthSession.user.roleTitle`,
+  `DealerProfile.contact.roleTitle`, `UpdateDealerInput.contact.roleTitle`
+- **Backend** `auth.service.{me,onboard}`, `dealers.service.{toProfile,session,
+selfUpdate}` — every write and read of the column
+- **API** No route changes. Three request/response **examples** in
+  `auth.docs.ts` and `dealers.docs.ts` lose the key; the schemas themselves are
+  generated from contracts and follow on their own
+- **Frontend** `features/auth/onboarding-wizard.tsx` — the `Field`;
+  `features/auth/actions.ts` — `ONBOARDING_FIELDS` and both parse calls;
+  `features/dealer/profile-form.tsx` — the `LockedField`
+- **Seeds** `seed/index.ts`, `seed/dev-dealers.ts`, and `ownerRole` off both
+  seed data files
+- **Sandbox** `auth/onboarding-wizard.stories.tsx`,
+  `dealer/profile-form.stories.tsx`
+- **Tests** eight files; `profile-form.test.tsx` drops `role` from the
+  locked-field table, and `actions.test.ts` re-points its
+  drops-an-empty-optional case at `landline`
+- **No new dependency.**
+
+### The authorisation roles are untouched, and that is the point
+
+`DealerRole` (`OWNER` / `MANAGER` / `SALES`), `AdminRole`, `DealerMember.role`
+and `User.adminRole` are the permission model. `permissionsForRole` reads one on
+every authenticated request, and `session.port.ts` asserts the matrix. None of
+it is in scope here.
+
+That two unrelated things were both called some form of _role_ on one
+dealership is half the reason this field is worth removing rather than leaving
+to rot. One of the two decides what a seat may do; the other was a job title on
+a business card. A reader of the schema had to work out which was which before
+touching either.
+
+### `landline` inherits a test, and that is not an accident
+
+`actions.test.ts` had a case proving the action drops an empty optional rather
+than sending `""` — a real rule, because `.strict()` Zod would take a blank
+string as a value rather than as an absence. `roleTitle` happened to be the
+optional it demonstrated with. `landline` is the other one, so the case moves
+rather than goes: the rule outlived the field it was written against.
+
+### Dropping the column rather than leaving it nullable
+
+`roleTitle` is nullable, so leaving it costs nothing at runtime. It costs
+something every time somebody reads the schema: a column no code path touches
+is a question — _is this dead, or is something I have not found still writing
+it?_ — and the honest answer gets harder to reach the longer it sits. R33 made
+the same call about `dealers.about` for the same reason.
+
+The migration deletes what dealers typed and names the `COPY` that preserves it
+first. Nothing in the application can put the values back.
+
+---
+
+## R37 — Services are added one at a time, and shown as chips
+
+**Revises F037 / F046 / R18 / R26**
+
+`specialities` is `string[]` in the contract and was a single comma-separated
+text box on both screens that write it. That box asked the dealer to hold a
+serialisation format in their head — _is a comma inside a service name allowed?
+does a trailing one make an empty entry?_ — and it hid the fact they most need
+to see, which is **how many services they have named and which**. A dealer
+reading `Finance, exchange, RC transfer, in-house workshop, insurance` back out
+of a one-line input is reading their own answer through a keyhole.
+
+- **Frontend** `components/ui/service-input.tsx` — **new** (C072);
+  `lib/services.ts` — **new**, the `servicesOf` parse, extracted from the three
+  places that had a copy of it; `components/ui/input.tsx` — props widen to
+  `ComponentPropsWithRef<'input'>`; `features/auth/onboarding-wizard.tsx` and
+  `features/dealer/profile-form.tsx` — the two consumers;
+  `features/auth/actions.ts`, `features/dealer/profile-actions.ts`,
+  `features/admin/dealer-profile-editor.tsx` — each drops its local copy
+- **Sandbox** `forms/service-input.stories.tsx` — **new**, seven states;
+  registry C072
+- **Tests** `service-input.test.tsx` — **new**, fourteen;
+  `profile-form.test.tsx` — three rewritten, one added;
+  `onboarding-wizard.test.tsx` — one rewritten
+- **Docs** `component-map.md` C072
+- **No contract, route, schema or migration.** The wire format is unchanged.
+- **No new dependency.**
+
+### The hidden input is the whole compatibility story
+
+The component submits `services.join(', ')` under `name` — byte-for-byte what
+the comma box submitted. `servicesOf()` on the far side was not changed and did
+not need to be, so the contract, the route, the API and the admin editor are
+untouched by a change to how the dealer types. A screen that had not adopted the
+new editor could not have disagreed with one that had.
+
+The visible box carries **no `name`**: it is the draft, not the value, and a
+draft must not be submittable. That is the R27 shape, and it is why `required`
+sits on the visible control instead — a browser cannot focus or message a hidden
+input, so `required` there would have produced a form that silently would not
+submit with nothing on screen highlighted.
+
+### The picture the dealer builds is the picture a buyer gets
+
+Buyers already read this list as chips, on the directory card and on the
+portfolio; so does the admin review screen. Making the editor the same shape —
+`Tag`, the same wrap, the accent on the first chip (**R29**) — means a dealer
+adding a service can see what it will look like where it lands, rather than
+inferring it from a comma.
+
+### Duplicates are refused here and merged elsewhere, and that is not a conflict
+
+R18 made the list a set on read, so `Exchange` twice has never reached a buyer
+twice. What it could not do is tell the dealer, at the moment they typed it,
+that they had already said it. The refusal is an editing affordance and the
+merge is a data rule; removing either would be a regression in a different
+direction.
+
+Case-insensitively, because "RC transfer" and "RC Transfer" are one service and
+a buyer comparing two dealerships should not be shown both. A refused entry
+stays in the box: there is nothing to retype and the message says what to
+change.
+
+### A draft that was typed but not added is still committed
+
+The most natural mistake on this screen is to type a service and press Continue.
+Without a submit handler that commits the draft, that silently discards the last
+thing the dealer wrote, and the loss is invisible until they look at their own
+public page. The handler writes the hidden input's `value` directly — a
+`setState` there has not flushed by the time the form serialises.
+
+### `servicesOf` was written three times
+
+`auth/actions.ts`, `dealer/profile-actions.ts` and
+`admin/dealer-profile-editor.tsx` each had their own copy of the same four-line
+split. Three copies of a parse is how two screens start disagreeing about what
+`In-house workshop, RC transfer` means; the fourth caller was the point to make
+it one.
+
+### What is deliberately not here
+
+**No autocomplete against existing values.** The suggest-existing-values guard
+rail D1 calls for is a real requirement and it needs the facet data F076
+produces — a datalist populated from nothing would be a control that looks like
+it is helping and is not.
+
+**No drag to reorder.** Order is meaningful — the first three are what a
+directory card shows — but removing and re-adding is a two-click reorder, and a
+drag affordance that has to work on a phone is a great deal of code for a list
+of at most twelve short labels.
+
+---
+
+## R38 — PAN is unique across the platform, as GSTIN already was
+
+**Revises F038 / F041 / F045 / F046**
+
+`dealers.gstin` has carried `@unique` since the identity migration, and the
+service turns a collision into a `409 GSTIN_ALREADY_REGISTERED` naming
+`body.gstin`. `pan` sat in the column beside it, validated for shape and checked
+against nothing.
+
+The asymmetry was not a decision. Both are read off a document by the same
+moderator on the same screen, and both identify **one taxable entity** — so two
+dealerships holding one PAN is either one business applying twice, or a typo
+that has quietly carried somebody else's tax identity into a KYC review.
+
+- **Schema** `Dealer.pan` gains `@unique` ·
+  `migrations/20260910180000_dealer_pan_unique`
+- **Backend** `dealers.repository.findConflicting` — takes `pan`, returns
+  `pan`; `dealers.service.assertNoDuplicate` — the `PAN_ALREADY_REGISTERED`
+  branch, and `pan` added at the one call site
+- **API** No route changes. `PATCH /v1/dealer/onboarding` and
+  `PATCH /v1/admin/dealers/:id` gain a 409 code, and both `*.docs.ts`
+  descriptions say so — `errors: [… 409]` was already declared on each
+- **Frontend** Nothing. `fieldErrors()` strips the `body.` prefix, so
+  `body.pan` already lands on the `pan` key the wizard's `<Field id="pan">` and
+  the admin editor's `errorFor` both read
+- **Tests** `dealer-onboarding.test.ts` — seven integration cases mirroring the
+  GSTIN block; `dealers.service.test.ts` — four unit;
+  `actions.test.ts` — the field-and-banner case, table-driven over both codes
+- **No new dependency.**
+
+### GSTIN is reported first when both collide
+
+A step-3 submit carries both, and both can be duplicates of the same rival row.
+One field error at a time is the shape of every check on this path, and the
+order is not arbitrary: **a GSTIN embeds the PAN of the entity that holds it**
+(characters 3–12). A dealer who corrects the GSTIN usually corrects the PAN with
+it, and naming the derived field first would send them to the wrong document.
+
+### The unique index is the guarantee; the read is the message
+
+This is the same split GSTIN uses and it is worth restating, because the check
+looks redundant next to the constraint. The index is what makes two applications
+racing safe. `findConflicting` exists for the other half of the job: turning a
+collision into a message against the box the dealer just typed in, rather than
+into a Prisma `P2002` the error handler renders as a 500.
+
+`findConflicting` still issues **one query** however many fields are asked
+about — the clauses are OR'd and the three answers are read back off the same
+rows. A dealer filling in step 3 sends GSTIN and PAN together, and two round
+trips to answer one question is a round trip nobody needed.
+
+### A dealership editing itself is excluded, and that is not new code
+
+`id: { not: exceptDealerId }` has always been in the `where`. It is what lets a
+dealer re-save a form without being refused by their own row, and it is now
+covered by two cases that did not exist for GSTIN either: re-saving the same
+PAN, and editing an unrelated field while holding one.
+
+### Nullable, and why that is what makes this deployable
+
+Postgres permits many NULLs in a unique index. Every dealership that has not
+reached step 3 has `pan = NULL`, and none of them collide — so the constraint
+can land now rather than after a backfill. It is the same reason `gstin` is
+nullable _and_ unique rather than one or the other.
+
+⚠️ **The migration fails if two rows already share a PAN**, and failing is the
+correct behaviour: silently keeping a duplicate would leave the database
+disagreeing with the application check that lands in the same commit. The
+migration names the query that finds them.
+
+### Case is handled twice, deliberately
+
+`PAN` in `packages/contracts` is `.trim().toUpperCase()` before the regex, so
+every value ever written is upper-case and the plain unique index is exact.
+`findConflicting` compares case-insensitively anyway. That is belt and braces
+rather than a second rule — and it is what the GSTIN check already did.
+
+### One test fixture had to change
+
+`dealer-onboarding.test.ts` wrote `pan: 'AABCS1429B'` as a literal in the
+yard-photo block, beside a GSTIN already derived from a counter. That was safe
+only while exactly one test wrote it. Both are derived now, so the next test to
+copy that line cannot break the one above it.
+
+---
+
+## R40 — Emails are queued, and a separate process sends them
+
+**Revises F031 / F038 / F045 / R34 · ⚠️ new table**
+
+The platform decided things about dealerships and told nobody. A dealer
+submitted an application and heard nothing; a moderator approved one and the
+dealer found out by opening the console; R34 shipped a review queue that nothing
+announced, so a proposal sat waiting until somebody happened to look.
+
+Six messages close that, and **none of them is sent by the API.**
+
+- **Schema** `NotificationDelivery`, `NotificationStatus` ·
+  `migrations/20260911090000_notification_deliveries`
+- **Platform** `platform/mail/{mail.port,console.adapter,resend.adapter,factory}.ts`
+  — **new**; `platform/jobs/queue.ts` — `notification.email` and a retry policy;
+  `platform/events/bus.ts` — `DealerProfileChangeSubmitted`
+- **Backend** `modules/notifications/{templates,notifications.service}.ts` —
+  **new**; `dealers.service.selfUpdate` emits the new event; `container.ts`
+  gains `mailer`, `notifications` and **`startWorker`**
+- **Process** `src/worker.ts` — **new**, the second entrypoint;
+  `dev:worker` and `start:worker` scripts
+- **Env** `MAIL_DRIVER` guarded, `RESEND_API_KEY`
+- **Deploy** a `worker` ECS service and task definition, its own log group,
+  four terraform variables, `RESEND_API_KEY` in SSM, a `worker` compose
+  profile, and the API flipped to `WORKER_INLINE=false`
+- **Tests** `resend.adapter.test.ts` — **new**, 14; `templates.test.ts` —
+  **new**, 20; `notifications.service.test.ts` — **new**, 17; nine integration
+  cases; the harness gains a recording mailer and `drainEmails()`
+- **No new dependency.** Resend is one authenticated `POST`.
+
+### The API never waits on Resend, and never touches it
+
+```
+API request                          Worker process
+  ↓ validate + business operation      ↓ OutboxPublisher polls
+  ↓ enqueueOutbox(tx, …)               ↓ bus.publish(event)
+  ↓ COMMIT                             ↓ queue.send('notification.email', …)
+  ↓ respond   ← the request ends here  ↓ claim → render → Resend
+```
+
+No route, service or request handler in this codebase holds a `MailerPort`. The
+API's entire contribution to an email is **one row in `outbox_events`, written
+inside the transaction that caused it** — which is what makes the email exactly
+as durable as the state change, and no more.
+
+### Why a second process and not a `void`-ed promise
+
+`void mailer.send(…)` after the response _looks_ asynchronous and is not. The
+work still runs on the API's event loop, still holds its memory, still competes
+with the next request, and still dies with a SIGTERM halfway through — with
+nowhere to record that it did. When Resend has a slow minute, every one of those
+becomes the API's slow minute.
+
+Splitting the process gives all four away at once, and it removes the one-task
+cap on the API: `WORKER_INLINE=true` meant N API tasks fired N copies of every
+scheduled job, which is why `api_desired_count` was not simply "however many we
+like".
+
+### Two hops, and the middle one is not skipped
+
+The outbox could enqueue a pg-boss job directly. It does not, because
+`boss.send` is not transactional with the caller's write — "the dealership was
+approved" and "the job exists" would be two commits, and a crash between them is
+a dealer who is verified and never told. The outbox row _is_ the transactional
+part; the bus is how it fans out; the queue is what survives a restart mid-send.
+
+### Idempotency is a unique index, not a flag
+
+pg-boss guarantees **at-least-once**. A duplicate delivery is therefore not a
+bug to prevent — it is a normal event to absorb, and the only version of that
+which survives two workers is a database constraint.
+
+`notification_deliveries.dedupeKey` is
+`<template>:<event id>:<recipient>`, and the worker **claims the row before it
+calls the provider**. A redelivery loses the insert, finds a `SENT` row and
+returns. Resend's own `Idempotency-Key` header is the second line, covering the
+one window the index cannot: a row claimed, a request sent, and the response
+lost coming back.
+
+The key is derived from the **event**, never from the attempt. A key generated
+per job would be unique per delivery and would deduplicate nothing.
+
+### Retryable and permanent are different, and getting it backwards is invisible
+
+A **5xx or a dropped socket** is Resend having a bad minute: rethrown, so
+pg-boss backs off — five attempts over roughly twenty minutes. A **4xx** is us:
+an unverified sending domain, a revoked key, a malformed address. Retrying that
+collects the same 422 five times and then archives a job nobody opens, so it is
+**swallowed deliberately** and the row goes straight to `FAILED` with the
+provider's own sentence — which is usually the exact instruction needed.
+
+### `console` is not a stub, and production refuses it
+
+It prints the recipient, the subject and the **plain-text** body, which is the
+part a developer actually needs — a template rendering `undefined` into a
+sentence is invisible in HTML and obvious in text. Everything above it is
+unchanged: same worker, same claim, same `SENT` row.
+
+`env.ts` refuses it in production. A platform that approves dealerships and
+silently tells nobody is worse than one that fails at boot.
+
+### Ids on the queue, never PII
+
+An event payload carries a dealer id; a job payload carries a template name and
+ids; the **worker** resolves the name and the address at send time. An address
+copied into a queue row is an address that goes stale the moment the dealer
+changes it — and a queue is not a place to keep personal data waiting.
+
+The exception proves the rule: the moderator's review email needs the
+**proposed** tagline, not the live one, so the job carries a
+`profileChangeId` and the worker reads that row. Rendering the dealership's
+current words over "has proposed a change" was a real bug, caught by the
+integration test rather than by review.
+
+### What is deliberately not here
+
+**No SMTP, and Mailpit stays unwired.** `MAIL_DRIVER=smtp` is in the enum
+because the baseline had it there, with no adapter then either; `env.ts` now
+refuses it at boot rather than letting a deployment discover at the first
+approval that nothing sends. Wiring Mailpit means an SMTP client, which means a
+dependency, for a convenience `console` already covers better.
+
+**No unsubscribe, and no preferences.** All six are transactional — they are
+the platform answering something the dealer did — and an unsubscribe link on
+"your application was rejected" is a link to not being told.
+
+**No bounce handling.** Resend reports them by webhook, which needs a public
+endpoint, signature verification and a decision about what a bounced approval
+_means_. `notification_deliveries` is the table that will hold the answer.
+
+**No `notification.enquiry-to-dealer`.** It is in `JOB_NAMES` and belongs to
+the enquiry feature, which has not landed.
+
+## R41 — A dealership suspension closes a seat, not an account
+
+**Revises F014, F016, F019, F045**
+
+One human can be two things: a dealership owner and a platform admin. Suspending
+the dealership used to write `users.status = 'SUSPENDED'` onto every member and
+revoke every session they held, so the admin console closed too — for a decision
+about a yard.
+
+- **Schema** `UserRole` (`user_roles`), `PlatformRole` (DEALER | ADMIN),
+  `UserRoleStatus` (ACTIVE | SUSPENDED), `User.roles`
+- **Migration** `20260913090000_user_role_seats` — creates the table, backfills a
+  seat per membership and per platform admin, then releases the account-level
+  flag a dealership suspension had set. `setDealerStatus` was its only writer,
+  so every such row was suspended for a reason the backfill has just recorded in
+  the right place
+- **Backend** `modules/auth/roles.ts` (new — `isSeatSuspended`, `ensureSeat`,
+  `setSeatStatus`, exported through `auth.facade.ts`),
+  `cookie-session.adapter.ts`, `dev-session.adapter.ts`, `auth.service.ts`,
+  `session.service.ts` (`resolve` loads the seats; `revokeAllForUser` takes a
+  scope), `admin.service.ts` (`setDealerStatus`)
+- **API** no route added, changed or removed — the OpenAPI document is untouched
+- **Tests** `tests/unit/modules/auth/roles.test.ts` (new),
+  `tests/auth.test.ts` — a member who is also an admin keeps their console after
+  their dealership is suspended,
+  `tests/unit/modules/admin/admin.service.test.ts`,
+  `tests/unit/modules/auth/{auth.facade,dev-session.adapter}.test.ts`
+- **Components** none · **Sandbox** none
+- A seat row **refuses** its role when it is SUSPENDED and an absent row says
+  nothing. It can close a door and never open one, which is what makes the table
+  safe to introduce beneath `ADMIN_ALLOWLIST`, `isPlatformAdmin` and the
+  dealership's own status — all three still decide.
+- `ensureSeat` upserts with an empty `update`, so signing in again never lifts a
+  suspension.
+- ⚠️ `apps/api/vitest.config.ts` now sets **two** addresses on
+  `ADMIN_ALLOWLIST`. Proving the split needs one operator to suspend a
+  dealership whose owner holds an operations seat of their own; a test that
+  counts admin emails has to count distinct templates, not messages.
+
+## R42 — An admin can grant admin access, by email
+
+**Revises F019, F072** · lands with **F072**
+
+`ADMIN_ALLOWLIST` was the entire admin authorization model: a list of addresses
+in the environment, checked when a session is issued and again on every request
+afterwards. That bought a property worth naming — no bug in an admin screen
+could promote anybody, because the row was not what was consulted — and it cost
+a deploy every time somebody joined the team.
+
+A **grant** is the second answer, and it is deliberately narrower than the first.
+
+- **Schema** no new table — a grant is a `user_roles` row with `role = 'ADMIN'`
+  and `grantedBy` set (**R41**)
+- **Backend** `modules/auth/roles.ts` (`grantSeat`, `hasGrantedSeat`, both
+  exported through `auth.facade.ts` with `isAllowlistedAdmin`),
+  `cookie-session.adapter.ts`, `auth.service.ts` (`completeAdminGoogle`),
+  `admin.service.ts`, `session.port.ts` (`admin:access:manage`)
+- **API** `GET /v1/admin/access`, `POST /v1/admin/access`,
+  `DELETE /v1/admin/access/:id`
+- **Frontend** `features/admin/{admin-access,access-actions}.tsx`, rendered on
+  `/admin/config`
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts`,
+  `apps/web/tests/unit/features/admin/{admin-access,access-actions}.test.*`
+- **Components — New (feature-specific)** `AdminAccessPanel` · **Reused**
+  `Table`, `Field`, `Input`, `Select`, `Button`, `Banner`, `Tag`
+- **Sandbox** `AdminAccessPanel` — allow-listed only / allow-listed + granted /
+  your own row / an address nobody has signed in with / granting / refused
+
+**`grantedBy` is what tells the two apart, and it is load-bearing.** Every admin
+sign-in already leaves an ADMIN seat behind (R41's `ensureSeat`), so "has a
+seat" cannot mean "is allowed in" — it would make the allow-list vacuous, and an
+address removed from the environment would keep working forever on the strength
+of its own last visit. Only `grantSeat` sets `grantedBy`, and only this screen
+calls it.
+
+**The allow-list still cannot be edited from the console.** Those rows show
+`Allow-listed` and no Withdraw control: removing an address is still a change to
+the deployment, and a button that appeared to do it and did not would be worse
+than no button.
+
+**Three refusals, all server-side.** Your own seat (403 — there may be nobody
+left to let you back in), an allow-listed address (409), and a seat nobody
+granted (404).
+
+**Withdrawing revokes their admin sessions and nothing else.** A dealer seat the
+same person holds is untouched — R41 read in the other direction.
+
+## R43 — The directory search recommends, and the old input is gone
+
+**Revises F085** · lands the shared typeahead the vehicle search (**F077**) reuses
+
+The directory's search was a plain 260px input inside a `<form>`: type the
+trading name, press Enter, get `?q=<whatever was typed>`. It asked a buyer to
+spell a dealership's name correctly with no help and no feedback — and on a
+platform where the same yard may be registered as "Sri Lakshmi Motors" or "Sree
+Lakshmi Motors", that is a coin toss between the grid and an empty state.
+
+**That input is removed, not augmented.** It is replaced by a typeahead that
+calls a suggest endpoint after the first character, holds the request back
+300 ms, highlights the first recommendation, and takes whatever is highlighted
+on Enter.
+
+- **Schema** none
+- **Contracts** `SuggestQuery`, `DealerSuggestQuery`, `DealerSuggestion`,
+  `DealerSuggestResponse` in `packages/contracts/src/public.ts`
+- **Backend** `dealers.public.service.ts` (`suggest`, `matchDealer`,
+  `suggestMeta`), `dealers.public.routes.ts`, `dealers.public.docs.ts`,
+  `docs/schemas.ts` (`INPUT_SCHEMA_NAMES`)
+- **API** `GET /v1/search/dealers`
+- **Frontend** `components/ui/autocomplete.tsx`,
+  `components/dealers/dealer-search-box.tsx`, `lib/use-debounced-value.ts`,
+  `app/api/search/dealers/route.ts`, `components/dealers/directory-filters.tsx`
+- **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`,
+  `tests/unit/routes.test.ts`,
+  `apps/web/tests/unit/components/dealers/dealer-search-box.test.tsx`,
+  `apps/web/tests/unit/lib/use-debounced-value.test.tsx`,
+  `apps/web/tests/unit/app/api/search-dealers-route.test.ts`
+- **Components — New (shared)** `AutocompletePanel` / `useAutocomplete` /
+  `HighlightedText` (C073) · **New (feature-specific)** `DealerSearchBox` (C074)
+  · **Removed** the raw `<input className="input">` inside `DirectoryFilters`
+- **Sandbox** `Search/DealerSearchBox` — default · no district · a search
+  already applied · matched on a place · loading · nothing found · endpoint
+  failed · slow endpoint
+
+**`?q=` on the grid is unchanged, and that is the point.** This is a better way
+to _arrive at_ a search term, not a different kind of search. Choosing a
+recommendation navigates to `/dealers?q=<that dealership's exact trading name>`
+— a URL that was always valid, is shareable, server-renders, and survives the
+back button like every other filter in the product. Nothing about the directory
+service, its paging or its SEO policy moves.
+
+**It does not jump to the dealership.** `/dealers/<slug>` was the alternative
+and it is wrong here: the box sits above a grid the buyer is reading, and a
+control that replaces that page with a different one is a link pretending to be
+a filter. The card is already the way to the portfolio.
+
+**The endpoint is `/v1/search/dealers`, not `/v1/dealers/suggest`.** The
+namespace is the deliverable: `/v1/search/vehicles` arrives at F076/F077 with
+the same `SuggestQuery` grammar and the same `search` / `data` / `countLabel`
+response shape. It is mounted in the dealers module all the same, for the reason
+`dealers.public.routes.ts` already gives — it calls `dealersPublic` and nothing
+else, and the path is about the audience rather than the folder.
+
+**Three things make a typeahead correct, and only two of them are obvious.**
+Debounce stops it asking per keystroke; abort cancels what the buyer has moved
+past. Neither helps once bytes are on the wire — a two-character query against a
+cold cache can resolve _after_ the four-character one that replaced it — so
+every response **echoes the search it answered**, and the client drops anything
+that is not the current question. `DealerSuggestResponse.search` exists for that
+and for nothing else.
+
+**`matchedOn` is why the server decides what to underline.** The suggest match
+is wider than the grid's: name, town and district, because a buyer typing
+"katpadi" has named a place and the useful answer is the yards in it. A client
+that searched the _name_ for the typed characters would mark nothing at all on
+such a row while still claiming a match.
+
+**The suggestion is not a `DealerCard`.** A card carries a cover photograph, a
+tagline, a service list and two composed price strings — six fields fetched and
+thrown away per keystroke, plus a media query per row. `DealerSuggestion` is the
+row as drawn: initials, a name, one meta line.
+
+**A dealership with no live cars shows the place and nothing else**, rather than
+"0 cars in yard". Until F076 every dealership has zero, and six identical zeroes
+over a dropdown reads as a broken endpoint rather than an empty catalogue — the
+same call the card's em dash makes (A8).
+
+⚠️ **Enter with no recommendations does nothing.** The raw-text submit path went
+with the old input, so a buyer who types something that matches no dealership
+gets the "No dealership matches …" row and no navigation. That is deliberate —
+the box is now a chooser rather than a free-text field — but it is the one
+behaviour a buyer could previously rely on and can no longer, and it is the
+thing to revisit first if the empty state turns out to be a dead end in use.
+
+## R39 — The mobile number is proved, not typed
+
+**Revises F014 / F018 / F037 / F038 / F046 / R27 / R34**
+
+Onboarding asked for a mobile number and wrote whatever was in the box. It was
+checked for shape — ten digits, starting 6–9 — and for uniqueness, and nothing
+else. Both of those are checks on a _string_.
+
+That number is the one thing on the public portfolio a buyer acts on. "Get
+directions" needs the yard to exist; the phone row needs the handset to be in
+the dealer's pocket, and nothing on the platform had ever shown that it was. A
+mistyped digit publishes a stranger's number under a dealership's name, with a
+reveal endpoint that costs an SMS every time somebody presses it.
+
+**The number is now proved.** MSG91's OTP widget puts a code on the handset,
+the dealer enters it, and the API takes the resulting access token to MSG91 and
+asks whose handset it belongs to.
+
+### The single-writer rule, which is the whole design
+
+`users.phone` is written by `POST /v1/auth/phone/verify` and by **nothing
+else** — the same shape of invariant as rule 5, and for the same reason. A
+column several call sites may set is a column whose meaning drifts, and the
+meaning here is specific: it holds a number somebody proved they hold. A number
+somebody typed is a different fact, and once both can land in the column there
+is no way to tell them apart afterwards.
+
+So onboarding and the profile edit stopped _setting_ it. They assert that the
+number they were handed is already the verified one on the session's user row,
+and refuse otherwise (`assertPhoneVerified`, exported through
+`auth.facade.ts`). That makes the round trip unskippable by construction rather
+than by a check somebody has to remember to add to the next write path.
+
+`PHONE_ALREADY_REGISTERED` moved with it, and landed somewhere better: the
+collision is now answered at the moment the claim is made, on the step that
+owns the field, instead of two steps later when the dealer has finished typing
+their address.
+
+### Three questions, in order, and only the third costs anything
+
+Step 1 asks: **is it a number** (in the browser, the same predicate the API
+validates with) · **is it free** (`POST /v1/auth/phone/availability`) · then
+sends.
+
+The middle one is not an optimisation. The uniqueness refusal used to arrive
+_with the verification_, which meant a dealer who typed a number another
+dealership holds paid for an SMS, read the code off their own handset, and only
+then learned they could not have it — and the message was delivered to a phone
+whose owner had never asked for one. It is the same refusal, the same message
+and the same field; it is asked a round trip earlier because that is where it is
+free.
+
+The early read is **not** the guarantee and does not pretend to be. Two callers
+can pass it for one number at the same instant; the unique index decides, and
+`verify` answers the loser identically. It is the cheap copy of a question that
+is asked again where it can be enforced.
+
+It answers `204` or `409` and nothing else — never who holds a number. A yes/no
+about what the platform knows is something a caller could walk a list through,
+so it sits behind the session like the rest of this module and is capped at the
+same order as the widget itself.
+
+### The widget, and what it costs us
+
+**MSG91's widget sends the SMS from the browser.** The six digits never reach
+this API, and neither does the send — which means the API cannot rate-limit it.
+That is a real consequence of the widget design and is worth stating rather
+than papering over. The two controls that remain are:
+
+1. **who gets the widget credentials.** `GET /v1/auth/phone/widget` is behind
+   `requireSignedIn`, so an SMS can only be provoked by somebody who has already
+   completed a Google sign-in — not by the open internet. They are deliberately
+   **not** on `GET /v1/config/public`, which is anonymous and
+   `Cache-Control: public`.
+2. **how often a token may be presented.** Ten in ten minutes per session, and
+   a token that has been accepted once is never accepted again.
+
+MSG91's own per-identifier limits are the third, and they are the only thing
+standing between one signed-in account and repeated sends. If that proves too
+loose in practice the answer is an API-side send endpoint — a different
+integration, not a tightening of this one.
+
+### Three refusals, and why they are three
+
+`identify()` answers `VERIFIED`, `REJECTED` or `UNAVAILABLE`. Collapsing the
+last two would tell a dealer their code was wrong during a vendor outage and
+send them round the resend loop spending SMS against a provider that is down.
+
+`REJECTED` and "the token proves a different number" are deliberately the _same_
+message to the caller, though: naming the number a token belongs to would
+confirm it to whoever is holding a stolen one.
+
+### Where the identifier comes from
+
+MSG91 publishes the `verifyAccessToken` request and not its response body, and
+the shape reported in the wild varies. The adapter looks in the response first
+and in the access token's own payload second. Reading the JWT is sound **only in
+that order** — the signature has already been checked, by MSG91, in the call
+above, so a forged token never reaches step 2 and a genuine token's payload
+cannot be edited without invalidating the signature that got it past step 1. A
+verification that names nobody is `REJECTED`, because accepting it would be
+accepting any valid token for any number.
+
+- **Schema** none — `users.phone` and `users.phoneVerifiedAt` have existed since
+  F014 and were both unused for what they describe
+- **Contracts** `PhoneOtpWidget`, `PhoneAvailabilityInput`, `VerifyPhoneInput`,
+  `VerifyPhoneResponse` and `AuthSession.user.phoneVerified` in
+  `packages/contracts/src/auth.ts`
+- **Backend** `platform/phone-otp/{phone-otp.port,fake.adapter,msg91.adapter,factory}.ts`,
+  `modules/auth/{phone.service,verified-phone,auth.routes,auth.docs,auth.facade,auth.service,session.port,cookie-session.adapter}.ts`,
+  `modules/dealers/dealers.service.ts`, `container.ts`, `routes.ts`,
+  `config/env.ts`, `docs/schemas.ts` (`INPUT_SCHEMA_NAMES`)
+- **API** `GET /v1/auth/phone/widget`, `POST /v1/auth/phone/availability`,
+  `POST /v1/auth/phone/verify`
+- **Config** `PHONE_OTP_DRIVER` (`fake` · `msg91`), `MSG91_WIDGET_ID`,
+  `MSG91_WIDGET_TOKEN`, `PHONE_OTP_DEV_CODE`, `PHONE_OTP_TIMEOUT_MS`;
+  `MSG91_AUTH_KEY` is server-only
+- **Frontend** `components/ui/otp-input.tsx`,
+  `features/auth/{phone-verification.tsx,phone-actions.ts,onboarding-wizard.tsx}`,
+  `lib/msg91-widget.ts`, `app/(auth)/dealer/onboarding/page.tsx`
+- **Tests** `tests/phone-verification.test.ts`,
+  `tests/unit/platform/phone-otp/{fake,msg91}.adapter.test.ts`,
+  `tests/unit/platform/phone-otp/factory.test.ts`,
+  `tests/unit/modules/auth/{phone.service,verified-phone}.test.ts`,
+  `apps/web/tests/unit/{components/ui/otp-input,features/auth/phone-verification,lib/msg91-widget}.test.*`
+- **Components — New (shared)** `OtpInput` (C075) · **New (feature-specific)**
+  `PhoneVerification` (C040b) · **Changed** `OnboardingWizard` (C040) takes
+  `phoneWidget`, holds `fullName`/`phone` as state, and no longer draws its own
+  Continue on step 1
+- **Sandbox** `Forms/OtpInput` — empty · partly typed · filled · invalid ·
+  disabled; `Forms/PhoneVerification` — send code · code entry · refused ·
+  attempts spent · verified · not configured · service unreachable;
+  `Forms/OnboardingWizard` — `AccountVerified`, `PhoneNotVerified`
+
+**Not verified: real SMS delivery.** No MSG91 widget was configured for this
+branch, so the `msg91` adapter is exercised against a stubbed `fetch` and the
+documented request shape. The first real send should be watched, and India
+requires DLT registration of the entity, the header and each template before
+any transactional SMS is delivered.
+
+**What is deliberately not here.** No session, no permission and no second
+factor: identity is the Google account and already was. And no API-side send —
+the widget owns that, which is what the spend note above is about.
+
+## R44 — A footer worth having, and the social links live in configuration
+
+**Revises F073** · adds six `social.*` platform config keys
+
+The baseline's footer was one row: a wordmark, the sentence the marketplace
+rests on, and four links floated right. That is the right footer for a product
+with four pages, and the wrong one for a product that asks a buyer to hand a
+dealership their phone number — there was nowhere on any public page to find out
+how to reach a person, and nowhere the platform could be seen to exist off the
+platform.
+
+- **Config** `social.instagram`, `social.facebook`, `social.youtube`,
+  `social.linkedin`, `social.x`, `social.whatsapp` — `string`, default `''`,
+  each named in `CONFIG_READERS` so `/admin/config` renders them editable
+- **Platform** `platform/config/platform-config.ts` — `string(key)` on
+  `PlatformConfigService`, the one reader the interface did not have
+- **Backend** `modules/config/config.service.ts` — `SOCIAL_NETWORKS` and the
+  `https:`-only `socialHref` guard; `modules/config/config.docs.ts` — the
+  operation's description
+- **API** no route added, changed or removed. `GET /v1/config/public` grows a
+  field, and its schema is generated from `packages/contracts`, so the OpenAPI
+  document follows without a hand-written line (§4a)
+- **Contracts** `SocialLink`; `PublicConfig.social`
+- **Frontend** `components/layout/{customer-footer,social-icons}.tsx`,
+  `lib/public-config.ts` (new), `lib/cache-tags.ts` (`CONFIG_TAG`,
+  `revalidatePublicConfig`), `features/admin/config-actions.ts`,
+  `app/(public)/layout.tsx`
+- **Tests** `apps/api/tests/unit/modules/config/config.service.test.ts` — nine
+  new cases, five of them the scheme guard;
+  `apps/web/tests/unit/components/layout/customer-footer.test.tsx` — **new**,
+  eleven; the two footer cases leave `customer-header.test.tsx`
+- **Components — Changed** `CustomerFooter` (C021) now takes `social`,
+  `supportEmail`, `supportPhone` · **New (feature-specific)** `SocialIcon`
+  (C021c)
+- **Sandbox** `Layout/CustomerFooter` — default · no social accounts published ·
+  two networks · API unreachable · tablet · mobile
+- **No new dependency.** The six marks are inline SVG at `currentColor`; an icon
+  library for six paths is not a dependency this repository takes on.
+
+### The social links are configuration, and that is the decision worth reading
+
+A marketing account is opened, renamed and closed on a timescale that has
+nothing to do with a release. Putting the URLs in code means an hour of CI to
+correct a dead Instagram link on every public page in the product; putting them
+in `NEXT_PUBLIC_*` means one image per environment and the end of
+build-once-promote-many (Rule 9). So they are `platform_config` rows: edited at
+`/admin/config` beside the GST percentage and the reveal caps, audit-logged like
+every other key, and read at request time through `GET /v1/config/public`.
+
+`revalidatePublicConfig()` is what makes that feel immediate. Without it a
+corrected link waits out the public shell's ten-minute window on the very page
+the operator is looking at while they fix it, which reads as the save not having
+worked.
+
+### The scheme check is a security boundary, not a tidy-up
+
+These six values are typed into a text box by an operator and rendered into an
+`href` on **every public page in the product**. That is exactly the shape a
+`javascript:` or `data:` URI is looking for, so `socialHref` refuses anything
+that is not an `https:` URL — once, on the way out of the API, rather than
+trusted at six render sites. A mistyped value, a bare `@handle` and a plain-HTTP
+profile all drop out of the payload, and the footer draws one icon fewer. Five
+of the nine new service tests are that guard.
+
+### Which links it offers, and which it refuses to invent
+
+**Exactly the destinations `CustomerHeader` offers.** Two of them — `/cars`
+(**F077**) and `/saved` (**F087**) — have not landed. The header carries them
+anyway, deliberately (F073's reconstruction note), and a footer quietly
+disagreeing with the header about which sections the site has is the more
+confusing of the two states.
+
+What it does **not** do is invent an About, a Terms, a Privacy or a Careers page
+to square the columns off. A footer link onto a 404 is the product telling a
+buyer a page exists and then not having it — the same rule `console-nav.tsx`
+follows for a console route that has not been built. The columns that are
+complete today are the ones needing no route at all: a `mailto:`, a `tel:` and
+six outbound profiles.
+
+⚠️ **Those legal pages are a real gap, and this revision does not close it.** A
+marketplace handling enquiries needs a privacy policy and terms of use, and
+neither exists anywhere in the reconstruction or in the baseline. It wants its
+own feature and its own copy review, not a link added here to a page nobody
+wrote.
+
+## R45 — Dealers-Drive photographs the car; the dealer never uploads a photo
+
+**Revises F035, F062, F063, F069, F070** · withdraws F062 as specified ·
+defers F034
+
+The baseline's add-vehicle wizard ended in a Photos step: the dealer dragged
+their own pictures in, reordered them and picked a primary, and the listing went
+to review carrying whatever the dealer's phone had produced. **That model is
+withdrawn.** Dealers-Drive now photographs every vehicle itself. The pictures
+are taken by Dealers-Drive staff, processed in **StudioCar** (a separate
+product, up to 20 images a batch), and the finished files are uploaded into
+Dealers-Drive by an admin, who orders them, chooses the primary and only then
+approves the listing.
+
+```
+Dealer enters vehicle data → Dealer submits → Admin moderation queue
+  → Dealers-Drive photographs the car → StudioCar processes the images
+  → Admin uploads the processed files → Admin orders them / sets the primary
+  → Admin verifies the details → Admin approves → Public vehicle page
+```
+
+What each feature becomes:
+
+| Feature  | Was                                      | Is now                                                                                                              |
+| -------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **F034** | `sharp` derivatives + blurhash           | **Deferred.** StudioCar produces the finished image; Dealers-Drive stores and serves it and processes nothing.      |
+| **F035** | Dealer reorders their own photos         | **Admin** image ordering and primary selection, on the moderation screen.                                           |
+| **F062** | Dealer photo upload UI (`PhotoUploader`) | **Withdrawn.** There is no dealer-facing photo upload anywhere in the product.                                      |
+| **F063** | Wizard: RC → basics → details → photos   | Data-only wizard: Registration → Basics → Details → Pricing → Review. **No Photos step.**                           |
+| **F069** | Queue with a one-click approve           | Queue shows photography/image readiness; approval is never one click, because a listing with no images cannot pass. |
+| **F070** | Review photos the dealer supplied        | Review the dealer's data, upload the processed images, order them, choose the primary, then decide.                 |
+
+### The rules this revision fixes in place
+
+- **A dealer can never write listing media.** Not through a hidden button, and
+  not through the API: the vehicle-media upload, ordering and primary routes are
+  mounted under `/v1/admin` and require `admin:media:upload`. No dealer-writable
+  schema accepts an image URL, a media id, a storage key, a moderation status,
+  a verification flag or a publication state — `.strict()` makes each of those a
+  400 that names the field (rule 2).
+- **Storage keys are the server's.** A vehicle image lives at a key derived from
+  the vehicle id and a server-generated media id. The client never names a path,
+  and commit verifies the object's size and its image signature before the row
+  is attached — a file that is not a JPEG, PNG or WebP is refused whatever the
+  declared `Content-Type` said.
+- **One primary, always on the same vehicle.** Position is an explicit integer,
+  order is deterministic, at most one image is primary (a partial unique index,
+  not a UI convention), and removing the primary promotes the next image in the
+  same transaction.
+- **Approval checks the photographs.** The minimum image count is the platform
+  config key the baseline already carries, `listing.minPhotos` (default 6), read
+  by the API and handed to the console in the review payload — it is not a
+  number repeated in two apps. StudioCar's 20-image batch is the _maximum_ a
+  vehicle accepts, one constant in `packages/contracts`, not a requirement.
+
+### Designed for StudioCar, without integrating it
+
+Each vehicle image records its `source`, and the only value today is
+`ADMIN_UPLOAD`. A later `STUDIOCAR_IMPORT` — with a batch or external reference
+beside it — is an additional enum value and two nullable columns, not a
+redesign. **Nothing in this revision calls StudioCar**: no API client, no
+webhook, no shared bucket, no shared database, no fabricated batch ids. The
+manual upload is the whole integration until a feature replaces it.
+
+### Why the dealer does not upload even as a fallback
+
+Because a fallback becomes the path. The value Dealers-Drive sells is that every
+car on it is photographed the same way, by the same people, on the same floor;
+one dealer-supplied phone photo on the marketplace grid is the end of that. A
+dealer who wants a car listed sooner is a scheduling problem, and it is solved
+by the photography queue, not by an upload box.
+
+## R46 — Vehicle details are entered by hand; RC lookup is deferred
+
+**Revises F056, F060, F061, F063** · defers **F057, F058, F059, F068**
+
+The baseline filled the wizard from a paid VAHAN lookup (Attestr) and fell back
+to manual entry when it failed. **The lookup is out of the initial listing
+workflow.** The dealer types the registration number and every vehicle detail;
+nothing in the flow calls an external registration, RC or vehicle-metadata
+service, and nothing scrapes one.
+
+- **F056 survives in full** and matters more than it did: the plate normaliser
+  is now the only thing standing between `KA-01-AB-1234`, `ka01ab1234` and
+  `KA 01 AB 1234` becoming three cars. It accepts the state series, the `BH`
+  series and legacy three-letter series, stores one canonical form, and formats
+  it for display on the way out. Registration numbers are unique among the
+  vehicles that hold them — see the vehicle schema for the exact rule.
+- **F057 / F058 / F059 are deferred, not deleted.** The port, the mock adapter,
+  the Attestr adapter and the lookup UI can return behind the same wizard later;
+  the Registration step is shaped so a "Look up" button can sit beside the plate
+  field without moving anything else.
+- **F068 (vehicle history report) is deferred with them** — it is the same
+  provider and the same bill.
+- **F060's warning still holds**, and now applies to every vehicle rather than
+  to the fallback: make and model are free text, so they are normalised on
+  write (case and whitespace), and the wizard offers the values already in use
+  as suggestions rather than a closed list.
+
+`rc-aliases.ts` (D1) is not brought across in this revision. It maps VAHAN maker
+strings, and nothing produces one until the lookup returns.
+
+## R47 — The listing lifecycle, before billing exists
+
+**Revises F064, F065, F067, F069, F070** · billing (**F050–F054**) deferred
+
+The baseline's lifecycle was entangled with credits: submitting held one,
+approving consumed it, rejecting released it. Billing is deferred behind the
+marketplace core, so the lifecycle lands **without a ledger**, and its states are
+the ones the product now names:
+
+```
+DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ──mark sold──▶ SOLD
+                    │    ▲    │                  │
+       request      │    │    └──reject──▶ REJECTED
+       changes      ▼    │ resubmit              └──remove──▶ REMOVED
+               CHANGES_REQUESTED
+```
+
+- `ListingStatus` becomes `DRAFT · PENDING_REVIEW · CHANGES_REQUESTED · ACTIVE ·
+REJECTED · SOLD · REMOVED`. `APPROVED` is spelled `ACTIVE`, and `EXPIRED` is
+  not a state until something expires a listing.
+- **Only `ACTIVE` is public** (DESIGN-SPEC §4.9). Rule 6's read-model split —
+  sold cars shown greyed — returns with search (**F076**); until then a sold car
+  is simply not on the marketplace, which is the conservative reading.
+- Every change goes through one `transition()` that checks the source state
+  and the actor, runs inside the transaction that writes the audit row, and is
+  guarded by the row's own status in the `UPDATE` — so two moderators, or a
+  moderator and a resubmitting dealer, cannot both win.
+- Approval is a domain operation with its own guards (dealer ACTIVE, data
+  complete, images present, a primary chosen) and sets `publishedAt`. There is no
+  route that writes `status`.
+- When billing returns, the hold/consume/release movements attach to the
+  `submit`, `approve` and `reject` transitions — which is exactly where the
+  baseline had them — without changing a state.
+
+## R48 — The dealer surfaces meet the listings
+
+**Revises F066, F085, F086, F082/F083** · no new feature numbers
+
+The listing series (R45–R47) ended at `/cars` and `/car/[slug]`. The dealer
+surfaces built before it — the console nav, the directory card's car count and
+the portfolio's inventory — were left pointing at nothing, because at the time
+there was nothing to point at. R48 connects them, and replaces the VDP's
+scrolling thumbnail strip with the gallery DESIGN-SPEC §2.9/§2.10 describes.
+
+- **Console nav.** `Inventory` joins the sidebar and the tab bar. The page
+  landed with F066; its line was still in `NOT_YET_BUILT`.
+- **One definition of "public".** The directory's car count and the portfolio's
+  inventory both read `PUBLIC_LISTING_WHERE` (the search module's predicate,
+  exported through its facade): an `ACTIVE` listing, with a slug, of an
+  `ACTIVE` dealership. The count is a grouped aggregate, never one query per
+  dealer, so the directory's "5 cars" and the portfolio's five cards cannot
+  disagree.
+- **One card.** The portfolio renders `VehicleCard`, the same component `/cars`
+  does, with the dealer strip left out — on a dealer's own page it only repeats
+  the header.
+- **Gallery.** Arrows on the main image (wrapping at both ends, as the legacy
+  lightbox did), `←`/`→` while the gallery has focus, and a fullscreen viewer
+  on the `Dialog` primitive with a counter, the same arrows, Escape, a focus
+  trap, focus returned to the image, and the page locked behind it. The legacy
+  branch was not reachable from this repository; the behaviour is taken from
+  §2.9/§2.10 and the F083 entry, which describe it.
+
+## R49 — The VDP gallery is the one the spec draws
+
+**Revises F083, R48** · no new feature numbers
+
+R48 replaced the gallery's thumbnail strip with arrows on the main image, and
+dropped the lightbox's rail. That is not what the product looks like: §2.9 and
+§2.10 draw a strip under a blueprint-framed main image and a lightbox with a
+numbered rail, and the legacy branch — reachable now, as `origin/legacy_branch`
+— implements exactly that. R49 puts it back.
+
+- **Ported from the legacy `gallery.tsx`, not copied.** The layout, sizes,
+  labels and behaviour are the baseline's: ±240px strip scrolling that
+  disables at either end, the lightbox opening on the photo pressed, ←/→ with
+  wrap, Escape, a focus trap, focus returned to the exact opener, the active
+  rail cell scrolled into view.
+- **Kept from R48.** The lightbox is `Dialog variant="fullscreen"`, not a
+  hand-rolled overlay, so the trap, Escape and scroll lock are Radix's. The
+  main image is the admin's primary photograph. The photograph is
+  `object-contain` in the stage, so a portrait shot is never cropped.
+- **`Dialog`** gains `onCloseAutoFocus` (a dialog with several openers returns
+  focus itself; the props are a union, so leaving out both it and `trigger`
+  does not compile), a visible `Close` label in the fullscreen variant, and an
+  `inverse` tone on `DialogDescription`.
+- **§4.15 over the baseline.** The strip and stage arrows grow to 44px below
+  768, and the arrow has a focus ring; the baseline's were 30px everywhere.
+
+## R50 — `/cars` takes the header's district
+
+**Revises F074, F077, R23** · no new feature number · first of the search series (F076–F080, F086 part 2)
+
+`/dealers` could be scoped to a district and `/cars` could not. The header's
+selector — on every public page, including `/cars` — sent every choice to the
+directory, so a buyer browsing cars who picked Ranipet was moved to a list of
+dealerships. R50 makes the district the top-level scope of the car listing too,
+with the **same dialog and the same selection rule**, not a second picker.
+
+- **Contracts** `PublicVehicleQuery` gains `district` (a slug, as on the
+  directory); `DealerVehicleQuery` is new — the portfolio's query, with no
+  `district`, because the dealership already fixes where its cars are.
+  `PublicLocations.cars` counts the districts in live cars.
+- **API** `GET /v1/vehicles?district=` — the dealership's district, resolved
+  from the slug by `slugify` over the names the listed dealerships carry; an
+  unknown district is an empty page, never "no filter". `GET /v1/locations`
+  gains `cars` from the same inventory stats the directory counts with.
+  `GET /v1/dealers/:slug/vehicles` refuses `district` (400).
+- **Frontend** `useDistrictSelection` keeps a buyer on `/cars` (and sends one on
+  `/car/<slug>` there), and everything else to `/dealers` — which also fixes a
+  portfolio (`/dealers/<slug>`) that used to be written `?district=` it never
+  read. Leaving a district drops `city`, `dealer` and `page`. On `/cars` the
+  dialog counts cars. `/cars` reads `?district=`, says `Cars in Ranipet` and
+  `N cars available`, carries the district through pagination, and has an
+  empty state of its own. New `DistrictScope` (C079) is the page's own opener.
+- **All districts** removes the parameter; nothing writes `district=all`.
+- **Tests** `public-vehicles.test.ts` (district scope, public rule inside it,
+  unknown district, the location counts agree with the list, 400s),
+  `search.test.ts`, `dealers.public.service.test.ts`,
+  `location-selector.test.tsx` (six, "on the car listing"),
+  `vehicle-card.test.tsx` ("/cars in one district")
+- **Sandbox** `Search/DistrictScope` — every district · one chosen · no
+  districts; `Layout/DistrictPicker` — `OnTheCarListing`; registry C079
+- **No schema change, no new dependency.**
+
+## R51 — A marketplace worth searching: 320 dev cars
+
+**Revises F097 (part)** · development data only; no schema, API or UI change
+
+The dev seed had 120 dealerships and not one car, so the search (**F076**) and
+the filter panel that follows it could only be looked at against the handful
+of listings an integration test leaves behind. R51 adds the cars.
+
+- **Seed** `prisma/seed/dev-vehicles.data.ts` — a catalogue of real brand/model
+  pairs (12 brands, 46 models, each with its body, fuels, gearboxes, trims,
+  price band and model years), 8 colours, an RTO per district, a `mulberry32`
+  PRNG with a fixed seed, and one pure function, `generateDevVehicles`, that
+  deals 320 cars out to the 120 dev dealerships: every dealership at least
+  one, Tamil Nadu's more (Ranipet 39 live across its four towns). 272 are
+  ACTIVE; 48 are spread over DRAFT, PENDING_REVIEW, CHANGES_REQUESTED,
+  REJECTED, SOLD and REMOVED so the public rule has something to exclude.
+  `prisma/seed/dev-vehicles.ts` writes them; `prisma/seed/dev-guard.ts` is the
+  loopback-only guard, now shared with `dev-dealers.ts`.
+- **Deterministic and idempotent.** Fixed seed, fixed anchor date, ids derived
+  from a name (`devUuid`), so every run writes the same rows and upserts them
+  by id. A seeded car the data file no longer generates is pruned — a dev
+  dealership's vehicle with no `createdBy`, which nothing a person enters has.
+- **Ordering is checked.** Cars are linked by the dealership's GSTIN; every one
+  of the 120 is looked up first, and a missing one stops the run naming
+  `pnpm db:seed:dev`.
+- **No photographs**, and no invented image URLs: the card's labelled no-photo
+  slot is what they render. These rows never pass the approval guard that
+  requires photographs — they are written directly.
+- **Scripts** `db:seed:dev` now runs the dealerships then the cars;
+  `db:seed:dev:dealers` and `db:seed:vehicles:dev` run one each. The root
+  `package.json` forwards `db:seed:dev` and `db:seed:vehicles:dev`.
+- **Tests** `tests/unit/seed/dev-vehicles.test.ts` — count, determinism,
+  every car on a seeded dealership, location from the dealership, brand/model
+  validity, readable and unique registrations, unique slugs, the registration
+  claims the partial unique indexes expect, every non-public state, variety in
+  every facet and every price and distance band, Ranipet's towns.
+
+## R52 — A car's colour is one of twelve families
+
+**Revises F061, F076, F078, R51** · ⚠️ schema change — `vehicles.color` becomes an enum; the old text is kept
+
+`vehicles.color` was free text. "Fiery Red", "Flame Red" and "red" were three
+colour filters for one colour, and the facet grew with every shade a dealer
+typed. The colour is now `VehicleColor` — Black, White, Grey, Silver, Red,
+Blue, Green, Brown, Beige, Yellow, Orange, Other — defined once in contracts
+(`packages/contracts/src/enums.ts`) and used by the listing form, the API's
+validation, the database enum and the search.
+
+- **Schema** `enum VehicleColor`; `vehicles.color VehicleColor?`; the old text
+  column is renamed `legacyColor` — written by nothing, read by nothing public,
+  kept so the backfill can be audited or redone.
+- **Migration** `20260927200000_vehicle_color` backfills through
+  `dd_vehicle_color(text)`, the same rule as `normaliseVehicleColor`: exactly
+  one colour word → that family ("Pearl White" → White); none, or more than one
+  → Other ("Deep Forest", "Red with black roof"); blank → null. Conservative on
+  purpose — a wrong colour files a car where a buyer will not look for it. The
+  function stays in the schema so the suite holds it to the TypeScript rule.
+- **Contracts** `VehicleColor`, `VEHICLE_COLOR_LABELS`, `VEHICLE_COLOR_WORDS`,
+  `normaliseVehicleColor`, `ColorSlug`; `VehicleFieldSchemas.color` and
+  `DealerVehicle.color` are the enum; `VEHICLE_LIMITS.colorMax` is gone.
+- **API** a shade name is a 400 naming `color`; the search maps `color=` slugs
+  to the enum without a vocabulary read, and `facets.colors` is always the
+  twelve families in order with their counts (zeros included). The public
+  vehicle page and the moderation screen print the family's label.
+- **Web** the wizard's colour is a `<select>` of the twelve; the review step
+  prints the label; the filter panel's Color group is the same twelve.
+- **Seed** `dev-vehicles.data.ts` deals only generic families, weighted
+  towards white, silver and grey.
+- **Tests** `tests/vehicle-color.test.ts` (the SQL backfill equals the TS rule
+  on 26 samples; the API accepts families and refuses shades; the database
+  enum equals the contract), `contracts/tests/unit/vehicle-color.test.ts`,
+  `public-vehicle-search.test.ts` (colour filter and the twelve-family facet),
+  the wizard's colour select, and the seed.
+
+## R53 — Filters offer only what can be chosen
+
+**Revises F076, F078, R52** · no schema change
+
+Two defects in the filter panel, found in manual testing:
+
+- **The Dealer filter showed with every district in scope** — a list of every
+  dealership on the platform. It now behaves like City / Town: both groups
+  appear only once a district is chosen (`FilterPanel` hides them, and
+  `GET /v1/vehicles` returns neither facet without a district, so the API does
+  not compute a list nothing will show). Changing district already clears
+  `city`, `dealer` and `page` (R50); that is now asserted for Ranipet → Vellore
+  on `/cars` too.
+- **Greyed options could still be ticked.** A zero-count option is now a
+  **disabled** control: no click, label click or keypress ticks it, Tab skips
+  it, nothing is written to the URL and no search runs. It stays visible and
+  named with its count ("Electric (0 cars)"). A ticked option stays enabled at
+  zero so it can be unticked — there is no ticked-and-disabled state. The price
+  and kilometre presets follow the same rule; so does the portfolio, which uses
+  the same panel.
+- Colour (twelve families, R52) is shown whole rather than collapsed.
+- **Tests** `filter-panel.test.tsx` ("the district decides the place filters",
+  "an option with nothing behind it"), `public-vehicle-search.test.ts` (no
+  dealer or town facet without a district).
+
+## R54 — Car search suggestions
+
+**Revises F077, F080** · no schema change · new route `GET /v1/search/vehicles`
+
+The `/cars` search box becomes a typeahead like the directory's (R43), on the
+same shared `Autocomplete` rather than a second one:
+
+- **`GET /v1/search/vehicles`** (`CarSuggestQuery` → `CarSuggestResponse`):
+  brands, models and variants from the public cars in scope, each with its
+  count and the canonical parameters choosing it writes. Narrowed by
+  `district`, `city` and `dealer` only; six rows by default, ten at most;
+  `search` echoed. Nothing about any one car or dealership. BFF:
+  `/api/search/vehicles`.
+- **`CarSearchBox`** (C082) in `SearchToolbar`'s new `searchBox` slot. Typing
+  only asks (300 ms debounce, abort, stale guard); nothing is written to the
+  URL until a row is chosen (↑/↓ + Enter, or a click), Enter searches free text
+  when there is nothing to choose, × clears `q`. Escape and a click away close
+  it. Choosing: brand → `brand=`; model → `brand=` + `model=`; variant → both
+  plus `q=<variant>`.
+- **`useAutocomplete`** gains `reset(next)`, skips asking about the value it
+  was mounted with, and drops an answer that lands after its request was
+  cancelled. The dealers' box shares all three.
+- The portfolio keeps the plain debounced `SearchField`.
+- **Tests** `public-vehicle-search.test.ts` ("the typeahead"),
+  `search.test.ts` (`rankSuggestions`, router order), `public.test.ts`
+  (`CarSuggestQuery`), `search-vehicles-route.test.ts`,
+  `car-search-box.test.tsx`.
+
+## R55 — `/cars` controls read like `/dealers`
+
+**Revises F080, R50, R54** · no schema change · layout only
+
+`/cars` had its search and sort floated right of the title, with the district
+control on a row of its own below. It now has the directory's shape:
+
+- The title and count on their own row, as on `/dealers`.
+- One controls row (`role="group"`, "Search, district and sort"):
+  `CarSearchBox` first, the same 38px field and 360px width as
+  `DealerSearchBox`; then `DistrictScope` (which reuses `DistrictPicker`); then
+  `SearchToolbar` with `showSearch={false}`, the sort pushed right by `ml-auto`,
+  and the mobile Filters button before it.
+- On a phone the search is full width, the district button wraps under it, and
+  Filters + Sort share the last line. No horizontal scroll at 390, 820 or
+  1360px.
+- The applied-filter chips move to their own row, which collapses when empty.
+- `SearchToolbar`'s `searchBox` slot from R54 is removed. The page composes the
+  row itself, so the slot had no consumer.
+- **Tests** `vehicle-card.test.tsx` ("/cars controls row": one group, in order,
+  and no second search field).
+
+## R56 — The filter rail scrolls on its own
+
+**Revises F078, F086** · no schema change · layout only
+
+On a desktop the filter panel on `/cars` (and on a dealership's inventory) was
+sticky but unbounded. When it was taller than the screen, its lower groups
+could only be reached by scrolling the whole page to the end of the results.
+
+- New `filter-rail` utility (`styles/globals.css`): sticky under the header,
+  `max-height: calc(100dvh - var(--rail-top) - var(--rail-gap))`,
+  `overflow-y: auto`, `overscroll-behavior: contain`. Both filtered pages use
+  it at `lg:`.
+- The results keep the page scroll. Below `lg` the rail is hidden (the panel is
+  the mobile sheet), so phones are unchanged.
+- The offset comes from one token: `--header-height` (the header uses it),
+  `--rail-gap`, and `--rail-top` derived from both. This replaces `top-[84px]`
+  on `/cars`, the inventory and the vehicle page.
+- **Measured** (Playwright, 1360×760, `/cars?district=ranipet`): the rail is
+  656px tall (760 − 84 − 20) over 2,623px of content. The wheel over the rail
+  scrolled it 600px with `window.scrollY` still 0. The wheel over the results
+  scrolled the page 900px with the rail still at `top: 84px`.
+- **Tests** `tests/unit/styles/filter-rail.test.ts`: both pages use the rail;
+  the utility is sticky, bounded and scrolls itself; the offset is the header
+  token.
+
+## R57 — Results update in place, without a flash
+
+**Revises F078, F079, F080** · no schema change
+
+The brief asked for updates that do not remount the page, keep the panel's
+scroll, open sections and the search focus, and do not flicker. It also asked
+for measurement rather than memoisation everywhere. The measurement came first
+(Playwright, dev seed, `/cars` and a portfolio):
+
+- **Already true, now pinned by tests.** The rail, panel, mobile sheet and
+  results region keep their DOM elements across a navigation. Rail scroll
+  (900 → 901px), "Show all" expansion, the open sheet (scroll 951px, live CTA
+  count) and search focus all survive. Cards are keyed by slug (18 of 18 reused
+  after a sort). The grid never empties between pages, and there is no
+  `loading.tsx` to swap in.
+- **Changed.** The results dimmed to 50% immediately for every update of about
+  200 ms, which is a flash. The dim now waits 200 ms and is 60%, and returns
+  instantly. Measured minimum opacity for an ordinary update: 0.987 (before:
+  0.5). For an update held back 900 ms: 0.6.
+- No `memo` or `useMemo` was added: nothing re-rendered that did not need to.
+- **Tests** `result-updates.test.tsx`: the panel keeps an opened list and its
+  element across new props; the sheet stays open with the new total; the
+  search box keeps focus and text; the fade is delayed and light, and the
+  return is immediate.
+
+## R58 — One proof of a handset, for every purpose
+
+**Revises R39** · no schema change · first of ten (R58–R67): customer accounts,
+customer and dealer phone sign-in, Google/phone identity linking, and enquiries
+
+This phase makes a verified mobile number a way to **sign in**, where R39 made
+it only a contact detail on an account Google had already authenticated. R58
+is the foundation and changes no behaviour a dealer can see: it moves the
+proof out of the one flow that used it, and gives the number one canonical
+form.
+
+### What the audit found
+
+- **One OTP integration, and it is the MSG91 widget.** The browser sends and
+  collects the code; the API takes the widget's access token to MSG91
+  (`verifyAccessToken`) and asks which number it proves. There is no
+  server-side send, so the API cannot rate-limit sends — only who receives the
+  widget credentials and how often a token is presented (see R39).
+- **The proof was fused to its first use.** `phone.service.ts` asked MSG91,
+  compared the number, spent the token _and_ wrote `users.phone`. Every new
+  flow in this phase needs the first three and not the fourth.
+- **Identity today.** One `User` row per person. Google is an `OAuthIdentity`
+  (`provider + providerSubject` unique). The phone is `users.phone` (unique,
+  written only by a completed OTP — R39's single-writer rule) plus
+  `users.phoneVerifiedAt`. Seats are `UserRole` (`DEALER`, `ADMIN`); sessions
+  are scoped `DEALER` or `ADMIN`. A `DEALER`-scoped session with no active
+  membership resolves as `PENDING` — a dealer mid-onboarding — so **a customer
+  session cannot reuse that scope unchanged**; R59 decides how a customer is
+  told apart.
+- **Post-sign-in routing is already written twice** — `auth.service.ts`
+  (`completeGoogle`) and `dealers.service.ts` (`session`) each derive
+  `ONBOARDING` / `PENDING_APPROVAL` / `DASHBOARD` from the dealership status.
+  A third copy for phone sign-in is what R60 must not add.
+- **Normalisation had a hole.** `toE164('09840012345')` answered
+  `+09840012345` — the validator refused that input, so nothing stored it, but
+  a phone identity looked up with a lookup-side normaliser that disagreed with
+  the write-side one would miss the account and create a second.
+
+### What changed
+
+- **`normaliseIndianMobile`** (contracts) is the one canonical form,
+  `+919840012345`, or `null`. It accepts the bare number, `91` / `+91` /
+  `0091`, and the trunk prefixes `0` / `091`; separators are stripped, letters
+  are not. `isIndianMobile` and `toE164` are both defined by it, so the
+  validator and the normaliser cannot disagree. ⚠️ `IndianMobile` now also
+  accepts `098400 12345` and `(984) 001-2345`, which it used to refuse; both
+  store as `+919840012345`. Nothing previously accepted changes form.
+- **`phone-proof.service.ts`** — `createPhoneProofService({ otp, cache })`,
+  with `widget()` and `prove({ phone, accessToken, purpose })`. It answers the
+  canonical number a token proves, or refuses, and knows nothing about
+  accounts. `phone.service.ts` keeps what is specific to linking — the
+  availability check, the collision refusal and the write — and calls
+  `prove({ purpose: 'DEALER_PHONE_LINK' })`.
+- **Purposes** — `DEALER_PHONE_LINK`, `DEALER_LOGIN`, `CUSTOMER_LOGIN`. Server
+  intent, decided by the route, never by the body. Replay across purposes is
+  already impossible — the spent-token key is purpose-free, so a token spent
+  anywhere is spent everywhere — so the purpose decides only what genuinely
+  differs: **when the replay guard is unreachable, linking fails open (as R39
+  did) and signing in fails closed** (`503 PHONE_OTP_UNAVAILABLE`), because a
+  sign-in proof that cannot rule out a replay would mint a session for a
+  captured token.
+- **The claim and the provider's identifier are compared canonically.** A
+  provider answer of `9840012345` now matches a claim of `+919840012345`; a
+  different handset is still refused with the same message as a wrong code.
+- **The widget sends to the canonical number.** `identifierOf` (web) now
+  derives MSG91's identifier from `normaliseIndianMobile`; the old digit-gluing
+  would have sent a trunk-prefixed number's code to `9109840012345` once the
+  validator accepted it.
+- **Messages** `modules/auth/auth.messages.ts`.
+
+### Not changed
+
+No route, no schema, no contract shape, no screen. `GET /v1/auth/phone/widget`
+stays behind `requireSignedIn` until a customer flow needs it (R63), and that
+PR owns the decision about serving it anonymously.
+
+- **Tests** `packages/contracts/tests/unit/common.test.ts`
+  (`normaliseIndianMobile`), `apps/api/tests/unit/modules/auth/phone-proof.service.test.ts`,
+  `apps/web/tests/unit/features/auth/phone-identifier.test.ts`;
+  `phone.service.test.ts` and `phone-verification.test.ts` pass unchanged.
+
+### The phase, in order
+
+Each is its own PR, merged before the next starts.
+
+| R   | Scope                                                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R58 | This entry — the reusable proof, purposes, canonical number                                                                                           |
+| R59 | Identity model — a phone as a sign-in identity beside Google, linking and `IDENTITY_ALREADY_LINKED`                                                   |
+| R60 | Dealer phone sign-in — `resolveDealerPostAuthDestination`, shared by Google and phone, and onboarding resume                                          |
+| R61 | Dealer provisional sign-up and identity completion — phone-first or Google-first, step 1 needs both                                                   |
+| R62 | Customer account and phone sign-in — name only, no email or password; a customer session told apart from a pending dealer                             |
+| R63 | Unified Login — header `Login`, Customer / Dealer tabs                                                                                                |
+| R64 | Enquiry model and API — revises F088: the customer is a signed-in account, not typed text; identity derived from the session; dealer from the listing |
+| R65 | Vehicle page enquiry — revises F089: sign-in interrupts and resumes the enquiry                                                                       |
+| R66 | Dealer enquiry inbox — revises F091                                                                                                                   |
+| R67 | Dashboard enquiry counts, header signed-in state, polish                                                                                              |
+| R68 | Customer enquiry tracking — My enquiries, one open enquiry per car, the requires-login hint (added after the series, at review)                       |
+
+## R59 — A phone and a Google account are two ways into one account
+
+**Revises F014 / F018 / R39** · one CHECK constraint, no new table or column
+
+R58 made the phone proof reusable. R59 decides what a proved phone _is_ once it
+can open an account, and puts every write that creates or links an identity in
+one file, `modules/auth/identity.service.ts`, so the sign-in flows of R60–R63
+ask it rather than each writing `users` themselves.
+
+### The model, and why it is not a new table
+
+- **One `users` row per person.** Google stays an `oauth_identities` row, found
+  by Google's stable `sub`.
+- **The phone identity is `users.phone`** — already unique, and since R39
+  written only by a completed OTP, so a value with `phoneVerifiedAt` _is_ a
+  proved handset. A `PHONE` row in `oauth_identities` was considered and
+  rejected: it would be a second copy of the number to keep in step with the
+  first, and the unique index on `users.phone` already is the guarantee.
+- **Dealer-specific state stays where it is** — `Dealer`, `DealerMember`,
+  `UserRole`. A person's seats say what they may do; their identities say how
+  they get in.
+
+### Linking is never merging
+
+Two identities converge on one account only when one of them already _is_ that
+account's and the other was just proved in the same flow. Two existing
+accounts are never combined: phone on User A plus Google on User B is
+`409 IDENTITY_ALREADY_LINKED`, both rows untouched, with a message that says
+what to do and not whose account it is. Linking a phone to a Google-first
+account remains `POST /v1/auth/phone/verify` (R39), which answers the same
+collision with `PHONE_ALREADY_REGISTERED`.
+
+### What the database guarantees
+
+- **`users_phone_canonical`** — `phone IS NULL OR phone ~ '^\+91[6-9][0-9]{9}$'`.
+  The unique index is over the stored string, so every writer must store the
+  one spelling R58 defined; this holds a writer that forgot to normalise.
+- **Two sign-ups for one new number** race to the unique index; the loser is
+  answered with the winner's account, so both callers reach the same user.
+- **Two accounts linking one Google account** race to
+  `(provider, providerSubject)`; the loser is refused.
+- **One account linking two Google accounts** is serialised by a `FOR UPDATE`
+  lock on the user row.
+- ⚠️ **Not** a unique index on `oauth_identities(userId, provider)`. It was
+  tried and broke admin sign-in: the admin path matches an allow-listed address
+  by email and can attach a second Google subject for one address (a Google
+  account re-created under the same address has a new `sub`), which
+  `auth.test.ts` exercises. The row lock gives the one-Google-account guarantee
+  on the linking path without changing admin sign-in.
+- **A legacy unverified holder** of a number is never found by a phone sign-in
+  and never silently taken over by the person who just proved the number: that
+  is `IDENTITY_ALREADY_LINKED` with a contact-support message.
+
+### What changed
+
+- `identity.service.ts` — `identitiesOf`, `findByVerifiedPhone`,
+  `createWithPhone`, `createWithGoogle`, `linkGoogle`.
+- `auth.service.ts` — `createIdentity` moved to `createWithGoogle`, unchanged;
+  Google sign-in behaves exactly as before.
+- Migration `20260928000000_identity_linking` — the CHECK.
+- Messages in `auth.messages.ts`; the linking audit row is
+  `auth.identity.linked` with `{ provider: 'GOOGLE' }`.
+
+### Not changed
+
+No route, no contract shape, no screen. Nothing calls `createWithPhone` or
+`linkGoogle` from a route yet — R60 (dealer phone sign-in) and R61 (identity
+completion on onboarding step 1) are their first callers.
+
+- **Tests** `apps/api/tests/identity-linking.test.ts` (real database: both
+  directions of convergence, idempotent relinking, every collision refused,
+  three races, the CHECK); `auth.test.ts`, `phone-verification.test.ts` and
+  `dealer-onboarding.test.ts` pass unchanged.
+
+## R60 — Dealers sign in with their phone, and land where Google would have sent them
+
+**Revises F018 / R39** · no schema change
+
+A dealer whose number is verified can now sign in with it: the MSG91 widget
+proves the handset, and the API issues the same `dd_session` a Google sign-in
+issues. The rule that governs the whole PR is that **the method of sign-in
+never changes the destination**.
+
+### One destination resolver
+
+Before R60 the status-to-destination branch was written out twice — the Google
+callback and the dealer session (`GET /v1/auth/me`). It is now:
+
+- `dealerSessionNext(status)` in contracts — the pure rule. `null` (no
+  dealership) and `DRAFT` → `ONBOARDING`; `PENDING_APPROVAL` →
+  `PENDING_APPROVAL`; everything else → `DASHBOARD`.
+- `resolveDealerPostAuthDestination(db, userId, requested?)` in
+  `modules/auth/post-auth.ts` — the lookup, the `SUSPENDED` refusal and the
+  return path (`safeReturnTo`, ignored while onboarding).
+
+Google sign-in, phone sign-in and `/me` all answer through them. With the
+repository's actual statuses:
+
+| Dealership status                                 | Destination                            |
+| ------------------------------------------------- | -------------------------------------- |
+| none yet                                          | `ONBOARDING` → `/dealer/onboarding`    |
+| `DRAFT` (incl. changes requested — back to DRAFT) | `ONBOARDING` → `/dealer/onboarding`    |
+| `PENDING_APPROVAL`                                | `PENDING_APPROVAL` → `/dealer`         |
+| `ACTIVE`                                          | `DASHBOARD` → `/dealer` or a safe path |
+| `REJECTED`, `CLOSED`                              | `DASHBOARD` (unchanged behaviour)      |
+| `SUSPENDED`, or the dealer seat closed            | refused, `403 ACCOUNT_SUSPENDED`       |
+
+### Phone sign-in
+
+- `POST /v1/auth/sign-in/phone/dealer` — `PhoneSignInInput` `{ phone,
+accessToken, returnTo? }` → `PhoneSignInResponse` `{ next, returnTo }`,
+  with `dd_session` set. Proof purpose `DEALER_LOGIN`, so an unreachable
+  replay guard refuses rather than allows (R58).
+- The account is found by its **verified** phone only (`findByVerifiedPhone`,
+  R59). A dealer account holds a dealer seat or an active membership.
+- `404 DEALER_NOT_FOUND` for a proved number no dealer holds — said only after
+  possession is proved, and nothing is created (that is R61).
+- Audited as `auth.login.phone`; logged as `auth.session.created` with
+  `method: 'PHONE'` (the Google line now carries `method: 'GOOGLE'`).
+- Rate limits: 20 per 10 minutes per IP and 10 per 10 minutes per number.
+
+### ⚠️ The widget credentials are now public
+
+`GET /v1/auth/sign-in/phone/widget` serves `PhoneOtpWidget` without a session,
+30 an hour per IP. A phone sign-in has no session before it starts, so R39's
+gate on MSG91 spend — "only somebody who completed a Google sign-in can read
+the widget credentials" — no longer holds. The remaining controls are
+MSG91's per-number limits and **widget captcha, which should be switched on in
+the MSG91 dashboard before this reaches production**, plus the API's limits on
+the sign-in that spends the token. The API still cannot count sends; only an
+API-side send endpoint could. The session-gated `GET /v1/auth/phone/widget` is
+left exactly as it was, so onboarding does not change.
+
+### Not here
+
+No screen (R62), no provisional account for an unknown number (R61), no
+customer sign-in (R63). The web action that relays the `dd_session` cookie
+from this response lands with the Login UI.
+
+- **Tests** `apps/api/tests/dealer-phone-sign-in.test.ts` — every status
+  signed into by Google and by phone with the answers compared, `/me` after a
+  phone sign-in, the console and logout, audit, safe and unsafe return paths,
+  wrong code, replayed token, mismatched number, unknown number, unverified
+  legacy number, closed seat, unknown field; `tests/unit/modules/auth/phone-sign-in.routes.test.ts`
+  (both limits, the keys, the cookie); `packages/contracts/tests/unit/auth.test.ts`
+  (`dealerSessionNext` over every status). `auth.test.ts` and
+  `phone-verification.test.ts` pass unchanged.
+
+## R61 — A new dealer starts with either identity, and step 1 completes the other
+
+**Revises F037 / F038 / R39 / R60** · no schema change
+
+A dealer's account needs both a verified mobile number and a Google account.
+Before R61 the only way in was Google, so the order was fixed. Now either can
+come first, and onboarding step 1 is where the other is completed.
+
+| Entry        | After sign-in                                           | Step 1 asks for                                |
+| ------------ | ------------------------------------------------------- | ---------------------------------------------- |
+| Phone first  | provisional dealer: phone verified, **no Google**       | Link Google (`/v1/auth/google/link/start`)     |
+| Google first | provisional dealer: Google linked, **phone unverified** | Prove the phone (`/v1/auth/phone/verify`, R39) |
+
+Both converge on **one** user: afterwards Google and the phone each sign in to
+the same account (`dealer-identity-completion.test.ts` asserts the user id is
+the same across all three sign-ins).
+
+### Phone first
+
+`POST /v1/auth/sign-in/phone/dealer` with a proved number no account holds now
+**creates** a provisional dealer (`identities.createWithPhone`, a dealer seat,
+audited as `auth.identity.created`) and sends it to `/dealer/onboarding` —
+where R60 answered `404 DEALER_NOT_FOUND`. A number held, unverified, by a
+legacy account is `409 IDENTITY_ALREADY_LINKED`, never taken over.
+
+### Linking Google to the signed-in account
+
+- `GET /v1/auth/google/link/start` — behind the session. The OAuth transaction
+  gains a third audience, `LINK`, and carries the id of the user who started
+  it, sealed with the rest (`AuthProvidersResponse.google.linkStartUrl`
+  publishes the URL).
+- The shared callback, for `LINK`, requires the `dd_session` presented **on the
+  callback** to belong to that same user — checked before the code is
+  exchanged. A link finished in another browser or with another account's
+  session links nothing (`?error=link_session_mismatch`).
+- Then `identities.linkGoogle` (R59): refused, never merged, when the Google
+  account belongs to another user or this account already has a different one
+  (`?error=identity_already_linked`). No new session is issued; the dealer
+  returns to step 1.
+
+### Step 1 requires both
+
+- **Server:** `POST /v1/auth/onboarding` refuses an account with no Google
+  identity — `422 ONBOARDING_IDENTITY_INCOMPLETE`, field `identity.google` —
+  before anything is written. The phone half is R39's `PHONE_NOT_VERIFIED`.
+- **Screen:** the Google block on step 1 shows "Verified with Google" or "Not
+  linked yet · Required" with a **Link Google account** button; Continue will
+  not leave step 1 without it. A link refusal is a banner, from a fixed lookup
+  of the two error codes rather than an echo of the query string.
+- ⚠️ **One web test changed**: "falls back to the account email when there is
+  no linked identity" pinned the old fallback (show `user.email` as if
+  verified). That state is now a phone-first dealer, so the test now asserts
+  the not-linked block and the link button.
+
+### Not here
+
+The Login screen that offers phone sign-in to a person who is not signed in
+yet is R62; until it lands, phone-first sign-up is reachable through the API
+only.
+
+- **Tests** `apps/api/tests/dealer-identity-completion.test.ts` (phone first →
+  provisional → create refused → link → create; Google first → create refused
+  → prove → create; convergence across three sign-ins; A's phone + B's Google
+  refused both ways; a second Google account refused; the link needs a session;
+  a callback with no session or another account's session links nothing);
+  `dealer-phone-sign-in.test.ts` (legacy unverified number now 409);
+  `tests/unit/modules/auth/oauth-transaction.test.ts` (the `LINK` transaction);
+  `apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx` (the
+  not-linked block, Continue held, both refusal banners, an unknown error
+  ignored).
+- **Sandbox** `Forms/OnboardingWizard` — `AccountPhoneFirst`,
+  `AccountGoogleLinkRefused`.
+
+## R62 — Customer accounts, by phone alone
+
+**New** · ⚠️ two enum values (`SessionScope.CUSTOMER`, `PlatformRole.CUSTOMER`),
+no table or column · **supersedes DESIGN-SPEC §4.10 for enquiries**
+
+> **Order changed.** The brief listed the unified Login screen (PR 5) before
+> customer accounts (PR 6). The Login screen's _default_ tab is Customer, so
+> shipping it first would have shipped a default tab with nothing behind it.
+> R62 is customer accounts; R63 is the Login screen, with both tabs working.
+
+> **DESIGN-SPEC §4.10 said "no customer auth anywhere"** and that an enquiry
+> form is never gated behind a sign-in. This phase deliberately reverses the
+> second half: an enquiry now needs a signed-in customer, so the phone the
+> dealer receives is a proved one (R64). Browsing is untouched — the catalogue,
+> vehicle pages and portfolios stay anonymous, and nothing in R62 gates them.
+
+### The flow: prove, then name, then create
+
+| Step                                                         | New number                                                | Existing customer             |
+| ------------------------------------------------------------ | --------------------------------------------------------- | ----------------------------- |
+| `POST /v1/auth/sign-in/phone/customer`                       | `NAME_REQUIRED` + a sealed `signUpToken`; nothing created | `SIGNED_IN`, `dd_session` set |
+| `POST /v1/auth/sign-up/customer` `{ signUpToken, fullName }` | account created, `201`, `dd_session` set                  | —                             |
+
+- The only question is **a name**: one field, any script, 2–80 characters, at
+  least one letter, no control characters (`CustomerName`). No email, no
+  password, no address, no Google. `CustomerSignUpInput` is `.strict()`, so a
+  sent `email` or `phone` is a 400 naming it.
+- The ticket is HMAC-sealed with the purpose, canonical-number-only, expires in
+  ten minutes and is **spent on first use** — refusing (`503`) rather than
+  risking a replay when the cache cannot say whether it was used.
+- A proved number on an account with no name (a phone-first dealer who never
+  finished step 1) goes to the name screen, and sign-up names that account.
+
+### Identity: one person, one account (brief §34, §40)
+
+- A customer is a `users` row — the phone is `users.phone`, R59's proved-handset
+  identity — with a `CUSTOMER` seat and `CUSTOMER`-scope sessions in the same
+  `sessions` table and the same `dd_session` cookie.
+- **A dealer's number on the customer tab reaches the dealer's own user** and
+  adds a `CUSTOMER` seat. There is never a second account for one handset.
+- **A dealer session counts as a customer** when its account has a proved phone
+  and a name (`createCustomerResolver`), so a dealer browsing the marketplace
+  can enquire without signing in again.
+- **A customer session opens nothing in the console.** `resolveSignedIn` reads
+  `DEALER` sessions only; a `CUSTOMER` session is 401 on `/v1/auth/me`,
+  `/v1/dealer/*` and onboarding, and is never read as a dealer mid-onboarding.
+
+### Routes
+
+| Method | Path                              | Auth     | Purpose                                 |
+| ------ | --------------------------------- | -------- | --------------------------------------- |
+| POST   | `/v1/auth/sign-in/phone/customer` | public   | prove → sign in, or `NAME_REQUIRED`     |
+| POST   | `/v1/auth/sign-up/customer`       | public   | ticket + name → account + session       |
+| GET    | `/v1/auth/customer/me`            | customer | the name and proved number              |
+| POST   | `/v1/auth/customer/logout`        | public   | the same revocation every sign-out uses |
+
+Rate limits: sign-in 20 / 10 min per IP and 10 / 10 min per number; sign-up
+10 / hour per IP. A new OpenAPI audience, `customer`, with its own
+`customerSession` scheme. Audited as `auth.identity.created` (actor
+`CUSTOMER`) and `auth.login.customer`.
+
+### Not here
+
+No screen (R63), no enquiry (R64). The web app does not read a customer
+session yet.
+
+- **Tests** `apps/api/tests/customer-auth.test.ts` (new customer → name →
+  account; nothing created before the name; four scripts of name accepted, six
+  bad names refused; email/phone/password/address refused by name; ticket spent
+  once; ticket edited to another number refused; two tickets for one number
+  race to one account; existing customer signs straight in; closed seat 403;
+  wrong code, replayed token, landline; a dealer's number and a dealer's
+  session reach one user; a customer session opens nothing in the console;
+  logout revokes; audit), `tests/unit/modules/auth/sign-up-ticket.test.ts`,
+  `tests/unit/routes.test.ts` (the customer route runs only the customer guard;
+  five sign-in routes need no session), `packages/contracts/tests/unit/auth.test.ts`
+  (`CustomerName`). `phone-sign-in.routes.test.ts`, `server.test.ts` and `openapi.test.ts` gained
+  a stub for the new guard or router argument in their fake containers — no
+  assertion changed.
+
+## R63 — One Login, with Customer and Dealer tabs
+
+**Revises F017 / F018 / F073 / R35** · no schema, no API change
+
+The header said `Dealer login` because only dealers had accounts. From R62
+buyers do too, so there is one `Login`, and it opens a screen with two tabs.
+
+### What a visitor sees
+
+- **Header** — `Login` at every width (the `lg:` / short-label split is gone),
+  to `/login`. Still one door (R35), still no "List your cars".
+- **`/login`** — `h1` "Login", then the §2.4 `.seg` as a `tablist`: **Customer**
+  (default) and **Dealer**. Arrow keys, Home and End move the selection with
+  roving focus; both panels stay mounted so a half-typed number survives a
+  switch. `?as=dealer` opens the Dealer tab.
+- **Customer tab** — mobile number (`+91`, numeric keypad, `tel-national`
+  autofill) → `Send OTP` → the OTP panel onboarding already uses → either back
+  to where they came from (existing customer) or **"Your number is verified"**
+  with one `Name` field and `Create account` (new customer). No email, no
+  password, no Google.
+- **Dealer tab** — `Continue with Google`, an `or` rule, then the same phone
+  form. After the proof the dealer goes wherever R60's resolver says:
+  onboarding for a draft or a new phone-first account (R61), the review screen
+  while pending, the console otherwise.
+- **`/dealer/login`** redirects to `/login?as=dealer`, carrying `error` and
+  `returnTo` only — the Google callback, the console's session-expired bounce
+  and sign-out all still send people there.
+- **Footer** `Dealer login` → `/login?as=dealer`.
+
+### How the session reaches the browser
+
+A phone sign-in is a Server Action calling the API, so the API's `dd_session`
+arrives as a `Set-Cookie` on a server-to-server response. `relaySessionCookie`
+(`lib/session-cookie.ts`) copies it onto the action's response with the API's
+own attributes — value, expiry, **domain**, path, `Secure` — and always
+`HttpOnly` and `SameSite=Lax`, so it is the same cookie the Google callback
+sets. `apiSend` gained an `onSetCookie` option for this; nothing else changed
+in the client.
+
+A new customer's sign-up ticket is held in an HttpOnly `dd_signup` cookie for
+its ten minutes; the page is told only that a name is needed.
+
+### One OTP implementation in the browser
+
+`lib/phone-otp.ts` — `sendPhoneOtp`, `phoneOtpToken`, `identifierOf` — is the
+MSG91 half of `PhoneVerification`, extracted rather than copied; onboarding and
+both Login tabs call it. `PhoneVerification`'s own tests pass unchanged.
+
+### Where a sign-in may send somebody
+
+`safeReturnPath` (`lib/url.ts`): a path on this site or the fallback — absolute
+URLs, `//host`, a backslash and whitespace refused. The API applies its own
+`safeReturnTo` to the same value for both Google and the phone.
+
+### Components
+
+**New:** `PhoneSignIn` (C083), `LoginTabs` (C084), `CustomerLogin` (C085),
+`CustomerNameStep` (C086), `DealerLogin` (C087). **Changed:**
+`PhoneCodePanel` gains `verifyLabel?`, `PhoneUnavailable` gains `tail?`.
+**Sandbox:** `Forms/Login` (customer, dealer, Google refused, Google not
+configured, new-customer name, phone unavailable), `Forms/PhoneSignIn`.
+
+### Tests changed
+
+- ⚠️ `customer-header.test.tsx` — "the dealer door" pinned `/dealer` and the
+  words "Dealer login"; it is now "the login door": `Login` → `/login`, still
+  exactly one door and no "List your cars".
+- ⚠️ `customer-footer.test.tsx` — the dealer column's href is `/login?as=dealer`.
+
+### Not here
+
+The header does not yet know a customer is signed in (R67), and nothing
+requires a customer session yet (R64/R65).
+
+- **Tests** `apps/web/tests/unit/features/auth/login.test.tsx` (tabs, keyboard,
+  customer new → name → return, existing → straight back, name refused, wrong
+  code, landline refused before a send, numeric keypad, unavailable; dealer
+  Google + phone, phone → API destination, error lookup),
+  `tests/unit/features/auth/sign-in-actions.test.ts` (session relayed, refusal
+  relays nothing, ticket kept out of the page, sign-up forgets the ticket,
+  expired ticket, `parseSessionCookie`), `tests/unit/app/login-page.test.tsx`
+  (default tab, `?as=dealer`, safe and unsafe `returnTo`, the old route's
+  redirect), `tests/unit/lib/safe-return-path.test.ts`.
+
+## R64 — Enquiries come from signed-in customers
+
+**Revises F088** · ⚠️ new table `enquiries`, new enum `EnquiryStatus`
+
+The baseline's enquiry was a form a buyer typed their name and number into,
+and a dealer rang whatever was typed. Now an enquiry is sent by a customer who
+proved their handset (R62), and **the request says only which car** — who is
+asking comes from the session, and which dealership receives it comes from the
+listing.
+
+### The model
+
+`enquiries` — `customerId`, `dealerId`, `listingId`, `message?`, `status`
+(`NEW` · `CONTACTED` · `CLOSED` · `SPAM`), `contactedAt?`, `closedAt?`,
+timestamps.
+
+- **No name or phone column — deliberately.** The dealer sees the customer's
+  current name and proved number, read from `users` when the inbox renders
+  them (R66). The number cannot drift (written only by a completed OTP, R39),
+  and a corrected name is the same lead, so a snapshot would only preserve a
+  mistake.
+- **No `vehicleId`.** A listing has exactly one vehicle (`listings.vehicleId`
+  is unique), so it would be a second copy of a fact.
+- **`SPAM` is kept** from the baseline's `EnquiryStatus` rather than trimmed to
+  the brief's three: DESIGN-SPEC §3.15 draws it as an inbox tab, and it is the
+  dealer's answer to the abuse this phase guards against.
+- **Indexes, each for a read that exists:** `(dealerId, status, createdAt)` —
+  the inbox tab, newest first; `(customerId, listingId, createdAt)` — the
+  duplicate guard; `(listingId)`.
+
+### `POST /v1/enquiries`
+
+Behind `requireCustomer`: a `CUSTOMER` session, or a dealer session whose
+account has a proved phone and a name (R62).
+
+- **Body** `CreateEnquiryInput` `{ listingSlug, message? }`, `.strict()` —
+  `customerPhone`, `customerName`, `dealerId`, `status` are each a 400 that
+  names the field. The slug is the listing's public address, the only
+  identifier a buyer sees; it is a reference, not a slug the caller chooses.
+  An empty or whitespace-only message is stored as no message.
+- **Only a car on the marketplace right now** — the public pages' own
+  `PUBLIC_LISTING_WHERE` (listing `ACTIVE`, dealership `ACTIVE`), read inside
+  the transaction that writes. Sold, removed, rejected, in review, or on a
+  suspended dealership → `409 LISTING_NOT_AVAILABLE`; a slug that was never a
+  listing → `404 LISTING_NOT_FOUND`.
+- **Not your own dealership's car** → `422 ENQUIRY_OWN_LISTING`.
+- **One per customer per car per day** → `409
+ENQUIRY_ALREADY_SUBMITTED_RECENTLY`; the check and the write are serialised
+  per customer and car by a transaction-scoped advisory lock, so five
+  simultaneous presses land exactly one. A follow-up the next day, another car,
+  or another customer is unaffected.
+- **Rate limits** 10 an hour per customer, 30 an hour per IP.
+- **Answer** `201 EnquiryReceipt` `{ id, status, createdAt, dealerName,
+vehicleTitle }`. Audited as `enquiry.created` (actor `CUSTOMER`, against the
+  dealership).
+- **OpenAPI** new tag `Enquiries`, module `enquiriesDocs`, `CreateEnquiryInput`
+  in `INPUT_SCHEMA_NAMES`.
+
+### Privacy
+
+The customer's number is in no public response: the public vehicle page is
+unchanged, and the only place the number will appear is the dealership's own
+inbox (R66), behind `requireDealer` and filtered by the session's dealership.
+
+### Not here
+
+The Enquire button and its sign-in interruption (R65); the inbox and status
+changes (R66); the dashboard counts, whose repository stubs return zero until
+R67.
+
+- **Tests** `apps/api/tests/enquiries.test.ts` (32, real database: anonymous
+  401; customer and dealer-as-customer accepted; customer and dealership
+  derived; no message / empty / whitespace stored as none; seven identity and
+  state fields refused by name; message limit; audit; six non-live listing
+  states and a suspended dealership refused; sold between page and press; 404
+  for an unknown slug; own dealership refused; duplicate within a day refused;
+  five simultaneous presses → one; follow-up after a day, other car, other
+  customer all accepted; the phone absent from the public page),
+  `tests/unit/routes.test.ts` (the route runs only the customer guard).
+
+## R65 — Enquire from the vehicle page, through sign-in and back
+
+**Revises F089** · no schema, no API change
+
+The baseline's vehicle page had a form a buyer typed a name and number into.
+Now the page has one button, **Enquire now**, and the enquiry is sent by a
+signed-in customer (R62) through `POST /v1/enquiries` (R64).
+
+### What a buyer sees
+
+- **`/car/[slug]`** — `Enquire now` (`btn-primary`, 44px) under the price
+  block, per DESIGN-SPEC §3.4; below `lg` it is also pinned as the bottom
+  action bar with `--shadow-lg`.
+- **Not signed in** → `/login?returnTo=/car/<slug>?enquire=1`, on the Customer
+  tab (the default). After the code — and, for a new number, the name — the
+  customer lands back on the car.
+- **`?enquire=1`** opens the form by itself. It is dropped once the enquiry is
+  sent, so a reload does not reopen it.
+- **The form** — the customer's name and mobile shown read-only, the mobile
+  tagged `Verified`; an optional message (1,000 characters); a sentence saying
+  the dealership receives the name and verified number; `Send enquiry` and
+  `Cancel`. There is no field for a name or number.
+- **Sent** — "Enquiry sent — <dealer> has received your contact request."
+- **Already enquired** (`ENQUIRY_ALREADY_SUBMITTED_RECENTLY`) and **no longer
+  available** (`LISTING_NOT_AVAILABLE`) replace the form with a banner and the
+  API's sentence; no second Send is offered. Any other refusal (a rate limit,
+  own dealership) stays on the form as an alert.
+
+### How
+
+- The page **stays static** (ISR, `revalidate = 60`). The panel is a client
+  component; who is signed in is asked by `enquiryCustomerAction` only when
+  Enquire is pressed, and the send is `sendEnquiryAction` — both Server
+  Actions forwarding the visitor's own cookie.
+- `?enquire=1` is read by `EnquireFromUrl` under a `Suspense` boundary whose
+  fallback is the same panel, so the button is in the static HTML.
+- **Double submit** — a ref set synchronously on submit; the API's
+  one-per-day guard is the backstop.
+- **The request** is `{ listingSlug, message? }` only, parsed with the
+  contracts `CreateEnquiryInput` before it is sent.
+
+### Files
+
+`apps/web/src/features/enquiry/` — `actions.ts`, `actions.constants.ts`,
+`enquiry-panel/{enquiry-panel.tsx, enquiry-form.tsx, enquire-from-url.tsx,
+enquiry-panel.constants.ts, enquiry-panel.types.ts, index.ts}`;
+`apps/web/src/app/(public)/car/[slug]/page.tsx`.
+
+- **Components** C088 `EnquiryPanel`, C089 `EnquiryForm` — sandbox
+  `Vehicle/EnquiryPanel` (idle, signed out, form, sent, already sent, no
+  longer available, rate-limited), mock `apps/sandbox/src/mocks/enquiry-actions.ts`.
+- **Tests** `apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx`
+  (anonymous → login with the return path; prefilled read-only name and
+  verified mobile; no message; a typed message; three presses send once; sold
+  meanwhile; already enquired; session ended; `?enquire=1` auto-opens and is
+  dropped after sending), `actions.test.ts` (the customer, or null on 401; only
+  slug and message sent; a blank message omitted; refusal codes passed through;
+  401 → signed out; an over-long message refused before any call).
+
+### Not here
+
+The dealer's inbox (R66); the signed-in header and the dashboard counts (R67).
+
+## R66 — The dealership's enquiry inbox
+
+**Revises F091** · no schema change
+
+The dealer side of R64: every enquiry a customer sent about one of the
+dealership's cars, in the four tabs DESIGN-SPEC §3.15 draws, each with the
+customer's verified mobile to call and a button to move it on.
+
+### API — three routes on the dealer router
+
+Behind `requireDealer`; the dealership is always the session's.
+
+- **`GET /v1/dealer/enquiries`** (`enquiry:read`) — `DealerEnquiryQuery`
+  `{ status?, cursor?, limit }`, `.strict()`. Newest first, cursor-paginated.
+  Each row (`DealerEnquiry`) carries the customer's **current** name and
+  proved phone read from `users` (with `phoneDisplay`, `callHref`, initials),
+  the message, `createdAt` / `contactedAt` / `closedAt`, and the car — title,
+  plate, listing status, and `href` to `/car/<slug>` only while it is live.
+  `counts` — `ALL`, `NEW`, `CONTACTED`, `CLOSED`, `SPAM` — ignore the filter.
+- **`GET /v1/dealer/enquiries/counts`** (`enquiry:read`) — the counts alone,
+  for a badge (R67).
+- **`PATCH /v1/dealer/enquiries/:id`** (`enquiry:update`) —
+  `UpdateEnquiryInput { status }`, `.strict()`, so no name, number or message
+  can be edited. Any status may follow any other. `contactedAt` is the first
+  contact and survives a close and reopen; `closedAt` is set on close and
+  cleared on reopen. Setting the current status changes and audits nothing.
+  Audited as `enquiry.contacted` / `enquiry.closed` / `enquiry.spam` /
+  `enquiry.reopened`, actor `DEALER`, against the dealership.
+
+**Tenant isolation.** Every read filters on the session's `dealerId`; the
+update locks the row `FOR UPDATE` by id **and** dealership, so another
+dealership's enquiry is a `404 ENQUIRY_NOT_FOUND` — the same answer as an id
+that never existed — and two simultaneous presses write one audit row. Every
+response is `no-store`.
+
+**OpenAPI** three operations in `enquiriesDocs`; `DealerEnquiryQuery` and
+`UpdateEnquiryInput` in `INPUT_SCHEMA_NAMES`. Also fixes four `'\\n\\n'`
+in R64's operation text that rendered as a literal `\n` in Swagger UI.
+
+### Web — `/dealer/enquiries`
+
+- **Nav** — `Enquiries` leaves `NOT_YET_BUILT`; it was already in `DEALER_NAV`.
+- **Page** — server-rendered, `force-dynamic`, read uncached. Opens on **New**;
+  a status it does not know falls back to New. The tab and cursor are the URL.
+- **Card** (§3.15) — avatar, name, mono phone + `Verified`, status tag, time;
+  "About **<car>** <plate>", linked while live; the message, or "Asked to be
+  contacted."; `Call +91 …` (full-width 44px below `sm`) and the moves.
+  No Email button — customers have no email (R62).
+- **Moves** — New: Mark contacted · Close · Spam; Contacted: Close · Spam;
+  Closed: Reopen; Spam: Not spam. A Server Action
+  (`setEnquiryStatusAction`) PATCHes and revalidates the page; a refusal
+  shows the API's sentence.
+- **Not the baseline's shape.** F091 used `@tanstack/react-query` and a BFF
+  route (`app/api/dealer/enquiries`); this follows the inventory's
+  server-rendered pattern (R47) instead, so neither comes across. The
+  dependency stays in `package.json`, unused, as it was before this entry.
+
+### Files
+
+- `packages/contracts/src/enquiry.ts` — `DealerEnquiryQuery`,
+  `DealerEnquiryCounts`, `DealerEnquiry`, `DealerEnquiriesResponse`,
+  `UpdateEnquiryInput`; `enums.ts` — `ENQUIRY_STATUS_TONES`.
+- `apps/api/src/modules/enquiries/` — `enquiries.mapper.ts`,
+  `enquiries.dealer.routes.ts`, `routes/{dealer-route, handle,
+get-dealer-enquiries, get-dealer-enquiry-counts, patch-dealer-enquiry}.ts`,
+  service `inbox` / `counts` / `setStatus`, messages; mounted in `routes.ts`.
+- `apps/web/src/features/dealer/enquiries/` — `EnquiryInbox`, `EnquiryCard`,
+  `EnquiryStatusActions`, constants, types, utils;
+  `features/dealer/enquiry-actions.ts`;
+  `app/(dealer)/dealer/enquiries/page.tsx`.
+- **Components** C090 `EnquiryInbox`, C091 `EnquiryCard`, C092
+  `EnquiryStatusActions` (replacing the baseline's C054 and C065) — sandbox
+  `Dealer/EnquiryInbox` (new, contacted, closed, spam, empty, more pages,
+  move refused, mobile), mock `apps/sandbox/src/mocks/dealer-enquiry-actions.ts`.
+- **Tests**
+  - `apps/api/tests/dealer-enquiries.test.ts` (26, real database): anonymous
+    and customer sessions refused; newest first with the customer read from the
+    account; a renamed customer shown by the new name; the link dropped once
+    sold; cursor pages without repeats; tab filter keeps counts, and the counts
+    route agrees; bad queries refused; **each dealership sees and counts only
+    its own; another's enquiry is a 404 and is left untouched and unaudited**;
+    an unknown id is the same 404; contacted / closed / reopened / spam with
+    stamps and audit rows; same status changes nothing; two simultaneous moves
+    write one audit row; five identity fields refused by name; bad status and
+    non-uuid refused.
+  - `apps/api/tests/unit/routes.test.ts` — the three routes run the dealer
+    guard and never the customer one.
+  - `packages/contracts/tests/unit/enquiry.test.ts` — query defaults and
+    refusals, status-only update, a label and tone for every status.
+  - `apps/web/tests/unit/features/dealer/enquiries-page.test.tsx` (15) and
+    `enquiry-actions.test.ts` (4); `console-nav.test.tsx` now expects
+    Enquiries in the nav.
+
+### Not here
+
+The dashboard's enquiry counts and recent enquiries, the session's
+`counts.newEnquiries`, and the signed-in customer header (R67).
+
+## R67 — Enquiry counts on the dashboard, and the signed-in header
+
+**Revises F048 / F073** · no schema change · the last PR of the R58–R67 series
+
+### The dashboard and the session read real enquiries
+
+`dealers.repository.ts` held three reconstruction stubs answering zero until
+`Enquiry` existed. It has since R64, so:
+
+- **`newEnquiryCount`** → the session's `counts.newEnquiries` (`GET
+/v1/auth/me`): enquiries in the New tab. The baseline's query, restored.
+- **`enquiryCounts`** → the dashboard's _New enquiries_ tile and its "vs last
+  week" sentence: **new** enquiries received this week, against every
+  non-spam enquiry received the week before. The baseline's two queries,
+  restored with the baseline's asymmetry.
+- **`recentEnquiries`** → the _Recent enquiries_ panel: the newest four,
+  spam left out. A direct query rather than the baseline's
+  `enquiries.recentForDealer` facade call, which would have brought an
+  `EnquiriesService` dependency into the dealers module for four rows.
+  `RecentEnquiryRow` carries free-text make/model (D1); a car with neither
+  is named by its plate.
+
+**Contract** `DashboardResponse.recentEnquiries[].phoneDisplay` and
+`callHref` become nullable: an account whose number has been released has
+nothing to dial, and the panel then offers no Call button. The panel's
+`All enquiries →` ghost button — the baseline's, held back until R66 — is
+restored.
+
+### The customer header knows who is signed in
+
+- **`HeaderAccount`** (`features/auth/header-account/`) in `CustomerHeader`'s
+  new `account` slot, passed by the public layout. It renders **Login** first
+  and asks `customerAccountAction` once in the browser; a signed-in customer
+  sees **"Hi, first name"** and **Logout** (initials below `sm`).
+- **`customerAccountAction`** makes no API call at all without a
+  `dd_session` cookie, and answers `null` rather than an error for a `401` or
+  an unreachable API — the check costs an anonymous page view nothing and
+  can never break the page. The public pages stay static.
+- **`customerLogoutAction`** → `POST /v1/auth/customer/logout`, then drops
+  the cookie even if the API is unreachable; the header shows Login and the
+  route refreshes.
+- **Mobile header fix.** At 390px the header measured 450px wide — Login was
+  off-screen — on `main` already. Per DESIGN-SPEC §3.1 at 375 ("logo + city +
+  CTA only") the wordmark is visually hidden below `sm` and the gutter is
+  16px; both states now fit at 375 and 390 with no horizontal scroll.
+
+### Not done
+
+- **A New-enquiries badge in the console nav.** The console layout reads the
+  dealer profile, not the session, so a badge is a second request on every
+  console page; `counts.newEnquiries` is served and the dashboard tile shows
+  the number. Left for a later, deliberate change.
+
+### Files
+
+- `apps/api/src/modules/dealers/{dealers.repository.ts, dealers.service.ts}`;
+  `UNNAMED_CUSTOMER` moves to `platform/messages.ts` (two modules say it).
+- `packages/contracts/src/dealer.ts` — the two nullable fields.
+- `apps/web/src/components/dealer/dashboard-panels/*`,
+  `components/layout/customer-header/*`,
+  `features/auth/{customer-account-actions.ts, customer-account-actions.constants.ts, header-account/}`,
+  `app/(public)/layout.tsx`.
+- **Components** C093 `HeaderAccount`; C020 `CustomerHeader` gains
+  `account`. Sandbox `Layout/CustomerHeader` (signed in, signed in at phone
+  width, account slot signed out), `Dealer/DashboardPanels`
+  (`NumberNoLongerOnFile`), mock `apps/sandbox/src/mocks/customer-account-actions.ts`.
+- **Tests**
+  - `apps/api/tests/dealer-enquiry-counts.test.ts` (2, real database): the
+    tile counts this week's new ones; recent is newest first without spam,
+    with the customer's name, the car's title and `tel:`; the session's
+    `counts.newEnquiries`; another dealership's enquiries count for nothing.
+  - `tests/unit/modules/dealers/dealers.repository.test.ts` — the restored
+    queries (replacing the "answers zero until the tables exist" case, as
+    that case said it would be).
+  - `tests/unit/modules/dealers/dealers.service.test.ts` — the recent row in
+    the D1 shape; "general enquiry" replaced by "named by its plate" (every
+    enquiry is about a listing since R64); no number / no name.
+  - `apps/web/tests/unit/features/auth/header-account.test.tsx` (6),
+    `customer-account-actions.test.ts` (5);
+    `tests/unit/features/dealer/dashboard-page.test.tsx` — no Call without a
+    number; the `All enquiries →` link (replacing "offers no link … because
+    there is not one yet", as that case said it would be).
+
+## R68 — Customers can track their enquiries, and ask again once one is closed
+
+**Revises R64 / R65 / R67** · no schema change · asked for after the series, while testing
+
+### Rule change: one open enquiry per car
+
+R64's "one enquiry per customer per car per 24 hours" is replaced. A customer
+may have **one open enquiry per car**: while their enquiry is New or Contacted
+— or marked as spam — a new one is `409 ENQUIRY_ALREADY_OPEN`. Once the
+dealership **closes** it, the customer may enquire again. Time alone no longer
+reopens the door. Spam keeps blocking (a product decision taken at review),
+though the customer is shown Closed. The advisory lock still serialises the
+check and the write, so five simultaneous presses still land one.
+
+### My enquiries — `GET /v1/enquiries` and `/enquiries`
+
+- **API** (customer guard, `no-store`): `CustomerEnquiryQuery` `{ cursor?,
+limit ≤ 50 }`, `.strict()`. `CustomerEnquiry` `{ status, statusLabel,
+statusTone, message, createdAt, createdLabel, dealerName, vehicle { title,
+href } }`, newest first. **Three states** — `SENT`, `CONTACTED`, `CLOSED` —
+  mapped from the dealer's four on the server by `customerEnquiryStatus`, so
+  **spam is Closed and the word appears in no customer response**. Current
+  state only; no history.
+- **Page** `/enquiries` (public group, `force-dynamic`, `noindex`): read-only
+  cards — the car (linked while listed), dealership, message, date sent,
+  status tag. Signed out → `/login?returnTo=/enquiries`. Empty → Browse cars.
+- **Ways in:** `My enquiries` in the signed-in header (the initials avatar on
+  a phone); "Track it in My enquiries" on the sent and already-open banners.
+
+### Vehicle page
+
+- **"Requires login with your mobile number"** under both Enquire buttons,
+  hidden once the panel knows the visitor is a signed-in customer. The panel
+  asks once on mount; with no session cookie the action answers without
+  calling the API.
+- The already-open banner replaces the already-enquired one, with the API's
+  sentence and the tracking link.
+
+### Not changed
+
+The dealer inbox, and how dealer and customer sessions relate (R62) — left as
+they are, as asked.
+
+### Files
+
+- `packages/contracts/src/enquiry.ts` — `CustomerEnquiryStatus`,
+  `customerEnquiryStatus`, labels, tones, `CustomerEnquiryQuery`,
+  `CustomerEnquiry`, `CustomerEnquiriesResponse`.
+- `apps/api/src/modules/enquiries/` — `BLOCKING_STATUSES` and
+  `ENQUIRY_ALREADY_OPEN` in the service, `mine`, `toCustomerEnquiry`,
+  `routes/get-my-enquiries.ts`, the docs operation `listMyEnquiries`;
+  `CustomerEnquiryQuery` in `INPUT_SCHEMA_NAMES`.
+- `apps/web/src/features/enquiry/` — the panel's hint, mount check and links;
+  `actions.ts` skips the API without a cookie;
+  `customer-enquiries/{customer-enquiry-list, customer-enquiry-card, constants, types, utils, index}`;
+  `app/(public)/enquiries/page.tsx`; `features/auth/header-account` link.
+- **Components** C094 `CustomerEnquiryList`, C095 `CustomerEnquiryCard` —
+  sandbox `Vehicle/CustomerEnquiryList`; C088 and C093 gain states.
+- **Tests**
+  - `apps/api/tests/enquiries.test.ts` — the R64 "floods" block becomes "one
+    open enquiry per car": open blocks; days later still blocks; contacted
+    blocks; closed allows; spam blocks; five at once land one; another car or
+    customer unaffected. New "a customer's own enquiries": 401 anonymous; own
+    only, newest first, with dealership and car; NEW/CONTACTED/CLOSED/SPAM
+    shown as SENT/CONTACTED/CLOSED/CLOSED and never "spam"; link dropped once
+    sold; cursor paging; three query fields refused; a dealer's session lists
+    its own.
+  - `tests/unit/routes.test.ts` — `GET /v1/enquiries` runs only the customer
+    guard.
+  - `packages/contracts/tests/unit/enquiry.test.ts` — the mapping, the
+    three-state enum, the query.
+  - `apps/web/tests/unit/features/enquiry/my-enquiries-page.test.tsx` (7),
+    `enquiry-panel.test.tsx` (hint shown / hidden, tracking links, the new
+    code), `actions.test.ts` (no cookie → no request),
+    `features/auth/header-account.test.tsx` (the My enquiries links).
+
+## R69 — The listing lifecycle a buyer can see: Active, Reserved, Sold, Withdrawn
+
+**Revises F064 / F067 / R47** · ⚠️ enum value renamed (`REMOVED` → `WITHDRAWN`), one added (`RESERVED`), four columns
+
+The first of the marketplace-lifecycle series (R69–R77). This slice is the
+domain and the dealer API; the console controls (R70) and every public surface
+(R71) follow.
+
+### States
+
+| State       | Public                          | Available | Way out                           |
+| ----------- | ------------------------------- | --------- | --------------------------------- |
+| `ACTIVE`    | yes                             | yes       | reserve · mark sold · withdraw    |
+| `RESERVED`  | yes, greyed and not clickable\* | no        | reactivate · mark sold · withdraw |
+| `SOLD`      | no                              | no        | none — history                    |
+| `WITHDRAWN` | no                              | no        | relist → `ACTIVE`                 |
+
+\* R71. Until R71 lands, only `ACTIVE` is public, so a reserved car is simply
+not shown — the conservative reading R47 took for sold cars.
+
+- `WITHDRAWN` is `REMOVED` renamed (`ALTER TYPE … RENAME VALUE`), and
+  `removedAt` is `withdrawnAt`. `RESERVED` is added **after `ACTIVE`**, so an
+  ascending sort on status puts available before reserved.
+- New columns on `listings`: `reservedAt`, `withdrawalReason`
+  (`WithdrawalReason`: `NO_LONGER_FOR_SALE · VEHICLE_ISSUE · DOCUMENT_ISSUE ·
+TEMPORARILY_PAUSED · OTHER`), `withdrawalNote`. Reason and note are the
+  dealership's; no public response carries them.
+- **`SOLD → ACTIVE` does not exist.** A sale recorded by mistake is an
+  administrative correction.
+- **`WITHDRAWN` keeps the registration** (R47's `REMOVED` released it), so a
+  relist never collides. A pre-R69 removal that released its plate is
+  reclaimed on relist, or refused `409 DUPLICATE_REGISTRATION` if another
+  dealership has claimed the car since.
+- Stamps are chosen by event: reactivate and relist reach `ACTIVE` without
+  touching `decidedBy`/`decidedAt`, and keep `publishedAt` and the slug.
+
+### API (dealer, `listing:submit`, dealership ACTIVE)
+
+`POST /v1/dealer/vehicles/:id/reserve` · `/reactivate` · `/mark-sold` ·
+`/withdraw` (body `WithdrawListingInput { reason, note? ≤ 500 }`, `.strict()`) ·
+`/relist`. Each answers `DealerVehicle`; each refusal is a `409` naming the move
+(`LISTING_NOT_RESERVABLE`, `LISTING_NOT_RESERVED`, `LISTING_NOT_SELLABLE`,
+`LISTING_NOT_WITHDRAWABLE`, `LISTING_NOT_RELISTABLE`). Another dealership's car
+is a 404. `DealerListing` gains `slug`, `reservedAt`, `soldAt`, `withdrawnAt`,
+`withdrawal` and `actions`; `DealerInventoryRow` gains `slug` and `actions`.
+Audit actions `listing.reserved`, `listing.reactivated`, `listing.marked_sold`,
+`listing.withdrawn` (reason and `hasNote`, never the note), `listing.relisted`.
+
+### Files
+
+- `apps/api/prisma/migrations/20260928120000_listing_reserved_withdrawn`, `schema.prisma`
+- `packages/contracts/src/{enums,listing,vehicle}.ts` — `ListingStatus`,
+  `DisplayStatus`, `WithdrawalReason` + labels, `ListingLifecycleAction`,
+  `LISTING_LIFECYCLE_FROM`, `lifecycleActionsOf`, `WithdrawListingInput`
+- `apps/api/src/modules/listings/{listing.state,listings.messages}.ts`
+- `apps/api/src/modules/vehicles/` — `lifecycle()`, `routes/lifecycle.ts`,
+  five `routes/post-vehicle-*.ts`, five operations in `vehicles.docs.ts`
+- `apps/api/prisma/seed/dev-vehicles*.ts` — 12 `RESERVED`, 6 `WITHDRAWN` (with
+  reasons), 260 `ACTIVE`
+- web: `REMOVED` renamed in the inventory and moderation tabs (`Reserved` tab
+  added to both) and the wizard's locked copy
+
+### Tests
+
+`tests/unit/modules/listings/listing.state.test.ts` (the whole 8 × 10 × 2
+table; nothing leaves `SOLD`; only approve/reactivate/relist reach `ACTIVE`;
+contracts table equal to the machine; stamps; withdrawal reason required),
+`tests/dealer-listing-lifecycle.test.ts` (24 — every move over HTTP, refusals,
+400s, tenant 404, enquiries kept, registration held/released/reclaimed, a race),
+`vehicles.routes.test.ts`, `packages/contracts/tests/unit/listing.test.ts`,
+`tests/unit/seed/dev-vehicles.test.ts`.
+
+## R70 — The dealer reserves, sells, withdraws and relists from the console
+
+**Revises F067 / R69** · no schema or API change
+
+The console half of R69. Every live car in the inventory now shows the moves
+the API lists in `actions`. The same moves appear under the read-only review on
+the car's own page (`/dealer/vehicles/:id/edit`), together with a withdrawn
+listing's reason and note and **View on site** while the car is on sale.
+
+| Status      | Buttons                            |
+| ----------- | ---------------------------------- |
+| `ACTIVE`    | Reserve · Mark sold · Withdraw     |
+| `RESERVED`  | Make active · Mark sold · Withdraw |
+| `WITHDRAWN` | Relist                             |
+| `SOLD`      | none                               |
+
+- Every move is confirmed in a `Dialog`, using the product's wording:
+  - _Reserve this vehicle?_: the listing stays visible, but customers cannot open it or enquire.
+  - _Mark this vehicle as sold?_: it leaves public listings and search, and cannot be put back on sale.
+  - _Withdraw this listing?_: it leaves public listings, and can be relisted later. Needs a reason; the note is optional.
+  - _Put this vehicle back on sale?_
+  - _Relist this vehicle?_
+- `listingLifecycleAction` (a Server Action) calls the R69 route and then redraws:
+  - the inventory, the dashboard and the vehicle page
+  - `VEHICLES_TAG`, `DEALERS_TAG` and the car's own `vehicle:<slug>` tag
+- The inventory tabs gained Reserved and Withdrawn in R69.
+- The mobile inventory card is no longer one link: the link covers its upper
+  part, so the buttons are not nested inside an anchor.
+
+### Files
+
+- `apps/web/src/features/dealer/listing-lifecycle/`:
+  - `actions.ts`
+  - `listing-lifecycle-actions.tsx`
+  - `lifecycle-dialog.tsx`
+  - `listing-lifecycle-panel.tsx`
+  - `listing-lifecycle.constants.ts`
+  - `listing-lifecycle.types.ts`
+  - `index.ts`
+- `features/dealer/inventory/{inventory-row,inventory-card}.tsx`
+- `features/vehicle/vehicle-wizard/vehicle-wizard.tsx`
+- **Components** C096 `ListingLifecycleActions`, C097 `LifecycleDialog`,
+  C098 `ListingLifecyclePanel`. The sandbox has `Dealer/ListingLifecycleActions`,
+  with the Server Action stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
+### Tests
+
+- `apps/web/tests/unit/features/dealer/listing-lifecycle.test.tsx` (14): the
+  moves offered per status, every confirmation, cancel, refusal, withdraw
+  gated on a reason with a trimmed note, and the panel.
+- `listing-lifecycle-actions.test.ts` (12): paths, body, revalidation,
+  refusals before any call, and API errors.
+- `inventory-page.test.tsx` (per-row moves) and `vehicle-wizard.test.tsx`
+  (a reserved car's moves).
+
+## R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface
+
+**Revises F075 / F076 / F082 / F086 / R48 / R64 / R69** · no schema change
+
+### The rule, in one place
+
+| Status      | `/cars`, portfolio  | Card                    | Vehicle page          | Counts, facets  | Enquiry                     |
+| ----------- | ------------------- | ----------------------- | --------------------- | --------------- | --------------------------- |
+| `ACTIVE`    | shown               | linked                  | open                  | counted         | taken                       |
+| `RESERVED`  | shown, after ACTIVE | greyed, badged, no link | open, marked Reserved | **not counted** | `409 LISTING_RESERVED`      |
+| `SOLD`      | absent              | —                       | 404                   | —               | `409 LISTING_NOT_AVAILABLE` |
+| `WITHDRAWN` | absent              | —                       | 404                   | —               | `409 LISTING_NOT_AVAILABLE` |
+
+- **Two predicates** replace R47's single `PUBLIC_LISTING_WHERE`, both in
+  `search.repository.ts`:
+  - `PUBLIC_VISIBLE_LISTING_WHERE` (`ACTIVE`/`RESERVED`) is used only by the
+    result list and the vehicle page.
+  - `PUBLIC_AVAILABLE_LISTING_WHERE` (`ACTIVE`) is used by every count: facets,
+    `available`, suggestions, the directory's and the district dialog's car
+    counts. The enquiry guard uses it too.
+  - `listingWhere()` defaults to **available**, so a new count counts stock.
+  - Contracts mirror both as `isListingPubliclyVisible` / `isListingAvailable`,
+    for code holding a status: the media route and the enquiry links.
+- **Paging vs availability.** `page.total` counts the cards returned (available
+  - reserved), which is what pages are cut from. The new top-level `available`
+    counts ACTIVE cars under the same scope and filters, and is what "N cars
+    available" shows on `/cars` and on the portfolio. Every sort starts with
+    `status asc`, so reserved cards come after every available one.
+- `VehicleCardDto` and `PublicVehicleDetail` gain `availability`
+  (`PublicAvailability`: `AVAILABLE · RESERVED · SOLD · UNAVAILABLE`, labelled
+  Available / Reserved / Sold / No longer available). Search only ever sends
+  the first two; the others are for saved cars (R75). No internal status leaves
+  the API.
+- **Enquiries** read the listing row `FOR SHARE` before checking availability,
+  so a sale racing an enquiry serialises with it.
+- **Media** serves a reserved car's photographs; a sold or withdrawn car's are a 404.
+
+### Web
+
+- `VehicleCard`, when not `AVAILABLE`:
+  - greyscale photograph at 60% opacity, muted text
+  - `AvailabilityBadge` (C099)
+  - no link: plain-text title with a visually hidden "— Reserved for another
+    buyer", nothing focusable, no hover border
+  - one component, so `/cars`, the portfolio and later surfaces all behave the same
+- `/car/[slug]` for a reserved car shows the badge beside the year plate and
+  `AvailabilityNotice` (C100) in place of the enquiry panel, so there is no
+  Enquire button and no `?enquire=1` auto-open.
+- `/cars` and the portfolio count `available`. The portfolio shows its rail
+  when it has any card at all.
+
+### Tests
+
+- `apps/api/tests/public-lifecycle.test.ts` (16) covers the matrix:
+  - moves made through the R69 routes
+  - list, sort order, `available`, portfolio, facets, directory count
+  - the vehicle page (200/200/404/404)
+  - enquiries for all four states, a reactivated car taking one again, and a
+    sale racing an enquiry
+- Updated: `search.test.ts` and `search.filters.test.ts` (both predicates,
+  default rule, status-first order), `media.service.test.ts` (RESERVED served),
+  `public-vehicles` / `public-vehicle-page` (key lists).
+- Web:
+  - `vehicle-card.test.tsx`: reserved has no link, is not focusable and is
+    greyed; sold and unavailable are labelled; `/cars` counts available.
+  - `vehicle-page.test.tsx`: reserved shows the notice and no Enquire.
+  - `portfolio-page.test.tsx`: a reserved card is shown, unlinked and not counted.
+- Contracts: `listing.test.ts`.
+
+## R72 — The homepage searches the marketplace, and shows what is on it
+
+**Lands F081, as revised** · no API change
+
+- **Hero:** "Find your next car", with a search block of four fields:
+  - **District**: the header's `LocationDialog`, counting cars.
+  - **Brand**: the marketplace brand facet, with counts.
+  - **Model**: disabled until a brand is chosen, then filled from
+    `/v1/vehicles?brand=…` facets through `heroFacetsAction`.
+  - **Budget**: up to ₹3/5/8/10/15/20/30 lakh, sent as `maxPrice` in paise.
+- **Search cars** navigates to `searchHref('/cars', …)`. For example, Ranipet,
+  Hyundai, Creta, up to ₹15 lakh becomes
+  `/cars?district=ranipet&brand=hyundai&model=creta&maxPrice=150000000`.
+  It is a GET form, so it also works without script.
+- **Discovery rows**, each `/v1/vehicles` with ordinary filters and `limit=4`,
+  and each with **View all N →** to the same filters on `/cars`:
+
+  | Row            | Filter                   |
+  | -------------- | ------------------------ |
+  | Recently added | none (newest)            |
+  | SUVs           | `bodyType=suv`           |
+  | Automatic cars | `transmission=automatic` |
+  | Under ₹10 lakh | `maxPrice=100000000`     |
+
+- **Rows promote ACTIVE cars only.** Any card that is not `AVAILABLE` is
+  dropped, so a row may hold fewer than four cars but never a reserved one; sold
+  and withdrawn cars are never returned. "View all N" counts `available`. An
+  empty row is not rendered.
+- The DESIGN-SPEC §3.2 body-type tiles and trusted-dealers row are left out;
+  the brief asked for a few focused sections, not ten.
+- Copy that said search and enquiries were "coming soon" is corrected. The page
+  revalidates every 60 s and is tagged `vehicles`.
+
+### Files
+
+- `apps/web/src/features/home/`:
+  - `actions.ts`
+  - `load-home.ts`
+  - `home.constants.ts`
+  - `hero-search/{hero-search,hero-district,hero-search.constants,hero-search.types,utils,index}`
+  - `discovery-row/{discovery-row,discovery-row.types,index}`
+- `app/(public)/page.tsx`
+- **Components:** C101 `HeroSearch`, C102 `DiscoveryRow`. The sandbox has
+  `Home/HeroSearch`, with the action stubbed by
+  `apps/sandbox/src/mocks/home-actions.ts`, and `Home/DiscoveryRow`.
+
+### Tests
+
+`apps/web/tests/unit/features/home/home-page.test.tsx` (16) covers:
+
+- the four requests and their filters, rows and links
+- reserved cars never promoted, empty rows dropped, the API being down, and no
+  "coming soon" copy
+- the hero: empty search, brand counts, model disabled until a brand, the
+  district via the dialog, the full URL, the model reset, budgets, and the GET form
+- `heroHref`, and `heroFacetsAction` (validation, request, failure)
+
+The old homepage assertions in `public-pages.test.tsx` were removed with the
+copy they asserted.
+
+## R73 — Similar vehicles on the vehicle page
+
+**Lands F084, as revised** · new route `GET /v1/vehicles/:slug/similar`
+
+- **Only available cars:** `ACTIVE` listings of `ACTIVE` dealerships. Never
+  reserved, sold or withdrawn, and never the car itself.
+- **Scoring** (`search.similar.ts`), deterministic:
+
+  | Trait in common              | Weight |
+  | ---------------------------- | ------ |
+  | Same model                   | +4     |
+  | Same make                    | +3     |
+  | Same body type               | +3     |
+  | Same district                | +2     |
+  | Price within ±20%            | +2     |
+  | Same fuel                    | +1     |
+  | Same transmission            | +1     |
+  | Manufacturing year within ±2 | +1     |
+
+  Ties go to the closer price, then the newer listing, then the id.
+
+- **Pool:** available cars sharing the make, body type or district, or within
+  a ±35% price band; newest 120, ranked in memory.
+- **Fallback:** the newest other available cars fill up to four, so the section
+  is empty only when the marketplace is.
+- **Limit:** four (`SIMILAR_VEHICLE_LIMIT`).
+- **Source:** may be `ACTIVE` or `RESERVED`. Any other slug is `404
+VEHICLE_NOT_FOUND`. The response is `Cache-Control: public, max-age=60`, and
+  the route sits behind the same public-read limiter as the page.
+- **Web:** `/car/[slug]` fetches the section with the page's own tags and
+  renders `SimilarVehicles` (C103): the grid `VehicleCard`, dealer strip
+  included. If the fetch fails, the page renders without the section.
+- The OpenAPI search examples now carry R71's `availability` and `available`.
+
+### Files
+
+- `packages/contracts/src/public.ts`: `SIMILAR_VEHICLE_LIMIT`,
+  `SimilarVehiclesResponse`.
+- `apps/api/src/modules/search/`:
+  - `search.similar.ts`
+  - the repository's `similarSource`, `similarPool`, `similarPoolWhere` and
+    `newestAvailable`, and `cardInclude.dealer.district`
+  - `service.similar` and `traitsOf`
+  - `routes/get-vehicle-similar.ts`
+  - the `getSimilarVehicles` doc operation
+- `apps/web/src/components/vehicle/similar-vehicles/` and
+  `app/(public)/car/[slug]/page.tsx`
+
+### Tests
+
+- `apps/api/tests/unit/modules/search/search.similar.test.ts`: each weight,
+  unknowns, tie-breaks, order independence, the limit and the pool's `where`.
+- `search.test.ts`: the service's 404, the fallback without repeats, no filler
+  when four are found, and the route list.
+- `apps/api/tests/public-similar-vehicles.test.ts` (11): the ranking,
+  exclusions, available-only, at most four, determinism, the dealer strip, a
+  reserved source, 404s and 400s, and the cache header.
+- `apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx`: the section
+  renders, and is left out when empty or failed.
+
+## R74 — Saved cars live on the server, and survive the lifecycle
+
+**Revises F087** · ⚠️ new table `saved_vehicles` · new module `saved-vehicles`
+
+F087's device-only `localStorage` list is replaced by a server-backed one:
+customers have accounts (R62), and a shortlist should follow the account.
+This slice is the backend; the heart, the sign-in intent and the page are R75.
+
+- **`SavedVehicle { id, customerId → users, listingId → listings, createdAt }`**:
+  - unique `(customerId, listingId)`
+  - index `(customerId, createdAt)` for the list and `(listingId)` for the cascade
+  - cascades only when the account or the listing itself is deleted
+- **API** (`/v1/saved-vehicles`, customer guard only, `no-store`), addressed by
+  public slug:
+  - `GET /` lists `SavedVehiclesQuery { cursor?, limit ≤ 50 }` →
+    `SavedVehiclesResponse { data: { savedAt, vehicle: VehicleCardDto }[], page }`,
+    newest first.
+  - `GET /slugs` → `SavedVehicleSlugs { slugs ≤ 500 }`, so a page of cards
+    draws every heart from one request.
+  - `PUT /:slug` saves, idempotently (`SavedState`). Only a car on the
+    marketplace (ACTIVE or RESERVED) can be newly saved; otherwise
+    `409 LISTING_NOT_SAVEABLE`. The listing row is read `FOR SHARE`, so a
+    racing withdrawal is deterministic.
+  - `DELETE /:slug` unsaves, idempotently, in any state.
+  - Both writes are rate-limited per customer (120/hour). An unknown slug is
+    `404 LISTING_NOT_FOUND`.
+- **Lifecycle:** a saved row is never deleted by a reservation, sale or
+  withdrawal. `availability` says what became of the car: `AVAILABLE`,
+  `RESERVED`, `SOLD`, or `UNAVAILABLE` (withdrawn, taken down, or dealership
+  suspended). A car off the marketplace carries `image: null`.
+- **Audit:** `vehicle.saved` and `vehicle.unsaved` (actor `CUSTOMER`, entity
+  the listing), written only when a row actually changes.
+- **Isolation:** the customer is always the session. No input names a customer,
+  and every schema is `.strict()`.
+
+### Files
+
+- `apps/api/prisma/migrations/20260928130000_saved_vehicles` and `schema.prisma`
+- `packages/contracts/src/saved.ts`
+- `apps/api/src/modules/saved-vehicles/`:
+  - `saved-vehicles.{service,mapper,messages,routes,docs}.ts`
+  - `routes/{get-saved-vehicles,get-saved-slugs,put-saved-vehicle,delete-saved-vehicle,write-limit,handle,route}.ts`
+- The search facade exports `cardInclude`, `toVehicleCard` and
+  `PUBLIC_DEALER_STATUS`.
+- Wiring: the container, `routes.ts`, `MODULES`, `DOC_TAGS` and `TAG_ORDER`
+  ("Saved cars"), and `SavedVehiclesQuery` in `INPUT_SCHEMA_NAMES`.
+
+### Tests
+
+- `apps/api/tests/saved-vehicles.test.ts` (18):
+  - signed out is 401, customers are isolated, no customer parameter exists
+  - saving: first save, the double save and the burst, a reserved car saved,
+    sold and withdrawn cars refused, 404 and 400
+  - lifecycle: reserved → sold keeps the row, withdrawn → relisted,
+    dealership suspended
+  - unsaving is idempotent in any state; paging; unknown query refused
+- `tests/unit/modules/saved-vehicles/saved-vehicles.mapper.test.ts` (9)
+- `tests/unit/routes.test.ts`: each route runs only the customer guard.
+
+## R75 — The heart, the sign-in that completes it, and the Saved cars page
+
+**Revises F087 / F075 / F082** · no API change (R74's routes)
+
+- **Heart on every card**: `SaveButton` (C104) sits top-right over the
+  photograph, including on reserved cards, which can still be saved. The vehicle
+  page adds a labelled **Save / Saved** under the price, for reserved cars as
+  well.
+  - The labels are "Save {title}" and "Remove {title} from saved vehicles".
+  - `aria-pressed` reflects the state, and the button is disabled while a write
+    is pending.
+  - `AvailabilityBadge` moves to the photograph's bottom-left.
+- **One provider** (`SavedVehiclesProvider`, C105) in the public layout keeps
+  every heart for the same car in step:
+  - It loads the saved slugs once after mount, so pages stay static.
+  - Toggles are optimistic, rolled back on refusal and announced politely.
+  - On `/saved`, a successful toggle refreshes the page.
+- **Signed out**: a tap goes to
+  `/login?returnTo=<page with its query>&save=<slug>`. On the way back,
+  `SaveFromUrl` strips `save` and completes the save, so the visitor does not
+  press twice. A session that expired mid-page is treated the same way.
+- **`/saved`** (replacing the coming-soon page): customer-only, `force-dynamic`,
+  `noindex`. Signed out, it redirects to `/login?returnTo=/saved`. It lists up
+  to 50 cars per page in three groups: **Available**, **Reserved**, and **No
+  longer available** (sold or withdrawn). Each card is the shared
+  `VehicleCard`; reserved and departed cars are greyed and unlinked, and every
+  card keeps its heart so it can be removed. The page has an empty state and
+  Show more.
+- The header's existing **Saved cars** link now leads somewhere real.
+
+### Files
+
+- `apps/web/src/components/vehicle/save-button/`:
+  - `save-button.tsx`
+  - `saved-vehicles-context.ts`
+  - `save-button.constants.ts`
+- `apps/web/src/features/saved/`:
+  - `actions.ts`
+  - `saved-vehicles-provider.tsx`
+  - `save-from-url.tsx`
+  - `saved.constants.ts`, `saved.types.ts`
+  - `saved-list/`
+- `app/(public)/layout.tsx`
+- `app/(public)/saved/page.tsx`
+- `app/(public)/car/[slug]/page.tsx`
+- `components/vehicle/vehicle-card/{vehicle-card,availability-badge}.tsx`
+- **Components** C104–C106. The sandbox has `Vehicle/SaveButton` and
+  `Vehicle/SavedList`, with the actions stubbed by
+  `apps/sandbox/src/mocks/saved-actions.ts`.
+- `tests/unit/components/public/public-pages.test.tsx` is removed. Its only
+  remaining case was the coming-soon `/saved`.
+
+### Tests
+
+- `apps/web/tests/unit/features/saved/saved-cars.test.tsx` (17):
+  - no heart without a provider; labels and state
+  - the optimistic save, and that the car is not opened
+  - rollback with a message; remove
+  - hearts in step; a reserved car can be saved
+  - signed out: to login with the page's query and `save`
+  - the return trip completes and strips the intent, with no double save
+  - an expired session
+  - the URL helpers
+  - `/saved`: the uncached read, the three groups with no links off the
+    marketplace, the empty state, the next page, and the redirect when signed out
+- `saved-actions.test.ts` (8): slugs as customer / anonymous / expired /
+  outage; PUT and DELETE with revalidation; an invalid slug; signed out; the
+  API's refusal.
+
+## R76 — The customer's account menu
+
+**Revises R67 / R68 / F073** · no API change
+
+- **Signed out:** the header shows **Login**, unchanged.
+- **Signed in:** the header shows a round avatar with the customer's initials.
+  - `personInitials()` takes the first and last name, at most two letters:
+    Rahul → R, John Doe → JD, Shashikiran Kumar → SK. A one-word "Shashikiran"
+    is S. The brief's "Shashikiran → SK" assumes a surname.
+  - The avatar uses the brand accent tint, never a per-user colour.
+  - It shows the initials only; there are no profile images in the product.
+- **The menu** holds the name and the masked mobile (`+91 98XXXXXX12`), then
+  **Saved cars** (`/saved`, R75), **My enquiries** (`/enquiries`, R68, reused),
+  and **Logout** (the existing `customerLogoutAction`, which revokes the
+  session and then refreshes the page).
+- **Behaviour:** the menu is a Radix `Popover`, which is already a dependency,
+  so there is nothing new to install.
+  - It is a `role="menu"`, and opening it focuses the first item.
+  - The arrow keys wrap, and Home and End jump to the ends.
+  - Escape closes it and returns focus to the avatar; so does a click outside,
+    or choosing an item.
+  - It is at most `calc(100vw - 24px)` wide, with collision padding, so it
+    fits at 375.
+- **Dealer console:** unaffected. The customer session carries no dealer flag,
+  so the menu is the customer's alone, and `/dealer` keeps its own entry and
+  its own shell.
+- `CustomerAccount` gains `phoneMasked`, computed on the server, so the full
+  number never reaches the browser. `firstNameOf` and the "Hi, name" greeting
+  are removed.
+
+### Files
+
+- `apps/web/src/lib/person.ts`: `personInitials`, `maskIndianMobile`
+- `apps/web/src/features/auth/`:
+  - `customer-account-actions.ts`
+  - `header-account/{account-menu,header-account,header-account.constants,header-account.types,index}`
+  - `utils.ts` is removed
+- **Components:** C107 `AccountMenu`, and C093 revised. The sandbox story is
+  `Layout/CustomerHeader`, with the stub's account gaining `phoneMasked`.
+
+### Tests
+
+- `apps/web/tests/unit/features/auth/header-account.test.tsx`:
+  - Login when signed out
+  - the avatar: initials, round, `haspopup`, closed
+  - the menu contents and links
+  - focus: first item, arrow keys, Home, End, wrap
+  - Escape returns focus; outside click; choosing an item closes it
+  - logout: refresh and Login again; a failed check keeps Login
+  - `personInitials` (8 cases) and `maskIndianMobile`
+- `customer-account-actions.test.ts`: the masked number is returned, never the
+  raw one.
+
+## R77 — Every surface agrees on the lifecycle
+
+**Revises F066 / R69–R76** · no schema or route change
+
+An audit of every surface that reads a listing's status, against the four
+lifecycle states. The one surface found out of step was the dealer dashboard;
+everything else already matched the matrix.
+
+| Surface                          | ACTIVE    | RESERVED               | SOLD                | WITHDRAWN           |
+| -------------------------------- | --------- | ---------------------- | ------------------- | ------------------- |
+| `/cars` and dealer portfolio     | listed    | listed, after, no link | hidden              | hidden              |
+| Counts, facets, "View all N"     | counted   | not counted            | —                   | —                   |
+| Vehicle page                     | open      | open, notice           | 404                 | 404                 |
+| Enquiry                          | taken     | `409 LISTING_RESERVED` | `409`               | `409`               |
+| Similar vehicles (suggested)     | yes       | no                     | no                  | no                  |
+| Similar vehicles (source page)   | yes       | yes                    | 404                 | 404                 |
+| Homepage discovery rows          | yes       | no                     | no                  | no                  |
+| Save                             | yes       | yes                    | `409`               | `409`               |
+| Saved list                       | Available | Reserved               | No longer available | No longer available |
+| Customer's enquiry list          | linked    | linked                 | not linked          | not linked          |
+| Dealer inventory tab             | yes       | yes                    | yes                 | yes                 |
+| **Dealer dashboard tile**        | yes       | **yes (R77)**          | yes                 | no                  |
+| Admin overview "Active listings" | yes       | no                     | no                  | no                  |
+
+- **The dashboard** gains a **Reserved** tile between Active and Pending
+  review, linking to `/dealer/inventory?status=RESERVED`. A reservation waits
+  on the dealer — it ends in a sale or a release — so it is counted where the
+  dealer looks first. Withdrawn stays on the inventory tab only.
+- **The seed** already holds every state: 12 RESERVED, 12 SOLD, 6 WITHDRAWN
+  among the 320 dev vehicles (R69).
+- **F067** (mark sold, remove & renew) is marked in progress rather than
+  done. R69 and R70 delivered mark sold and remove, as reserve, reactivate,
+  mark sold, withdraw and relist. Renew does not exist yet: a listing does not
+  expire until billing (F050–F054) gives it a paid term.
+
+### Files
+
+- `apps/api/src/modules/dealers/dealers.service.ts`: `DASHBOARD_LISTING_STATS`
+- `apps/sandbox/src/stories/dealer/listing-stats.stories.tsx`
+
+### Tests
+
+- `apps/api/tests/unit/modules/dealers/dealers.service.test.ts`: five tiles, in
+  order, with the reserved count and tone
+- `apps/api/tests/dealer-inventory.test.ts`: the dashboard counts the same
+  listings as the inventory, reserved included
+- `apps/web/tests/unit/features/dealer/dashboard-page.test.tsx`: the Reserved
+  tile links to its inventory tab
+
+## R78 — The homepage never says how many cars there are
+
+**Revises R72** · no API change
+
+- Every homepage row's link now reads **View all →** instead of
+  **View all N →**. It still goes to the same filters on `/cars`.
+- The size of the marketplace is not something the homepage tells a visitor.
+  The rows are fetched on the server, so the API's `page.total` and
+  `available` never reach the browser from this page.
+- Everything else about the rows is unchanged: four rows, four available cars
+  each, newest first, hidden when empty.
+- `DiscoveryRow` loses its `total` prop, and `HomeInventory` its `total`
+  field, which nothing read.
+
+### Files
+
+- `apps/web/src/features/home/`:
+  - `home.constants.ts`
+  - `load-home.ts`
+  - `discovery-row/{discovery-row,discovery-row.types}`
+- `apps/sandbox/src/stories/home/discovery-row.stories.tsx`, and the registry
+  entry for `DiscoveryRow`
+
+### Tests
+
+- `apps/web/tests/unit/features/home/home-page.test.tsx`: each row's link reads
+  exactly "View all →" even when the API reports counts.
+
+## R79 — One search bar on the homepage, the same as `/cars`
+
+**Revises R72 / F081** · no API change
+
+- The hero's four selectors (District, Brand, Model, Budget) and its Search
+  button are gone. In their place is `CarSearchBox`, the `/cars` search box,
+  reused rather than copied so the two cannot drift apart.
+- **Typing** shows the same make, model and variant suggestions from the same
+  endpoint (`/api/search/vehicles`), across the whole marketplace. The
+  homepage has no district of its own: the header's district picker already
+  goes to `/cars?district=…`.
+- **Choosing a suggestion** opens `/cars` with it as filters: a brand is
+  `brand=`, a model `brand=&model=`, and a variant adds `q=`.
+- **Enter on free text** opens `/cars?q=<text>`, exactly as on `/cars`.
+- There is **no button**, as on `/cars`.
+- **Before the script loads** it is still a GET form to `/cars`, with the input
+  named `q`, as the four-field hero was.
+- The homepage no longer reads `/v1/locations`, or the brand facet that only
+  the hero used.
+
+### Component changes
+
+- `CarSearchBox` (C082) gains an optional `action`. When it is given, the form
+  is `action=… method="get"` and the input is named `q`. `/cars` passes
+  neither, and is unchanged.
+- `AutocompletePanel` (C073) gains an optional `name` for its input.
+  `DealerSearchBox` does not pass it.
+- C101 `HeroSearch`, `heroFacetsAction`, the sandbox's `home-actions` stub and
+  the `Home/HeroSearch` story are removed.
+
+### Files
+
+- `apps/web/src/app/(public)/page.tsx`
+- `apps/web/src/components/search/car-search-box/{car-search-box,car-search-box.constants,car-search-box.types}`
+- `apps/web/src/components/ui/autocomplete/autocomplete-panel.tsx`
+- `apps/web/src/features/home/{home.constants,load-home}`
+- removed: `apps/web/src/features/home/hero-search/**`,
+  `apps/web/src/features/home/actions.ts`
+- sandbox: the `Search/CarSearchBox` story "On the homepage", the registry,
+  and `.storybook/main.ts` (the `home-actions` alias is removed)
+
+### Tests
+
+- `apps/web/tests/unit/features/home/home-page.test.tsx`:
+  - one text box and no button
+  - suggestions come from `/api/search/vehicles`
+  - choosing a suggestion opens `/cars?brand=…&model=…`
+  - Enter on free text opens `/cars?q=…`
+  - the form is a GET to `/cars` with the input named `q`
+  - no `/v1/locations` read
+- The HeroSearch, `heroHref` and `heroFacetsAction` tests are removed with
+  their code. The `CarSearchBox` tests are unchanged and still pass.
+
+## R80 — A stale cached read is asked for again, not shown as an error
+
+**Revises R22** · no API change
+
+**What happened.** `/cars?brand=volkswagen&model=virtus` sometimes rendered an
+error page ("did not match its contract: data.0.availability … available
+Invalid input"), and a refresh cured it.
+
+**Why.** Next's fetch cache serves an expired entry, however old, while it
+revalidates in the background. That URL's entry had been written before R71
+added `availability` and `available`. The first request after R71 got that
+body, and `apiGetParsed` rightly refused it. By the refresh, the background
+revalidation had replaced it. The API was answering correctly throughout.
+
+**The change.** When a read that went through the cache fails its contract,
+`apiGetParsed` asks once more, uncached (`cache: 'no-store'`, no session
+cookie), and answers from that. If the API itself answers the old shape, the
+R22 skew, it still throws exactly as before. A read that was never cached is
+not asked twice.
+
+This affects every `apiGetParsed` read, not only `/cars`. It also covers
+production: any deploy that changes a contract while the web app's fetch cache
+survives would otherwise show one error page per cached URL.
+
+### Files
+
+- `apps/web/src/lib/api.ts`
+
+### Tests
+
+- `apps/web/tests/unit/lib/api.test.ts`:
+  - a stale cached payload is answered from a second, `no-store` request
+  - the second request sends no session cookie
+  - the old shape from the API itself still throws, naming the field
+  - an uncached read is not retried

@@ -1,0 +1,47 @@
+[
+  {
+    "saved": {
+      "tagline": true,
+      "description": true,
+      "enquiry": 201,
+      "ticket": 201
+    },
+    "pages": [
+      {
+        "path": "/car/2023-hyundai-creta-sx-o-vellore-8c5b3085",
+        "status": 200,
+        "fired": false,
+        "dialog": false,
+        "shownAsText": true
+      },
+      {
+        "path": "/dealers/xss5751-motors-57517587576f-vellore-tamil-nadu",
+        "status": 200,
+        "fired": false,
+        "dialog": false,
+        "shownAsText": true
+      },
+      {
+        "path": "/dealers",
+        "status": 200,
+        "fired": false,
+        "dialog": false,
+        "shownAsText": false
+      },
+      {
+        "path": "/dealer/enquiries",
+        "status": 200,
+        "fired": false,
+        "dialog": false,
+        "shownAsText": true
+      },
+      {
+        "path": "/enquiries",
+        "status": 200,
+        "fired": false,
+        "dialog": false,
+        "shownAsText": true
+      }
+    ]
+  }
+]

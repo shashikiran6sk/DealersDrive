@@ -1,0 +1,288 @@
+{
+  "at": "2026-10-21T05:10:49.141Z",
+  "machine": {
+    "cpus": 4,
+    "cpuModel": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "memoryGiB": 16
+  },
+  "samplesPerCell": 60,
+  "concurrency": 10,
+  "note": "Local container: one API process (tsx, development mode), one `next start` web process, local PostgreSQL 16 holding the campaign data. Warm cache after one priming request. Not a production capacity measurement.",
+  "rows": [
+    {
+      "label": "API GET /v1/vehicles",
+      "sequential": {
+        "n": 60,
+        "p50": 18,
+        "p95": 25,
+        "p99": 37,
+        "max": 37,
+        "rps": 54.9,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 134,
+        "p95": 176,
+        "p99": 199,
+        "max": 199,
+        "rps": 74.1,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "API GET /v1/vehicles filtered",
+      "sequential": {
+        "n": 60,
+        "p50": 16,
+        "p95": 20,
+        "p99": 23,
+        "max": 23,
+        "rps": 62.2,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 121,
+        "p95": 138,
+        "p99": 144,
+        "max": 144,
+        "rps": 81.7,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "API GET /v1/vehicles/:slug",
+      "sequential": {
+        "n": 60,
+        "p50": 3,
+        "p95": 4,
+        "p99": 4,
+        "max": 4,
+        "rps": 314.8,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 12,
+        "p95": 19,
+        "p99": 21,
+        "max": 21,
+        "rps": 786.9,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "API GET /v1/dealers",
+      "sequential": {
+        "n": 60,
+        "p50": 14,
+        "p95": 21,
+        "p99": 23,
+        "max": 23,
+        "rps": 64.1,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 113,
+        "p95": 120,
+        "p99": 156,
+        "max": 156,
+        "rps": 88,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "API GET /v1/dealers/:slug",
+      "sequential": {
+        "n": 60,
+        "p50": 8,
+        "p95": 11,
+        "p99": 13,
+        "max": 13,
+        "rps": 125.5,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 40,
+        "p95": 56,
+        "p99": 58,
+        "max": 58,
+        "rps": 226.1,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "API GET /v1/enquiries (signed in)",
+      "sequential": {
+        "n": 60,
+        "p50": 4,
+        "p95": 5,
+        "p99": 5,
+        "max": 5,
+        "rps": 242.5,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 18,
+        "p95": 24,
+        "p99": 26,
+        "max": 26,
+        "rps": 528.7,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "WEB GET /",
+      "sequential": {
+        "n": 60,
+        "p50": 6,
+        "p95": 8,
+        "p99": 11,
+        "max": 11,
+        "rps": 156.8,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 41,
+        "p95": 58,
+        "p99": 62,
+        "max": 62,
+        "rps": 240.8,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "WEB GET /cars",
+      "sequential": {
+        "n": 60,
+        "p50": 24,
+        "p95": 31,
+        "p99": 39,
+        "max": 39,
+        "rps": 39.2,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 196,
+        "p95": 219,
+        "p99": 221,
+        "max": 221,
+        "rps": 50.8,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "WEB GET /cars?q=Creta",
+      "sequential": {
+        "n": 60,
+        "p50": 24,
+        "p95": 33,
+        "p99": 36,
+        "max": 36,
+        "rps": 39.4,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 212,
+        "p95": 363,
+        "p99": 469,
+        "max": 469,
+        "rps": 44.4,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "WEB GET /car/:slug",
+      "sequential": {
+        "n": 60,
+        "p50": 16,
+        "p95": 21,
+        "p99": 26,
+        "max": 26,
+        "rps": 60.1,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 133,
+        "p95": 200,
+        "p99": 225,
+        "max": 225,
+        "rps": 74.8,
+        "statuses": {
+          "200": 60
+        }
+      }
+    },
+    {
+      "label": "WEB GET /dealers/:slug",
+      "sequential": {
+        "n": 60,
+        "p50": 13,
+        "p95": 17,
+        "p99": 21,
+        "max": 21,
+        "rps": 72.1,
+        "statuses": {
+          "200": 60
+        }
+      },
+      "concurrent": {
+        "n": 60,
+        "p50": 102,
+        "p95": 149,
+        "p99": 185,
+        "max": 185,
+        "rps": 98.2,
+        "statuses": {
+          "200": 60
+        }
+      }
+    }
+  ]
+}

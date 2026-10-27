@@ -1,0 +1,46 @@
+{
+  "_about": "Reviewed reclassifications applied by harness/finalize.mjs on top of the harness verdicts in registry/results/*.json. The harness verdict is kept as `harnessStatus`; every entry states why.",
+  "AUTH-012": {
+    "status": "NOT_APPLICABLE",
+    "reason": "Product owner decision UPD-1, recorded 2026-10-21: \"log out of all devices\" is not needed for V1. No logout-all route exists (SessionService.revokeAllForUser is unused); single-session logout (AUTH-011) and server-side revocation on disable, removal and suspension are covered elsewhere. Revisit for a later release."
+  },
+  "SEO-009": {
+    "bug": "BUG-101"
+  },
+  "SEO-010": {
+    "bug": "BUG-101"
+  },
+  "CAMPAIGN-03 BUG-NEW-010 warmed car page after Admin suspension (console)": {
+    "bug": "BUG-101",
+    "reason": "The warmed car page stops serving the car at once (BUG-NEW-010-console-timing: not-found document within 0.1 s) but answers HTTP 200, not 404."
+  },
+  "BUG-NEW-010 warmed car page survives dealer suspension": {
+    "status": "NOT_APPLICABLE",
+    "reason": "Superseded by BUG-NEW-010-timing, which measures the same out-of-band suspension instead of sampling once at 65 s: the car page stops serving the car after 71 s and the dealer page after 332 s, inside the design of #251. The 65 s sample is shorter than the page's 60 s ISR window plus one regeneration."
+  },
+  "AUTH-DISC-002": {
+    "bug": "BUG-102"
+  },
+  "ENQ-LIFE-010": {
+    "status": "BLOCKED",
+    "reason": "Permission enforcement is proved (STAFF→CLOSED/SPAM 403, unknown status 400), but the scenario asks for invalid transitions to be rejected and the product defines none: OWNER/MANAGER may move an enquiry from any status to any other, including CLOSED → NEW and CONTACTED → NEW (enquiries.service.ts setStatus). Undefined product decision UPD-2."
+  },
+  "PUBLIC-015": {
+    "bug": "BUG-101",
+    "reason": "Experience correct (branded not-found page, noindex, no listing data); the web page answers HTTP 200 rather than 404 — BUG-101, judged under SEO-009."
+  },
+  "LISTING-LIFE-015": {
+    "bug": "BUG-101",
+    "reason": "API 404 and no listing content on the web; the web page's HTTP status is 200 (BUG-101)."
+  },
+  "STORAGE-005": {
+    "bug": "BUG-109",
+    "reason": "No page crashes on a missing object; a vehicle card shows a broken image instead of its fallback (BUG-109, judged under MEDIA-012)."
+  },
+  "NOTIFY-001": {
+    "reason": "Strengthened by NOTIFY-DISC-001: the console mailer emitted 274 dealer.application.received e-mails during the campaign; the outbox → worker path is asynchronous (PERF-DISC-001)."
+  },
+  "BUG-NEW-010-timing": {
+    "reason": "Out-of-band suspension (no console action): designed cache windows are ≈ 70 s (car, revalidate 60) and ≈ 610 s (dealer, revalidate 600); BUG-111 records the window."
+  }
+}

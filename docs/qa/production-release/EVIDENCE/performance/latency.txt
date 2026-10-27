@@ -1,0 +1,11 @@
+API GET /v1/vehicles                 seq p50 18 p95 25 p99 37 | c10 p50 134 p95 176 p99 199 74.1 rps {"200":60}
+API GET /v1/vehicles filtered        seq p50 16 p95 20 p99 23 | c10 p50 121 p95 138 p99 144 81.7 rps {"200":60}
+API GET /v1/vehicles/:slug           seq p50 3 p95 4 p99 4 | c10 p50 12 p95 19 p99 21 786.9 rps {"200":60}
+API GET /v1/dealers                  seq p50 14 p95 21 p99 23 | c10 p50 113 p95 120 p99 156 88 rps {"200":60}
+API GET /v1/dealers/:slug            seq p50 8 p95 11 p99 13 | c10 p50 40 p95 56 p99 58 226.1 rps {"200":60}
+API GET /v1/enquiries (signed in)    seq p50 4 p95 5 p99 5 | c10 p50 18 p95 24 p99 26 528.7 rps {"200":60}
+WEB GET /                            seq p50 6 p95 8 p99 11 | c10 p50 41 p95 58 p99 62 240.8 rps {"200":60}
+WEB GET /cars                        seq p50 24 p95 31 p99 39 | c10 p50 196 p95 219 p99 221 50.8 rps {"200":60}
+WEB GET /cars?q=Creta                seq p50 24 p95 33 p99 36 | c10 p50 212 p95 363 p99 469 44.4 rps {"200":60}
+WEB GET /car/:slug                   seq p50 16 p95 21 p99 26 | c10 p50 133 p95 200 p99 225 74.8 rps {"200":60}
+WEB GET /dealers/:slug               seq p50 13 p95 17 p99 21 | c10 p50 102 p95 149 p99 185 98.2 rps {"200":60}

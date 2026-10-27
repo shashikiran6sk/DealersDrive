@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dealers-Drive | Select City &amp; District</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter & Space Grotesk/Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cobalt: {
+              DEFAULT: '#2f55dd',
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              600: '#2f55dd',
+              700: '#1e3fae',
+              800: '#172f7d',
+            },
+            neutral: {
+              850: '#1f242d',
+              900: '#14171c',
+            },
+            dim: 'rgba(43,43,45,0.65)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'modal': '0 16px 40px -8px rgba(20, 23, 28, 0.28), 0 0 0 1px rgba(20, 23, 28, 0.08)',
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Spec Styles -->
+<style data-purpose="design-spec-system">
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* DD License Plate Style */
+    .dd-plate {
+      display: inline-flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid rgba(20, 23, 28, 0.25);
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+      line-height: 1;
+    }
+    .dd-plate::before {
+      content: "";
+      display: inline-block;
+      width: 5px;
+      height: 100%;
+      background-color: #2f55dd;
+      margin-right: 4px;
+      align-self: stretch;
+    }
+    /* Hairline borders */
+    .border-hairline {
+      border-color: rgba(20, 23, 28, 0.15);
+    }
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<!-- END: Custom Spec Styles -->
+</head>
+<body class="bg-neutral-100 text-neutral-900 font-sans antialiased overflow-hidden min-h-screen">
+<!-- BEGIN: Underlay Application Context (Dealers-Drive Marketplace) -->
+<div class="min-h-screen flex flex-col filter blur-[2px] opacity-70 pointer-events-none select-none" data-purpose="background-context">
+<!-- Header Bar (64px) -->
+<header class="h-16 bg-white border-b border-hairline px-6 flex items-center justify-between z-0">
+<div class="flex items-center space-x-8">
+<!-- Logo -->
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 bg-neutral-900 flex items-center justify-center border-l-4 border-cobalt">
+<span class="text-white font-mono font-bold text-sm tracking-tighter">DD</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-neutral-900 uppercase">Dealers-Drive</span>
+</div>
+<!-- Main Nav -->
+<nav class="hidden md:flex space-x-6 text-sm font-medium text-neutral-600">
+<a class="text-cobalt font-semibold" href="#">Buy Cars</a>
+<a class="hover:text-neutral-900" href="#">Certified Dealers</a>
+<a class="hover:text-neutral-900" href="#">Saved Cars (3)</a>
+<a class="hover:text-neutral-900" href="#">Valuation Engine</a>
+</nav>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center space-x-3">
+<button class="flex items-center space-x-2 border border-cobalt bg-cobalt-50 text-cobalt px-3 py-1.5 rounded text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-cobalt"></span>
+<span>Chennai Central ▾</span>
+</button>
+<button class="text-xs font-semibold px-3 py-1.5 border border-hairline rounded hover:bg-neutral-50">Dealer Login</button>
+<button class="text-xs font-semibold px-3 py-1.5 bg-cobalt text-white rounded hover:bg-cobalt-700">List Your Cars</button>
+</div>
+</header>
+<!-- Simulated Marketplace Hero -->
+<main class="flex-1 bg-white p-8 max-w-7xl mx-auto w-full">
+<div class="bg-neutral-50 border border-hairline p-8 rounded mb-8">
+<div class="max-w-2xl">
+<span class="inline-block text-[11px] font-mono tracking-widest text-cobalt uppercase font-semibold mb-2">Verified RTO Hub Marketplace</span>
+<h1 class="text-3xl font-bold tracking-tight text-neutral-900 mb-3">Find certified dealer stock in your district.</h1>
+<p class="text-neutral-500 text-sm mb-6">Explore 14,000+ certified vehicles directly across southern state hubs.</p>
+</div>
+</div>
+</main>
+</div>
+<!-- END: Underlay Application Context -->
+<!-- BEGIN: Modal Backdrop Overlay -->
+<div class="fixed inset-0 z-50 bg-dim flex items-center justify-center p-3 md:p-6 overflow-y-auto backdrop-blur-[1px]" data-purpose="modal-overlay">
+<!-- BEGIN: Select City & District Modal Dialog -->
+<div class="bg-white w-full max-w-[880px] rounded-[7px] border border-hairline shadow-modal flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150" data-purpose="city-district-modal">
+<!-- BEGIN: Modal Header with Search -->
+<header class="px-6 py-4 border-b border-hairline flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white sticky top-0 z-20">
+<div class="flex items-center justify-between">
+<h2 class="text-lg md:text-[20px] font-bold text-neutral-900 tracking-tight flex items-center gap-2.5">
+<span>Select City &amp; District</span>
+<span class="text-xs font-mono font-normal text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded border border-hairline hidden sm:inline-block">RTO-VERIFIED</span>
+</h2>
+<!-- Mobile Close button -->
+<button aria-label="Close dialog" class="md:hidden p-1.5 text-neutral-400 hover:text-neutral-800 rounded" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="flex items-center gap-3 flex-1 md:max-w-md md:ml-6">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-9 pr-8 py-2 bg-neutral-100 hover:bg-neutral-50 focus:bg-white text-xs md:text-sm text-neutral-900 placeholder-neutral-500 border border-hairline rounded-[4px] focus:outline-none focus:ring-1 focus:ring-cobalt focus:border-cobalt transition-colors" placeholder="Search city, district, taluk or pincode..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center">
+<kbd class="text-[10px] font-mono text-neutral-400 bg-white border border-hairline px-1 rounded">⌘K</kbd>
+</div>
+</div>
+<!-- Desktop Close Modal Button -->
+<button aria-label="Close dialog" class="hidden md:flex w-8 h-8 items-center justify-center rounded-[4px] text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 transition-colors border border-transparent hover:border-hairline" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: Modal Header with Search -->
+<!-- BEGIN: Quick Filter Rail & Location Auto-detect -->
+<section class="bg-neutral-50 border-b border-hairline px-6 py-2.5" data-purpose="quick-navigator">
+<div class="flex flex-wrap items-center justify-between gap-2.5">
+<!-- State Segment Tabs -->
+<div class="flex items-center space-x-1.5 overflow-x-auto text-xs py-0.5">
+<span class="text-neutral-400 text-[11px] font-semibold uppercase tracking-wider mr-1">Filter:</span>
+<button class="px-2.5 py-1 rounded-[3px] bg-cobalt text-white font-medium shadow-xs text-xs whitespace-nowrap">All States</button>
+<button class="px-2.5 py-1 rounded-[3px] bg-white text-neutral-700 hover:bg-neutral-100 border border-hairline font-medium text-xs whitespace-nowrap flex items-center gap-1.5">
+<span>Tamil Nadu</span>
+<span class="text-[10px] bg-neutral-100 text-neutral-500 px-1 rounded font-mono">38</span>
+</button>
+<button class="px-2.5 py-1 rounded-[3px] bg-white text-neutral-700 hover:bg-neutral-100 border border-hairline font-medium text-xs whitespace-nowrap flex items-center gap-1.5">
+<span>Karnataka</span>
+<span class="text-[10px] bg-neutral-100 text-neutral-500 px-1 rounded font-mono">31</span>
+</button>
+<button class="px-2.5 py-1 rounded-[3px] bg-white text-neutral-700 hover:bg-neutral-100 border border-hairline font-medium text-xs whitespace-nowrap flex items-center gap-1.5">
+<span>Andhra Pradesh</span>
+<span class="text-[10px] bg-neutral-100 text-neutral-500 px-1 rounded font-mono">26</span>
+</button>
+<button class="px-2.5 py-1 rounded-[3px] bg-white text-neutral-700 hover:bg-neutral-100 border border-hairline font-medium text-xs whitespace-nowrap flex items-center gap-1.5">
+<span>Telangana</span>
+<span class="text-[10px] bg-neutral-100 text-neutral-500 px-1 rounded font-mono">33</span>
+</button>
+<button class="px-2.5 py-1 rounded-[3px] bg-white text-neutral-700 hover:bg-neutral-100 border border-hairline font-medium text-xs whitespace-nowrap flex items-center gap-1.5">
+<span>Kerala</span>
+<span class="text-[10px] bg-neutral-100 text-neutral-500 px-1 rounded font-mono">14</span>
+</button>
+</div>
+<!-- GPS Detection Action -->
+<button class="text-xs text-cobalt font-semibold hover:text-cobalt-700 flex items-center gap-1.5 py-1 px-2 rounded hover:bg-cobalt-50 transition-colors">
+<svg class="w-3.5 h-3.5 text-cobalt" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Detect Current Location</span>
+</button>
+</div>
+</section>
+<!-- END: Quick Filter Rail & Location Auto-detect -->
+<!-- BEGIN: Scrollable Content Body -->
+<div class="overflow-y-auto p-6 space-y-7 custom-scrollbar max-h-[60vh]" data-purpose="modal-content">
+<!-- BEGIN: Popular Metropolitan Hubs -->
+<section data-purpose="popular-metro-hubs">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-[11px] font-mono tracking-wider text-neutral-500 uppercase font-semibold">
+              Popular Metropolitan Hubs
+            </h3>
+<span class="text-[11px] text-neutral-400">Direct Dealer Delivery Hubs</span>
+</div>
+<!-- Metro Cards Grid (Line-art landmarks) -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+<!-- Chennai (Selected state) -->
+<button class="relative text-left p-3 rounded-[4px] border-2 border-cobalt bg-cobalt-50/70 hover:bg-cobalt-50 transition flex flex-col items-center text-center group">
+<!-- Checkmark badge -->
+<span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-cobalt text-white flex items-center justify-center text-[10px]">✓</span>
+<!-- Landmark Silhouette: Chennai Ripon/Central -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M4 26h24M6 26V13l4-5v18M22 26V13l-4-5v18M10 8h12v18H10zM14 12h4v4h-4zM16 4v4M13 4h6"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Chennai</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">1,420 cars</span>
+</button>
+<!-- Bangalore -->
+<button class="text-left p-3 rounded-[4px] border border-hairline bg-white hover:border-cobalt hover:bg-neutral-50 transition flex flex-col items-center text-center group">
+<!-- Landmark: Vidhana Soudha -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-neutral-600 group-hover:text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M4 25h24M6 25V14h20v11M8 14V9l8-4 8 4v5M14 25v-5h4v5M13 14h6v3h-6z"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Bangalore</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">1,940 cars</span>
+</button>
+<!-- Hyderabad -->
+<button class="text-left p-3 rounded-[4px] border border-hairline bg-white hover:border-cobalt hover:bg-neutral-50 transition flex flex-col items-center text-center group">
+<!-- Landmark: Charminar -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-neutral-600 group-hover:text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M6 26h20M7 26V8l3-2 3 2v18M19 26V8l3-2 3 2v18M10 12h12M12 26a4 4 0 018 0"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Hyderabad</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">1,620 cars</span>
+</button>
+<!-- Coimbatore -->
+<button class="text-left p-3 rounded-[4px] border border-hairline bg-white hover:border-cobalt hover:bg-neutral-50 transition flex flex-col items-center text-center group">
+<!-- Landmark: Clock Tower -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-neutral-600 group-hover:text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M8 26h16M11 26V9l5-4 5 4v17M14 13a2 2 0 104 0 2 2 0 00-4 0zM14 26v-4h4v4"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Coimbatore</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">890 cars</span>
+</button>
+<!-- Madurai -->
+<button class="text-left p-3 rounded-[4px] border border-hairline bg-white hover:border-cobalt hover:bg-neutral-50 transition flex flex-col items-center text-center group">
+<!-- Landmark: Meenakshi Gopuram -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-neutral-600 group-hover:text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M5 26h22M7 26l2-16h14l2 16M11 10V6l5-2 5 2v4M13 14h6M12 19h8M14 26v-3h4v3"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Madurai</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">410 cars</span>
+</button>
+<!-- Vijayawada -->
+<button class="text-left p-3 rounded-[4px] border border-hairline bg-white hover:border-cobalt hover:bg-neutral-50 transition flex flex-col items-center text-center group">
+<!-- Landmark: Barrage / Bridge -->
+<div class="w-10 h-10 mb-2 flex items-center justify-center text-neutral-600 group-hover:text-cobalt">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 32 32">
+<path d="M3 24h26M5 24V11l6 4 5-8 5 8 6-4v13M10 24v-4M16 24v-4M22 24v-4"></path>
+</svg>
+</div>
+<span class="font-bold text-xs text-neutral-900 group-hover:text-cobalt">Vijayawada</span>
+<span class="text-[10px] text-neutral-500 tabular-nums mt-0.5">380 cars</span>
+</button>
+</div>
+</section>
+<!-- END: Popular Metropolitan Hubs -->
+<!-- BEGIN: State Block 1: TAMIL NADU -->
+<section class="space-y-3" data-purpose="state-cluster-tn">
+<div class="flex items-center justify-between pb-1.5 border-b border-hairline">
+<div class="flex items-center space-x-2.5">
+<span class="dd-plate px-1.5 py-0.5 text-xs text-neutral-800">TN</span>
+<h3 class="font-bold text-sm tracking-tight text-neutral-900">TAMIL NADU</h3>
+<span class="text-[11px] text-neutral-400 font-mono">38 Districts</span>
+</div>
+<span class="text-xs font-mono font-medium text-neutral-500 tabular-nums">4,210 verified cars</span>
+</div>
+<!-- District Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+<!-- Chennai (Selected) -->
+<div class="border border-cobalt bg-cobalt-50/50 p-2.5 rounded-[4px] flex items-center justify-between hover:bg-cobalt-50 cursor-pointer">
+<div>
+<div class="font-semibold text-xs text-neutral-900 flex items-center gap-1.5">
+<span>Chennai Hub</span>
+<span class="w-1.5 h-1.5 rounded-full bg-cobalt"></span>
+</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Anna Nagar, OMR, Velachery</div>
+</div>
+<span class="text-[11px] font-mono font-semibold text-cobalt tabular-nums">1,420</span>
+</div>
+<!-- Coimbatore -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Coimbatore</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">RS Puram, Gandhipuram</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">890</span>
+</div>
+<!-- Madurai -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Madurai</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">KK Nagar, Mattuthavani</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">410</span>
+</div>
+<!-- Chengalpattu -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Chengalpattu</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Tambaram, Maraimalai</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">340</span>
+</div>
+<!-- Tiruchirappalli -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Tiruchirappalli</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Thillai Nagar, Cantonment</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">310</span>
+</div>
+<!-- Salem -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Salem</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Fairlands, Suramangalam</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">260</span>
+</div>
+<!-- Vellore -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Vellore</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Katpadi, Bagayam</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">210</span>
+</div>
+<!-- Tirupattur -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Tirupattur</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Vaniyambadi, Ambur Hub</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">95</span>
+</div>
+<!-- Ranipet -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Ranipet</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Walajah, Arakkonam</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">84</span>
+</div>
+<!-- Erode -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Erode</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Perundurai, Bhavani</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">175</span>
+</div>
+<!-- Kanchipuram -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Kanchipuram</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Sriperumbudur corridor</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">165</span>
+</div>
+<!-- Tirunelveli -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Tirunelveli</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Palayamkottai, Town</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">140</span>
+</div>
+</div>
+<!-- Secondary District Quick Pills -->
+<div class="pt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-500">
+<span class="font-medium text-neutral-400">Other Districts:</span>
+<button class="px-2 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Dindigul (82)</button>
+<button class="px-2 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Thanjavur (68)</button>
+<button class="px-2 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Hosur / Krishnagiri (190)</button>
+<button class="px-2 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Kanyakumari (74)</button>
+<button class="px-2 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Cuddalore (52)</button>
+<span class="text-cobalt font-medium cursor-pointer hover:underline">+21 more</span>
+</div>
+</section>
+<!-- END: State Block 1: TAMIL NADU -->
+<!-- BEGIN: State Block 2: ANDHRA PRADESH -->
+<section class="space-y-3" data-purpose="state-cluster-ap">
+<div class="flex items-center justify-between pb-1.5 border-b border-hairline">
+<div class="flex items-center space-x-2.5">
+<span class="dd-plate px-1.5 py-0.5 text-xs text-neutral-800">AP</span>
+<h3 class="font-bold text-sm tracking-tight text-neutral-900">ANDHRA PRADESH</h3>
+<span class="text-[11px] text-neutral-400 font-mono">26 Districts</span>
+</div>
+<span class="text-xs font-mono font-medium text-neutral-500 tabular-nums">1,840 verified cars</span>
+</div>
+<!-- District Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+<!-- Visakhapatnam -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Visakhapatnam</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">MVP Colony, Gajuwaka</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">540</span>
+</div>
+<!-- Vijayawada (NTR) -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Vijayawada (NTR)</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Benz Circle, Governorpet</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">380</span>
+</div>
+<!-- Tirupati -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Tirupati</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Renigunta, Chandragiri</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">220</span>
+</div>
+<!-- Guntur -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Guntur</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Amaravati Road, Brodipet</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">210</span>
+</div>
+<!-- Rajahmundry -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Rajahmundry</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">East Godavari Hub</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">160</span>
+</div>
+<!-- Nellore -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Nellore (SPSR)</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Magunta Layout</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">145</span>
+</div>
+<!-- Chittoor -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Chittoor</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Madanapalle, Palamaner</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">130</span>
+</div>
+<!-- Kurnool -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Kurnool</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Nandyal Checkpost</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">110</span>
+</div>
+</div>
+</section>
+<!-- END: State Block 2: ANDHRA PRADESH -->
+<!-- BEGIN: State Block 3: KARNATAKA -->
+<section class="space-y-3 pb-2" data-purpose="state-cluster-ka">
+<div class="flex items-center justify-between pb-1.5 border-b border-hairline">
+<div class="flex items-center space-x-2.5">
+<span class="dd-plate px-1.5 py-0.5 text-xs text-neutral-800">KA</span>
+<h3 class="font-bold text-sm tracking-tight text-neutral-900">KARNATAKA</h3>
+<span class="text-[11px] text-neutral-400 font-mono">31 Districts</span>
+</div>
+<span class="text-xs font-mono font-medium text-neutral-500 tabular-nums">3,120 verified cars</span>
+</div>
+<!-- District Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+<!-- Bangalore Urban -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Bangalore Urban</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Koramangala, Whitefield</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">1,940</span>
+</div>
+<!-- Mysore -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Mysore</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Gokulam, Kuvempunagar</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">320</span>
+</div>
+<!-- Mangalore -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Mangalore (DK)</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Kadri, Bejai</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">280</span>
+</div>
+<!-- Hubli-Dharwad -->
+<div class="border border-hairline bg-white p-2.5 rounded-[4px] flex items-center justify-between hover:border-neutral-400 hover:bg-neutral-50 cursor-pointer">
+<div>
+<div class="font-medium text-xs text-neutral-900">Hubli-Dharwad</div>
+<div class="text-[10px] text-neutral-500 truncate max-w-[130px]">Vidyanagar Hub</div>
+</div>
+<span class="text-[11px] font-mono text-neutral-600 tabular-nums">190</span>
+</div>
+</div>
+</section>
+<!-- END: State Block 3: KARNATAKA -->
+</div>
+<!-- END: Scrollable Content Body -->
+<!-- BEGIN: Modal Footer Bar -->
+<footer class="px-6 py-4 bg-neutral-50 border-t border-hairline flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-20">
+<!-- Left: Explanatory Guarantee -->
+<div class="flex items-center space-x-2 text-neutral-500 text-xs">
+<svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>All car listings strictly verified with regional RTO databases</span>
+</div>
+<!-- Right: Action Buttons -->
+<div class="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
+<button class="px-4 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60 rounded-[4px] transition-colors" type="button">
+            Browse All India
+          </button>
+<button class="px-5 py-2.5 bg-cobalt hover:bg-cobalt-700 active:bg-cobalt-800 text-white text-xs font-bold rounded-[4px] flex items-center justify-center space-x-2 shadow-sm transition-colors" type="button">
+<span>Confirm Selection (Chennai)</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</footer>
+<!-- END: Modal Footer Bar -->
+</div>
+<!-- END: Select City & District Modal Dialog -->
+</div>
+<!-- END: Modal Backdrop Overlay -->
+</body></html>

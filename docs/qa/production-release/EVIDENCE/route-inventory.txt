@@ -1,0 +1,178 @@
+GET     /v1/auth/admin/phone/widget                                            Authentication | 
+GET     /v1/admin/profile/security                                             Authentication | adminSession
+POST    /v1/auth/admin/phone/challenge                                         Authentication | 
+POST    /v1/auth/admin/phone/verify                                            Authentication | 
+POST    /v1/admin/profile/security/phone/challenge                             Authentication | adminSession
+POST    /v1/admin/profile/security/phone/verify                                Authentication | adminSession
+POST    /v1/admin/profile/security/phone/revoke                                Authentication | adminSession
+GET     /v1/auth/providers                                                     Authentication | 
+GET     /v1/auth/google/start                                                  Authentication | 
+GET     /v1/auth/admin/google/start                                            Authentication | 
+GET     /v1/auth/google/callback                                               Authentication | 
+GET     /v1/auth/me                                                            Authentication | dealerSession
+GET     /v1/auth/google/link/start                                             Authentication | dealerSession
+POST    /v1/auth/onboarding                                                    Authentication | dealerSession
+GET     /v1/auth/phone/widget                                                  Authentication | dealerSession
+POST    /v1/auth/phone/availability                                            Authentication | dealerSession
+POST    /v1/auth/phone/verify                                                  Authentication | dealerSession
+POST    /v1/auth/logout                                                        Authentication | dealerSession
+POST    /v1/auth/admin/logout                                                  Authentication | 
+GET     /v1/auth/sign-in/phone/widget                                          Authentication | 
+POST    /v1/auth/sign-in/phone/dealer                                          Authentication | 
+POST    /v1/auth/sign-in/phone/customer                                        Authentication | 
+POST    /v1/auth/sign-up/customer                                              Authentication | 
+POST    /v1/auth/customer/logout                                               Authentication | 
+GET     /v1/auth/customer/me                                                   Authentication | customerSession
+GET     /v1/auth/workspaces                                                    Authentication | customerSession
+PUT     /v1/auth/workspaces/current                                            Authentication | customerSession
+GET     /v1/service-locations                                                  Platform configuration | 
+GET     /v1/config/public                                                      Platform configuration | 
+GET     /v1/dealers                                                            Dealers (public) | 
+GET     /v1/search/dealers                                                     Dealers (public) | 
+GET     /v1/locations                                                          Dealers (public) | 
+GET     /v1/dealers/{slug}                                                     Dealers (public) | 
+GET     /v1/vehicles                                                           Vehicles (public) | 
+GET     /v1/vehicles/{slug}                                                    Vehicles (public) | 
+GET     /v1/vehicles/{slug}/similar                                            Vehicles (public) | 
+GET     /v1/dealers/{slug}/vehicles                                            Vehicles (public) | 
+GET     /v1/search/vehicles                                                    Vehicles (public) | 
+GET     /v1/sitemap                                                            Vehicles (public) | 
+GET     /v1/dealer                                                             Dealer account | dealerSession
+PATCH   /v1/dealer                                                             Dealer account | dealerSession
+DELETE  /v1/dealer/profile-change                                              Dealer account | dealerSession
+PATCH   /v1/dealer/onboarding                                                  Dealer account | dealerSession
+GET     /v1/dealer/completeness                                                Dealer account | dealerSession
+POST    /v1/dealer/submit                                                      Dealer account | dealerSession
+GET     /v1/dealer/documents                                                   Dealer account | dealerSession
+POST    /v1/dealer/documents/presign                                           Dealer account | dealerSession
+POST    /v1/dealer/documents/{category}/commit                                 Dealer account | dealerSession
+DELETE  /v1/dealer/documents/{category}                                        Dealer account | dealerSession
+GET     /v1/dealer/portfolio                                                   Dealer account | dealerSession
+POST    /v1/dealer/portfolio/presign                                           Dealer account | dealerSession
+POST    /v1/dealer/portfolio/commit                                            Dealer account | dealerSession
+DELETE  /v1/dealer/portfolio/{id}                                              Dealer account | dealerSession
+GET     /v1/dealer/dashboard                                                   Dealer account | dealerSession
+GET     /v1/dealer/vehicles                                                    Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles                                                    Vehicles (dealer) | dealerSession
+GET     /v1/dealer/vehicles/suggestions                                        Vehicles (dealer) | dealerSession
+GET     /v1/dealer/vehicles/{id}                                               Vehicles (dealer) | dealerSession
+PATCH   /v1/dealer/vehicles/{id}                                               Vehicles (dealer) | dealerSession
+DELETE  /v1/dealer/vehicles/{id}                                               Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles/{id}/submit                                        Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles/{id}/reserve                                       Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles/{id}/mark-sold                                     Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles/{id}/withdraw                                      Vehicles (dealer) | dealerSession
+POST    /v1/dealer/vehicles/{id}/request-reactivation                          Vehicles (dealer) | dealerSession
+GET     /v1/enquiries                                                          Enquiries | customerSession
+POST    /v1/enquiries                                                          Enquiries | customerSession
+GET     /v1/dealer/enquiries                                                   Enquiries | dealerSession
+GET     /v1/dealer/enquiries/counts                                            Enquiries | dealerSession
+PATCH   /v1/dealer/enquiries/{id}                                              Enquiries | dealerSession
+GET     /v1/admin/enquiries                                                    Enquiries | adminSession
+GET     /v1/admin/enquiries/{id}                                               Enquiries | adminSession
+GET     /v1/dealer/team                                                        Dealer team | dealerSession
+POST    /v1/dealer/team/invitations                                            Dealer team | dealerSession
+DELETE  /v1/dealer/team/invitations/{id}                                       Dealer team | dealerSession
+PATCH   /v1/dealer/team/members/{id}                                           Dealer team | dealerSession
+DELETE  /v1/dealer/team/members/{id}                                           Dealer team | dealerSession
+GET     /v1/invitations                                                        Dealer team | customerSession
+POST    /v1/invitations/{id}/accept                                            Dealer team | customerSession
+POST    /v1/invitations/{id}/decline                                           Dealer team | customerSession
+GET     /v1/saved-vehicles                                                     Saved cars | customerSession
+GET     /v1/saved-vehicles/slugs                                               Saved cars | customerSession
+PUT     /v1/saved-vehicles/{slug}                                              Saved cars | customerSession
+DELETE  /v1/saved-vehicles/{slug}                                              Saved cars | customerSession
+GET     /v1/support/tickets                                                    Support requests | customerSession
+POST    /v1/support/tickets                                                    Support requests | customerSession
+GET     /v1/support/tickets/{id}                                               Support requests | customerSession
+POST    /v1/support/tickets/{id}/messages                                      Support requests | customerSession
+POST    /v1/support/tickets/{id}/reopen                                        Support requests | customerSession
+GET     /v1/admin/dealers/{id}/verification                                    Admin | adminSession
+POST    /v1/admin/dealers/{id}/verification                                    Admin | adminSession
+GET     /v1/admin/service-locations                                            Admin | adminSession
+GET     /v1/admin/service-locations/history                                    Admin | adminSession
+PUT     /v1/admin/service-locations/state/{id}                                 Admin | adminSession
+PUT     /v1/admin/service-locations/district/{id}                              Admin | adminSession
+POST    /v1/admin/service-locations/districts                                  Admin | adminSession
+GET     /v1/admin/metrics/overview                                             Admin | adminSession
+GET     /v1/admin/dealers                                                      Admin | adminSession
+GET     /v1/admin/dealers/{id}                                                 Admin | adminSession
+PATCH   /v1/admin/dealers/{id}                                                 Admin | adminSession
+POST    /v1/admin/dealers/{id}/approve                                         Admin | adminSession
+POST    /v1/admin/dealers/{id}/activation-override                             Admin | adminSession
+POST    /v1/admin/dealers/{id}/activation-override/revoke                      Admin | adminSession
+POST    /v1/admin/dealers/{id}/reject                                          Admin | adminSession
+POST    /v1/admin/dealers/{id}/close                                           Admin | adminSession
+POST    /v1/admin/dealers/{id}/request-changes                                 Admin | adminSession
+POST    /v1/admin/dealers/{id}/suspend                                         Admin | adminSession
+POST    /v1/admin/dealers/{id}/reinstate                                       Admin | adminSession
+GET     /v1/admin/dealers/{id}/yard-visits                                     Admin | adminSession
+POST    /v1/admin/dealers/{id}/yard-visits                                     Admin | adminSession
+POST    /v1/admin/dealers/{id}/yard-visits/{visitId}/photos/presign            Admin | adminSession
+POST    /v1/admin/dealers/{id}/yard-visits/{visitId}/photos/commit             Admin | adminSession
+GET     /v1/admin/profile-changes                                              Admin | adminSession
+POST    /v1/admin/profile-changes/{id}/approve                                 Admin | adminSession
+POST    /v1/admin/profile-changes/{id}/reject                                  Admin | adminSession
+GET     /v1/admin/portfolio                                                    Admin | adminSession
+POST    /v1/admin/portfolio/{id}/approve                                       Admin | adminSession
+POST    /v1/admin/portfolio/{id}/reject                                        Admin | adminSession
+POST    /v1/admin/portfolio/{id}/take-down                                     Admin | adminSession
+POST    /v1/admin/documents/{id}/verify                                        Admin | adminSession
+POST    /v1/admin/documents/{id}/reject                                        Admin | adminSession
+GET     /v1/admin/config                                                       Admin | adminSession
+PUT     /v1/admin/config/{key}                                                 Admin | adminSession
+GET     /v1/admin/access                                                       Admin | adminSession
+POST    /v1/admin/access                                                       Admin | adminSession
+DELETE  /v1/admin/access/{id}                                                  Admin | adminSession
+GET     /v1/admin/members                                                      Admin members | adminSession
+POST    /v1/admin/members                                                      Admin members | adminSession
+GET     /v1/admin/members/{id}/history                                         Admin members | adminSession
+PATCH   /v1/admin/members/{id}                                                 Admin members | adminSession
+POST    /v1/admin/members/{id}/disable                                         Admin members | adminSession
+POST    /v1/admin/members/{id}/activate                                        Admin members | adminSession
+GET     /v1/sales/dashboard                                                    Sales workspace | adminSession
+GET     /v1/sales/phone/widget                                                 Sales workspace | adminSession
+POST    /v1/sales/dealers/phone/verify                                         Sales workspace | adminSession
+POST    /v1/sales/dealers/email/code                                           Sales workspace | adminSession
+POST    /v1/sales/dealers/email/verify                                         Sales workspace | adminSession
+GET     /v1/sales/dealers                                                      Sales workspace | adminSession
+POST    /v1/sales/dealers                                                      Sales workspace | adminSession
+GET     /v1/sales/dealers/{id}                                                 Sales workspace | adminSession
+PATCH   /v1/sales/dealers/{id}                                                 Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/verify                                          Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/documents/presign                               Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/documents/{category}/commit                     Sales workspace | adminSession
+DELETE  /v1/sales/dealers/{id}/documents/{category}                            Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/submit                                          Sales workspace | adminSession
+GET     /v1/sales/dealers/{id}/vehicles                                        Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/vehicles                                        Sales workspace | adminSession
+GET     /v1/sales/dealers/{id}/vehicles/{vehicleId}                            Sales workspace | adminSession
+PATCH   /v1/sales/dealers/{id}/vehicles/{vehicleId}                            Sales workspace | adminSession
+POST    /v1/sales/dealers/{id}/vehicles/{vehicleId}/submit                     Sales workspace | adminSession
+GET     /v1/admin/notifications                                                Notification deliveries | adminSession
+GET     /v1/admin/listings                                                     Moderation | adminSession
+GET     /v1/admin/listings/{id}                                                Moderation | adminSession
+PUT     /v1/admin/listings/{id}/checks/{key}                                   Moderation | adminSession
+PUT     /v1/admin/listings/{id}/photography                                    Moderation | adminSession
+POST    /v1/admin/listings/{id}/request-changes                                Moderation | adminSession
+POST    /v1/admin/listings/{id}/reject                                         Moderation | adminSession
+POST    /v1/admin/listings/{id}/approve                                        Moderation | adminSession
+GET     /v1/admin/reactivation-requests                                        Moderation | adminSession
+POST    /v1/admin/reactivation-requests/{id}/reject                            Moderation | adminSession
+POST    /v1/admin/reactivation-requests/{id}/approve                           Moderation | adminSession
+GET     /v1/admin/support/tickets                                              Support tickets (admin) | adminSession
+GET     /v1/admin/support/tickets/{id}                                         Support tickets (admin) | adminSession
+PATCH   /v1/admin/support/tickets/{id}                                         Support tickets (admin) | adminSession
+POST    /v1/admin/support/tickets/{id}/messages                                Support tickets (admin) | adminSession
+POST    /v1/admin/support/tickets/{id}/notes                                   Support tickets (admin) | adminSession
+POST    /v1/admin/listings/{id}/images/presign                                 Vehicle images | adminSession
+POST    /v1/admin/listings/{id}/images/{mediaId}/commit                        Vehicle images | adminSession
+PUT     /v1/admin/listings/{id}/images/order                                   Vehicle images | adminSession
+PUT     /v1/admin/listings/{id}/images/{mediaId}/primary                       Vehicle images | adminSession
+DELETE  /v1/admin/listings/{id}/images/{mediaId}                               Vehicle images | adminSession
+GET     /health/live                                                           Health | 
+GET     /health/ready                                                          Health | 
+PUT     /uploads                                                               Storage (local only) | 
+GET     /private                                                               Storage (local only) | 
+GET     /media/by-media/{mediaId}/{width}.webp                                 Storage (local only) | 
+GET     /internal/metrics                                                      Metrics | 

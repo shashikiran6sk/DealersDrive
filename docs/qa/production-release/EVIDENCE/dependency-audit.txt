@@ -1,0 +1,40 @@
+pnpm audit on 6e39a9a (2026-10-21). Severity counts: {'info': 0, 'low': 0, 'moderate': 8, 'high': 7, 'critical': 0}
+
+moderate  postcss          <8.5.10                PostCSS has XSS via Unescaped </style> in its CSS Stringify Output
+          path: apps/sandbox > next@15.5.27 > postcss@8.4.31
+high      postcss          <=8.5.11               PostCSS: Arbitrary file read and information disclosure via attacker-controlled 
+          path: apps/sandbox > next@15.5.27 > postcss@8.4.31
+moderate  postcss          <=8.5.22               PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappi
+          path: apps/sandbox > next@15.5.27 > postcss@8.4.31
+high      postcss          <=8.5.17               PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) l
+          path: apps/sandbox > next@15.5.27 > postcss@8.4.31
+high      deepmerge-ts     <8.0.0                 DeepmergeTS has stack exhaustion when merging recursive object graphs
+          path: apps/api > @prisma/client@7.10.0 > prisma@7.10.0 > @prisma/config@7.10.0 > deepmerge-ts@7.1.5
+high      mysql2           <3.22.0                MySQL2: Auth Plugin Downgrade to mysql_clear_password Leaks Plaintext Credential
+          path: apps/api > @prisma/client@7.10.0 > prisma@7.10.0 > mysql2@3.15.3
+moderate  qs               >=6.14.2 <=6.15.3      qs array-limit bypass via bracket-key comma parsing
+          path: apps/api > express@5.2.1 > body-parser@2.3.0 > qs@6.15.3
+moderate  qs               >=2.2.5 <6.16.0        qs: Denial of Service via Attacker Controlled isBuffer
+          path: apps/api > express@5.2.1 > body-parser@2.3.0 > qs@6.15.3
+moderate  mysql2           <=3.23.0               MySQL2: Unbounded zlib inflate in compressed MySQL protocol handler allows decom
+          path: apps/api > @prisma/client@7.10.0 > prisma@7.10.0 > mysql2@3.15.3
+moderate  fast-uri         >=3.0.0 <3.1.8         fast-uri vulnerable to inconsistent host case normalization via percent-encoded 
+          path: apps/api > @prisma/client@7.10.0 > prisma@7.10.0 > @prisma/dev@0.24.17 > @prisma/streams-local@0.1.11 > ajv@8.20.0 > fas
+high      braces           <=3.0.3                braces vulnerable to stack-exhaustion denial of service through deeply nested pa
+          path: apps/api > @dealers-drive/config@link:../../packages/config > @next/eslint-plugin-next@15.5.27 > fast-glob@3.3.1 > micro
+high      source-map-js    >=1.0.0 <1.2.2         source-map-js allows event-loop denial of service through indexed source-map sec
+          path: apps/sandbox > @tailwindcss/postcss@4.3.3 > @tailwindcss/node@4.3.3 > source-map-js@1.2.1
+moderate  vite             >=8.3.0 <=8.3.2        launch-editor: escapeCmdArgs() omits % escaping on Windows
+          path: . > vitest@5.0.3 > @vitest/mocker@5.0.3 > vite@8.3.2
+moderate  vite             >=8.3.0 <=8.3.2        launch-editor: Editor CLI flag misinterpretation causing arbitrary command execu
+          path: . > vitest@5.0.3 > @vitest/mocker@5.0.3 > vite@8.3.2
+high      vite             >=8.3.0 <=8.3.2        launch-editor: `fs.existsSync()` existence check can be bypassed on Windows
+          path: . > vitest@5.0.3 > @vitest/mocker@5.0.3 > vite@8.3.2
+
+Bounded urlencoded-body probe against the API (express.urlencoded extended → qs):
+  baseline small body            → 401 in 30 ms
+  1 MB of a[]=1                  → 400 in 4 ms
+  1 MB deeply nested a[b][b]…    → 400 in 16 ms
+  100k indexed keys a[i]=1       → 400 in 4 ms
+  400k-item comma list           → 401 in 6 ms
+  /health/live after the probe   → {"status":"ok"}

@@ -1,0 +1,196 @@
+[
+  {
+    "codes": ["ok", "ok", "ok", "ok", "ok"],
+    "db": {
+      "n": 5,
+      "status": "OPEN",
+      "msgs": 5
+    }
+  },
+  {
+    "ok": 2,
+    "refused": 6,
+    "other": [201, 201, 409, 409, 409],
+    "db": {
+      "n": 5,
+      "status": "OPEN",
+      "msgs": 5
+    }
+  },
+  {
+    "note": 201,
+    "afterNote": [409, "SUPPORT_MESSAGE_LIMIT_REACHED"],
+    "sup": 201,
+    "afterReply": 201,
+    "db": {
+      "n": 1,
+      "status": "OPEN",
+      "msgs": 6
+    }
+  },
+  {
+    "own": 200,
+    "other": 404,
+    "otherReply": 404,
+    "otherReopen": 404,
+    "leaksNote": false
+  },
+  {
+    "resolve": 200,
+    "onResolved": "SUPPORT_TICKET_RESOLVED",
+    "reopen": "OPEN",
+    "afterReopen": 201,
+    "close": 200,
+    "onClosed": "SUPPORT_TICKET_CLOSED",
+    "reopenClosed": "SUPPORT_TICKET_CLOSED",
+    "adminOnClosed": 409
+  },
+  {
+    "first": 201,
+    "retry": 201,
+    "changed": [409, "SUPPORT_MESSAGE_RETRY_CONFLICT"],
+    "forged": [400, "VALIDATION_FAILED"],
+    "db": {
+      "n": 1,
+      "status": "OPEN",
+      "msgs": 1
+    }
+  },
+  {
+    "enquiry": 201,
+    "foreign": [422, "SUPPORT_ENQUIRY_INVALID"]
+  },
+  {
+    "support": {
+      "dealers": 200,
+      "approve": 403,
+      "members": 403,
+      "tickets": 200,
+      "notifications": 403
+    },
+    "moderator": {
+      "members": 403,
+      "invite": 403,
+      "config": 403,
+      "queue": 200
+    },
+    "sales": {
+      "dealers": 403,
+      "enquiries": 403,
+      "workspace": 200
+    },
+    "superAdminSales": 403
+  },
+  {
+    "before": 200,
+    "disable": 200,
+    "after": 401,
+    "openSessions": 0,
+    "selfDisable": [403, "ADMIN_MEMBER_SELF"]
+  },
+  {
+    "before": 403,
+    "consoleAfter": 403,
+    "salesAfter": 200
+  },
+  {
+    "adminAsCustomer": 401,
+    "adminAsDealer": 401,
+    "customerAsAdmin": 401,
+    "dealerAsAdmin": 401
+  },
+  {
+    "logout": 204,
+    "after": 401,
+    "clears": true
+  },
+  {
+    "outsider": 404,
+    "outsiderVehicles": 404,
+    "outsiderPatch": 404,
+    "selfServeDealer": 404,
+    "leaks": false
+  },
+  {
+    "assisted": "b55e03fc-496d-499f-a899-dcded2aba01f",
+    "mass": [400, "VALIDATION_FAILED"]
+  },
+  {
+    "byDealer": 401,
+    "bySupport": 403,
+    "bySales": 403,
+    "stale": [409, "VERIFICATION_CHANGED"],
+    "ok": [200, null],
+    "again": 409,
+    "row": "VERIFIED",
+    "audit": 1
+  },
+  {
+    "early": [422, "DEALER_NOT_APPROVED"],
+    "row": {
+      "s": "NOT_VERIFIED",
+      "status": "PENDING_APPROVAL"
+    }
+  },
+  {
+    "before": [200, true],
+    "during": 404,
+    "after": [200, true],
+    "row": "VERIFIED"
+  },
+  {
+    "commit": 201,
+    "status": "PENDING",
+    "pubPending": 404,
+    "pagePending": false,
+    "approve": 200,
+    "pubApproved": 200,
+    "pageApproved": true,
+    "takeDown": 200,
+    "pubDown": 404
+  },
+  {
+    "staff": 403,
+    "manager": 403,
+    "crossDelete": 404,
+    "stillThere": "REMOVED"
+  },
+  {
+    "crossList": 200,
+    "leaks": false,
+    "supportReject": 403,
+    "salesVerify": 403,
+    "still": "VERIFIED"
+  },
+  {
+    "logs": 2,
+    "emailsByTemplate": {
+      "dealer.application.received": 367,
+      "admin.application.received": 2646,
+      "dealer.application.approved": 326,
+      "admin.listing.submitted": 2822,
+      "dealer.listing.approved": 352,
+      "dealer.listing.rejected": 6,
+      "dealer.enquiry.received": 183,
+      "dealer.account.suspended": 66,
+      "dealer.application.rejected": 11,
+      "dealer.application.changes-requested": 6,
+      "dealer.application.resubmitted": 6,
+      "admin.application.resubmitted": 36,
+      "dealer.account.reinstated": 19,
+      "admin.listing.reactivation-requested": 28,
+      "admin.profile-change.submitted": 36,
+      "dealer.profile-change.approved": 2,
+      "dealer.listing.changes-requested": 2,
+      "admin.listing.resubmitted": 16,
+      "dealer.listing.reactivation-approved": 2,
+      "dealer.application.closed": 4,
+      "admin.support.ticket-created": 363
+    },
+    "templatesWithAMobileNumber": {}
+  },
+  {
+    "email": null,
+    "emailVerified": true
+  }
+]
