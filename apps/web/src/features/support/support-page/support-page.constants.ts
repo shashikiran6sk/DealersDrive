@@ -35,6 +35,4 @@ export function mailtoHref(email: string): string {
   return `mailto:${email}`;
 }
 
-export function telHref(phone: string): string {
-  return `tel:${phone.replace(/[\s-]/g, '')}`;
-}
+export { telHref } from '@/lib/contact-phone';

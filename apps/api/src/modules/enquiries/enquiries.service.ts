@@ -1,6 +1,7 @@
 import {
   enquiryTransitionPermission,
   formatRegistration,
+  isEnquiryTransition,
   vehicleTitle,
   type CreateEnquiryInput,
   type CustomerEnquiriesResponse,
@@ -40,6 +41,7 @@ import {
 } from './enquiries.mapper.js';
 import {
   ALREADY_OPEN,
+  ENQUIRY_INVALID_TRANSITION,
   ENQUIRY_NOT_FOUND,
   ENQUIRY_TRANSITION_FORBIDDEN,
   LISTING_NOT_AVAILABLE,
@@ -215,6 +217,11 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           throw new ForbiddenError(ENQUIRY_TRANSITION_FORBIDDEN, {
             code: 'ENQUIRY_ACTION_FORBIDDEN',
             extra: { enquiryStatus: current.status, permission: needed },
+          });
+        }
+        if (!isEnquiryTransition(current.status, input.status)) {
+          throw new ConflictError('ENQUIRY_INVALID_TRANSITION', ENQUIRY_INVALID_TRANSITION, {
+            extra: { enquiryStatus: current.status, requestedStatus: input.status },
           });
         }
 

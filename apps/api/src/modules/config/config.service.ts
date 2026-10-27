@@ -108,11 +108,13 @@ export function createConfigService({ config }: ConfigDeps) {
         if (href !== null) social.push({ network: entry.network, label: entry.label, href });
       }
 
+      const support = supportContacts(supportValues);
+
       return {
         mediaBaseUrl: env.MEDIA_BASE_URL,
         captchaSiteKey: null,
-        supportEmail: env.SUPPORT_EMAIL,
-        supportPhone: env.SUPPORT_PHONE,
+        supportEmail: support.customer.email,
+        supportPhone: support.customer.phone,
         minPhotosPerListing: minPhotos,
         listingDurationDays: durationDays,
         enquiryRateLimitPerHour: enquiryRate,
@@ -120,7 +122,7 @@ export function createConfigService({ config }: ConfigDeps) {
         rcLookupEnabled: rcLookup,
         vehicleReportEnabled: vehicleReport,
         social,
-        support: supportContacts(supportValues),
+        support,
         heroImage: heroImage(heroUrl, heroAlt),
       };
     },

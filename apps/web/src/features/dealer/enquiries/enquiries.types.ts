@@ -4,6 +4,8 @@ import type {
   EnquiryStatus,
 } from '@dealers-drive/contracts';
 
+import type { FinalStatus } from './enquiries.constants';
+
 export interface EnquiryInboxProps {
   inbox: DealerEnquiriesResponse;
   status: EnquiryStatus;
@@ -20,4 +22,13 @@ export interface EnquiryStatusActionsProps {
   status: EnquiryStatus;
   customerName: string;
   permissions?: readonly string[];
+}
+
+export interface FinalMoveDialogProps {
+  to: FinalStatus;
+  label: string;
+  customerName: string;
+  disabled: boolean;
+  loading: boolean;
+  onConfirm: () => void;
 }

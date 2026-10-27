@@ -1,3 +1,5 @@
+import { phoneLabel } from '@/lib/contact-phone';
+
 import { mailtoHref, SUPPORT_TEXT, telHref } from './support-page.constants';
 import type { ContactLinesProps } from './support-page.types';
 
@@ -25,7 +27,7 @@ export function ContactLines({ contact }: ContactLinesProps) {
               href={telHref(contact.phone)}
               className="font-extrabold underline underline-offset-4 tnum"
             >
-              {contact.phone}
+              {phoneLabel(contact.phone)}
             </a>
           </dd>
         </div>
