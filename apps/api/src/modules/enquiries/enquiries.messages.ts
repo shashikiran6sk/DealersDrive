@@ -17,7 +17,10 @@ export const ENQUIRY_RATE_LIMITED =
 export const ENQUIRY_NOT_FOUND = 'That enquiry is not in your inbox.';
 
 export const ENQUIRY_TRANSITION_FORBIDDEN =
-  'Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.';
+  'Your role can mark a new enquiry as contacted, but closing it or marking it as spam is for a manager or the owner.';
+
+export const ENQUIRY_INVALID_TRANSITION =
+  'An enquiry moves forward from New to Contacted, then Closed or Spam. Closed and spam enquiries are final.';
 
 export const ADMIN_ENQUIRY_NOT_FOUND = 'There is no enquiry with that id.';
 

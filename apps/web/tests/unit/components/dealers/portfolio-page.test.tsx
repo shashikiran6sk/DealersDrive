@@ -599,7 +599,7 @@ describe('metadata', () => {
   it('titles a missing dealership rather than throwing', async () => {
     serve(notListed());
 
-    expect(await generateMetadata({ params })).toEqual({ title: 'Dealership not found' });
+    expect(await generateMetadata({ params })).toEqual({ title: 'Page not found' });
   });
 });
 

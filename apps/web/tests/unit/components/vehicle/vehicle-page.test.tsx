@@ -344,7 +344,7 @@ describe('/car/[slug]', () => {
       new ApiError({ type: 'x', title: 'Not found', status: 404, code: 'VEHICLE_NOT_FOUND' }),
     );
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'gone' }) });
-    expect(metadata.title).toBe('Car not found');
+    expect(metadata.title).toBe('Page not found');
   });
 });
 
@@ -456,5 +456,15 @@ describe('/car/[slug] structured data', () => {
         .getAllByRole('link')
         .some((link) => link.getAttribute('href') === '/dealers/sri-lakshmi-motors'),
     ).toBe(true);
+  });
+});
+
+describe('the car route', () => {
+  it('has no loading boundary, so a missing car answers 404 and an outage 500 (BUG-101)', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const route = path.join(process.cwd(), 'src/app/(public)/car/[slug]/');
+    expect(fs.existsSync(`${route}page.tsx`)).toBe(true);
+    expect(fs.existsSync(`${route}loading.tsx`)).toBe(false);
   });
 });
