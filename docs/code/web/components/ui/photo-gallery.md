@@ -283,7 +283,7 @@ rather than overflowing.
 
 Pinch, double tap, wheel and drag for the viewer's photograph, in pointer
 events and a `translate3d(x, y, 0) scale(s)` on the `<img>` — no library. The
-baseline has none to reuse, and CLAUDE.md §6 rules out adding one, but it is
+baseline has none to reuse, and AGENTS.md §6 rules out adding one, but it is
 also not much code once the maths is pure functions in `utils.ts` and the hook
 only routes events to them.
 

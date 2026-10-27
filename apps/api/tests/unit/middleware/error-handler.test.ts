@@ -20,7 +20,7 @@ import {
  *  · **Every** failure leaves as RFC 9457 `application/problem+json` — one
  *    shape, so a client writes one error path rather than six.
  *  · A bug never leaks its message in production. The 500 branch is the one
- *    place a stack trace could escape, and CLAUDE.md forbids it outright.
+ *    place a stack trace could escape, and AGENTS.md forbids it outright.
  *
  * Everything else here is mapping: which throwable becomes which status.
  */
@@ -313,7 +313,7 @@ describe('unknown throwables', () => {
   });
 
   /**
-   * CLAUDE.md: "Never leak stack traces or internal implementation details to
+   * The original agent manual (docs/original-spec/AGENTS.md on the docs branch): "Never leak stack traces or internal implementation details to
    * clients." In production the detail is dropped entirely — the traceId is
    * how support correlates the report with the log line that has the stack.
    */

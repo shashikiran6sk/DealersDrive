@@ -25,7 +25,7 @@ import { createRoutes } from '../../../src/routes.js';
  * endpoint which 404s is worse than one that omits it, because a client writes
  * code against it.
  *
- * This is the mechanical half of the API-documentation rule in CLAUDE.md §4.
+ * This is the mechanical half of the API-documentation rule in AGENTS.md §4.
  * The rule asks for prose in the right place; this asks whether it is there.
  */
 
@@ -173,7 +173,7 @@ describe('the OpenAPI document against the router', () => {
     expect(
       undocumented,
       'These routes are mounted but absent from the OpenAPI document. Add an operation to ' +
-        "the module's `*.docs.ts` in the same PR that added the route — CLAUDE.md §4.",
+        "the module's `*.docs.ts` in the same PR that added the route — AGENTS.md §4.",
     ).toEqual([]);
   });
 

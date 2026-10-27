@@ -23,7 +23,7 @@ import { formatRupees } from '../../src/common.js';
 
 /**
  * DESIGN-SPEC §4.14 fixes these forms exactly — `₹6.45 Lakh`, `02 Aug 2026`,
- * `+91 98400 12345` — and CLAUDE.md repeats them as a rule. They live in one
+ * `+91 98400 12345` — and AGENTS.md repeats them as a rule. They live in one
  * package so the two apps cannot round differently; these tests are what keeps
  * that single implementation honest.
  */

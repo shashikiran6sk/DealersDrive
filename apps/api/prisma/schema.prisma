@@ -1,7 +1,7 @@
 // Dealers-Drive — database schema.
 //
 // Every model and enum arrives with the feature that owns it, in the order set
-// by `docs/project/feature-map.md`. Money is BigInt paise everywhere, and every
+// by `docs/project/feature-map.md` on the `docs` branch. Money is BigInt paise everywhere, and every
 // dealer-owned table carries `dealerId` as a first-class column so tenant
 // filtering is one indexed predicate and never a join.
 //
@@ -620,7 +620,7 @@ model DealerProfileChange {
 // There is no `City` model, and that is the second deliberate divergence from
 // the baseline after D1.
 //
-// D1 removed the vehicle catalogue for the reason recorded in CLAUDE.md §5;
+// D1 removed the vehicle catalogue for the reason recorded in AGENTS.md §5;
 // `City` survived it because cities are not catalogue data. On the evidence of
 // the first onboarding flow they are: the table held five towns in one state,
 // so it decided which dealerships could exist rather than describing the ones

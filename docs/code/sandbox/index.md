@@ -48,7 +48,7 @@ Storybook id, for deep links.
 
 Populated one component at a time, by the feature that brings the component
 across. An entry without a story, or a story without an entry, is a gap —
-see `docs/project/component-sandbox.md` §5.
+see `docs/project/component-sandbox.md` §5 on the `docs` branch.
 
 ### `purpose:`
 

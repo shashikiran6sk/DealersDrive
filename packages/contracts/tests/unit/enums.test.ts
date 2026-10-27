@@ -141,7 +141,7 @@ describe('roles', () => {
 
 describe('the credit ledger vocabulary', () => {
   /**
-   * CLAUDE.md rule 4: every movement writes a row, and the reason is what
+   * AGENTS.md rule 4: every movement writes a row, and the reason is what
    * makes the ledger auditable. The three moderation outcomes have to be
    * distinguishable — a hold consumed on approval and a hold released on
    * rejection are opposite events with the same net effect on the balance.

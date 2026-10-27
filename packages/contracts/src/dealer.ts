@@ -15,7 +15,7 @@ import {
 /**
  * PART C — the dealer console (API-SPEC C1–C20). Every shape here is read or
  * written by somebody holding a `DealerPrincipal`, which is why not one of them
- * names a `dealerId`: that comes from the session (CLAUDE.md rule 1).
+ * names a `dealerId`: that comes from the session (AGENTS.md rule 1).
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline file is ~800 lines covering the dealership profile, onboarding,

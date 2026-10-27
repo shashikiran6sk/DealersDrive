@@ -1,5 +1,5 @@
 /**
- * Source carries no prose (CLAUDE.md §4b) — the reasoning lives under
+ * Source carries no prose (AGENTS.md §4b) — the reasoning lives under
  * `docs/code`, on a page mirroring the source path.
  *
  * Opted into per app rather than set in the base preset: it applies to the three

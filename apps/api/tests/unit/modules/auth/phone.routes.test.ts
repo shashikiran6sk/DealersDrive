@@ -95,7 +95,7 @@ async function appFor(userId: string | (() => string)) {
   app.use(errorHandler);
 
   /*
-   * One listener for the file, not one per request (CONTEXT.md §7l).
+   * One listener for the file, not one per request (CONTEXT.md §7l, on the docs branch).
    *
    * `request(app)` calls `app.listen(0)` and closes it again when the request
    * ends, so thirty-one requests are thirty-one ephemeral ports handed back to

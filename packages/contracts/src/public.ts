@@ -172,7 +172,7 @@ export type DealerDirectoryQuery = z.infer<typeof DealerDirectoryQuery>;
  * There is **no phone number here, and no email**. The only route that returns
  * a dealer's number is `POST /v1/vehicles/:id/reveal-contact`, and it is
  * deliberately a POST so it can be rate-limited and logged as a lead
- * (CLAUDE.md rule 7).
+ * (AGENTS.md rule 7).
  */
 export const DealerCard = z.object({
   slug: z.string(),

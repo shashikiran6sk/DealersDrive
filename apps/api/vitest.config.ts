@@ -119,7 +119,7 @@ export default defineConfig({
      * project` and the feature that brings this package's tests across, there
      * are legitimately no test files here and vitest would otherwise exit 1.
      * Remove this line once the suite is fully restored — see
-     * `docs/project/feature-map.md`.
+     * `docs/project/feature-map.md` on the `docs` branch.
      */
     passWithNoTests: true,
     coverage: {

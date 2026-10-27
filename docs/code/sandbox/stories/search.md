@@ -9,7 +9,7 @@ declaration the note sat above.
 
 ### `const YARDS: DealerSuggestResponse['data'] = [`
 
-DESIGN-SPEC §3.5 and `docs/Dealers-Drive-UI/Search-Bar` — the directory's
+DESIGN-SPEC §3.5 and `docs/Dealers-Drive-UI/Search-Bar` (on the `docs` branch) — the directory's
 search box, with recommendations (C074, **R43**).
 
 The interaction underneath it is `AutocompletePanel` (C073), which knows
