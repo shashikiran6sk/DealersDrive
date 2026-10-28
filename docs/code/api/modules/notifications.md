@@ -511,3 +511,39 @@ says exactly that, names the outstanding categories (worked out at send time
 from the documents, so a document uploaded in between is not asked for
 again), and links to `/dealer/documents`. The `DealerApproved` payload carries
 `activationMethod`, and the rule picks the template from it.
+
+## `apps/api/src/modules/notifications/notifications.service.ts` — the daily enquiry summary
+
+### `export const ENQUIRY_DIGEST_CRON = '31 8 * * *'`
+
+Admins hear about enquiries once a day, not once per enquiry: a per-enquiry
+email to every admin turns into noise as volume grows, and nothing about an
+enquiry needs an admin within the hour — the dealership is emailed at once
+(`dealer.enquiry.received`). 08:31 India time, after the day has closed and
+before the working day starts; pg-boss holds the schedule in Postgres with
+`tz: 'Asia/Kolkata'` (`platform/jobs/queue.ts`), so it fires once however many
+workers run. It is the first scheduled job; the inline queue used when
+`JOBS_ENABLED=false` treats `schedule` as a no-op.
+
+### `export function previousIstDay(now: Date): string`
+
+The summary covers the whole previous calendar day in India, from 00:00 IST to
+00:00 IST, not "the last 24 hours" — a run that starts a minute late must not
+move an enquiry from one day's summary to the next.
+
+### `export function enquiryDigestJob(day: string): EmailJob`
+
+The scheduled job does no work itself: it enqueues an ordinary
+`notification.email` job whose `subjectId` is the day. `sendOne`'s dedupe key
+is template, subject and recipient, so a retried or doubled run sends each admin
+one summary per day and no more — the same guarantee every other email has,
+without a second mechanism.
+
+### `async function sendEnquiryDigest(day: string): Promise<void>`
+
+Reads that day's enquiries, groups them by dealership — busiest first, then by
+name — with each dealership's distinct cars, and sends it to every admin
+allowed `admin:enquiry:read`. A day without enquiries sends nothing: an empty
+summary every quiet day teaches people to ignore the real ones. Spam is
+included: it was an enquiry when it arrived, and the count is of what customers
+sent.

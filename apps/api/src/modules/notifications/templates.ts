@@ -32,6 +32,7 @@ export type TemplateName =
   | 'dealer.listing.reactivation-approved'
   | 'dealer.listing.reactivation-rejected'
   | 'dealer.enquiry.received'
+  | 'admin.enquiry.digest'
   | 'admin.support.ticket-created'
   | 'customer.support.ticket-received'
   | 'customer.support.ticket-status';
@@ -53,6 +54,18 @@ export interface ListingContext {
 export interface EnquiryContext {
   buyerName: string | null;
   message: string | null;
+}
+
+export interface EnquiryDigestDealer {
+  name: string;
+  count: number;
+  cars: string[];
+}
+
+export interface EnquiryDigestContext {
+  dayLabel: string;
+  total: number;
+  dealers: EnquiryDigestDealer[];
 }
 
 export interface TicketContext {
@@ -77,6 +90,7 @@ export interface TemplateContext {
   listing?: ListingContext;
   enquiry?: EnquiryContext;
   ticket?: TicketContext;
+  digest?: EnquiryDigestContext;
 }
 
 const CONSOLE = `${env.WEB_BASE_URL}/dealer`;
@@ -84,6 +98,7 @@ const DOCUMENTS = `${env.WEB_BASE_URL}/dealer/documents`;
 const ADMIN_QUEUE = `${env.WEB_BASE_URL}/admin/dealers`;
 const SUPPORT_REQUESTS = `${env.WEB_BASE_URL}/support-requests`;
 const ADMIN_SUPPORT = `${env.WEB_BASE_URL}/admin/support`;
+const ADMIN_ENQUIRIES = `${env.WEB_BASE_URL}/admin/enquiries`;
 
 const TICKET_STATUS_LINES: Record<SupportTicketStatus, string> = {
   OPEN: 'Your request has been reopened and is back with our support team.',
@@ -381,6 +396,21 @@ export function render(template: TemplateName, context: TemplateContext): Render
         action: { label: 'Open your inventory', url: `${CONSOLE}/inventory` },
       });
 
+    case 'admin.enquiry.digest': {
+      const digest = context.digest ?? { dayLabel: '', total: 0, dealers: [] };
+      return compose({
+        subject: `${enquiryCount(digest.total)} on ${digest.dayLabel} — Dealers-Drive`,
+        heading: `Enquiries on ${digest.dayLabel}`,
+        paragraphs: [
+          `Customers sent ${enquiryCount(digest.total)} to ${dealershipCount(digest.dealers.length)}.`,
+          ...digest.dealers.map(
+            (dealer) => `${dealer.name} — ${String(dealer.count)}: ${dealer.cars.join(', ')}`,
+          ),
+        ],
+        action: { label: 'Open enquiries', url: ADMIN_ENQUIRIES },
+      });
+    }
+
     case 'dealer.enquiry.received':
       return compose({
         subject: `New enquiry — ${listingOf(context).title}`,
@@ -533,6 +563,14 @@ function outstandingLine(outstanding: readonly string[]): string {
       ? outstanding[0]
       : `${outstanding.slice(0, -1).join(', ')} and ${outstanding[outstanding.length - 1]}`;
   return `Your documents have not been verified yet. Upload your ${named} so our team can review ${outstanding.length === 1 ? 'it' : 'them'}.`;
+}
+
+function enquiryCount(count: number): string {
+  return `${String(count)} ${count === 1 ? 'enquiry' : 'enquiries'}`;
+}
+
+function dealershipCount(count: number): string {
+  return `${String(count)} ${count === 1 ? 'dealership' : 'dealerships'}`;
 }
 
 function compose(parts: Composition): RenderedEmail {
