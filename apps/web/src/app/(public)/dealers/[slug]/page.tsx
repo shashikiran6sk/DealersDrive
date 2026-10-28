@@ -17,7 +17,7 @@ import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
 import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
-import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
+import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
 import { isMissingResource, isServerFailure } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import {
@@ -36,9 +36,9 @@ import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-searc
 
 import { DEALER_HERO_STAGE_CLASS, DEALER_PAGE_TEXT } from './dealer-page.constants';
 
-export const revalidate = 600;
+export const revalidate = 60;
 
-const DEALER_CACHE = (slug: string) => ({ revalidate: 600, tags: [dealerTag(slug), DEALERS_TAG] });
+const DEALER_CACHE = (slug: string) => ({ revalidate: 60, tags: [dealerTag(slug), DEALERS_TAG] });
 
 const loadDealer = cache((slug: string): Promise<DealerPublicProfile | null> =>
   cachedLookup(
@@ -68,7 +68,7 @@ async function loadInventory(slug: string, params: VehicleSearchParams): Promise
     const inventory = await apiGetParsed(
       PublicVehiclesResponse,
       `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs(params)}`,
-      { revalidate: 60, tags: [dealerTag(slug), VEHICLES_TAG] },
+      { revalidate: false },
     );
     return { status: 'ready', inventory };
   } catch (error) {
@@ -229,7 +229,6 @@ export default async function DealerPortfolioPage({
               </div>
             ))}
           </dl>
-          <p className="mt-2 text-[11px] ink-secondary">{DEALER_PAGE_TEXT.responseTimeNote}</p>
 
           {dealer.services.length > 0 ? (
             <div className="mt-auto flex flex-wrap gap-[6px] border-t border-(--color-divider) pt-[10px]">

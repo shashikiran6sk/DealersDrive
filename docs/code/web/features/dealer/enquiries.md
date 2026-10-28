@@ -38,9 +38,10 @@ rather than leaving a blank line.
 ### `export function EnquiryStatusActions(...)`
 
 The moves that make sense from where an enquiry is (`ENQUIRY_MOVES`): a new one
-can be marked contacted, closed or spammed; a contacted one closed or spammed;
-a closed one reopened; a spammed one marked not spam. The API accepts any move —
-this list is what is worth a button. All buttons disable while one is in flight.
+can be marked contacted, closed or spammed; a contacted one closed or spammed; a closed or spammed one is final and
+shows no buttons. These are exactly
+`ENQUIRY_TRANSITIONS` in contracts, which the API enforces (UPD-2), and a test
+holds the two lists together. All buttons disable while one is in flight.
 On success the Server Action's `revalidatePath` redraws the page, so the card
 moves tab with no client state to keep in step; a refusal shows the API's
 sentence under the buttons.
@@ -69,3 +70,14 @@ clears `closedById` — and nothing renders until somebody has acted.
 Parses the id and the status with the contracts' `IdParam` and
 `UpdateEnquiryInput` before calling, and sends `{ status }` only. Revalidates
 `/dealer/enquiries` on success and nothing on refusal.
+
+## `apps/web/src/features/dealer/enquiries/final-move-dialog.tsx`
+
+### `export function FinalMoveDialog(...)`
+
+**UPD-2.** Closed and spam are final, so Close and Spam ask first. The product
+owner asked for it once the reopen went (2026-10-22): a mis-click used to be
+undone with Reopen, and now it cannot be. The dialog says which consequence
+applies — a closed customer can enquire again as a new enquiry, a spammed one
+cannot — names the customer, and only the confirm button sends the move.
+Mark contacted stays one click; it is not final.

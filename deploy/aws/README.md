@@ -190,7 +190,7 @@ aws rds create-db-instance \
 
 `--deletion-protection` on production only, and `--backup-retention-period 7`
 gives point-in-time recovery to any second in the last week — which is the
-actual database rollback story (docs/DEPLOYMENT.md §K).
+actual database rollback story (docs/original-spec/DEPLOYMENT.md §K on the docs branch).
 
 ## 5. Object storage — Cloudflare R2
 
@@ -344,7 +344,7 @@ fewer healthy tasks than it started with.
 `dd-web-prod`. The API is capped at one task by `WORKER_INLINE=true` — the job
 handlers run inside the HTTP process, so a second task runs every scheduled job
 twice. Lifting that cap means the separate worker entrypoint described in
-docs/DEPLOYMENT.md §C, not a bigger `desired-count`.
+docs/original-spec/DEPLOYMENT.md §C on the docs branch, not a bigger `desired-count`.
 
 ## 10. DNS
 

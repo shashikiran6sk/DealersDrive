@@ -24,7 +24,6 @@
 //   node scripts/check-docs.mjs --list   also print everything it verified
 // ---------------------------------------------------------------------------
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
@@ -33,14 +32,26 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const verbose = process.argv.includes('--list');
 
 /**
- * The files a newcomer is told to read.
+ * The files a newcomer is told to read: the README, the operating manual, and
+ * every skill under `.claude/skills`.
  *
- * `docs/project/**` is excluded on purpose, for the same reason ARCHITECTURE.md
- * always was: those four documents are the *plan*. Naming paths that do not
- * exist yet is what they are for, and checking them would report the plan as
- * rot. They are reviewed by a human instead.
+ * The history and process documents — the feature map, the engineering log, the
+ * certification — live on the `docs` branch, not here. They record what was
+ * true when they were written, so checking them against today's tree would
+ * report history as rot.
  */
-const DOCS = ['README.md', 'CONTEXT.md', 'CLAUDE.md'];
+const SKILLS_DIR = '.claude/skills';
+
+function skillDocs() {
+  const dir = join(root, SKILLS_DIR);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => statSync(join(dir, name)).isDirectory())
+    .map((name) => `${SKILLS_DIR}/${name}/SKILL.md`)
+    .filter((path) => existsSync(join(root, path)));
+}
+
+const DOCS = ['README.md', 'AGENTS.md', ...skillDocs()];
 
 /** Every script name declared anywhere in the workspace. */
 function knownScripts() {
@@ -51,7 +62,7 @@ function knownScripts() {
     'apps/web/package.json',
     // The sandbox is a workspace like any other, and `build:sandbox` is
     // declared only here. Omitting it made every reference to that script look
-    // stale — found at F041, when CONTEXT.md first named it.
+    // stale — found at F041, when a document first named it.
     'apps/sandbox/package.json',
     'packages/contracts/package.json',
     'packages/config/package.json',
@@ -106,72 +117,17 @@ const BASES = [
   'deploy/aws',
 ];
 
-/**
- * Paths a document names *because* they do not exist.
- *
- * Add to this only when the absence is the point. If a path is missing because
- * something was renamed, fix the document.
- */
-const KNOWN_ABSENT = new Map([
-  [
-    'apps/sandbox/src/registry.ts',
-    'CLAUDE.md names the component sandbox, which is built at sandbox step S0',
-  ],
-]);
-
-/**
- * The baseline this repository is reconstructing.
- *
- * Almost every path CLAUDE.md and CONTEXT.md name is a *forward* reference:
- * `apps/api/src/routes.ts` does not exist yet and will not until F002. Listing
- * each one by hand would mean editing this file on nearly every PR, and the
- * list would be stale a week later.
- *
- * So the rule is stricter than an allowlist rather than looser: a path is
- * acceptable when it exists **now, or in the baseline we are re-delivering**.
- * A typo satisfies neither. A path that is simply not built yet satisfies the
- * second, and stops being a forward reference the moment its feature lands.
- *
- * If the baseline ref is unreachable — a shallow CI clone, or a fresh clone of
- * a remote that does not carry it — the check degrades to today's worktree and
- * says so, rather than failing on every forward reference.
- */
-const BASELINE_REF = process.env.DOCS_BASELINE_REF ?? 'legacy/pre-reorg';
-let baselineFiles = null;
-let baselineNote = '';
-
-try {
-  const listing = execFileSync('git', ['ls-tree', '-r', '--name-only', BASELINE_REF], {
-    cwd: root,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'ignore'],
-    maxBuffer: 32 * 1024 * 1024,
-  });
-  baselineFiles = new Set(listing.split('\n').filter(Boolean));
-} catch {
-  baselineNote = `  (baseline ref '${BASELINE_REF}' unreachable — forward references not verified)`;
-}
-
-/** Does this path exist in the baseline, under any of the known bases? */
-function existsInBaseline(candidate) {
-  if (baselineFiles === null) return true;
-  const trimmed = candidate.replace(/\/$/, '');
-  for (const base of BASES) {
-    const full = base === '.' ? trimmed : `${base}/${trimmed}`;
-    if (baselineFiles.has(full)) return true;
-    // A directory reference: accept it when the baseline has anything beneath it.
-    const prefix = `${full}/`;
-    for (const file of baselineFiles) {
-      if (file.startsWith(prefix)) return true;
-    }
-  }
-  return false;
-}
-
 function resolvesAnywhere(candidate) {
-  if (KNOWN_ABSENT.has(candidate)) return true;
-  if (BASES.some((base) => existsSync(join(root, base, candidate)))) return true;
-  return existsInBaseline(candidate);
+  return BASES.some((base) => existsSync(join(root, base, candidate)));
+}
+
+/**
+ * `turbo` writes and re-writes a block of its own into AGENTS.md. Its paths name
+ * files inside the installed turbo package and the Turborepo source tree, not
+ * this repository, and the block is not ours to edit.
+ */
+function withoutManagedBlocks(text) {
+  return text.replace(/<!-- BEGIN:([\w-]+) -->[\s\S]*?<!-- END:\1 -->/g, '');
 }
 
 const scripts = knownScripts();
@@ -185,7 +141,7 @@ for (const doc of DOCS) {
     continue;
   }
 
-  const text = readFileSync(path, 'utf8');
+  const text = withoutManagedBlocks(readFileSync(path, 'utf8'));
 
   // `pnpm foo` / `pnpm run foo` / `pnpm --filter x foo`
   for (const match of text.matchAll(/`pnpm (?:run )?(?:--filter [@\w/-]+ )?([a-z][\w:-]*)`/g)) {
@@ -232,7 +188,7 @@ for (const doc of DOCS) {
 }
 
 console.log(
-  `checked ${checked.scripts} script reference(s) and ${checked.paths} path(s) across ${DOCS.length} document(s)${baselineNote}`,
+  `checked ${checked.scripts} script reference(s) and ${checked.paths} path(s) across ${DOCS.length} document(s)`,
 );
 
 if (problems.length > 0) {

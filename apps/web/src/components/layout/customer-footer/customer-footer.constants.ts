@@ -3,7 +3,6 @@ import type { FooterLink } from './customer-footer.types';
 export const BUYER_LINKS: FooterLink[] = [
   { href: '/cars', label: 'Buy cars' },
   { href: '/dealers', label: 'Dealer directory' },
-  { href: '/saved', label: 'Saved cars' },
 ];
 
 export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }];
@@ -11,6 +10,9 @@ export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'D
 export const SUPPORT_LINKS: FooterLink[] = [{ href: '/contact', label: 'Contact & support' }];
 
 export const FOOTER_TEXT = {
+  legalLabel: 'Legal policies',
+  terms: 'Terms & Conditions',
+  privacy: 'Privacy Policy',
   brand: 'Dealers-Drive',
   trust:
     'The Dealer Verified badge follows a business and representative review. Dealers are responsible for their listings, prices and vehicle documentation.',

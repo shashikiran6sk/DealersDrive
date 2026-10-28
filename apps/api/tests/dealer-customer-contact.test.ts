@@ -249,7 +249,7 @@ describe('approved customer contact numbers', () => {
 });
 
 describe('measured enquiry response time', () => {
-  it('requires five valid samples and updates when dealers contact, close, reopen or mark spam', async () => {
+  it('requires five valid samples and updates when dealers contact, close or mark spam, and a closed enquiry stays closed', async () => {
     const dealer = await fixtures.dealership();
     const listing = await car(dealer);
     const now = new Date();
@@ -295,11 +295,7 @@ describe('measured enquiry response time', () => {
     await dealer.agent
       .patch(`/v1/dealer/enquiries/${fifth.id}`)
       .send({ status: 'NEW' })
-      .expect(200);
-    await dealer.agent
-      .patch(`/v1/dealer/enquiries/${fifth.id}`)
-      .send({ status: 'CONTACTED' })
-      .expect(200);
+      .expect(409);
     expect(
       (await h.prisma.enquiry.findUniqueOrThrow({ where: { id: fifth.id } })).contactedAt,
     ).toEqual(firstContact);

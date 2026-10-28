@@ -454,7 +454,7 @@ through `POST /v1/dealer/submit` and the moderation queue — never
 
 ### `status: 'DRAFT'`
 
-by a field on this request (CLAUDE.md rule 5).
+by a field on this request (AGENTS.md rule 5).
 
 ### `mapsUrl: input.mapsUrl`
 
@@ -781,7 +781,7 @@ that account has both.
 
 ### `export function createDevSessionResolver(prisma: PrismaClient): SessionResolver`
 
-The local development session (CLAUDE.md §5, §17).
+The local development session (the original agent manual, §5 and §17 — docs/original-spec/AGENTS.md on the docs branch).
 
 The identity is _server-configured_ — `DEV_DEALER_SLUG` and the first entry
 on `ADMIN_ALLOWLIST` — and re-read from the database on every request, so the
@@ -1573,7 +1573,7 @@ origin, is what protects the state-changing routes.
 Who is making this request.
 
 The only thing the current build bypasses is the _identity verification
-mechanism_ — the OTP round-trip (CLAUDE.md §5). Everything downstream still
+mechanism_ — the OTP round-trip (the original agent manual §5 — docs/original-spec/AGENTS.md on the docs branch). Everything downstream still
 behaves exactly as it will in production: `dealerId` is a property of the
 resolved principal, never a field a client can send, and every permission
 check runs unchanged.

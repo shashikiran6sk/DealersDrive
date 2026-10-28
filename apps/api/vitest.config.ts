@@ -21,6 +21,7 @@ import { defineConfig } from 'vitest/config';
  */
 const ENV = {
   NODE_ENV: 'test',
+  LEGAL_V1_PREVIEW: 'false',
   DATABASE_URL: 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive_test',
   // pg-boss off: the suite drives handlers directly where it needs them, and a
   // background poller against the test database is just noise.
@@ -118,7 +119,7 @@ export default defineConfig({
      * project` and the feature that brings this package's tests across, there
      * are legitimately no test files here and vitest would otherwise exit 1.
      * Remove this line once the suite is fully restored — see
-     * `docs/project/feature-map.md`.
+     * `docs/project/feature-map.md` on the `docs` branch.
      */
     passWithNoTests: true,
     coverage: {

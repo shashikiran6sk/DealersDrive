@@ -259,6 +259,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     repo: createModerationRepository(prisma),
     audit,
     images: vehicleImages,
+    vehicles,
   });
 
   return {

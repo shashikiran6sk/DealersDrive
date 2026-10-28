@@ -1,10 +1,12 @@
 import {
+  ADMIN_EDITABLE_LISTING_STATUSES,
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
   isVehicleMake,
   parseRegistration,
   vehicleIssues,
+  type AdminUpdateVehicleInput,
   type CreateVehicleInput,
   type DealerInventoryQuery,
   type DealerInventoryResponse,
@@ -18,16 +20,27 @@ import {
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
-import { authorizeDealerWrite, type DealerWriteActor } from '../auth/auth.facade.js';
+import {
+  authorizeDealerWrite,
+  type AdminPrincipal,
+  type DealerWriteActor,
+} from '../auth/auth.facade.js';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
-import { ConflictError, DomainError, NotFoundError, errorCode } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+  errorCode,
+} from '../../platform/errors.js';
 import {
   assertTransition,
   createDraftListing,
   fileReactivationRequest,
+  lockListing,
   lockListingForVehicle,
   transition,
 } from '../listings/listings.facade.js';
@@ -105,6 +118,12 @@ function notFound(): NotFoundError {
 function rtoCodeOf(registrationNumber: string): string | null {
   const parsed = parseRegistration(registrationNumber);
   return parsed.ok ? parsed.value.rtoCode : null;
+}
+
+function auditValue(vehicle: object, field: string): string | number | null {
+  const value: unknown = Object.entries(vehicle).find(([key]) => key === field)?.[1];
+  if (typeof value === 'bigint') return String(value);
+  return typeof value === 'number' || typeof value === 'string' ? value : null;
 }
 
 export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
@@ -211,12 +230,6 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     if (input.ownerCount !== undefined) data.ownerCount = input.ownerCount;
     if (input.color !== undefined) data.color = input.color;
     if (input.insuranceType !== undefined) data.insuranceType = input.insuranceType;
-    if (input.insuranceValidUntil !== undefined) {
-      data.insuranceValidUntil =
-        input.insuranceValidUntil === null
-          ? null
-          : new Date(`${input.insuranceValidUntil}T00:00:00Z`);
-    }
     if (input.pricePaise !== undefined) {
       data.pricePaise = input.pricePaise === null ? null : BigInt(input.pricePaise);
     }
@@ -348,6 +361,97 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         return toDealerVehicle(updated.vehicle, updated.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw duplicate();
+        throw error;
+      }
+    },
+
+    async adminUpdate(
+      admin: AdminPrincipal,
+      listingId: string,
+      input: AdminUpdateVehicleInput,
+    ): Promise<void> {
+      try {
+        await withTransaction(prisma, async (tx) => {
+          const listing = await lockListing(tx, listingId);
+          if (!listing) throw notFound();
+          if (!ADMIN_EDITABLE_LISTING_STATUSES.includes(listing.status)) {
+            throw new ConflictError(
+              'VEHICLE_NOT_EDITABLE',
+              'This listing can no longer be edited. Reload the page.',
+              {
+                extra: { listingStatus: listing.status },
+              },
+            );
+          }
+          const current = await repo.findOwned(listing.dealerId, listing.vehicleId, tx);
+          if (!current) throw notFound();
+          if (
+            admin.memberId &&
+            (current.createdByMemberId === admin.memberId ||
+              listing.submittedByMemberId === admin.memberId)
+          ) {
+            throw new ForbiddenError(
+              'Another reviewer must edit a listing you prepared or submitted.',
+              { code: 'SELF_REVIEW_FORBIDDEN' },
+            );
+          }
+          if (current.updatedAt.toISOString() !== input.expectedUpdatedAt) {
+            throw new ConflictError(
+              'VEHICLE_CHANGED',
+              'These details have changed. Reload the page before saving.',
+            );
+          }
+          checkMake(input.details, current.make);
+          const data = await writeOf(input.details);
+          const fields = Object.keys(data).filter(
+            (field) =>
+              field !== 'rtoCode' && auditValue(data, field) !== auditValue(current, field),
+          );
+          if (fields.length === 0) return;
+          const timedData = {
+            ...data,
+            updatedAt: new Date(Math.max(Date.now(), current.updatedAt.getTime() + 1)),
+          };
+          const updated = await repo.updateOwned(
+            listing.dealerId,
+            listing.vehicleId,
+            timedData,
+            tx,
+          );
+          if (!updated) throw notFound();
+          const issues = vehicleIssues(completenessOf(updated));
+          if ((listing.status === 'ACTIVE' || listing.status === 'RESERVED') && issues.length > 0) {
+            throw new DomainError(
+              'VEHICLE_INCOMPLETE',
+              'Keep all required vehicle details complete before saving.',
+              {
+                errors: issues.map((issue) => ({ ...issue, code: 'REQUIRED' })),
+              },
+            );
+          }
+          if (listing.status === 'PENDING_REVIEW') {
+            await tx.listingCheck.deleteMany({ where: { listingId } });
+          }
+          await tx.listing.update({ where: { id: listingId }, data: { updatedAt: new Date() } });
+          const before = Object.fromEntries(
+            fields.map((field) => [field, auditValue(current, field)]),
+          );
+          const after = Object.fromEntries(
+            fields.map((field) => [field, auditValue(updated, field)]),
+          );
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: listing.dealerId,
+            action: 'listing.details_updated',
+            entityType: 'Listing',
+            entityId: listingId,
+            before,
+            after: { ...after, vehicleId: listing.vehicleId, fields },
+          });
+        });
+      } catch (error) {
+        if (errorCode(error) === 'P2002') throw alreadyListed();
         throw error;
       }
     },

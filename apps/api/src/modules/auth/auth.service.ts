@@ -106,7 +106,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         phoneDisplay: principal.phone ? formatPhone(principal.phone) : '',
         phoneVerified: principal.phoneVerified,
         email: principal.email,
-        emailVerified: true,
+        emailVerified: principal.emailVerified,
       },
       dealer: null,
       role: null,

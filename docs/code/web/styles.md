@@ -12,7 +12,7 @@ rule the note sat above.
 Dealers-Drive design system.
 
 Transcribed from `docs/DESIGN-SPEC.md` and the prototype's own stylesheet
-(`docs/Dealers-Drive-UI/ds/industry.css` plus the `:root` overrides in
+(`docs/Dealers-Drive-UI/ds/industry.css` on the `docs` branch, plus the `:root` overrides in
 `Dealers-Drive.dc.html`). The prototype is the source of truth for anything
 visual, so the component classes below carry the same names and the same
 values it uses — `.btn`, `.card`, `.tag`, `.dd-plate`, `.blueprint` — and

@@ -47,9 +47,15 @@ against the Next.js version in use.
 
 ## `apps/web/src/app/(public)/dealers/[slug]/page.tsx`
 
-### `export const revalidate = 600`
+### `export const revalidate = 60`
 
-RSC + ISR 10 min — SEO (ARCHITECTURE §15.1).
+RSC + ISR — SEO (ARCHITECTURE §15.1). It was 10 minutes, with the dealership
+fetch (`DEALER_CACHE`) cached as long. A console moderation clears the `dealers`
+tag at once, but a dealership suspended any other way — directly in the
+database, or by a job — stayed on its public page for about ten minutes
+(BUG-111, measured 614 s). Both are 60 s now, the car page's window: one
+`GET /v1/dealers/:slug` per dealership per minute at most, and a suspension
+that bypasses the console is gone within about a minute.
 
 ### `async function loadDealer(slug: string): Promise<DealerPublicProfile | null>`
 
@@ -90,8 +96,8 @@ the page is worse than no button, so both arrive together.
 Both tags. `dealer:<slug>` is what this dealership's own save clears;
 `dealers` is what a moderation decision clears, because approving or
 suspending changes whether this page may exist at all — and a suspended
-dealership's portfolio staying up for ten minutes is the one stale
-window here that is not merely untidy.
+dealership's portfolio staying up is the one stale window here that is not
+merely untidy, which is why the fallback window is now a minute (BUG-111).
 
 ### `description:`
 
@@ -239,6 +245,11 @@ the not-found page like the profile's 404. `?page=` pages the inventory
 and the links carry `#inventory` so paging lands on the grid, not the
 cover. The filter rail and toolbar (F078/F080) are still deferred with
 search.
+
+The inventory fetch is uncached (`revalidate: false`) for the reason `/cars`
+is (BUG-113): a stale cache entry is served once more after its window on
+Vercel, which showed sold cars on a dealership's page nobody had opened for a
+while. The profile above it keeps its own cache.
 
 ### `function detailRows(dealer: DealerPublicProfile): DetailRow[]`
 

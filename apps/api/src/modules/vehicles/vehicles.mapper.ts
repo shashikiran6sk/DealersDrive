@@ -44,7 +44,6 @@ export function completenessOf(row: Vehicle): VehicleCompletenessInput {
     ownerCount: row.ownerCount,
     color: row.color,
     insuranceType: row.insuranceType,
-    insuranceValidUntil: row.insuranceValidUntil,
     pricePaise: row.pricePaise,
   };
 }
@@ -132,7 +131,6 @@ export function toDealerVehicle(row: VehicleRow, permissions?: readonly string[]
     ownerCount: row.ownerCount,
     color: row.color,
     insuranceType: row.insuranceType,
-    insuranceValidUntil: isoDate(row.insuranceValidUntil),
     pricePaise,
     priceLabel: pricePaise === null ? null : formatRupees(pricePaise),
     negotiability: row.negotiability,

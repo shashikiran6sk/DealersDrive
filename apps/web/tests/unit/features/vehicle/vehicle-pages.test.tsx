@@ -38,7 +38,6 @@ function stored() {
     ownerCount: null,
     color: null,
     insuranceType: null,
-    insuranceValidUntil: null,
     pricePaise: null,
     priceLabel: null,
     negotiability: null,

@@ -45,13 +45,18 @@ Not `getPublicLocations()`, which swallows a failure into an empty list: a
 sitemap that quietly drops every district page while the API is down is worse
 than a 5xx, which a crawler retries.
 
-## `apps/web/src/app/favicon.ico` · `icon.png` · `apple-icon.png`
+## The favicon — `apps/web/public/favicon-v2.ico` and `public/brand/dd-*-v2-*.png`
 
-The header's mark — the `#0c0c0b` tile, `DD` in Manrope 800 — rendered at
-16/32/48 (the `.ico`), 512 and 180. The Apple icon is full-bleed and square
-because iOS draws its own corners, and transparent ones come out black. They
-were rendered with the `next/og` renderer and the Manrope font the app already
-uses; there is no older logo anywhere in the repository to reuse.
+There are no icon files in `app/`. The favicon is declared by `rootMetadata()`
+(`SITE_ICONS`) at versioned URLs, and the reason is under `seo.constants.ts`
+in [lib](lib.md). `public/favicon.ico` is the same image as `favicon-v2.ico`,
+kept for clients that ask for that address without reading the page.
+
+The mark is the `#0c0c0b` tile with the two-shape `D` icon, at 16/32/48 (the
+`.ico`), 48, 96 and 192 (PNGs), and 180 for Apple. The Apple icon is full-bleed
+and square because iOS draws its own corners, and transparent ones come out
+black. All of them come from `scripts/generate-favicon.mjs`, which draws each
+size from the SVG master rather than shrinking a larger raster.
 
 ## `apps/web/src/app/page.tsx`
 

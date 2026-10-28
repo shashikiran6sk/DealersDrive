@@ -1,3 +1,5 @@
+import { STATUS_TEXT } from '@/components/errors/status-page';
+
 export interface VehicleDescriptionInput {
   title: string;
   place: string | null;
@@ -12,7 +14,7 @@ export const VEHICLE_PAGE_TEXT = {
   back: '← All cars',
   specifications: 'Specifications',
   description: 'From the dealer',
-  notFoundTitle: 'Car not found',
+  notFoundTitle: STATUS_TEXT.notFound.metaTitle,
   metaTitle: (title: string, city: string | null) => (city ? `${title} in ${city}` : title),
   metaDescription: ({
     title,

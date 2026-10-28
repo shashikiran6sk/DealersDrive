@@ -19,7 +19,7 @@ const ADMIN_EMAIL = env.adminAllowlist[0] ?? '';
 const DEV_SLUG = env.DEV_DEALER_SLUG;
 
 /**
- * CLAUDE.md §5: "The only thing being bypassed locally is the identity
+ * The original agent manual §5 (docs/original-spec/AGENTS.md on the docs branch): "The only thing being bypassed locally is the identity
  * verification mechanism." This adapter is where that promise is kept or
  * broken, so the tests below are mostly about what it *refuses* to read:
  *

@@ -51,6 +51,18 @@ export const Compact: Story = { args: { variant: 'compact' } };
 
 export const WithoutPhotograph: Story = { args: { vehicle: { ...CARD, image: null } } };
 
+export const PhotographFailsToLoad: Story = {
+  args: {
+    vehicle: {
+      ...CARD,
+      image: {
+        url: 'https://media.invalid/missing.webp',
+        alt: '2023 Hyundai Creta SX(O), the primary photograph',
+      },
+    },
+  },
+};
+
 export const PriceOnRequest: Story = { args: { vehicle: { ...CARD, priceLabel: null } } };
 
 export const LongTitle: Story = {

@@ -95,3 +95,13 @@ it is given, so "no Instagram account yet" is an absent entry here
 ### `social`
 
 rather than a rule in a component.
+
+### `supportEmail: support.customer.email, supportPhone: support.customer.phone`
+
+The top-level pair is the customer support contact, the same values as
+`support.customer` (BUG-112). It used to be `env.SUPPORT_EMAIL` /
+`env.SUPPORT_PHONE` directly, so the footer and the organisation JSON-LD kept the
+deployment's number after an operator changed it in `/admin/config`, while the
+Contact page — which reads `support` — showed the new one. `supportContacts`
+already falls back to the environment value when nothing usable is configured,
+so an unconfigured deployment reports exactly what it did before.

@@ -20,7 +20,7 @@ what the page already says. Everything below is one of those four.
 | `/cars`                   | dynamic                    | the base, each district, plain later pages  | the base and each stocked district |
 | `/car/[slug]`             | ISR, 60 s, tag-revalidated | ACTIVE and RESERVED; every other state 404s | ACTIVE and RESERVED                |
 | `/dealers`                | dynamic                    | the base, each district, plain later pages  | the base and each district         |
-| `/dealers/[slug]`         | ISR, 600 s                 | an ACTIVE dealership with an available car  | the same                           |
+| `/dealers/[slug]`         | ISR, 60 s, tag-revalidated | an ACTIVE dealership with an available car  | the same                           |
 | `/contact`                | ISR, 10 min                | yes                                         | yes                                |
 | `/support`                | 308 → `/contact`           | —                                           | no                                 |
 | `/login`                  | dynamic                    | `noindex, follow`                           | no                                 |
@@ -91,12 +91,19 @@ not include Googlebot — and Google ignores a canonical outside `<head>`.
 client. Each `generateMetadata` awaits the same memoised fetch as its page, so
 this costs nothing measurable.
 
-**Icons.** `app/favicon.ico` (16/32/48), `app/icon.png` (512) and
-`app/apple-icon.png` (180) use only the approved white DD symbol on black.
-The browser favicon and `icon.png` use a smaller symbol (68% of tile width) on a
-rounded black tile with transparent outer corners. Apple and PWA icons retain
-their platform-appropriate full-bleed backgrounds.
-Next generates their link tags; root metadata declares no duplicate icons.
+**Icons.** Root metadata declares the favicon (`SITE_ICONS` in
+`lib/seo/seo.constants.ts`) at versioned URLs: `/favicon-v2.ico` (16/32/48),
+`/brand/dd-favicon-v2-48.png`, `-96.png`, `/brand/dd-icon-v2-192.png` and the
+180px `/brand/dd-apple-icon-v2-180.png`. Every PNG favicon is a square multiple
+of 48px, the only size Google uses in search results. There are no icon files
+in `app/`: Next always links `app/favicon.ico`, which would put the
+unversioned URL Google cached the pre-#311 mark under back on the page.
+`/favicon.ico` stays in `public/`, the same image as `favicon-v2.ico`, for
+clients that request it without reading the page. A future mark gets `v3`
+names, not new bytes under these.
+The browser favicons use a smaller symbol (68% of tile width) on a rounded
+black tile with transparent outer corners. Apple and PWA icons retain their
+platform-appropriate full-bleed backgrounds.
 `app/manifest.ts` references versioned 192/512 PNGs and a separate maskable
 512 PNG whose artwork fits inside the central safe circle.
 The Organization logo uses `/brand/dealersdrive-organization-v2.png` (1024 square),
@@ -106,8 +113,8 @@ retaining the existing marketplace copy. Car and dealership photo overrides,
 canonicals, indexing rules and SEO text remain unchanged.
 Legacy public brand and social paths serve updated artwork for compatibility.
 Regenerate derivatives with `node scripts/generate-favicon.mjs`.
-Conventional browser icon URLs retain normal browser favicon caching; no global
-cache settings or arbitrary query parameters are introduced.
+No global cache settings or arbitrary query parameters are introduced; a new
+file name is the cache-busting.
 
 ## 4. Faceted navigation — `/cars` and `/dealers`
 

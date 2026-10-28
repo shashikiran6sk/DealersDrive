@@ -4,6 +4,7 @@ import { CursorPage } from './common.js';
 import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES } from './dealer.js';
 import { ListingStatus, StatusTone } from './enums.js';
 import { ReactivationRequestStatus } from './listing.js';
+import { DealerVehicle, UpdateVehicleInput } from './vehicle.js';
 
 /**
  * The admin side of a listing (**F069**, **F070**, as revised by **R45**).
@@ -237,6 +238,7 @@ export const VehicleImagePresignInput = z
     bytes: z.number().int().min(1).max(IMAGE_MAX_BYTES),
     width: z.number().int().min(1).max(20000).optional(),
     height: z.number().int().min(1).max(20000).optional(),
+    replacesMediaId: z.string().uuid().optional(),
   })
   .strict();
 export type VehicleImagePresignInput = z.infer<typeof VehicleImagePresignInput>;
@@ -245,6 +247,11 @@ export const ListingImageParam = z
   .object({ id: z.string().uuid(), mediaId: z.string().uuid() })
   .strict();
 export type ListingImageParam = z.infer<typeof ListingImageParam>;
+
+export const ReplaceVehicleImageInput = z
+  .object({ replacementMediaId: z.string().uuid() })
+  .strict();
+export type ReplaceVehicleImageInput = z.infer<typeof ReplaceVehicleImageInput>;
 
 /**
  * The gallery order an admin wants (**F035** as reinterpreted by **R45**):
@@ -298,6 +305,7 @@ export type AdminVehicleImages = z.infer<typeof AdminVehicleImages>;
  */
 export const ApprovalBlockerCode = z.enum([
   'DEALER_NOT_ACTIVE',
+  'DEALER_TERMS_NOT_ACCEPTED',
   'VEHICLE_INCOMPLETE',
   'CHECKS_INCOMPLETE',
   'TOO_FEW_IMAGES',
@@ -311,7 +319,30 @@ export const ApprovalBlocker = z.object({
 });
 export type ApprovalBlocker = z.infer<typeof ApprovalBlocker>;
 
+export const ADMIN_EDITABLE_LISTING_STATUSES: readonly ListingStatus[] = [
+  'PENDING_REVIEW',
+  'CHANGES_REQUESTED',
+  'ACTIVE',
+  'RESERVED',
+];
+
+export const AdminUpdateVehicleInput = z
+  .object({
+    details: UpdateVehicleInput,
+    expectedUpdatedAt: z.iso.datetime(),
+  })
+  .strict();
+export type AdminUpdateVehicleInput = z.infer<typeof AdminUpdateVehicleInput>;
+
+export const AdminVehicleDetails = DealerVehicle.omit({
+  listing: true,
+  issues: true,
+  complete: true,
+});
+export type AdminVehicleDetails = z.infer<typeof AdminVehicleDetails>;
+
 export const AdminListingDetail = z.object({
+  vehicle: AdminVehicleDetails,
   listing: AdminListingRow.extend({
     reason: z.string().nullable(),
     submissionCount: z.number().int(),
@@ -368,6 +399,9 @@ export const AdminListingDetail = z.object({
     reviewerIsAssistant: z.boolean(),
   }),
   actions: z.object({
+    canEdit: z.boolean(),
+    canReserve: z.boolean(),
+    canMarkSold: z.boolean(),
     canVerify: z.boolean(),
     canRequestChanges: z.boolean(),
     canReject: z.boolean(),

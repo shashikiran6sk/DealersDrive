@@ -6,6 +6,7 @@ import { Corners, Tag } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
 import { classifyPhoto } from './classify-photo';
+import { ExpandIcon } from './expand-icon';
 import { GalleryArrow } from './gallery-arrow';
 import { GalleryFallback } from './gallery-fallback';
 import { GalleryStrip } from './gallery-strip';
@@ -18,7 +19,7 @@ import {
 import type { GalleryStep, PhotoGalleryProps, PhotoKind } from './photo-gallery.types';
 import { StudioWhiteFilter } from './studio-white-filter';
 import { useSwipe } from './use-swipe';
-import { initialIndex, studioFilterId, wrapIndex } from './utils';
+import { indexAfterRemoval, initialIndex, studioFilterId, wrapIndex } from './utils';
 
 export function PhotoGallery({
   title,
@@ -66,9 +67,15 @@ export function PhotoGallery({
   const mainUrl = main?.url;
   const whitened = variant === 'studio' && mainUrl !== undefined && kinds.get(mainUrl) !== 'photo';
 
-  const markFailed = useCallback((url: string) => {
-    setFailed((previous) => (previous.has(url) ? previous : new Set(previous).add(url)));
-  }, []);
+  const markFailed = useCallback(
+    (url: string) => {
+      const removedAt = shown.findIndex((photo) => photo.url === url);
+      if (removedAt === -1) return;
+      setFailed((previous) => (previous.has(url) ? previous : new Set(previous).add(url)));
+      setIndex((selected) => indexAfterRemoval(wrapIndex(selected, shown.length), removedAt));
+    },
+    [shown],
+  );
 
   const classify = useCallback(
     (url: string, image: HTMLImageElement) => {
@@ -97,7 +104,7 @@ export function PhotoGallery({
   return (
     <section aria-label={PHOTO_GALLERY_TEXT.label} className="min-w-0">
       {variant === 'studio' ? <StudioWhiteFilter id={filterId} /> : null}
-      <div {...swipe} className="relative touch-pan-y">
+      <div {...swipe} className="relative touch-pan-y touch-pinch-zoom">
         <button
           type="button"
           onClick={(event) => openAt(current, event.currentTarget)}
@@ -120,7 +127,8 @@ export function PhotoGallery({
             onLoad={(event) => classify(main.url, event.currentTarget)}
             onError={() => markFailed(main.url)}
           />
-          <Tag className="absolute right-[10px] bottom-[10px] z-[3] bg-white text-[11px] tnum">
+          <Tag className="absolute right-[10px] bottom-[10px] z-[3] gap-[6px] bg-white text-[11px] tnum">
+            <ExpandIcon />
             {several ? PHOTO_GALLERY_TEXT.viewAll(current, total) : PHOTO_GALLERY_TEXT.viewOne}
           </Tag>
         </button>
@@ -143,7 +151,15 @@ export function PhotoGallery({
         ) : null}
       </div>
 
-      {strip && several ? <GalleryStrip photos={shown} index={current} onOpen={openAt} /> : null}
+      {several ? (
+        <p className="sr-only" aria-live="polite">
+          {PHOTO_GALLERY_TEXT.position(current, total)}
+        </p>
+      ) : null}
+
+      {strip && several ? (
+        <GalleryStrip photos={shown} index={current} onSelect={setIndex} onFailed={markFailed} />
+      ) : null}
 
       <GalleryViewer
         title={title}

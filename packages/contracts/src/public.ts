@@ -83,6 +83,7 @@ export type HeroImageConfig = z.infer<typeof HeroImageConfig>;
 export const PublicConfig = z.object({
   mediaBaseUrl: z.string(),
   captchaSiteKey: z.string().nullable(),
+  /** The customer support contact — always `support.customer`, kept for the footer and JSON-LD. */
   supportEmail: z.string(),
   supportPhone: z.string(),
   minPhotosPerListing: z.number().int(),
@@ -171,7 +172,7 @@ export type DealerDirectoryQuery = z.infer<typeof DealerDirectoryQuery>;
  * There is **no phone number here, and no email**. The only route that returns
  * a dealer's number is `POST /v1/vehicles/:slug/reveal-contact`, and it is
  * deliberately a POST so it can be rate-limited and logged as a lead
- * (CLAUDE.md rule 7).
+ * (AGENTS.md rule 7).
  */
 export const DealerCard = z.object({
   slug: z.string(),
@@ -179,7 +180,7 @@ export const DealerCard = z.object({
   initials: z.string(),
   city: z.string(),
   state: z.string(),
-  yearsOperating: z.number().int(),
+  yearsOperating: z.number().int().nullable(),
   /** Already reads "Vellore, Tamil Nadu · 7 years" — one line, composed once. */
   yearsLabel: z.string(),
   tagline: z.string().nullable(),

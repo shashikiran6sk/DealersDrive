@@ -32,7 +32,7 @@ export async function saveDealerProfileAction(
     ...(formData.has('customerContactNumber')
       ? { contact: { landline: formData.get('customerContactNumber') } }
       : {}),
-    ...(year ? { establishedYear: Number(year) } : {}),
+    ...(formData.has('establishedYear') ? { establishedYear: year ? Number(year) : null } : {}),
     ...(formData.has('tagline') ? { tagline: formData.get('tagline') } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),
   });

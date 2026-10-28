@@ -35,7 +35,7 @@ export const vehicleImagesDocs: ModuleDocs = {
     'the object — its size against the declaration and its first bytes against the JPEG, ' +
     'PNG and WebP signatures — and only then attaches it to the vehicle. The storage key is ' +
     'always the server’s: `vehicles/{vehicleId}/{mediaId}/original.{ext}`.\n\n' +
-    'Images may change only while the listing is `PENDING_REVIEW` or `CHANGES_REQUESTED`. ' +
+    'Images may change while the listing is `PENDING_REVIEW`, `CHANGES_REQUESTED`, `ACTIVE` or `RESERVED`. ' +
     'Every route requires `admin:media:upload` and answers `Cache-Control: no-store`.',
   operations: [
     {
@@ -48,7 +48,8 @@ export const vehicleImagesDocs: ModuleDocs = {
         'Step 1 of 3. `id` is the listing. The client names the file, its type and size; it ' +
         'never names a path or a vehicle. JPEG, PNG and WebP up to 10 MB, and at most ' +
         '`max` (20) images per vehicle — a full vehicle is `409 VEHICLE_IMAGES_FULL`. The ' +
-        'declared type and length are signed into the URL.',
+        'declared type and length are signed into the URL. Supply `replacesMediaId` to stage a ' +
+        'replacement for an attached image, including when the gallery is full; then use the replace endpoint.',
       audience: 'admin',
       permission: 'admin:media:upload',
       params: 'IdParam',
@@ -102,6 +103,35 @@ export const vehicleImagesDocs: ModuleDocs = {
         {
           status: 200,
           description: 'The vehicle’s images, in order.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/images/:mediaId/replace',
+      operationId: 'replaceListingImage',
+      tag: DOC_TAGS.media,
+      summary: 'Replace an image with a validated upload',
+      description:
+        'Verifies replacementMediaId using the same checks as commit, then swaps the attachment ' +
+        'atomically, preserving position and primary status. The old photo remains until success. ' +
+        'Works at the image limit. Retries return success without another swap. ' +
+        'Audited as vehicle.image_replaced; detached files are deleted after commit with durable cleanup retries.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'ListingImageParam',
+      requestBody: {
+        schema: 'ReplaceVehicleImageInput',
+        description: 'The staged replacement upload.',
+        example: { replacementMediaId: MEDIA_ID },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The updated gallery.',
           schema: 'AdminVehicleImages',
           example: IMAGES_EXAMPLE,
         },
@@ -170,7 +200,8 @@ export const vehicleImagesDocs: ModuleDocs = {
       summary: 'Remove one image from the vehicle',
       description:
         'Detaches the image, deletes its file and closes the gap in the order. Removing the ' +
-        'primary promotes the next image in the same transaction, so a vehicle with images ' +
+        'primary promotes the next image in the same transaction. ACTIVE and RESERVED listings ' +
+        'must retain listing.minPhotos images (409 VEHICLE_IMAGES_MINIMUM); use replacement at the minimum. A vehicle with images ' +
         'always has exactly one primary. Audited as `vehicle.image_removed`. `id` is the ' +
         `listing, e.g. \`${LISTING_ID}\`.`,
       audience: 'admin',

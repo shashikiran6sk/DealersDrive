@@ -73,10 +73,10 @@ describe('the destinations it claims exist', () => {
    * Careers page to fill a column out. A footer link onto a 404 is the product
    * telling a buyer a page exists and then not having it.
    */
-  it('offers the three buyer sections the header does', () => {
+  it('offers the two public buyer sections, and not Saved cars (UPD-3)', () => {
     renderFooter();
 
-    expect(columnHrefs('Buy a car')).toEqual(['/cars', '/dealers', '/saved']);
+    expect(columnHrefs('Buy a car')).toEqual(['/cars', '/dealers']);
   });
 
   /**
@@ -98,7 +98,7 @@ describe('the destinations it claims exist', () => {
       .filter((href) => href.startsWith('/'));
 
     expect(new Set(routes)).toEqual(
-      new Set(['/cars', '/dealers', '/saved', '/login?as=dealer', '/contact']),
+      new Set(['/cars', '/dealers', '/login?as=dealer', '/contact', '/terms', '/privacy']),
     );
   });
 });
@@ -167,5 +167,23 @@ describe('the support contacts', () => {
     renderFooter({ supportEmail: '', supportPhone: '' });
 
     expect(columnHrefs('Support')).toEqual(['/contact']);
+  });
+
+  it('shows a number exactly as an operator typed it in /admin/config, and dials its digits', () => {
+    renderFooter({ supportPhone: '044-2345-6789' });
+
+    expect(screen.getByRole('link', { name: '044-2345-6789' })).toHaveAttribute(
+      'href',
+      'tel:04423456789',
+    );
+  });
+
+  it('shows the number grouped for reading, and dials it unformatted (BUG-107)', () => {
+    renderFooter();
+
+    expect(screen.getByRole('link', { name: '+91 41622 48890' })).toHaveAttribute(
+      'href',
+      'tel:+914162248890',
+    );
   });
 });

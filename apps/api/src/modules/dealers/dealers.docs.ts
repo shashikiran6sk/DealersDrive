@@ -174,6 +174,12 @@ export const dealersDocs: ModuleDocs = {
     {
       method: 'post',
       path: '/v1/dealer/submit',
+      requestBody: {
+        schema: 'DealerLegalSubmitInput',
+        description:
+          'An unchecked/missing acceptance is refused when V1 agreement is missing. Only the authenticated owner may affirm it. Previously accepted owners may submit an empty object.',
+        required: false,
+      },
       operationId: 'submitDealerForVerification',
       tag: DOC_TAGS.dealerAccount,
       summary: 'Submit for verification',

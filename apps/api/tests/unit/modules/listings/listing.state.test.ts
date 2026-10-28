@@ -38,6 +38,9 @@ const ALLOWED: [ListingStatus, ListingEvent, ListingActorType, ListingStatus][] 
   ['PENDING_REVIEW', 'reject', 'ADMIN', 'REJECTED'],
   ['PENDING_REVIEW', 'approve', 'ADMIN', 'ACTIVE'],
   ['ACTIVE', 'reserve', 'DEALER', 'RESERVED'],
+  ['ACTIVE', 'reserve', 'ADMIN', 'RESERVED'],
+  ['ACTIVE', 'markSold', 'ADMIN', 'SOLD'],
+  ['RESERVED', 'markSold', 'ADMIN', 'SOLD'],
   ['ACTIVE', 'markSold', 'DEALER', 'SOLD'],
   ['ACTIVE', 'withdraw', 'DEALER', 'WITHDRAWN'],
   ['ACTIVE', 'withdraw', 'ADMIN', 'WITHDRAWN'],
@@ -83,9 +86,12 @@ describe('the transition table', () => {
     }
   });
 
-  it('lets only the dealership reserve or sell its own car', () => {
+  it('lets admins reserve and sell, while sales representatives cannot', () => {
+    expect(nextStatus('ACTIVE', 'reserve', 'ADMIN')).toBe('RESERVED');
+    expect(nextStatus('ACTIVE', 'markSold', 'ADMIN')).toBe('SOLD');
+    expect(nextStatus('RESERVED', 'markSold', 'ADMIN')).toBe('SOLD');
     for (const event of ['reserve', 'markSold'] as const) {
-      for (const status of STATUSES) expect(nextStatus(status, event, 'ADMIN')).toBeNull();
+      for (const status of STATUSES) expect(nextStatus(status, event, 'SALES')).toBeNull();
     }
   });
 

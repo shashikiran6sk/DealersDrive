@@ -69,7 +69,7 @@ export function createDealersRepository(prisma: PrismaClient) {
         specialities: dealer.specialities,
         yearsOperating: dealer.establishedYear
           ? Math.max(1, new Date().getUTCFullYear() - dealer.establishedYear)
-          : 1,
+          : null,
       }));
     },
 

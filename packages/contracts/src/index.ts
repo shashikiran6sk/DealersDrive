@@ -7,12 +7,12 @@
  *
  * Two rules govern everything in this package:
  *   1. Every input schema is `.strict()`. An unknown field is a 400, never a
- *      silent ignore (CLAUDE.md rule 2).
+ *      silent ignore (AGENTS.md rule 2).
  *   2. No input schema accepts `dealerId`, `status` or `slug`. Those come from
- *      the session and from the state machine (CLAUDE.md rules 1 and 5).
+ *      the session and from the state machine (AGENTS.md rules 1 and 5).
  *
  * Each feature adds its own module and its own export line, in the order set
- * by `docs/project/feature-map.md`. `public`, `dealer` and `admin` each grow
+ * by `docs/project/feature-map.md` on the `docs` branch. `public`, `dealer` and `admin` each grow
  * shape by shape, as the feature that answers with one lands.
  */
 
@@ -56,3 +56,4 @@ export * from './dealer-portfolio.js';
 export * from './dealer-yard-visits.js';
 
 export * from './dealer-contact.js';
+export * from './legal.js';

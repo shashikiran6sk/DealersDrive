@@ -8,6 +8,7 @@ interface ContactRevealDeps {
   service: EnquiriesService;
   rateLimit: RateLimiter;
   requireCustomer: RequestHandler;
+  legalGate: RequestHandler;
 }
 export type ContactRevealRoute = RouteRegistrar<ContactRevealDeps>;
 
@@ -15,8 +16,9 @@ export function createContactRevealsRouter(
   service: EnquiriesService,
   rateLimit: RateLimiter,
   requireCustomer: RequestHandler,
+  legalGate: RequestHandler,
 ): Router {
   const router = Router();
-  postRevealContact(router, { service, rateLimit, requireCustomer });
+  postRevealContact(router, { service, rateLimit, requireCustomer, legalGate });
   return router;
 }

@@ -195,7 +195,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const state = dealer.state ?? '';
       const yearsOperating = dealer.establishedYear
         ? Math.max(1, new Date().getUTCFullYear() - dealer.establishedYear)
-        : 1;
+        : null;
 
       const fullAddress = [dealer.addressLine, `${city} ${dealer.pincode ?? ''}`.trim(), state]
         .filter(Boolean)
@@ -236,13 +236,10 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         },
         stats: [
           { key: 'cars', label: 'Cars available', value: String(carCount) },
-          { key: 'years', label: 'Years operating', value: String(yearsOperating) },
+          ...(yearsOperating === null
+            ? []
+            : [{ key: 'years', label: 'Years operating', value: String(yearsOperating) }]),
           { key: 'location', label: 'Location', value: city },
-          {
-            key: 'response',
-            label: 'Response time',
-            value: responseLabel(dealer.medianResponseMins),
-          },
         ],
         contact: [
           { key: 'city', label: 'City', value: [city, state].filter(Boolean).join(', ') },
@@ -348,18 +345,11 @@ function districtChip(row: {
     : null;
 }
 
-function locationLabel(city: string, state: string, years: number): string {
+function locationLabel(city: string, state: string, years: number | null): string {
   const place = [city, state].filter(Boolean).join(', ');
+  if (years === null) return place;
   const age = `${years} ${years === 1 ? 'year' : 'years'}`;
   return place ? `${place} · ${age}` : age;
-}
-
-function responseLabel(medianMins: number | null): string {
-  if (medianMins === null) return 'Not enough response data';
-  if (medianMins < 60) return '< 1 hr';
-  if (medianMins < 120) return '< 2 hrs';
-  if (medianMins < 60 * 24) return `About ${Math.ceil(medianMins / 60)} hrs`;
-  return '1 day or more';
 }
 
 function humanHours(range: string): string {

@@ -1097,7 +1097,7 @@ describe('profile', () => {
     expect(address.district).toBe('Vellore');
   });
 
-  it('reports four stats, including the live car count', async () => {
+  it('reports public stats, including the live car count', async () => {
     const h = setup({
       profile: publicDealer(),
       stats: [{ dealer_slug: 'sri-lakshmi-motors', count: 7, from_price: null }],
@@ -1135,35 +1135,16 @@ describe('profile', () => {
       (await thisYear.service.profile('x')).stats.find((stat) => stat.key === 'years')?.value,
     ).toBe('1');
     expect(
-      (await unknown.service.profile('x')).stats.find((stat) => stat.key === 'years')?.value,
-    ).toBe('1');
+      (await unknown.service.profile('x')).stats.find((stat) => stat.key === 'years'),
+    ).toBeUndefined();
     vi.useRealTimers();
   });
 
-  describe('the response-time ladder', () => {
-    it.each([
-      [null, 'Not enough response data'],
-      [5, '< 1 hr'],
-      [59, '< 1 hr'],
-      [60, '< 2 hrs'],
-      [119, '< 2 hrs'],
-      [120, 'About 2 hrs'],
-      [121, 'About 3 hrs'],
-      [600, 'About 10 hrs'],
-      [1_439, 'About 24 hrs'],
-      [1_440, '1 day or more'],
-      [10_000, '1 day or more'],
-    ])('reports %s minutes as "%s"', async (minutes, expected) => {
-      const h = setup({ profile: publicDealer({ medianResponseMins: minutes }) });
-
-      const stats = await h.service
-        .profile('x')
-        .then((profile) => new Map(profile.stats.map((stat) => [stat.key, stat.value])));
-
-      // §14.3: this is a public stat a dealer degrades by ignoring their inbox,
-      // so the buckets have to be honest at the boundaries.
-      expect(stats.get('response')).toBe(expected);
-    });
+  it.each([null, 5, 60, 1440])('omits response time even when stored as %s', async (minutes) => {
+    const h = setup({ profile: publicDealer({ medianResponseMins: minutes }) });
+    expect((await h.service.profile('x')).stats.some((stat) => stat.key === 'response')).toBe(
+      false,
+    );
   });
 
   it('renders opening hours in words', async () => {

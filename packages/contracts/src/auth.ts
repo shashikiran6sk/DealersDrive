@@ -83,7 +83,7 @@ export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponse>;
  * No `email`: it comes from the Google identity on the session, and accepting
  * one here would let a caller claim an address Google never verified. No
  * `status` and no `slug` either — the state machine owns one and the service
- * derives the other (CLAUDE.md rules 1 and 5).
+ * derives the other (AGENTS.md rules 1 and 5).
  */
 export const OnboardingInput = z
   .object({

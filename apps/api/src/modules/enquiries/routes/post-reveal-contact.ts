@@ -12,11 +12,12 @@ import { byCustomer } from './by-customer.js';
 
 export const postRevealContact: ContactRevealRoute = (
   router,
-  { service, rateLimit, requireCustomer },
+  { service, rateLimit, requireCustomer, legalGate },
 ) => {
   router.post(
     '/vehicles/:slug/reveal-contact',
     requireCustomer,
+    legalGate,
     rateLimit('contact.reveal.customer', {
       limit: 10,
       windowSeconds: 3600,

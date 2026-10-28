@@ -8,7 +8,7 @@
 > The three-environment deployment — local → `dev.dealers-drive.com` →
 > `www.dealers-drive.com`, one image built per commit and promoted unchanged,
 > with health gates, smoke tests, an approval and a rollback — is
-> [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md), and its one-time setup is
+> [`docs/original-spec/DEPLOYMENT.md`](https://github.com/shashikiran6sk/DealersDrive/blob/docs/docs/original-spec/DEPLOYMENT.md) on the `docs` branch, and its one-time setup is
 > [`deploy/aws/README.md`](aws/README.md).
 
 Everything the MVP needs runs on a single instance behind nginx: the Next.js

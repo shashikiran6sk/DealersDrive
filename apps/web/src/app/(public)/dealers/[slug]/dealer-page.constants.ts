@@ -1,3 +1,5 @@
+import { STATUS_TEXT } from '@/components/errors/status-page';
+
 export interface DealerDescriptionInput {
   brandName: string;
   tagline: string | null;
@@ -6,9 +8,7 @@ export interface DealerDescriptionInput {
 }
 
 export const DEALER_PAGE_TEXT = {
-  responseTimeNote:
-    'Response time is based on when the dealer marks enquiries as contacted. Actual callback times may vary.',
-  notFoundTitle: 'Dealership not found',
+  notFoundTitle: STATUS_TEXT.notFound.metaTitle,
   inventoryUnavailableTitle: 'We couldn’t load this dealership’s cars right now',
   inventoryUnavailableMessage: 'The dealership’s details are above. Please try again for its cars.',
   coverAlt: (brandName: string) => `${brandName} dealership yard`,

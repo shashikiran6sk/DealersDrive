@@ -65,7 +65,6 @@ const DEALER: DealerPublicProfile = {
     { key: 'cars', label: 'Cars available', value: '0' },
     { key: 'years', label: 'Years operating', value: '27' },
     { key: 'location', label: 'Location', value: 'Vellore' },
-    { key: 'response', label: 'Response time', value: 'New dealer' },
   ],
   contact: [
     { key: 'city', label: 'City', value: 'Vellore, Tamil Nadu' },
@@ -189,7 +188,7 @@ describe('the dealership it shows', () => {
 
     expect(screen.getByText('Cars available')).toBeInTheDocument();
     expect(screen.getByText('27')).toBeInTheDocument();
-    expect(screen.getByText('New dealer')).toBeInTheDocument();
+    expect(screen.queryByText('Response time')).not.toBeInTheDocument();
   });
 
   /**
@@ -230,7 +229,7 @@ describe('the dealership it shows', () => {
   it('shows an em dash for a stat the API sent empty', async () => {
     serve({
       ...DEALER,
-      stats: DEALER.stats.map((s) => (s.key === 'response' ? { ...s, value: '' } : s)),
+      stats: DEALER.stats.map((s) => (s.key === 'cars' ? { ...s, value: '' } : s)),
     });
     render(await DealerPortfolioPage({ params, searchParams }));
 
@@ -600,7 +599,7 @@ describe('metadata', () => {
   it('titles a missing dealership rather than throwing', async () => {
     serve(notListed());
 
-    expect(await generateMetadata({ params })).toEqual({ title: 'Dealership not found' });
+    expect(await generateMetadata({ params })).toEqual({ title: 'Page not found' });
   });
 });
 
@@ -721,7 +720,7 @@ describe('the photo gallery in the hero', () => {
       'Sri Lakshmi Motors — The yard on Katpadi Road',
     );
     expect(within(stage).getByText('1 / 3 · view all')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Open photo/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Show photo/ })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Next image' }));
     expect(within(heroButton()).getByRole('img')).toHaveAttribute(
@@ -865,7 +864,7 @@ describe('the inventory (R48)', () => {
     expect(apiGetParsed).toHaveBeenCalledWith(
       expect.anything(),
       '/v1/dealers/sri-lakshmi-motors/vehicles',
-      { revalidate: 60, tags: ['dealer:sri-lakshmi-motors', 'vehicles'] },
+      { revalidate: false },
     );
     const section = within(screen.getByRole('region', { name: 'Inventory' }));
     expect(section.getAllByRole('article')).toHaveLength(3);

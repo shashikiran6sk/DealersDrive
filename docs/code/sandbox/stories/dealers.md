@@ -17,7 +17,7 @@ is the _contracts DTO_ this component takes. Somebody searching the registry
 for either name has to land here rather than write a second card, which is
 what the `aliases` field is for.
 
-## R28 — the card as `docs/Dealers-Drive-UI/Dealer-Card` draws it
+## R28 — the card as `docs/Dealers-Drive-UI/Dealer-Card` (on the `docs` branch) draws it
 
 The composition changed; the rules that hold it together did not. What is
 new to look at:

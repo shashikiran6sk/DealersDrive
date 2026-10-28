@@ -4,6 +4,7 @@ import {
   DEALER_PERMISSIONS,
 } from '@dealers-drive/contracts';
 
+import { legalDocs } from '../modules/legal/legal.docs.js';
 import { env } from '../config/env.js';
 import { authDocs } from '../modules/auth/auth.docs.js';
 import { adminDocs } from '../modules/admin/admin.docs.js';
@@ -32,6 +33,7 @@ import { TAG_ORDER } from './tags.js';
 
 const MODULES: ModuleDocs[] = [
   authDocs,
+  legalDocs,
   configDocs,
   dealersPublicDocs,
   searchDocs,

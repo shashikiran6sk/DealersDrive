@@ -95,7 +95,7 @@ export interface AuthHarness {
    * other long-lived servers on it, one of them can take a port the suite has
    * just released — and the next request then dials somebody else's process and
    * gets an answer that is not this API's at all. That is the intermittent
-   * integration failure `CONTEXT.md` §7l describes; listening once removes the
+   * integration failure `CONTEXT.md` §7l (on the `docs` branch) describes; listening once removes the
    * churn it needs.
    */
   server: Server;

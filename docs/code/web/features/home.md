@@ -53,6 +53,14 @@ broken-image icon while a photograph is being chosen. The suggestion panel of
 the search box hangs below the banner, which is why the clipping
 (`overflow-hidden`) is on the background layer and not on the section.
 
+**`isolate` and `z-10` are a pair.** `isolate` gives the section its own
+stacking context so the photograph's `-z-10` stays behind the copy rather than
+behind the page. The cost is that nothing inside the banner can layer above
+anything outside it — the panel's own `z-50` only counts within the banner — so
+without `z-10` the positioned elements that follow (each card's photo, the
+"View all" link) painted over the hanging panel. `z-10` lifts the whole banner
+above the sections below it and stays under the sticky header's `z-20`.
+
 ### `apps/web/src/features/home/hero-banner/hero-banner.constants.ts` — `HOME_HERO_IMAGE`
 
 The committed default: `apps/web/public/images/home-hero.webp`, a showroom

@@ -39,7 +39,7 @@ export const VehicleColor = z.enum([
 ]);
 export type VehicleColor = z.infer<typeof VehicleColor>;
 
-export const InsuranceType = z.enum(['COMPREHENSIVE', 'THIRD_PARTY', 'NONE']);
+export const InsuranceType = z.enum(['NONE', 'LIVE']);
 export type InsuranceType = z.infer<typeof InsuranceType>;
 
 export const PriceNegotiability = z.enum(['SLIGHTLY', 'FIXED']);
@@ -294,8 +294,7 @@ export function normaliseVehicleColor(input: string | null | undefined): Vehicle
 }
 
 export const INSURANCE_LABELS: Record<InsuranceType, string> = {
-  COMPREHENSIVE: 'Comprehensive',
-  THIRD_PARTY: 'Third party',
+  LIVE: 'Live',
   NONE: 'None',
 };
 

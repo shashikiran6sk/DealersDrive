@@ -550,16 +550,11 @@ the district: the selector's list is the platform's coverage, and a district
 that vanished because somebody skipped a form field is a place a buyer can no
 longer reach.
 
-### `function locationLabel(city: string, state: string, years: number): string`
+### `function locationLabel(city: string, state: string, years: number | null): string`
 
 "Vellore, Tamil Nadu · 7 years", and gracefully less when a dealership
 predates one of the fields. The baseline built this inline and produced
 ", Tamil Nadu · 1 years" for a row with no city — a string a buyer sees.
-
-### `function responseLabel(medianMins: number | null): string`
-
-A dealer who never touches their inbox degrades their own public stat.
-That feedback loop is intentional (§14.3).
 
 ### `interface SuggestHit`
 
@@ -1603,7 +1598,7 @@ is no owner account yet to read them from.
 
 ### `function gstinOnCommit(`
 
-Owner decision (2026-10-12, `docs/project/optional-gstin.md`): the GSTIN is
+Owner decision (2026-10-12, `docs/project/optional-gstin.md` on the `docs` branch): the GSTIN is
 not a field the dealer types on its own. It arrives with the GST certificate,
 and committing a business proof decides it — the certificate's box, or nothing
 for any other proof. That keeps the GSTIN on file and the document a reviewer
@@ -1626,6 +1621,8 @@ plainly untrue — and Dealer Verified is a separate review with its own badge.
 ACTIVE now reads "Approved", and "Dealer Verified" only when that review has
 granted it.
 
+Missing established years are represented as null, with no invented directory age or public portfolio age row. Response-time statistics are omitted from the public profile.
+
 ## Customer contact approval
 
-The customer contact workflow extends the historical landline field. Owners may propose it alongside marketing edits; the live value stays unchanged until approval. Confirmation and approval timestamps deliberately start empty for legacy rows. Standard application approval only enables a number confirmed under the new onboarding wording. Post-activation changes use the profile queue, including explicit removal and reconfirming an existing value. The account mobile remains locked and is never a customer-contact fallback. See [customer contact policy](../../../project/dealer-customer-contact.md).
+The customer contact workflow extends the historical landline field. Owners may propose it alongside marketing edits; the live value stays unchanged until approval. Confirmation and approval timestamps deliberately start empty for legacy rows. Standard application approval only enables a number confirmed under the new onboarding wording. Post-activation changes use the profile queue, including explicit removal and reconfirming an existing value. The account mobile remains locked and is never a customer-contact fallback. See [customer contact policy](https://github.com/shashikiran6sk/DealersDrive/blob/docs/docs/project/dealer-customer-contact.md) on the `docs` branch.

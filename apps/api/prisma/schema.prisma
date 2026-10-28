@@ -1,7 +1,7 @@
 // Dealers-Drive — database schema.
 //
 // Every model and enum arrives with the feature that owns it, in the order set
-// by `docs/project/feature-map.md`. Money is BigInt paise everywhere, and every
+// by `docs/project/feature-map.md` on the `docs` branch. Money is BigInt paise everywhere, and every
 // dealer-owned table carries `dealerId` as a first-class column so tenant
 // filtering is one indexed predicate and never a join.
 //
@@ -59,6 +59,7 @@ model User {
   roles                UserRole[]
   enquiries            Enquiry[]
   savedVehicles        SavedVehicle[]
+  legalAcceptances     LegalAcceptance[]
 
   enquiriesContacted Enquiry[] @relation("EnquiryContactedBy")
   enquiriesClosed    Enquiry[] @relation("EnquiryClosedBy")
@@ -623,7 +624,7 @@ model DealerProfileChange {
 // There is no `City` model, and that is the second deliberate divergence from
 // the baseline after D1.
 //
-// D1 removed the vehicle catalogue for the reason recorded in CLAUDE.md §5;
+// D1 removed the vehicle catalogue for the reason recorded in AGENTS.md §5;
 // `City` survived it because cities are not catalogue data. On the evidence of
 // the first onboarding flow they are: the table held five towns in one state,
 // so it decided which dealerships could exist rather than describing the ones
@@ -752,6 +753,7 @@ model Vehicle {
   /// read by nothing public.
   legacyColor         String?
   insuranceType       InsuranceType?
+  /// Historical expiry retained for migration review; no longer exposed or writable.
   insuranceValidUntil DateTime?      @db.Date
 
   /// Money is BigInt paise (rule 3). `64500000` is ₹6,45,000.
@@ -1306,9 +1308,8 @@ enum VehicleColor {
 }
 
 enum InsuranceType {
-  COMPREHENSIVE
-  THIRD_PARTY
   NONE
+  LIVE
 }
 
 enum PriceNegotiability {
@@ -1676,4 +1677,19 @@ model AdminOtpRedemption {
   challenge AdminOtpChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
 
   @@map("admin_otp_redemptions")
+}
+
+model LegalAcceptance {
+  id             String   @id @default(uuid()) @db.Uuid
+  subjectKey     String
+  userId         String   @db.Uuid
+  dealerId       String?  @db.Uuid
+  termsVersion   String
+  privacyVersion String
+  acceptedAt     DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([subjectKey, termsVersion, privacyVersion])
+  @@index([userId])
+  @@map("legal_acceptances")
 }
