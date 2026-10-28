@@ -299,3 +299,43 @@ A listing is never deleted by the lifecycle, so the review screen link always
 resolves. The public page exists only while the car is on the marketplace; for
 a sold, withdrawn or suspended car it is null, and the console says so rather
 than linking to a 404.
+
+## `apps/api/src/modules/enquiries/call-leads.repository.ts` — call leads
+
+### `export async function recordCallLead(tx, lead)`
+
+Written inside the reveal's transaction, after the audit row, so a number is
+never handed out without the lead that says who asked for it. A call lead is
+what the dealer sees of a reveal: the customer and the car, so a missed call can
+be returned. The customer is told on the car page, before the number appears,
+that the dealer will see their name and mobile.
+
+**One lead per customer and car**, by the `(customerId, listingId)` unique key
+and an `INSERT … ON CONFLICT`. A repeat reveal within
+`CALL_LEAD_REPEAT_WINDOW_HOURS` (24) changes nothing — the `WHERE` on the
+conflict update is false, so the row is untouched — and after that it moves
+`lastRevealedAt` to now and adds one to `revealCount`. Somebody tapping Call
+dealer three times in a minute is one lead, not three, and the count reads as
+"came back on another day". The upsert is a single statement, so two
+simultaneous reveals cannot race into a duplicate.
+
+A lead is deliberately **not an enquiry**: a reveal is not a request, and the
+customer may never call. Turning reveals into enquiries would fill the inbox
+with rows nobody asked to be called back about, and give the dealer a status
+to manage that means nothing.
+
+### `export async function callLeadPage(prisma, scope, query)`
+
+Keyset pagination on `(lastRevealedAt, id)`, newest first — the same shape as
+the inbox and admin oversight, so equal times never lose a row between pages.
+The dealer's page scopes by `dealerId` from the session; the admin's by an
+optional dealership slug.
+
+## `apps/api/src/modules/enquiries/call-leads.mapper.ts`
+
+### `export function toCallLead(row: CallLeadRow, now: Date = new Date())`
+
+The customer is read from their account as the list renders — the current name
+and the proved mobile, never anything typed — exactly as an enquiry's is. A
+number since released leaves no Call link. The car links to its public page
+only while it is visible and its dealership is active.

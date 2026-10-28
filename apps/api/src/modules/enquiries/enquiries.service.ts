@@ -1,6 +1,8 @@
-import { lockDealerResponseTime, refreshDealerResponseTime } from './enquiry-response-time.js';
 import {
   enquiryTransitionPermission,
+  formatPhone,
+  type CallLeadQuery,
+  type CallLeadsResponse,
   normaliseDealerContact,
   type RevealDealerContact,
   formatRegistration,
@@ -36,6 +38,8 @@ import {
   PUBLIC_AVAILABLE_LISTING_WHERE,
   PUBLIC_VISIBLE_LISTING_WHERE,
 } from '../search/search.facade.js';
+import { toCallLead } from './call-leads.mapper.js';
+import { callLeadPage, recordCallLead } from './call-leads.repository.js';
 import {
   CUSTOMER_SELECT,
   INBOX_SELECT,
@@ -199,7 +203,6 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       input: UpdateEnquiryInput,
     ): Promise<DealerEnquiry> {
       return withTransaction(prisma, async (tx) => {
-        await lockDealerResponseTime(tx, actor.dealerId);
         const locked = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id" FROM "enquiries"
           WHERE "id" = ${enquiryId}::uuid AND "dealerId" = ${actor.dealerId}::uuid
@@ -247,9 +250,14 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           after: { status: input.status },
         });
 
-        await refreshDealerResponseTime(tx, actor.dealerId);
         return toDealerEnquiry(updated);
       });
+    },
+
+    async callLeads(dealerId: string, query: CallLeadQuery): Promise<CallLeadsResponse> {
+      const { rows, page } = await callLeadPage(prisma, { dealerId }, query);
+      const now = new Date();
+      return { data: rows.map((row) => toCallLead(row, now)), page };
     },
 
     async revealContact(customer: CustomerPrincipal, slug: string): Promise<RevealDealerContact> {
@@ -288,9 +296,14 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           entityId: available.id,
           after: { listingId: available.id, channel: 'CALL' },
         });
+        await recordCallLead(tx, {
+          customerId: customer.userId,
+          dealerId: available.dealerId,
+          listingId: available.id,
+        });
         return {
           phone,
-          phoneDisplay: `+91 ${phone.slice(3)}`,
+          phoneDisplay: formatPhone(phone),
           callHref: `tel:${phone}`,
           dealerName: available.dealer.brandName,
         };

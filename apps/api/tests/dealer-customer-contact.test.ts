@@ -3,11 +3,6 @@ import { randomUUID } from 'node:crypto';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import {
-  refreshAllDealerResponseTimes,
-  refreshDealerResponseTime,
-} from '../src/modules/enquiries/enquiry-response-time.js';
-import { withTransaction } from '../src/platform/db/tenant-tx.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
 
@@ -248,171 +243,78 @@ describe('approved customer contact numbers', () => {
   });
 });
 
-describe('measured enquiry response time', () => {
-  it('requires five valid samples and updates when dealers contact, close or mark spam, and a closed enquiry stays closed', async () => {
-    const dealer = await fixtures.dealership();
+describe('call leads', () => {
+  it('records one lead per customer and car, shown to that dealership and to admins', async () => {
+    const dealer = await approvedDealer();
+    const other = await approvedDealer();
     const listing = await car(dealer);
-    const now = new Date();
-    const createdAt = new Date(now.getTime() - 86_400_000);
-    const enquiries = await Promise.all(
-      [10, 20, 30, 40].map((minutes) =>
-        h.prisma.enquiry.create({
-          data: {
-            dealerId: dealer.dealerId,
-            listingId: listing.id,
-            customerId: buyer.userId,
-            status: 'CONTACTED',
-            createdAt,
-            contactedAt: new Date(createdAt.getTime() + minutes * 60_000),
-          },
-        }),
-      ),
-    );
-    const fifth = await h.prisma.enquiry.create({
+    const customer = await h.prisma.user.findUniqueOrThrow({ where: { id: buyer.userId } });
+
+    await reveal(buyer.agent, listing.slug).expect(200);
+    await reveal(buyer.agent, listing.slug).expect(200);
+
+    const leads = await dealer.agent.get('/v1/dealer/call-leads').expect(200);
+    expect(leads.body.data).toHaveLength(1);
+    const lead = leads.body.data[0];
+    expect(lead.customer.name).toBe(customer.fullName);
+    expect(lead.customer.callHref).toBe(`tel:${customer.phone}`);
+    expect(lead.vehicle.href).toBe(`/car/${listing.slug}`);
+    expect(lead.revealCount).toBe(1);
+    expect(leads.body.page).toEqual({ nextCursor: null, hasMore: false });
+
+    expect((await other.agent.get('/v1/dealer/call-leads').expect(200)).body.data).toEqual([]);
+
+    const dealerRow = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } });
+    const admin = await reviewer.get(`/v1/admin/call-leads?dealer=${dealerRow.slug}`).expect(200);
+    expect(admin.body.data).toHaveLength(1);
+    expect(admin.body.data[0].dealer).toEqual({ name: dealerRow.brandName, slug: dealerRow.slug });
+    expect(admin.body.data[0].id).toBe(lead.id);
+  });
+
+  it('counts a repeat reveal only after 24 hours, and moves the lead to the top', async () => {
+    const dealer = await approvedDealer();
+    const first = await car(dealer);
+    const second = await car(dealer);
+    await reveal(buyer.agent, first.slug).expect(200);
+    await reveal(buyer.agent, second.slug).expect(200);
+
+    await h.prisma.callLead.updateMany({
+      where: { listingId: first.id },
       data: {
-        dealerId: dealer.dealerId,
-        listingId: listing.id,
-        customerId: buyer.userId,
-        createdAt,
+        firstRevealedAt: new Date(Date.now() - 26 * 3_600_000),
+        lastRevealedAt: new Date(Date.now() - 25 * 3_600_000),
       },
     });
-    await withTransaction(h.prisma, (tx) => refreshDealerResponseTime(tx, dealer.dealerId, now));
-    const median = async () =>
-      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } }))
-        .medianResponseMins;
-    expect(await median()).toBeNull();
-    await dealer.agent
-      .patch(`/v1/dealer/enquiries/${fifth.id}`)
-      .send({ status: 'CONTACTED' })
-      .expect(200);
-    expect(await median()).toBe(30);
-    const firstContact = (await h.prisma.enquiry.findUniqueOrThrow({ where: { id: fifth.id } }))
-      .contactedAt;
-    await dealer.agent
-      .patch(`/v1/dealer/enquiries/${fifth.id}`)
-      .send({ status: 'CLOSED' })
-      .expect(200);
-    await dealer.agent
-      .patch(`/v1/dealer/enquiries/${fifth.id}`)
-      .send({ status: 'NEW' })
-      .expect(409);
-    expect(
-      (await h.prisma.enquiry.findUniqueOrThrow({ where: { id: fifth.id } })).contactedAt,
-    ).toEqual(firstContact);
-    expect(await median()).toBe(30);
-    await dealer.agent
-      .patch(`/v1/dealer/enquiries/${enquiries[0]!.id}`)
-      .send({ status: 'SPAM' })
-      .expect(200);
-    expect(await median()).toBeNull();
-    await refreshAllDealerResponseTimes(h.prisma);
-    expect(await median()).toBeNull();
+    await reveal(buyer.agent, first.slug).expect(200);
+
+    const leads = (await dealer.agent.get('/v1/dealer/call-leads?limit=1').expect(200)).body;
+    expect(leads.data).toHaveLength(1);
+    expect(leads.data[0].revealCount).toBe(2);
+    expect(leads.data[0].vehicle.href).toBe(`/car/${first.slug}`);
+    expect(leads.page.hasMore).toBe(true);
+
+    const next = (
+      await dealer.agent
+        .get(`/v1/dealer/call-leads?limit=1&cursor=${encodeURIComponent(leads.page.nextCursor)}`)
+        .expect(200)
+    ).body;
+    expect(next.data[0].vehicle.href).toBe(`/car/${second.slug}`);
+    expect(next.page.hasMore).toBe(false);
   });
 
-  it('retains both simultaneous first contacts in the dealer median', async () => {
+  it('records nothing when the number is not revealed', async () => {
     const dealer = await fixtures.dealership();
     const listing = await car(dealer);
-    const createdAt = new Date(Date.now() - 86_400_000);
-    for (const minutes of [10, 20, 30]) {
-      await h.prisma.enquiry.create({
-        data: {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'CONTACTED',
-          createdAt,
-          contactedAt: new Date(createdAt.getTime() + minutes * 60_000),
-        },
-      });
-    }
-    const pending = await Promise.all(
-      [1, 2].map(() =>
-        h.prisma.enquiry.create({
-          data: {
-            dealerId: dealer.dealerId,
-            listingId: listing.id,
-            customerId: buyer.userId,
-            createdAt,
-          },
-        }),
-      ),
-    );
-    const responses = await Promise.all(
-      pending.map((enquiry) =>
-        dealer.agent.patch(`/v1/dealer/enquiries/${enquiry.id}`).send({ status: 'CONTACTED' }),
-      ),
-    );
-    expect(responses.map((response) => response.status)).toEqual([200, 200]);
-    expect(
-      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } }))
-        .medianResponseMins,
-    ).toBe(30);
+    await reveal(buyer.agent, listing.slug).expect(404);
+    await reveal(dealer.agent, listing.slug).expect(422);
+    expect(await h.prisma.callLead.count({ where: { listingId: listing.id } })).toBe(0);
   });
 
-  it('ignores old, spam, missing and invalid timestamps and expires rolling samples', async () => {
-    const dealer = await fixtures.dealership();
-    const listing = await car(dealer);
-    const now = new Date();
-    const day = 86_400_000;
-    const createdAt = new Date(now.getTime() - day);
-    for (const minutes of [1, 2, 10, 20, 30, 60]) {
-      await h.prisma.enquiry.create({
-        data: {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'CLOSED',
-          createdAt,
-          contactedAt: new Date(createdAt.getTime() + minutes * 60_000),
-        },
-      });
-    }
-    await h.prisma.enquiry.createMany({
-      data: [
-        {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'SPAM',
-          createdAt,
-          contactedAt: new Date(createdAt.getTime() + 1000),
-        },
-        {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'CLOSED',
-          createdAt,
-        },
-        {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'CONTACTED',
-          createdAt: new Date(now.getTime() - 91 * day),
-          contactedAt: now,
-        },
-        {
-          dealerId: dealer.dealerId,
-          listingId: listing.id,
-          customerId: buyer.userId,
-          status: 'CONTACTED',
-          createdAt,
-          contactedAt: new Date(createdAt.getTime() - 1000),
-        },
-      ],
-    });
-    await withTransaction(h.prisma, (tx) => refreshDealerResponseTime(tx, dealer.dealerId, now));
-    expect(
-      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } }))
-        .medianResponseMins,
-    ).toBe(15);
-    await withTransaction(h.prisma, (tx) =>
-      refreshDealerResponseTime(tx, dealer.dealerId, new Date(now.getTime() + 91 * day)),
-    );
-    expect(
-      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealer.dealerId } }))
-        .medianResponseMins,
-    ).toBeNull();
+  it('refuses unknown query parameters and other audiences', async () => {
+    const dealer = await approvedDealer();
+    const response = await dealer.agent.get('/v1/dealer/call-leads?dealerId=x').expect(400);
+    expect(JSON.stringify(response.body)).toContain('dealerId');
+    await h.agent().get('/v1/dealer/call-leads').expect(401);
+    await buyer.agent.get('/v1/admin/call-leads').expect(401);
   });
 });

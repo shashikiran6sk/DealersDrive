@@ -325,6 +325,7 @@ describe('calling the dealership', () => {
     await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
     expect(await screen.findByRole('button', { name: 'Call dealer' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Request a callback' })).toBeVisible();
+    expect(screen.getByText('The dealer will see your name and mobile number.')).toBeVisible();
     expect(revealContactAction).not.toHaveBeenCalled();
     expect(sendEnquiryAction).not.toHaveBeenCalled();
   });

@@ -207,6 +207,7 @@ export function EnquiryPanel({
                 {ENQUIRY_PANEL_TEXT.call}
               </Button>
               <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callIntro}</p>
+              <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callConsent}</p>
             </div>
           ) : null}
           <Button

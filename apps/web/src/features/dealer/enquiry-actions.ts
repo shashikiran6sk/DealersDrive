@@ -4,7 +4,6 @@ import { IdParam, UpdateEnquiryInput, type DealerEnquiry } from '@dealers-drive/
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
-import { revalidatePublicDealer } from '@/lib/cache-tags';
 
 import { ENQUIRY_ACTION_TEXT } from './enquiry-actions.constants';
 
@@ -32,6 +31,5 @@ export async function setEnquiryStatusAction(
   }
 
   revalidatePath(ENQUIRY_ACTION_TEXT.inboxPath);
-  revalidatePublicDealer();
   return { ok: true };
 }

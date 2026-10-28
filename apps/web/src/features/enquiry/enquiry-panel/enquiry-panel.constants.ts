@@ -8,6 +8,7 @@ export const ENQUIRY_PANEL_TEXT = {
   callbackRequiresLogin: 'Requires login with your mobile number',
   call: 'Call dealer',
   callIntro: 'Speak directly with the dealership.',
+  callConsent: 'The dealer will see your name and mobile number.',
   callback: 'Request a callback',
   callbackIntro: 'Send an enquiry and ask the dealer to call your verified mobile.',
   choose: 'How would you like to contact the dealer?',
