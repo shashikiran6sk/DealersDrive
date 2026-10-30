@@ -1,0 +1,26 @@
+{
+  "sha": "115ac26a077d55bf10ba073129e360fa86f7e37b",
+  "canonical": {
+    "expected": 556,
+    "PASS": 546,
+    "FAIL": 0,
+    "BLOCKED": 9,
+    "NOT_APPLICABLE": 1,
+    "accounted": 556,
+    "missing": 0,
+    "unclassified": 0
+  },
+  "discovered": {
+    "total": 138,
+    "PASS": 137,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_APPLICABLE": 1,
+    "byGroup": {
+      "security": 22,
+      "audit": 78,
+      "regression": 27,
+      "exploratory": 11
+    }
+  }
+}

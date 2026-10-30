@@ -1,0 +1,242 @@
+{
+  "BROWSER-001": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "Chromium 141 desktop 1440: 19 public/dealer/admin pages 200 with no overflow (headless Chromium = Chrome's engine; branded Google Chrome itself not installed)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:17.927Z"
+  },
+  "BROWSER-002": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Safari (WebKit) desktop is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:17.928Z"
+  },
+  "BROWSER-003": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Firefox (Gecko) desktop is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:17.929Z"
+  },
+  "BROWSER-004": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Microsoft Edge is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:17.929Z"
+  },
+  "BROWSER-005": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "EMULATED Chrome Android (Chromium mobile: Pixel UA, touch, DPR 3, 390×844): tap search → results → tap car; no overflow. Real Android hardware not available — real-device check stays in HUMAN-UAT.md",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:20.355Z"
+  },
+  "BROWSER-006": {
+    "status": "BLOCKED",
+    "layers": ["BROWSER"],
+    "note": "Safari on iPhone (WebKit/iOS) is not installed in this environment (only Playwright Chromium 1194 is available). Requires a real-device/BrowserStack run — listed in HUMAN-UAT.md. Not inferred from Chromium.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:20.355Z"
+  },
+  "BROWSER-007": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "tablet 820×1180: 18 public/dealer/admin pages 200, no overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:39.021Z"
+  },
+  "BROWSER-008": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "dealer console at 320/390 (emulated mobile): 12 pages 200, no overflow; enquiry actions reachable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:16:51.615Z"
+  },
+  "BROWSER-009": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "35 admin page×width cases clean (320–1440)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:17:23.633Z"
+  },
+  "BROWSER-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "invite dialog at 390×420 (keyboard-open viewport): phone field typeable, Invite button scrolls into view, Escape closes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:17:25.534Z"
+  },
+  "BROWSER-011": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "back restores ?q=Creta&fuel=PETROL with the same 24 results; forward returns to the car",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:17:27.419Z"
+  },
+  "BROWSER-012": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "second tab shares the session (/enquiries renders); signing out in tab 1 → tab 2’s next navigation goes to /login",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-ux",
+    "at": "2026-10-30T13:17:59.733Z"
+  },
+  "UX-001": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "search box reachable by Tab from page start; typing + Enter submits to /cars?q=Creta",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:01.125Z"
+  },
+  "UX-002": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "phone → Enter sends OTP (focus moves to \"null\"), digits typed → Enter verifies, name → Enter creates account; signed in without a pointer",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:02.583Z"
+  },
+  "UX-003": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "add-vehicle form: all 2 interactive controls reachable by Tab",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:07.586Z"
+  },
+  "UX-004": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "admin configuration form: all 180 controls reachable by Tab",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:13.682Z"
+  },
+  "UX-005": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "every visible input/select/textarea on 8 forms has a label or aria-label",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:22.119Z"
+  },
+  "UX-006": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "invalid phone: aria-invalid=true, message \"Enter a 10-digit Indian mobile number.\" tied to the field",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:23.765Z"
+  },
+  "UX-007": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "withdraw dialog: focus moves inside on open, Tab is trapped (12 presses), Escape closes and focus returns to the Withdraw trigger",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:25.336Z"
+  },
+  "UX-008": {
+    "status": "PASS",
+    "layers": ["BROWSER", "A11Y"],
+    "note": "6 pages: every visible button/link has a text or aria-label name (icon buttons such as ♡/✕/‹› carry aria-labels like \"Save 2023 Hyundai Creta SX(O)\", \"Close\")",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:32.284Z"
+  },
+  "UX-009": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "triple-click on \"Send enquiry\" → exactly 1 enquiry row (button enters a pending state; server also de-duplicates)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:36.757Z"
+  },
+  "UX-010": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "empty states: /saved → \"Saved cars Cars you have saved, on any device you sign in on. No saved…\" [Browse cars] | /enquiries → \"My enquiries Each dealership has your name and verified mobile number,…\" [Browse cars] | /dealer/inventory?status=SOLD → \"Inventory 0 vehicles Add vehicle All 0 Draft 0 Pending review 0 Change…\" [Add vehicle, All0] | /dealer/enquiries → \"Enquiries 0 enquiries Customer calls New 0 Contacted 0 Closed 0 Spam 0…\" [Customer calls, New0]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:41.235Z"
+  },
+  "UX-011": {
+    "status": "PASS",
+    "layers": ["BROWSER", "DATABASE"],
+    "note": "\"Mark this vehicle as sold?\", \"Withdraw this listing?\" (reason required) and \"Remove Ux Manager?\" confirmations; cancelling leaves listings and members unchanged in the DB",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:43.621Z"
+  },
+  "UX-012": {
+    "status": "PASS",
+    "layers": ["BROWSER"],
+    "note": "denials render as pages, not crashes: STAFF /dealer/team → 200 /dealer \"Good evening, Staff\"; STAFF /dealer/profile → 200 /dealer/profile \"Dealer profile\"; STAFF /admin → 200 /admin/login?error=session_expired \"Admin sign-in\"; CUSTOMER /dealer → 200 /login?as=dealer \"Login\"; CUSTOMER /admin/dealers → 200 /admin/login?error=session_expired \"Admin sign-in\"",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-ux",
+    "at": "2026-10-30T13:18:48.934Z"
+  }
+}

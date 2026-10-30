@@ -1,0 +1,322 @@
+{
+  "CALL-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "no approved number → public detail carries canCall:false and no number",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.091Z"
+  },
+  "APPR-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approve with no saved number → 409 CUSTOMER_CONTACT_MISSING",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.104Z"
+  },
+  "CALL-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reveal on a dealership with no approved number → 404 CONTACT_UNAVAILABLE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.122Z"
+  },
+  "APPR-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "manager → 403, staff → 403; no profile change filed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.146Z"
+  },
+  "APPR-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid number and unknown field → 400 naming the field",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.167Z"
+  },
+  "APPR-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "owner proposal → PENDING change, stored normalised (E.164); live number unchanged and canCall still false",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.224Z"
+  },
+  "APPR-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "second proposal while one is pending → 409 PROFILE_EDIT_PENDING",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.241Z"
+  },
+  "APPR-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves the profile change → number live and approved; canCall:true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.289Z"
+  },
+  "CALL-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "anonymous reveal → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.291Z"
+  },
+  "CALL-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "signed in but terms not accepted → 403 from the legal gate; no lead",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.298Z"
+  },
+  "CALL-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "the owner’s own session (one identity across audiences) is refused by the own-listing guard → 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.311Z"
+  },
+  "CALL-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "200 +91 44234 56789 (landline shown in mobile grouping — DISC-CALL-001, P3); Cache-Control no-store; one call lead (count 1) and one audit event",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.329Z"
+  },
+  "CALL-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "any body field → 400 naming it (strict empty body)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.341Z"
+  },
+  "CALL-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reserved, sold, withdrawn → 409 LISTING_NOT_AVAILABLE; unknown slug → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.377Z"
+  },
+  "CALL-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a member of the dealership revealing its own car's number → 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.409Z"
+  },
+  "LEAD-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "two more reveals within 24 h → still one lead, count 1",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.437Z"
+  },
+  "LEAD-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reveal after 25 h → count 2, latest time moved, first time kept",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.456Z"
+  },
+  "LEAD-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "10 concurrent reveals → all 200, exactly one lead, count 1",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.573Z"
+  },
+  "LEAD-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "reveals create no enquiry and nothing in the enquiry inbox",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.607Z"
+  },
+  "LEAD-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "owner sees 3 leads newest first with name and callable mobile; manager 200; staff 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.661Z"
+  },
+  "LEAD-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "newest first; keyset pages 2+1 with no overlap; dealerId and limit 500 → 400; a bad cursor → 409 MALFORMED_CURSOR (platform convention)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.725Z"
+  },
+  "LEAD-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "other dealership sees 0 of D’s leads; anonymous and customer sessions → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.746Z"
+  },
+  "LEAD-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees leads with the dealership; ?dealer narrows (3 / 0); unknown slug → 200; dealer session → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.787Z"
+  },
+  "LEAD-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "the lead shows the customer's current name, read at render time",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.803Z"
+  },
+  "APPR-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "legacy onboarding number (SIM-LEGACY row) → Approve for calls normalises and approves; second call idempotent; one audit event",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.849Z"
+  },
+  "APPR-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unparseable legacy text → 409; unknown dealer → 404; dealer session → 401; body with a field → 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.886Z"
+  },
+  "APPR-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "replacement proposed while approved → old number stays live during review; rejection leaves it approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:26.956Z"
+  },
+  "APPR-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin edits the number → approval withdrawn; canCall false; reveal → 404 until approved again",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:27.008Z"
+  },
+  "CALL-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "suspended dealership → reveal 409; reinstated (200) → 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:27.090Z"
+  },
+  "CALL-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a dealership without a number still takes callback enquiries (201)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:27.111Z"
+  },
+  "PRIV-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "number absent from 4 API reads and the car + dealer HTML (200/200/200/200/200/200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:27.337Z"
+  },
+  "CALL-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "10 reveals per customer per hour, the 11th → 429 CONTACT_RATE_LIMITED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-calls",
+    "at": "2026-10-30T13:07:27.667Z"
+  }
+}

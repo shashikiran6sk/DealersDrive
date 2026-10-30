@@ -1,0 +1,20 @@
+[
+  {
+    "kmBefore": 22400,
+    "kmWhileDown": 22400,
+    "kmAfterRetry": 31313,
+    "falseSuccess": false,
+    "shownError": true,
+    "savedAfterRetry": true
+  },
+  {
+    "falseSuccess": false,
+    "rowsWhileDown": 0,
+    "rowsAfterRetry": 1
+  },
+  {
+    "enquiryRowsAfterRefresh": 0,
+    "enquiryFormAfterRefresh": true,
+    "draftKmAfterSaveAndRefresh": "42424"
+  }
+]

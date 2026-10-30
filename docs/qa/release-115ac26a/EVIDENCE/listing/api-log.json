@@ -1,0 +1,3336 @@
+[
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "ae40e5e8-1eb4-4bc7-ad52-2686b93cad9e",
+      "title": "TN 34 UK 1469",
+      "registrationNumber": "TN34UK1469",
+      "registrationDisplay": "TN 34 UK 1469",
+      "rtoCode": "TN34",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "087bcc1f-c1d1-4115-b322-22039cef7d96",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.374Z",
+      "updatedAt": "2026-10-30T13:14:24.374Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "b18be968-70bb-4853-ba5d-3ceb8761eb57",
+      "title": "TN 88 NA 6409",
+      "registrationNumber": "TN88NA6409",
+      "registrationDisplay": "TN 88 NA 6409",
+      "rtoCode": "TN88",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "f8049c60-048a-4d65-8a30-a8a2b0cd5926",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.396Z",
+      "updatedAt": "2026-10-30T13:14:24.396Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "f8aa9277-7dc5-4c71-aadf-0f747db53acf",
+      "title": "TN 39 XB 4538",
+      "registrationNumber": "TN39XB4538",
+      "registrationDisplay": "TN 39 XB 4538",
+      "rtoCode": "TN39",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "d912c122-dbeb-4bf0-b538-700ecc0a6a64",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.414Z",
+      "updatedAt": "2026-10-30T13:14:24.414Z"
+    }
+  },
+  {
+    "dealerId": true
+  },
+  {
+    "actorRecorded": true
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/f8aa9277-7dc5-4c71-aadf-0f747db53acf",
+    "status": 200,
+    "body": {
+      "id": "f8aa9277-7dc5-4c71-aadf-0f747db53acf",
+      "title": "Maruti Suzuki Swift",
+      "registrationNumber": "TN39XB4538",
+      "registrationDisplay": "TN 39 XB 4538",
+      "rtoCode": "TN39",
+      "make": "Maruti Suzuki",
+      "model": "Swift",
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        },
+        {
+          "field": "kilometersDriven",
+          "message": "Kilometres driven is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "d912c122-dbeb-4bf0-b538-700ecc0a6a64",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.414Z",
+      "updatedAt": "2026-10-30T13:14:24.454Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/c4433b8d-4d72-41e7-96af-0e882df96a25",
+    "status": 200,
+    "body": {
+      "id": "c4433b8d-4d72-41e7-96af-0e882df96a25",
+      "title": "Honda",
+      "registrationNumber": "TN73RT4205",
+      "registrationDisplay": "TN 73 RT 4205",
+      "rtoCode": "TN73",
+      "make": "Honda",
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": 30000,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "30,000 km",
+      "issues": [
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "d9924bd6-4175-4dbc-a47a-82fb7370373e",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.479Z",
+      "updatedAt": "2026-10-30T13:14:24.501Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/c801b8b8-5cdb-4bfa-b35d-93c5508f0772",
+    "status": 200,
+    "body": {
+      "id": "c801b8b8-5cdb-4bfa-b35d-93c5508f0772",
+      "title": "Tata",
+      "registrationNumber": "TN85EP4848",
+      "registrationDisplay": "TN 85 EP 4848",
+      "rtoCode": "TN85",
+      "make": "Tata",
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": "BLUE",
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "08abf7a9-bbce-4a5e-8263-1cb558995cb1",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.525Z",
+      "updatedAt": "2026-10-30T13:14:24.555Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/cff7fdff-0e61-4bf3-a614-21c4051a19d6/submit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-incomplete",
+      "title": "Vehicle incomplete",
+      "status": 422,
+      "code": "VEHICLE_INCOMPLETE",
+      "traceId": "Xo9PxGXVvJ",
+      "detail": "A few details are still missing. Fill them in, then submit the vehicle again.",
+      "errors": [
+        {
+          "field": "make",
+          "code": "REQUIRED",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "code": "REQUIRED",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "code": "REQUIRED",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "code": "REQUIRED",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "code": "REQUIRED",
+          "message": "Transmission is required."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/27e0917f-bf2a-4eaa-a9f9-452915858e48",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "UFy6LcTxx6",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.manufacturingYear",
+          "code": "TOO_SMALL",
+          "message": "Enter a year from 1950."
+        },
+        {
+          "field": "body.kilometersDriven",
+          "code": "TOO_SMALL",
+          "message": "The reading cannot be negative."
+        },
+        {
+          "field": "body.ownerCount",
+          "code": "TOO_BIG",
+          "message": "Check the number of owners."
+        },
+        {
+          "field": "body.pricePaise",
+          "code": "TOO_SMALL",
+          "message": "Enter a price of at least ₹10,000."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "MyvwicVt2D",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/00000000-0000-4000-8000-000000000000",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "aOr9_wtT_q",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "dealerId": false
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f86c126c-6784-4af3-896a-28cc08f3768f/submit",
+    "status": 200,
+    "body": {
+      "id": "f86c126c-6784-4af3-896a-28cc08f3768f",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN31KT6626",
+      "registrationDisplay": "TN 31 KT 6626",
+      "rtoCode": "TN31",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "26b7fb4e-c76c-4f1e-a069-15ddfe639d47",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:24.723Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.673Z",
+      "updatedAt": "2026-10-30T13:14:24.696Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f86c126c-6784-4af3-896a-28cc08f3768f/submit",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-submittable",
+      "title": "Listing not submittable",
+      "status": 409,
+      "code": "LISTING_NOT_SUBMITTABLE",
+      "traceId": "Z6AlSuOUYd",
+      "detail": "Only a draft can be submitted for review.",
+      "listingStatus": "PENDING_REVIEW"
+    }
+  },
+  {
+    "listingRows": 1
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/61f6de7d-4dec-44ab-b06e-0f2b0e8d82b8",
+    "status": 200,
+    "body": {
+      "id": "61f6de7d-4dec-44ab-b06e-0f2b0e8d82b8",
+      "title": "TN 45 BJ 1113",
+      "registrationNumber": "TN45BJ1113",
+      "registrationDisplay": "TN 45 BJ 1113",
+      "rtoCode": "TN45",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": 10000,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "10,000 km",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "8bd48ac8-13f4-4a28-80f3-347cb3efe7cc",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.757Z",
+      "updatedAt": "2026-10-30T13:14:24.779Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/61f6de7d-4dec-44ab-b06e-0f2b0e8d82b8",
+    "status": 200,
+    "body": {
+      "id": "61f6de7d-4dec-44ab-b06e-0f2b0e8d82b8",
+      "title": "TN 45 BJ 1113",
+      "registrationNumber": "TN45BJ1113",
+      "registrationDisplay": "TN 45 BJ 1113",
+      "rtoCode": "TN45",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": 20000,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "20,000 km",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "8bd48ac8-13f4-4a28-80f3-347cb3efe7cc",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.757Z",
+      "updatedAt": "2026-10-30T13:14:24.790Z"
+    }
+  },
+  {
+    "finalKm": 20000
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/6ad48489-9d81-480c-8b4d-8d129a4b152c",
+    "status": 200,
+    "body": {
+      "id": "6ad48489-9d81-480c-8b4d-8d129a4b152c",
+      "title": "Kia Seltos",
+      "registrationNumber": "TN67RC5336",
+      "registrationDisplay": "TN 67 RC 5336",
+      "rtoCode": "TN67",
+      "make": "Kia",
+      "model": "Seltos",
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        },
+        {
+          "field": "kilometersDriven",
+          "message": "Kilometres driven is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "98bae424-87aa-417f-bcd5-be6e9f34f89c",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:24.807Z",
+      "updatedAt": "2026-10-30T13:14:24.836Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/041be7f5-c15c-4c3f-b0bc-6d382d449c2e/images/e5c9f47d-0384-45be-a072-fd7248b56127/commit",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "mediaId": "e5c9f47d-0384-45be-a072-fd7248b56127",
+          "position": 0,
+          "isPrimary": true,
+          "url": "<redacted>",
+          "fileName": "car-1.jpg",
+          "mimeType": "image/jpeg",
+          "bytes": 11518,
+          "width": 1600,
+          "height": 1200,
+          "uploadedAt": "2026-10-30T13:14:25.253Z"
+        }
+      ],
+      "min": 6,
+      "max": 20,
+      "canEdit": true
+    }
+  },
+  {
+    "linkedVehicle": true
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/0935054b-adcc-49c4-b175-2a42ca81a900",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "vb1wOl_nJw",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/0935054b-adcc-49c4-b175-2a42ca81a900",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "loYWpy3aXU",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/a3c79b8e-b8be-49cc-8cd3-32a2e344f784/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "L7yBSOc7X6",
+      "detail": "This action needs the listing:submit permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/829a5fee-b5f2-40bb-b7b4-0187feee2070/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "A9QVsQfH_t",
+      "detail": "This action needs the listing:submit permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/370b891e-facb-440b-8364-2abe0597c5e0/submit",
+    "status": 200,
+    "body": {
+      "id": "370b891e-facb-440b-8364-2abe0597c5e0",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN42FN6235",
+      "registrationDisplay": "TN 42 FN 6235",
+      "rtoCode": "TN42",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "aa5f1db6-2a5b-410d-a80c-35347bc6fe6b",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:25.534Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:25.479Z",
+      "updatedAt": "2026-10-30T13:14:25.503Z"
+    }
+  },
+  {
+    "listingId": "c2dda8f2-d740-452c-b464-74607fb5dd83"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/8b9eac86-2bf3-47dd-97cc-2d76a367f36c/submit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-incomplete",
+      "title": "Vehicle incomplete",
+      "status": 422,
+      "code": "VEHICLE_INCOMPLETE",
+      "traceId": "NRNxFIJ9eV",
+      "detail": "A few details are still missing. Fill them in, then submit the vehicle again.",
+      "errors": [
+        {
+          "field": "make",
+          "code": "REQUIRED",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "code": "REQUIRED",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "code": "REQUIRED",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "code": "REQUIRED",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "code": "REQUIRED",
+          "message": "Transmission is required."
+        }
+      ]
+    }
+  },
+  {
+    "status": "PENDING_REVIEW"
+  },
+  {
+    "slug": null,
+    "vdp": 404
+  },
+  {
+    "queueCount": 27,
+    "pages": 1,
+    "seesListing": true
+  },
+  {
+    "req": "GET /v1/admin/listings/aa5f1db6-2a5b-410d-a80c-35347bc6fe6b",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "aa5f1db6-2a5b-410d-a80c-35347bc6fe6b",
+        "vehicleId": "370b891e-facb-440b-8364-2abe0597c5e0",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 42 FN 6235",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "dealer": {
+          "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+          "name": "ListA Motors 634621ddc0a",
+          "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-30T13:14:25.534Z",
+        "submittedLabel": "30 Oct 2026",
+        "waitingLabel": "just now",
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 0,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": null
+      },
+      "dealer": {
+        "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 •••••• 3459"
+      },
+      "vehicle": {
+        "id": "370b891e-facb-440b-8364-2abe0597c5e0",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationNumber": "TN42FN6235",
+        "registrationDisplay": "TN 42 FN 6235",
+        "rtoCode": "TN42",
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "manufacturingYear": 2023,
+        "registrationYear": 2023,
+        "fuelType": "PETROL",
+        "transmission": "AUTOMATIC",
+        "bodyType": "SUV",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "color": "WHITE",
+        "insuranceType": "LIVE",
+        "pricePaise": 145000000,
+        "priceLabel": "₹14,50,000",
+        "negotiability": "FIXED",
+        "description": "Single owner, certification fixture.",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "createdAt": "2026-10-30T13:14:25.479Z",
+        "updatedAt": "2026-10-30T13:14:25.531Z"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 42 FN 6235"
+            },
+            {
+              "label": "RTO",
+              "value": "TN42"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Live"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": true
+      },
+      "images": {
+        "items": [],
+        "min": 6,
+        "max": 20,
+        "canEdit": true
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": false,
+          "checkedAt": null
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-30T13:14:25.536Z",
+          "atLabel": "30 Oct 2026"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "CHECKS_INCOMPLETE",
+          "message": "7 verification checks are still unticked."
+        },
+        {
+          "code": "TOO_FEW_IMAGES",
+          "message": "0 of the 6 images needed are uploaded."
+        },
+        {
+          "code": "NO_PRIMARY_IMAGE",
+          "message": "No primary image is chosen."
+        }
+      ],
+      "assisted": {
+        "createdBy": null,
+        "submittedBy": null,
+        "reviewerIsAssistant": false
+      },
+      "actions": {
+        "canEdit": true,
+        "canReserve": false,
+        "canMarkSold": false,
+        "canVerify": true,
+        "canRequestChanges": true,
+        "canReject": true,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "status": "ACTIVE"
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-6200d144",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-6200d144",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "initials": "LM",
+        "isVerified": false,
+        "canCall": false,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/6aceddf3-a403-447c-9060-eb333139853b/reject",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "6aceddf3-a403-447c-9060-eb333139853b",
+        "vehicleId": "0f6ff31e-cfe7-491d-9e5e-6532cffb23c3",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 91 YG 3259",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "REJECTED",
+        "statusLabel": "Rejected",
+        "statusTone": "err",
+        "dealer": {
+          "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+          "name": "ListA Motors 634621ddc0a",
+          "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-30T13:14:26.658Z",
+        "submittedLabel": "30 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 0,
+        "reason": "Photos do not match the described vehicle",
+        "submissionCount": 1,
+        "publishedAt": null
+      },
+      "dealer": {
+        "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 •••••• 3459"
+      },
+      "vehicle": {
+        "id": "0f6ff31e-cfe7-491d-9e5e-6532cffb23c3",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationNumber": "TN91YG3259",
+        "registrationDisplay": "TN 91 YG 3259",
+        "rtoCode": "TN91",
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "manufacturingYear": 2023,
+        "registrationYear": 2023,
+        "fuelType": "PETROL",
+        "transmission": "AUTOMATIC",
+        "bodyType": "SUV",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "color": "WHITE",
+        "insuranceType": "LIVE",
+        "pricePaise": 145000000,
+        "priceLabel": "₹14,50,000",
+        "negotiability": "FIXED",
+        "description": "Single owner, certification fixture.",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "createdAt": "2026-10-30T13:14:26.602Z",
+        "updatedAt": "2026-10-30T13:14:26.677Z"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 91 YG 3259"
+            },
+            {
+              "label": "RTO",
+              "value": "TN91"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Live"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [],
+        "min": 6,
+        "max": 20,
+        "canEdit": false
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": false,
+          "checkedAt": null
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-30T13:14:26.660Z",
+          "atLabel": "30 Oct 2026"
+        },
+        {
+          "action": "listing.rejected",
+          "label": "Rejected",
+          "actor": "Dealers-Drive",
+          "reason": "Photos do not match the described vehicle",
+          "at": "2026-10-30T13:14:26.679Z",
+          "atLabel": "30 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "assisted": {
+        "createdBy": null,
+        "submittedBy": null,
+        "reviewerIsAssistant": false
+      },
+      "actions": {
+        "canEdit": false,
+        "canReserve": false,
+        "canMarkSold": false,
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "status": "REJECTED"
+  },
+  {
+    "vdp": 404
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/0f6ff31e-cfe7-491d-9e5e-6532cffb23c3",
+    "status": 200,
+    "body": {
+      "id": "0f6ff31e-cfe7-491d-9e5e-6532cffb23c3",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN91YG3259",
+      "registrationDisplay": "TN 91 YG 3259",
+      "rtoCode": "TN91",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "6aceddf3-a403-447c-9060-eb333139853b",
+        "status": "REJECTED",
+        "statusLabel": "Rejected",
+        "statusTone": "err",
+        "reason": "Photos do not match the described vehicle",
+        "submittedAt": "2026-10-30T13:14:26.658Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:26.602Z",
+      "updatedAt": "2026-10-30T13:14:26.677Z"
+    }
+  },
+  {
+    "afterRequestChanges": "CHANGES_REQUESTED"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f8d9ab81-712f-4af4-9fda-c027ebaedd9a/submit",
+    "status": 200,
+    "body": {
+      "id": "f8d9ab81-712f-4af4-9fda-c027ebaedd9a",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN37GN7273",
+      "registrationDisplay": "TN 37 GN 7273",
+      "rtoCode": "TN37",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 25000,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 25,000 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "c336ca8e-792b-40c2-9e49-bcafa1b46b29",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:26.869Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:26.726Z",
+      "updatedAt": "2026-10-30T13:14:26.842Z"
+    }
+  },
+  {
+    "afterResubmit": "PENDING_REVIEW"
+  },
+  {
+    "req": "POST /v1/admin/listings/b3d2a333-9a93-4f55-bc11-70bce63c2639/approve",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "b3d2a333-9a93-4f55-bc11-70bce63c2639",
+        "vehicleId": "b0ea82bf-6998-4845-87ea-0d1748dcb733",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 26 JD 8902",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "dealer": {
+          "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+          "name": "ListA Motors 634621ddc0a",
+          "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-30T13:14:26.979Z",
+        "submittedLabel": "30 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 6,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": "2026-10-30T13:14:27.621Z"
+      },
+      "dealer": {
+        "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 •••••• 3459"
+      },
+      "vehicle": {
+        "id": "b0ea82bf-6998-4845-87ea-0d1748dcb733",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationNumber": "TN26JD8902",
+        "registrationDisplay": "TN 26 JD 8902",
+        "rtoCode": "TN26",
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "manufacturingYear": 2023,
+        "registrationYear": 2023,
+        "fuelType": "PETROL",
+        "transmission": "AUTOMATIC",
+        "bodyType": "SUV",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "color": "WHITE",
+        "insuranceType": "LIVE",
+        "pricePaise": 145000000,
+        "priceLabel": "₹14,50,000",
+        "negotiability": "FIXED",
+        "description": "Single owner, certification fixture.",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "createdAt": "2026-10-30T13:14:26.895Z",
+        "updatedAt": "2026-10-30T13:14:26.974Z"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 26 JD 8902"
+            },
+            {
+              "label": "RTO",
+              "value": "TN26"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Live"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [
+          {
+            "mediaId": "e13d700a-780c-48db-90f7-e0fa7564c09b",
+            "position": 0,
+            "isPrimary": true,
+            "url": "<redacted>",
+            "fileName": "car-1.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11518,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:27.214Z"
+          },
+          {
+            "mediaId": "74526635-0ede-4dc6-8f57-1ab56754596f",
+            "position": 1,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-2.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:27.291Z"
+          },
+          {
+            "mediaId": "ce79c03d-9099-4a02-b38e-f8e0320051ed",
+            "position": 2,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-3.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:27.372Z"
+          },
+          {
+            "mediaId": "4490a5f1-451b-4cc3-9b55-7976912dec95",
+            "position": 3,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-4.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:27.447Z"
+          },
+          {
+            "mediaId": "b46eacd4-5072-4ecb-b6b1-cf26cecf0839",
+            "position": 4,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-5.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:27.536Z"
+          }
+        ],
+        "min": 6,
+        "max": 20,
+        "canEdit": true
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.010Z"
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.033Z"
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.052Z"
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.072Z"
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.094Z"
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-30T13:14:26.993Z",
+          "atLabel": "30 Oct 2026"
+        },
+        {
+          "action": "listing.approved",
+          "label": "Approved and published",
+          "actor": "Dealers-Drive",
+          "reason": null,
+          "at": "2026-10-30T13:14:27.623Z",
+          "atLabel": "30 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "assisted": {
+        "createdBy": null,
+        "submittedBy": null,
+        "reviewerIsAssistant": false
+      },
+      "actions": {
+        "canEdit": true,
+        "canReserve": true,
+        "canMarkSold": true,
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/b3d2a333-9a93-4f55-bc11-70bce63c2639/approve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-approvable",
+      "title": "Listing not approvable",
+      "status": 409,
+      "code": "LISTING_NOT_APPROVABLE",
+      "traceId": "TSk1yIKwBC",
+      "detail": "Only a listing waiting for review can be approved.",
+      "listingStatus": "ACTIVE"
+    }
+  },
+  {
+    "status": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/admin/listings/3c477875-3312-4837-a78f-554267892fd2/approve",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "3c477875-3312-4837-a78f-554267892fd2",
+        "vehicleId": "fa16c0b3-2a58-48c4-96da-7be825219fe2",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 97 LE 8212",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "dealer": {
+          "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+          "name": "ListA Motors 634621ddc0a",
+          "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-30T13:14:27.754Z",
+        "submittedLabel": "30 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 6,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": "2026-10-30T13:14:28.420Z"
+      },
+      "dealer": {
+        "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 •••••• 3459"
+      },
+      "vehicle": {
+        "id": "fa16c0b3-2a58-48c4-96da-7be825219fe2",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationNumber": "TN97LE8212",
+        "registrationDisplay": "TN 97 LE 8212",
+        "rtoCode": "TN97",
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "manufacturingYear": 2023,
+        "registrationYear": 2023,
+        "fuelType": "PETROL",
+        "transmission": "AUTOMATIC",
+        "bodyType": "SUV",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "color": "WHITE",
+        "insuranceType": "LIVE",
+        "pricePaise": 145000000,
+        "priceLabel": "₹14,50,000",
+        "negotiability": "FIXED",
+        "description": "Single owner, certification fixture.",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "createdAt": "2026-10-30T13:14:27.666Z",
+        "updatedAt": "2026-10-30T13:14:27.740Z"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 97 LE 8212"
+            },
+            {
+              "label": "RTO",
+              "value": "TN97"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Live"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [
+          {
+            "mediaId": "e9747a78-0e14-4909-aaf7-4e3b029ef289",
+            "position": 0,
+            "isPrimary": true,
+            "url": "<redacted>",
+            "fileName": "car-1.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11518,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:28.032Z"
+          },
+          {
+            "mediaId": "88fcb451-bc9e-4761-bf1b-f0f8aa7c23cc",
+            "position": 1,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-2.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:28.115Z"
+          },
+          {
+            "mediaId": "90f208d6-1f7f-44a9-b445-351f4e5fa75c",
+            "position": 2,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-3.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:28.193Z"
+          },
+          {
+            "mediaId": "0fc725d1-3a2a-4ecc-9a25-89d11fb8fa69",
+            "position": 3,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-4.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:28.259Z"
+          },
+          {
+            "mediaId": "8bde7aa0-89b9-4ee2-84a9-1f3de7c41aeb",
+            "position": 4,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-5.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-30T13:14:28.328Z"
+          }
+        ],
+        "min": 6,
+        "max": 20,
+        "canEdit": true
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.784Z"
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.833Z"
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.854Z"
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.879Z"
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": true,
+          "checkedAt": "2026-10-30T13:14:27.901Z"
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-30T13:14:27.756Z",
+          "atLabel": "30 Oct 2026"
+        },
+        {
+          "action": "listing.approved",
+          "label": "Approved and published",
+          "actor": "Dealers-Drive",
+          "reason": null,
+          "at": "2026-10-30T13:14:28.421Z",
+          "atLabel": "30 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "assisted": {
+        "createdBy": null,
+        "submittedBy": null,
+        "reviewerIsAssistant": false
+      },
+      "actions": {
+        "canEdit": true,
+        "canReserve": true,
+        "canMarkSold": true,
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/3c477875-3312-4837-a78f-554267892fd2/reject",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reviewable",
+      "title": "Listing not reviewable",
+      "status": 409,
+      "code": "LISTING_NOT_REVIEWABLE",
+      "traceId": "bN4mqWaYZu",
+      "detail": "Only a listing waiting for review can be rejected.",
+      "listingStatus": "ACTIVE"
+    }
+  },
+  {
+    "final": "ACTIVE"
+  },
+  {
+    "actions": [
+      "listing.check_set",
+      "listing.submitted",
+      "listing.check_set",
+      "listing.check_set",
+      "listing.check_set"
+    ]
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "15aab8f7-f06b-41af-bfca-e8f46396d9b9",
+      "title": "TN 41 JV 2907",
+      "registrationNumber": "TN41JV2907",
+      "registrationDisplay": "TN 41 JV 2907",
+      "rtoCode": "TN41",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "e13ef4d3-8e9e-4fcd-b907-51419f5fd19a",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:28.449Z",
+      "updatedAt": "2026-10-30T13:14:28.449Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/6e274002-59a9-4ac0-9c30-4958dbfad9a9/images/7a09c265-7e4b-4534-b95a-1722a7108c4f/commit",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "mediaId": "7a09c265-7e4b-4534-b95a-1722a7108c4f",
+          "position": 0,
+          "isPrimary": true,
+          "url": "<redacted>",
+          "fileName": "car-1.jpg",
+          "mimeType": "image/jpeg",
+          "bytes": 11518,
+          "width": 1600,
+          "height": 1200,
+          "uploadedAt": "2026-10-30T13:14:28.609Z"
+        }
+      ],
+      "min": 6,
+      "max": 20,
+      "canEdit": true
+    }
+  },
+  {
+    "linked": true
+  },
+  {
+    "imageRows": 20,
+    "first20": [200, 200, 200, 200, 200],
+    "twentyFirst": "presign 409 VEHICLE_IMAGES_FULL"
+  },
+  {
+    "reorder": 200,
+    "applied": true,
+    "partialOrder": 422,
+    "emptyOrder": 400
+  },
+  {
+    "req": "POST /v1/admin/listings/cb5ee802-82c4-4c00-888c-ea5511dc98c1/images/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "witJA2w9u4",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.bytes",
+          "code": "TOO_BIG",
+          "message": "Too big: expected number to be <=10485760"
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/cb5ee802-82c4-4c00-888c-ea5511dc98c1/images/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "QDgtaAyBjR",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.mimeType",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"image/jpeg\"|\"image/png\"|\"image/webp\""
+        }
+      ]
+    }
+  },
+  {
+    "req": "DELETE /v1/admin/listings/995b5c3a-3486-4759-a85a-99f866d6652c/images/d237ec57-d2c5-4c12-bbc8-76413824a6d9",
+    "status": 200,
+    "body": {
+      "items": [],
+      "min": 6,
+      "max": 20,
+      "canEdit": true
+    }
+  },
+  {
+    "remaining": 0
+  },
+  {
+    "req": "POST /v1/admin/listings/f6146bfd-deff-4788-8ffb-fc0e725a0cac/images/presign",
+    "status": 201,
+    "body": {
+      "mediaId": "a6a3069b-1233-4187-b107-8d23ebae7ba5",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "image/jpeg",
+        "Content-Length": "1000"
+      },
+      "expiresInSeconds": 900,
+      "maxBytes": 1000
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/f6146bfd-deff-4788-8ffb-fc0e725a0cac/images/a6a3069b-1233-4187-b107-8d23ebae7ba5/commit",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/upload-missing",
+      "title": "Upload missing",
+      "status": 422,
+      "code": "UPLOAD_MISSING",
+      "traceId": "_7B25RF6ve",
+      "detail": "The upload did not complete. Try again."
+    }
+  },
+  {
+    "listingStatus": "PENDING_REVIEW"
+  },
+  {
+    "usesMediaRoute": true,
+    "leaksRawKey": false
+  },
+  {
+    "hasPrimary": true
+  },
+  {
+    "galleryCount": 6
+  },
+  {
+    "sampleImageCount": 6,
+    "hasImageField": true
+  },
+  {
+    "note": "ordered gallery provided by API; interaction verified in Agent UAT"
+  },
+  {
+    "req": "DELETE /v1/admin/listings/21855147-2ba3-4570-a1b8-4b46b28c3c28/images/321dcd53-7309-47ef-9287-a366599b5d80",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "9voIkDuy82",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/listings/21855147-2ba3-4570-a1b8-4b46b28c3c28/images/presign",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "mV8Un8qdSn",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealers/lista-motors-634621ddc0a-vellore-tamil-nadu",
+    "status": 200,
+    "body": {
+      "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+      "brandName": "ListA Motors 634621ddc0a",
+      "legalName": "ListA Motors 634621ddc0a",
+      "initials": "LM",
+      "isVerified": false,
+      "tagline": "Quality used cars from ListA",
+      "services": ["SUVs", "Sedans"],
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "full": "12 Main Road, Vellore 632001, Tamil Nadu",
+        "mapsUrl": "<redacted>",
+        "geo": null,
+        "embedUrl": null
+      },
+      "stats": [
+        {
+          "key": "cars",
+          "label": "Cars available",
+          "value": "4"
+        },
+        {
+          "key": "location",
+          "label": "Location",
+          "value": "Vellore"
+        }
+      ],
+      "contact": [
+        {
+          "key": "city",
+          "label": "City",
+          "value": "Vellore, Tamil Nadu"
+        },
+        {
+          "key": "gstin",
+          "label": "GSTIN",
+          "value": "33YJBCG6414D1Z4",
+          "mono": true
+        }
+      ],
+      "logoUrl": null,
+      "coverUrl": null,
+      "portfolio": [],
+      "seo": {
+        "canonical": "http://localhost:3000/dealers/lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "isIndexable": true,
+        "title": "ListA Motors 634621ddc0a — Used Car Dealer in Vellore | Dealers-Drive"
+      }
+    }
+  },
+  {
+    "availableActive": 4
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/10d5b9c0-b5c3-4335-98fd-83ac9c31ad1f/reserve",
+    "status": 200,
+    "body": {
+      "id": "10d5b9c0-b5c3-4335-98fd-83ac9c31ad1f",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN68CY1383",
+      "registrationDisplay": "TN 68 CY 1383",
+      "rtoCode": "TN68",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "a7a3b95e-e62a-43a2-bfab-c2e7f3419a4b",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:31.280Z",
+        "publishedAt": "2026-10-30T13:14:31.817Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-7cfdf4a0",
+        "reservedAt": "2026-10-30T13:14:31.902Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:31.235Z",
+      "updatedAt": "2026-10-30T13:14:31.278Z"
+    }
+  },
+  {
+    "status": "RESERVED"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/1de21ced-c195-4205-843e-19a19a9d17cf/reserve",
+    "status": 200,
+    "body": {
+      "id": "1de21ced-c195-4205-843e-19a19a9d17cf",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN60JJ2535",
+      "registrationDisplay": "TN 60 JJ 2535",
+      "rtoCode": "TN60",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "5341b168-5714-4458-bc54-8fd40d765530",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:31.964Z",
+        "publishedAt": "2026-10-30T13:14:32.502Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-f19c506b",
+        "reservedAt": "2026-10-30T13:14:32.537Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:31.922Z",
+      "updatedAt": "2026-10-30T13:14:31.961Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/84c0f09f-183d-477d-b405-80b2394f54ce/reserve",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "ZdQ1PJYUfI",
+      "detail": "This action needs the listing:reserve permission."
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-7cfdf4a0",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-7cfdf4a0",
+      "availability": "RESERVED",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu",
+        "initials": "LM",
+        "isVerified": false,
+        "canCall": false,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "reservedCardAvailability": "RESERVED"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-reserved",
+      "title": "Listing reserved",
+      "status": 409,
+      "code": "LISTING_RESERVED",
+      "traceId": "zVTHhzbeUv",
+      "detail": "This car is reserved for another buyer, so the dealership is not taking enquiries about it for now."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/10d5b9c0-b5c3-4335-98fd-83ac9c31ad1f/request-reactivation",
+    "status": 200,
+    "body": {
+      "id": "10d5b9c0-b5c3-4335-98fd-83ac9c31ad1f",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN68CY1383",
+      "registrationDisplay": "TN 68 CY 1383",
+      "rtoCode": "TN68",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "a7a3b95e-e62a-43a2-bfab-c2e7f3419a4b",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:31.280Z",
+        "publishedAt": "2026-10-30T13:14:31.817Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-7cfdf4a0",
+        "reservedAt": "2026-10-30T13:14:31.902Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold"],
+        "reactivation": {
+          "id": "625117f2-1341-4caf-93cd-6f96c7850ebe",
+          "status": "PENDING",
+          "statusLabel": "Reactivation pending approval",
+          "statusTone": "warn",
+          "fromStatus": "RESERVED",
+          "reason": "Buyer backed out",
+          "requestedAt": "2026-10-30T13:14:33.293Z",
+          "reviewedAt": null,
+          "adminNote": null
+        }
+      },
+      "createdAt": "2026-10-30T13:14:31.235Z",
+      "updatedAt": "2026-10-30T13:14:31.278Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/reactivation-requests/625117f2-1341-4caf-93cd-6f96c7850ebe/approve",
+    "status": 200,
+    "body": {
+      "id": "625117f2-1341-4caf-93cd-6f96c7850ebe",
+      "status": "APPROVED",
+      "statusLabel": "Reactivation approved",
+      "statusTone": "ok",
+      "fromStatus": "RESERVED",
+      "fromStatusLabel": "Reserved",
+      "toStatus": "ACTIVE",
+      "toStatusLabel": "Active",
+      "reason": "Buyer backed out",
+      "requestedAt": "2026-10-30T13:14:33.293Z",
+      "requestedLabel": "30 Oct 2026",
+      "reviewedAt": "2026-10-30T13:14:33.312Z",
+      "adminNote": null,
+      "listing": {
+        "id": "a7a3b95e-e62a-43a2-bfab-c2e7f3419a4b",
+        "vehicleId": "10d5b9c0-b5c3-4335-98fd-83ac9c31ad1f",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 68 CY 1383",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "slug": "2023-hyundai-creta-sx-o-vellore-7cfdf4a0"
+      },
+      "dealer": {
+        "id": "e4f4d00e-3fd2-4d18-ac59-3a73a6a9d124",
+        "name": "ListA Motors 634621ddc0a",
+        "slug": "lista-motors-634621ddc0a-vellore-tamil-nadu"
+      },
+      "current": false
+    }
+  },
+  {
+    "status": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/12d2a6d5-4eb2-4997-b31d-b9d07304a036/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "12d2a6d5-4eb2-4997-b31d-b9d07304a036",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN62AZ4553",
+      "registrationDisplay": "TN 62 AZ 4553",
+      "rtoCode": "TN62",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "e13b8c92-07c4-4506-a537-f96e086d133d",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:33.395Z",
+        "publishedAt": "2026-10-30T13:14:33.947Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-25b51fb6",
+        "reservedAt": null,
+        "soldAt": "2026-10-30T13:14:33.981Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:33.337Z",
+      "updatedAt": "2026-10-30T13:14:33.982Z"
+    }
+  },
+  {
+    "status": "SOLD"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/abe8f740-c450-4726-980d-cbb8fb3ec2dd/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "abe8f740-c450-4726-980d-cbb8fb3ec2dd",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN67ZN4179",
+      "registrationDisplay": "TN 67 ZN 4179",
+      "rtoCode": "TN67",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "34e7e2b4-7fea-4fa2-b6e0-7efd3d31b8bb",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:34.045Z",
+        "publishedAt": "2026-10-30T13:14:34.675Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-0268da28",
+        "reservedAt": null,
+        "soldAt": "2026-10-30T13:14:34.704Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:33.999Z",
+      "updatedAt": "2026-10-30T13:14:34.706Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/3e379c29-25e8-41aa-881a-c647ef0d9fc6/mark-sold",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "vVNTMkNeBE",
+      "detail": "This action needs the listing:sell permission."
+    }
+  },
+  {
+    "inSearch": false,
+    "vdp": 404
+  },
+  {
+    "inPortfolio": false
+  },
+  {
+    "activeAvailable": 6
+  },
+  {
+    "dbStatus": "SOLD",
+    "adminDetail": 200
+  },
+  {
+    "enquiryExists": true
+  },
+  {
+    "inHistory": true
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/b6fb4c68-a7bd-4913-beea-ebd2ffc28856/withdraw",
+    "status": 200,
+    "body": {
+      "id": "b6fb4c68-a7bd-4913-beea-ebd2ffc28856",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN70EG2798",
+      "registrationDisplay": "TN 70 EG 2798",
+      "rtoCode": "TN70",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "a8d0caaa-7379-46c6-ae9a-fca5464c9106",
+        "status": "WITHDRAWN",
+        "statusLabel": "Withdrawn",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:38.519Z",
+        "publishedAt": "2026-10-30T13:14:39.307Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-06d87a39",
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": "2026-10-30T13:14:39.340Z",
+        "withdrawal": {
+          "reason": "NO_LONGER_FOR_SALE",
+          "reasonLabel": "No longer for sale",
+          "note": null
+        },
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:38.438Z",
+      "updatedAt": "2026-10-30T13:14:38.516Z"
+    }
+  },
+  {
+    "status": "WITHDRAWN"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/11fca27b-7a20-455d-a863-58a89e8e2fbf/withdraw",
+    "status": 200,
+    "body": {
+      "id": "11fca27b-7a20-455d-a863-58a89e8e2fbf",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN98XC6055",
+      "registrationDisplay": "TN 98 XC 6055",
+      "rtoCode": "TN98",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "00171384-309a-4a4c-947d-753e729186f6",
+        "status": "WITHDRAWN",
+        "statusLabel": "Withdrawn",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:39.421Z",
+        "publishedAt": "2026-10-30T13:14:40.078Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-d4a0c521",
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": "2026-10-30T13:14:40.120Z",
+        "withdrawal": {
+          "reason": "VEHICLE_ISSUE",
+          "reasonLabel": "Issue with the vehicle",
+          "note": null
+        },
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:39.364Z",
+      "updatedAt": "2026-10-30T13:14:39.418Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/38a3fe91-8a43-44ad-8704-eb1476836cf9/withdraw",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "TIhj1WIXeW",
+      "detail": "This action needs the listing:withdraw permission."
+    }
+  },
+  {
+    "inSearch": false,
+    "vdp": 404
+  },
+  {
+    "status": "WITHDRAWN"
+  },
+  {
+    "enquiryExists": true
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9a7230ff-764e-4fce-9f41-d3ad27eb76bb/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "589Xgtimz1",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9a7230ff-764e-4fce-9f41-d3ad27eb76bb/withdraw",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-withdrawable",
+      "title": "Listing not withdrawable",
+      "status": 409,
+      "code": "LISTING_NOT_WITHDRAWABLE",
+      "traceId": "1u4JhrAfUZ",
+      "detail": "Only a car that is on sale can be withdrawn.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/5d99f683-e3c1-488c-b9d6-5dca4d301093/mark-sold",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "KtmE0dGtDg",
+      "detail": "This action needs the listing:sell permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/0e47d3a1-f045-41fe-812d-0267eccddb15/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "Ad1TPhKlCR",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/0e47d3a1-f045-41fe-812d-0267eccddb15/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "0e47d3a1-f045-41fe-812d-0267eccddb15",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN72TJ1064",
+      "registrationDisplay": "TN 72 TJ 1064",
+      "rtoCode": "TN72",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "LIVE",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "921ff00a-8bfe-4e6d-8a93-af29d9c9b0da",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-30T13:14:43.279Z",
+        "publishedAt": "2026-10-30T13:14:43.833Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-b8c0f954",
+        "reservedAt": null,
+        "soldAt": "2026-10-30T13:14:43.871Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-30T13:14:43.216Z",
+      "updatedAt": "2026-10-30T13:14:43.872Z"
+    }
+  },
+  {
+    "final": "SOLD"
+  },
+  {
+    "beforeSold": 200,
+    "afterSold": 404
+  },
+  {
+    "withdrawnStillInSearch": false
+  }
+]

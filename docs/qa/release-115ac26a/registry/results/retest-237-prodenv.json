@@ -1,0 +1,32 @@
+{
+  "R237-PROD-002-minio-and-local-refused": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "production: r2 boots; minio refused (STORAGE_DRIVER: must be `r2` in production — `local` and `minio` are development adapters.); local refused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-30T13:12:34.753Z"
+  },
+  "R237-BUG-NEW-013-r2-endpoint-unvalidated": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "omitted 1, loopback 1",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-30T13:12:34.755Z"
+  },
+  "R237-ORIG-BUG-001-default-signing-secret-in-production": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "stand-ins mounted only for the local driver and production refuses local; default secret under r2 present but unused",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-237-prodenv",
+    "at": "2026-10-30T13:12:34.755Z"
+  }
+}

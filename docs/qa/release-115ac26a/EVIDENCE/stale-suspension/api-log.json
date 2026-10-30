@@ -1,0 +1,16 @@
+[
+  {
+    "carHttpStatusAfter": 404,
+    "warm": [200, 200, 200, 200],
+    "suspend": 200,
+    "api": 404,
+    "carGoneAfterS": 71,
+    "dealerGoneAfterS": 0,
+    "samples": [
+      "0s car 200 dealer 404",
+      "30s car 200 dealer 404",
+      "61s car 200 dealer 404",
+      "71s car 404 dealer 404"
+    ]
+  }
+]

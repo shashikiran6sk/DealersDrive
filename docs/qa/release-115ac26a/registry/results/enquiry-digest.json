@@ -1,0 +1,52 @@
+{
+  "DIGEST-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "the API registered one schedule: 31 8 * * * Asia/Kolkata (08:31 IST daily)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry-digest",
+    "at": "2026-10-30T13:07:35.747Z"
+  },
+  "DIGEST-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "the scheduled job, run by the API worker, sent 2 digest(s) for 2026-10-29, one per admin (1 allowlisted admin account(s) exist)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry-digest",
+    "at": "2026-10-30T13:07:44.834Z"
+  },
+  "DIGEST-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "the console mailer printed the digest: \"DigestAlpha Motors 652722b6b18b — 3: 2023 Hyundai Creta SX(O\" / \"DigestBeta Motors 652726af8dd7 — 1: 2023 Hyundai Creta SX(O)\"; 4 enquiries (IST day edges 00:00:00 and 23:59:59 in, the day before and today out)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry-digest",
+    "at": "2026-10-30T13:07:44.839Z"
+  },
+  "DIGEST-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "firing the job again for the same day sends nothing more (dedupe key per day and admin)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry-digest",
+    "at": "2026-10-30T13:07:44.851Z"
+  },
+  "DIGEST-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "no per-enquiry admin email was sent for the 6 enquiries — only the daily summary",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "enquiry-digest",
+    "at": "2026-10-30T13:07:44.852Z"
+  }
+}

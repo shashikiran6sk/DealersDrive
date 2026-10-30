@@ -21,18 +21,19 @@ git ls-tree -r --name-only origin/docs -- docs/qa
 
 ## What is here
 
-| Path                                                                                           | What it is                                                                                                                                 |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`CONTEXT.md`](CONTEXT.md)                                                                     | The engineering log: gotchas, constraints and decisions discovered while building (§7a–§8e). Read it before a refactor.                    |
-| [`docs/project/`](docs/project)                                                                | The plan: feature map (F001–F097), component map, sandbox design, git strategy, progress, and per-feature design notes                     |
-| [`docs/qa/production-release/`](docs/qa/production-release)                                    | The pre-production certification campaign: test plan, registry, defect register, evidence, GO/NO-GO                                        |
-| [`docs/screens/`](docs/screens)                                                                | The original screen designs, one folder per page                                                                                           |
-| [`docs/Dealers-Drive-UI/`](docs/Dealers-Drive-UI)                                              | The original UI design-system reference                                                                                                    |
-| [`docs/evidence/`](docs/evidence)                                                              | Screenshots and captures attached to individual features                                                                                   |
-| [`docs/testing/`](docs/testing)                                                                | Browser test output for individual features (legal v1, dealer publication)                                                                 |
-| [`docs/branding-migration.md`](docs/branding-migration.md)                                     | The brand-asset migration record                                                                                                           |
-| [`docs/original-spec/`](docs/original-spec)                                                    | The five specification documents the product was first built from (architecture, API spec, deployment, onboarding, the first agent manual) |
-| [`docs/history/CLAUDE-reconstruction-manual.md`](docs/history/CLAUDE-reconstruction-manual.md) | The operating manual used while the codebase was re-delivered feature by feature; `AGENTS.md` on `main` replaced it                        |
+| Path                                                                                           | What it is                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`CONTEXT.md`](CONTEXT.md)                                                                     | The engineering log: gotchas, constraints and decisions discovered while building (§7a–§8e). Read it before a refactor.                               |
+| [`docs/project/`](docs/project)                                                                | The plan: feature map (F001–F097), component map, sandbox design, git strategy, progress, and per-feature design notes                                |
+| [`docs/qa/production-release/`](docs/qa/production-release)                                    | The pre-production certification campaign: test plan, registry, defect register, evidence, GO/NO-GO                                                   |
+| [`docs/qa/release-115ac26a/`](docs/qa/release-115ac26a)                                        | The release-candidate certification of `115ac26a`: the full replay, the retest of every baseline defect, the new-feature campaigns and the GO verdict |
+| [`docs/screens/`](docs/screens)                                                                | The original screen designs, one folder per page                                                                                                      |
+| [`docs/Dealers-Drive-UI/`](docs/Dealers-Drive-UI)                                              | The original UI design-system reference                                                                                                               |
+| [`docs/evidence/`](docs/evidence)                                                              | Screenshots and captures attached to individual features                                                                                              |
+| [`docs/testing/`](docs/testing)                                                                | Browser test output for individual features (legal v1, dealer publication)                                                                            |
+| [`docs/branding-migration.md`](docs/branding-migration.md)                                     | The brand-asset migration record                                                                                                                      |
+| [`docs/original-spec/`](docs/original-spec)                                                    | The five specification documents the product was first built from (architecture, API spec, deployment, onboarding, the first agent manual)            |
+| [`docs/history/CLAUDE-reconstruction-manual.md`](docs/history/CLAUDE-reconstruction-manual.md) | The operating manual used while the codebase was re-delivered feature by feature; `AGENTS.md` on `main` replaced it                                   |
 
 ## Updating this branch
 
