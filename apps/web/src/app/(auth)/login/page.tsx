@@ -39,9 +39,8 @@ export default async function LoginPage({
 
   if (audience === 'customer') {
     const status = await legalStatus('CUSTOMER');
-    if (status?.enabled) {
+    if (status?.enabled && !status.accepted) {
       const returnTo = safeReturnPath(requested, '/');
-      if (status.accepted) redirect(returnTo);
       return (
         <EntryShell>
           <AuthShell eyebrow={LOGIN_EYEBROW}>
@@ -49,6 +48,9 @@ export default async function LoginPage({
           </AuthShell>
         </EntryShell>
       );
+    }
+    if (status?.enabled && status.accepted && requested) {
+      redirect(safeReturnPath(requested, '/'));
     }
   }
 

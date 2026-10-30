@@ -141,6 +141,29 @@ describe('server actions and one-time routing', () => {
       LoginPage({ searchParams: Promise.resolve({ returnTo: '/saved' }) }),
     ).rejects.toThrow('NEXT_REDIRECT:/saved');
   });
+  it('keeps a direct login visit on the form after the policies were already accepted', async () => {
+    enabled();
+    api.parsed.mockResolvedValue(status(true));
+    api.get.mockImplementation((path: string) =>
+      Promise.resolve(
+        path === '/v1/auth/providers'
+          ? {
+              google: {
+                enabled: true,
+                startUrl: '/v1/auth/google/start',
+                reason: null,
+              },
+            }
+          : null,
+      ),
+    );
+
+    render(await LoginPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.click(screen.getByRole('tab', { name: 'Dealer' }));
+    expect(screen.getByRole('link', { name: 'Continue with Google' })).toBeInTheDocument();
+  });
   it('shows approved dealers a small gate before fetching normal console data', async () => {
     api.get.mockResolvedValue({ next: 'DASHBOARD' });
     enabled();
