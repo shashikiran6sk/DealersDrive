@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cookieJar } from '../../setup.js';
 import {
   currentAdmin,
+  currentCustomerSession,
   currentSession,
   destinationFor,
   hasSession,
@@ -73,6 +74,57 @@ describe('currentSession', () => {
     globalThis.fetch = respond(500, { status: 500, code: 'INTERNAL', title: 'boom' });
 
     await expect(currentSession()).rejects.toThrow();
+  });
+});
+
+describe('currentCustomerSession', () => {
+  it('does not ask the API when the browser has no person session', async () => {
+    const fetch = respond(200);
+    globalThis.fetch = fetch;
+
+    expect(await currentCustomerSession()).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('recognises a verified customer using the existing shared session', async () => {
+    cookieJar.set('dd_session', 'verified-dealer-or-customer');
+    const customer = {
+      id: '00000000-0000-4000-8000-000000000001',
+      fullName: 'Asha Menon',
+      phone: '+919840012345',
+      phoneDisplay: '+91 98400 12345',
+    };
+    const fetch = respond(200, { customer });
+    globalThis.fetch = fetch;
+
+    expect(await currentCustomerSession()).toEqual({ customer });
+    const [url, options] = vi.mocked(fetch).mock.calls[0] ?? [];
+    expect(url).toBe('http://api.test/v1/auth/customer/me');
+    expect(options?.cache).toBe('no-store');
+    expect(options?.headers).toMatchObject({ Cookie: 'dd_session=verified-dealer-or-customer' });
+    expect(cookieJar.get('dd_session')).toBe('verified-dealer-or-customer');
+  });
+
+  it('returns null for an incomplete Google dealer or an expired session', async () => {
+    cookieJar.set('dd_session', 'google-dealer');
+    globalThis.fetch = respond(401, { status: 401, code: 'NOT_AUTHENTICATED' });
+
+    expect(await currentCustomerSession()).toBeNull();
+    expect(cookieJar.get('dd_session')).toBe('google-dealer');
+  });
+
+  it('rejects a dealer response that is missing the customer contract', async () => {
+    cookieJar.set('dd_session', 'google-dealer');
+    globalThis.fetch = respond(200, { next: 'ONBOARDING', user: { fullName: 'Google Dealer' } });
+
+    await expect(currentCustomerSession()).rejects.toThrow();
+  });
+
+  it('does not mistake a service outage for an incomplete account', async () => {
+    cookieJar.set('dd_session', 'verified-customer');
+    globalThis.fetch = respond(503, { status: 503, code: 'SERVICE_UNAVAILABLE' });
+
+    await expect(currentCustomerSession()).rejects.toThrow();
   });
 });
 

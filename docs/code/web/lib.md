@@ -837,9 +837,31 @@ with the API instead renders the form and lets the person sign in again.
 
 The same question for the admin console, whose sessions are a separate scope.
 
+### `export async function currentCustomerSession(): Promise<CustomerSession | null>`
+
+A person session created by Google dealer sign-in is not sufficient for customer
+features. The customer resolver also requires a verified phone and a name. This
+uses the same endpoint as the header and validates its response against the
+customer contract, so dealer onboarding state cannot be mistaken for a customer
+account. A 401 returns null without removing the shared dealer session; an outage
+or malformed response remains an error rather than a signed-out answer.
+
 ### `export function destinationFor(session: AuthSession): string`
 
 Where a signed-in dealer belongs, given what the API says about them.
+
+## `apps/web/src/lib/legal.ts`
+
+### `export async function legalStatus(scope: LegalScope): Promise<LegalStatus | null>`
+
+The customer acceptance screen first checks customer eligibility. The legal API
+can report personal acceptance for a dealer who signed in with Google before
+proving a phone number, because acceptance belongs to the person. That does not
+make the session eligible for customer features. Showing that person a gate
+instead of phone sign-in stranded them after acceptance, and an explicit customer
+return path could bounce between the protected page and login. Returning null for
+an ineligible customer lets the login page render phone sign-in while preserving
+dealer onboarding access. Verified dealers continue to use their shared session.
 
 ## `apps/web/src/lib/session-cookie.ts`
 
