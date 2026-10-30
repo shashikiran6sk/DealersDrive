@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation';
 
 import { ApiError, apiGetParsed, SESSION_COOKIE } from './api';
 import { serverConfig } from './config';
+import { currentCustomerSession } from './session';
 
 export function legalPagesVisible(): boolean {
   return serverConfig().appEnv !== 'production' || legalV1Ready();
@@ -25,6 +26,7 @@ export function legalGateEnabled(): boolean {
 
 export async function legalStatus(scope: LegalScope): Promise<LegalStatus | null> {
   if (!legalGateEnabled() || !(await cookies()).get(SESSION_COOKIE)?.value) return null;
+  if (scope === 'CUSTOMER' && !(await currentCustomerSession())) return null;
   try {
     return await apiGetParsed(LegalStatus, `/v1/legal/status?scope=${scope}`, {
       revalidate: false,

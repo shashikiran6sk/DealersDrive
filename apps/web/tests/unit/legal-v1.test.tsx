@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   LEGAL_CHECKBOX_TEXT,
   TERMS_V1,
@@ -23,14 +23,32 @@ import PrivacyPage, { generateMetadata as privacyMetadata } from '@/app/(public)
 import LoginPage from '@/app/(auth)/login/page';
 import DealerLayout from '@/app/(dealer)/dealer/layout';
 import OnboardingPage from '@/app/(auth)/dealer/onboarding/page';
+import { ApiError } from '@/lib/api';
 
-const api = vi.hoisted(() => ({ send: vi.fn(), parsed: vi.fn(), get: vi.fn() }));
+const api = vi.hoisted(() => ({
+  send: vi.fn(),
+  parsed: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  get: vi.fn(),
+  customer: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+}));
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   apiSend: api.send,
   apiGet: api.get,
-  apiGetParsed: api.parsed,
+  apiGetParsed: (...args: unknown[]) =>
+    args[1] === '/v1/auth/customer/me' ? api.customer(...args) : api.parsed(...args),
 }));
+
+beforeEach(() => {
+  api.customer.mockResolvedValue({
+    customer: {
+      id: '00000000-0000-4000-8000-000000000001',
+      fullName: 'Verified Customer',
+      phone: '+919840012345',
+      phoneDisplay: '+91 98400 12345',
+    },
+  });
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -50,6 +68,29 @@ const status = (accepted = false, canAccept = true) => ({
   termsVersion: 'terms-v1.0',
   privacyVersion: 'privacy-v1.0',
 });
+
+function mockLoginProviders(): void {
+  api.get.mockImplementation((path: string) =>
+    Promise.resolve(
+      path === '/v1/auth/providers'
+        ? {
+            google: {
+              enabled: true,
+              startUrl: '/v1/auth/google/start',
+              reason: null,
+            },
+          }
+        : {
+            enabled: true,
+            driver: 'fake',
+            widgetId: null,
+            tokenAuth: null,
+            devCode: '123456',
+            reason: null,
+          },
+    ),
+  );
+}
 
 describe('one-line affirmative checkbox', () => {
   it('is unchecked, required, named by the exact sentence, and has two independent policy links', async () => {
@@ -141,6 +182,61 @@ describe('server actions and one-time routing', () => {
       LoginPage({ searchParams: Promise.resolve({ returnTo: '/saved' }) }),
     ).rejects.toThrow('NEXT_REDIRECT:/saved');
   });
+  it('keeps a direct login visit on the form after the policies were already accepted', async () => {
+    enabled();
+    api.parsed.mockResolvedValue(status(true));
+    mockLoginProviders();
+
+    render(await LoginPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.click(screen.getByRole('tab', { name: 'Dealer' }));
+    expect(screen.getByRole('link', { name: 'Continue with Google' })).toBeInTheDocument();
+  });
+  it('never redirects an accepted customer back to the login page itself', async () => {
+    enabled();
+    api.parsed.mockResolvedValue(status(true));
+    mockLoginProviders();
+
+    render(
+      await LoginPage({ searchParams: Promise.resolve({ returnTo: '/login?returnTo=%2Flogin' }) }),
+    );
+
+    expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
+  });
+  it.each([
+    { accepted: false, returnTo: undefined },
+    { accepted: true, returnTo: undefined },
+    { accepted: false, returnTo: '/saved' },
+    { accepted: true, returnTo: '/saved' },
+  ])(
+    'keeps customer phone sign-in accessible for a Google-only dealer ($accepted, $returnTo)',
+    async ({ accepted, returnTo }) => {
+      enabled();
+      cookieJar.set('dd_session', 'google-dealer-session');
+      api.customer.mockRejectedValue(
+        new ApiError({
+          type: 'about:blank',
+          title: 'Not authenticated as a customer',
+          status: 401,
+          code: 'NOT_AUTHENTICATED',
+        }),
+      );
+      api.parsed.mockResolvedValue(status(accepted));
+      mockLoginProviders();
+
+      render(await LoginPage({ searchParams: Promise.resolve({ returnTo }) }));
+
+      expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(screen.getByRole('textbox', { name: /mobile number/i })).toBeInTheDocument();
+      expect(screen.queryByRole('checkbox', { name: LEGAL_CHECKBOX_TEXT })).toBeNull();
+      expect(api.parsed).not.toHaveBeenCalled();
+      expect(cookieJar.get('dd_session')).toBe('google-dealer-session');
+    },
+  );
   it('shows approved dealers a small gate before fetching normal console data', async () => {
     api.get.mockResolvedValue({ next: 'DASHBOARD' });
     enabled();

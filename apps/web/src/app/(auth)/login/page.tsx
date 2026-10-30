@@ -11,7 +11,7 @@ import { EntryShell } from '@/components/auth/entry-shell';
 import { CustomerLogin, DealerLogin, LOGIN_TEXT, LoginTabs } from '@/features/auth/login';
 import { apiGet } from '@/lib/api';
 import { currentSession, destinationFor } from '@/lib/session';
-import { one, safeReturnPath, type SearchParamsInput } from '@/lib/url';
+import { isLoginPath, one, safeReturnPath, type SearchParamsInput } from '@/lib/url';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -39,9 +39,8 @@ export default async function LoginPage({
 
   if (audience === 'customer') {
     const status = await legalStatus('CUSTOMER');
-    if (status?.enabled) {
+    if (status?.enabled && !status.accepted) {
       const returnTo = safeReturnPath(requested, '/');
-      if (status.accepted) redirect(returnTo);
       return (
         <EntryShell>
           <AuthShell eyebrow={LOGIN_EYEBROW}>
@@ -49,6 +48,10 @@ export default async function LoginPage({
           </AuthShell>
         </EntryShell>
       );
+    }
+    if (status?.enabled && status.accepted && requested) {
+      const resume = safeReturnPath(requested, '/');
+      if (!isLoginPath(resume)) redirect(resume);
     }
   }
 

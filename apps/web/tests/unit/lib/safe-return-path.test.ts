@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { safeReturnPath } from '../../../src/lib/url.js';
+import { isLoginPath, safeReturnPath } from '../../../src/lib/url.js';
 
 /**
  * Where a sign-in may send somebody afterwards (**R63**). A path on this site
@@ -27,5 +27,19 @@ describe('safeReturnPath', () => {
     null,
   ])('replaces %j with the fallback', (value) => {
     expect(safeReturnPath(value, '/fallback')).toBe('/fallback');
+  });
+});
+
+describe('isLoginPath', () => {
+  it.each([
+    ['/login', true],
+    ['/login/', true],
+    ['/login?returnTo=%2Flogin', true],
+    ['/login#customer', true],
+    ['/saved', false],
+    ['/login-help', false],
+    ['/dealer/login', false],
+  ])('%s → %s', (path, expected) => {
+    expect(isLoginPath(path)).toBe(expected);
   });
 });
