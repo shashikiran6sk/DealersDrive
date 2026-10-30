@@ -282,6 +282,11 @@ export const AdminDealerDetail = z.object({
   contactEmail: z.string().nullable(),
   landline: z.string().nullable(),
   /**
+   * When the number in `landline` was approved for customers to call, or null
+   * while it is not. Calling is offered only on an approved number.
+   */
+  landlineApprovedAt: z.string().nullable().optional(),
+  /**
    * The dealership in one line, and what its yard does — the two answers
    * onboarding asks for and the two the public pages render (**R32**).
    *
@@ -509,6 +514,19 @@ export const ProfileChangeDecisionResponse = z.object({
   decidedAt: z.string(),
 });
 export type ProfileChangeDecisionResponse = z.infer<typeof ProfileChangeDecisionResponse>;
+
+/**
+ * `POST /v1/admin/dealers/:id/customer-contact/approve` — an admin approves the
+ * dealership's saved number for customers to call, without a request from the
+ * dealer. `landline` comes back normalised.
+ */
+export const CustomerContactApprovalResponse = z.object({
+  dealerId: Uuid,
+  dealerSlug: z.string(),
+  landline: z.string(),
+  approvedAt: z.string(),
+});
+export type CustomerContactApprovalResponse = z.infer<typeof CustomerContactApprovalResponse>;
 
 /** The queue, oldest first — a moderator works the top of it. */
 export const AdminProfileChangesResponse = z.object({

@@ -9,6 +9,7 @@ import {
   RevokeActivationOverrideInput,
   UpdateDealerInput,
   type ActivationOverrideResponse,
+  type CustomerContactApprovalResponse,
   type DealerModerationResponse,
   type DealerProfile,
   type DealerPurgeResponse,
@@ -230,6 +231,22 @@ export async function suspendDealerAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not suspend that dealer.');
+  }
+}
+
+export async function approveCustomerContactAction(
+  dealerId: string,
+): Promise<AdminResult<CustomerContactApprovalResponse>> {
+  try {
+    const data = await apiSend<CustomerContactApprovalResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/customer-contact/approve`,
+      {},
+    );
+    refreshAdmin(data.dealerSlug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, ADMIN_ACTION_TEXT.customerContactFailed);
   }
 }
 

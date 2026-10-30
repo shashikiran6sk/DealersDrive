@@ -5,4 +5,5 @@ export const ADMIN_ACTION_TEXT = {
   revokeFailed: 'We could not withdraw that manual activation.',
   visitInvalid: 'That visit is not valid.',
   visitFailed: 'We could not record that visit.',
+  customerContactFailed: 'We could not approve that number for calls.',
 } as const;

@@ -2456,6 +2456,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'dealer-callleadlist--card-states',
   },
   {
+    id: 'C140',
+    name: 'CustomerContactApproval',
+    source: 'apps/web/src/features/admin/customer-contact-approval/customer-contact-approval.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose:
+      'On the admin dealer page: the dealership’s saved customer contact number, whether it is approved for calls, and an Approve for calls button that turns on Call dealer without a request from the dealer.',
+    aliases: ['ApproveForCalls', 'CustomerContactNumber', 'customer-contact-approval'],
+    features: ['#346 call leads'],
+    props: ['dealerId', 'landline', 'approvedAt'],
+    states: ['awaiting approval', 'approved', 'no number', 'invalid number', 'approving'],
+    reusable: false,
+    storyId: 'admin-customercontactapproval',
+  },
+  {
     id: 'C093',
     name: 'HeaderAccount',
     source: 'apps/web/src/features/auth/header-account/header-account.tsx',

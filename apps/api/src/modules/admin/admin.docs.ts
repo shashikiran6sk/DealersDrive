@@ -334,6 +334,35 @@ export const adminDocs: ModuleDocs = {
     },
     {
       method: 'post',
+      path: '/v1/admin/dealers/:id/customer-contact/approve',
+      operationId: 'approveDealerCustomerContact',
+      tag: DOC_TAGS.admin,
+      summary: 'Approve the saved customer contact number for calls',
+      description:
+        'Approves the number already saved on the dealership as its customer contact number, ' +
+        'so signed-in customers are offered **Call dealer** on its cars. It is the admin path ' +
+        'beside the dealer’s own confirm-and-review one, for dealerships the team onboarded or ' +
+        'whose number was given to us directly.\n\n' +
+        'The number is normalised (`+91…`) and must be an Indian mobile or a landline with STD ' +
+        'code; a dealership with none, or one that does not parse, is a `409 ' +
+        'CUSTOMER_CONTACT_MISSING`. Approving an already approved number changes nothing and ' +
+        'records nothing. Otherwise the approval is audited as ' +
+        '`dealer.customer_contact.approved` with the admin as actor. Changing the number in the ' +
+        'profile editor afterwards withdraws the approval again.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'Approved. The number is offered to signed-in customers.',
+          schema: 'CustomerContactApprovalResponse',
+        },
+      ],
+      errors: [401, 403, 404, 409],
+    },
+    {
+      method: 'post',
       path: '/v1/admin/dealers/:id/reject',
       operationId: 'rejectDealer',
       tag: DOC_TAGS.admin,

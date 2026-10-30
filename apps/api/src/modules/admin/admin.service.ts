@@ -19,6 +19,7 @@ import {
   formatDate,
   formatPhone,
   formatRupees,
+  normaliseDealerContact,
   initialsOf,
   timeAgo,
   type AdminAccessEntry,
@@ -31,6 +32,7 @@ import {
   type AdminProfileChange,
   type AdminProfileChangesResponse,
   type ApproveDealerInput,
+  type CustomerContactApprovalResponse,
   type DealerOnboardingProvenance,
   type ConfigResponse,
   type GrantAdminAccessInput,
@@ -85,6 +87,7 @@ import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
 import {
   CLOSED_NOT_REJECTABLE,
   CONTACT_NOT_VERIFIED,
+  CUSTOMER_CONTACT_MISSING,
   DEALER_NOT_CLOSABLE,
   DEALER_NOT_FOUND,
 } from './admin.messages.js';
@@ -563,6 +566,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
         landline: dealer.landline,
+        landlineApprovedAt: dealer.landlineApprovedAt?.toISOString() ?? null,
         tagline: dealer.tagline,
         specialities: distinctServices(dealer.specialities),
         joinedLabel: formatDate(dealer.createdAt),
@@ -1261,6 +1265,65 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         data: rows.map((row) => toAdminProfileChange(row, row.dealer, now)),
         pendingCount: rows.length,
       };
+    },
+
+    async approveCustomerContact(
+      admin: AdminPrincipal,
+      dealerId: string,
+    ): Promise<CustomerContactApprovalResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          select: {
+            id: true,
+            slug: true,
+            landline: true,
+            landlineConfirmedAt: true,
+            landlineApprovedAt: true,
+          },
+        });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        const landline = dealer.landline ? normaliseDealerContact(dealer.landline) : null;
+        if (!landline) {
+          throw new ConflictError('CUSTOMER_CONTACT_MISSING', CUSTOMER_CONTACT_MISSING);
+        }
+        if (dealer.landlineApprovedAt && dealer.landline === landline) {
+          return {
+            dealerId,
+            dealerSlug: dealer.slug,
+            landline,
+            approvedAt: dealer.landlineApprovedAt.toISOString(),
+          };
+        }
+
+        const now = new Date();
+        await tx.dealer.update({
+          where: { id: dealerId },
+          data: {
+            landline,
+            landlineConfirmedAt: dealer.landlineConfirmedAt ?? now,
+            landlineApprovedAt: now,
+          },
+        });
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.customer_contact.approved',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: {
+            landline: dealer.landline,
+            landlineApprovedAt: dealer.landlineApprovedAt?.toISOString() ?? null,
+          },
+          after: { landline, landlineApprovedAt: now.toISOString(), by: 'ADMIN' },
+        });
+
+        return { dealerId, dealerSlug: dealer.slug, landline, approvedAt: now.toISOString() };
+      });
     },
 
     async approveProfileChange(

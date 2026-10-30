@@ -318,3 +318,73 @@ describe('call leads', () => {
     await buyer.agent.get('/v1/admin/call-leads').expect(401);
   });
 });
+
+describe('admin approval of a saved number', () => {
+  function approveSaved(agent: request.Agent, dealerId: string) {
+    return agent.post(`/v1/admin/dealers/${dealerId}/customer-contact/approve`).send({});
+  }
+
+  it('turns on calling for a number saved at onboarding, without a request from the dealer', async () => {
+    const dealer = await fixtures.dealership();
+    const listing = await car(dealer);
+    await h.prisma.dealer.update({
+      where: { id: dealer.dealerId },
+      data: { landline: '9677902626' },
+    });
+    expect(
+      (await h.agent().get(`/v1/vehicles/${listing.slug}`).expect(200)).body.dealer.canCall,
+    ).toBe(false);
+
+    const approved = await approveSaved(reviewer, dealer.dealerId).expect(200);
+    expect(approved.body.landline).toBe('+919677902626');
+
+    expect(
+      (await h.agent().get(`/v1/vehicles/${listing.slug}`).expect(200)).body.dealer.canCall,
+    ).toBe(true);
+    expect((await reveal(buyer.agent, listing.slug).expect(200)).body.phone).toBe('+919677902626');
+    const detail = await reviewer.get(`/v1/admin/dealers/${dealer.dealerId}`).expect(200);
+    expect(detail.body.landlineApprovedAt).toBe(approved.body.approvedAt);
+
+    await approveSaved(reviewer, dealer.dealerId).expect(200);
+    expect(
+      await h.prisma.auditLog.count({
+        where: { entityId: dealer.dealerId, action: 'dealer.customer_contact.approved' },
+      }),
+    ).toBe(1);
+  });
+
+  it('refuses a dealership with no usable number, and roles that cannot approve', async () => {
+    const dealer = await fixtures.dealership();
+    const missing = await approveSaved(reviewer, dealer.dealerId).expect(409);
+    expect(missing.body.code).toBe('CUSTOMER_CONTACT_MISSING');
+
+    await h.prisma.dealer.update({ where: { id: dealer.dealerId }, data: { landline: 'call us' } });
+    await approveSaved(reviewer, dealer.dealerId).expect(409);
+
+    await approveSaved(reviewer, randomUUID()).expect(404);
+    const support = await fixtures.staff('SUPPORT');
+    await approveSaved(support, dealer.dealerId).expect(403);
+    await approveSaved(buyer.agent, dealer.dealerId).expect(401);
+  });
+
+  it('withdraws the approval when an admin changes the number, until approved again', async () => {
+    const dealer = await fixtures.dealership();
+    const listing = await car(dealer);
+    await h.prisma.dealer.update({
+      where: { id: dealer.dealerId },
+      data: { landline: '9677902626' },
+    });
+    await approveSaved(reviewer, dealer.dealerId).expect(200);
+
+    await reviewer
+      .patch(`/v1/admin/dealers/${dealer.dealerId}`)
+      .send({ contact: { landline: '0416 224 8890' } })
+      .expect(200);
+    expect(
+      (await h.agent().get(`/v1/vehicles/${listing.slug}`).expect(200)).body.dealer.canCall,
+    ).toBe(false);
+
+    await approveSaved(reviewer, dealer.dealerId).expect(200);
+    expect((await reveal(buyer.agent, listing.slug).expect(200)).body.phone).toBe('+914162248890');
+  });
+});
