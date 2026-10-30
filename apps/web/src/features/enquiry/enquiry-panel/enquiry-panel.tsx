@@ -23,8 +23,7 @@ export function EnquiryPanel({
   listingSlug,
   dealerName,
   autoOpen = false,
-  autoAction = 'callback',
-  canCall = true,
+  canCall = false,
 }: EnquiryPanelProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -33,52 +32,54 @@ export function EnquiryPanel({
   const [contact, setContact] = useState<RevealDealerContact | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [callUnavailable, setCallUnavailable] = useState(false);
+  const [revealing, setRevealing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const autoOpened = useRef(false);
+  const callingAvailable = canCall && !callUnavailable;
 
-  const open = useCallback(
-    async (action: 'call' | 'callback' = 'callback') => {
-      setStage('checking');
-      setNotice(null);
-      let signedIn: EnquiryCustomer | null;
-      try {
-        signedIn = await enquiryCustomerAction();
-      } catch {
-        setNotice(ENQUIRY_PANEL_TEXT.openFailed);
-        setStage('idle');
+  const open = useCallback(async () => {
+    setStage('checking');
+    setNotice(null);
+    let signedIn: EnquiryCustomer | null;
+    try {
+      signedIn = await enquiryCustomerAction();
+    } catch {
+      setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+      setStage('idle');
+      return;
+    }
+    if (!signedIn) {
+      router.push(loginHref(pathname));
+      return;
+    }
+    setCustomer(signedIn);
+    setStage(callingAvailable ? 'choices' : 'form');
+  }, [pathname, router, callingAvailable]);
+
+  async function reveal(): Promise<void> {
+    setRevealing(true);
+    setNotice(null);
+    try {
+      const result = await revealContactAction(listingSlug);
+      if (result.status === 'signed-out') {
+        router.push(loginHref(pathname));
         return;
       }
-      if (!signedIn) {
-        router.push(loginHref(pathname, action));
+      if (result.status === 'revealed') {
+        setContact(result.contact);
+        setStage('call');
         return;
       }
-      setCustomer(signedIn);
-      if (action === 'call') {
-        try {
-          const result = await revealContactAction(listingSlug);
-          if (result.status === 'signed-out') {
-            router.push(loginHref(pathname, 'call'));
-            return;
-          }
-          if (result.status === 'revealed') {
-            setContact(result.contact);
-            setStage('call');
-            return;
-          }
-          setNotice(result.message);
-          if (result.code === 'CONTACT_UNAVAILABLE') setCallUnavailable(true);
-          setStage(result.code === 'LISTING_NOT_AVAILABLE' ? 'gone' : 'choices');
-        } catch {
-          setNotice(ENQUIRY_PANEL_TEXT.openFailed);
-          setStage('choices');
-        }
-        return;
-      }
-      setStage('form');
-    },
-    [pathname, router, listingSlug],
-  );
+      setNotice(result.message);
+      if (result.code === 'CONTACT_UNAVAILABLE') setCallUnavailable(true);
+      if (result.code === 'LISTING_NOT_AVAILABLE') setStage('gone');
+    } catch {
+      setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+    } finally {
+      setRevealing(false);
+    }
+  }
 
   useEffect(() => {
     if (stage === 'choices' || stage === 'call') {
@@ -94,8 +95,8 @@ export function EnquiryPanel({
   useEffect(() => {
     if (!autoOpen || autoOpened.current) return;
     autoOpened.current = true;
-    void open(autoAction);
-  }, [autoOpen, autoAction, open]);
+    void open();
+  }, [autoOpen, open]);
 
   useEffect(() => {
     if (autoOpen) return;
@@ -134,15 +135,6 @@ export function EnquiryPanel({
     return result;
   }
 
-  const callingAvailable = canCall && !callUnavailable;
-  const requiresLogin = callingAvailable
-    ? ENQUIRY_PANEL_TEXT.requiresLogin
-    : ENQUIRY_PANEL_TEXT.callbackRequiresLogin;
-  function begin(): void {
-    if (callingAvailable) setStage('choices');
-    else void open('callback');
-  }
-
   return (
     <div ref={panel} className="flex flex-col gap-[10px]" aria-live="polite">
       {stage === 'idle' && notice ? (
@@ -161,14 +153,14 @@ export function EnquiryPanel({
             loading={stage === 'checking'}
             aria-label={stage === 'checking' ? ENQUIRY_PANEL_TEXT.loading : undefined}
             onClick={() => {
-              begin();
+              void open();
             }}
           >
-            {callingAvailable ? ENQUIRY_PANEL_TEXT.enquire : ENQUIRY_PANEL_TEXT.callback}
+            {ENQUIRY_PANEL_TEXT.enquire}
           </Button>
           {customer ? null : (
             <p className="m-0 text-center text-[12px] ink-secondary max-lg:hidden">
-              {requiresLogin}
+              {ENQUIRY_PANEL_TEXT.requiresLogin}
             </p>
           )}
           <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] max-lg:pb-[max(10px,env(safe-area-inset-bottom))] shadow-(--shadow-lg) lg:hidden">
@@ -179,13 +171,15 @@ export function EnquiryPanel({
               className="min-h-[44px]"
               loading={stage === 'checking'}
               onClick={() => {
-                begin();
+                void open();
               }}
             >
-              {callingAvailable ? ENQUIRY_PANEL_TEXT.enquire : ENQUIRY_PANEL_TEXT.callback}
+              {ENQUIRY_PANEL_TEXT.enquire}
             </Button>
             {customer ? null : (
-              <p className="m-0 mt-[4px] text-center text-[11px] ink-secondary">{requiresLogin}</p>
+              <p className="m-0 mt-[4px] text-center text-[11px] ink-secondary">
+                {ENQUIRY_PANEL_TEXT.requiresLogin}
+              </p>
             )}
           </div>
         </>
@@ -195,13 +189,14 @@ export function EnquiryPanel({
         <section className="card gap-3 p-4" aria-label={ENQUIRY_PANEL_TEXT.choose}>
           <h2 className="text-[17px]">{ENQUIRY_PANEL_TEXT.choose}</h2>
           {notice ? <Banner tone="warn">{notice}</Banner> : null}
-          {canCall && !callUnavailable ? (
+          {callingAvailable ? (
             <div className="flex flex-col gap-1">
               <Button
                 block
                 variant="secondary"
+                loading={revealing}
                 onClick={() => {
-                  void open('call');
+                  void reveal();
                 }}
               >
                 {ENQUIRY_PANEL_TEXT.call}
@@ -214,13 +209,12 @@ export function EnquiryPanel({
             block
             variant="primary"
             onClick={() => {
-              void open('callback');
+              setStage('form');
             }}
           >
             {ENQUIRY_PANEL_TEXT.callback}
           </Button>
           <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callbackIntro}</p>
-          {!customer ? <p className="text-[12px] ink-secondary">{requiresLogin}</p> : null}
         </section>
       ) : null}
       {stage === 'call' && contact ? (
@@ -257,7 +251,7 @@ export function EnquiryPanel({
           dealerName={dealerName}
           onSend={send}
           onCancel={() => {
-            setStage('choices');
+            setStage(callingAvailable ? 'choices' : 'idle');
           }}
         />
       ) : null}
@@ -280,7 +274,7 @@ export function EnquiryPanel({
         </Banner>
       ) : null}
 
-      {stage === 'already' || stage === 'sent' ? (
+      {callingAvailable && (stage === 'already' || stage === 'sent') ? (
         <Button variant="ghost" onClick={() => setStage('choices')}>
           {ENQUIRY_PANEL_TEXT.back}
         </Button>

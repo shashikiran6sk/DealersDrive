@@ -4,8 +4,7 @@ export const ENQUIRY_MESSAGE_MAX = 1000;
 
 export const ENQUIRY_PANEL_TEXT = {
   enquire: 'Enquire now',
-  requiresLogin: 'Both options require login with your mobile number',
-  callbackRequiresLogin: 'Requires login with your mobile number',
+  requiresLogin: 'Requires login with your mobile number',
   call: 'Call dealer',
   callIntro: 'Speak directly with the dealership.',
   callConsent: 'The dealer will see your name and mobile number.',
@@ -43,7 +42,7 @@ export const ENQUIRY_PANEL_TEXT = {
 
 export const MY_ENQUIRIES_HREF = '/enquiries';
 
-export function loginHref(pathname: string, action: 'call' | 'callback' = 'callback'): string {
-  const back = `${pathname}?${ENQUIRE_PARAM}=${action === 'call' ? 'call' : '1'}`;
+export function loginHref(pathname: string): string {
+  const back = `${pathname}?${ENQUIRE_PARAM}=1`;
   return `/login?returnTo=${encodeURIComponent(back)}`;
 }

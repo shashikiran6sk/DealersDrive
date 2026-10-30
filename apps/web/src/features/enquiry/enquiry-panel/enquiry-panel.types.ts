@@ -4,7 +4,6 @@ export interface EnquiryPanelProps {
   listingSlug: string;
   dealerName: string;
   autoOpen?: boolean;
-  autoAction?: 'call' | 'callback';
   canCall?: boolean;
 }
 

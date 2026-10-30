@@ -161,20 +161,21 @@ describe('/car/[slug]', () => {
     );
   });
 
-  it('offers callback only on an available car without an approved contact number', async () => {
+  it('offers the enquiry on an available car, with no reserved notice', async () => {
     serve(detail());
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
 
-    expect(screen.getAllByRole('button', { name: 'Request a callback' }).length).toBeGreaterThan(0);
-    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Enquire/ }).length).toBeGreaterThan(0);
     expect(screen.queryByText(/reserved for another buyer/)).not.toBeInTheDocument();
   });
 
-  it('offers contact choices when the dealer has an approved number', async () => {
+  it('shows only Enquire now before login, even when the dealer has an approved number', async () => {
     const car = detail();
     serve({ ...car, dealer: { ...car.dealer, canCall: true } });
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
     expect(screen.getAllByRole('button', { name: 'Enquire now' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
   });
 
   it('shows similar vehicles under the page, each with its dealership and a link (R73)', async () => {

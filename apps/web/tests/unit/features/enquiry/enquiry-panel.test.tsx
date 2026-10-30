@@ -6,8 +6,8 @@ import { navigationState, setLocation } from '../../../setup';
 
 import {
   enquiryCustomerAction,
-  sendEnquiryAction,
   revealContactAction,
+  sendEnquiryAction,
 } from '@/features/enquiry/actions';
 import { EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 
@@ -55,7 +55,6 @@ function panel(autoOpen = false) {
 
 async function pressEnquire(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
-  await user.click(await screen.findByRole('button', { name: 'Request a callback' }));
 }
 
 describe('an anonymous visitor', () => {
@@ -83,11 +82,10 @@ describe('a signed-in customer', () => {
     panel();
 
     await user.click(screen.getAllByRole('button', { name: 'Enquire now' }).at(-1)!);
-    await user.click(await screen.findByRole('button', { name: 'Request a callback' }));
 
     const message = await screen.findByRole('textbox', { name: /message/i });
-    expect(scroll).toHaveBeenCalledTimes(2);
-    expect(scroll.mock.instances[1]).toBe(message);
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.instances[0]).toBe(message);
     expect(scroll).toHaveBeenCalledWith({ block: 'center' });
   });
 
@@ -231,9 +229,7 @@ describe('the requires-login hint (R68)', () => {
     await waitFor(() => {
       expect(enquiryCustomerAction).toHaveBeenCalledTimes(1);
     });
-    expect(screen.getAllByText('Both options require login with your mobile number')).toHaveLength(
-      2,
-    );
+    expect(screen.getAllByText('Requires login with your mobile number')).toHaveLength(2);
   });
 
   it('drops the hint for a customer who is already signed in', async () => {
@@ -241,7 +237,7 @@ describe('the requires-login hint (R68)', () => {
     panel();
 
     await waitFor(() => {
-      expect(screen.queryByText('Both options require login with your mobile number')).toBeNull();
+      expect(screen.queryByText('Requires login with your mobile number')).toBeNull();
     });
     expect(enquiryCustomerAction).toHaveBeenCalledTimes(1);
   });
@@ -317,65 +313,110 @@ describe('when the service cannot be reached', () => {
   });
 });
 
-describe('calling the dealership', () => {
-  it('shows choices without exposing a number or sending an enquiry', async () => {
+describe('a dealership with an approved customer contact number', () => {
+  function callablePanel() {
+    return render(
+      <EnquiryPanel listingSlug="2023-hyundai-creta" dealerName="Sri Lakshmi Motors" canCall />,
+    );
+  }
+
+  it('shows only Enquire now before login, and checks the login first', async () => {
     const user = userEvent.setup();
     vi.mocked(enquiryCustomerAction).mockResolvedValue(null);
-    panel();
+    callablePanel();
+
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Request a callback' })).not.toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
+
+    await waitFor(() =>
+      expect(navigationState.pushed).toContain(
+        '/login?returnTo=%2Fcar%2F2023-hyundai-creta%3Fenquire%3D1',
+      ),
+    );
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    expect(revealContactAction).not.toHaveBeenCalled();
+  });
+
+  it('offers both options once signed in, saying what the dealer will see', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    callablePanel();
+
+    await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
+
     expect(await screen.findByRole('button', { name: 'Call dealer' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Request a callback' })).toBeVisible();
     expect(screen.getByText('The dealer will see your name and mobile number.')).toBeVisible();
     expect(revealContactAction).not.toHaveBeenCalled();
     expect(sendEnquiryAction).not.toHaveBeenCalled();
   });
-  it('preserves the call action through mobile login', async () => {
-    const user = userEvent.setup();
-    vi.mocked(enquiryCustomerAction).mockResolvedValue(null);
-    panel();
-    await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
-    await user.click(await screen.findByRole('button', { name: 'Call dealer' }));
-    await waitFor(() =>
-      expect(navigationState.pushed).toContain(
-        '/login?returnTo=%2Fcar%2F2023-hyundai-creta%3Fenquire%3Dcall',
-      ),
-    );
-    expect(revealContactAction).not.toHaveBeenCalled();
-  });
-  it('reveals a telephone link only after authentication, without a callback enquiry', async () => {
+
+  it('reveals a telephone link on Call dealer, without sending an enquiry', async () => {
     const user = userEvent.setup();
     vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
     vi.mocked(revealContactAction).mockResolvedValue({
       status: 'revealed',
       contact: {
-        phone: '+914162248890',
-        phoneDisplay: '+91 416 224 8890',
-        callHref: 'tel:+914162248890',
+        phone: '+919677902626',
+        phoneDisplay: '+91 96779 02626',
+        callHref: 'tel:+919677902626',
         dealerName: 'Sri Lakshmi Motors',
       },
     });
-    panel();
+    callablePanel();
+
     await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
     await user.click(await screen.findByRole('button', { name: 'Call dealer' }));
-    expect(await screen.findByRole('link', { name: '+91 416 224 8890' })).toHaveAttribute(
+
+    expect(await screen.findByRole('link', { name: '+91 96779 02626' })).toHaveAttribute(
       'href',
-      'tel:+914162248890',
+      'tel:+919677902626',
     );
     expect(sendEnquiryAction).not.toHaveBeenCalled();
   });
-  it('offers callback only when calling is unavailable', async () => {
+
+  it('opens the enquiry form on Request a callback', async () => {
     const user = userEvent.setup();
     vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
-    render(
-      <EnquiryPanel
-        listingSlug="2023-hyundai-creta"
-        dealerName="Sri Lakshmi Motors"
-        canCall={false}
-      />,
-    );
-    await user.click(screen.getAllByRole('button', { name: 'Request a callback' })[0]!);
-    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    callablePanel();
+
+    await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
+    await user.click(await screen.findByRole('button', { name: 'Request a callback' }));
+
     expect(await screen.findByRole('textbox', { name: /message/i })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Send enquiry' })).toBeVisible();
+    expect(revealContactAction).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the enquiry when the number has just been withdrawn', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    vi.mocked(revealContactAction).mockResolvedValue({
+      status: 'refused',
+      code: 'CONTACT_UNAVAILABLE',
+      message: 'A customer contact number is not available. Send an enquiry to request a callback.',
+    });
+    callablePanel();
+
+    await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
+    await user.click(await screen.findByRole('button', { name: 'Call dealer' }));
+
+    expect(await screen.findByText(/not available/)).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Request a callback' })).toBeVisible();
+  });
+});
+
+describe('a dealership without an approved number', () => {
+  it('goes straight from Enquire now to the enquiry form after login', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    panel();
+
+    await user.click(screen.getAllByRole('button', { name: 'Enquire now' })[0]!);
+
+    expect(await screen.findByRole('button', { name: 'Send enquiry' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Request a callback' })).not.toBeInTheDocument();
   });
 });

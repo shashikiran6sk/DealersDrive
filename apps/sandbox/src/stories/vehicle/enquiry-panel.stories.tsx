@@ -25,11 +25,13 @@ const meta = {
   ],
   argTypes: {
     autoOpen: { control: 'boolean' },
+    canCall: { control: 'boolean' },
   },
   args: {
     listingSlug: '2023-hyundai-creta-sx-o',
     dealerName: 'Sri Lakshmi Motors',
     autoOpen: false,
+    canCall: false,
   },
   beforeEach: () => {
     enquiryActionStub.customer = CUSTOMER;
@@ -51,14 +53,28 @@ type Story = StoryObj<typeof meta>;
 
 export const Idle: Story = {};
 export const Choices: Story = {
+  args: { canCall: true },
   play: async ({ canvasElement }) => {
     await userEvent.click(
       within(canvasElement).getAllByRole('button', { name: 'Enquire now' })[0]!,
     );
   },
 };
-export const CallbackOnly: Story = { args: { canCall: false } };
-export const CallDealer: Story = { args: { autoOpen: true, autoAction: 'call' } };
+export const CallbackOnly: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getAllByRole('button', { name: 'Enquire now' })[0]!,
+    );
+  },
+};
+export const CallDealer: Story = {
+  args: { autoOpen: true, canCall: true },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      await within(canvasElement).findByRole('button', { name: 'Call dealer' }),
+    );
+  },
+};
 
 export const SignedOut: Story = {
   beforeEach: () => {

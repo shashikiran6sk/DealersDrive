@@ -2315,7 +2315,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'Enquire now on the vehicle page offers Call dealer or Request a callback. Both require verified-mobile login, returning to the selected action; only the call action reveals the approved number. The mobile bottom button scrolls the selected panel into view.',
+      'Enquire now on the vehicle page, the only button before login. It checks for a verified-mobile session first (signing in returns here); then a dealership with an approved customer contact number offers Call dealer or Request a callback, and one without goes straight to the enquiry form. Only Call dealer reveals the number. The mobile bottom button scrolls the selected panel into view.',
     aliases: [
       'Enquire',
       'EnquireNow',
@@ -2327,7 +2327,7 @@ export const registry: RegistryEntry[] = [
       'enquiry-panel',
     ],
     features: ['R65', 'R64'],
-    props: ['listingSlug', 'dealerName', 'autoOpen', 'autoAction', 'canCall'],
+    props: ['listingSlug', 'dealerName', 'autoOpen', 'canCall'],
     states: [
       'idle, requires-login hint (R68)',
       'idle, signed in',
