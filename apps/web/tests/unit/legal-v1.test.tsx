@@ -193,6 +193,17 @@ describe('server actions and one-time routing', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Dealer' }));
     expect(screen.getByRole('link', { name: 'Continue with Google' })).toBeInTheDocument();
   });
+  it('never redirects an accepted customer back to the login page itself', async () => {
+    enabled();
+    api.parsed.mockResolvedValue(status(true));
+    mockLoginProviders();
+
+    render(
+      await LoginPage({ searchParams: Promise.resolve({ returnTo: '/login?returnTo=%2Flogin' }) }),
+    );
+
+    expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
+  });
   it.each([
     { accepted: false, returnTo: undefined },
     { accepted: true, returnTo: undefined },

@@ -39,6 +39,13 @@ neither step may stand in for the other.
 
 ![Customer phone sign-in remains reachable after Google dealer sign-in](login-fixed.jpg)
 
+### `if (!isLoginPath(resume)) redirect(resume)`
+
+An accepted customer is never sent back to the login page itself. `returnTo`
+is a same-site path, so `/login?returnTo=/login` is a valid one, and resuming it
+redirected the page to itself until the browser gave up with too many
+redirects. The form renders instead.
+
 ### `const dealerReturnTo = requested ? safeReturnPath(requested, '/dealer') : null`
 
 Where a sign-in may send somebody afterwards is decided here, on the server,

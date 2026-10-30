@@ -968,6 +968,12 @@ takes one value per key, the shorter form survives being pasted into a chat
 window intact, and a single slug still reads as a list of one — so every
 link shared before the chips became toggles keeps working.
 
+### `export function isLoginPath(path: string): boolean`
+
+Whether a same-site path is the login page, query and trailing slash aside. The
+login page uses it so a `returnTo` pointing at `/login` cannot redirect the page
+to itself.
+
 ### `export function safeReturnPath(candidate: string | undefined | null, fallback = '/'): string`
 
 **R63** — where a sign-in may send somebody afterwards: a path on this site, or
