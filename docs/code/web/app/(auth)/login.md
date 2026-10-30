@@ -31,7 +31,13 @@ page made the header's Login link flash a blank page and immediately return home
 The post-sign-in and protected-page flows supply `returnTo` and still continue
 after acceptance; sessions that need to accept the policies still see the gate.
 
-![The Dealer tab remains reachable from the login form](login-fixed.jpg)
+The customer status helper first verifies the session through the customer API.
+A Google-only dealer can therefore reach phone sign-in before or after personal
+policy acceptance, including when the URL carries a protected customer destination.
+Completing customer identity requirements is separate from accepting policies;
+neither step may stand in for the other.
+
+![Customer phone sign-in remains reachable after Google dealer sign-in](login-fixed.jpg)
 
 ### `const dealerReturnTo = requested ? safeReturnPath(requested, '/dealer') : null`
 

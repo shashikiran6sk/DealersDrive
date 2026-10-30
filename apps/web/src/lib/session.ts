@@ -1,9 +1,11 @@
 import 'server-only';
 
-import type { AdminOverview, AuthSession } from '@dealers-drive/contracts';
+import { CustomerSession, type AdminOverview, type AuthSession } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
 
-import { ApiError, apiGet, SESSION_COOKIE } from './api';
+import { CUSTOMER_ACCOUNT_PATHS } from '@/features/auth/customer-account-actions.constants';
+
+import { ApiError, apiGet, apiGetParsed, SESSION_COOKIE } from './api';
 
 export async function hasSession(): Promise<boolean> {
   return Boolean((await cookies()).get(SESSION_COOKIE)?.value);
@@ -12,6 +14,16 @@ export async function hasSession(): Promise<boolean> {
 export async function currentSession(): Promise<AuthSession | null> {
   try {
     return await apiGet<AuthSession>('/v1/auth/me', { revalidate: false });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return null;
+    throw error;
+  }
+}
+
+export async function currentCustomerSession(): Promise<CustomerSession | null> {
+  if (!(await hasSession())) return null;
+  try {
+    return await apiGetParsed(CustomerSession, CUSTOMER_ACCOUNT_PATHS.me, { revalidate: false });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return null;
     throw error;
