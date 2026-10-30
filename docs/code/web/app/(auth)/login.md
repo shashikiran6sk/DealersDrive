@@ -22,6 +22,17 @@ The customer tab does not redirect a signed-in customer: nothing on the
 customer side depends on landing there, and a stale cookie must still be able
 to reach the form.
 
+### `if (status?.enabled && status.accepted && requested)`
+
+Customer policy acceptance only resumes navigation when the URL includes an
+explicit `returnTo`. A direct visit to `/login` must keep the form accessible,
+including its Dealer tab. Redirecting an accepted session to the fallback home
+page made the header's Login link flash a blank page and immediately return home.
+The post-sign-in and protected-page flows supply `returnTo` and still continue
+after acceptance; sessions that need to accept the policies still see the gate.
+
+![The Dealer tab remains reachable from the login form](login-fixed.jpg)
+
 ### `const dealerReturnTo = requested ? safeReturnPath(requested, '/dealer') : null`
 
 Where a sign-in may send somebody afterwards is decided here, on the server,
