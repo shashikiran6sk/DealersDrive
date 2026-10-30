@@ -1,0 +1,18 @@
+{
+  "_about": "Reviewed reclassifications applied by harness/finalize.mjs on top of the harness verdicts in registry/results/*.json. The harness verdict is kept as `harnessStatus`; every entry states why.",
+  "AUTH-012": {
+    "status": "NOT_APPLICABLE",
+    "reason": "Product owner decision UPD-1, recorded 2026-10-21: \"log out of all devices\" is not needed for V1. No logout-all route exists (SessionService.revokeAllForUser is unused); single-session logout (AUTH-011) and server-side revocation on disable, removal and suspension are covered elsewhere. Revisit for a later release."
+  },
+  "BUG-NEW-010 warmed car page survives dealer suspension": {
+    "status": "NOT_APPLICABLE",
+    "reason": "Superseded by BUG-NEW-010-timing, which measures the same out-of-band suspension instead of sampling once at 65 s: the car page stops serving the car after 71 s and the dealer page after 332 s, inside the design of #251. The 65 s sample is shorter than the page's 60 s ISR window plus one regeneration."
+  },
+  "NOTIFY-001": {
+    "reason": "Strengthened by NOTIFY-DISC-001: the console mailer emitted 274 dealer.application.received e-mails during the campaign; the outbox → worker path is asynchronous (PERF-DISC-001)."
+  },
+  "BUG-NEW-010-timing": {
+    "reason": "Out-of-band suspension (no console action): designed cache windows are ≈ 70 s (car, revalidate 60) and ≈ 610 s (dealer, revalidate 600); BUG-111 records the window."
+  },
+  "_release": "Release-candidate certification of 115ac26a (2026-10-30): triage entries that pointed at BUG-101, BUG-102 and BUG-109 were removed because those defects are fixed (#337, #340, #339) and the scenarios now PASS on the harness verdict; ENQ-LIFE-010's BLOCKED entry was removed because UPD-2 (#338) defined the transitions and v01-final-retest proves every backward move is refused."
+}

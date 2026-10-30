@@ -1,0 +1,33 @@
+[
+  {
+    "forgedPut": 404,
+    "forgedRead": 404,
+    "s3ApiHealth": 200
+  },
+  {
+    "presign": 409,
+    "code": "DOCUMENT_LOCKED",
+    "delete": 409,
+    "statuses": ["VERIFIED", "VERIFIED"]
+  },
+  {
+    "warm": [200, 200],
+    "after": [404, 404]
+  },
+  {
+    "presign": 404,
+    "live": 200,
+    "suspended": 404
+  },
+  {
+    "visited": 5,
+    "unique": 5
+  },
+  {
+    "close": 200,
+    "after": "CLOSED",
+    "docs": 2,
+    "session": 401,
+    "secondClose": 422
+  }
+]

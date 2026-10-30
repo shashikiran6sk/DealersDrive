@@ -1,0 +1,122 @@
+{
+  "ENQ-LIFE-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER: NEW→CONTACTED→CLOSED and NEW→SPAM all 200 (UPD-2 forward-only paths)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:28.711Z"
+  },
+  "ENQ-LIFE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "UPD-2: every backward or out-of-final move refused ({\"CLOSED→CONTACTED\":409,\"CLOSED→SPAM\":409,\"CLOSED→NEW\":409,\"SPAM→CLOSED\":409,\"SPAM→CONTACTED\":409,\"CONTACTED→NEW\":409}); statuses unchanged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:29.050Z"
+  },
+  "DEP-DISC-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "BUG-108 fixed: pnpm audit {\"info\":0,\"low\":2,\"moderate\":4,\"high\":0,\"critical\":0} — no high or critical",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:32.008Z"
+  },
+  "PERF-DISC-001": {
+    "status": "PASS",
+    "layers": ["CODE"],
+    "note": "BUG-104 fixed: notification.email polls every 0.5 s (was 2 s, 30 jobs/min); see EVIDENCE/email-queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:32.009Z"
+  },
+  "DATA-DISC-003": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "BUG-103 fixed: 4 assisted dealerships, each with one OWNER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:32.011Z"
+  },
+  "DOC-DISC-002": {
+    "status": "PASS",
+    "layers": ["DOCS"],
+    "note": "BUG-106 fixed: AGENTS.md invariant 6 states R71 (sold/withdrawn on no public surface)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:32.012Z"
+  },
+  "UAT-OBS-001": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "BUG-105/UPD-3 fixed: signed-out /saved asks the visitor to sign in (\"Login\")",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:33.960Z"
+  },
+  "UAT-OBS-002": {
+    "status": "PASS",
+    "layers": ["WEB"],
+    "note": "BUG-101/107 fixed: 404, title \"Page not found | Dealers-Drive\", footer number formatted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:33.999Z"
+  },
+  "UAT-OBS-003": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "BUG-110 fixed: the dealer console shows no credit balance or credits panel",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:35.156Z"
+  },
+  "ORIG-DISC-PROFILE-001 second profile edit": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "second edit while pending → 409 PROFILE_EDIT_PENDING; the reference documents \"one pending request per dealership; cancel it before proposing another change\" and a 409 — not a bug (as in the baseline triage)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:35.242Z"
+  },
+  "RETEST-BUG-112": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin config change → the top-level supportPhone the footer reads and support.customer agree at once (one value, one public-config tag); restored",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:35.285Z"
+  },
+  "RETEST-BUG-113": {
+    "status": "PASS",
+    "layers": ["WEB"],
+    "note": "a car on /cars?district=vellore disappears on the very next request after Mark sold (no cached results)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "zz-zfinal-retest",
+    "at": "2026-10-30T13:38:36.401Z"
+  }
+}

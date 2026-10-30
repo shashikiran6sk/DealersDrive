@@ -1,0 +1,28 @@
+[
+  {
+    "primary": "277197d8-5d91-4b57-a8be-86bcb24e958f",
+    "cardUsesPrimary": true,
+    "heroUsesPrimary": true
+  },
+  {
+    "start": "1/6",
+    "afterNext": "2/6",
+    "afterPrev": "1/6",
+    "wrapped": "6/6"
+  },
+  {
+    "opened": "1 / 6",
+    "afterArrowRight": "2 / 6",
+    "focusAfterEscape": "View all 6 photos of 2023 Hyundai Creta SX(O)"
+  },
+  {
+    "removedAll": 6,
+    "removedTwo": 2,
+    "allGone": {
+      "comingSoon": 2,
+      "brokenInGallery": 0,
+      "brokenCards": []
+    },
+    "partialCount": "1/4"
+  }
+]

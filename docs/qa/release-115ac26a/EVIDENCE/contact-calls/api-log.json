@@ -1,0 +1,1463 @@
+[
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-52469cba",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallMain Motors 6396233cf3b4",
+        "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": false,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/50a2c0f8-1935-4f52-81be-278f375121a4/customer-contact/approve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/customer-contact-missing",
+      "title": "Customer contact missing",
+      "status": 409,
+      "code": "CUSTOMER_CONTACT_MISSING",
+      "traceId": "x7ZBSj2ADz",
+      "detail": "This dealership has no valid customer contact number to approve. Add one in the profile editor first."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-ea6ceb9f/reveal-contact",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/contact-unavailable",
+      "title": "Not found",
+      "status": 404,
+      "code": "CONTACT_UNAVAILABLE",
+      "traceId": "wXZntVAhvX",
+      "detail": "A customer contact number is not available. Send an enquiry to request a callback."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "8gSzLfsgoq",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "N3FKEhiARn",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "5G5yWdiwb_",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.contact.landline",
+          "code": "CUSTOM",
+          "message": "Enter an Indian mobile number or landline with its STD code."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "EIb3hp6dVy",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.contact.x",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`x` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "50a2c0f8-1935-4f52-81be-278f375121a4",
+      "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "CallMain Motors 6396233cf3b4",
+      "legalName": "CallMain Motors 6396233cf3b4",
+      "tagline": "Quality used cars from CallMain",
+      "gstin": "33HRHCZ1351T1Z4",
+      "pan": null,
+      "contact": {
+        "fullName": "CallMain Owner",
+        "phone": "+••••••••9620",
+        "phoneDisplay": "+91 •••••• 9620",
+        "email": "callmain.639621512ab2@example.test",
+        "landline": null,
+        "landlineApproved": false
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-30T13:07:20.068Z",
+      "createdAt": "2026-10-30T13:07:19.853Z",
+      "profileChange": {
+        "id": "cbdc0fe5-e5c1-4c81-bf0b-bd9d6fee33f6",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": null,
+        "taglineChanged": false,
+        "specialities": [],
+        "landline": "+91••••••6789",
+        "landlineChanged": true,
+        "submittedAtLabel": "30 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-52469cba",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallMain Motors 6396233cf3b4",
+        "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": false,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-edit-pending",
+      "title": "Profile edit pending",
+      "status": 409,
+      "code": "PROFILE_EDIT_PENDING",
+      "traceId": "25jhG3tni3",
+      "detail": "You already have a change waiting for review. Cancel it first if you want to write something different."
+    }
+  },
+  {
+    "req": "GET /v1/admin/profile-changes",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "cbdc0fe5-e5c1-4c81-bf0b-bd9d6fee33f6",
+          "dealerId": "50a2c0f8-1935-4f52-81be-278f375121a4",
+          "dealerSlug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+          "dealerName": "CallMain Motors 6396233cf3b4",
+          "initials": "CM",
+          "status": "PENDING",
+          "statusLabel": "Waiting for review",
+          "statusTone": "warn",
+          "tagline": null,
+          "taglineChanged": false,
+          "specialities": [],
+          "landline": "+91••••••6789",
+          "landlineChanged": true,
+          "liveLandline": null,
+          "liveTagline": "Quality used cars from CallMain",
+          "liveSpecialities": ["SUVs", "Sedans"],
+          "submittedAt": "2026-10-30T13:07:26.202Z",
+          "submittedAtLabel": "30 Oct 2026",
+          "waitingLabel": "just now",
+          "decisionReason": null
+        }
+      ],
+      "pendingCount": 1
+    }
+  },
+  {
+    "req": "POST /v1/admin/profile-changes/cbdc0fe5-e5c1-4c81-bf0b-bd9d6fee33f6/approve",
+    "status": 200,
+    "body": {
+      "id": "cbdc0fe5-e5c1-4c81-bf0b-bd9d6fee33f6",
+      "status": "APPROVED",
+      "statusLabel": "Published",
+      "dealerId": "50a2c0f8-1935-4f52-81be-278f375121a4",
+      "dealerSlug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+      "published": true,
+      "decidedAt": "2026-10-30T13:07:26.277Z"
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-52469cba",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallMain Motors 6396233cf3b4",
+        "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "OXMKFx5utC",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "QnrSBpQmr2",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/enquiry-own-listing",
+      "title": "Enquiry own listing",
+      "status": 422,
+      "code": "ENQUIRY_OWN_LISTING",
+      "traceId": "0E8AU9HQgt",
+      "detail": "This car belongs to your own dealership."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 200,
+    "body": {
+      "phone": "+••••••••6789",
+      "phoneDisplay": "+91 44234 56789",
+      "callHref": "tel:+91••••••6789",
+      "dealerName": "CallMain Motors 6396233cf3b4"
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "XQw7B14TYz",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.listingId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`listingId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "juv6ZoVH4R",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-ed8e5424/reveal-contact",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-available",
+      "title": "Listing not available",
+      "status": 409,
+      "code": "LISTING_NOT_AVAILABLE",
+      "traceId": "NElel6DsXS",
+      "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-76f659ec/reveal-contact",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-available",
+      "title": "Listing not available",
+      "status": 409,
+      "code": "LISTING_NOT_AVAILABLE",
+      "traceId": "9apbcQJeFk",
+      "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-a576ee98/reveal-contact",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-available",
+      "title": "Listing not available",
+      "status": 409,
+      "code": "LISTING_NOT_AVAILABLE",
+      "traceId": "uOVan78mvc",
+      "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/no-such-car-zz/reveal-contact",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "LISTING_NOT_FOUND",
+      "traceId": "0-Z2-a63PM",
+      "detail": "That car is not on Dealers-Drive."
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/enquiry-own-listing",
+      "title": "Enquiry own listing",
+      "status": 422,
+      "code": "ENQUIRY_OWN_LISTING",
+      "traceId": "MQTXY6qII_",
+      "detail": "This car belongs to your own dealership."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/enquiries",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      },
+      "counts": {
+        "ALL": 0,
+        "NEW": 0,
+        "CONTACTED": 0,
+        "CLOSED": 0,
+        "SPAM": 0
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "0643f078-204a-4de8-b886-6dca80063894",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.581Z",
+          "lastRevealedAgoLabel": "just now"
+        },
+        {
+          "id": "16fdd6d2-1e8c-45e3-a380-cfdb6e025c22",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 64 MA 7484",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-fbc9e00c"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.472Z",
+          "lastRevealedAgoLabel": "just now"
+        },
+        {
+          "id": "84bf0f61-2b75-40ce-931c-603ebc1a8d2d",
+          "customer": {
+            "name": "Call Buyer One",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9625",
+            "callHref": "tel:+91••••••9625"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 2,
+          "firstRevealedLabel": "29 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.445Z",
+          "lastRevealedAgoLabel": "just now"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads?limit=2",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "0643f078-204a-4de8-b886-6dca80063894",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.581Z",
+          "lastRevealedAgoLabel": "just now"
+        },
+        {
+          "id": "16fdd6d2-1e8c-45e3-a380-cfdb6e025c22",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 64 MA 7484",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-fbc9e00c"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.472Z",
+          "lastRevealedAgoLabel": "just now"
+        }
+      ],
+      "page": {
+        "nextCursor": "MjAyNi0xMC0zMFQxMzowNzoyNi40NzJafDE2ZmRkNmQyLTFlOGMtNDVlMy1hMzgwLWNmZGI2ZTAyNWMyMg",
+        "hasMore": true
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads?limit=2&cursor=MjAyNi0xMC0zMFQxMzowNzoyNi40NzJafDE2ZmRkNmQyLTFlOGMtNDVlMy1hMzgwLWNmZGI2ZTAyNWMyMg",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "84bf0f61-2b75-40ce-931c-603ebc1a8d2d",
+          "customer": {
+            "name": "Call Buyer One",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9625",
+            "callHref": "tel:+91••••••9625"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 2,
+          "firstRevealedLabel": "29 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.445Z",
+          "lastRevealedAgoLabel": "just now"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads?dealerId=x",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "MrTaH1xqO7",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads?limit=500",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "GSs-QvOHUW",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.limit",
+          "code": "TOO_BIG",
+          "message": "Too big: expected number to be <=100"
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads?cursor=garbage",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/malformed-cursor",
+      "title": "Malformed cursor",
+      "status": 409,
+      "code": "MALFORMED_CURSOR",
+      "traceId": "sTnBx9ktsa",
+      "detail": "That page cursor is not valid."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "g_vnostOUp",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/call-leads",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "4lty0ZfCoA",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/call-leads?dealer=callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "0643f078-204a-4de8-b886-6dca80063894",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.581Z",
+          "lastRevealedAgoLabel": "just now",
+          "dealer": {
+            "name": "CallMain Motors 6396233cf3b4",
+            "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu"
+          }
+        },
+        {
+          "id": "16fdd6d2-1e8c-45e3-a380-cfdb6e025c22",
+          "customer": {
+            "name": "Call Buyer Two",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9626",
+            "callHref": "tel:+91••••••9626"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 64 MA 7484",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-fbc9e00c"
+          },
+          "revealCount": 1,
+          "firstRevealedLabel": "30 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.472Z",
+          "lastRevealedAgoLabel": "just now",
+          "dealer": {
+            "name": "CallMain Motors 6396233cf3b4",
+            "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu"
+          }
+        },
+        {
+          "id": "84bf0f61-2b75-40ce-931c-603ebc1a8d2d",
+          "customer": {
+            "name": "Call Buyer One",
+            "initials": "CB",
+            "phoneDisplay": "+91 •••••• 9625",
+            "callHref": "tel:+91••••••9625"
+          },
+          "vehicle": {
+            "title": "2023 Hyundai Creta SX(O)",
+            "registrationDisplay": "TN 42 GW 9468",
+            "href": "/car/2023-hyundai-creta-sx-o-vellore-52469cba"
+          },
+          "revealCount": 2,
+          "firstRevealedLabel": "29 Oct 2026",
+          "lastRevealedAt": "2026-10-30T13:07:26.445Z",
+          "lastRevealedAgoLabel": "just now",
+          "dealer": {
+            "name": "CallMain Motors 6396233cf3b4",
+            "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu"
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/admin/call-leads?dealer=callother-motors-639629ae8930-vellore-tamil-nadu",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/admin/call-leads?dealer=no-such-dealer",
+    "status": 200,
+    "body": {
+      "data": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/admin/call-leads",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "tvMBSf_mgZ",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772/customer-contact/approve",
+    "status": 200,
+    "body": {
+      "dealerId": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "dealerSlug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+      "landline": "+91••••••2345",
+      "approvedAt": "2026-10-30T13:07:26.821Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772/customer-contact/approve",
+    "status": 200,
+    "body": {
+      "dealerId": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "dealerSlug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+      "landline": "+91••••••2345",
+      "approvedAt": "2026-10-30T13:07:26.821Z"
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-e6fbe729",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-e6fbe729",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallOther Motors 639629ae8930",
+        "slug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/be9a9aab-5889-468e-8e41-9b161170fcf6/customer-contact/approve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/customer-contact-missing",
+      "title": "Customer contact missing",
+      "status": 409,
+      "code": "CUSTOMER_CONTACT_MISSING",
+      "traceId": "TaRqDa59UJ",
+      "detail": "This dealership has no valid customer contact number to approve. Add one in the profile editor first."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/00000000-0000-4000-8000-000000000000/customer-contact/approve",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "QhX6Rwmeer",
+      "detail": "That dealership does not exist."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/50a2c0f8-1935-4f52-81be-278f375121a4/customer-contact/approve",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "HyxnZNDcrZ",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772/customer-contact/approve",
+    "status": 200,
+    "body": {
+      "dealerId": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "dealerSlug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+      "landline": "+91••••••2345",
+      "approvedAt": "2026-10-30T13:07:26.821Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "50a2c0f8-1935-4f52-81be-278f375121a4",
+      "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "CallMain Motors 6396233cf3b4",
+      "legalName": "CallMain Motors 6396233cf3b4",
+      "tagline": "Quality used cars from CallMain",
+      "gstin": "33HRHCZ1351T1Z4",
+      "pan": null,
+      "contact": {
+        "fullName": "CallMain Owner",
+        "phone": "+••••••••9620",
+        "phoneDisplay": "+91 •••••• 9620",
+        "email": "callmain.639621512ab2@example.test",
+        "landline": "+91••••••6789",
+        "landlineApproved": true
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-30T13:07:20.068Z",
+      "createdAt": "2026-10-30T13:07:19.853Z",
+      "profileChange": {
+        "id": "1e13fe41-922e-4982-9f8b-d220edbbad52",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": null,
+        "taglineChanged": false,
+        "specialities": [],
+        "landline": "+91••••••0000",
+        "landlineChanged": true,
+        "submittedAtLabel": "30 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-52469cba",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallMain Motors 6396233cf3b4",
+        "slug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/profile-changes/1e13fe41-922e-4982-9f8b-d220edbbad52/reject",
+    "status": 200,
+    "body": {
+      "id": "1e13fe41-922e-4982-9f8b-d220edbbad52",
+      "status": "REJECTED",
+      "statusLabel": "Not approved",
+      "dealerId": "50a2c0f8-1935-4f52-81be-278f375121a4",
+      "dealerSlug": "callmain-motors-6396233cf3b4-vellore-tamil-nadu",
+      "published": false,
+      "decidedAt": "2026-10-30T13:07:26.948Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772",
+    "status": 200,
+    "body": {
+      "id": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "slug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Approved",
+      "statusReason": null,
+      "brandName": "CallOther Motors 639629ae8930",
+      "legalName": "CallOther Motors 639629ae8930",
+      "tagline": "Quality used cars from CallOther",
+      "gstin": "33GFJCF7126S1Z0",
+      "pan": null,
+      "contact": {
+        "fullName": "CallOther Owner",
+        "phone": "+••••••••9623",
+        "phoneDisplay": "+91 •••••• 9623",
+        "email": "callother.6396272807bd@example.test",
+        "landline": "+91••••••4321",
+        "landlineApproved": false
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-30T13:07:24.167Z",
+      "createdAt": "2026-10-30T13:07:23.957Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-e6fbe729",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-e6fbe729",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 30 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "CallOther Motors 639629ae8930",
+        "slug": "callother-motors-639629ae8930-vellore-tamil-nadu",
+        "initials": "CM",
+        "isVerified": false,
+        "canCall": false,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-e6fbe729/reveal-contact",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/contact-unavailable",
+      "title": "Not found",
+      "status": 404,
+      "code": "CONTACT_UNAVAILABLE",
+      "traceId": "yzAJoULVDR",
+      "detail": "A customer contact number is not available. Send an enquiry to request a callback."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772/suspend",
+    "status": 200,
+    "body": {
+      "id": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-30T13:07:27.038Z"
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-e6fbe729/reveal-contact",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-available",
+      "title": "Listing not available",
+      "status": 409,
+      "code": "LISTING_NOT_AVAILABLE",
+      "traceId": "hYaNCAvAOS",
+      "detail": "This car is no longer available, so the dealership is not taking enquiries about it."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/9988c03d-f7a2-4929-9a0a-5c07afac7772/reinstate",
+    "status": 200,
+    "body": {
+      "id": "9988c03d-f7a2-4929-9a0a-5c07afac7772",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-30T13:07:27.071Z"
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-e6fbe729/reveal-contact",
+    "status": 200,
+    "body": {
+      "phone": "+••••••••4321",
+      "phoneDisplay": "+91 •••••• 4321",
+      "callHref": "tel:+91••••••4321",
+      "dealerName": "CallOther Motors 639629ae8930"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "5d5eb72a-be96-41cb-959d-1081809e3ed0",
+      "status": "NEW",
+      "createdAt": "2026-10-30T13:07:27.107Z",
+      "dealerName": "CallNone Motors 639633571f17",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "POST /v1/vehicles/2023-hyundai-creta-sx-o-vellore-52469cba/reveal-contact",
+    "status": 429,
+    "body": {
+      "type": "https://dealers-drive.com/errors/contact-rate-limited",
+      "title": "Too many requests",
+      "status": 429,
+      "code": "CONTACT_RATE_LIMITED",
+      "traceId": "83XwW4R12O",
+      "detail": "You have viewed several dealer numbers. Try again in a little while."
+    }
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "outcomes": [
+      {
+        "approve": 200,
+        "reject": 422,
+        "rejectCode": "DEALER_ALREADY_APPROVED",
+        "dealer": "ACTIVE"
+      },
+      {
+        "approve": 200,
+        "reject": 422,
+        "rejectCode": "DEALER_ALREADY_APPROVED",
+        "dealer": "ACTIVE"
+      },
+      {
+        "approve": 200,
+        "reject": 422,
+        "rejectCode": "DEALER_ALREADY_APPROVED",
+        "dealer": "ACTIVE"
+      },
+      {
+        "approve": 404,
+        "reject": 200,
+        "dealer": "ABSENT"
+      },
+      {
+        "approve": 200,
+        "reject": 422,
+        "rejectCode": "DEALER_ALREADY_APPROVED",
+        "dealer": "ACTIVE"
+      }
+    ]
+  }
+]

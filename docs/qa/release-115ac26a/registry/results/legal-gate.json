@@ -1,0 +1,72 @@
+{
+  "LEGAL-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "new customer: enabled, not accepted, can accept; anonymous status → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.582Z"
+  },
+  "LEGAL-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unaccepted customer: enquiry, save and enquiry list → 403; nothing written",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.607Z"
+  },
+  "LEGAL-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "unknown field, accepted:false and a bad scope → 400; anonymous accept → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.636Z"
+  },
+  "LEGAL-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "accept → 200; repeat → 200; status accepted; enquiry → 201 (acceptance rows 1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.691Z"
+  },
+  "LEGAL-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "active dealer without dealer terms: console API → 403; after accepting → 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.762Z"
+  },
+  "LEGAL-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "a DRAFT dealer can finish onboarding paths without terms; other console routes → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:36.975Z"
+  },
+  "LEGAL-007": {
+    "status": "PASS",
+    "layers": ["WEB"],
+    "note": "unaccepted customer opening /enquiries → streamed redirect (200 + NEXT_REDIRECT/meta refresh) to /login?returnTo=%2Fenquiries; /login renders the terms gate",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "legal-gate",
+    "at": "2026-10-30T13:10:37.077Z"
+  }
+}

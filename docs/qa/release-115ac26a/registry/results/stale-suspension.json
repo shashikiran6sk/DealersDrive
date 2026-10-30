@@ -1,0 +1,12 @@
+{
+  "BUG-NEW-010-timing": {
+    "status": "PASS",
+    "layers": ["BROWSER", "API"],
+    "note": "API 404 at once; warmed car page 404 after 71 s, dealer page after 0 s (out-of-band suspension; console path is immediate, #243) — inside the designed cache windows (car ≤ 90 s, dealer ≤ 660 s)",
+    "evidence": [],
+    "bug": "BUG-111",
+    "auth": null,
+    "area": "stale-suspension",
+    "at": "2026-10-30T13:26:28.269Z"
+  }
+}

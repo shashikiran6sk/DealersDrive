@@ -1,0 +1,332 @@
+[
+  {
+    "req": "GET /v1/legal/status?scope=CUSTOMER",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": false,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "GET /v1/legal/status?scope=CUSTOMER",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "f570I0P54m",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "Kz82ieOkJ7",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  },
+  {
+    "req": "POST /v1/saved-vehicles",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "lH0KVyZHPe",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  },
+  {
+    "req": "GET /v1/enquiries",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "EW9IXdYqES",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "l7qjeoWtOA",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.x",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`x` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "n8qoqqLduX",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.accepted",
+          "code": "INVALID_VALUE",
+          "message": "Invalid input: expected true"
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "fFzbDHzSbO",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.scope",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"CUSTOMER\"|\"DEALER\""
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "mM0kKsY9QV",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": true,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": true,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "GET /v1/legal/status?scope=CUSTOMER",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": true,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "fbcb7840-f5bc-4ad5-83d2-a54a6275b665",
+      "status": "NEW",
+      "createdAt": "2026-10-30T13:10:36.683Z",
+      "dealerName": "LegalDealer Motors 835167ba0e14",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "MBqSf-luBR",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  },
+  {
+    "req": "GET /v1/legal/status?scope=DEALER",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": false,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "POST /v1/legal/accept",
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "accepted": true,
+      "canAccept": true,
+      "termsVersion": "terms-v1.0",
+      "privacyVersion": "privacy-v1.0"
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "9aa14e45-0afc-4d4d-8e7f-9aee63b95095",
+          "title": "2023 Hyundai Creta SX(O)",
+          "registrationDisplay": "TN 48 XV 1666",
+          "summary": "Petrol · Automatic · 22,400 km",
+          "priceLabel": "₹14,50,000",
+          "status": "ACTIVE",
+          "statusLabel": "Active",
+          "statusTone": "ok",
+          "reason": null,
+          "complete": true,
+          "slug": "2023-hyundai-creta-sx-o-vellore-3c79dcc3",
+          "actions": ["reserve", "markSold", "withdraw"],
+          "reactivationPending": false,
+          "updatedAt": "2026-10-30T13:10:35.686Z",
+          "updatedLabel": "30 Oct 2026"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      },
+      "counts": {
+        "ALL": 1,
+        "ACTIVE": 1
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "bbfefb8f-2cd9-42a7-aa4c-80b24d4e5412",
+      "slug": "legaldraft-motors-835172e79ee7-vellore-tamil-nadu",
+      "status": "DRAFT",
+      "statusLabel": "Draft",
+      "statusReason": null,
+      "brandName": "LegalDraft Motors 835172e79ee7",
+      "legalName": "LegalDraft Motors 835172e79ee7",
+      "tagline": "Quality used cars from LegalDraft",
+      "gstin": "33NTVCT6098G1Z0",
+      "pan": null,
+      "contact": {
+        "fullName": "LegalDraft Owner",
+        "phone": "+••••••••5166",
+        "phoneDisplay": "+91 •••••• 5166",
+        "email": "legaldraft.8351709b3059@example.test",
+        "landline": null,
+        "landlineApproved": false
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": ["SUVs", "Sedans"],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": null,
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": null,
+      "createdAt": "2026-10-30T13:10:36.812Z",
+      "profileChange": null
+    }
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": true,
+      "canSubmit": true,
+      "percent": 75,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/legal-acceptance-required",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "LEGAL_ACCEPTANCE_REQUIRED",
+      "traceId": "XxTA0pGU5k",
+      "detail": "Sign in and accept the Terms & Conditions and Privacy Policy to continue."
+    }
+  }
+]

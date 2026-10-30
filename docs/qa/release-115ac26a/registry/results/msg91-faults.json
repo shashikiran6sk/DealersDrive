@@ -1,0 +1,32 @@
+{
+  "AUTH-DISC-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "RECOVERY"],
+    "note": "MSG91 refusal → 422 PHONE_VERIFICATION_FAILED; provider 500/429/timeout/network → 503/503/503/503 (PHONE_OTP_UNAVAILABLE); timeout answered in 1509 ms; no session or cookie in any case, customer or dealer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-30T13:11:55.873Z"
+  },
+  "AUTH-DISC-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "a token proving one number cannot sign in another (422 PHONE_VERIFICATION_FAILED / 422 PHONE_VERIFICATION_FAILED); no session",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-30T13:11:55.888Z"
+  },
+  "AUTH-DISC-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "first use 200 NAME_REQUIRED; the server refuses the replayed access token itself (422 PHONE_VERIFICATION_FAILED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "msg91-faults",
+    "at": "2026-10-30T13:11:55.936Z"
+  }
+}

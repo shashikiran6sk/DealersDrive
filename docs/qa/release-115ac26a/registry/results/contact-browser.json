@@ -1,0 +1,122 @@
+{
+  "BCALL-001": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "only Enquire now + login hint; no Call dealer or number; click → /login?returnTo=/car/2023-hyundai-creta-sx-o-vellore-f3ac78b0?enquire=1",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:44.333Z"
+  },
+  "BCALL-002": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "email-only Google dealer session → /login shows the customer phone form, not the terms gate, and does not redirect home (SIM-GOOGLE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:45.467Z"
+  },
+  "BCALL-003": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "accepted customer → /login resumes returnTo; returnTo=/login renders (no redirect loop); unaccepted customer sees the terms gate",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:48.618Z"
+  },
+  "BCALL-004": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "signed in → choices with consent line; Call dealer shows +91 44234 50000 as a tel: link; no overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:50.182Z"
+  },
+  "BCALL-005": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "signed in → choices with consent line; Call dealer shows +91 44234 50000 as a tel: link; no overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:52.066Z"
+  },
+  "BCALL-006": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "Request a callback → enquiry form → Enquiry sent; one enquiry row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:53.643Z"
+  },
+  "BCALL-007": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "dealer without an approved number → Enquire now opens the enquiry form directly",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:54.897Z"
+  },
+  "BCALL-008": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "return from login (?enquire=1) reopens straight at the contact choices",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:55.969Z"
+  },
+  "BCALL-009": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "inbox links to Customer calls; the lead shows the caller’s name and a call-back link",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:58.136Z"
+  },
+  "BCALL-010": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "admin Customer calls lists the lead with its dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:08:59.195Z"
+  },
+  "BCALL-011": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "admin dealer page: Not approved → Approve for calls → Approved on …; canCall true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:09:00.607Z"
+  },
+  "BCALL-012": {
+    "status": "PASS",
+    "layers": ["WEB", "BROWSER"],
+    "note": "after Approve for calls the car page offers the choices on the next load (no stale canCall)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "contact-browser",
+    "at": "2026-10-30T13:09:01.916Z"
+  }
+}

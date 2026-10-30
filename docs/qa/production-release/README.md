@@ -5,6 +5,10 @@ Pre-launch certification of **one exact commit**: `6e39a9a6af7a6aaa2806e9eaab948
 container against local, synthetic data; no production system, credential, provider or customer
 was touched, and no application source was changed.
 
+> **Superseded for release:** the release candidate `115ac26a`, with every defect below fixed
+> and retested, is certified in [`../release-115ac26a/`](../release-115ac26a/README.md). This
+> folder remains the baseline record for `6e39a9a`.
+
 **Start with [RELEASE-READINESS-REPORT.md](RELEASE-READINESS-REPORT.md)** — the verdict, the
 counts and what stands between this commit and launch.
 
