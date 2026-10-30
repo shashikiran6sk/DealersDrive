@@ -1,0 +1,44 @@
+[
+  {
+    "path": "/v1/saved-vehicles",
+    "seen": [
+      "2023-hyundai-creta-sx-o-vellore-d1a9fe4b",
+      "2023-hyundai-creta-sx-o-vellore-dcb5d13e",
+      "2023-hyundai-creta-sx-o-vellore-8a9b40ac",
+      "2023-hyundai-creta-sx-o-vellore-fd844964",
+      "2023-hyundai-creta-sx-o-vellore-31b8ee1b"
+    ],
+    "pages": 3,
+    "unique": 5
+  },
+  {
+    "path": "/v1/enquiries",
+    "seen": [
+      "ee31d06f-429a-401e-82d1-c5e2ddd4d8a6",
+      "dd4f9f23-e2de-446b-9841-055e456915c0",
+      "a79e89e8-a43b-4406-a107-571dd16f04b3",
+      "6032e250-6b1b-42dd-bdaa-81b5dc7b2b8e",
+      "284b7c2f-b0b9-46a1-aceb-4301d80e472d"
+    ],
+    "pages": 3,
+    "unique": 5
+  },
+  {
+    "path": "/v1/dealer/enquiries",
+    "seen": [
+      "ee31d06f-429a-401e-82d1-c5e2ddd4d8a6",
+      "dd4f9f23-e2de-446b-9841-055e456915c0",
+      "a79e89e8-a43b-4406-a107-571dd16f04b3",
+      "6032e250-6b1b-42dd-bdaa-81b5dc7b2b8e",
+      "284b7c2f-b0b9-46a1-aceb-4301d80e472d"
+    ],
+    "pages": 3,
+    "unique": 5
+  },
+  {
+    "path": "/v1/dealer/vehicles",
+    "seen": ["d0055342-1018-44c6-9778-fb5ce5edeb9b", "b6a0b454-ad36-408a-9fa3-b876ac482d4e"],
+    "pages": 2,
+    "unique": 2
+  }
+]

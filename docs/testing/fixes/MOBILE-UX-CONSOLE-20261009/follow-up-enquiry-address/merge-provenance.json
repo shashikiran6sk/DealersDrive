@@ -1,0 +1,14 @@
+{
+  "head": "6ccf12a0699b86e49149cbeb68a940159b8eecd7",
+  "fullTests": {
+    "web": 1479,
+    "contracts": 427,
+    "api": 3014,
+    "total": 4920
+  },
+  "mobileMerge": "25796c07b42b91fa586c63cb9cb28e9ecec75498",
+  "consoleHeadAfterMainUpdate": "14ae77630586c7cb5ab5e4442d69800d3681876d",
+  "verifiedLocalTree": "ed5d43398ce863e36ae8a7904375dadeb332ceee",
+  "consoleTreeMatchesLocalReference": true,
+  "protectedSourceDiffFromMain": []
+}

@@ -1,0 +1,21 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "turbo",
+    "run",
+    "test",
+    "--env-mode=loose",
+    "--force",
+    "--",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=fix-cert-results.json"
+  ],
+  "sha": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
+  "start_utc": "2026-10-04T07:16:25.726507+00:00",
+  "end_utc": "2026-10-04T07:19:52.170163+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug005-full-tests.log",
+  "cache": "TURBO_FORCE=true"
+}

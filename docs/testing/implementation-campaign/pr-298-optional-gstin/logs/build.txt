@@ -1,0 +1,30 @@
+@dealers-drive/web:build: ├ ○ /icon.png                                            0 B            0 B
+@dealers-drive/web:build: ├ ƒ /invitations                                     4.13 kB         119 kB
+@dealers-drive/web:build: ├ ƒ /login                                            5.4 kB         177 kB
+@dealers-drive/web:build: ├ ○ /manifest.webmanifest                              207 B         103 kB
+@dealers-drive/web:build: ├ ƒ /robots.txt                                        207 B         103 kB
+@dealers-drive/web:build: ├ ƒ /sales                                             824 B         107 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers                                     166 B         106 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]                              5.48 kB         170 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]/vehicles/[vehicleId]/edit      213 B         185 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]/vehicles/new                   213 B         185 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/new                               5.86 kB         172 kB
+@dealers-drive/web:build: ├ ƒ /saved                                           1.58 kB         116 kB
+@dealers-drive/web:build: ├ ƒ /sitemap.xml                                       207 B         103 kB
+@dealers-drive/web:build: ├ ƒ /support-requests                                  231 B         166 kB
+@dealers-drive/web:build: ├ ƒ /support-requests/[id]                             231 B         166 kB
+@dealers-drive/web:build: └ ƒ /support-requests/new                              231 B         166 kB
+@dealers-drive/web:build: + First Load JS shared by all                         103 kB
+@dealers-drive/web:build:   ├ chunks/2406-c239329ea3fcdffa.js                  46.6 kB
+@dealers-drive/web:build:   ├ chunks/938c6ab6-3f94b23de08d27df.js              54.2 kB
+@dealers-drive/web:build:   └ other shared chunks (total)                      1.94 kB
+@dealers-drive/web:build: 
+@dealers-drive/web:build: 
+@dealers-drive/web:build: ○  (Static)   prerendered as static content
+@dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
+@dealers-drive/web:build: 
+
+ Tasks:    3 successful, 3 total
+Cached:    1 cached, 3 total
+  Time:    1m11.383s 
+

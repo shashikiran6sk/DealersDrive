@@ -1,0 +1,24 @@
+{
+  "390": {
+    "combobox": 1,
+    "optionsForMerc": ["Mercedes-Benz"],
+    "boxAfterAlias": "Tata",
+    "storedAfterSave": "Tata",
+    "legacyBox": "Hindustan Ambassador Co",
+    "firstOption": "Hindustan Ambassador Co (as saved)",
+    "legacyAfterResave": "Hindustan Ambassador Co",
+    "overflow": false,
+    "pageErrors": []
+  },
+  "1280": {
+    "combobox": 1,
+    "optionsForMerc": ["Mercedes-Benz"],
+    "boxAfterAlias": "Tata",
+    "storedAfterSave": "Tata",
+    "legacyBox": "Hindustan Ambassador Co",
+    "firstOption": "Hindustan Ambassador Co (as saved)",
+    "legacyAfterResave": "Hindustan Ambassador Co",
+    "overflow": false,
+    "pageErrors": []
+  }
+}

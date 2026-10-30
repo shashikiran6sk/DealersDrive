@@ -1,0 +1,12 @@
+[
+  'city first tap visually selected and applied',
+  'dealer first tap visually selected and applied',
+  'Year first selection persists with results',
+  'Back restores checked appearance and URL',
+  'Forward restores both checked appearances and URL',
+  'Pending results are announced',
+  'Rapid taps retain both selections and applied parameters',
+  'Zero-count facet remains disabled without navigation',
+  'Long facet list expands on first tap',
+  'Sticky enquiry fits landscape and short height'
+]

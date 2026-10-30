@@ -1,0 +1,49 @@
+[
+  {
+    "removed": 204,
+    "memberAfterRemoval": "REMOVED"
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/9ee904fc-9102-4cb6-833f-55919c9be793",
+    "status": 200,
+    "body": {
+      "id": "9ee904fc-9102-4cb6-833f-55919c9be793",
+      "status": "CLOSED",
+      "statusLabel": "Closed",
+      "statusTone": "neutral",
+      "message": "Is this still available for a viewing?",
+      "createdAt": "2026-10-04T13:57:00.209Z",
+      "createdLabel": "04 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": null,
+      "closedAt": "2026-10-04T13:57:00.654Z",
+      "contactedBy": null,
+      "closedBy": {
+        "name": "R012 Manager",
+        "atLabel": "04 Oct 2026, 19:27"
+      },
+      "customer": {
+        "name": "R012 Buyer",
+        "initials": "RB",
+        "phone": "+••••••••8819",
+        "phoneDisplay": "+91 96002 18819",
+        "callHref": "tel:+919600218819"
+      },
+      "vehicle": {
+        "id": "1d3226b2-a3c0-4bf0-8c95-daf03fa6218a",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 38 VW 7797",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-77100847"
+      }
+    }
+  },
+  {
+    "enquiryAfter": {
+      "status": "CLOSED"
+    }
+  },
+  {
+    "nextRequest": 401
+  }
+]

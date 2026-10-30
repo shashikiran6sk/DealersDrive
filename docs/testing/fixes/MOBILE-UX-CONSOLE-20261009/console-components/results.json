@@ -1,0 +1,545 @@
+{
+  "results": [
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--populated",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--large-values",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--loading",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-dashboardmetrics--unavailable",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--signed-out",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "dealer-consoleutilities--multiple-workspaces",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,13 @@
+      type       |  status  | count 
+-----------------+----------+-------
+ ADDRESS_PROOF   | VERIFIED |   121
+ GST_CERTIFICATE | VERIFIED |   120
+ PAN_CARD        | VERIFIED |   121
+(3 rows)
+
+ status | count 
+--------+-------
+ ACTIVE |   122
+ DRAFT  |     2
+(2 rows)
+

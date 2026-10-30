@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Real isolated customer sign-in opens six-digit OTP",
+    "Existing verified fixture account signs in without registration",
+    "Public marketplace account menu remains available",
+    "Existing public workspace action enters dealer console without reauthentication",
+    "Authenticated dealer header has no avatar",
+    "Untouched main authenticated dealer header has avatar",
+    "Session is authenticated before logout",
+    "Desktop sidebar Logout preserves existing home destination",
+    "Logout clears browser session cookie",
+    "Previous session token is rejected by API after logout",
+    "Protected dealer route redirects after logout"
+  ],
+  "sessionValuesRecorded": false,
+  "physicalKeyboardTested": false
+}

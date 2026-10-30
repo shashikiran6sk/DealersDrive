@@ -1,0 +1,960 @@
+[
+  {
+    "before": 200,
+    "after": 404,
+    "listingRow": "ACTIVE"
+  },
+  {
+    "afterReinstate": 200
+  },
+  {
+    "reservedRow": "RESERVED"
+  },
+  {
+    "listingRow": "PENDING_REVIEW"
+  },
+  {
+    "req": "POST /v1/admin/dealers/0933b314-a210-4596-bbb1-4906ca91d51a/suspend",
+    "status": 200,
+    "body": {
+      "id": "0933b314-a210-4596-bbb1-4906ca91d51a",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T14:39:05.136Z"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "173a1032-f4e5-4e78-ab48-15b183fdf968",
+      "status": "NEW",
+      "createdAt": "2026-10-04T14:39:05.138Z",
+      "dealerName": "Cross5 Motors 742851fe860d",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "enquiries": 1
+  },
+  {
+    "enquiryExists": true
+  },
+  {
+    "req": "POST /v1/admin/dealers/ee13ec90-572d-452d-a779-a54b048e2784/reject",
+    "status": 200,
+    "body": {
+      "id": "ee13ec90-572d-452d-a779-a54b048e2784",
+      "brandName": "Cross7 Motors 7428610d173c",
+      "documentsDeleted": 3,
+      "objectsDeleted": 4,
+      "reason": "Rejecting dealer with draft listings",
+      "purgedAt": "2026-10-04T14:39:05.780Z"
+    }
+  },
+  {
+    "draftExists": false,
+    "dealerRow": "DELETED"
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-04T14:39:06.286Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-abbb39bd",
+            "availability": "SOLD",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": null,
+            "imageCount": 6,
+            "dealer": {
+              "name": "Cross8 Motors 7428653ca935",
+              "slug": "cross8-motors-7428653ca935-vellore-tamil-nadu",
+              "initials": "CM",
+              "isVerified": true
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "savedRows": 1
+  },
+  {
+    "listingAction": "SOLD",
+    "enquiryExists": true,
+    "inHistory": true
+  },
+  {
+    "listingAction": "WITHDRAWN",
+    "enquiryExists": true,
+    "inHistory": true
+  },
+  {
+    "listingAction": "RESERVED",
+    "enquiryExists": true,
+    "inHistory": true
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/0583ca6c-de7b-4481-a3c3-1b1bbe5c59e4",
+    "status": 200,
+    "body": {
+      "id": "0583ca6c-de7b-4481-a3c3-1b1bbe5c59e4",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "before reserve",
+      "createdAt": "2026-10-04T14:39:08.419Z",
+      "createdLabel": "04 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-04T14:39:08.438Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "Cross12 Owner",
+        "atLabel": "04 Oct 2026, 20:09"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Cross12 Buyer",
+        "initials": "CB",
+        "phone": "+••••••••2850",
+        "phoneDisplay": "+91 96007 42850",
+        "callHref": "tel:+919600742850"
+      },
+      "vehicle": {
+        "id": "5457685f-0832-4698-9219-7d87ac3bb2f2",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 27 XH 5237",
+        "listingStatus": "RESERVED",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-4d6e85f0"
+      }
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/fadf67d1-c0f8-44b5-850d-ae1be284095c/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "mGvzumILYU",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/fadf67d1-c0f8-44b5-850d-ae1be284095c/request-reactivation",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reactivatable",
+      "title": "Listing not reactivatable",
+      "status": 409,
+      "code": "LISTING_NOT_REACTIVATABLE",
+      "traceId": "7hMaUo5vpj",
+      "detail": "Only a reserved or withdrawn car can be put back on sale.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/1aa98fc2-1655-48dc-90f7-48bd6c65bd89/mark-sold",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-sellable",
+      "title": "Listing not sellable",
+      "status": 409,
+      "code": "LISTING_NOT_SELLABLE",
+      "traceId": "5m4oZFALh-",
+      "detail": "Only a car that is on sale or reserved can be marked sold.",
+      "listingStatus": "WITHDRAWN"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/1aa98fc2-1655-48dc-90f7-48bd6c65bd89/reserve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-reservable",
+      "title": "Listing not reservable",
+      "status": 409,
+      "code": "LISTING_NOT_RESERVABLE",
+      "traceId": "PWJ-SKUcML",
+      "detail": "Only a car that is on sale can be reserved.",
+      "listingStatus": "WITHDRAWN"
+    }
+  },
+  {
+    "draftDealer": true
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/a9e29e4d-87e8-4c06-94f7-e17c692d17ef/submit",
+    "status": 200,
+    "body": {
+      "id": "a9e29e4d-87e8-4c06-94f7-e17c692d17ef",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN91GP9254",
+      "registrationDisplay": "TN 91 GP 9254",
+      "rtoCode": "TN91",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "22d3c74e-ee6e-44b5-91fc-8e63419fd2bf",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-04T14:39:09.834Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-04T14:39:09.796Z",
+      "updatedAt": "2026-10-04T14:39:09.809Z"
+    }
+  },
+  {
+    "afterDemote": "PENDING_REVIEW"
+  },
+  {
+    "req": "POST /v1/admin/listings/5ae96e59-fe30-4267-9118-51e0fd6e760a/approve",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "5ae96e59-fe30-4267-9118-51e0fd6e760a",
+        "vehicleId": "9ba03e3b-cb84-47d2-96bc-6c1afd43e5da",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 91 ML 3825",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "dealer": {
+          "id": "9ed8feba-345d-42c4-971e-fd91aedb9d1f",
+          "name": "Cross17 Motors 7429084df0fa",
+          "slug": "cross17-motors-7429084df0fa-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-04T14:39:10.175Z",
+        "submittedLabel": "04 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 6,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": "2026-10-04T14:39:10.477Z"
+      },
+      "dealer": {
+        "id": "9ed8feba-345d-42c4-971e-fd91aedb9d1f",
+        "name": "Cross17 Motors 7429084df0fa",
+        "slug": "cross17-motors-7429084df0fa-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 96007 42857"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 91 ML 3825"
+            },
+            {
+              "label": "RTO",
+              "value": "TN91"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Comprehensive"
+            },
+            {
+              "label": "Insurance valid until",
+              "value": "31 Mar 2027"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [
+          {
+            "mediaId": "9dfd1554-ba10-4a15-8626-b30474ba3b8a",
+            "position": 0,
+            "isPrimary": true,
+            "url": "<redacted>",
+            "fileName": "car-1.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11518,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-04T14:39:10.300Z"
+          },
+          {
+            "mediaId": "7374392e-140f-44ab-8371-a53c8f57f16b",
+            "position": 1,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-2.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-04T14:39:10.336Z"
+          },
+          {
+            "mediaId": "f60febf4-512f-40d7-925f-bd9f3af98929",
+            "position": 2,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-3.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-04T14:39:10.366Z"
+          },
+          {
+            "mediaId": "18fc26e7-383f-4560-b781-0ce169f0e351",
+            "position": 3,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-4.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-04T14:39:10.400Z"
+          },
+          {
+            "mediaId": "c514a9f1-5224-4359-9ef8-382e21b71608",
+            "position": 4,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-5.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-04T14:39:10.435Z"
+          }
+        ],
+        "min": 6,
+        "max": 20,
+        "canEdit": false
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-04T14:39:10.196Z"
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": true,
+          "checkedAt": "2026-10-04T14:39:10.207Z"
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": true,
+          "checkedAt": "2026-10-04T14:39:10.224Z"
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-04T14:39:10.236Z"
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": true,
+          "checkedAt": "2026-10-04T14:39:10.247Z"
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-04T14:39:10.178Z",
+          "atLabel": "04 Oct 2026"
+        },
+        {
+          "action": "listing.approved",
+          "label": "Approved and published",
+          "actor": "Dealers-Drive",
+          "reason": null,
+          "at": "2026-10-04T14:39:10.477Z",
+          "atLabel": "04 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "actions": {
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "afterApprove": "ACTIVE"
+  },
+  {
+    "contactedByPreserved": true
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/98df6813-41cb-43ca-ba52-41e81826a017",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/df99eaea-a4d5-4ab4-bebc-e10bf9ab3b1e",
+    "status": 200,
+    "body": {
+      "id": "df99eaea-a4d5-4ab4-bebc-e10bf9ab3b1e",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "race removal",
+      "createdAt": "2026-10-04T14:39:11.505Z",
+      "createdLabel": "04 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-04T14:39:11.514Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "Cross19 Mgr",
+        "atLabel": "04 Oct 2026, 20:09"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Cross19 Buyer",
+        "initials": "CB",
+        "phone": "+••••••••2864",
+        "phoneDisplay": "+91 96007 42864",
+        "callHref": "tel:+919600742864"
+      },
+      "vehicle": {
+        "id": "0cc3e565-c997-4e67-a34e-25ec40c63115",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 51 NA 4513",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-8e62d512"
+      }
+    }
+  },
+  {
+    "enquiryStatus": "CONTACTED"
+  },
+  {
+    "before": 200,
+    "after": 401
+  },
+  {
+    "before": 200,
+    "after": 401
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 200,
+    "body": {
+      "greeting": "Good evening, Staff",
+      "subline": "Here is what happened across your inventory in the last 7 days.",
+      "stats": [
+        {
+          "key": "activeListings",
+          "label": "Active listings",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "No change this week",
+          "deltaTone": "neutral"
+        },
+        {
+          "key": "credits",
+          "label": "Available credits",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "0 used this month",
+          "deltaTone": "neutral"
+        },
+        {
+          "key": "newEnquiries",
+          "label": "New enquiries",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "First week of enquiries",
+          "deltaTone": "ok"
+        },
+        {
+          "key": "views",
+          "label": "Vehicle views",
+          "value": 0,
+          "valueLabel": "0",
+          "delta": "No data for last week",
+          "deltaTone": "ok"
+        }
+      ],
+      "viewsChart": {
+        "title": "Views this week",
+        "totalLabel": "0 total",
+        "max": 1,
+        "series": [
+          {
+            "day": "Mon",
+            "date": "2026-09-28",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Tue",
+            "date": "2026-09-29",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Wed",
+            "date": "2026-09-30",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Thu",
+            "date": "2026-10-01",
+            "views": 0,
+            "heightPct": 0
+          },
+          {
+            "day": "Fri",
+            "date": "2026-10-02",
+            "views": 0,
+            "heightPct": 0
+          }
+        ]
+      },
+      "recentEnquiries": [],
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "listingStats": [
+        {
+          "key": "ACTIVE",
+          "label": "Active listings",
+          "value": 0,
+          "href": "/dealer/inventory?status=ACTIVE",
+          "tone": "ok"
+        },
+        {
+          "key": "RESERVED",
+          "label": "Reserved",
+          "value": 0,
+          "href": "/dealer/inventory?status=RESERVED",
+          "tone": "warn"
+        },
+        {
+          "key": "PENDING_REVIEW",
+          "label": "Pending review",
+          "value": 0,
+          "href": "/dealer/inventory?status=PENDING_REVIEW",
+          "tone": "warn"
+        },
+        {
+          "key": "CHANGES_REQUESTED",
+          "label": "Changes requested",
+          "value": 0,
+          "href": "/dealer/inventory?status=CHANGES_REQUESTED",
+          "tone": "warn"
+        },
+        {
+          "key": "SOLD",
+          "label": "Sold",
+          "value": 0,
+          "href": "/dealer/inventory?status=SOLD",
+          "tone": "accent"
+        }
+      ],
+      "alerts": []
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "LN5uJKmGcI",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "28875df5-2091-4ca8-90bf-2fd63f2487c3",
+        "fullName": "Cross24 Staff",
+        "phone": "+••••••••2873",
+        "phoneDisplay": "+91 96007 42873"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "h0elI9mHZP",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "vpa_9XSmhr",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "b23144d6-e28d-410e-adeb-e9de724b9762",
+        "fullName": "Cross25 Staff",
+        "phone": "+••••••••2875",
+        "phoneDisplay": "+91 96007 42875"
+      }
+    }
+  },
+  {
+    "usersForPhone": 1
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "d36ff36a-3eff-4d5e-b2b0-070feb83555f",
+      "status": "NEW",
+      "createdAt": "2026-10-04T14:39:13.726Z",
+      "dealerName": "Cross27Comp Motors 742964242971",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "enquiryDealer": true,
+    "inEmployerInbox": false
+  },
+  {
+    "savedByMemberUser": true
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-04T14:39:15.114Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-b2f58c5e",
+            "availability": "AVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": {
+              "url": "<redacted>",
+              "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+            },
+            "imageCount": 6,
+            "dealer": {
+              "name": "Cross29Other Motors 7429826b6934",
+              "slug": "cross29other-motors-7429826b6934-vellore-tamil-nadu",
+              "initials": "CM",
+              "isVerified": true
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "a1f01072-5508-4c84-ac0c-321165a5461e",
+      "status": "NEW",
+      "createdAt": "2026-10-04T14:39:15.133Z",
+      "dealerName": "Cross29Other Motors 7429826b6934",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "before": 200,
+    "after": 404
+  },
+  {
+    "afterReinstate": 200
+  },
+  {
+    "before": 0,
+    "after": 1
+  },
+  {
+    "before": 1,
+    "after": 0
+  },
+  {
+    "before": 1,
+    "after": 0
+  },
+  {
+    "before": 1,
+    "after": 1
+  },
+  {
+    "before": 1,
+    "after": 1
+  },
+  {
+    "enquiryExists": true
+  },
+  {
+    "before": {
+      "l": 1,
+      "e": 1
+    },
+    "after": {
+      "l": 1,
+      "e": 1
+    }
+  },
+  {
+    "orphanListings": 0,
+    "orphanEnquiries": 0,
+    "orphanMembers": 0
+  },
+  {
+    "duplicatePhones": 0,
+    "duplicateEmails": 0
+  },
+  {
+    "usersWithMultipleOwnerMemberships": 0
+  },
+  {
+    "duplicateMemberships": 0
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f3db52c1-de3e-4503-9262-321718d385ba/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "f3db52c1-de3e-4503-9262-321718d385ba",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN17VW2040",
+      "registrationDisplay": "TN 17 VW 2040",
+      "rtoCode": "TN17",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "9990ec22-d885-4f52-8072-58e61d240a0e",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-04T14:39:20.028Z",
+        "publishedAt": "2026-10-04T14:39:20.280Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-0829c874",
+        "reservedAt": null,
+        "soldAt": "2026-10-04T14:39:20.295Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-04T14:39:19.996Z",
+      "updatedAt": "2026-10-04T14:39:20.295Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f3db52c1-de3e-4503-9262-321718d385ba/mark-sold",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-sellable",
+      "title": "Listing not sellable",
+      "status": 409,
+      "code": "LISTING_NOT_SELLABLE",
+      "traceId": "4w3e4yq03J",
+      "detail": "Only a car that is on sale or reserved can be marked sold.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "status": "SOLD"
+  },
+  {
+    "auditRowsForRemovedActor": 3
+  },
+  {
+    "dbStatus": "SOLD",
+    "publicVdp": 404
+  }
+]

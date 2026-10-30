@@ -1,0 +1,1574 @@
+[
+  {
+    "codes": {
+      "/v1/dealer/dashboard": 401,
+      "/v1/dealer/vehicles": 401,
+      "/v1/admin/dealers": 401,
+      "/v1/enquiries": 401,
+      "/v1/saved-vehicles": 401,
+      "/v1/dealer/team": 401
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "p2h-UZvXV5",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "_YlvRIpLmO",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/96c5bcc3-c0a5-44b3-b6bf-cc2eedd88dd7/mark-sold",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "HkmVqkOAuj",
+      "detail": "This action needs the listing:sell permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "b23Jg-SCZl",
+      "detail": "This action needs the member:manage permission."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "pwlUpN7ZwK",
+      "detail": "This action needs the dealer:update permission."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/3621d6c5-2b91-4417-a80d-822bcfa5f829/approve",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "zF3i8rooZL",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "results": {
+      "getVehicle": 404,
+      "patchVehicle": 404,
+      "sellVehicle": 404
+    }
+  },
+  {
+    "create": 400
+  },
+  {
+    "status": "n/a"
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/not-a-uuid",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "5XqgWdI31e",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "params.id",
+          "code": "INVALID_FORMAT",
+          "message": "Invalid UUID"
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/dealer/vehicles/00000000-0000-4000-8000-000000000000",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "VEHICLE_NOT_FOUND",
+      "traceId": "3B-p_OeWRY",
+      "detail": "That vehicle does not exist."
+    }
+  },
+  {
+    "leaksInternal": false
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "-C4w9P81Yw",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        },
+        {
+          "field": "body.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "wfbkZDJPUD",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        },
+        {
+          "field": "body.customerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`customerId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/bab7578b-8f47-4fe5-bf62-06609ce2401f",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "VQkgmBkoU8",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.dealerId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`dealerId` is not a recognised field."
+        },
+        {
+          "field": "body.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        },
+        {
+          "field": "body.createdByUserId",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`createdByUserId` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "vehicleDealer": true,
+    "listingStatus": "DRAFT"
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/c7fcbf0b-86f8-4b49-8260-d5c9f163300d",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "W2mf0msMYs",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.role",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"MANAGER\"|\"STAFF\""
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?limit=9999",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "Y2ZrD901Eg",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.limit",
+          "code": "TOO_BIG",
+          "message": "Too big: expected number to be <=48"
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?page=-1",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "APUaDl4A1z",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.page",
+          "code": "TOO_SMALL",
+          "message": "Too small: expected number to be >=1"
+        }
+      ]
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?sort=DROP TABLE",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "Uk2dWPui9m",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.sort",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"newest\"|\"price_asc\"|\"price_desc\"|\"year_desc\"|\"km_asc\""
+        }
+      ]
+    }
+  },
+  {
+    "attempts": 14,
+    "rateLimited429": 14,
+    "lastStatus": 429
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "Uj8eiKv-rf",
+      "detail": "Sign in with your mobile number to do that."
+    }
+  },
+  {
+    "req": "PUT /uploads?key=x&contentType=text/plain&contentLength=0&expiresAt=9999999999999&signature=<redacted>",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "7E267u6hKP",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "query.contentLength",
+          "code": "TOO_SMALL",
+          "message": "Too small: expected number to be >=1"
+        }
+      ]
+    }
+  },
+  {
+    "leaks": false
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "20SSw_8tyU",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.bytes",
+          "code": "TOO_BIG",
+          "message": "Too big: expected number to be <=5242880"
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "6hA8LJqw7D",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.mimeType",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"application/pdf\"|\"image/jpeg\"|\"image/png\""
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/GST_CERTIFICATE/commit",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "GVHXgxwQZ6",
+      "detail": "That document does not exist."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 201,
+    "body": {
+      "documentId": "ffae8c6b-b9e5-4889-88aa-371fa3d0a07c",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "application/pdf",
+        "Content-Length": "193"
+      },
+      "expiresInSeconds": 300
+    }
+  },
+  {
+    "tamperedKeyPut": 422
+  },
+  {
+    "req": "DELETE /v1/dealer/documents/ADDRESS_PROOF",
+    "status": 204,
+    "body": null
+  },
+  {
+    "slotStatusAfter": "REQUIRED",
+    "mediaIdAfter": null
+  },
+  {
+    "req": "GET /media/by-media/00000000-0000-4000-8000-000000000000/640.webp",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "ReQvkPRuQL",
+      "detail": "No such image."
+    }
+  },
+  {
+    "unsignedPrivate": 400,
+    "viaMediaRoute": 404
+  },
+  {
+    "imageUrlsAllViaMediaRoute": true
+  },
+  {
+    "sensitiveInKeys": false
+  },
+  {
+    "rateLimited": 14
+  },
+  {
+    "created": 10,
+    "rateLimited": 4
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/11aa1548-8239-4c72-aab9-ab109d9192d8/submit",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/dealer-not-active",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "DEALER_NOT_ACTIVE",
+      "traceId": "ODrd8hq-Lc",
+      "detail": "Your dealership is not active yet. Listings can be published once our team approves it."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/7a274bb1-b16b-4aa1-98a5-941f1d8bd8aa/mark-sold",
+    "status": 403,
+    "body": {
+      "type": "https://dealers-drive.com/errors/forbidden",
+      "title": "Forbidden",
+      "status": 403,
+      "code": "FORBIDDEN",
+      "traceId": "AkNDROOG7z",
+      "detail": "This action needs the listing:sell permission."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 201,
+    "body": {
+      "id": "dd82bc5e-7cb4-4fe9-8fc4-610d05d8b0de",
+      "title": "TN 37 CD 8829",
+      "registrationNumber": "TN37CD8829",
+      "registrationDisplay": "TN 37 CD 8829",
+      "rtoCode": "TN37",
+      "make": null,
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": null,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "",
+      "issues": [
+        {
+          "field": "make",
+          "message": "Make is required."
+        },
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "aa88ef52-df15-4f60-b46d-6e5a2899c2af",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:14.009Z",
+      "updatedAt": "2026-10-02T04:37:14.009Z"
+    }
+  },
+  {
+    "dealer": true
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/bc50afb0-a744-4d96-b2f0-8157a06401ef",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "OhaC6dV69q",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        },
+        {
+          "field": "body.listingStatus",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`listingStatus` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "listingStatus": "DRAFT"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "cpU8EvmlV4",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.status",
+          "code": "UNRECOGNIZED_KEY",
+          "message": "`status` is not a recognised field."
+        }
+      ]
+    }
+  },
+  {
+    "status": "n/a"
+  },
+  {
+    "req": "POST /v1/dealer/team/invitations",
+    "status": 400,
+    "body": {
+      "type": "https://dealers-drive.com/errors/validation-failed",
+      "title": "Validation failed",
+      "status": 400,
+      "code": "VALIDATION_FAILED",
+      "traceId": "qQM1EuddUY",
+      "detail": "The request did not match the expected shape.",
+      "errors": [
+        {
+          "field": "body.role",
+          "code": "INVALID_VALUE",
+          "message": "Invalid option: expected one of \"MANAGER\"|\"STAFF\""
+        }
+      ]
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/ae0659d4-9170-4c22-aad8-fd983cbdef7f",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/owner-locked",
+      "title": "Owner locked",
+      "status": 409,
+      "code": "OWNER_LOCKED",
+      "traceId": "aj81800bpT",
+      "detail": "The owner’s place cannot be changed here. Contact support if the dealership has changed hands."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/team/members/ae0659d4-9170-4c22-aad8-fd983cbdef7f",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/owner-locked",
+      "title": "Owner locked",
+      "status": 409,
+      "code": "OWNER_LOCKED",
+      "traceId": "4X5y1mVnVX",
+      "detail": "The owner’s place cannot be changed here. Contact support if the dealership has changed hands."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "LcI_NgwmAP",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "9KO42W8BjT",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "_q3B-XAXt3",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/metrics/overview",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "_uZaatXKwg",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/team",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "8HyNE4jswe",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/listings",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "M9OsjwWtGc",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/4c7bad28-5f86-402a-9139-ceae77da27f0",
+    "status": 200,
+    "body": {
+      "id": "4c7bad28-5f86-402a-9139-ceae77da27f0",
+      "title": "Honda",
+      "registrationNumber": "TN31AN6952",
+      "registrationDisplay": "TN 31 AN 6952",
+      "rtoCode": "TN31",
+      "make": "Honda",
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": 11111,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "11,111 km",
+      "issues": [
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "168bc429-7509-4eec-a31a-39a5d6872ca7",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:14.732Z",
+      "updatedAt": "2026-10-02T04:37:14.744Z"
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/4c7bad28-5f86-402a-9139-ceae77da27f0",
+    "status": 200,
+    "body": {
+      "id": "4c7bad28-5f86-402a-9139-ceae77da27f0",
+      "title": "Kia",
+      "registrationNumber": "TN31AN6952",
+      "registrationDisplay": "TN 31 AN 6952",
+      "rtoCode": "TN31",
+      "make": "Kia",
+      "model": null,
+      "variant": null,
+      "manufacturingYear": null,
+      "registrationYear": null,
+      "fuelType": null,
+      "transmission": null,
+      "bodyType": null,
+      "kilometersDriven": 22222,
+      "ownerCount": null,
+      "color": null,
+      "insuranceType": null,
+      "insuranceValidUntil": null,
+      "pricePaise": null,
+      "priceLabel": null,
+      "negotiability": null,
+      "description": null,
+      "summary": "22,222 km",
+      "issues": [
+        {
+          "field": "model",
+          "message": "Model is required."
+        },
+        {
+          "field": "manufacturingYear",
+          "message": "Manufacturing year is required."
+        },
+        {
+          "field": "fuelType",
+          "message": "Fuel is required."
+        },
+        {
+          "field": "transmission",
+          "message": "Transmission is required."
+        },
+        {
+          "field": "bodyType",
+          "message": "Body type is required."
+        }
+      ],
+      "complete": false,
+      "listing": {
+        "id": "168bc429-7509-4eec-a31a-39a5d6872ca7",
+        "status": "DRAFT",
+        "statusLabel": "Draft",
+        "statusTone": "neutral",
+        "reason": null,
+        "submittedAt": null,
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": true,
+        "canSubmit": false,
+        "canDelete": true,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:14.732Z",
+      "updatedAt": "2026-10-02T04:37:14.748Z"
+    }
+  },
+  {
+    "km": 22222,
+    "make": "Kia"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9b1162ee-c6b0-46a7-92cb-8dfbde68df43/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "9b1162ee-c6b0-46a7-92cb-8dfbde68df43",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN73PG2219",
+      "registrationDisplay": "TN 73 PG 2219",
+      "rtoCode": "TN73",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "14cb0877-b6fc-46ec-990c-d7dce3b87f8e",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-02T04:37:14.780Z",
+        "publishedAt": "2026-10-02T04:37:15.034Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-b569870a",
+        "reservedAt": null,
+        "soldAt": "2026-10-02T04:37:15.050Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:14.756Z",
+      "updatedAt": "2026-10-02T04:37:15.051Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/9b1162ee-c6b0-46a7-92cb-8dfbde68df43/mark-sold",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-sellable",
+      "title": "Listing not sellable",
+      "status": 409,
+      "code": "LISTING_NOT_SELLABLE",
+      "traceId": "wzM6kUkJSH",
+      "detail": "Only a car that is on sale or reserved can be marked sold.",
+      "listingStatus": "SOLD"
+    }
+  },
+  {
+    "final": "SOLD"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/b37426ce-2c6c-4703-8b3b-82d7dd2d6551/reserve",
+    "status": 200,
+    "body": {
+      "id": "b37426ce-2c6c-4703-8b3b-82d7dd2d6551",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN38HK7338",
+      "registrationDisplay": "TN 38 HK 7338",
+      "rtoCode": "TN38",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "40caf13b-57b2-46a7-ba60-324faa2d2ef6",
+        "status": "RESERVED",
+        "statusLabel": "Reserved",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-02T04:37:15.086Z",
+        "publishedAt": "2026-10-02T04:37:15.362Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-e5b773a8",
+        "reservedAt": "2026-10-02T04:37:15.377Z",
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": ["markSold", "requestReactivation"],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:15.064Z",
+      "updatedAt": "2026-10-02T04:37:15.084Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/b37426ce-2c6c-4703-8b3b-82d7dd2d6551/mark-sold",
+    "status": 200,
+    "body": {
+      "id": "b37426ce-2c6c-4703-8b3b-82d7dd2d6551",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN38HK7338",
+      "registrationDisplay": "TN 38 HK 7338",
+      "rtoCode": "TN38",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "40caf13b-57b2-46a7-ba60-324faa2d2ef6",
+        "status": "SOLD",
+        "statusLabel": "Sold",
+        "statusTone": "accent",
+        "reason": null,
+        "submittedAt": "2026-10-02T04:37:15.086Z",
+        "publishedAt": "2026-10-02T04:37:15.362Z",
+        "slug": "2023-hyundai-creta-sx-o-vellore-e5b773a8",
+        "reservedAt": "2026-10-02T04:37:15.377Z",
+        "soldAt": "2026-10-02T04:37:15.383Z",
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:15.064Z",
+      "updatedAt": "2026-10-02T04:37:15.384Z"
+    }
+  },
+  {
+    "final": "SOLD"
+  },
+  {
+    "req": "POST /v1/admin/listings/20bd7a5f-d1e4-4dcf-a488-f750a7c0b52f/approve",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "20bd7a5f-d1e4-4dcf-a488-f750a7c0b52f",
+        "vehicleId": "cb582588-2038-47ec-8c27-a3ae83cd0147",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 68 TU 8327",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "dealer": {
+          "id": "636d04a1-0f10-4a94-b542-5944fd78fecc",
+          "name": "ConcApprove Motors 825263dafeb9",
+          "slug": "concapprove-motors-825263dafeb9-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-02T04:37:15.553Z",
+        "submittedLabel": "02 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 6,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": "2026-10-02T04:37:15.820Z"
+      },
+      "dealer": {
+        "id": "636d04a1-0f10-4a94-b542-5944fd78fecc",
+        "name": "ConcApprove Motors 825263dafeb9",
+        "slug": "concapprove-motors-825263dafeb9-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 96008 25176"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 68 TU 8327"
+            },
+            {
+              "label": "RTO",
+              "value": "TN68"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Comprehensive"
+            },
+            {
+              "label": "Insurance valid until",
+              "value": "31 Mar 2027"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [
+          {
+            "mediaId": "fb098eca-18d2-43c2-9b0a-99f07a08edab",
+            "position": 0,
+            "isPrimary": true,
+            "url": "<redacted>",
+            "fileName": "car-1.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11518,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-02T04:37:15.648Z"
+          },
+          {
+            "mediaId": "9d0a8e55-ff01-4b06-9fdc-47cc72279a41",
+            "position": 1,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-2.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-02T04:37:15.679Z"
+          },
+          {
+            "mediaId": "050a993c-c5aa-4878-a36a-c9cb23ba9616",
+            "position": 2,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-3.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-02T04:37:15.713Z"
+          },
+          {
+            "mediaId": "9b1e9725-4064-4eba-93d3-725413489ebb",
+            "position": 3,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-4.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-02T04:37:15.745Z"
+          },
+          {
+            "mediaId": "c3494c98-307d-442e-8e6e-b8a963dc60cc",
+            "position": 4,
+            "isPrimary": false,
+            "url": "<redacted>",
+            "fileName": "car-5.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": 11519,
+            "width": 1600,
+            "height": 1200,
+            "uploadedAt": "2026-10-02T04:37:15.777Z"
+          }
+        ],
+        "min": 6,
+        "max": 20,
+        "canEdit": false
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-02T04:37:15.561Z"
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": true,
+          "checkedAt": "2026-10-02T04:37:15.571Z"
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": true,
+          "checkedAt": "2026-10-02T04:37:15.580Z"
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": true,
+          "checkedAt": "2026-10-02T04:37:15.589Z"
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": true,
+          "checkedAt": "2026-10-02T04:37:15.598Z"
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-02T04:37:15.555Z",
+          "atLabel": "02 Oct 2026"
+        },
+        {
+          "action": "listing.approved",
+          "label": "Approved and published",
+          "actor": "Dealers-Drive",
+          "reason": null,
+          "at": "2026-10-02T04:37:15.821Z",
+          "atLabel": "02 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "actions": {
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/vehicles/cb582588-2038-47ec-8c27-a3ae83cd0147",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/vehicle-not-editable",
+      "title": "Vehicle not editable",
+      "status": 409,
+      "code": "VEHICLE_NOT_EDITABLE",
+      "traceId": "wYF1SN3Mpn",
+      "detail": "This vehicle is with our team for review, so it cannot be changed right now.",
+      "listingStatus": "PENDING_REVIEW"
+    }
+  },
+  {
+    "final": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/admin/dealers/68a222ef-3546-41aa-b4bb-8b91208076d7/suspend",
+    "status": 200,
+    "body": {
+      "id": "68a222ef-3546-41aa-b4bb-8b91208076d7",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:37:16.021Z"
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/13f70691-57a7-420e-8fdf-7ab502fe7465/submit",
+    "status": 200,
+    "body": {
+      "id": "13f70691-57a7-420e-8fdf-7ab502fe7465",
+      "title": "2023 Hyundai Creta SX(O)",
+      "registrationNumber": "TN32LV7718",
+      "registrationDisplay": "TN 32 LV 7718",
+      "rtoCode": "TN32",
+      "make": "Hyundai",
+      "model": "Creta",
+      "variant": "SX(O)",
+      "manufacturingYear": 2023,
+      "registrationYear": 2023,
+      "fuelType": "PETROL",
+      "transmission": "AUTOMATIC",
+      "bodyType": "SUV",
+      "kilometersDriven": 22400,
+      "ownerCount": 1,
+      "color": "WHITE",
+      "insuranceType": "COMPREHENSIVE",
+      "insuranceValidUntil": "2027-03-31",
+      "pricePaise": 145000000,
+      "priceLabel": "₹14,50,000",
+      "negotiability": "FIXED",
+      "description": "Single owner, certification fixture.",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "issues": [],
+      "complete": true,
+      "listing": {
+        "id": "ed3aa661-10ae-4e05-a966-a2e0b5e52525",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "reason": null,
+        "submittedAt": "2026-10-02T04:37:16.025Z",
+        "publishedAt": null,
+        "slug": null,
+        "reservedAt": null,
+        "soldAt": null,
+        "withdrawnAt": null,
+        "withdrawal": null,
+        "canEdit": false,
+        "canSubmit": false,
+        "canDelete": false,
+        "actions": [],
+        "reactivation": null
+      },
+      "createdAt": "2026-10-02T04:37:15.996Z",
+      "updatedAt": "2026-10-02T04:37:16.010Z"
+    }
+  },
+  {
+    "listing": "PENDING_REVIEW"
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/9130fa57-0c32-4740-8dac-35b906a2cda9",
+    "status": 200,
+    "body": {
+      "id": "9130fa57-0c32-4740-8dac-35b906a2cda9",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "race contacted vs closed",
+      "createdAt": "2026-10-02T04:37:16.391Z",
+      "createdLabel": "02 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-02T04:37:16.407Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "Sec Manager",
+        "atLabel": "02 Oct 2026, 10:07"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Conc Enq Buyer",
+        "initials": "CE",
+        "phone": "+••••••••5178",
+        "phoneDisplay": "+91 96008 25178",
+        "callHref": "tel:+919600825178"
+      },
+      "vehicle": {
+        "id": "de971e48-0705-4bd8-8b07-292e1dd4a90d",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 96 UF 7225",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-7565b0c2"
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/9130fa57-0c32-4740-8dac-35b906a2cda9",
+    "status": 200,
+    "body": {
+      "id": "9130fa57-0c32-4740-8dac-35b906a2cda9",
+      "status": "CLOSED",
+      "statusLabel": "Closed",
+      "statusTone": "neutral",
+      "message": "race contacted vs closed",
+      "createdAt": "2026-10-02T04:37:16.391Z",
+      "createdLabel": "02 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": null,
+      "closedAt": "2026-10-02T04:37:16.400Z",
+      "contactedBy": null,
+      "closedBy": {
+        "name": "SecA Owner",
+        "atLabel": "02 Oct 2026, 10:07"
+      },
+      "customer": {
+        "name": "Conc Enq Buyer",
+        "initials": "CE",
+        "phone": "+••••••••5178",
+        "phoneDisplay": "+91 96008 25178",
+        "callHref": "tel:+919600825178"
+      },
+      "vehicle": {
+        "id": "de971e48-0705-4bd8-8b07-292e1dd4a90d",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 96 UF 7225",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-7565b0c2"
+      }
+    }
+  },
+  {
+    "final": "CONTACTED"
+  },
+  {
+    "req": "DELETE /v1/dealer/team/members/28c894f0-434e-424e-8352-019e337c784c",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "PATCH /v1/dealer/enquiries/046a0ef0-5c78-408f-92a8-7ed821ddcdf1",
+    "status": 200,
+    "body": {
+      "id": "046a0ef0-5c78-408f-92a8-7ed821ddcdf1",
+      "status": "CONTACTED",
+      "statusLabel": "Contacted",
+      "statusTone": "ok",
+      "message": "race remove vs mutate",
+      "createdAt": "2026-10-02T04:37:16.924Z",
+      "createdLabel": "02 Oct 2026",
+      "timeAgoLabel": "just now",
+      "contactedAt": "2026-10-02T04:37:16.932Z",
+      "closedAt": null,
+      "contactedBy": {
+        "name": "Conc Mbr",
+        "atLabel": "02 Oct 2026, 10:07"
+      },
+      "closedBy": null,
+      "customer": {
+        "name": "Conc Mbr Buyer",
+        "initials": "CM",
+        "phone": "+••••••••5181",
+        "phoneDisplay": "+91 96008 25181",
+        "callHref": "tel:+919600825181"
+      },
+      "vehicle": {
+        "id": "8ba544f6-bddd-4e65-a775-96c9beb1e1b5",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 49 TD 7486",
+        "listingStatus": "ACTIVE",
+        "href": "/car/2023-hyundai-creta-sx-o-vellore-0fb78834"
+      }
+    }
+  },
+  {
+    "final": "CONTACTED"
+  },
+  {
+    "req": "POST /v1/admin/dealers/95d1b677-a6e5-4043-8435-d833df4505d6/approve",
+    "status": 200,
+    "body": {
+      "id": "95d1b677-a6e5-4043-8435-d833df4505d6",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:37:17.086Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/95d1b677-a6e5-4043-8435-d833df4505d6/approve",
+    "status": 200,
+    "body": {
+      "id": "95d1b677-a6e5-4043-8435-d833df4505d6",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:37:17.089Z"
+    }
+  },
+  {
+    "final": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "3c921104-b37a-42e5-80f1-5a7faff847b9",
+      "status": "NEW",
+      "createdAt": "2026-10-02T04:37:17.875Z",
+      "dealerName": "ConcEnq Motors 825282926439",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "req": "POST /v1/enquiries",
+    "status": 201,
+    "body": {
+      "id": "8f032bc5-cf48-4745-b079-55ae30406e78",
+      "status": "NEW",
+      "createdAt": "2026-10-02T04:37:17.875Z",
+      "dealerName": "ConcEnq Motors 825282926439",
+      "vehicleTitle": "2023 Hyundai Creta SX(O)"
+    }
+  },
+  {
+    "enquiries": 2
+  },
+  {
+    "req": "POST /v1/invitations/aa643bef-5df5-4b43-badc-930732c8caa0/accept",
+    "status": 200,
+    "body": {
+      "membershipId": "c34bf850-c660-4823-88c3-b16142252b87",
+      "dealer": {
+        "brandName": "ConcInvite Motors 8252882fff2a"
+      },
+      "role": "STAFF",
+      "roleLabel": "Staff"
+    }
+  },
+  {
+    "req": "POST /v1/invitations/aa643bef-5df5-4b43-badc-930732c8caa0/accept",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invitation-closed",
+      "title": "Invitation closed",
+      "status": 409,
+      "code": "INVITATION_CLOSED",
+      "traceId": "-GUH7aksab",
+      "detail": "This invitation has already been accepted.",
+      "invitationStatus": "ACCEPTED"
+    }
+  },
+  {
+    "memberships": 1
+  }
+]

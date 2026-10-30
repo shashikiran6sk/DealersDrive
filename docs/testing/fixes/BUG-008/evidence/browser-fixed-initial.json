@@ -1,0 +1,3902 @@
+{
+  "bug": "BUG-008",
+  "mode": "fixed",
+  "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221",
+  "environment": "Built Next.js/Chromium; real ADMIN cookie session; isolated PostgreSQL cert fixtures",
+  "rows": [
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg max-w-full self-start overflow-x-auto",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 406,
+            "overflowX": "auto",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 863,
+              "width": 842,
+              "scrollWidth": 842,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 300,
+              "width": 280,
+              "scrollWidth": 842,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 999,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 889,
+              "width": 868,
+              "scrollWidth": 868,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 300,
+              "width": 280,
+              "scrollWidth": 868,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 414,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 809,
+              "width": 788,
+              "scrollWidth": 788,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 300,
+              "width": 280,
+              "scrollWidth": 788,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/support",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 589,
+            "width": 569,
+            "scrollWidth": 567,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/config",
+      "width": 320,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 300,
+            "width": 280,
+            "scrollWidth": 280,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 222,
+            "width": 77,
+            "scrollWidth": 77,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 234,
+            "right": 300,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 320,
+          "width": 320,
+          "scrollWidth": 320,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 519,
+              "width": 498,
+              "scrollWidth": 498,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 300,
+              "width": 280,
+              "scrollWidth": 498,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg max-w-full self-start overflow-x-auto",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 406,
+            "overflowX": "auto",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 863,
+              "width": 842,
+              "scrollWidth": 842,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 842,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/fixed-dealers-390.png",
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 999,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 889,
+              "width": 868,
+              "scrollWidth": 868,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 868,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/fixed-listings-390.png",
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 414,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 809,
+              "width": 788,
+              "scrollWidth": 788,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 788,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/fixed-enquiries-390.png",
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/support",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 589,
+            "width": 569,
+            "scrollWidth": 567,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/config",
+      "width": 390,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 350,
+            "overflowX": "visible",
+            "flexWrap": "wrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 20,
+            "right": 133,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 145,
+            "right": 292,
+            "width": 147,
+            "scrollWidth": 147,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 304,
+            "right": 370,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 519,
+              "width": 498,
+              "scrollWidth": 498,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 498,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg max-w-full self-start overflow-x-auto",
+            "left": 226,
+            "right": 634,
+            "width": 408,
+            "scrollWidth": 406,
+            "overflowX": "auto",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1069,
+              "width": 842,
+              "scrollWidth": 842,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 748,
+              "width": 522,
+              "scrollWidth": 842,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 1205,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1095,
+              "width": 868,
+              "scrollWidth": 868,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 748,
+              "width": 522,
+              "scrollWidth": 868,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 620,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1015,
+              "width": 788,
+              "scrollWidth": 788,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 748,
+              "width": 522,
+              "scrollWidth": 788,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/fixed-enquiries-768.png",
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/support",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 795,
+            "width": 569,
+            "scrollWidth": 567,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/config",
+      "width": 768,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 768,
+        "documentWidth": 768,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 768,
+          "width": 562,
+          "scrollWidth": 562,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 402,
+            "right": 748,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 402,
+            "right": 515,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 527,
+            "right": 670,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 682,
+            "right": 748,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 747,
+              "width": 520,
+              "scrollWidth": 520,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 748,
+              "width": 522,
+              "scrollWidth": 520,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg max-w-full self-start overflow-x-auto",
+            "left": 226,
+            "right": 634,
+            "width": 408,
+            "scrollWidth": 406,
+            "overflowX": "auto",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1069,
+              "width": 842,
+              "scrollWidth": 842,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1004,
+              "width": 778,
+              "scrollWidth": 842,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 1205,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1095,
+              "width": 868,
+              "scrollWidth": 868,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1004,
+              "width": 778,
+              "scrollWidth": 868,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 620,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1015,
+              "width": 788,
+              "scrollWidth": 788,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1004,
+              "width": 778,
+              "scrollWidth": 788,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/support",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 795,
+            "width": 569,
+            "scrollWidth": 567,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/config",
+      "width": 1024,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1024,
+          "width": 818,
+          "scrollWidth": 818,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 658,
+            "right": 1004,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 658,
+            "right": 771,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 783,
+            "right": 926,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 938,
+            "right": 1004,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1003,
+              "width": 776,
+              "scrollWidth": 776,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1004,
+              "width": 778,
+              "scrollWidth": 776,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg max-w-full self-start overflow-x-auto",
+            "left": 226,
+            "right": 634,
+            "width": 408,
+            "scrollWidth": 406,
+            "overflowX": "auto",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1419,
+              "width": 1192,
+              "scrollWidth": 1192,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1420,
+              "width": 1194,
+              "scrollWidth": 1192,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 1205,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1419,
+              "width": 1192,
+              "scrollWidth": 1192,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1420,
+              "width": 1194,
+              "scrollWidth": 1192,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 620,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 227,
+              "right": 1419,
+              "width": 1192,
+              "scrollWidth": 1192,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 226,
+              "right": 1420,
+              "width": 1194,
+              "scrollWidth": 1192,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/fixed-enquiries-1440.png",
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/support",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 226,
+            "right": 795,
+            "width": 569,
+            "scrollWidth": 567,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": []
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/config",
+      "width": 1440,
+      "http": 200,
+      "result": "PASS",
+      "geometry": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3",
+          "left": 206,
+          "right": 1440,
+          "width": 1234,
+          "scrollWidth": 1234,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 226,
+            "right": 300,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap",
+            "left": 1074,
+            "right": 1420,
+            "width": 346,
+            "scrollWidth": 346,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 1074,
+            "right": 1187,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "min-w-0 text-[12px] break-all ink-muted max-sm:flex-1",
+            "left": 1199,
+            "right": 1342,
+            "width": 143,
+            "scrollWidth": 143,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 1354,
+            "right": 1420,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 206,
+          "width": 206,
+          "scrollWidth": 206,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 394,
+              "right": 1252,
+              "width": 858,
+              "scrollWidth": 858,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 393,
+              "right": 1253,
+              "width": 860,
+              "scrollWidth": 858,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": null,
+      "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221"
+    }
+  ],
+  "counts": {
+    "pass": 30,
+    "fail": 0
+  }
+}

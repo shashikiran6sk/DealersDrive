@@ -1,0 +1,17 @@
+{
+  "head": "8310fba (web/API built locally from this tree)",
+  "dealer": "local seed 'Motor Point' (PENDING_APPROVAL), GSTIN cleared, PAN + address proof VERIFIED with stored objects",
+  "api": {
+    "approveWithoutReview": "422 GST_APPLICABILITY_REVIEW_REQUIRED",
+    "approveWithShortReview": "400 VALIDATION_FAILED body.gstNotRequiredReview TOO_SMALL"
+  },
+  "browser390": {
+    "reviewFieldPresent": 1,
+    "disabledWithoutReview": true,
+    "disabledWithShortReview": true,
+    "enabledWithReview": true,
+    "overflow": false,
+    "statusAfter": "Active"
+  },
+  "audit": "dealer.approved after = {status: ACTIVE, creditsGranted: 0, gstNotRequiredReview: <the review text>}"
+}

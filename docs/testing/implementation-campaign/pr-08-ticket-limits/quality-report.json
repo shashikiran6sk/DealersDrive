@@ -1,0 +1,37 @@
+{
+  "prNumber": 295,
+  "prUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/295",
+  "branch": "feat/ticket-message-limits",
+  "baseBranch": "feat/mobile-admin-access",
+  "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+  "incrementalFiles": 23,
+  "migration": "20261010120000_ticket_message_limits",
+  "testsPassed": {
+    "api": 3216,
+    "web": 1530,
+    "contracts": 469,
+    "total": 5215,
+    "browserChecks": 37,
+    "quotaBrowserChecks": 15,
+    "authBrowserChecks": 22
+  },
+  "testsFailedFinal": 0,
+  "notRun": [
+    "live external provider delivery",
+    "native Safari",
+    "physical mobile devices",
+    "production data migration"
+  ],
+  "ciRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238707",
+  "securityRun": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238693",
+  "ciFinalStatus": "SUCCESS",
+  "prState": "OPEN",
+  "merged": false,
+  "productionDeployment": false,
+  "next": "PR 9: fix/mobile-sidebar-navigation",
+  "postCreationDefectsFixed": [
+    "customer persisted snapshot refresh lag",
+    "admin persisted support reply refresh lag"
+  ],
+  "ciHeadSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df"
+}

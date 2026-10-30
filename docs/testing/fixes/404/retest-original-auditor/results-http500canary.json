@@ -1,0 +1,45 @@
+[
+  {
+    "id": "outage-http500canary-car",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http500canary-cars",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http500canary-dealer",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http500canary-dealers",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http500canary-home",
+    "ok": true,
+    "status": 200
+  },
+  {
+    "id": "outage-http500canary-bff",
+    "ok": true,
+    "status": 502,
+    "body": "{\"type\":\"about:blank\",\"title\":\"Internal error\",\"status\":502,\"code\":\"INTERNAL_ERROR\",\"detail\":\"Something went wrong. Please try again.\"}"
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "admin-config-390": {
+    "url": "/admin/config",
+    "hasEditor": true,
+    "tamilNadu": true,
+    "ariyalur": true,
+    "overflow": false,
+    "failed": []
+  },
+  "admin-config-1280": {
+    "url": "/admin/config",
+    "hasEditor": true,
+    "tamilNadu": true,
+    "ariyalur": true,
+    "overflow": false,
+    "failed": []
+  },
+  "sales-draft-390": {
+    "url": "http://localhost:3000/sales/dealers/6db753d7-4259-4270-8cd9-b97c2c705d60",
+    "before": {
+      "state": "Tamil Nadu",
+      "district": "Vellore"
+    },
+    "options": {
+      "trichy": ["Tiruchirappalli"],
+      "tuticorin": ["Thoothukudi"],
+      "kanchipuram": ["Kancheepuram"],
+      "nilgiris": ["The Nilgiris"],
+      "tiruchi": ["Tiruchirappalli"]
+    },
+    "picked": {
+      "visible": "Tiruchirappalli",
+      "hidden": "Tiruchirappalli"
+    },
+    "overflow": false,
+    "failed": []
+  },
+  "dealers?district=tiruchirappalli": {
+    "cards": 0,
+    "heading": "0 verified dealerships"
+  },
+  "dealers?district=trichy": {
+    "cards": 0,
+    "heading": "0 verified dealerships"
+  },
+  "dealers?district=the-nilgiris": {
+    "cards": 0,
+    "heading": "0 verified dealerships"
+  },
+  "dealers?district=nilgiris": {
+    "cards": 0,
+    "heading": "0 verified dealerships"
+  }
+}

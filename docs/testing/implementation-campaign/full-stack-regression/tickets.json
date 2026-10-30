@@ -1,0 +1,66 @@
+{
+  "provider": "controlled local authentication; no production data",
+  "checks": [
+    {
+      "check": "actual customer login and ticket creation starts at five",
+      "pass": true
+    },
+    {
+      "check": "persisted customer message 1",
+      "pass": true
+    },
+    {
+      "check": "persisted customer message 2",
+      "pass": true
+    },
+    {
+      "check": "persisted customer message 3",
+      "pass": true
+    },
+    {
+      "check": "persisted customer message 4",
+      "pass": true
+    },
+    {
+      "check": "persisted customer message 5",
+      "pass": true
+    },
+    {
+      "check": "sixth API call blocked independently of composer",
+      "pass": true
+    },
+    {
+      "check": "blocked/refresh layout 320",
+      "pass": true
+    },
+    {
+      "check": "blocked/refresh layout 390",
+      "pass": true
+    },
+    {
+      "check": "blocked/refresh layout 768",
+      "pass": true
+    },
+    {
+      "check": "blocked/refresh layout 1280",
+      "pass": true
+    },
+    {
+      "check": "second device/tab sees persisted limit",
+      "pass": true
+    },
+    {
+      "check": "actual authorized admin reply persisted",
+      "pass": true
+    },
+    {
+      "check": "admin response resets exactly five new slots",
+      "pass": true
+    },
+    {
+      "check": "second reset and reload retain correct allowance",
+      "pass": true
+    }
+  ],
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e"
+}

@@ -1,0 +1,110 @@
+{
+ "dealerPhotosOverflow390": false,
+ "dealerPhotosOverflow1280": false,
+ "afterSubmit": "Awaiting review — not public yet",
+ "publicWhilePending": [
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/43aadc24-082b-45ee-ae46-400f7dca9d9d/1600.webp",
+   "ok": true
+  }
+ ],
+ "publicAfterApprove": [
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/43aadc24-082b-45ee-ae46-400f7dca9d9d/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f93e0b63-8334-4b9e-aa5d-a24f8e46e268/1600.webp",
+   "ok": true
+  }
+ ],
+ "publicWhileReplacementPending": [
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f352e8bc-2b7b-46bb-93c7-ee0d7bcd1857/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/43aadc24-082b-45ee-ae46-400f7dca9d9d/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f93e0b63-8334-4b9e-aa5d-a24f8e46e268/1600.webp",
+   "ok": true
+  }
+ ],
+ "publicAfterReplacement": [
+  {
+   "src": "http://localhost:4000/media/by-media/cd90ea59-1b21-4763-a063-436d6d82b41b/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/cd90ea59-1b21-4763-a063-436d6d82b41b/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/43aadc24-082b-45ee-ae46-400f7dca9d9d/1600.webp",
+   "ok": true
+  },
+  {
+   "src": "http://localhost:4000/media/by-media/f93e0b63-8334-4b9e-aa5d-a24f8e46e268/1600.webp",
+   "ok": true
+  }
+ ],
+ "verification": {
+  "status": "Verification in review",
+  "textareasBeforeSave": 0,
+  "options": [
+   "Dealer Verified",
+   "Verification rejected"
+  ],
+  "textareasForVerified": 0,
+  "verifiedOutcome": "Review the applicable uploaded business documents before granting a badge."
+ },
+ "yardPanel": 1,
+ "yardVisitPhotos": [
+  {
+   "ok": true,
+   "signed": true
+  },
+  {
+   "ok": true,
+   "signed": true
+  }
+ ],
+ "adminDealerOverflow390": false,
+ "draftOverride": [
+  "Manual activation — Super admin exception",
+  "Manual activation is not available: Complete the business details first. Manual activation waives only the document review."
+ ],
+ "sales390": {
+  "yard": false,
+  "optional": true,
+  "overflow": false
+ },
+ "sales1280": {
+  "yard": false,
+  "optional": true,
+  "overflow": false
+ },
+ "publicMentionsYardVisit": false
+}

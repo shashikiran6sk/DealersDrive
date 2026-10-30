@@ -1,0 +1,146 @@
+{
+  "SEC-DISC-001a": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:04.597Z"
+  },
+  "SEC-DISC-001b": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "S3-driver deployment: forged GET /private → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:04.600Z"
+  },
+  "SEC-DISC-001c": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "S3-driver deployment: forged PUT /uploads → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:04.602Z"
+  },
+  "LIFE-DISC-001a": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:04.686Z"
+  },
+  "LIFE-DISC-001b": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused: 422 NOT_UNDER_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.028Z"
+  },
+  "LIFE-DISC-002a": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused: 422 INVALID_DEALER_TRANSITION",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.343Z"
+  },
+  "LIFE-DISC-002b": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "suspend 422/DRAFT, reinstate 422/DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.396Z"
+  },
+  "LIFE-DISC-002c": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.403Z"
+  },
+  "API-DISC-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.414Z"
+  },
+  "API-DISC-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "presign refused 409 DOCUMENT_LOCKED — a verified document cannot be swapped while ACTIVE (#242)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.423Z"
+  },
+  "API-DISC-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "refused 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.432Z"
+  },
+  "API-DISC-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "ACTIVE dealer yard-photo presign refused 409 YARD_PHOTO_LOCKED — the reviewed photograph is locked outside DRAFT (#245)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-04T19:52:05.463Z"
+  }
+}

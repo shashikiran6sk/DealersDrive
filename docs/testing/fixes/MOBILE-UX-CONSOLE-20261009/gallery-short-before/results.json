@@ -1,0 +1,420 @@
+{
+  "results": [
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 320,
+      "height": 360,
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 375,
+      "height": 360,
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 320,
+      "height": 360,
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 375,
+      "height": 360,
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 320,
+      "scroll": 320,
+      "viewport": 320,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 360,
+      "scroll": 360,
+      "viewport": 360,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 375,
+      "scroll": 375,
+      "viewport": 375,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 390,
+      "scroll": 390,
+      "viewport": 390,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 430,
+      "scroll": 430,
+      "viewport": 430,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 440,
+      "scroll": 440,
+      "viewport": 440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 768,
+      "scroll": 768,
+      "viewport": 768,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 1024,
+      "scroll": 1024,
+      "viewport": 1024,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 1280,
+      "scroll": 1280,
+      "viewport": 1280,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 1440,
+      "scroll": 1440,
+      "viewport": 1440,
+      "boxes": [],
+      "overflow": [],
+      "errors": []
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 320,
+      "height": 360,
+      "rail": {
+        "top": 300,
+        "bottom": 379
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 375,
+      "height": 360,
+      "rail": {
+        "top": 341.25,
+        "bottom": 420.25
+      },
+      "errors": [
+        "Gallery rail leaves viewport"
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--twenty",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 394
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--portrait",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 435.25
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 320,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 300,
+        "bottom": 379
+      }
+    },
+    {
+      "story": "vehicle-vehiclegallery--one-photo",
+      "width": 375,
+      "height": 360,
+      "errors": [
+        "Gallery rail leaves viewport"
+      ],
+      "rail": {
+        "top": 341.25,
+        "bottom": 420.25
+      }
+    }
+  ]
+}

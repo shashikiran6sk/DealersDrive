@@ -1,0 +1,349 @@
+[
+  {
+    "all": [
+      {
+        "p": "/",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Find your next car",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/cars",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Used cars",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/car/2023-hyundai-creta-sx-o-vellore-7d505a2f",
+        "status": 200,
+        "overflow": 0,
+        "h1": "2023 Hyundai Creta SX(O)",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealers",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Verified dealers",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealers/uxmotors-motors-685919a3f6c3-vellore-tamil-nadu",
+        "status": 200,
+        "overflow": 0,
+        "h1": "UxMotors Motors 685919a3f6c3",
+        "url": "<redacted>"
+      }
+    ]
+  },
+  {
+    "url": "<redacted>",
+    "overflow": 0,
+    "h1": "2023 Hyundai Creta SX(O)",
+    "shot": "screenshots/BROWSER-005-android-car.png"
+  },
+  {
+    "all": [
+      {
+        "p": "/",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Find your next car",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/cars",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Used cars",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/car/2023-hyundai-creta-sx-o-vellore-7d505a2f",
+        "status": 200,
+        "overflow": 0,
+        "h1": "2023 Hyundai Creta SX(O)",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealers",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Verified dealers",
+        "url": "<redacted>"
+      },
+      {
+        "p": "/dealers/uxmotors-motors-685919a3f6c3-vellore-tamil-nadu",
+        "status": 200,
+        "overflow": 0,
+        "h1": "UxMotors Motors 685919a3f6c3",
+        "url": "<redacted>"
+      }
+    ]
+  },
+  {
+    "out": [
+      {
+        "p": "/dealer",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Good morning, Owner",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/dealer/inventory",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Inventory",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/dealer/enquiries",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Enquiries",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/dealer/team",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Team",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/dealer/profile",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Dealer profile",
+        "url": "<redacted>",
+        "width": 320
+      }
+    ],
+    "markable": true,
+    "shot": "screenshots/BROWSER-008-dealer-enquiries-390.png"
+  },
+  {
+    "out": [
+      {
+        "p": "/admin",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Operations overview",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/admin/dealers",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Dealers",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/admin/dealers/:id",
+        "status": 200,
+        "overflow": 0,
+        "h1": "UxMotors Motors 685919a3f6c3",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/admin/listings",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Listings",
+        "url": "<redacted>",
+        "width": 320
+      },
+      {
+        "p": "/admin/enquiries",
+        "status": 200,
+        "overflow": 0,
+        "h1": "Enquiries",
+        "url": "<redacted>",
+        "width": 320
+      }
+    ]
+  },
+  {
+    "inView": true,
+    "value": "9876500001",
+    "shot": "screenshots/BROWSER-010-dialog-keyboard.png"
+  },
+  {
+    "listUrl": "<redacted>",
+    "count": 24,
+    "carUrl": "<redacted>",
+    "backUrl": "<redacted>",
+    "backCount": 24,
+    "fwdUrl": "<redacted>"
+  },
+  {
+    "twoSignedIn": true,
+    "afterLogout": "/login?returnTo=%2Fenquiries"
+  },
+  {
+    "reached": true,
+    "url": "<redacted>"
+  },
+  {
+    "autoFocused": null,
+    "url": "<redacted>"
+  },
+  {
+    "fields": [
+      "0:INPUT:registrationNumber",
+      "1:BUTTON:intent"
+    ],
+    "stops": 2,
+    "unreachable": []
+  },
+  {
+    "fields": 22,
+    "stops": 22,
+    "unreachable": []
+  },
+  {
+    "out": {
+      "/login": [],
+      "/cars": [],
+      "/dealer/vehicles/new": [],
+      "/dealer/profile": [],
+      "/dealer/inventory": [],
+      "/admin/config": [],
+      "/admin/dealers": [],
+      "/support-requests/new": []
+    }
+  },
+  {
+    "invalid": "true",
+    "describedText": "Enter a 10-digit Indian mobile number.",
+    "alerts": []
+  },
+  {
+    "inside": true,
+    "trapped": true,
+    "returned": "Withdraw"
+  },
+  {
+    "out": {
+      "/": [],
+      "/cars": [],
+      "/car/2023-hyundai-creta-sx-o-vellore-7d505a2f": [],
+      "/dealer/inventory": [],
+      "/dealer/enquiries": [],
+      "/admin/listings": []
+    }
+  },
+  {
+    "enquiries": 1
+  },
+  {
+    "out": [
+      {
+        "p": "/saved",
+        "text": "Saved cars Cars you have saved, on any device you sign in on. No saved cars yet Tap the heart on any car to keep it here while you compare. Browse cars",
+        "ctas": [
+          "Browse cars"
+        ]
+      },
+      {
+        "p": "/enquiries",
+        "text": "My enquiries Each dealership has your name and verified mobile number, and will contact you. No enquiries yet When you enquire about a car, you can follow it here. Browse cars",
+        "ctas": [
+          "Browse cars"
+        ]
+      },
+      {
+        "p": "/dealer/inventory?status=SOLD",
+        "text": "Inventory 0 vehicles Add vehicle All 0 Draft 0 Pending review 0 Changes requested 0 Active 0 Reserved 0 Sold 0 Withdrawn 0 Search your inventory Search Nothing here No vehicle matches this filter.",
+        "ctas": [
+          "Add vehicle",
+          "All0",
+          "Draft0",
+          "Pending review0",
+          "Changes requested0"
+        ]
+      },
+      {
+        "p": "/dealer/enquiries",
+        "text": "Enquiries 0 enquiries New 0 Contacted 0 Closed 0 Spam 0 No new enquiries When a customer enquires about one of your cars, they appear here with their verified mobile number.",
+        "ctas": [
+          "New0",
+          "Contacted0",
+          "Closed0",
+          "Spam0"
+        ]
+      }
+    ]
+  },
+  {
+    "checks": {
+      "Mark sold": "Mark this vehicle as sold?",
+      "Withdraw": "Withdraw this listing?"
+    },
+    "listings": [
+      "ACTIVE",
+      "ACTIVE",
+      "ACTIVE"
+    ],
+    "removeDialog": "Remove Ux Manager?",
+    "members": [
+      "ACTIVE",
+      "ACTIVE",
+      "ACTIVE"
+    ]
+  },
+  {
+    "cases": [
+      {
+        "who": "STAFF",
+        "p": "/dealer/team",
+        "status": 200,
+        "url": "<redacted>",
+        "h1": "Good morning, Staff",
+        "crash": false
+      },
+      {
+        "who": "STAFF",
+        "p": "/dealer/profile",
+        "status": 200,
+        "url": "<redacted>",
+        "h1": "Dealer profile",
+        "crash": false
+      },
+      {
+        "who": "STAFF",
+        "p": "/admin",
+        "status": 200,
+        "url": "<redacted>",
+        "h1": "Admin sign-in",
+        "crash": false
+      },
+      {
+        "who": "CUSTOMER",
+        "p": "/dealer",
+        "status": 200,
+        "url": "<redacted>",
+        "h1": "Login",
+        "crash": false
+      },
+      {
+        "who": "CUSTOMER",
+        "p": "/admin/dealers",
+        "status": 200,
+        "url": "<redacted>",
+        "h1": "Admin sign-in",
+        "crash": false
+      }
+    ]
+  }
+]

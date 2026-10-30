@@ -1,0 +1,46 @@
+{
+  "label": "fix-branch",
+  "results": [
+    {
+      "page": "onboarding",
+      "width": 320,
+      "overflow": 0
+    },
+    {
+      "page": "admin-detail",
+      "width": 320,
+      "overflow": 0
+    },
+    {
+      "page": "onboarding",
+      "width": 360,
+      "overflow": 0
+    },
+    {
+      "page": "admin-detail",
+      "width": 360,
+      "overflow": 0
+    },
+    {
+      "page": "onboarding",
+      "width": 390,
+      "overflow": 0
+    },
+    {
+      "page": "admin-detail",
+      "width": 390,
+      "overflow": 0
+    },
+    {
+      "page": "onboarding",
+      "width": 768,
+      "overflow": 0
+    },
+    {
+      "page": "admin-detail",
+      "width": 768,
+      "overflow": 0
+    }
+  ],
+  "verdict": "PASS"
+}

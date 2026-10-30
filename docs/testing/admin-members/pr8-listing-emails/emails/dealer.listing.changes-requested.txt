@@ -1,0 +1,17 @@
+Subject: Changes needed — 2023 Hyundai Creta SX(O)
+
+Your listing needs a few changes
+
+Hi Lakshmi,
+
+Before 2023 Hyundai Creta SX(O) (KA 05 MR 8801) can go live, our reviewer has asked for this:
+
+  Add a photo of the odometer.
+
+Make the changes and send it back for review — nothing else is lost.
+
+Make the changes: http://localhost:3000/dealer/vehicles/90d5df11-ba01-4c19-aead-2b615717c6b5/edit?step=review
+
+—
+Dealers-Drive
+Questions? support@example.com

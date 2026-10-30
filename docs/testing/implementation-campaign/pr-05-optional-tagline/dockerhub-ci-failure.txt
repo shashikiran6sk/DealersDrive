@@ -1,0 +1,26 @@
+lint · typecheck · test · build	Initialize containers	﻿2026-10-09T21:16:24.6824626Z ##[group]Checking docker version
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:24.6835926Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1327972Z '1.48'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1336989Z Docker daemon API version: '1.48'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1338215Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1494277Z '1.48'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1505190Z Docker client API version: '1.48'
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1511173Z ##[endgroup]
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1514629Z ##[group]Clean up resources from previous jobs
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1520886Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=2802ed"
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1653069Z ##[command]/usr/bin/docker network prune --force --filter "label=2802ed"
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1773501Z ##[endgroup]
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1774349Z ##[group]Create local container network
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.1783298Z ##[command]/usr/bin/docker network create --label 2802ed github_network_8e73a9ef2015419fa1a24acdaeda3570
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.5049945Z 441ace217a88f43f8317693679c258dfc07d3ba27d91f0b94f0d894c887873d7
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.5065552Z ##[endgroup]
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.5087332Z ##[group]Starting postgres service container
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:25.5105620Z ##[command]/usr/bin/docker pull postgres:16-alpine
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:26.3691138Z Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:26.3715488Z ##[warning]Docker pull failed with exit code 1, back off 5.378 seconds before retry.
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:31.7503032Z ##[command]/usr/bin/docker pull postgres:16-alpine
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:32.8816091Z Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:32.8828190Z ##[warning]Docker pull failed with exit code 1, back off 2.638 seconds before retry.
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:35.5221530Z ##[command]/usr/bin/docker pull postgres:16-alpine
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:36.4054198Z Error response from daemon: toomanyrequests: You have reached your unauthenticated pull rate limit. https://www.docker.com/increase-rate-limit
+lint · typecheck · test · build	Initialize containers	2026-10-09T21:16:36.4129041Z ##[error]Docker pull failed with exit code 1

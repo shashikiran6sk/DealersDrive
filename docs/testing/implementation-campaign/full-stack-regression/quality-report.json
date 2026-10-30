@@ -1,0 +1,33 @@
+{
+  "branch": "feat/optional-gstin",
+  "headSha": "b500bd5ae6bd026f8f0e9b0d7b3a6cd5fc7c531e",
+  "features": "PRs 1\u201311",
+  "tests": {
+    "api": 3268,
+    "web": 1537,
+    "contracts": 484,
+    "total": 5289
+  },
+  "browserChecks": {
+    "authentication": 22,
+    "tickets": 15,
+    "navigation": 26,
+    "verification": 17,
+    "optional_gstin": 13,
+    "total": 93
+  },
+  "apiCoverage": {
+    "branches": 90.53,
+    "lines": 97.02
+  },
+  "requiredChecks": "SUCCESS on final SHA",
+  "productionBuild": "PASS",
+  "merged": false,
+  "productionDeployment": false,
+  "notRun": [
+    "historical 556 manual cases as an automated suite",
+    "native Safari/physical devices",
+    "live MSG91/government validation",
+    "production migrations"
+  ]
+}

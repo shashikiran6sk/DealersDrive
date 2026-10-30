@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "docs/testing/fixes/BUG-006/evidence/diagnostics/configuration-probes.py",
+    "baseline"
+  ],
+  "sha": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
+  "start_utc": "2026-10-04T10:15:38.001143+00:00",
+  "end_utc": "2026-10-04T10:15:40.341053+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug006-configuration-baseline.log",
+  "cache": "TURBO_FORCE=true"
+}

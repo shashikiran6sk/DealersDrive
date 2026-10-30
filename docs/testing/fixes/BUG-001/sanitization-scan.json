@@ -1,0 +1,6 @@
+{
+  "files_scanned": 29,
+  "patterns": ["cookie_value", "raw_local_otp_proof", "jwt_value", "bearer_value"],
+  "matches": [],
+  "scope": "Common token/proof patterns in BUG-001 text evidence and harnesses; screenshots use inert local fixtures."
+}

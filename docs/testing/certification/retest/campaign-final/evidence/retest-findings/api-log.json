@@ -1,0 +1,171 @@
+[
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 200,
+    "body": {
+      "id": "ab12d5b8-dfc2-4c47-8563-da43bba80cf5",
+      "slug": "profiletwice-motors-9895121c1fba-vellore-tamil-nadu",
+      "status": "ACTIVE",
+      "statusLabel": "Verified",
+      "statusReason": null,
+      "brandName": "ProfileTwice Motors 9895121c1fba",
+      "legalName": "ProfileTwice Motors 9895121c1fba",
+      "tagline": "Quality used cars from ProfileTwice",
+      "gstin": "33RKDCZ5442H1Z0",
+      "pan": "RKDCZ5442H",
+      "contact": {
+        "fullName": "ProfileTwice Owner",
+        "phone": "+••••••••9509",
+        "phoneDisplay": "+91 96009 89509",
+        "email": "profiletwice.98951005cf66@example.test",
+        "landline": null
+      },
+      "address": {
+        "line": "12 Main Road",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu",
+        "pincode": "632001",
+        "mapsUrl": "<redacted>",
+        "mapKind": "NONE"
+      },
+      "specialities": [
+        "SUVs",
+        "Sedans"
+      ],
+      "workingHours": null,
+      "establishedYear": null,
+      "logoMediaId": null,
+      "coverMediaId": "8420070e-710d-4107-9171-4ba05f9f37ff",
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "activeListings": 0,
+      "approvedAt": "2026-10-04T19:59:49.830Z",
+      "createdAt": "2026-10-04T19:59:49.642Z",
+      "profileChange": {
+        "id": "fb983330-b4a1-4f56-bbb9-6da367cd3e15",
+        "status": "PENDING",
+        "statusLabel": "Waiting for review",
+        "tagline": "First edit waiting for moderation review",
+        "specialities": [],
+        "submittedAtLabel": "04 Oct 2026",
+        "reviewedAtLabel": null,
+        "decisionReason": null
+      }
+    }
+  },
+  {
+    "req": "PATCH /v1/dealer",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/profile-edit-pending",
+      "title": "Profile edit pending",
+      "status": 409,
+      "code": "PROFILE_EDIT_PENDING",
+      "traceId": "Y08v35SxTu",
+      "detail": "You already have a change waiting for review. Cancel it first if you want to write something different."
+    }
+  },
+  {
+    "pending": [
+      "PENDING"
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/5fae4d93-6fdf-477e-92b0-c9248dc5f400/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "1bEHNz3Tb2",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/5fae4d93-6fdf-477e-92b0-c9248dc5f400/close",
+    "status": 200,
+    "body": {
+      "id": "5fae4d93-6fdf-477e-92b0-c9248dc5f400",
+      "status": "CLOSED",
+      "statusLabel": "Closed",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T19:59:49.936Z"
+    }
+  },
+  {
+    "closeRoutes": [
+      "/v1/admin/dealers/{id}/close"
+    ],
+    "closedDealers": 5,
+    "dealer": "CLOSED"
+  },
+  {
+    "out": [
+      {
+        "width": 320,
+        "status": 200,
+        "url": "<redacted>",
+        "overflow": 0,
+        "h1": "Create your account"
+      },
+      {
+        "width": 390,
+        "status": 200,
+        "url": "<redacted>",
+        "overflow": 0,
+        "h1": "Create your account"
+      }
+    ]
+  },
+  {
+    "results": [
+      {
+        "status": 200,
+        "type": "application/pdf",
+        "isPdf": true
+      },
+      {
+        "status": 200,
+        "type": "application/pdf",
+        "isPdf": true
+      },
+      {
+        "status": 200,
+        "type": "application/pdf",
+        "isPdf": true
+      }
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/486ba4e1-98af-4bb5-9a77-b9874add4c8b/suspend",
+    "status": 200,
+    "body": {
+      "id": "486ba4e1-98af-4bb5-9a77-b9874add4c8b",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T20:00:23.670Z"
+    }
+  },
+  {
+    "api": 404,
+    "webImmediately": 200,
+    "webAfter65s": 200,
+    "webAfter65sSecond": 404
+  },
+  {
+    "widths": {
+      "320": 200,
+      "500": 200,
+      "4000": 200,
+      "4001": 404
+    },
+    "docSaysFixed": false
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "phase": "after",
+  "input": "CDP native mouse press/release",
+  "before": {
+    "url": "http://localhost:3000/cars",
+    "checked": false
+  },
+  "immediate": {
+    "url": "http://localhost:3000/cars",
+    "checked": true
+  },
+  "applied": {
+    "url": "http://localhost:3000/cars?maxPrice=50000000",
+    "mobileChecked": true,
+    "desktopChecked": true,
+    "resultAction": "Show 76 cars"
+  },
+  "frames": 10
+}

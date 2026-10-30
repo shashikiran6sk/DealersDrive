@@ -1,0 +1,12 @@
+{
+  "R238-admin-no-horizontal-overflow": {
+    "status": "FAIL",
+    "layers": ["BROWSER"],
+    "note": "1/40 overflow or fail: [\"/admin/dealers/:id@320:200:339/320\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-238-green",
+    "at": "2026-10-04T14:28:48.361Z"
+  }
+}

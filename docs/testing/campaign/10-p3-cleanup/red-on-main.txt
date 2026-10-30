@@ -1,0 +1,90 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/api
+
+ ❯ |unit| tests/unit/modules/media/media-delivery-p3.test.ts (5 tests | 4 failed) 86ms
+   ❯ BUG-NEW-008 — a local signed read is typed by its bytes (4)
+     × serves a PDF KYC document under its own type 31ms
+     × serves a PNG KYC document under its own type 5ms
+     × serves a WebP KYC document under its own type 4ms
+   ❯ BUG-NEW-011 — the derivative reference matches the widths the route serves (1)
+     × documents the accepted width range rather than a fixed list 40ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/modules/media/media-delivery-p3.test.ts > BUG-NEW-008 — a local signed read is typed by its bytes > serves a PDF KYC document under its own type
+AssertionError: expected 'image/jpeg' to contain 'application/pdf'
+
+Expected: "application/pdf"
+Received: "image/jpeg"
+
+ ❯ tests/unit/modules/media/media-delivery-p3.test.ts:57:41
+     55|
+     56|     expect(res.status).toBe(200);
+     57|     expect(res.headers['content-type']).toContain(type);
+       |                                         ^
+     58|   });
+     59| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/modules/media/media-delivery-p3.test.ts > BUG-NEW-008 — a local signed read is typed by its bytes > serves a PNG KYC document under its own type
+AssertionError: expected 'image/jpeg' to contain 'image/png'
+
+Expected: "image/png"
+Received: "image/jpeg"
+
+ ❯ tests/unit/modules/media/media-delivery-p3.test.ts:57:41
+     55|
+     56|     expect(res.status).toBe(200);
+     57|     expect(res.headers['content-type']).toContain(type);
+       |                                         ^
+     58|   });
+     59| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/modules/media/media-delivery-p3.test.ts > BUG-NEW-008 — a local signed read is typed by its bytes > serves a WebP KYC document under its own type
+AssertionError: expected 'image/jpeg' to contain 'image/webp'
+
+Expected: "image/webp"
+Received: "image/jpeg"
+
+ ❯ tests/unit/modules/media/media-delivery-p3.test.ts:57:41
+     55|
+     56|     expect(res.status).toBe(200);
+     57|     expect(res.headers['content-type']).toContain(type);
+       |                                         ^
+     58|   });
+     59| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/modules/media/media-delivery-p3.test.ts > BUG-NEW-011 — the derivative reference matches the widths the route serves > documents the accepted width range rather than a fixed list
+AssertionError: expected 'Content-addressed image delivery for …' not to match /anything else is a 404/
+
+- Expected:
+/anything else is a 404/
+
++ Received:
+"Content-addressed image delivery for every kind of image the product stores — a vehicle photograph and a dealership yard photograph are the same bytes behind the same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED` and its dealership is `ACTIVE`** (**R45**): before approval, after a sale or a removal it is a 404, and a moderator previews it through a signed read URL instead. **A yard photograph is served only while it is the cover of an `ACTIVE` dealership** — before approval, during a suspension or once replaced it is a 404. Any other kind of media is never served here. Media readiness and public visibility can change while the id stays the same. Both successful responses and denials send `Cache-Control: no-store`, so future requests observe suspension, removal and reinstatement.
+
+Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a media origin is a different host from the web app in every environment and the strict default would stop the browser embedding the image.
+
+*The path ends in a literal `.webp`, which is why the width parameter is documented as `width.webp`.*"
+
+ ❯ tests/unit/modules/media/media-delivery-p3.test.ts:69:29
+     67|
+     68|     expect(description).toBeDefined();
+     69|     expect(description).not.toMatch(/anything else is a 404/);
+       |                             ^
+     70|     expect(description).toMatch(/1 to 4000/);
+     71|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  18:36:58
+   Duration  1.17s (transform 64%, import 27%, tests 8%)
+

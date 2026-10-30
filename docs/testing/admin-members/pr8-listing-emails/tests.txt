@@ -1,0 +1,122 @@
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received renders both bodies and names the dealership 4ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received renders both bodies and names the dealership 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated renders both bodies and names the dealership 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.email.verify renders both bodies and names the dealership 17ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.submitted renders both bodies and names the dealership 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.resubmitted renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.rejected renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.changes-requested renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.reactivation-requested renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-approved renders both bodies and names the dealership 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-rejected renders both bodies and names the dealership 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received survives an empty context 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved survives an empty context 1ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.email.verify survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.submitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.resubmitted survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.approved survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.changes-requested survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.reactivation-requested survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-approved survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-rejected survives an empty context 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.received links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.received links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.resubmitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.application.resubmitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.changes-requested links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.application.closed links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.suspended links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.account.reinstated links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.profile-change.submitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.profile-change.rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.email.verify links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.submitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.resubmitted links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.changes-requested links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > admin.listing.reactivation-requested links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-approved links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > every template > dealer.listing.reactivation-rejected links somewhere absolute 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.application.rejected carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.application.changes-requested carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.account.suspended carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > dealer.profile-change.rejected carries the reason verbatim 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the moderator’s own words > renders no quote block when there is no reason 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > application resubmission > thanks the dealer for resubmitting the details 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > application resubmission > tells the admin that the dealer resubmitted the application 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > escaping > escapes a dealership name that contains markup 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > escaping > escapes a moderator’s note that contains markup 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the profile-change review email > shows the moderator what was proposed 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the profile-change review email > shows the services alone when only they changed 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the approved message > links the dealership’s own public page 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the approved message > falls back to the console when there is no slug 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the listing emails (R116) > name the car by title and plate, and link where the reader acts 0ms
+ ✓ |unit| tests/unit/modules/notifications/templates.test.ts > the listing emails (R116) > fall back to the inventory when the listing is gone or unpublished 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer and the admins when an application arrives 7ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > uses distinct dealer and admin emails when an application is resubmitted 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on approval 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on a rejection, with the reason 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > sends a rejection from the surviving audit snapshot after the dealer is purged 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when changes are requested 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the admins when a profile change is submitted 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when the dealership is suspended 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer a dedicated message when the application is closed 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer when the dealership is reinstated 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on an approved profile change 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the notification rules > emails the dealer on a refused profile change, with the reason 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > sends one email however many times the job is delivered 2ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > sends again for a different event 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > keys on the recipient as well as the event 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > claims the row before sending 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > idempotency > lets a failed attempt be retried, and counts the attempts 2ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > rethrows a retryable failure and leaves the row PENDING 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > does not rethrow a permanent failure, and marks the row FAILED 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > failure > skips a dealer with no email, without a delivery row 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > recipients > fans an admin message out to the allow-list 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > recipients > reads the dealer address out of the database 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > mints the link at send time and emails it to the verification’s address 7ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > does not mint a second link once the email has been sent 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > sends nothing for a superseded or claimed verification 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the claim link (R113) > sends an unclaimed dealership’s mail only to a verified address 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > writes to the active members whose role holds the permission, once each 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > never writes to a bootstrap member the allow-list no longer admits 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > admin recipients (R115) > falls back to the allow-list when no member holds the permission 0ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > user recipients (R115) > writes only to a verified address on an active account 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > a transient failure that never clears (R115) > is marked FAILED on the last attempt, and stops being retried 2ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the rules table (R115) > turns each rule into the job the old hand-written subscriber produced 1ms
+ ✓ |unit| tests/unit/modules/notifications/notifications.service.test.ts > the rules table (R115) > keys the claim email on the verification, and drops a malformed event 0ms
+ ✓ |integration| tests/listing-emails.test.ts > a submission > tells Operations, with a link to the listing, and not the dealer 185ms
+ ✓ |integration| tests/listing-emails.test.ts > a submission > tells Operations it is back after changes, and the dealer what to change 184ms
+ ✓ |integration| tests/listing-emails.test.ts > a decision > tells the dealer their listing is live, with the public link 468ms
+ ✓ |integration| tests/listing-emails.test.ts > a decision > tells the dealer a rejection, with the reviewer’s reason 125ms
+ ✓ |integration| tests/listing-emails.test.ts > reactivation > tells Operations about a request and the dealer about the decision 376ms
+ ✓ |integration| tests/listing-emails.test.ts > a sale > emails nobody 294ms
+ Test Files  3 passed (3)
+      Tests  120 passed (120)

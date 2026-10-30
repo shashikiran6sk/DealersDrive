@@ -1,0 +1,18 @@
+      type       |     category      |  status  | count | submissions 
+-----------------+-------------------+----------+-------+-------------
+ ADDRESS_PROOF   | SUPPORTING        | VERIFIED |   121 |           2
+ GST_CERTIFICATE | BUSINESS_IDENTITY | VERIFIED |   120 |           1
+ PAN_CARD        | PERSONAL_IDENTITY | VERIFIED |   121 |           2
+(3 rows)
+
+ status | activationMethod | count 
+--------+------------------+-------
+ ACTIVE | STANDARD         |   122
+ DRAFT  |                  |     2
+(2 rows)
+
+ portfolio_rows 
+----------------
+              0
+(1 row)
+

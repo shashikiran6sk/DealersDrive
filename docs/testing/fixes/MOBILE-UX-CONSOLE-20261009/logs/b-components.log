@@ -1,0 +1,10 @@
+dealer-dashboardmetrics--populated []
+dealer-dashboardmetrics--large-values []
+dealer-dashboardmetrics--loading []
+dealer-dashboardmetrics--unavailable []
+dealer-consoleutilities--signed-out []
+dealer-consoleutilities--multiple-workspaces []
+{
+  "viewports": 60,
+  "failures": []
+}

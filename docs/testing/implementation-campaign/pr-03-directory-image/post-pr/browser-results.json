@@ -1,0 +1,45 @@
+{
+  "stage": "post-pr",
+  "browser": "155.0.8059.39",
+  "results": [
+    {
+      "width": 320,
+      "cards": 24,
+      "identicalAsset": true,
+      "assetStatus": 200,
+      "overflow": false,
+      "yardClaimAbsent": true
+    },
+    {
+      "width": 390,
+      "cards": 24,
+      "identicalAsset": true,
+      "assetStatus": 200,
+      "overflow": false,
+      "yardClaimAbsent": true
+    },
+    {
+      "width": 768,
+      "cards": 24,
+      "identicalAsset": true,
+      "assetStatus": 200,
+      "overflow": false,
+      "yardClaimAbsent": true
+    },
+    {
+      "width": 1280,
+      "cards": 24,
+      "identicalAsset": true,
+      "assetStatus": 200,
+      "overflow": false,
+      "yardClaimAbsent": true
+    }
+  ],
+  "api": {
+    "status": 200,
+    "cards": 24,
+    "identicalAsset": true,
+    "privateIdentityNotExposed": true
+  },
+  "note": "Actual branch application; local synthetic fixtures. Existing yard-media authorization/gallery regressions run in automated suites; current model has one yard cover, not a multi-photo yard gallery."
+}

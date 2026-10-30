@@ -1,0 +1,246 @@
+
+ RUN  v5.0.0 /workspace/DealersDrive/apps/web
+
+ ❯ tests/unit/features/enquiry/enquiry-panel.test.tsx (15 tests | 2 failed) 980ms
+   ❯ a signed-in customer (8)
+     × scrolls the bottom enquiry button to the message field after the form is mounted 77ms
+   ❯ coming back from sign-in (2)
+     × opens the form by itself, prefilled 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/features/enquiry/enquiry-panel.test.tsx > a signed-in customer > scrolls the bottom enquiry button to the message field after the form is mounted
+AssertionError: expected <div …(2)>…(1)</div> to be <textarea …(5)></textarea> // Object.is equality
+
+- Expected
++ Received
+
++ <div
++   aria-live="polite"
++   class="flex flex-col gap-[10px]"
++ >
++   <form
++     aria-labelledby="_r_0_-heading"
++     class="flex flex-col gap-[14px] rounded-[16px] border border-(--color-divider) bg-white p-[18px]"
++     novalidate=""
++   >
++     <h2
++       class="text-[17px]"
++       id="_r_0_-heading"
++     >
++       Interested in this vehicle?
++     </h2>
++     <dl
++       class="m-0 grid gap-[10px] text-[14px]"
++     >
++       <div>
++         <dt
++           class="text-[12px] ink-secondary"
++         >
++           Name
++         </dt>
++         <dd
++           class="m-0 font-medium"
++         >
++           Shashikiran
++         </dd>
++       </div>
++       <div>
++         <dt
++           class="text-[12px] ink-secondary"
++         >
++           Mobile
++         </dt>
++         <dd
++           class="m-0 flex items-center gap-[8px]"
++         >
++           <span
++             class="font-mono tnum"
++           >
++             +91 98400 12345
++           </span>
++           <span
++             class="tag tag-ok"
++           >
++             Verified
++           </span>
++         </dd>
++       </div>
++     </dl>
++     <div
++       class="field"
++     >
++       <label
++         for="_r_0_-message"
++       >
++         Message
++         <span
++           class="ml-1 ink-faint"
++         >
++           (optional)
++         </span>
++       </label>
+        <textarea
+          class="input min-h-[88px] py-[8px]"
+          id="_r_0_-message"
+          maxlength="1000"
+          name="message"
+          placeholder="Ask about the car, or when you can visit."
+        />
++     </div>
++     <p
++       class="m-0 text-[12px] ink-secondary"
++     >
++       Sri Lakshmi Motors will receive your name and verified mobile number, and will contact you.
++     </p>
++     <div
++       class="flex flex-wrap gap-[8px]"
++     >
++       <button
++         class="btn btn-primary h-10 text-[14px] min-h-[44px] flex-1"
++         type="submit"
++       >
++         Send enquiry
++       </button>
++       <button
++         class="btn btn-secondary h-10 text-[14px] min-h-[44px]"
++         type="button"
++       >
++         Cancel
++       </button>
++     </div>
++   </form>
++ </div>
+
+ ❯ tests/unit/features/enquiry/enquiry-panel.test.tsx:82:38
+     80|     const message = await screen.findByRole('textbox', { name: /messag…
+     81|     expect(scroll).toHaveBeenCalledTimes(1);
+     82|     expect(scroll.mock.instances[0]).toBe(message);
+       |                                      ^
+     83|     expect(scroll).toHaveBeenCalledWith({ block: 'center' });
+     84|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/features/enquiry/enquiry-panel.test.tsx > coming back from sign-in > opens the form by itself, prefilled
+AssertionError: expected <div …(2)>…(1)</div> to be <textarea …(5)></textarea> // Object.is equality
+
+- Expected
++ Received
+
++ <div
++   aria-live="polite"
++   class="flex flex-col gap-[10px]"
++ >
++   <form
++     aria-labelledby="_r_8_-heading"
++     class="flex flex-col gap-[14px] rounded-[16px] border border-(--color-divider) bg-white p-[18px]"
++     novalidate=""
++   >
++     <h2
++       class="text-[17px]"
++       id="_r_8_-heading"
++     >
++       Interested in this vehicle?
++     </h2>
++     <dl
++       class="m-0 grid gap-[10px] text-[14px]"
++     >
++       <div>
++         <dt
++           class="text-[12px] ink-secondary"
++         >
++           Name
++         </dt>
++         <dd
++           class="m-0 font-medium"
++         >
++           Shashikiran
++         </dd>
++       </div>
++       <div>
++         <dt
++           class="text-[12px] ink-secondary"
++         >
++           Mobile
++         </dt>
++         <dd
++           class="m-0 flex items-center gap-[8px]"
++         >
++           <span
++             class="font-mono tnum"
++           >
++             +91 98400 12345
++           </span>
++           <span
++             class="tag tag-ok"
++           >
++             Verified
++           </span>
++         </dd>
++       </div>
++     </dl>
++     <div
++       class="field"
++     >
++       <label
++         for="_r_8_-message"
++       >
++         Message
++         <span
++           class="ml-1 ink-faint"
++         >
++           (optional)
++         </span>
++       </label>
+        <textarea
+          class="input min-h-[88px] py-[8px]"
+          id="_r_8_-message"
+          maxlength="1000"
+          name="message"
+          placeholder="Ask about the car, or when you can visit."
+        />
++     </div>
++     <p
++       class="m-0 text-[12px] ink-secondary"
++     >
++       Sri Lakshmi Motors will receive your name and verified mobile number, and will contact you.
++     </p>
++     <div
++       class="flex flex-wrap gap-[8px]"
++     >
++       <button
++         class="btn btn-primary h-10 text-[14px] min-h-[44px] flex-1"
++         type="submit"
++       >
++         Send enquiry
++       </button>
++       <button
++         class="btn btn-secondary h-10 text-[14px] min-h-[44px]"
++         type="button"
++       >
++         Cancel
++       </button>
++     </div>
++   </form>
++ </div>
+
+ ❯ tests/unit/features/enquiry/enquiry-panel.test.tsx:249:38
+    247|     expect(await screen.findByRole('button', { name: 'Send enquiry' })…
+    248|     expect(screen.getByText('Shashikiran')).toBeInTheDocument();
+    249|     expect(scroll.mock.instances[0]).toBe(screen.getByRole('textbox', …
+       |                                      ^
+    250|   });
+    251|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed (15)
+   Start at  11:16:50
+   Duration  2.95s (environment 40%, tests 35%, transform 13%, setup 8%, import 4%)
+
+undefined
+/workspace/DealersDrive/apps/web:
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with exit code 1: vitest run tests/unit/features/enquiry/enquiry-panel.test.tsx

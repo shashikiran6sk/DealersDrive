@@ -1,0 +1,53 @@
+{
+  "viewport": 360,
+  "dialog": {
+    "top": 0,
+    "bottom": 360,
+    "height": 360,
+    "width": 320,
+    "minHeight": "0px",
+    "classes": "fixed inset-0 z-71 flex h-dvh w-screen flex-col bg-[#0d1017] text-white"
+  },
+  "body": {
+    "top": 54,
+    "bottom": 360,
+    "height": 306,
+    "width": 320,
+    "minHeight": "0px",
+    "classes": "relative flex min-h-0 flex-1 overflow-hidden dd-dialog-body max-md:flex-col"
+  },
+  "rail": {
+    "top": 300,
+    "bottom": 394,
+    "height": 94,
+    "width": 320,
+    "minHeight": "auto",
+    "classes": "dd-rail w-[84px] flex-none border-r border-white/15 p-3 max-md:order-last max-md:w-full max-md:flex-row max-md:overflow-x-auto max-md:overflow-y-hidden max-md:border-r-0 max-md:border-t max-md:pb-[max(12px,env(safe-area-inset-bottom))] md:w-[132px]"
+  },
+  "stage": {
+    "top": 54,
+    "bottom": 300,
+    "height": 246,
+    "width": 320,
+    "minHeight": "auto",
+    "classes": "relative flex min-w-0 flex-1 items-center justify-center p-3 md:p-5"
+  },
+  "children": [
+    {
+      "top": 300,
+      "bottom": 394,
+      "height": 94,
+      "width": 320,
+      "minHeight": "auto",
+      "classes": "dd-rail w-[84px] flex-none border-r border-white/15 p-3 max-md:order-last max-md:w-full max-md:flex-row max-md:overflow-x-auto max-md:overflow-y-hidden max-md:border-r-0 max-md:border-t max-md:pb-[max(12px,env(safe-area-inset-bottom))] md:w-[132px]"
+    },
+    {
+      "top": 54,
+      "bottom": 300,
+      "height": 246,
+      "width": 320,
+      "minHeight": "auto",
+      "classes": "relative flex min-w-0 flex-1 items-center justify-center p-3 md:p-5"
+    }
+  ]
+}

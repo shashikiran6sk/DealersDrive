@@ -1,0 +1,376 @@
+{
+  "phase": "before",
+  "base": "http://localhost:3008",
+  "checks": [
+    {
+      "name": "Bottom CTA reaches message at 320x640",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3554,
+          "scrollHeight": 4194
+        },
+        "scrollY": 1129,
+        "top": -241.40625,
+        "bottom": -153.40625,
+        "headerBottom": 65,
+        "height": 640,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 320x640",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 360x740",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3419,
+          "scrollHeight": 4159
+        },
+        "scrollY": 1110,
+        "top": -222.296875,
+        "bottom": -134.296875,
+        "headerBottom": 65,
+        "height": 740,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 360x740",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 375x812",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3395,
+          "scrollHeight": 4207
+        },
+        "scrollY": 1121,
+        "top": -222.046875,
+        "bottom": -134.046875,
+        "headerBottom": 65,
+        "height": 812,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 375x812",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 390x844",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3412,
+          "scrollHeight": 4256
+        },
+        "scrollY": 1133,
+        "top": -222.796875,
+        "bottom": -134.796875,
+        "headerBottom": 65,
+        "height": 844,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 390x844",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 430x932",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3436,
+          "scrollHeight": 4368
+        },
+        "scrollY": 1163,
+        "top": -222.796875,
+        "bottom": -134.796875,
+        "headerBottom": 65,
+        "height": 932,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 430x932",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 440x900",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3500,
+          "scrollHeight": 4400
+        },
+        "scrollY": 1170,
+        "top": -222.296875,
+        "bottom": -134.296875,
+        "headerBottom": 65,
+        "height": 900,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 440x900",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 390x360",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3896,
+          "scrollHeight": 4256
+        },
+        "scrollY": 1133,
+        "top": -222.796875,
+        "bottom": -134.796875,
+        "headerBottom": 65,
+        "height": 360,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 390x360",
+      "pass": true
+    },
+    {
+      "name": "Bottom CTA reaches message at 568x320",
+      "pass": false,
+      "detail": {
+        "before": {
+          "scrollY": 3062,
+          "scrollHeight": 3382
+        },
+        "scrollY": 1266,
+        "top": -222.296875,
+        "bottom": -134.296875,
+        "headerBottom": 65,
+        "height": 320,
+        "cta": 0
+      }
+    },
+    {
+      "name": "Message editable at 568x320",
+      "pass": true
+    },
+    {
+      "name": "Return from login reaches message at short height",
+      "pass": false,
+      "detail": {
+        "top": 543.203125,
+        "bottom": 631.203125,
+        "headerBottom": 65,
+        "height": 360
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 320",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 289,
+          "top": 233.734375,
+          "width": 201
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 305,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 360",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 329,
+          "top": 233.734375,
+          "width": 241
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 345,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 375",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 344,
+          "top": 233.734375,
+          "width": 256
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 360,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 390",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 359,
+          "top": 233.734375,
+          "width": 271
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 227.734375,
+        "gridWidth": 375,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 430",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 399,
+          "top": 204.234375,
+          "width": 311
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 198.234375,
+        "gridWidth": 415,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Address below logo, full width: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 440",
+      "pass": false,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 88,
+          "right": 409,
+          "top": 204.234375,
+          "width": 321
+        },
+        "logo": {
+          "left": 16,
+          "bottom": 234.046875
+        },
+        "titleBottom": 198.234375,
+        "gridWidth": 425,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 768",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 729,
+          "top": 253.625,
+          "width": 609
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 753,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1024",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 985,
+          "top": 253.625,
+          "width": 865
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1009,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1280",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 120,
+          "right": 1241,
+          "top": 253.625,
+          "width": 1121
+        },
+        "logo": {
+          "left": 24,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1265,
+        "overflow": false
+      }
+    },
+    {
+      "name": "Desktop fits: sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu 1440",
+      "pass": true,
+      "detail": {
+        "name": "Sri Lakshmi Motors",
+        "address": {
+          "left": 192.5,
+          "right": 1328.5,
+          "top": 253.625,
+          "width": 1136
+        },
+        "logo": {
+          "left": 96.5,
+          "bottom": 256.234375
+        },
+        "titleBottom": 215.625,
+        "gridWidth": 1280,
+        "overflow": false
+      }
+    }
+  ]
+}

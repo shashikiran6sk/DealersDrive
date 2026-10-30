@@ -1,0 +1,107 @@
+{
+  "prNumber": 291,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/291",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/standard-dealer-directory-image",
+  "headRefName": "feat/dynamic-service-locations",
+  "headRefOid": "aaceb0172c85d1d22b172452f500103c9a873edc",
+  "files": [
+    "apps/api/prisma/migrations/20261010090000_service_locations/migration.sql",
+    "apps/api/prisma/migrations/20261010090100_service_location_audit_index/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/prisma/seed/dev-dealers.ts",
+    "apps/api/prisma/seed/dev-sales.ts",
+    "apps/api/prisma/seed/index.ts",
+    "apps/api/prisma/seed/seed-location.ts",
+    "apps/api/src/container.ts",
+    "apps/api/src/docs/schemas.ts",
+    "apps/api/src/modules/admin/admin.docs.ts",
+    "apps/api/src/modules/admin/admin.service.ts",
+    "apps/api/src/modules/auth/auth.service.ts",
+    "apps/api/src/modules/config/config.docs.ts",
+    "apps/api/src/modules/dealers/dealers.public.service.ts",
+    "apps/api/src/modules/dealers/dealers.service.ts",
+    "apps/api/src/modules/sales/sales.service.ts",
+    "apps/api/src/modules/search/search.facets.ts",
+    "apps/api/src/modules/service-locations/location-validation.ts",
+    "apps/api/src/modules/service-locations/service-locations.facade.ts",
+    "apps/api/src/modules/service-locations/service-locations.routes.ts",
+    "apps/api/src/modules/service-locations/service-locations.service.ts",
+    "apps/api/src/routes.ts",
+    "apps/api/tests/auth.test.ts",
+    "apps/api/tests/dealer-onboarding.test.ts",
+    "apps/api/tests/sales-assisted-listings.test.ts",
+    "apps/api/tests/service-locations-migration.test.ts",
+    "apps/api/tests/service-locations.test.ts",
+    "apps/api/tests/unit/modules/dealers/dealers.service.test.ts",
+    "apps/api/tests/unit/modules/search/search.facets.test.ts",
+    "apps/sandbox/.storybook/main.ts",
+    "apps/sandbox/src/mocks/service-location-actions.ts",
+    "apps/web/src/app/(admin)/admin/config/page.tsx",
+    "apps/web/src/components/forms/service-location-fields/service-location-fields.tsx",
+    "apps/web/src/features/admin/dealer-profile-editor/dealer-detail-form.tsx",
+    "apps/web/src/features/admin/dealer-profile-editor/dealer-profile-editor.tsx",
+    "apps/web/src/features/admin/service-location-actions.ts",
+    "apps/web/src/features/admin/service-locations-editor.tsx",
+    "apps/web/src/features/auth/onboarding-wizard/business-step.tsx",
+    "apps/web/src/features/sales/assisted-dealer-form/assisted-dealer-form.tsx",
+    "apps/web/src/features/service-location-actions.ts",
+    "apps/web/tests/unit/components/forms/service-location-fields.test.tsx",
+    "apps/web/tests/unit/features/admin/dealer-profile-editor.test.tsx",
+    "apps/web/tests/unit/features/admin/service-location-actions.test.ts",
+    "apps/web/tests/unit/features/admin/service-locations-editor.test.tsx",
+    "apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx",
+    "apps/web/tests/unit/features/sales/assisted-dealer-form.test.tsx",
+    "docs/code/api/modules/service-locations/README.md",
+    "docs/project/service-locations.md",
+    "packages/contracts/src/admin.ts",
+    "packages/contracts/src/index.ts",
+    "packages/contracts/src/service-locations.ts",
+    "packages/contracts/tests/unit/service-locations.test.ts"
+  ],
+  "commits": [
+    "40f5b87c36ae6b00a52f96a8fa37bb7da2322dfa",
+    "7fdf6a87501dcf22a3f41e6ebfe5064edf8c85ba",
+    "aaceb0172c85d1d22b172452f500103c9a873edc"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985927019/job/114007778468"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985927019/job/114007778306"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985927019/job/114007778172"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899/job/114007777738"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "aaceb0172c85d1d22b172452f500103c9a873edc",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/37985926899/job/114007777390"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "prNumber": 295,
+  "url": "https://github.com/shashikiran6sk/DealersDrive/pull/295",
+  "state": "OPEN",
+  "isDraft": false,
+  "mergedAt": null,
+  "baseRefName": "feat/mobile-admin-access",
+  "headRefName": "feat/ticket-message-limits",
+  "headRefOid": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+  "files": [
+    "apps/api/prisma/migrations/20261010120000_ticket_message_limits/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/modules/support/message-retry.ts",
+    "apps/api/src/modules/support/support.admin.docs.ts",
+    "apps/api/src/modules/support/support.admin.service.ts",
+    "apps/api/src/modules/support/support.docs.ts",
+    "apps/api/src/modules/support/support.mapper.ts",
+    "apps/api/src/modules/support/support.service.ts",
+    "apps/api/tests/ticket-message-limits.test.ts",
+    "apps/api/tests/ticket-message-migration.test.ts",
+    "apps/web/src/features/admin/support-actions.ts",
+    "apps/web/src/features/admin/support-ticket/support-ticket.tsx",
+    "apps/web/src/features/admin/support-ticket/support-ticket.types.ts",
+    "apps/web/src/features/admin/support-ticket/ticket-composer.tsx",
+    "apps/web/src/features/support/support-actions.ts",
+    "apps/web/src/features/support/support-requests/support-reply-form.tsx",
+    "apps/web/src/features/support/support-requests/support-request-detail.tsx",
+    "apps/web/src/features/support/support-requests/support-requests.types.ts",
+    "apps/web/tests/unit/features/admin/support-tickets.test.tsx",
+    "apps/web/tests/unit/features/support/support-requests.test.tsx",
+    "docs/project/ticket-message-limits.md",
+    "packages/contracts/src/support.ts",
+    "packages/contracts/tests/unit/support.test.ts"
+  ],
+  "commits": [
+    "4cd276b34410a3ab88cdca9571306e14433c48bc",
+    "fdee3eaca2347b1bc9fffda1507e4e36db67c367",
+    "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df"
+  ],
+  "checks": [
+    {
+      "name": "Vercel Preview Comments",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://vercel.com/github"
+    },
+    {
+      "name": "lint \u00b7 typecheck \u00b7 test \u00b7 build",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238707/job/114233922789"
+    },
+    {
+      "name": "dependency audit",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238707/job/114233922747"
+    },
+    {
+      "name": "gitleaks",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238693/job/114233922627"
+    },
+    {
+      "name": "terraform fmt / validate",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238707/job/114233922517"
+    },
+    {
+      "name": "semgrep",
+      "headSha": "98a5b786f8b7b8903a08c8d2d9bf3f5aa478e1df",
+      "conclusion": "success",
+      "detailsUrl": "https://github.com/shashikiran6sk/DealersDrive/actions/runs/38059238693/job/114233922371"
+    }
+  ]
+}

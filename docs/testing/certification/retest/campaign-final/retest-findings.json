@@ -1,0 +1,75 @@
+{
+  "ORIG-DISC-PROFILE-001 second profile edit": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "second edit while pending → 409 PROFILE_EDIT_PENDING, as the API reference documents (\"One request at a time … a 409, not a merge\"). Reclassified NOT A BUG in the campaign triage.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T19:59:49.878Z"
+  },
+  "ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "DRAFT dealership: suspend → 422 (suspend-only once ACTIVE), close → 200, record kept as CLOSED with its reason (#249). Documented in OpenAPI (1 close path).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T19:59:49.954Z"
+  },
+  "BUG-NEW-006 onboarding account overflow on mobile": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "no overflow [{\"width\":320,\"status\":200,\"url\":\"/dealer/onboarding\",\"overflow\":0,\"h1\":\"Create your account\"},{\"width\":390,\"status\":200,\"url\":\"/dealer/onboarding\",\"overflow\":0,\"h1\":\"Create your account\"}]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T19:59:52.175Z"
+  },
+  "BUG-NEW-008 local private PDF served as image/jpeg": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "types [{\"status\":200,\"type\":\"application/pdf\",\"isPdf\":true},{\"status\":200,\"type\":\"application/pdf\",\"isPdf\":true},{\"status\":200,\"type\":\"application/pdf\",\"isPdf\":true}]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T19:59:52.345Z"
+  },
+  "BUG-NEW-010 warmed car page survives dealer suspension": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "API"
+    ],
+    "note": "direct-API suspension (no web action): API 404; warmed car page 200 immediately (inside the 60 s window), then 200/404 after 65 s — the stale page is replaced once the window passes (#251). A console suspension clears it at once (#243).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T20:01:29.447Z"
+  },
+  "BUG-NEW-011 media width contract vs documentation": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "{\"widths\":{\"320\":200,\"500\":200,\"4000\":200,\"4001\":404},\"docSaysFixed\":false}",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-findings",
+    "at": "2026-10-04T20:01:29.496Z"
+  }
+}

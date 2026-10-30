@@ -1,0 +1,56 @@
+[
+  {
+    "results": [
+      {
+        "route": "/admin",
+        "width": 320,
+        "status": 200,
+        "sw": 431,
+        "cw": 320,
+        "signOut": true,
+        "h1": "Operations overview",
+        "ok": false
+      },
+      {
+        "route": "/admin/dealers",
+        "width": 320,
+        "status": 200,
+        "sw": 431,
+        "cw": 320,
+        "signOut": true,
+        "h1": "Dealers",
+        "ok": false
+      },
+      {
+        "route": "/admin/dealers/:id",
+        "width": 320,
+        "status": 200,
+        "sw": 431,
+        "cw": 320,
+        "signOut": true,
+        "h1": "R012Owner Motors 218820de8ec3",
+        "ok": false
+      },
+      {
+        "route": "/admin/listings",
+        "width": 320,
+        "status": 200,
+        "sw": 431,
+        "cw": 320,
+        "signOut": true,
+        "h1": "Listings",
+        "ok": false
+      },
+      {
+        "route": "/admin/listings/:id",
+        "width": 320,
+        "status": 200,
+        "sw": 431,
+        "cw": 320,
+        "signOut": true,
+        "h1": "2023 Hyundai Creta SX(O)",
+        "ok": false
+      }
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  76 passed (76)
+   Start at  17:52:27
+   Duration  5.81s (tests 56%, environment 19%, transform 18%, setup 4%, import 3%)
+

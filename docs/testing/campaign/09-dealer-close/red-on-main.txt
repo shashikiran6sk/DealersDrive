@@ -1,0 +1,304 @@
+
+ RUN  v5.0.0 /home/user/DealersDrive/apps/api
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "dealersdrive_test", schema "public" at "localhost:5432"
+
+39 migrations found in prisma/migrations
+
+Applying migration `20260903095253_identity`
+Applying migration `20260903100216_cache_shared_state`
+Applying migration `20260903100656_audit_log`
+Applying migration `20260903151511_outbox_events`
+Applying migration `20260903153022_dealers`
+Applying migration `20260903171909_platform_config`
+Applying migration `20260903175301_media`
+Applying migration `20260904090000_dealer_identity_and_locality`
+Applying migration `20260906120000_district_and_google_admin`
+Applying migration `20260906160000_dealer_maps_url`
+Applying migration `20260907120000_dealer_maps_place_id`
+Applying migration `20260909130000_drop_dealer_about`
+Applying migration `20260909160000_dealer_profile_change_review`
+Applying migration `20260910170000_drop_user_role_title`
+Applying migration `20260910180000_dealer_pan_unique`
+Applying migration `20260911090000_notification_deliveries`
+Applying migration `20260913090000_user_role_seats`
+Applying migration `20260926181711_vehicles`
+Applying migration `20260926190000_vehicle_registration_held`
+Applying migration `20260926200000_listings`
+Applying migration `20260926210000_vehicle_registration_claimed`
+Applying migration `20260926220000_listing_checks`
+Applying migration `20260926230000_vehicle_photography`
+Applying migration `20260927000000_vehicle_media`
+Applying migration `20260927010000_listing_slug`
+Applying migration `20260927100000_vehicle_search_index`
+Applying migration `20260927200000_vehicle_color`
+Applying migration `20260928000000_identity_linking`
+Applying migration `20260928100000_customer_accounts`
+Applying migration `20260928110000_enquiries`
+Applying migration `20260928120000_listing_reserved_withdrawn`
+Applying migration `20260928130000_saved_vehicles`
+Applying migration `20260930120000_listing_reactivation_requests`
+Applying migration `20261001090000_enquiry_oversight_indexes`
+Applying migration `20261001120000_support_tickets`
+Applying migration `20261001150000_support_ticket_admin`
+Applying migration `20261002090000_dealer_membership_rbac`
+Applying migration `20261002100000_session_workspace`
+Applying migration `20261002110000_dealer_invitations`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260903095253_identity/
+    └─ migration.sql
+  └─ 20260903100216_cache_shared_state/
+    └─ migration.sql
+  └─ 20260903100656_audit_log/
+    └─ migration.sql
+  └─ 20260903151511_outbox_events/
+    └─ migration.sql
+  └─ 20260903153022_dealers/
+    └─ migration.sql
+  └─ 20260903171909_platform_config/
+    └─ migration.sql
+  └─ 20260903175301_media/
+    └─ migration.sql
+  └─ 20260904090000_dealer_identity_and_locality/
+    └─ migration.sql
+  └─ 20260906120000_district_and_google_admin/
+    └─ migration.sql
+  └─ 20260906160000_dealer_maps_url/
+    └─ migration.sql
+  └─ 20260907120000_dealer_maps_place_id/
+    └─ migration.sql
+  └─ 20260909130000_drop_dealer_about/
+    └─ migration.sql
+  └─ 20260909160000_dealer_profile_change_review/
+    └─ migration.sql
+  └─ 20260910170000_drop_user_role_title/
+    └─ migration.sql
+  └─ 20260910180000_dealer_pan_unique/
+    └─ migration.sql
+  └─ 20260911090000_notification_deliveries/
+    └─ migration.sql
+  └─ 20260913090000_user_role_seats/
+    └─ migration.sql
+  └─ 20260926181711_vehicles/
+    └─ migration.sql
+  └─ 20260926190000_vehicle_registration_held/
+    └─ migration.sql
+  └─ 20260926200000_listings/
+    └─ migration.sql
+  └─ 20260926210000_vehicle_registration_claimed/
+    └─ migration.sql
+  └─ 20260926220000_listing_checks/
+    └─ migration.sql
+  └─ 20260926230000_vehicle_photography/
+    └─ migration.sql
+  └─ 20260927000000_vehicle_media/
+    └─ migration.sql
+  └─ 20260927010000_listing_slug/
+    └─ migration.sql
+  └─ 20260927100000_vehicle_search_index/
+    └─ migration.sql
+  └─ 20260927200000_vehicle_color/
+    └─ migration.sql
+  └─ 20260928000000_identity_linking/
+    └─ migration.sql
+  └─ 20260928100000_customer_accounts/
+    └─ migration.sql
+  └─ 20260928110000_enquiries/
+    └─ migration.sql
+  └─ 20260928120000_listing_reserved_withdrawn/
+    └─ migration.sql
+  └─ 20260928130000_saved_vehicles/
+    └─ migration.sql
+  └─ 20260930120000_listing_reactivation_requests/
+    └─ migration.sql
+  └─ 20261001090000_enquiry_oversight_indexes/
+    └─ migration.sql
+  └─ 20261001120000_support_tickets/
+    └─ migration.sql
+  └─ 20261001150000_support_ticket_admin/
+    └─ migration.sql
+  └─ 20261002090000_dealer_membership_rbac/
+    └─ migration.sql
+  └─ 20261002100000_session_workspace/
+    └─ migration.sql
+  └─ 20261002110000_dealer_invitations/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+seeded 1 admin and 1 dealership
+(node:4997) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ |integration| tests/dealer-close.test.ts (14 tests | 12 failed) 6565ms
+   ❯ ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application (13)
+     × closes a DRAFT application and keeps the record, members, documents and audit trail 243ms
+     × closes a PENDING_APPROVAL application and keeps the record, members, documents and audit trail 116ms
+     × sends a dedicated close email, not the rejection email 62ms
+     × shuts the members out: the open session stops working and sign-in names the closure 82ms
+     × refuses to close a ACTIVE dealership and changes nothing 87ms
+     × refuses to close a SUSPENDED dealership and changes nothing 83ms
+     × refuses to close a CLOSED dealership and changes nothing 78ms
+     × requires a reason — refuses no reason 60ms
+     × requires a reason — refuses an empty reason 61ms
+     × requires a reason — refuses a reason too short to mean anything 55ms
+     × cannot be approved or rejected once closed 53ms
+   ❯ ORIG-GAP-CLOSE — a submission queued behind a close does not reopen it (1)
+     × leaves the application CLOSED when the dealer submits while the close holds the row 5263ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > closes a DRAFT application and keeps the record, members, documents and audit trail
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > closes a PENDING_APPROVAL application and keeps the record, members, documents and audit trail
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/dealer-close.test.ts:144:44
+    142|       }
+    143|       const detail = await admin.get(`/v1/admin/dealers/${dealer.deale…
+    144|       expect(detail.body.actions.canClose).toBe(true);
+       |                                            ^
+    145|       const before = await snapshot(dealer.dealerId);
+    146|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > sends a dedicated close email, not the rejection email
+Error: expected 200 "OK", got 404 "Not Found"
+ ❯ tests/dealer-close.test.ts:187:34
+    185|     const before = h.mailer.sent.length;
+    186|
+    187|     await close(dealer.dealerId).expect(200);
+       |                                  ^
+    188|     await h.drainEmails();
+    189|
+ ❯ Test._assertStatus ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+ ❯ Test._assertFunction ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13
+ ❯ Test.assert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23
+ ❯ localAssert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:156:7
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:904:3
+ ❯ callback ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:1183:18
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/parsers/json.js:19:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > shuts the members out: the open session stops working and sign-in names the closure
+Error: expected 200 "OK", got 404 "Not Found"
+ ❯ tests/dealer-close.test.ts:200:34
+    198|     await dealer.agent.get('/v1/dealer').expect(200);
+    199|
+    200|     await close(dealer.dealerId).expect(200);
+       |                                  ^
+    201|
+    202|     await dealer.agent.get('/v1/dealer').expect(401);
+ ❯ Test._assertStatus ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+ ❯ Test._assertFunction ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13
+ ❯ Test.assert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23
+ ❯ localAssert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:156:7
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:904:3
+ ❯ callback ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:1183:18
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/parsers/json.js:19:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > refuses to close a ACTIVE dealership and changes nothing
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > refuses to close a SUSPENDED dealership and changes nothing
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > refuses to close a CLOSED dealership and changes nothing
+AssertionError: expected { Object (canClose, http, ...) } to deeply equal { canClose: false, http: 422, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "canClose": false,
+-   "code": "INVALID_DEALER_TRANSITION",
+-   "http": 422,
++   "canClose": undefined,
++   "code": "NOT_FOUND",
++   "http": 404,
+  }
+
+ ❯ tests/dealer-close.test.ts:235:10
+    233|         http: response.status,
+    234|         code: response.body.code,
+    235|       }).toEqual({ canClose: false, http: 422, code: 'INVALID_DEALER_T…
+       |          ^
+    236|       expect(await snapshot(dealer.dealerId)).toEqual(before);
+    237|       expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > requires a reason — refuses no reason
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > requires a reason — refuses an empty reason
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > requires a reason — refuses a reason too short to mean anything
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/dealer-close.test.ts:254:29
+    252|     const response = await close(dealer.dealerId, body);
+    253|
+    254|     expect(response.status).toBe(400);
+       |                             ^
+    255|     expect((await snapshot(dealer.dealerId)).status).toBe('DRAFT');
+    256|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — an Admin closes a DRAFT or in-review application > cannot be approved or rejected once closed
+Error: expected 200 "OK", got 404 "Not Found"
+ ❯ tests/dealer-close.test.ts:275:34
+    273|   it('cannot be approved or rejected once closed', async () => {
+    274|     const dealer = await fixtures.dealership('PENDING_APPROVAL');
+    275|     await close(dealer.dealerId).expect(200);
+       |                                  ^
+    276|
+    277|     const approve = await admin.post(`/v1/admin/dealers/${dealer.deale…
+ ❯ Test._assertStatus ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+ ❯ Test._assertFunction ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13
+ ❯ Test.assert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23
+ ❯ localAssert ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14
+ ❯ ../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:156:7
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:904:3
+ ❯ callback ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/index.js:1183:18
+ ❯ fn ../../node_modules/.pnpm/superagent@10.3.0/node_modules/superagent/src/node/parsers/json.js:19:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |integration| tests/dealer-close.test.ts > ORIG-GAP-CLOSE — a submission queued behind a close does not reopen it > leaves the application CLOSED when the dealer submits while the close holds the row
+Error: Expected 1 dealer lock waiters
+ ❯ waitForDealerLockWaiters tests/dealer-close.test.ts:332:9
+    330|     await pause(20);
+    331|   }
+    332|   throw new Error(`Expected ${String(count)} dealer lock waiters`);
+       |         ^
+    333| }
+    334|
+ ❯ tests/dealer-close.test.ts:303:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 2 passed (14)
+   Start at  18:12:56
+   Duration  14.39s (tests 68%, transform 24%, import 8%)
+

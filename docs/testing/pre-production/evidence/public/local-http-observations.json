@@ -1,0 +1,74 @@
+{
+  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "scope": "Single-process loopback synthetic smoke; not a load test or production SLA",
+  "samples": [
+    {
+      "path": "/",
+      "http": 200,
+      "samples": [52.48, 11.76, 9.98, 23.02, 19.14, 15.71],
+      "median_ms": 19,
+      "max_ms": 52,
+      "bytes": 108533,
+      "title": "Dealers-Drive | Used Cars from Verified Independent Dealers",
+      "hasDescription": true,
+      "canonical": "http://localhost:3000",
+      "jsonLdBlocks": 2
+    },
+    {
+      "path": "/cars",
+      "http": 200,
+      "samples": [34.38, 19.35, 30.81, 20.68, 16.79, 19.76],
+      "median_ms": 21,
+      "max_ms": 34,
+      "bytes": 80613,
+      "title": "Used Cars for Sale | Dealers-Drive",
+      "hasDescription": true,
+      "canonical": "http://localhost:3000/cars",
+      "jsonLdBlocks": 2
+    },
+    {
+      "path": "/car/2023-hyundai-creta-sx-o-katpadi-659cfc1d",
+      "http": 200,
+      "samples": [20.89, 20, 25.78, 18.8, 16.84, 13.86],
+      "median_ms": 20,
+      "max_ms": 26,
+      "bytes": 69871,
+      "title": "2023 Hyundai Creta SX(O) in Katpadi | Dealers-Drive",
+      "hasDescription": true,
+      "canonical": "http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-659cfc1d",
+      "jsonLdBlocks": 2
+    },
+    {
+      "path": "/dealers",
+      "http": 200,
+      "samples": [15.22, 13.23, 14.39, 13.22, 13.49, 13.5],
+      "median_ms": 13,
+      "max_ms": 15,
+      "bytes": 44432,
+      "title": "Used Car Dealers | Dealers-Drive",
+      "hasDescription": true,
+      "canonical": "http://localhost:3000/dealers",
+      "jsonLdBlocks": 2
+    },
+    {
+      "path": "/robots.txt",
+      "http": 200,
+      "samples": [7.54, 3.22, 2.77, 3.91, 2.74, 2.97],
+      "median_ms": 3,
+      "max_ms": 8,
+      "bytes": 27,
+      "containsLoopbackOrigin": false,
+      "content": "User-Agent: *\nDisallow: /\n\n"
+    },
+    {
+      "path": "/sitemap.xml",
+      "http": 200,
+      "samples": [14.92, 3.69, 3.87, 5.03, 2.95, 2.76],
+      "median_ms": 4,
+      "max_ms": 15,
+      "bytes": 1454,
+      "containsLoopbackOrigin": true,
+      "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n<loc>http://localhost:3000/</loc>\n</url>\n<url>\n<loc>http://localhost:3000/cars</loc>\n</url>\n<url>\n<loc>http://localhost:3000/dealers</loc>\n</url>\n<url>\n<loc>http://localhost:3000/contact</loc>\n</url>\n<url>\n<loc>http://localhost:3000/cars?district=vellore</loc>\n</url>\n<url>\n<loc>http://localhost:3000/dealers?district=vellore</loc>\n</url>\n<url>\n<loc>http://localhost:3000/dealers/certification-motors-2-1790945257986-katpadi-vellore-tamil-nadu</loc>\n<lastmod>2026-10-02T16:09:07.497Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/dealers/certification-motors-3-1790945258080-katpadi-vellore-tamil-nadu</loc>\n<lastmod>2026-10-02T12:47:38.764Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-659cfc1d</loc>\n<lastmod>2026-10-02T16:09:07.497Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-b9eb5e1e</loc>\n<lastmod>2026-10-02T12:47:39.044Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-ab592001</loc>\n<lastmod>2026-10-02T12:47:38.764Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-0e94c97e</loc>\n<lastmod>2026-10-02T12:47:38.650Z</lastmod>\n</url>\n<url>\n<loc>http://localhost:3000/car/2023-hyundai-creta-sx-o-katpadi-9610856b</loc>\n<lastmod>2026-10-02T12:47:38.528Z</lastmod>\n</url>\n</urlset>\n"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+
+> @dealers-drive/contracts@0.0.0 test /workspace/DealersDrive/packages/contracts
+> vitest run --coverage
+
+
+ RUN  v5.0.3 /workspace/DealersDrive/packages/contracts
+      Coverage enabled with v8
+
+
+ Test Files  16 passed (16)
+      Tests  429 passed (429)
+   Start at  06:14:22
+   Duration  12.51s (import 56%, transform 21%, tests 11%, worker 11%)
+
+     Import  40 modules were evaluated 57 times · 3.78s total, 56% of tracked time
+             ~1.13s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 98.15% ( 690/703 )
+Branches     : 93.75% ( 240/256 )
+Functions    : 95.83% ( 92/96 )
+Lines        : 98.64% ( 653/662 )
+================================================================================

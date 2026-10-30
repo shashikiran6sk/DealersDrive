@@ -1,0 +1,10 @@
+{
+  "baseline_sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "canonical_source_verbatim": true,
+  "baseline_verifier_on_original_commit": "PASS",
+  "baseline_verifier_output_unchanged": true,
+  "archived_files_checked": 162,
+  "baseline_registry_and_evidence_unchanged": true,
+  "current_report_updates": "prepended; complete original text retained",
+  "fixed_tree_policy": "Archived verifier intentionally requires the baseline HEAD; it does not certify a fixed branch."
+}

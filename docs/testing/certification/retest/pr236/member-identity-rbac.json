@@ -1,0 +1,952 @@
+{
+  "MEMBER-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "onboarding owner holds OWNER membership (migration/creation)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.565Z"
+  },
+  "MEMBER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites existing customer as MANAGER; accept joins as MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.609Z"
+  },
+  "MEMBER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites existing customer as STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.650Z"
+  },
+  "MEMBER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER invites an unregistered phone → PENDING invitation held against the number",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.661Z"
+  },
+  "MEMBER-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "inviting an existing customer creates no duplicate user (one row before and after)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.718Z"
+  },
+  "MEMBER-006": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "member joins with just phone identity proof (no dealer KYC) and reaches the console",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.796Z"
+  },
+  "MEMBER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "accepted invitation joins the inviting dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.852Z"
+  },
+  "MEMBER-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "one membership row per person per dealership (1); re-invite does not fork",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.911Z"
+  },
+  "MEMBER-009": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "re-inviting a pending number amends the one PENDING row (partial unique index); 1 pending",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.936Z"
+  },
+  "MEMBER-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "expired invitation rejected → 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:42.971Z"
+  },
+  "MEMBER-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "revoked invitation cannot be accepted → 409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.023Z"
+  },
+  "MEMBER-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "invitation matched to the session's verified number; a different person → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.055Z"
+  },
+  "MEMBER-013": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "second accept → 409; one membership row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.105Z"
+  },
+  "MEMBER-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER changes MANAGER → STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.137Z"
+  },
+  "MEMBER-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER changes STAFF → MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.162Z"
+  },
+  "MEMBER-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "role change takes effect on the next request: demoted MANAGER→STAFF submit → 403 (session re-read, no wait)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.296Z"
+  },
+  "MEMBER-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "OWNER removes a member → row REMOVED with removedAt (kept for attribution)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.359Z"
+  },
+  "MEMBER-018": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "removed member immediately loses dealership access (dashboard + inventory → 401) using the same session",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.415Z"
+  },
+  "MEMBER-019": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "membership (not session) is what gates dealer access: dealer → 401, customer /me → 200, session revokedAt=false",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.475Z"
+  },
+  "MEMBER-020": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member remains a valid customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.520Z"
+  },
+  "MEMBER-021": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member can browse normally",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.621Z"
+  },
+  "MEMBER-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member keeps personal saved cars",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.698Z"
+  },
+  "MEMBER-023": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member keeps personal enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.773Z"
+  },
+  "MEMBER-024": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "removed member cannot enter former dealer dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.829Z"
+  },
+  "MEMBER-025": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft created by a since-removed member stays owned by the dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:43.911Z"
+  },
+  "MEMBER-026": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "removing a member does not delete the listings/drafts they created",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.022Z"
+  },
+  "MEMBER-027": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "removing a member keeps enquiries they handled, with contactedById intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.600Z"
+  },
+  "MEMBER-028": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "member removal leaves dealership listings untouched",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.651Z"
+  },
+  "MEMBER-029": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot invite → 403 (member:manage is OWNER-only)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.656Z"
+  },
+  "MEMBER-030": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot change roles → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.660Z"
+  },
+  "MEMBER-031": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot remove members → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.664Z"
+  },
+  "MEMBER-032": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage members (invite 403, team list 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.673Z"
+  },
+  "MEMBER-033": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "last OWNER cannot remove themselves → 409 OWNER_LOCKED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.680Z"
+  },
+  "MEMBER-034": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "last OWNER cannot demote themselves → 409 OWNER_LOCKED (OWNER not an assignable role)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.691Z"
+  },
+  "MEMBER-035": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct member-management API calls by STAFF → 403/403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.699Z"
+  },
+  "IDENTITY-001": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "OWNER's ordinary customer sign-in reaches the dealer console; workspaces lists their dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.725Z"
+  },
+  "IDENTITY-002": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "MANAGER reaches console via customer login, /me role MANAGER",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.748Z"
+  },
+  "IDENTITY-003": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "STAFF reaches console via customer login, /me role STAFF",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.773Z"
+  },
+  "IDENTITY-004": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "customer with no membership is denied the dealer console → 401; workspaces empty (never offered onboarding)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.796Z"
+  },
+  "IDENTITY-005": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "one session answers both customer and dealer reads — personal → dealer needs no second OTP",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.813Z"
+  },
+  "IDENTITY-006": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "Dealer → Personal is the same session (see IDENTITY-005); the customer and dealer reads share one cookie, no OTP to switch back.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.814Z"
+  },
+  "IDENTITY-007": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "switching context creates no duplicate user (one user row for the phone)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.829Z"
+  },
+  "IDENTITY-008": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "IDENTITY"],
+    "note": "an owner's personal enquiry is owned by their user id (customerId), tied to the target dealer, not their own dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.853Z"
+  },
+  "IDENTITY-009": {
+    "status": "PASS",
+    "layers": ["DATABASE", "IDENTITY"],
+    "note": "dealer action (create vehicle) is stamped with the dealership; actor is the session user",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.869Z"
+  },
+  "IDENTITY-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "revocation during an open dealer context: next dealer request → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:44.945Z"
+  },
+  "IDENTITY-011": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "revocation does not terminate customer access",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.000Z"
+  },
+  "IDENTITY-012": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "dealer suspension blocks dealer ops (401) but preserves personal customer access (200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.249Z"
+  },
+  "IDENTITY-013": {
+    "status": "PASS",
+    "layers": ["API", "IDENTITY"],
+    "note": "two memberships; switching by membershipId resolves the right dealer + role (B as MANAGER)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.347Z"
+  },
+  "IDENTITY-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY", "IDENTITY"],
+    "note": "switch takes a membershipId the caller owns, never a dealer id: passing A's dealerId → 404, a fabricated membership → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.375Z"
+  },
+  "OWNER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER accesses dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.386Z"
+  },
+  "OWNER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages listings (inventory + lifecycle)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.433Z"
+  },
+  "OWNER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.443Z"
+  },
+  "OWNER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER edits dealership profile",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.459Z"
+  },
+  "OWNER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages verification documents",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.464Z"
+  },
+  "OWNER-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER manages Team",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.474Z"
+  },
+  "OWNER-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER of A cannot access B's resources (B draft GET 404, PATCH 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.487Z"
+  },
+  "OWNER-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "OWNER cannot perform admin-only ops (approve 401, admin list 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.493Z"
+  },
+  "MANAGER-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER accesses dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.504Z"
+  },
+  "MANAGER-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER views inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.515Z"
+  },
+  "MANAGER-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER creates/edits drafts",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.553Z"
+  },
+  "MANAGER-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER submits an eligible listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.600Z"
+  },
+  "MANAGER-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER performs allowed lifecycle transitions (reserve)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:45.997Z"
+  },
+  "MANAGER-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER views enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.004Z"
+  },
+  "MANAGER-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER marks CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.435Z"
+  },
+  "MANAGER-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER closes enquiry",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.857Z"
+  },
+  "MANAGER-009": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot edit protected dealer profile → 403 (dealer:update is OWNER-only)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.861Z"
+  },
+  "MANAGER-010": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot manage verification (docs 403, presign 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.870Z"
+  },
+  "MANAGER-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot manage Team → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.875Z"
+  },
+  "MANAGER-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot access admin → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.877Z"
+  },
+  "MANAGER-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot access another dealer's resources → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.883Z"
+  },
+  "STAFF-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF accesses permitted dashboard",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.893Z"
+  },
+  "STAFF-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF views inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.901Z"
+  },
+  "STAFF-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.913Z"
+  },
+  "STAFF-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.928Z"
+  },
+  "STAFF-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot submit → 403 (listing:submit is OWNER/MANAGER)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:46.932Z"
+  },
+  "STAFF-006": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot RESERVE → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.367Z"
+  },
+  "STAFF-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot mark SOLD → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.371Z"
+  },
+  "STAFF-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot WITHDRAW → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.375Z"
+  },
+  "STAFF-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF views enquiries",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.382Z"
+  },
+  "STAFF-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF sees required enquiry contact details (customer phone)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.394Z"
+  },
+  "STAFF-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF marks NEW → CONTACTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:47.812Z"
+  },
+  "STAFF-012": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot close → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.222Z"
+  },
+  "STAFF-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot edit dealer profile → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.226Z"
+  },
+  "STAFF-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage verification → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.230Z"
+  },
+  "STAFF-015": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot manage Team → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.234Z"
+  },
+  "STAFF-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot access admin → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.236Z"
+  },
+  "STAFF-017": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot access another dealer's resources → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.241Z"
+  },
+  "PROFILE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER updates permitted profile information (self-update accepted; tagline change queued for review)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.270Z"
+  },
+  "PROFILE-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "MANAGER cannot update owner-only profile fields → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.274Z"
+  },
+  "PROFILE-003": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot update dealer profile → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.278Z"
+  },
+  "PROFILE-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "profile tagline change queued for review (PENDING); after admin approval the public profile reflects it",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.325Z"
+  },
+  "PROFILE-005": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "GSTIN not accepted via the self-update endpoint while ACTIVE → 400 (not in DealerSelfUpdateInput)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.330Z"
+  },
+  "PROFILE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid profile values rejected (year<1900 → 400, tagline<10 → 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.339Z"
+  },
+  "PROFILE-007": {
+    "status": "PASS",
+    "layers": ["DATABASE", "SECURITY"],
+    "note": "dealer media storage key is namespaced under the dealer's own slug",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.392Z"
+  },
+  "PROFILE-008": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "profile updates audit-logged: dealer.profile_change.approved, dealer.profile_change.submitted, dealer.profile_change.withdrawn",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "member-identity-rbac",
+    "at": "2026-10-04T13:55:48.393Z"
+  }
+}

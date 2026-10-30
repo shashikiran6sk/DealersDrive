@@ -1,0 +1,1 @@
+Verified persisted reply, scrolling, configuration mutation/restore and desktop; recaptured sanitized screenshots.

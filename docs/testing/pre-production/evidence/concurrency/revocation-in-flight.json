@@ -1,0 +1,17 @@
+[
+  {
+    "id": "AUTH-DISC-001",
+    "canonical": ["CONCURRENCY-007", "CROSS-019"],
+    "title": "Revocation before a blocked submission commits",
+    "status": "FAIL",
+    "observed": {
+      "lockWaitProven": true,
+      "revocationHttp": 204,
+      "member": "REMOVED",
+      "submissionHttp": 200,
+      "listing": "PENDING_REVIEW",
+      "nextDealerRequest": 401
+    },
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+  }
+]

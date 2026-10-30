@@ -1,0 +1,20 @@
+{
+  "label": "main",
+  "path": "Admin console Suspend button (server action)",
+  "warm": [
+    200,
+    200
+  ],
+  "dealerPageWarm": 200,
+  "apiAfterSuspend": 404,
+  "carPageAfterSuspend": [
+    200,
+    200
+  ],
+  "carPageAfter65s": [
+    200,
+    200
+  ],
+  "dealerPageAfterSuspend": 404,
+  "verdict": "FAIL"
+}

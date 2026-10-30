@@ -1,0 +1,39 @@
+{
+  "stage": "pre-pr",
+  "browser": "155.0.8059.39",
+  "results": [
+    {
+      "width": 320,
+      "route": "/sales/dealers/new",
+      "duplicateError": true,
+      "emailInvalid": true,
+      "overflow": false,
+      "detailsPreservedAfterRenewal": true
+    },
+    {
+      "width": 390,
+      "route": "/sales/dealers/new",
+      "duplicateError": true,
+      "emailInvalid": true,
+      "overflow": false,
+      "detailsPreservedAfterRenewal": true
+    },
+    {
+      "width": 768,
+      "route": "/sales/dealers/new",
+      "duplicateError": true,
+      "emailInvalid": true,
+      "overflow": false,
+      "detailsPreservedAfterRenewal": true
+    },
+    {
+      "width": 1280,
+      "route": "/sales/dealers/new",
+      "duplicateError": true,
+      "emailInvalid": true,
+      "overflow": false,
+      "detailsPreservedAfterRenewal": true
+    }
+  ],
+  "privacy": "Synthetic database only; government identifier fields/contact text masked; session file and OTP values excluded."
+}

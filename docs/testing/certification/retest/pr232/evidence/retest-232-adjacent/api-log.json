@@ -1,0 +1,89 @@
+[
+  {
+    "req": "POST /v1/admin/dealers/75d0107e-054f-4c3d-8fb1-9bf1af973057/approve",
+    "status": 200,
+    "body": {
+      "id": "75d0107e-054f-4c3d-8fb1-9bf1af973057",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:04:41.978Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/75d0107e-054f-4c3d-8fb1-9bf1af973057/suspend",
+    "status": 200,
+    "body": {
+      "id": "75d0107e-054f-4c3d-8fb1-9bf1af973057",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:04:41.996Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/75d0107e-054f-4c3d-8fb1-9bf1af973057/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "XJ2wsMzqJr",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/75d0107e-054f-4c3d-8fb1-9bf1af973057/reinstate",
+    "status": 200,
+    "body": {
+      "id": "75d0107e-054f-4c3d-8fb1-9bf1af973057",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:04:42.019Z"
+    }
+  },
+  {
+    "a1": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    },
+    "a2": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    },
+    "audits": [
+      "dealer.onboarding.created",
+      "dealer.approved",
+      "dealer.suspended",
+      "dealer.reinstated"
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/bc9461b6-fd68-43c5-b432-0e9c24b4ee56/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/documents-not-verified",
+      "title": "Documents not verified",
+      "status": 422,
+      "code": "DOCUMENTS_NOT_VERIFIED",
+      "traceId": "YVDleq5IM7",
+      "detail": "Verify all three uploaded KYC documents before approving this dealership."
+    }
+  },
+  {
+    "before": {
+      "status": "PENDING_APPROVAL"
+    },
+    "after": {
+      "status": "PENDING_APPROVAL"
+    }
+  }
+]

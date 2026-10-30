@@ -1,0 +1,25 @@
+@dealers-drive/web:build: ├ ƒ /sales/dealers                                     167 B         106 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]                              5.48 kB         170 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]/vehicles/[vehicleId]/edit      213 B         185 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/[id]/vehicles/new                   213 B         185 kB
+@dealers-drive/web:build: ├ ƒ /sales/dealers/new                               5.84 kB         172 kB
+@dealers-drive/web:build: ├ ƒ /saved                                           1.57 kB         116 kB
+@dealers-drive/web:build: ├ ƒ /sitemap.xml                                       207 B         103 kB
+@dealers-drive/web:build: ├ ƒ /support-requests                                  231 B         166 kB
+@dealers-drive/web:build: ├ ƒ /support-requests/[id]                             231 B         166 kB
+@dealers-drive/web:build: └ ƒ /support-requests/new                              231 B         166 kB
+@dealers-drive/web:build: + First Load JS shared by all                         103 kB
+@dealers-drive/web:build:   ├ chunks/2406-c239329ea3fcdffa.js                  46.6 kB
+@dealers-drive/web:build:   ├ chunks/938c6ab6-3f94b23de08d27df.js              54.2 kB
+@dealers-drive/web:build:   └ other shared chunks (total)                      1.94 kB
+@dealers-drive/web:build: 
+@dealers-drive/web:build: 
+@dealers-drive/web:build: ○  (Static)   prerendered as static content
+@dealers-drive/web:build: ƒ  (Dynamic)  server-rendered on demand
+@dealers-drive/web:build: 
+
+ Tasks:    3 successful, 3 total
+Cached:    1 cached, 3 total
+  Time:    1m14.061s 
+
+BUILD_EXIT 0

@@ -1,0 +1,85 @@
+{
+  "stage": "post-numeric",
+  "browser": "155.0.8059.39",
+  "results": [
+    {
+      "width": 320,
+      "permittedStates": [
+        "Tamil Nadu"
+      ],
+      "districtCount": 38,
+      "keyboardSelection": true,
+      "firstSelectionVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "adminConfiguredStates": 36,
+      "serviceLocationSectionFitsViewport": true
+    },
+    {
+      "width": 390,
+      "permittedStates": [
+        "Tamil Nadu"
+      ],
+      "districtCount": 38,
+      "keyboardSelection": true,
+      "firstSelectionVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "adminConfiguredStates": 36,
+      "serviceLocationSectionFitsViewport": true
+    },
+    {
+      "width": 768,
+      "permittedStates": [
+        "Tamil Nadu"
+      ],
+      "districtCount": 38,
+      "keyboardSelection": true,
+      "firstSelectionVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "adminConfiguredStates": 36,
+      "serviceLocationSectionFitsViewport": true
+    },
+    {
+      "width": 1280,
+      "persistedRegistration": true,
+      "canonicalAddress": {
+        "state": "Tamil Nadu",
+        "district": "Vellore",
+        "city": "Katpadi"
+      }
+    },
+    {
+      "width": 1280,
+      "permittedStates": [
+        "Tamil Nadu"
+      ],
+      "districtCount": 38,
+      "keyboardSelection": true,
+      "firstSelectionVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "actualConfigurationPersistence": true,
+      "photographyIndependent": true,
+      "availabilityReflectedImmediately": true,
+      "numericDistrictUiSelection": "North 24 Parganas"
+    },
+    {
+      "width": 1280,
+      "adminConfiguredStates": 36,
+      "serviceLocationSectionFitsViewport": true
+    }
+  ],
+  "runtimeErrors": [],
+  "publicLocationRoutes": "PASS",
+  "privacy": "Synthetic local fixtures only. OTPs, sessions and personal identifier fields excluded from evidence."
+}

@@ -1,0 +1,11 @@
+{
+  "setup": "two ACTIVE Maruti Suzuki vehicles in the local dev DB set to 'MARUTI SUZUKI INDIA LTD' and 'Maruti'; restored to 'Maruti Suzuki' afterwards",
+  "before": { "marutiFacets": [["maruti-suzuki", "Maruti Suzuki", 70]], "brandFilterTotal": 70 },
+  "after": { "marutiFacets": [["maruti-suzuki", "Maruti Suzuki", 70]], "brandFilterTotal": 70 },
+  "textSearchVsBrandFilter": {
+    "q=brezza": 15,
+    "q=brezza&brand=maruti-suzuki": 15,
+    "q=wagon": 12,
+    "q=wagon&brand=maruti-suzuki": 12
+  }
+}
