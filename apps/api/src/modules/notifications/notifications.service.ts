@@ -3,7 +3,9 @@ import {
   DOCUMENT_GAP_LABELS,
   documentRequirement,
   isVerifiedDocument,
+  formatDate,
   formatRegistration,
+  istDayStart,
   supportTicketReference,
   SupportTicketStatus,
   vehicleTitle,
@@ -24,6 +26,7 @@ import { NOTIFICATION_RULES, payloadOf, type NotificationRule } from './notifica
 import {
   render,
   type EnquiryContext,
+  type EnquiryDigestDealer,
   type ListingContext,
   type TemplateContext,
   type TemplateName,
@@ -51,6 +54,26 @@ export interface EmailJob extends Record<string, unknown> {
 }
 
 export const MAX_DELIVERY_ATTEMPTS = 6;
+
+export const ENQUIRY_DIGEST_CRON = '31 8 * * *';
+export const ENQUIRY_DIGEST_PERMISSION = 'admin:enquiry:read';
+
+const IST_OFFSET_MS = 330 * 60_000;
+const DAY_MS = 86_400_000;
+
+export function previousIstDay(now: Date): string {
+  return new Date(now.getTime() + IST_OFFSET_MS - DAY_MS).toISOString().slice(0, 10);
+}
+
+export function enquiryDigestJob(day: string): EmailJob {
+  return {
+    template: 'admin.enquiry.digest',
+    dealerId: null,
+    audience: 'admin',
+    subjectId: day,
+    permission: ENQUIRY_DIGEST_PERMISSION,
+  };
+}
 
 export function createNotificationsService({ prisma, queue, mailer }: NotificationsDeps) {
   async function enqueue(job: EmailJob): Promise<void> {
@@ -83,14 +106,24 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pg-boss hands job data back untyped
         await handleEmailJob(data as unknown as EmailJob);
       });
+      await queue.work('notifications.enquiry-digest', async () => {
+        await enqueue(enquiryDigestJob(previousIstDay(new Date())));
+      });
+      await queue.schedule('notifications.enquiry-digest', ENQUIRY_DIGEST_CRON);
     },
 
     handleEmailJob,
+    sendEnquiryDigest,
   };
 
   async function handleEmailJob(job: EmailJob): Promise<void> {
     if (job.ticketId) {
       await sendTicketMail(job, job.ticketId);
+      return;
+    }
+
+    if (job.template === 'admin.enquiry.digest') {
+      await sendEnquiryDigest(job.subjectId);
       return;
     }
 
@@ -378,6 +411,62 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       );
 
       if (!permanent) throw error;
+    }
+  }
+
+  async function sendEnquiryDigest(day: string): Promise<void> {
+    const from = istDayStart(day);
+    const enquiries = await prisma.enquiry.findMany({
+      where: { createdAt: { gte: from, lt: new Date(from.getTime() + DAY_MS) } },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        dealerId: true,
+        dealer: { select: { brandName: true } },
+        listing: {
+          select: {
+            vehicle: {
+              select: {
+                manufacturingYear: true,
+                make: true,
+                model: true,
+                variant: true,
+                registrationNumber: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (enquiries.length === 0) {
+      logger.info({ template: 'admin.enquiry.digest', day }, 'enquiry digest skipped — none');
+      return;
+    }
+
+    const byDealer = new Map<string, EnquiryDigestDealer>();
+    for (const enquiry of enquiries) {
+      const vehicle = enquiry.listing.vehicle;
+      const car = vehicleTitle(vehicle) || formatRegistration(vehicle.registrationNumber);
+      const entry = byDealer.get(enquiry.dealerId) ?? {
+        name: enquiry.dealer.brandName,
+        count: 0,
+        cars: [],
+      };
+      entry.count += 1;
+      if (!entry.cars.includes(car)) entry.cars.push(car);
+      byDealer.set(enquiry.dealerId, entry);
+    }
+    const dealers = [...byDealer.values()].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+    );
+
+    const job = enquiryDigestJob(day);
+    const context: TemplateContext = {
+      dealerName: 'Dealers-Drive',
+      contactName: null,
+      digest: { dayLabel: formatDate(`${day}T00:00:00.000Z`), total: enquiries.length, dealers },
+    };
+    for (const recipient of await adminRecipients(ENQUIRY_DIGEST_PERMISSION)) {
+      await sendOne(job, recipient, context, null);
     }
   }
 

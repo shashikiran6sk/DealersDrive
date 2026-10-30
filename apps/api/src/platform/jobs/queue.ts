@@ -26,6 +26,7 @@ export const JOB_NAMES = [
   'notification.dealer-reviewed',
   'notification.invoice',
   'notification.email',
+  'notifications.enquiry-digest',
   'listings.expire-sweep',
   'counters.reconcile',
   'cache.sweep-counters',

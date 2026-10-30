@@ -40,6 +40,7 @@ const ALL: TemplateName[] = [
   'dealer.listing.reactivation-approved',
   'dealer.listing.reactivation-rejected',
   'dealer.enquiry.received',
+  'admin.enquiry.digest',
   'admin.support.ticket-created',
   'customer.support.ticket-received',
   'customer.support.ticket-status',
@@ -69,6 +70,14 @@ const CONTEXT = {
     subject: 'The dealer has not called me back',
     category: 'DEALER_ISSUE' as const,
     status: 'WAITING_FOR_CUSTOMER' as const,
+  },
+  digest: {
+    dayLabel: '27 Oct 2026',
+    total: 3,
+    dealers: [
+      { name: 'Sri Lakshmi Motors', count: 2, cars: ['2022 Hyundai Creta SX'] },
+      { name: 'Vellore Car Bazaar', count: 1, cars: ['2019 Maruti Suzuki Swift VXi'] },
+    ],
   },
 };
 
@@ -315,5 +324,30 @@ describe('approval emails say only what is true (#299 L8)', () => {
     });
 
     expect(email.text).toContain('Upload your Business Identity Proof so our team can review it.');
+  });
+});
+
+describe('the daily enquiry summary', () => {
+  it('counts the day and lists each dealership with its cars', () => {
+    const email = render('admin.enquiry.digest', CONTEXT);
+    expect(email.subject).toBe('3 enquiries on 27 Oct 2026 — Dealers-Drive');
+    expect(email.text).toContain('Customers sent 3 enquiries to 2 dealerships.');
+    expect(email.text).toContain('Sri Lakshmi Motors — 2: 2022 Hyundai Creta SX');
+    expect(email.text).toContain('Vellore Car Bazaar — 1: 2019 Maruti Suzuki Swift VXi');
+    expect(email.html).toContain('/admin/enquiries');
+  });
+
+  it('speaks in the singular, and escapes a dealership name', () => {
+    const email = render('admin.enquiry.digest', {
+      ...CONTEXT,
+      digest: {
+        dayLabel: '27 Oct 2026',
+        total: 1,
+        dealers: [{ name: '<b>Motors</b>', count: 1, cars: ['2019 Swift'] }],
+      },
+    });
+    expect(email.subject).toBe('1 enquiry on 27 Oct 2026 — Dealers-Drive');
+    expect(email.text).toContain('Customers sent 1 enquiry to 1 dealership.');
+    expect(email.html).not.toContain('<b>Motors</b>');
   });
 });
