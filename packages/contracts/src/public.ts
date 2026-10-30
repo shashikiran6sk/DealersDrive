@@ -170,7 +170,7 @@ export type DealerDirectoryQuery = z.infer<typeof DealerDirectoryQuery>;
  * be a decision each component author takes again.
  *
  * There is **no phone number here, and no email**. The only route that returns
- * a dealer's number is `POST /v1/vehicles/:id/reveal-contact`, and it is
+ * a dealer's number is `POST /v1/vehicles/:slug/reveal-contact`, and it is
  * deliberately a POST so it can be rate-limited and logged as a lead
  * (AGENTS.md rule 7).
  */
@@ -1014,6 +1014,7 @@ export const PublicVehicleDetail = z.object({
     slug: z.string(),
     initials: z.string(),
     isVerified: z.boolean(),
+    canCall: z.boolean().optional(),
     location: z.string().nullable(),
     /** The parts `location` is joined from, for the title and structured data. */
     city: z.string().nullable(),

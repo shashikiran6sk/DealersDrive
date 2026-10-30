@@ -93,6 +93,7 @@ export const detailInclude = {
   },
   dealer: {
     select: {
+      landlineApprovedAt: true,
       status: true,
       verificationStatus: true,
       brandName: true,

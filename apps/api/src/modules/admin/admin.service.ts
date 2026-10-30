@@ -19,6 +19,7 @@ import {
   formatDate,
   formatPhone,
   formatRupees,
+  normaliseDealerContact,
   initialsOf,
   timeAgo,
   type AdminAccessEntry,
@@ -31,6 +32,7 @@ import {
   type AdminProfileChange,
   type AdminProfileChangesResponse,
   type ApproveDealerInput,
+  type CustomerContactApprovalResponse,
   type DealerOnboardingProvenance,
   type ConfigResponse,
   type GrantAdminAccessInput,
@@ -85,6 +87,7 @@ import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
 import {
   CLOSED_NOT_REJECTABLE,
   CONTACT_NOT_VERIFIED,
+  CUSTOMER_CONTACT_MISSING,
   DEALER_NOT_CLOSABLE,
   DEALER_NOT_FOUND,
 } from './admin.messages.js';
@@ -186,11 +189,19 @@ function toAdminProfileChange(
     status: ProfileChangeStatus;
     tagline: string | null;
     taglineChanged?: boolean;
+    landline?: string | null;
+    landlineChanged?: boolean;
     specialities: string[];
     createdAt: Date;
     decisionReason: string | null;
   },
-  dealer: { slug: string; brandName: string; tagline: string | null; specialities: string[] },
+  dealer: {
+    slug: string;
+    brandName: string;
+    tagline: string | null;
+    specialities: string[];
+    landline?: string | null;
+  },
   now: Date = new Date(),
 ): AdminProfileChange {
   return {
@@ -205,6 +216,9 @@ function toAdminProfileChange(
     tagline: row.tagline,
     taglineChanged: row.taglineChanged || row.tagline !== null,
     specialities: row.specialities,
+    landline: row.landline ?? null,
+    landlineChanged: row.landlineChanged ?? false,
+    liveLandline: dealer.landline ?? null,
     liveTagline: dealer.tagline,
     liveSpecialities: distinctServices(dealer.specialities),
     submittedAt: row.createdAt.toISOString(),
@@ -552,6 +566,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
         landline: dealer.landline,
+        landlineApprovedAt: dealer.landlineApprovedAt?.toISOString() ?? null,
         tagline: dealer.tagline,
         specialities: distinctServices(dealer.specialities),
         joinedLabel: formatDate(dealer.createdAt),
@@ -676,6 +691,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           data: {
             status: 'ACTIVE',
             approvedAt: new Date(),
+            landlineApprovedAt: dealer.landline && dealer.landlineConfirmedAt ? new Date() : null,
             statusReason: null,
             activationMethod: 'STANDARD',
           },
@@ -1251,6 +1267,65 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       };
     },
 
+    async approveCustomerContact(
+      admin: AdminPrincipal,
+      dealerId: string,
+    ): Promise<CustomerContactApprovalResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          select: {
+            id: true,
+            slug: true,
+            landline: true,
+            landlineConfirmedAt: true,
+            landlineApprovedAt: true,
+          },
+        });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        const landline = dealer.landline ? normaliseDealerContact(dealer.landline) : null;
+        if (!landline) {
+          throw new ConflictError('CUSTOMER_CONTACT_MISSING', CUSTOMER_CONTACT_MISSING);
+        }
+        if (dealer.landlineApprovedAt && dealer.landline === landline) {
+          return {
+            dealerId,
+            dealerSlug: dealer.slug,
+            landline,
+            approvedAt: dealer.landlineApprovedAt.toISOString(),
+          };
+        }
+
+        const now = new Date();
+        await tx.dealer.update({
+          where: { id: dealerId },
+          data: {
+            landline,
+            landlineConfirmedAt: dealer.landlineConfirmedAt ?? now,
+            landlineApprovedAt: now,
+          },
+        });
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.customer_contact.approved',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: {
+            landline: dealer.landline,
+            landlineApprovedAt: dealer.landlineApprovedAt?.toISOString() ?? null,
+          },
+          after: { landline, landlineApprovedAt: now.toISOString(), by: 'ADMIN' },
+        });
+
+        return { dealerId, dealerSlug: dealer.slug, landline, approvedAt: now.toISOString() };
+      });
+    },
+
     async approveProfileChange(
       admin: AdminPrincipal,
       changeId: string,
@@ -1273,6 +1348,16 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
           tx,
         );
+        if (current.landlineChanged) {
+          await tx.dealer.update({
+            where: { id: current.dealerId },
+            data: {
+              landline: current.landline,
+              landlineConfirmedAt: current.landline ? current.createdAt : null,
+              landlineApprovedAt: current.landline ? new Date() : null,
+            },
+          });
+        }
         const saved = await tx.dealerProfileChange.update({
           where: { id: changeId },
           data: { status: 'APPROVED', reviewedBy: admin.userId, reviewedAt: new Date() },
@@ -1286,10 +1371,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           entityType: 'DealerProfileChange',
           entityId: changeId,
           before: {
+            landline: current.dealer.landline,
             tagline: current.dealer.tagline,
             specialities: current.dealer.specialities,
           },
           after: {
+            landline: current.landline,
+            landlineChanged: current.landlineChanged,
             tagline: current.tagline,
             taglineChanged: current.taglineChanged || current.tagline !== null,
             specialities: current.specialities,

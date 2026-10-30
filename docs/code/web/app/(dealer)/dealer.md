@@ -127,3 +127,13 @@ The inbox (**R66**). `force-dynamic` and read with `revalidate: false`, like the
 inventory: it carries customers' numbers and must never be served from a cache.
 A `status` it does not know falls back to New rather than being sent; only the
 tab and the cursor reach the API.
+
+## `apps/web/src/app/(dealer)/dealer/enquiries/calls/page.tsx`
+
+### `export default async function DealerCallLeadsPage(...)`
+
+Customer calls: who revealed the dealership's number, for which car. Read with
+`revalidate: false` and `force-dynamic` for the same reason as the inbox — it
+carries customers' numbers. Only the cursor reaches the API; the dealership is
+the session's. Linked from the inbox header rather than added as an inbox tab,
+because a lead has no status and is not an enquiry.

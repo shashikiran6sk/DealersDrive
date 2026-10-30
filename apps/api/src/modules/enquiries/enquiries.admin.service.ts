@@ -1,4 +1,6 @@
 import {
+  type AdminCallLeadQuery,
+  type AdminCallLeadsResponse,
   istDayStart,
   type AdminEnquiriesResponse,
   type AdminEnquiryDetail,
@@ -16,6 +18,8 @@ import {
   toAdminEnquiryDetail,
   toAdminEnquiryRow,
 } from './enquiries.admin.mapper.js';
+import { toAdminCallLead } from './call-leads.mapper.js';
+import { callLeadPage } from './call-leads.repository.js';
 import { ADMIN_ENQUIRY_NOT_FOUND, ENQUIRY_HISTORY_LABELS } from './enquiries.messages.js';
 
 export const MIN_PHONE_DIGITS = 3;
@@ -54,6 +58,15 @@ export function enquiryWindow(
 
 export function createAdminEnquiriesService({ prisma }: { prisma: PrismaClient }) {
   return {
+    async callLeads(query: AdminCallLeadQuery): Promise<AdminCallLeadsResponse> {
+      const scope: Prisma.CallLeadWhereInput = query.dealer
+        ? { dealer: { slug: query.dealer } }
+        : {};
+      const { rows, page } = await callLeadPage(prisma, scope, query);
+      const now = new Date();
+      return { data: rows.map((row) => toAdminCallLead(row, now)), page };
+    },
+
     async list(query: AdminEnquiryQuery): Promise<AdminEnquiriesResponse> {
       const filters: Prisma.EnquiryWhereInput[] = [];
       if (query.dealer) filters.push({ dealer: { slug: query.dealer } });

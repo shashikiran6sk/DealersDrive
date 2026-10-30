@@ -19,6 +19,26 @@ export const enquiriesDocs: ModuleDocs = {
     'dealership’s inbox stays the only place its status moves.',
   operations: [
     {
+      method: 'post',
+      path: '/v1/vehicles/:slug/reveal-contact',
+      operationId: 'revealDealerContact',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Reveal the approved customer contact number',
+      description:
+        'Requires a verified-mobile customer session. Available listings of active dealerships only. Returns the explicitly confirmed and admin-approved customer contact number, never the login mobile as a fallback. Rate-limited to 10 per customer and 30 per IP per hour. Records a contact-reveal audit event and a call lead the dealership sees under `GET /v1/dealer/call-leads` (one per customer and car; a repeat within 24 hours changes nothing), without creating a callback enquiry or asserting that a call connected. Responses are no-store.',
+      audience: 'customer',
+      params: 'VehicleSlugParam',
+      requestBody: { schema: 'RevealContactInput' },
+      responses: [
+        {
+          status: 200,
+          description: 'The approved dealer number and telephone link.',
+          schema: 'RevealDealerContact',
+        },
+      ],
+      errors: [400, 401, 404, 409, 422, 429],
+    },
+    {
       method: 'get',
       path: '/v1/enquiries',
       operationId: 'listMyEnquiries',
@@ -182,6 +202,29 @@ export const enquiriesDocs: ModuleDocs = {
     },
     {
       method: 'get',
+      path: '/v1/dealer/call-leads',
+      operationId: 'listDealerCallLeads',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Customers who revealed your number',
+      description:
+        'One lead per customer and car that revealed the dealership’s customer contact number ' +
+        'through `POST /v1/vehicles/:slug/reveal-contact`, most recently revealed first, ' +
+        'keyset-paginated by `(lastRevealedAt, id)`.\n\n' +
+        'Each carries the customer’s **current name and proved mobile** with a `tel:` link — the ' +
+        'customer is told before the number is shown that the dealer will see them — and the car, ' +
+        'linked while it is on the marketplace. A repeat reveal within 24 hours changes nothing; ' +
+        'after that it moves `lastRevealedAt` and adds to `revealCount`.\n\n' +
+        'A lead is not an enquiry: it has no status and asks nothing of the dealer. Read-only.',
+      audience: 'dealer',
+      permission: 'enquiry:read',
+      query: 'CallLeadQuery',
+      responses: [
+        { status: 200, description: 'A page of call leads.', schema: 'CallLeadsResponse' },
+      ],
+      errors: [400, 401, 403, 409],
+    },
+    {
+      method: 'get',
       path: '/v1/admin/enquiries',
       operationId: 'listAdminEnquiries',
       tag: DOC_TAGS.enquiries,
@@ -224,6 +267,29 @@ export const enquiriesDocs: ModuleDocs = {
       params: 'IdParam',
       responses: [{ status: 200, description: 'The enquiry.', schema: 'AdminEnquiryDetail' }],
       errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/call-leads',
+      operationId: 'listAdminCallLeads',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Every call lead, for oversight',
+      description:
+        'Call leads across every dealership, most recently revealed first, keyset-paginated by ' +
+        '`(lastRevealedAt, id)`. `dealer` narrows to one dealership by its slug. The same rows ' +
+        'the dealership sees under `GET /v1/dealer/call-leads`, with the dealership named. ' +
+        'Read-only.',
+      audience: 'admin',
+      permission: 'admin:enquiry:read',
+      query: 'AdminCallLeadQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'A page of call leads.',
+          schema: 'AdminCallLeadsResponse',
+        },
+      ],
+      errors: [400, 401, 403, 409],
     },
   ],
 };

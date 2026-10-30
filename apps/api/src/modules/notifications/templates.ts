@@ -255,9 +255,9 @@ export function render(template: TemplateName, context: TemplateContext): Render
     case 'admin.profile-change.submitted':
       return compose({
         subject: `Profile change to review — ${context.dealerName}`,
-        heading: 'A dealership has proposed new public words',
+        heading: 'A dealership has proposed profile changes',
         paragraphs: [
-          `${context.dealerName} has proposed a change to what buyers read on its page. Nothing is public until somebody approves it.`,
+          `${context.dealerName} has proposed a change to its profile or customer contact number. The approved details stay in use until review.`,
         ],
         quote: proposalOf(context),
         action: { label: 'Review the change', url: ADMIN_QUEUE },
@@ -269,7 +269,7 @@ export function render(template: TemplateName, context: TemplateContext): Render
         heading: 'Your change is live',
         greeting: context.contactName,
         paragraphs: [
-          `The change you made to the public page for ${context.dealerName} has been approved and buyers can see it now.`,
+          `Your proposed profile or customer contact change for ${context.dealerName} has been approved. Customers can now use the approved details.`,
         ],
         action: { label: 'See your page', url: publicPage(context) },
       });

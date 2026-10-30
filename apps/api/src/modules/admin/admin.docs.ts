@@ -334,6 +334,35 @@ export const adminDocs: ModuleDocs = {
     },
     {
       method: 'post',
+      path: '/v1/admin/dealers/:id/customer-contact/approve',
+      operationId: 'approveDealerCustomerContact',
+      tag: DOC_TAGS.admin,
+      summary: 'Approve the saved customer contact number for calls',
+      description:
+        'Approves the number already saved on the dealership as its customer contact number, ' +
+        'so signed-in customers are offered **Call dealer** on its cars. It is the admin path ' +
+        'beside the dealer’s own confirm-and-review one, for dealerships the team onboarded or ' +
+        'whose number was given to us directly.\n\n' +
+        'The number is normalised (`+91…`) and must be an Indian mobile or a landline with STD ' +
+        'code; a dealership with none, or one that does not parse, is a `409 ' +
+        'CUSTOMER_CONTACT_MISSING`. Approving an already approved number changes nothing and ' +
+        'records nothing. Otherwise the approval is audited as ' +
+        '`dealer.customer_contact.approved` with the admin as actor. Changing the number in the ' +
+        'profile editor afterwards withdraws the approval again.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'Approved. The number is offered to signed-in customers.',
+          schema: 'CustomerContactApprovalResponse',
+        },
+      ],
+      errors: [401, 403, 404, 409],
+    },
+    {
+      method: 'post',
       path: '/v1/admin/dealers/:id/reject',
       operationId: 'rejectDealer',
       tag: DOC_TAGS.admin,
@@ -590,7 +619,7 @@ export const adminDocs: ModuleDocs = {
       tag: DOC_TAGS.admin,
       summary: 'Profile edits waiting for a decision',
       description:
-        'The queue a dealer’s own words wait in (**R34**), **oldest first** — this ' +
+        'The queue for profile text and customer contact number changes, **oldest first** — this ' +
         'is work, and the dealership that has been waiting longest is the one owed an ' +
         'answer.\n\n' +
         'Every row carries what is **live** beside what is **proposed**, because the ' +
@@ -598,9 +627,7 @@ export const adminDocs: ModuleDocs = {
         'the two differ whenever the edit is a small correction to a line already approved. ' +
         'A reviewer holding the old value in their head is one who approves a number ' +
         'appended to a sentence they half-remember.\n\n' +
-        '`tagline: null` and `specialities: []` on the proposed side mean *this request does ' +
-        'not touch that field* — unambiguous because neither can be emptied by a ' +
-        'dealer: the floors are ten characters and one entry.\n\n' +
+        '`taglineChanged` and `landlineChanged` distinguish removal (null with the flag) from omission. Empty `specialities` means unchanged. Contact approval publishes the confirmed number without resetting business verification.\n\n' +
         'Capped at 100. A backlog longer than that is an operational problem rather than a ' +
         'pagination one.',
       audience: 'admin',

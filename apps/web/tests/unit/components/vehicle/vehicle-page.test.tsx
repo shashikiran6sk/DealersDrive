@@ -169,6 +169,15 @@ describe('/car/[slug]', () => {
     expect(screen.queryByText(/reserved for another buyer/)).not.toBeInTheDocument();
   });
 
+  it('shows only Enquire now before login, even when the dealer has an approved number', async () => {
+    const car = detail();
+    serve({ ...car, dealer: { ...car.dealer, canCall: true } });
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(screen.getAllByRole('button', { name: 'Enquire now' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Call dealer' })).not.toBeInTheDocument();
+  });
+
   it('shows similar vehicles under the page, each with its dealership and a link (R73)', async () => {
     serve(detail(), [similarCard('a'), similarCard('b')]);
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));

@@ -55,4 +55,6 @@ export * from './dealer-activation.js';
 export * from './dealer-portfolio.js';
 export * from './dealer-yard-visits.js';
 
+export * from './dealer-contact.js';
+export * from './call-lead.js';
 export * from './legal.js';

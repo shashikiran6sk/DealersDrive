@@ -39,7 +39,19 @@ the API's code and sentence; `invalid` for a message the contract refused.
 
 ### `export function EnquiryPanel(...)`
 
-Idle → checking → form → sent / already / gone.
+Idle → checking → (choices →) form or call → sent / already / gone.
+
+- **One button before login.** Every visitor sees only Enquire now, whatever
+  the dealership offers. Pressing it checks the session first; a dealership
+  with an approved customer contact number (`dealer.canCall` on the vehicle)
+  then offers **Call dealer** or **Request a callback**, and one without goes
+  straight to the enquiry form. The choice is shown only to a signed-in
+  customer, so nobody picks an option and is then asked to log in for it.
+- **Call dealer.** Reveals the number through `revealContactAction`, which
+  records a call lead; the consent line under the button says the dealer will
+  see the customer's name and mobile. A `CONTACT_UNAVAILABLE` answer (the
+  number was withdrawn after the page was cached) hides Call dealer and keeps
+  Request a callback.
 
 - **Anonymous.** Pressing Enquire sends the visitor to
   `/login?returnTo=/car/<slug>?enquire=1`. `/login` opens on the Customer tab

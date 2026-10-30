@@ -22,6 +22,30 @@ The customer tab does not redirect a signed-in customer: nothing on the
 customer side depends on landing there, and a stale cookie must still be able
 to reach the form.
 
+### `if (status?.enabled && status.accepted && requested)`
+
+Customer policy acceptance only resumes navigation when the URL includes an
+explicit `returnTo`. A direct visit to `/login` must keep the form accessible,
+including its Dealer tab. Redirecting an accepted session to the fallback home
+page made the header's Login link flash a blank page and immediately return home.
+The post-sign-in and protected-page flows supply `returnTo` and still continue
+after acceptance; sessions that need to accept the policies still see the gate.
+
+The customer status helper first verifies the session through the customer API.
+A Google-only dealer can therefore reach phone sign-in before or after personal
+policy acceptance, including when the URL carries a protected customer destination.
+Completing customer identity requirements is separate from accepting policies;
+neither step may stand in for the other.
+
+![Customer phone sign-in remains reachable after Google dealer sign-in](login-fixed.jpg)
+
+### `if (!isLoginPath(resume)) redirect(resume)`
+
+An accepted customer is never sent back to the login page itself. `returnTo`
+is a same-site path, so `/login?returnTo=/login` is a valid one, and resuming it
+redirected the page to itself until the browser gave up with too many
+redirects. The form renders instead.
+
 ### `const dealerReturnTo = requested ? safeReturnPath(requested, '/dealer') : null`
 
 Where a sign-in may send somebody afterwards is decided here, on the server,

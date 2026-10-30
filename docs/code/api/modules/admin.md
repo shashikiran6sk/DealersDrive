@@ -626,6 +626,23 @@ One clock for the whole page, so two rows submitted in the same second
 
 do not report different waits because the loop took a moment.
 
+### `async approveCustomerContact(admin, dealerId)`
+
+The admin path to calling, beside the dealer's own confirm-and-review one: an
+admin with `admin:dealer:approve` approves the number already saved on the
+dealership, and **Call dealer** appears on its cars. It exists for dealerships
+the team onboarded, and for numbers saved before calling existed (the
+"landline" asked for at onboarding), whose owners rarely sign in to confirm
+anything themselves. The admin is the one vouching for the number, and the
+audit row (`dealer.customer_contact.approved`, actor ADMIN) says so.
+
+The number is normalised on approval, so the stored value is the one a
+customer is shown. Nothing saved, or text that does not parse as an Indian
+mobile or landline, is a 409 rather than an approval of nothing. Approving an
+approved number is a no-op with no second audit row. Changing the number later
+through the editor (`dealers.update`) clears the approval, so an edit can never
+publish a number nobody approved.
+
 ### `async approveProfileChange`
 
 Publish it.

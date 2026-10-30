@@ -193,10 +193,18 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
             {available ? (
               <Suspense
                 fallback={
-                  <EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+                  <EnquiryPanel
+                    listingSlug={vehicle.slug}
+                    dealerName={vehicle.dealer.name}
+                    canCall={vehicle.dealer.canCall ?? false}
+                  />
                 }
               >
-                <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+                <EnquireFromUrl
+                  listingSlug={vehicle.slug}
+                  dealerName={vehicle.dealer.name}
+                  canCall={vehicle.dealer.canCall ?? false}
+                />
               </Suspense>
             ) : (
               <AvailabilityNotice />

@@ -29,6 +29,9 @@ export async function saveDealerProfileAction(
   const year = text('establishedYear');
 
   const parsed = DealerSelfUpdateInput.safeParse({
+    ...(formData.has('customerContactNumber')
+      ? { contact: { landline: formData.get('customerContactNumber') } }
+      : {}),
     ...(formData.has('establishedYear') ? { establishedYear: year ? Number(year) : null } : {}),
     ...(formData.has('tagline') ? { tagline: formData.get('tagline') } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),

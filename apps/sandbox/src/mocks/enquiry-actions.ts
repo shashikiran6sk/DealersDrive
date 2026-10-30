@@ -1,3 +1,4 @@
+import type { RevealContactState } from '@/features/enquiry/actions';
 export interface EnquiryCustomer {
   fullName: string;
   phoneDisplay: string;
@@ -47,4 +48,16 @@ export function enquiryCustomerAction(): Promise<EnquiryCustomer | null> {
 
 export function sendEnquiryAction(): Promise<SendEnquiryState> {
   return settle(enquiryActionStub.result);
+}
+
+export function revealContactAction(): Promise<RevealContactState> {
+  return settle({
+    status: 'revealed',
+    contact: {
+      phone: '+914162248890',
+      phoneDisplay: '+91 416 224 8890',
+      callHref: 'tel:+914162248890',
+      dealerName: 'Sri Lakshmi Motors',
+    },
+  });
 }

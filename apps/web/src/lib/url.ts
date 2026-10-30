@@ -13,6 +13,10 @@ export function many(params: SearchParamsInput, key: string): string[] {
     .filter((value) => value.length > 0);
 }
 
+export function isLoginPath(path: string): boolean {
+  return new URL(path, 'https://dealers-drive.local').pathname.replace(/\/+$/, '') === '/login';
+}
+
 export function safeReturnPath(candidate: string | undefined | null, fallback = '/'): string {
   if (!candidate) return fallback;
   if (!candidate.startsWith('/') || candidate.startsWith('//')) return fallback;

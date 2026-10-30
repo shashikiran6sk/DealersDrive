@@ -124,10 +124,17 @@ export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepPro
             </p>
           </Field>
 
-          <Field id="landline" label="Landline" hint="optional" error={errors.landline}>
+          <Field
+            id="landline"
+            label="Customer contact number — mobile or landline"
+            hint="optional — shared with signed-in customers after admin approval"
+            error={errors.landline}
+          >
             <input
               id="landline"
               name="landline"
+              type="tel"
+              maxLength={24}
               defaultValue={values.landline ?? dealer?.contact.landline ?? ''}
               className="input tnum"
               autoComplete="tel"

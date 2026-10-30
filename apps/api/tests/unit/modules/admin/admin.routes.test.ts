@@ -45,6 +45,8 @@ describe('the surface', () => {
         'POST /dealers/:id/activation-override',
         'POST /dealers/:id/activation-override/revoke',
         'PATCH /dealers/:id',
+        // #346 — an admin approves a saved customer contact number for calls.
+        'POST /dealers/:id/customer-contact/approve',
         'POST /dealers/:id/reject',
         'POST /dealers/:id/request-changes',
         'POST /dealers/:id/close',

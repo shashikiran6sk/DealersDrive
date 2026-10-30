@@ -80,3 +80,7 @@ export async function revokeActivationOverrideAction(dealerId: string, input: un
 export async function recordYardVisitAction(dealerId: string, input: unknown) {
   return respond('recordYardVisit', dealerId, input);
 }
+
+export async function approveCustomerContactAction(dealerId: string) {
+  return respond('approveCustomerContact', dealerId, undefined);
+}

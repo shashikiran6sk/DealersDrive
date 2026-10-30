@@ -93,3 +93,12 @@ The panel stays, because its sentence is true and is the one an
 operator needs: with no listings table there is nothing waiting for
 review, and the message says exactly that.
 ───────────────────────────────────────────────────────────────────
+
+## `apps/web/src/app/(admin)/admin/enquiries/calls/page.tsx`
+
+### `export default async function AdminCallLeadsPage(...)`
+
+Every dealership's call leads, for oversight, linked from the enquiries header.
+Read uncached — the rows carry customers' numbers. `dealer` narrows to one
+dealership by slug and is carried onto the Show more link, so paging never
+drops the filter. Read-only, like the enquiry oversight it sits beside.

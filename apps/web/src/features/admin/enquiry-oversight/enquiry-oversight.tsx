@@ -1,10 +1,11 @@
 import Link from 'next/link';
 
+import { CALL_LEAD_TEXT } from '@/components/leads/call-lead-list';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 
-import { ENQUIRY_OVERSIGHT_TEXT } from './enquiry-oversight.constants';
+import { ENQUIRY_OVERSIGHT_PATH, ENQUIRY_OVERSIGHT_TEXT } from './enquiry-oversight.constants';
 import { EnquiryOversightFilters } from './enquiry-oversight-filters';
 import { EnquiryOversightRow } from './enquiry-oversight-row';
 import { EnquiryOversightTabs } from './enquiry-oversight-tabs';
@@ -36,6 +37,9 @@ export function EnquiryOversight({ enquiries, filters }: EnquiryOversightProps) 
           <span className="text-[13px] ink-muted tnum">
             {ENQUIRY_OVERSIGHT_TEXT.total(enquiries.counts.ALL)}
           </span>
+          <Link href={`${ENQUIRY_OVERSIGHT_PATH}/calls`} className="btn btn-secondary ml-auto">
+            {CALL_LEAD_TEXT.viewCalls}
+          </Link>
         </div>
         <p className="max-w-[72ch] text-[13px] ink-muted">{ENQUIRY_OVERSIGHT_TEXT.intro}</p>
       </div>

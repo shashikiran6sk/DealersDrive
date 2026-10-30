@@ -104,7 +104,10 @@ describe('customer post-authentication activation', () => {
       name: 'Google Customer Dealer',
     };
     const agent = h.agent();
-    expect((await h.signIn(agent)).status).toBe(302);
+    const callback = await h.signIn(agent);
+    expect(callback.status).toBe(302);
+    expect(callback.location).toBe(`${env.WEB_BASE_URL}/dealer/onboarding`);
+    await agent.get('/v1/auth/customer/me').expect(401);
     expect((await agent.get('/v1/legal/status?scope=CUSTOMER').expect(200)).body.accepted).toBe(
       false,
     );
@@ -113,7 +116,28 @@ describe('customer post-authentication activation', () => {
     expect((await agent.get('/v1/legal/status?scope=CUSTOMER').expect(200)).body.accepted).toBe(
       true,
     );
-    await agent.get('/v1/auth/me').expect(200);
+    await agent.get('/v1/auth/customer/me').expect(401);
+    const dealerSession = await agent.get('/v1/auth/me').expect(200);
+    expect(dealerSession.body).toMatchObject({
+      next: 'ONBOARDING',
+      user: { phoneVerified: false },
+    });
+
+    n += 1;
+    const phone = `984770${String(n).padStart(4, '0')}`;
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({
+        phone,
+        accessToken: `dev-otp:91${phone}:${env.PHONE_OTP_DEV_CODE}:legal-google-${n}`,
+      })
+      .expect(200);
+    const customerSession = await agent.get('/v1/auth/customer/me').expect(200);
+    expect(customerSession.body.customer.phone).toBe(`+91${phone}`);
+    expect((await agent.get('/v1/legal/status?scope=CUSTOMER').expect(200)).body.accepted).toBe(
+      true,
+    );
+    expect((await agent.get('/v1/auth/me').expect(200)).body.next).toBe('ONBOARDING');
   });
   it('retains support/privacy requests and public browsing without acceptance', async () => {
     const c = await customer();
