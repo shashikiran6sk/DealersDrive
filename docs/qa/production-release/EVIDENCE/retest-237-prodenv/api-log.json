@@ -1,0 +1,38 @@
+[
+  {
+    "r2WithEndpoint": {
+      "code": 0,
+      "ok": {
+        "storage": "r2",
+        "endpoint": "https://acct.r2.cloudflarestorage.com",
+        "signingSecretIsDefault": true
+      },
+      "reason": ""
+    },
+    "minio": {
+      "code": 1,
+      "ok": null,
+      "reason": "STORAGE_DRIVER: must be `r2` in production — `local` and `minio` are development adapters."
+    },
+    "local": {
+      "code": 1,
+      "ok": null,
+      "reason": "STORAGE_DRIVER: must be `r2` in production — `local` and `minio` are development adapters."
+    },
+    "r2NoEndpoint": {
+      "code": 1,
+      "ok": null,
+      "reason": ""
+    },
+    "r2LoopbackEndpoint": {
+      "code": 1,
+      "ok": null,
+      "reason": ""
+    }
+  },
+  {
+    "standInsLocalOnly": true,
+    "defaultSecretUnderR2": true,
+    "localRefusedInProduction": true
+  }
+]

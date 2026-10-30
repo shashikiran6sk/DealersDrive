@@ -1,0 +1,337 @@
+[
+  {
+    "surface": "S3-driver API http://localhost:4005",
+    "req": "PUT /uploads?…&signature=<forged>",
+    "status": 404
+  },
+  {
+    "surface": "S3-driver API http://localhost:4005",
+    "req": "GET /private?…&signature=<forged>",
+    "status": 404
+  },
+  {
+    "surface": "S3-driver API http://localhost:4005",
+    "req": "PUT /uploads?…&signature=<forged>",
+    "status": 404
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": false,
+      "canSubmit": false,
+      "percent": 50,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": false,
+          "missing": ["PERSONAL_IDENTITY", "BUSINESS_IDENTITY"]
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/7bf47e2e-5cd9-4c2f-b47a-65104cd58420/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "yE9kvU45-w",
+      "detail": "Only a submitted application can be approved."
+    }
+  },
+  {
+    "db_before": {
+      "status": "DRAFT",
+      "gstin": null,
+      "pan": null
+    },
+    "documents": 2,
+    "db_after": {
+      "status": "DRAFT",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/bcc8e926-096e-4b92-be6c-82c71fc0e8c1/suspend",
+    "status": 200,
+    "body": {
+      "id": "bcc8e926-096e-4b92-be6c-82c71fc0e8c1",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-21T05:27:15.848Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/bcc8e926-096e-4b92-be6c-82c71fc0e8c1/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "DLgKUqYtcI",
+      "detail": "Only a submitted application can be approved."
+    }
+  },
+  {
+    "db_after": {
+      "status": "SUSPENDED"
+    },
+    "audit": [
+      "dealer.onboarding.created",
+      "dealer.submitted",
+      "dealer.approved",
+      "dealer.suspended"
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/ecabfa1a-ed98-4082-b012-7e3f3ea2a116/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "ES9qJ_T6UO",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "db_before": {
+      "status": "PENDING_APPROVAL"
+    },
+    "documents": ["UPLOADED", "UPLOADED"],
+    "db_after": {
+      "status": "PENDING_APPROVAL",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/fcda5b98-cf40-41a7-bca9-763f56aa84a0/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "-iv-v4j-HD",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "db_after_suspend": {
+      "status": "DRAFT"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/fcda5b98-cf40-41a7-bca9-763f56aa84a0/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "1knRPSDgw0",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "db_after_reinstate": {
+      "status": "DRAFT",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/87b80a29-7656-4e9c-958d-918ff5f281bd/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "yBW0d37iBt",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "before": [
+      {
+        "type": "GST_CERTIFICATE",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      },
+      {
+        "type": "PAN_CARD",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      }
+    ]
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/document-locked",
+      "title": "Document locked",
+      "status": 409,
+      "code": "DOCUMENT_LOCKED",
+      "traceId": "pWmef81e5U",
+      "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
+    }
+  },
+  {
+    "after": [
+      {
+        "type": "GST_CERTIFICATE",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      },
+      {
+        "type": "PAN_CARD",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      }
+    ]
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/document-locked",
+      "title": "Document locked",
+      "status": 409,
+      "code": "DOCUMENT_LOCKED",
+      "traceId": "2BuiItmPIR",
+      "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/PERSONAL_IDENTITY/commit",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "qO24Qecsht",
+      "detail": "That document does not exist."
+    }
+  },
+  {
+    "after": [
+      {
+        "type": "GST_CERTIFICATE",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      },
+      {
+        "type": "PAN_CARD",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      }
+    ]
+  },
+  {
+    "req": "DELETE /v1/dealer/documents/PERSONAL_IDENTITY",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/document-locked",
+      "title": "Document locked",
+      "status": 409,
+      "code": "DOCUMENT_LOCKED",
+      "traceId": "r77wdPuqwa",
+      "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/documents/BUSINESS_IDENTITY",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/document-locked",
+      "title": "Document locked",
+      "status": 409,
+      "code": "DOCUMENT_LOCKED",
+      "traceId": "36zOf2UW0e",
+      "detail": "This document has been submitted for review and can no longer be changed. Contact support if it needs correcting."
+    }
+  },
+  {
+    "after": [
+      {
+        "type": "GST_CERTIFICATE",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      },
+      {
+        "type": "PAN_CARD",
+        "status": "VERIFIED",
+        "dealer": "ACTIVE",
+        "fileOnDisk": true
+      }
+    ]
+  },
+  {
+    "req": "POST /v1/dealer/yard-photo/presign",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "8-fQ8j0Hj5",
+      "detail": "No route matches POST /v1/dealer/yard-photo/presign."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/portfolio/commit",
+    "status": 201,
+    "body": {
+      "id": "ffb4e945-f737-4adf-952d-b7bb4af362d6",
+      "status": "PENDING",
+      "statusLabel": "Awaiting review — not public yet",
+      "previewUrl": "<redacted>",
+      "caption": null,
+      "replacesId": null,
+      "position": 0,
+      "rejectionReason": null,
+      "submittedAt": "2026-10-21T05:27:16.144Z",
+      "reviewedAt": null
+    }
+  },
+  {
+    "portfolioStatus": "PENDING",
+    "publicBeforeReview": false
+  }
+]

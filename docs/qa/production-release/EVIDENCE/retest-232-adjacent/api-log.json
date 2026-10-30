@@ -1,0 +1,90 @@
+[
+  {
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/approve",
+    "status": 200,
+    "body": {
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-21T05:29:03.243Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/suspend",
+    "status": 200,
+    "body": {
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-21T05:29:03.254Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "PLTWs_AXbd",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/2d57db51-773e-4926-b4a8-442953697c7d/reinstate",
+    "status": 200,
+    "body": {
+      "id": "2d57db51-773e-4926-b4a8-442953697c7d",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-21T05:29:03.276Z"
+    }
+  },
+  {
+    "a1": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    },
+    "a2": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    },
+    "audits": [
+      "dealer.onboarding.created",
+      "dealer.submitted",
+      "dealer.approved",
+      "dealer.suspended",
+      "dealer.reinstated"
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/9707f227-92de-4835-9244-af207dbb212b/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/documents-not-verified",
+      "title": "Documents not verified",
+      "status": 422,
+      "code": "DOCUMENTS_NOT_VERIFIED",
+      "traceId": "Sz4UjSigSR",
+      "detail": "Verify the applicable uploaded business documents before approving this dealership."
+    }
+  },
+  {
+    "before": {
+      "status": "PENDING_APPROVAL"
+    },
+    "after": {
+      "status": "PENDING_APPROVAL"
+    }
+  }
+]

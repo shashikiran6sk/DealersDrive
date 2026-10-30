@@ -1,0 +1,22 @@
+{
+  "R235-vehicle-image-follows-dealer-status": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "vehicle image 200 no-cache → (suspend) 404 no-store → (reinstate) 200; car API 404, dealer API 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-21T05:29:39.526Z"
+  },
+  "R235-yard-photo-while-suspended (BUG-NEW-009, not in #235 scope)": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "yard photo 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-21T05:29:39.526Z"
+  }
+}
