@@ -175,3 +175,7 @@ Nothing renders for an APPROVED change — the API sends `null` for one.
 nothing to type into and no Save — the page passes `readOnly` when the session
 lacks `dealer:update`. They can still read it: it is their dealership, and the
 address and contact details are what a buyer on the phone asks about.
+
+## Customer contact proposals
+
+Customer contact number is editable for the owner, separate from the locked login mobile and email. It supports mobile or landline with STD code. Saving confirms customer-facing use and queues a proposal on an active dealership. While review is pending the field shows the proposed value and is disabled; the approval workflow leaves the previous number active. Blank requests removal. Existing numbers need confirmation and approval before calling becomes available.

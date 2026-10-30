@@ -2,6 +2,7 @@ import { createLegalService } from './modules/legal/legal.service.js';
 import { createLegalRouter } from './modules/legal/legal.routes.js';
 import { customerLegalGate, dealerLegalGate } from './modules/legal/legal.middleware.js';
 import { createCustomerResolver } from './modules/auth/customer-session.js';
+import { createContactRevealsRouter } from './modules/enquiries/contact-reveals.routes.js';
 import {
   createPublicServiceLocationsRouter,
   createAdminServiceLocationsRouter,
@@ -97,6 +98,14 @@ export function createRoutes(container: Container): Router {
     container.guards.requireCustomer,
     customerLegalGate(legal),
     createInvitationsRouter(container.invitations),
+  );
+  v1.use(
+    createContactRevealsRouter(
+      container.enquiries,
+      container.rateLimit,
+      container.guards.requireCustomer,
+      customerLegalGate(legal),
+    ),
   );
   v1.use(
     '/enquiries',

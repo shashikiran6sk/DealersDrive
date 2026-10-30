@@ -58,6 +58,7 @@ model User {
   identities           OAuthIdentity[]
   roles                UserRole[]
   enquiries            Enquiry[]
+  callLeads            CallLead[]
   savedVehicles        SavedVehicle[]
   legalAcceptances     LegalAcceptance[]
 
@@ -368,6 +369,8 @@ model Dealer {
   /// Dealers-Drive to create and submit this profile on their behalf.
   assistedConsentAt        DateTime?
   landline                 String?
+  landlineConfirmedAt      DateTime?
+  landlineApprovedAt       DateTime?
   workingHours             Json?
   establishedYear          Int?
   specialities             String[]
@@ -394,6 +397,7 @@ model Dealer {
   vehicles           Vehicle[]
   listings           Listing[]
   enquiries          Enquiry[]
+  callLeads          CallLead[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
   serviceState       ServiceState?                @relation(fields: [serviceStateId], references: [id], onDelete: Restrict)
@@ -582,9 +586,11 @@ model DealerProfileChange {
   status   ProfileChangeStatus @default(PENDING)
 
   /// Null plus taglineChanged means removal; null without it means unchanged.
-  tagline        String?
-  taglineChanged Boolean  @default(false)
-  specialities   String[]
+  tagline         String?
+  taglineChanged  Boolean  @default(false)
+  specialities    String[]
+  landline        String?
+  landlineChanged Boolean  @default(false)
 
   /// Who typed it. `dealerId` says whose profile; this says whose hands.
   submittedBy    String?   @db.Uuid
@@ -860,6 +866,7 @@ model Listing {
   dealer            Dealer                       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
   checks            ListingCheck[]
   enquiries         Enquiry[]
+  callLeads         CallLead[]
   savedBy           SavedVehicle[]
   reactivations     ListingReactivationRequest[]
 
@@ -1071,6 +1078,31 @@ model Enquiry {
   @@index([createdAt])
   @@index([status, createdAt])
   @@map("enquiries")
+}
+
+/// A signed-in customer revealed a dealership's customer contact number for one
+/// car. One row per customer and listing: a repeat reveal moves
+/// `lastRevealedAt` and counts, so the dealer sees one lead, not a list of taps.
+model CallLead {
+  id              String   @id @default(uuid()) @db.Uuid
+  customerId      String   @db.Uuid
+  dealerId        String   @db.Uuid
+  listingId       String   @db.Uuid
+  firstRevealedAt DateTime @default(now())
+  lastRevealedAt  DateTime @default(now())
+  revealCount     Int      @default(1)
+
+  customer User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  dealer   Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, listingId])
+  /// The dealer's Calls list, most recent first.
+  @@index([dealerId, lastRevealedAt])
+  /// Admin oversight across dealerships.
+  @@index([lastRevealedAt])
+  @@index([listingId])
+  @@map("call_leads")
 }
 
 /// A customer asking Dealers-Drive for help (**R90**).

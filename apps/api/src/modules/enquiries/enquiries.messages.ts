@@ -40,3 +40,8 @@ export const ENQUIRY_ACTOR_LABELS: Record<string, string> = {
 };
 
 export const ENQUIRY_IMAGE_ALT = (title: string) => `Photograph of the ${title}`;
+
+export const CONTACT_RATE_LIMITED =
+  'You have viewed several dealer numbers. Try again in a little while.';
+export const CONTACT_UNAVAILABLE =
+  'A customer contact number is not available. Send an enquiry to request a callback.';

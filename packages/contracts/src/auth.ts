@@ -1,3 +1,4 @@
+import { DealerContactInput } from './dealer-contact.js';
 import { DealerTaglineInput } from './dealer-tagline.js';
 import { z } from 'zod';
 
@@ -141,7 +142,7 @@ export const OnboardingInput = z
      * checked.
      */
     mapsUrl: GoogleMapsUrl,
-    landline: z.string().trim().max(24).optional(),
+    landline: DealerContactInput.optional(),
     /** Optional marketing text; absence/blank becomes null, while omitted patches preserve the live value. */
     tagline: DealerTaglineInput,
     /**

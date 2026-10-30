@@ -115,6 +115,7 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
       slug: dealer.slug,
       initials: initialsOf(dealer.brandName),
       isVerified: isDealerVerified(dealer),
+      canCall: dealer.landlineApprovedAt != null,
       location: locationOf(dealer),
       city: dealer.city,
       district: dealer.district,

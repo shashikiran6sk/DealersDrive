@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { RevealDealerContact } from '@dealers-drive/contracts';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -9,6 +10,7 @@ import { Banner } from '@/components/ui/primitives';
 import {
   enquiryCustomerAction,
   sendEnquiryAction,
+  revealContactAction,
   type EnquiryCustomer,
   type SendEnquiryState,
 } from '@/features/enquiry/actions';
@@ -17,14 +19,24 @@ import { EnquiryForm } from './enquiry-form';
 import { ENQUIRY_PANEL_TEXT, loginHref, MY_ENQUIRIES_HREF } from './enquiry-panel.constants';
 import type { EnquiryPanelProps, EnquiryPanelStage } from './enquiry-panel.types';
 
-export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: EnquiryPanelProps) {
+export function EnquiryPanel({
+  listingSlug,
+  dealerName,
+  autoOpen = false,
+  canCall = false,
+}: EnquiryPanelProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [stage, setStage] = useState<EnquiryPanelStage>(autoOpen ? 'checking' : 'idle');
   const [customer, setCustomer] = useState<EnquiryCustomer | null>(null);
+  const [contact, setContact] = useState<RevealDealerContact | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [callUnavailable, setCallUnavailable] = useState(false);
+  const [revealing, setRevealing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const autoOpened = useRef(false);
+  const callingAvailable = canCall && !callUnavailable;
 
   const open = useCallback(async () => {
     setStage('checking');
@@ -42,10 +54,38 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
       return;
     }
     setCustomer(signedIn);
-    setStage('form');
-  }, [pathname, router]);
+    setStage(callingAvailable ? 'choices' : 'form');
+  }, [pathname, router, callingAvailable]);
+
+  async function reveal(): Promise<void> {
+    setRevealing(true);
+    setNotice(null);
+    try {
+      const result = await revealContactAction(listingSlug);
+      if (result.status === 'signed-out') {
+        router.push(loginHref(pathname));
+        return;
+      }
+      if (result.status === 'revealed') {
+        setContact(result.contact);
+        setStage('call');
+        return;
+      }
+      setNotice(result.message);
+      if (result.code === 'CONTACT_UNAVAILABLE') setCallUnavailable(true);
+      if (result.code === 'LISTING_NOT_AVAILABLE') setStage('gone');
+    } catch {
+      setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+    } finally {
+      setRevealing(false);
+    }
+  }
 
   useEffect(() => {
+    if (stage === 'choices' || stage === 'call') {
+      panel.current?.scrollIntoView({ block: 'center' });
+      return;
+    }
     if (stage !== 'form') return;
     panel.current
       ?.querySelector<HTMLTextAreaElement>('textarea[name="message"]')
@@ -145,13 +185,73 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
         </>
       ) : null}
 
+      {stage === 'choices' ? (
+        <section className="card gap-3 p-4" aria-label={ENQUIRY_PANEL_TEXT.choose}>
+          <h2 className="text-[17px]">{ENQUIRY_PANEL_TEXT.choose}</h2>
+          {notice ? <Banner tone="warn">{notice}</Banner> : null}
+          {callingAvailable ? (
+            <div className="flex flex-col gap-1">
+              <Button
+                block
+                variant="secondary"
+                loading={revealing}
+                onClick={() => {
+                  void reveal();
+                }}
+              >
+                {ENQUIRY_PANEL_TEXT.call}
+              </Button>
+              <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callIntro}</p>
+              <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callConsent}</p>
+            </div>
+          ) : null}
+          <Button
+            block
+            variant="primary"
+            onClick={() => {
+              setStage('form');
+            }}
+          >
+            {ENQUIRY_PANEL_TEXT.callback}
+          </Button>
+          <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callbackIntro}</p>
+        </section>
+      ) : null}
+      {stage === 'call' && contact ? (
+        <section className="card gap-3 p-4">
+          <h2 className="text-[17px]">{ENQUIRY_PANEL_TEXT.call}</h2>
+          <a href={contact.callHref} className="btn btn-primary min-h-[44px] font-mono">
+            {contact.phoneDisplay}
+          </a>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void (async () => {
+                try {
+                  await navigator.clipboard.writeText(contact.phone);
+                  setCopied(ENQUIRY_PANEL_TEXT.copied);
+                } catch {
+                  setCopied(ENQUIRY_PANEL_TEXT.copyFailed);
+                }
+              })();
+            }}
+          >
+            {ENQUIRY_PANEL_TEXT.copy}
+          </Button>
+          {copied ? <p className="text-[12px]">{copied}</p> : null}
+          <p className="text-[12px] ink-secondary">{ENQUIRY_PANEL_TEXT.callingNote}</p>
+          <Button variant="ghost" onClick={() => setStage('choices')}>
+            {ENQUIRY_PANEL_TEXT.back}
+          </Button>
+        </section>
+      ) : null}
       {stage === 'form' && customer ? (
         <EnquiryForm
           customer={customer}
           dealerName={dealerName}
           onSend={send}
           onCancel={() => {
-            setStage('idle');
+            setStage(callingAvailable ? 'choices' : 'idle');
           }}
         />
       ) : null}
@@ -174,6 +274,11 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
         </Banner>
       ) : null}
 
+      {callingAvailable && (stage === 'already' || stage === 'sent') ? (
+        <Button variant="ghost" onClick={() => setStage('choices')}>
+          {ENQUIRY_PANEL_TEXT.back}
+        </Button>
+      ) : null}
       {stage === 'gone' ? (
         <Banner tone="err" title={ENQUIRY_PANEL_TEXT.unavailableTitle}>
           {notice}

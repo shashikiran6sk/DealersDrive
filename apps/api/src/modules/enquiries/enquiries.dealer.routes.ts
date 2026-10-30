@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import type { EnquiriesService } from './enquiries.service.js';
 import type { DealerEnquiriesRoute } from './routes/dealer-route.js';
+import { getDealerCallLeads } from './routes/get-dealer-call-leads.js';
 import { getDealerEnquiries } from './routes/get-dealer-enquiries.js';
 import { getDealerEnquiryCounts } from './routes/get-dealer-enquiry-counts.js';
 import { patchDealerEnquiry } from './routes/patch-dealer-enquiry.js';
@@ -10,6 +11,7 @@ const ROUTES: DealerEnquiriesRoute[] = [
   getDealerEnquiries,
   getDealerEnquiryCounts,
   patchDealerEnquiry,
+  getDealerCallLeads,
 ];
 
 export function createDealerEnquiriesRouter(service: EnquiriesService): Router {

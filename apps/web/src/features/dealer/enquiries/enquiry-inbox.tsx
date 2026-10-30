@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
+import { CALL_LEAD_TEXT } from '@/components/leads/call-lead-list';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 
-import { ENQUIRIES_TEXT, ENQUIRY_TABS } from './enquiries.constants';
+import { ENQUIRIES_PATH, ENQUIRIES_TEXT, ENQUIRY_TABS } from './enquiries.constants';
 import type { EnquiryInboxProps } from './enquiries.types';
 import { EnquiryCard } from './enquiry-card';
 import { enquiriesHref } from './utils';
@@ -11,9 +12,14 @@ import { enquiriesHref } from './utils';
 export function EnquiryInbox({ inbox, status, permissions }: EnquiryInboxProps) {
   return (
     <div className="flex flex-col gap-[18px]">
-      <div>
-        <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{ENQUIRIES_TEXT.title}</h1>
-        <p className="text-[13px] ink-muted tnum">{ENQUIRIES_TEXT.count(inbox.counts.ALL)}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{ENQUIRIES_TEXT.title}</h1>
+          <p className="text-[13px] ink-muted tnum">{ENQUIRIES_TEXT.count(inbox.counts.ALL)}</p>
+        </div>
+        <Link href={`${ENQUIRIES_PATH}/calls`} className="btn btn-secondary">
+          {CALL_LEAD_TEXT.viewCalls}
+        </Link>
       </div>
 
       <nav aria-label={ENQUIRIES_TEXT.tabsLabel} className="-mx-1 overflow-x-auto px-1 pb-1">

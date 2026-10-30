@@ -29,64 +29,17 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'Update the dealership',
       description:
-        '**Three fields (R27).** `establishedYear`, `tagline` and `specialities` \u2014 and ' +
-        '`DealerSelfUpdateInput` is `.strict()`, so anything else is a `400` naming the ' +
-        'field rather than a silent write.\n\n' +
-        'The absences are the point. A dealership\u2019s registered name is what KYC was ' +
-        'checked against and what its public slug is derived from; its address, town and pin ' +
-        'are what the verification was *about*; its mobile and ' +
-        'email are how a buyer reaches a business that has been vouched for. None of those ' +
-        'is a preference a dealer may revise \u2014 a dealership that has genuinely moved ' +
-        'closes this account and opens another, because the VERIFIED plate is a claim about ' +
-        'a place and cannot be carried across a move unchecked.\n\n' +
-        'GSTIN and PAN are absent for the neighbouring reason: they were verified against a ' +
-        'document, and a silent edit would invalidate that check. The console has rendered ' +
-        'them read-only since it was built; this is the same rule at the API.\n\n' +
-        '`PATCH /v1/dealer/onboarding` takes the wider `DealerOnboardingInput` while the ' +
-        'dealership is a **DRAFT** \u2014 everything except the GSTIN, which is entered with ' +
-        'the GST certificate, and the PAN, which is an identity document. ' +
-        '`PATCH /v1/admin/dealers/{id}` takes `UpdateDealerInput` for a moderator with the ' +
-        'certificate in hand.\n\n' +
-        '**Partial by design**: an absent field is untouched. Tagline is optional; null or ' +
-        'blank text requests removal through the same review queue. Services remain nonempty ' +
-        'when supplied.\n\n' +
-        'OWNER only (`dealer:update`) \u2014 a manager or salesperson gets a 403.\n\n' +
-        '## Two of the three wait for a moderator (R34)\n\n' +
-        'On an **ACTIVE** dealership `tagline` and `specialities` do not reach the ' +
-        'dealership row. They become a profile-edit request, and what buyers see is ' +
-        'unchanged until an admin approves it at ' +
-        '`POST /v1/admin/profile-changes/{id}/approve`. `establishedYear` is written ' +
-        'immediately.\n\n' +
-        'The split is free text against a number. A year bounded by 1900 and 2100 cannot ' +
-        'carry a phone number, a rival\u2019s name or a WhatsApp handle; the other two are ' +
-        'the only prose a dealer writes that a buyer reads, which makes them the only place ' +
-        'a number can reach a public page without passing ' +
-        '`POST /v1/vehicles/{id}/reveal-contact` \u2014 the one route allowed to hand one ' +
-        'out, rate-limited twice over and logged as a lead.\n\n' +
-        '**Still a `200`.** The save succeeded: the edit was accepted and recorded. What ' +
-        'comes back is the dealership *as it stands now* \u2014 old values on top \u2014 ' +
-        'with `profileChange` carrying the proposal, its status, and on a refusal the ' +
-        'moderator\u2019s reason. A client that renders the response body will show the ' +
-        'right thing; one that assumes `200` means published will not.\n\n' +
-        '**One request at a time.** A second edit to either sentence while one is waiting is a ' +
-        '`409` (`PROFILE_EDIT_PENDING`), not a merge \u2014 the profile screen shows the two ' +
-        'boxes `disabled` with the proposed text in that state, so this is the server-side half ' +
-        'of a rule the form already states. A request that quietly absorbed later edits could ' +
-        'change *after* a moderator started reading it.\n\n' +
-        'A save that proposes nothing new queues nothing: the form re-sends all three fields ' +
-        'every time, so a dealer correcting only their established year would otherwise put a ' +
-        'request in front of a moderator asking them to approve the status quo. That is not a ' +
-        'withdrawal \u2014 `DELETE /v1/dealer/profile-change` is.\n\n' +
-        'A dealership that is **not ACTIVE** writes straight through: nothing about it is ' +
-        'public (rule 6), so there is no page for a number to appear on, and the whole ' +
-        'application is read at approval anyway.',
+        'OWNER only (`dealer:update`). Accepts `establishedYear`, `tagline`, `specialities`, and `contact.landline`; unknown fields are a named 400. Account mobile/email, business identity and address remain locked. ' +
+        'On ACTIVE dealerships, tagline, services and customer contact changes enter the existing admin review queue. Established year updates immediately. The response shows approved details and the pending proposal; 200 means accepted, not published. ' +
+        'An Indian mobile or landline with STD code is accepted for customer contact; blank/null requests removal. An omitted field is unchanged. Saving confirms consent to share the number with signed-in customers after approval. The previous approved number remains active while pending, rejected or withdrawn. ' +
+        'Existing numbers need explicit confirmation and approval before calling is enabled. Account mobile is never a fallback. There is one pending request per dealership; cancel it before proposing another change. Draft contact edits are saved for initial application review. Other non-active states refuse contact edits. ' +
+        'Customer contact review does not invalidate business verification. The wider draft onboarding and admin amendment routes remain available for their respective purposes.',
       audience: 'dealer',
       permission: 'dealer:update',
       requestBody: {
         schema: 'DealerSelfUpdateInput',
         description:
-          'Only the fields being changed. On an ACTIVE dealership, `tagline` and ' +
-          '`specialities` are proposals rather than writes.',
+          'Only changed fields. On ACTIVE dealerships, tagline, services and customer contact changes require approval.',
         example: {
           establishedYear: 2009,
           tagline: 'Family-run since 2009 \u2014 every car with a service book.',

@@ -6,6 +6,7 @@ Parent: [web/features](../README.md)
 
 - [admin-access](admin-access.md)
 - [config-editor](config-editor.md)
+- [customer-contact-approval](customer-contact-approval.md)
 - [dealer-actions](dealer-actions.md)
 - [dealer-portfolio-summary](dealer-portfolio-summary.md)
 - [dealer-profile-editor](dealer-profile-editor.md)

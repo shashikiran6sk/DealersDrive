@@ -153,7 +153,7 @@ export type DocStatus = z.infer<typeof DocStatus>;
  * The tagline and the service list are the two things on a verified dealership
  * a dealer may still change, and they are also the two pieces of free text a
  * buyer reads. A number typed into either of them is a phone number on a public
- * page that bypassed `POST /v1/vehicles/:id/reveal-contact` — which is the one
+ * page that bypassed `POST /v1/vehicles/:slug/reveal-contact` — which is the one
  * route allowed to hand one out, rate-limited twice over and logged as a lead
  * (rule 7). So the edit is proposed rather than applied, and a moderator
  * decides.

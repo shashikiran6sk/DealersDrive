@@ -8,7 +8,7 @@ export const dealersPublicDocs: ModuleDocs = {
     'number or an email address**, and that is a property of the schemas rather than of the ' +
     'handlers: `DealerPublicProfile.contact` has no phone row at all, and no field in it that ' +
     'could hold a number. ' +
-    '`POST /v1/vehicles/:id/reveal-contact` is the only route that returns one, and it is a ' +
+    '`POST /v1/vehicles/:slug/reveal-contact` is the only route that returns one, and it is a ' +
     'POST precisely so it can be rate-limited twice over and logged as a lead (rule 7).',
   operations: [
     {

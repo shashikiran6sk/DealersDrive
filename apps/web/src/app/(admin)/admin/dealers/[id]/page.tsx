@@ -13,6 +13,7 @@ import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 import { DealerPortfolioSummary } from '@/features/admin/dealer-portfolio-summary';
+import { CustomerContactApproval } from '@/features/admin/customer-contact-approval';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
 import { ManualActivationNotice } from '@/features/admin/manual-activation-notice';
@@ -118,6 +119,12 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       </div>
 
       {dealer.profileChange ? <ProfileChangeReview change={dealer.profileChange} /> : null}
+
+      <CustomerContactApproval
+        dealerId={dealer.id}
+        landline={dealer.landline}
+        approvedAt={dealer.landlineApprovedAt ?? null}
+      />
 
       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr))]">
         <DealerProfileEditor dealer={dealer} />

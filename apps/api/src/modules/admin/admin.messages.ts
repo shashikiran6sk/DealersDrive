@@ -50,3 +50,6 @@ export const YARD_VISIT_PHOTO_LIMIT_REACHED =
 
 export const YARD_VISIT_PHOTO_MISMATCH =
   'That file is not a JPEG, PNG or WebP photograph of the type it was uploaded as. Choose the photograph again.';
+
+export const CUSTOMER_CONTACT_MISSING =
+  'This dealership has no valid customer contact number to approve. Add one in the profile editor first.';

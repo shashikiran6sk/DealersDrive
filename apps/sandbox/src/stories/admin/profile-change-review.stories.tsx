@@ -98,3 +98,19 @@ export const Deciding: Story = {
     adminActionStub.delayMs = 8000;
   },
 };
+
+export const CustomerContact: Story = {
+  args: {
+    change: {
+      ...BASE,
+      landlineChanged: true,
+      liveLandline: '+914162248890',
+      landline: '+919840012345',
+    },
+  },
+};
+export const RemoveCustomerCalling: Story = {
+  args: {
+    change: { ...BASE, landlineChanged: true, liveLandline: '+914162248890', landline: null },
+  },
+};
