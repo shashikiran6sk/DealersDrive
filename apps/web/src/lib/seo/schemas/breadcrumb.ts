@@ -25,10 +25,7 @@ export interface DistrictCrumb {
   slug: string;
 }
 
-export function directoryTrail(
-  directory: Crumb,
-  district?: DistrictCrumb,
-): readonly Crumb[] {
+export function directoryTrail(directory: Crumb, district?: DistrictCrumb): readonly Crumb[] {
   return [
     { name: BREADCRUMB_TEXT.home, path: '/' },
     directory,
