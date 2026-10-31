@@ -55,9 +55,11 @@ canonical of `/car/{slug}`.
 
 **SEO.** `generateMetadata` and the page call the same `loadVehicle`, whose
 fetch Next memoises, so the metadata costs no second request. The title is
-`{title} in {town}`; the description is built from the price, the summary
+`Used {title} for Sale in {town}` — the words a buyer types ("used Kia Seltos
+Vellore", "Tata Nexon for sale in Vellore") are the words a search engine
+matches, and the brand suffix is added by the template; the description is built from the price, the summary
 and the dealership, and says "Reserved for another buyer." first on a reserved
-car. The primary photograph is the social image. `Car` + `Offer` +
+car. The primary photograph is the social image. `Car`/`Product` + `Offer` +
 `BreadcrumbList` come from `lib/seo/schemas`; see [lib](../../lib.md) and
 docs/seo.md §7 for what each lifecycle state answers.
 

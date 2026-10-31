@@ -1,11 +1,13 @@
-import type { PublicConfig } from '@dealers-drive/contracts';
+import { toE164, type PublicConfig } from '@dealers-drive/contracts';
 
 import type { JsonLdNode } from '../json-ld';
 import {
   LOGO_PATH,
   LOGO_SIZE,
   NOT_A_PROFILE_NETWORKS,
+  SITE_ALTERNATE_NAMES,
   SITE_DESCRIPTION,
+  SITE_DOMAIN_NAME,
   SITE_NAME,
   SUPPORT_CONTACT_TYPE,
   COUNTRY_CODE,
@@ -36,7 +38,9 @@ export function organizationSchema({
     '@type': 'Organization',
     '@id': organizationId(),
     name: SITE_NAME,
+    alternateName: [...SITE_ALTERNATE_NAMES],
     url: absoluteUrl('/'),
+    description: SITE_DESCRIPTION,
     logo: {
       '@type': 'ImageObject',
       url: absoluteUrl(LOGO_PATH),
@@ -49,7 +53,7 @@ export function organizationSchema({
           '@type': 'ContactPoint',
           contactType: SUPPORT_CONTACT_TYPE,
           email: supportEmail || undefined,
-          telephone: supportPhone || undefined,
+          telephone: supportPhone ? toE164(supportPhone) : undefined,
           areaServed: COUNTRY_CODE,
         }
       : undefined,
@@ -61,6 +65,7 @@ export function websiteSchema(): JsonLdNode {
     '@type': 'WebSite',
     '@id': websiteId(),
     name: SITE_NAME,
+    alternateName: [...SITE_ALTERNATE_NAMES, SITE_DOMAIN_NAME],
     url: absoluteUrl('/'),
     description: SITE_DESCRIPTION,
     inLanguage: 'en-IN',

@@ -22,6 +22,7 @@ import { getPublicLocations } from '@/lib/locations';
 import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
+  directoryTrail,
   directoryView,
   isIndexableView,
   itemListSchema,
@@ -86,10 +87,12 @@ export default async function CarsPage({
     <SearchNavigationProvider>
       <JsonLd
         nodes={[
-          breadcrumbSchema([
-            { name: BREADCRUMB_TEXT.home, path: '/' },
-            { name: BREADCRUMB_TEXT.cars, path: CARS_PATH },
-          ]),
+          breadcrumbSchema(
+            directoryTrail(
+              { name: BREADCRUMB_TEXT.cars, path: CARS_PATH },
+              place && params.district ? { name: place, slug: params.district } : undefined,
+            ),
+          ),
           ...(isIndexableView(view) && listed.length > 0
             ? [
                 itemListSchema(

@@ -68,3 +68,7 @@ not a missing page. The indexing policy is in [lib/seo](../../lib.md).
 The `ItemList` carries only the cars the page links to — a reserved car's card
 has no link — and only on an indexable view, numbered from where the page
 starts.
+
+On a district page the `BreadcrumbList` is Home → Cars → the district, built by
+`directoryTrail`, and the `<h1>` reads "Used cars in {district}" to match the
+title "Used Cars in {district}" — the landing page for "used cars in Vellore".

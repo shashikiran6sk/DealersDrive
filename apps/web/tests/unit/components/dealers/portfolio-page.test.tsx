@@ -668,6 +668,41 @@ describe('structured data', () => {
     ]);
   });
 
+  it('lists the cars a buyer can open on the page, at their canonical URLs', async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(
+      inventory([car('a'), { ...car('b'), availability: 'RESERVED' }, car('c')], {
+        page: 2,
+        total: 27,
+      }),
+    );
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    const list = graphOf(container).find((node) => node['@type'] === 'ItemList');
+
+    expect(list).toMatchObject({
+      name: 'Used cars for sale at Sri Lakshmi Motors',
+      numberOfItems: 2,
+      itemListElement: [
+        { position: 25, url: 'https://www.dealers-drive.com/car/a' },
+        { position: 26, url: 'https://www.dealers-drive.com/car/c' },
+      ],
+    });
+  });
+
+  it('publishes no car list for a filtered inventory, or an empty one', async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(inventory([car('a')]));
+    const filtered = render(
+      await DealerPortfolioPage({ params, searchParams: Promise.resolve({ fuel: 'diesel' }) }),
+    );
+    expect(graphOf(filtered.container).map((node) => node['@type'])).not.toContain('ItemList');
+    filtered.unmount();
+
+    apiGetParsed.mockResolvedValue(inventory());
+    const empty = render(await DealerPortfolioPage({ params, searchParams }));
+    expect(graphOf(empty.container).map((node) => node['@type'])).not.toContain('ItemList');
+  });
+
   it('cannot be broken out of by what a dealer typed', async () => {
     serve({ ...DEALER, tagline: '</script><script>alert(1)</script>' });
     const { container } = render(await DealerPortfolioPage({ params, searchParams }));

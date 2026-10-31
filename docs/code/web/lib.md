@@ -773,6 +773,24 @@ prints with, so the number a crawler reads is the number on the page.
 rather than `InStock`, which would be false, or `OutOfStock`, which is less
 true.
 
+**`'@type': ['Car', 'Product']`, not `'Car'`.** Schema.org makes `Car` a
+subtype of `Product`, but Google's product-snippet documentation says it does
+not read `Car` as a `Product` on its own and asks for both types. Typed `Car`
+alone, a car page was not eligible for the price-and-availability line under
+its search result, which is the rich result India actually gets — the
+vehicle-listing rich result is US-only. Both types describe the same thing, so
+nothing on the page changes.
+
+**`offers.availableAtOrFrom`** is the dealership's town, district and state —
+what the dealer card prints under the dealership's name — so the offer says
+where the car can be seen. No street address: the car page does not print one,
+and the dealer's own node (linked by `seller.@id`) carries it.
+
+**`color` leaves out `Other`.** It is a placeholder the dealer chose because
+the list had nothing better, not a colour; a search engine reading
+`color: "Other"` learns nothing true. A missing colour and an unstated one are
+both absent.
+
 ### `schemas/dealer.ts` — `export function dealerSchema(dealer)`
 
 No `geo` and no `telephone` — see
@@ -788,6 +806,25 @@ The footer prints the support contacts and the social links on every public
 page, so the `Organization` says what the footer says and nothing more. A
 WhatsApp link is a way to message somebody, not a profile, so it is not a
 `sameAs`.
+
+The telephone is written through `toE164` (`+918015354298`), because the
+operator types it into `/admin/config` however they like and a bare ten-digit
+number in structured data has no country.
+
+### `export function websiteSchema()`
+
+`alternateName` lists the ways people type the brand — `Dealers Drive`,
+`DealersDrive` — and the domain last. Google picks the site name it shows in
+results from the home page's `WebSite` node, and its guidance is to give the
+alternatives in order of preference with the domain as the final fallback. The
+`Organization` carries the same two names, so a search for "dealers drive" is
+matched to the brand whichever node it reads.
+
+### `schemas/breadcrumb.ts` — `export function directoryTrail(directory, district?)`
+
+Home → the directory → the district, the district crumb at the district's
+canonical landing URL. One function for `/cars` and `/dealers`, so the two
+trails cannot disagree about what a district page's parent is.
 
 ### `sitemap.ts` — `export function buildSitemap(pages, locations)`
 
