@@ -1,7 +1,13 @@
 import type { PublicAvailability, PublicVehicleDetail } from '@dealers-drive/contracts';
 
 import type { JsonLdNode } from '../json-ld';
-import { CURRENCY, KILOMETRE_UNIT } from '../seo.constants';
+import {
+  COUNTRY_CODE,
+  CURRENCY,
+  KILOMETRE_UNIT,
+  UNSTATED_COLOURS,
+  VEHICLE_SCHEMA_TYPES,
+} from '../seo.constants';
 import { absoluteUrl } from '../site';
 import { dealerId } from './dealer';
 
@@ -32,6 +38,25 @@ function inPrimaryOrder(vehicle: PublicVehicleDetail): string[] {
   return (primary ? [primary, ...rest] : rest).map((image) => image.url);
 }
 
+function placeOf(dealer: PublicVehicleDetail['dealer']): JsonLdNode | undefined {
+  if (!dealer.city && !dealer.district && !dealer.state) return undefined;
+  return {
+    '@type': 'Place',
+    name: dealer.location ?? undefined,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: dealer.city ?? dealer.district ?? undefined,
+      addressRegion: dealer.state ?? undefined,
+      addressCountry: COUNTRY_CODE,
+    },
+  };
+}
+
+function colourOf(colour: string | null): string | undefined {
+  if (!colour || UNSTATED_COLOURS.has(colour.trim().toLowerCase())) return undefined;
+  return colour;
+}
+
 function offerOf(vehicle: PublicVehicleDetail, url: string): JsonLdNode | undefined {
   const { pricePaise } = vehicle.facts;
   if (pricePaise === null) return undefined;
@@ -42,6 +67,7 @@ function offerOf(vehicle: PublicVehicleDetail, url: string): JsonLdNode | undefi
     priceCurrency: CURRENCY,
     availability: AVAILABILITY[vehicle.availability],
     itemCondition: USED_CONDITION,
+    availableAtOrFrom: placeOf(vehicle.dealer),
     seller: {
       '@type': 'AutoDealer',
       '@id': dealerId(vehicle.dealer.slug),
@@ -57,7 +83,7 @@ export function vehicleSchema(vehicle: PublicVehicleDetail): JsonLdNode {
   const images = inPrimaryOrder(vehicle);
 
   return {
-    '@type': 'Car',
+    '@type': [...VEHICLE_SCHEMA_TYPES],
     '@id': vehicleId(vehicle.slug),
     name: vehicle.title,
     url,
@@ -70,7 +96,7 @@ export function vehicleSchema(vehicle: PublicVehicleDetail): JsonLdNode {
     bodyType: facts.bodyType ?? undefined,
     fuelType: facts.fuelType ?? undefined,
     vehicleTransmission: facts.transmission ?? undefined,
-    color: facts.color ?? undefined,
+    color: colourOf(facts.color),
     mileageFromOdometer:
       facts.kilometersDriven === null
         ? undefined

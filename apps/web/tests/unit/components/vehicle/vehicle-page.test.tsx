@@ -304,7 +304,7 @@ describe('/car/[slug]', () => {
     serve(detail());
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
 
-    expect(metadata.title).toBe('2023 Hyundai Creta SX(O) in Katpadi');
+    expect(metadata.title).toBe('Used 2023 Hyundai Creta SX(O) for Sale in Katpadi');
     expect(metadata.description).toBe(
       '2023 Hyundai Creta SX(O) for sale in Katpadi, Vellore at ₹14,50,000 — Petrol · Automatic · 22,400 km. Sold by Sri Lakshmi Motors, a verified dealership on Dealers-Drive.',
     );
@@ -318,7 +318,7 @@ describe('/car/[slug]', () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
 
     expect(metadata.openGraph).toMatchObject({
-      title: '2023 Hyundai Creta SX(O) in Katpadi | Dealers-Drive',
+      title: 'Used 2023 Hyundai Creta SX(O) for Sale in Katpadi | Dealers-Drive',
       siteName: 'Dealers-Drive',
       url: `http://localhost:3000/car/${SLUG}`,
       images: [image(1)],
@@ -369,12 +369,14 @@ describe('/car/[slug] structured data', () => {
   async function carNode(car: PublicVehicleDetail) {
     serve(car);
     const { container } = render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
-    return graphOf(container).find((node) => node['@type'] === 'Car');
+    return graphOf(container).find(
+      (node) => Array.isArray(node['@type']) && node['@type'].includes('Car'),
+    );
   }
 
   it('describes the car from the facts the page prints, and nothing else', async () => {
     expect(await carNode(detail())).toEqual({
-      '@type': 'Car',
+      '@type': ['Car', 'Product'],
       '@id': `http://localhost:3000/car/${SLUG}#vehicle`,
       name: '2023 Hyundai Creta SX(O)',
       url: `http://localhost:3000/car/${SLUG}`,
@@ -398,6 +400,16 @@ describe('/car/[slug] structured data', () => {
         priceCurrency: 'INR',
         availability: 'https://schema.org/InStock',
         itemCondition: 'https://schema.org/UsedCondition',
+        availableAtOrFrom: {
+          '@type': 'Place',
+          name: 'Katpadi, Vellore',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Katpadi',
+            addressRegion: 'Tamil Nadu',
+            addressCountry: 'IN',
+          },
+        },
         seller: {
           '@type': 'AutoDealer',
           '@id': 'http://localhost:3000/dealers/sri-lakshmi-motors#dealer',
@@ -406,6 +418,42 @@ describe('/car/[slug] structured data', () => {
         },
       },
     });
+  });
+
+  /**
+   * Google does not read `Car` as a `Product` on its own: without both types a
+   * car page is not eligible for the price-and-availability snippet.
+   */
+  it('is typed as a Product as well as a Car, so search can show its price', async () => {
+    const node = await carNode(detail());
+    expect(node?.['@type']).toEqual(['Car', 'Product']);
+  });
+
+  it('leaves out a colour the dealer did not really state', async () => {
+    for (const color of ['Other', 'others']) {
+      const node = await carNode(detail({ facts: { ...detail().facts, color } }));
+      expect(node).not.toHaveProperty('color');
+    }
+  });
+
+  it('places the offer where the dealership is, and nowhere when that is unknown', async () => {
+    const located = await carNode(detail());
+    expect(located?.offers).toMatchObject({
+      availableAtOrFrom: { address: { addressLocality: 'Katpadi', addressRegion: 'Tamil Nadu' } },
+    });
+
+    const unknown = await carNode(
+      detail({
+        dealer: { ...detail().dealer, location: null, city: null, district: null, state: null },
+      }),
+    );
+    expect(unknown?.offers).not.toHaveProperty('availableAtOrFrom');
+  });
+
+  it('titles a car with no town as a used car for sale', async () => {
+    serve(detail({ dealer: { ...detail().dealer, city: null } }));
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
+    expect(metadata.title).toBe('Used 2023 Hyundai Creta SX(O) for Sale');
   });
 
   it('prices the offer at exactly the rupees the page shows', async () => {

@@ -10,7 +10,7 @@ export const CARS_TEXT = {
   home: 'Home',
   breadcrumb: 'Cars',
   title: 'Used cars',
-  titleIn: (district: string) => `Cars in ${district}`,
+  titleIn: (district: string) => `Used cars in ${district}`,
   count: (total: number) => `${countLabel(total, 'car')} available`,
   emptyTitle: 'No cars listed yet',
   emptyMessage:

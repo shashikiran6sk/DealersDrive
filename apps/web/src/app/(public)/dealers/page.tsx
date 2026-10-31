@@ -15,6 +15,7 @@ import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
   dealerPath,
+  directoryTrail,
   directoryView,
   isIndexableView,
   itemListSchema,
@@ -25,6 +26,8 @@ import { many, one, type SearchParamsInput } from '@/lib/url';
 import { DEALERS_TEXT } from './dealers.constants';
 
 export const dynamic = 'force-dynamic';
+
+const DEALERS_PATH = '/dealers';
 
 function readParams(params: SearchParamsInput): {
   city: string[];
@@ -101,10 +104,12 @@ export default async function DealerDirectoryPage({
     <div className="mx-auto max-w-[1280px] px-4 pb-[64px] pt-[28px] sm:px-6">
       <JsonLd
         nodes={[
-          breadcrumbSchema([
-            { name: BREADCRUMB_TEXT.home, path: '/' },
-            { name: BREADCRUMB_TEXT.dealers, path: '/dealers' },
-          ]),
+          breadcrumbSchema(
+            directoryTrail(
+              { name: BREADCRUMB_TEXT.dealers, path: DEALERS_PATH },
+              place && district && city.length === 0 ? { name: place, slug: district } : undefined,
+            ),
+          ),
           ...(isIndexableView(view)
             ? [
                 itemListSchema(
@@ -124,7 +129,7 @@ export default async function DealerDirectoryPage({
       </nav>
 
       <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="text-[26px] sm:text-[30px]">{place ? `Dealers in ${place}` : 'Dealers'}</h1>
+        <h1 className="text-[26px] sm:text-[30px]">{DEALERS_TEXT.heading(place)}</h1>
         <span className="text-[14px] ink-muted tnum">{directory.countLabel}</span>
       </div>
 

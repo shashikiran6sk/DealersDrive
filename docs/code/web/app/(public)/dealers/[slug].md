@@ -351,3 +351,12 @@ sides) both keep the building, the sign and the cars.
 Was `alt=""`. On the directory card the photograph is decoration beside a link
 that names the dealership; here it is the page's own picture of the yard, and
 the only description of it an image search has.
+
+### `function inventoryListOf(dealer, inventory, search)`
+
+The portfolio publishes an `ItemList` of the cars it links to, the same rule as
+`/cars`: only available cars (a reserved card has no link), numbered from where
+the page starts, and only on an indexable view — a filtered or sorted inventory
+is `noindex` and lists nothing. It ties each car page to its dealership in the
+structured data the way the page's links already do. An inventory that failed
+to load lists nothing rather than an empty list.

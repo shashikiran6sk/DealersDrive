@@ -28,8 +28,10 @@ import {
   directoryPath,
   directoryView,
   isIndexableView,
+  itemListSchema,
   pageMetadata,
   seoMetadata,
+  vehiclePath,
 } from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-search';
@@ -101,6 +103,24 @@ function placeNameOf(dealer: DealerPublicProfile): string | null {
   return placeOf([dealer.address.city, dealer.address.district, dealer.address.state]);
 }
 
+function inventoryListOf(
+  dealer: DealerPublicProfile,
+  inventory: InventoryResult,
+  search: VehicleSearchParams,
+) {
+  if (inventory.status !== 'ready' || !isIndexableView(directoryView(search, false))) return [];
+  const { data, page } = inventory.inventory;
+  const listed = data.filter((vehicle) => vehicle.availability === 'AVAILABLE');
+  if (listed.length === 0) return [];
+  return [
+    itemListSchema(
+      DEALER_PAGE_TEXT.inventoryListName(dealer.brandName),
+      listed.map((vehicle) => ({ name: vehicle.title, path: vehiclePath(vehicle.slug) })),
+      (page.page - 1) * page.limit,
+    ),
+  ];
+}
+
 function canonicalOf(
   dealer: DealerPublicProfile,
   search: VehicleSearchParams,
@@ -162,6 +182,7 @@ export default async function DealerPortfolioPage({
             { name: BREADCRUMB_TEXT.dealers, path: '/dealers' },
             { name: dealer.brandName, path: dealerPath(dealer.slug) },
           ]),
+          ...inventoryListOf(dealer, inventory, search),
         ]}
       />
 

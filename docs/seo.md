@@ -22,6 +22,7 @@ what the page already says. Everything below is one of those four.
 | `/dealers`                | dynamic                    | the base, each district, plain later pages  | the base and each district         |
 | `/dealers/[slug]`         | ISR, 60 s, tag-revalidated | an ACTIVE dealership with an available car  | the same                           |
 | `/contact`                | ISR, 10 min                | yes                                         | yes                                |
+| `/terms`, `/privacy`      | static                     | yes, once the legal v1 pages are published  | the same                           |
 | `/support`                | 308 → `/contact`           | —                                           | no                                 |
 | `/login`                  | dynamic                    | `noindex, follow`                           | no                                 |
 | `/saved`, `/enquiries`    | dynamic, signed in         | `noindex, nofollow`                         | no                                 |
@@ -75,7 +76,7 @@ Open Graph and Twitter are written in full on each page because Next replaces a
 parent's `openGraph` object rather than merging it.
 
 **Titles** read `<page> | Dealers-Drive`: `Used Cars for Sale`, `Used Cars in
-Vellore`, `2022 Maruti Suzuki Brezza ZXI in Mangalagiri`, `Adoni Motor Traders —
+Vellore`, `Used 2022 Maruti Suzuki Brezza ZXI for Sale in Mangalagiri`, `Adoni Motor Traders —
 Used Car Dealer in Adoni` (the API composes the dealer's, `seo.title`). The home
 page is `Dealers-Drive | Used Cars from Verified Independent Dealers`. The brand
 is always `Dealers-Drive`.
@@ -151,8 +152,9 @@ or sorted portfolio is `noindex, follow`, canonical to `/dealers/[slug]`.
 
 **`/sitemap.xml`** (`app/sitemap.ts`, built by `lib/seo/sitemap.ts`) lists:
 
-1. `/`, `/cars`, `/dealers`, `/contact` — no `lastmod`; a static page has no
-   honest last-changed time and "now" is a lie.
+1. `/`, `/cars`, `/dealers`, `/contact`, and `/terms` and `/privacy` once the
+   legal pages are visible — no `lastmod`; a static page has no honest
+   last-changed time and "now" is a lie.
 2. The district landing pages above.
 3. Every indexable dealership, `lastmod` = the later of its approval and the
    newest change to one of its available cars.
@@ -204,15 +206,17 @@ opening hours, "certified", "lowest price" or telephone number is emitted,
 because none is on the page. A fact the dealer never entered is left out, never
 guessed.
 
-| Page              | Nodes                                                                                                                       |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/`               | `Organization` (name, url, logo, footer social links as `sameAs`, footer support email/phone as `contactPoint`) · `WebSite` |
-| `/cars`           | `BreadcrumbList` · `ItemList` of the available cars on the page, in page order — indexable views only                       |
-| `/car/[slug]`     | `Car` (+ `Offer`) · `BreadcrumbList` Home → Cars → the car                                                                  |
-| `/dealers`        | `BreadcrumbList` · `ItemList` of the dealerships on the page — indexable views only                                         |
-| `/dealers/[slug]` | `AutoDealer` · `BreadcrumbList` Home → Dealers → the dealership                                                             |
+| Page              | Nodes                                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`               | `Organization` (name, `alternateName`, url, logo, footer social links as `sameAs`, footer support email/phone as `contactPoint`) · `WebSite` (with `alternateName`) |
+| `/cars`           | `BreadcrumbList` (Home → Cars → the district, on a district page) · `ItemList` of the available cars on the page, in page order — indexable views only              |
+| `/car/[slug]`     | `Car`+`Product` (+ `Offer`) · `BreadcrumbList` Home → Cars → the car                                                                                                |
+| `/dealers`        | `BreadcrumbList` (Home → Dealers → the district, on a district page) · `ItemList` of the dealerships on the page — indexable views only                             |
+| `/dealers/[slug]` | `AutoDealer` · `BreadcrumbList` Home → Dealers → the dealership · `ItemList` of its available cars — indexable views only                                           |
 
-**`Car`** (`schemas/vehicle.ts`) is built from `PublicVehicleDetail.facts` — the
+**`Car`** (`schemas/vehicle.ts`) is typed `["Car", "Product"]` — Google does
+not treat `Car` as a `Product` by itself, and without `Product` a car page is not
+eligible for the price-and-availability snippet. It is built from `PublicVehicleDetail.facts` — the
 same values the Specifications list prints: `brand`, `model`,
 `vehicleConfiguration` (variant), `vehicleModelDate` (year), `bodyType`,
 `fuelType`, `vehicleTransmission`, `color`, `mileageFromOdometer` (KMT),
@@ -222,7 +226,9 @@ the dealer's phone never appear.
 
 **`Offer`** is present only when the page shows a price. `price` is
 `round(pricePaise / 100)` — exactly the rupees the page prints — in `INR`.
-`seller` is the dealership, by the same `@id` its own page uses.
+`seller` is the dealership, by the same `@id` its own page uses, and
+`availableAtOrFrom` is the dealership's town, district and state — the place the
+dealer card prints. A colour of `Other` is left out: it is not a colour.
 
 **`AutoDealer`** (`schemas/dealer.ts`): name, `legalName`, url, the tagline as
 `description`, the yard photograph, `PostalAddress` (street, locality, region,
@@ -232,9 +238,18 @@ coordinates come from a pasted share link, fine for centring a map a person
 looks at, not for asserting to a search engine. **Not** `telephone`: rule 7.
 
 Schema.org validity and Google rich-result eligibility are different things.
-Google's vehicle-listing rich result is limited in region; the `Car`/`Offer`
-markup is kept because it is the accurate description of the page and is what
-search and AI systems read to understand it.
+Google's vehicle-listing rich result (the car carousel with a "Vehicle listings"
+filter) is available only in the US, so no markup produces it for an Indian
+search. What an Indian search can show is the **product snippet** — price and
+availability under the blue link, from the `Product` type and its `Offer` — and
+the car's photograph in Images. The `Car` properties stay because they are the
+accurate description of the page and what search and AI systems read to
+understand it.
+
+**Site name.** Google chooses the site name it shows over a result from the home
+page's `WebSite` node. `alternateName` lists `Dealers Drive`, `DealersDrive`
+and `dealers-drive.com`, in that order, so a search typed without the hyphen is
+still matched to the brand.
 
 ## 7. Vehicle lifecycle — what happens to a car's URL
 
@@ -327,16 +342,40 @@ The portfolio's yard photograph is alt-texted `{dealer} dealership yard`.
 6. Build, `next start` with `APP_ENV=production WEB_BASE_URL=https://www.dealers-drive.com`,
    and read the `<head>` and the JSON-LD with `curl`.
 
-## 11. After each production deployment
+## 11. What code cannot do
+
+Everything above makes the site eligible and understood. It does not make it
+rank. For a query like "used Kia Seltos Vellore" or "used cars in Vellore", the
+order of results is decided by things outside the repository:
+
+- **Google Business Profile.** Local results ("near me", "in Vellore", the map
+  pack) come from Business Profiles, not from websites. Each dealership should
+  have a verified profile whose website link is its `/dealers/[slug]` page, and
+  Dealers-Drive should have its own.
+- **Links from elsewhere.** The social profiles in `sameAs`, local directories
+  (Justdial, Sulekha, IndiaMART), the dealers' own social pages linking to their
+  Dealers-Drive page, and local press.
+- **Time and inventory.** A new domain with two dealerships and a couple of dozen
+  cars competes with CarWale, CarDekho, OLX and Cars24. Fresh, complete listings
+  — every field filled, a real description, many photographs — are what close
+  that gap.
+- **Bing.** Bing's index powers DuckDuckGo, Yahoo and Ecosia, and is one of the
+  sources for ChatGPT search. Safari and Chrome default to Google; Brave uses
+  its own index. Registering with Bing Webmaster Tools covers most of the rest.
+
+## 12. After each production deployment
 
 In Google Search Console (property `https://www.dealers-drive.com`) and Bing
 Webmaster Tools:
 
 1. Submit `https://www.dealers-drive.com/sitemap.xml` (once; re-read automatically).
+   In Bing Webmaster Tools, "Import from Google Search Console" does this too.
 2. URL-inspect `/`, `/cars`, `/dealers`, one dealership and one available car;
    check "Page is indexable", the Google-selected canonical, and the rendered HTML.
 3. Run one car and one dealership through the Rich Results Test and the
-   Schema.org validator.
+   Schema.org validator. The car should show **Product snippets** as a
+   detected, valid item; the dealership's `AutoDealer` is validated by the
+   Schema.org validator only (Google has no rich result for it).
 4. Request indexing for the home page and the directories on the first launch.
 5. Watch **Pages → Not indexed**: filtered `/cars` URLs should be "Excluded by
    noindex"; sold and withdrawn cars "Not found (404)". Anything else there is a

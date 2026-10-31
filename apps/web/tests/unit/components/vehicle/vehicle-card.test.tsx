@@ -257,7 +257,9 @@ describe('/cars in one district', () => {
       '/v1/vehicles?district=ranipet',
       expect.anything(),
     );
-    expect(screen.getByRole('heading', { level: 1, name: 'Cars in Ranipet' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Used cars in Ranipet' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('1 car available')).toBeInTheDocument();
     expect(screen.getByText('District: Ranipet, Tamil Nadu')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /change district/i })).toBeInTheDocument();

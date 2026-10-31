@@ -15,7 +15,8 @@ export const VEHICLE_PAGE_TEXT = {
   specifications: 'Specifications',
   description: 'From the dealer',
   notFoundTitle: STATUS_TEXT.notFound.metaTitle,
-  metaTitle: (title: string, city: string | null) => (city ? `${title} in ${city}` : title),
+  metaTitle: (title: string, city: string | null) =>
+    city ? `Used ${title} for Sale in ${city}` : `Used ${title} for Sale`,
   metaDescription: ({
     title,
     place,

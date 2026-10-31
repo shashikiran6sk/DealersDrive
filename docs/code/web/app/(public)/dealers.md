@@ -55,9 +55,11 @@ the layout above already made — same URL, same options — so this is a hit
 rather than a second call to the API, and the picker below cannot disagree
 with the header about which districts exist (**R23**).
 
-### `<h1 className="text-[34px]">{place ? `Dealers in ${place}` : 'Verified dealers'}</h1>`
+### `<h1 className="text-[26px] sm:text-[30px]">{DEALERS_TEXT.heading(place)}</h1>`
 
-The heading names a place only when one was chosen. The baseline said
+The heading names a place only when one was chosen, and says "Used car
+dealers" rather than "Dealers": a district page is the landing page for "used
+car dealers in Vellore", and its `<h1>` should say what its title says. The baseline said
 "Dealers near Tamil Nadu" on the unfiltered page, which was a
 hard-coded state from the days when the platform had five towns in one
 of them (D6).
@@ -71,3 +73,11 @@ tagline still grew every card on the page. The card carries a hard
 height now, so equal rows are what it produces rather than something
 the grid has to arrange, and leaving the rule here would only be a
 second mechanism for a job already done.
+
+### `breadcrumbSchema(directoryTrail(…))`
+
+A district page breadcrumbs Home → Dealers → the district, at the district's
+canonical URL, so a search result for it shows where it sits. A city-filtered
+view is not a landing page (it is `noindex`), and a city's name paired with the
+district's slug would be a crumb that lies, so the district crumb is added only
+when no city is chosen.

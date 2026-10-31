@@ -1,5 +1,9 @@
 export const SITE_NAME = 'Dealers-Drive';
 
+export const SITE_ALTERNATE_NAMES: readonly string[] = ['Dealers Drive', 'DealersDrive'];
+
+export const SITE_DOMAIN_NAME = 'dealers-drive.com';
+
 export const SITE_LOCALE = 'en_IN';
 
 export const TITLE_SEPARATOR = ' | ';
@@ -64,6 +68,10 @@ export const COUNTRY_CODE = 'IN';
 export const CURRENCY = 'INR';
 
 export const KILOMETRE_UNIT = 'KMT';
+
+export const VEHICLE_SCHEMA_TYPES = ['Car', 'Product'] as const;
+
+export const UNSTATED_COLOURS: ReadonlySet<string> = new Set(['other', 'others', 'not specified']);
 
 export const SUPPORT_CONTACT_TYPE = 'customer support';
 

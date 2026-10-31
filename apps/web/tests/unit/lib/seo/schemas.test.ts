@@ -17,7 +17,9 @@ describe('organizationSchema', () => {
       '@type': 'Organization',
       '@id': 'https://www.dealers-drive.com/#organization',
       name: 'Dealers-Drive',
+      alternateName: ['Dealers Drive', 'DealersDrive'],
       url: 'https://www.dealers-drive.com/',
+      description: expect.stringContaining('used cars') as unknown,
       logo: {
         '@type': 'ImageObject',
         url: 'https://www.dealers-drive.com/brand/dealersdrive-organization-v2.png',
@@ -56,6 +58,14 @@ describe('organizationSchema', () => {
       areaServed: 'IN',
     });
   });
+
+  it('writes the support number in international form', () => {
+    production();
+    for (const supportPhone of ['8015354298', '+91 80153 54298', '08015354298']) {
+      const node = organizationSchema({ social: [], supportEmail: '', supportPhone });
+      expect(node.contactPoint).toMatchObject({ telephone: '+918015354298' });
+    }
+  });
 });
 
 describe('websiteSchema', () => {
@@ -68,6 +78,19 @@ describe('websiteSchema', () => {
       url: 'https://www.dealers-drive.com/',
       publisher: { '@id': 'https://www.dealers-drive.com/#organization' },
     });
+  });
+
+  /**
+   * People type the brand as "dealers drive" or "dealersdrive"; the alternate
+   * names let Google show the site name for those searches too.
+   */
+  it('names the ways people type the brand, and the domain last', () => {
+    production();
+    expect(websiteSchema().alternateName).toEqual([
+      'Dealers Drive',
+      'DealersDrive',
+      'dealers-drive.com',
+    ]);
   });
 });
 

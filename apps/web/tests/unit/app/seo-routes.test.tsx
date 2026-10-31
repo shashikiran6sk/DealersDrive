@@ -255,6 +255,30 @@ describe('/cars', () => {
     ]);
   });
 
+  it('breadcrumbs a district page through its district', async () => {
+    serveCars(vehicles([card('a')]));
+    const { container } = render(
+      await CarsPage({ searchParams: Promise.resolve({ district: 'vellore' }) }),
+    );
+    const trail = graphOf(container).find((node) => node['@type'] === 'BreadcrumbList');
+
+    expect(trail?.itemListElement).toEqual([
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.dealers-drive.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Cars',
+        item: 'https://www.dealers-drive.com/cars',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Vellore',
+        item: 'https://www.dealers-drive.com/cars?district=vellore',
+      },
+    ]);
+  });
+
   it('publishes no list for a view that is not indexed', async () => {
     serveCars(vehicles([card('a')]));
     const { container } = render(
@@ -290,6 +314,20 @@ describe('/dealers', () => {
   it('keeps a name search out of the index', async () => {
     const meta = await dealersMetadata({ searchParams: Promise.resolve({ q: 'adoni' }) });
     expect(meta.robots).toEqual({ index: false, follow: true });
+  });
+
+  it('headlines and breadcrumbs a district page by its district', async () => {
+    const { container, getByRole } = render(
+      await DealerDirectoryPage({ searchParams: Promise.resolve({ district: 'kurnool' }) }),
+    );
+    const trail = graphOf(container).find((node) => node['@type'] === 'BreadcrumbList');
+
+    expect(getByRole('heading', { level: 1 }).textContent).toBe('Used car dealers in Kurnool');
+    expect(trail?.itemListElement).toMatchObject([
+      { name: 'Home' },
+      { name: 'Dealers' },
+      { name: 'Kurnool', item: 'https://www.dealers-drive.com/dealers?district=kurnool' },
+    ]);
   });
 
   it('lists each dealership at its profile URL', async () => {

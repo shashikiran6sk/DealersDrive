@@ -22,7 +22,12 @@ export {
   type SeoRoute,
 } from './policy';
 export { robotsTxt } from './robots';
-export { breadcrumbSchema, type Crumb } from './schemas/breadcrumb';
+export {
+  breadcrumbSchema,
+  directoryTrail,
+  type Crumb,
+  type DistrictCrumb,
+} from './schemas/breadcrumb';
 export { dealerId, dealerPath, dealerSchema } from './schemas/dealer';
 export { itemListSchema, type ListedPage } from './schemas/item-list';
 export {
