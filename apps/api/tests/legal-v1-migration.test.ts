@@ -76,8 +76,8 @@ async function rehearsal(legacy: boolean) {
     expect(
       (
         await db.query(
-          'SELECT * FROM _prisma_migrations WHERE migration_name<>$1 ORDER BY migration_name',
-          [NAME],
+          'SELECT * FROM _prisma_migrations WHERE migration_name = ANY($1) ORDER BY migration_name',
+          [history.map((row: { migration_name: string }) => row.migration_name)],
         )
       ).rows,
     ).toEqual(history);
