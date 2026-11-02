@@ -26,6 +26,7 @@ export default async function AdminDashboardPage() {
               <div className="font-heading text-[28px] font-extrabold leading-[1.15] tnum">
                 {stat.valueLabel}
               </div>
+              {stat.detail ? <div className="text-[12px] ink-muted tnum">{stat.detail}</div> : null}
             </>
           );
 

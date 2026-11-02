@@ -52,7 +52,7 @@ which is why `admin-nav.tsx` is the file this feature changed.
 
 ### `export const dynamic = 'force-dynamic'`
 
-DESIGN-SPEC §3.17 — six plain stat boxes (no blueprint marks in admin), then
+DESIGN-SPEC §3.17 — plain stat boxes, one per tile the API sends (no blueprint marks in admin), then
 the moderation-queue panel.
 
 The shell has been mounted since **F049** and, until now, had no page under
@@ -72,6 +72,12 @@ Five of the six counters read `Listing` (F064), `Payment` (F052) and
 answer with no rows. The gross/net GST split behind two of them is real and
 is the part that is expensive to get wrong later. See `admin.service.ts`.
 ────────────────────────────────────────────────────────────────────────────
+
+### `{stat.detail ? <div className="text-[12px] ink-muted tnum">{stat.detail}</div> : null}`
+
+A box may carry one line under its number — the signed-in users box uses it
+for its buyer/dealer split. The sentence is the API's, like the label and the
+formatted value; the page decides only whether there is one to show.
 
 ### `return stat.href ?`
 

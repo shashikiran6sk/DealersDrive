@@ -149,6 +149,10 @@ model Session {
   /// enter is skipped as if this were NULL.
   activeDealerId       String?      @db.Uuid
   createdAt            DateTime     @default(now())
+  /// When this session last made a request, refreshed at most once an hour so
+  /// that browsing never turns every read into a write. A sign-in is one row;
+  /// this column is what tells the admin overview who is still coming back.
+  lastSeenAt           DateTime     @default(now())
 
   adminOtpChallenges AdminOtpChallenge[]
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -156,6 +160,7 @@ model Session {
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
+  @@index([lastSeenAt])
   @@map("sessions")
 }
 

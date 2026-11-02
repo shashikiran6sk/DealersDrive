@@ -5,6 +5,7 @@ import {
 } from './activation-override.service.js';
 import { createYardVisitService } from './yard-visits.service.js';
 import { createDealerVerificationService } from './dealer-verification.service.js';
+import { countSignedInUsers, signedInUsersStat } from './signed-in-users.js';
 import {
   documentRequirement,
   isVerifiedDocument,
@@ -314,17 +315,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     portfolio: dealers.portfolio,
     yardVisits: createYardVisitService({ prisma, storage, audit }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
-      const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
-        prisma.dealer.count(),
-        prisma.dealer.count({ where: { status: 'PENDING_APPROVAL' } }),
-        prisma.listing.count({ where: { status: 'PENDING_REVIEW' } }),
-        prisma.listing.count({ where: { status: 'ACTIVE' } }),
-        prisma.listing.findFirst({
-          where: { status: 'PENDING_REVIEW' },
-          orderBy: { lastSubmittedAt: 'asc' },
-          select: { lastSubmittedAt: true },
-        }),
-      ]);
+      const [totalDealers, pendingDealers, pending, activeListings, oldest, signedIn] =
+        await Promise.all([
+          prisma.dealer.count(),
+          prisma.dealer.count({ where: { status: 'PENDING_APPROVAL' } }),
+          prisma.listing.count({ where: { status: 'PENDING_REVIEW' } }),
+          prisma.listing.count({ where: { status: 'ACTIVE' } }),
+          prisma.listing.findFirst({
+            where: { status: 'PENDING_REVIEW' },
+            orderBy: { lastSubmittedAt: 'asc' },
+            select: { lastSubmittedAt: true },
+          }),
+          countSignedInUsers(prisma),
+        ]);
 
       const newEnquiries = 0;
       const gross = 0;
@@ -354,6 +357,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             valueLabel: String(activeListings),
             href: '/admin/listings?status=ACTIVE',
           },
+          signedInUsersStat(signedIn),
           {
             key: 'payments30d',
             label: 'Payments (30d)',

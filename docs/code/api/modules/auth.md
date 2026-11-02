@@ -1646,9 +1646,35 @@ slower to consult and easier to forget.
 
 §8.2 — 30 days for a dealer, 12 hours for an admin.
 
+### `export const LAST_SEEN_REFRESH_MS = 60 * 60 * 1000`
+
+How stale `sessions.lastSeenAt` may get before a request refreshes it.
+
+A session row is written once, at sign-in, so `createdAt` answers "who signed
+in this month" and nothing else: someone who signed in 20 days ago and has
+browsed every day since looks gone. `lastSeenAt` is what lets the admin
+overview count people who are still coming back.
+
+An hour is the coarsest grain that question needs — the overview counts over
+30 days — and it keeps the cost to at most one write per session per hour.
+Every other request reads the timestamp the session lookup already fetched and
+writes nothing.
+
 ### `export function createSessionService(prisma: PrismaClient)`
 
 The token is returned exactly once, here. It is never stored or logged.
+
+### `async function markSeen<T extends { id: string; lastSeenAt: Date }>(`
+
+Refreshes `lastSeenAt` when it is older than `LAST_SEEN_REFRESH_MS`, for every
+scope (admin sessions included; the overview filters them out, not this).
+
+The update is conditional on the `lastSeenAt` it read, so two requests from the
+same session arriving together write once, not twice.
+
+It is best-effort. A failed write is logged and swallowed: last-seen is a
+usage figure, and refusing a signed-in person because a statistic could not be
+stored would put telemetry in front of the product.
 
 ### `async resolve(token: string | undefined, scope: SessionScope)`
 
@@ -1660,6 +1686,9 @@ The user's seats come back with it (**R41**). They are read on every
 request — a closed DEALER seat has to stop answering on the next click,
 the way a revoked session does — and pulling them here costs nothing: it
 is the same round trip that was already fetching the user.
+
+Both `resolve` and `resolvePerson` pass the session through `markSeen` before
+returning it — they are the two doors every authenticated request comes through.
 
 ### `async resolvePerson(token: string | undefined)`
 
