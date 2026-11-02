@@ -70,6 +70,25 @@ describe('the overview screen', () => {
     expect(apiGet).toHaveBeenCalledWith('/v1/admin/metrics/overview');
   });
 
+  it('renders a stat box’s detail line when the API sends one', async () => {
+    await renderPage(
+      overview({
+        stats: [
+          {
+            key: 'signedInUsers30d',
+            label: 'Signed-in users (30d)',
+            value: 1250,
+            valueLabel: '1,250',
+            detail: '1,204 buyers · 87 dealers',
+          },
+        ],
+      }),
+    );
+
+    expect(screen.getByText('1,250')).toBeInTheDocument();
+    expect(screen.getByText('1,204 buyers · 87 dealers')).toBeInTheDocument();
+  });
+
   it('renders six stat boxes with the API’s own labels', async () => {
     await renderPage();
 

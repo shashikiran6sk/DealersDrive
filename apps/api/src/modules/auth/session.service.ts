@@ -2,8 +2,12 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import type { Prisma, PrismaClient, SessionScope } from '@prisma/client';
 
+import { logger } from '../../platform/telemetry/logger.js';
+
 export const DEALER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const ADMIN_SESSION_TTL_SECONDS = 12 * 60 * 60;
+
+export const LAST_SEEN_REFRESH_MS = 60 * 60 * 1000;
 
 export const PERSON_SCOPES = ['DEALER', 'CUSTOMER'] as const satisfies readonly SessionScope[];
 
@@ -17,6 +21,29 @@ export function ttlFor(scope: SessionScope): number {
 }
 
 export function createSessionService(prisma: PrismaClient) {
+  async function markSeen<T extends { id: string; lastSeenAt: Date }>(
+    session: T | null,
+  ): Promise<T | null> {
+    if (!session) return null;
+
+    const now = new Date();
+    if (now.getTime() - session.lastSeenAt.getTime() < LAST_SEEN_REFRESH_MS) return session;
+
+    try {
+      await prisma.session.updateMany({
+        where: { id: session.id, lastSeenAt: session.lastSeenAt },
+        data: { lastSeenAt: now },
+      });
+    } catch (error) {
+      logger.warn(
+        { event: 'auth.session.last_seen_failed', sessionId: session.id, err: error },
+        'session last-seen refresh failed',
+      );
+    }
+
+    return session;
+  }
+
   return {
     async issue(
       input: {
@@ -49,7 +76,7 @@ export function createSessionService(prisma: PrismaClient) {
     async resolve(token: string | undefined, scope: SessionScope) {
       if (!token) return null;
 
-      return prisma.session.findFirst({
+      const session = await prisma.session.findFirst({
         where: {
           tokenHash: hashToken(token),
           scope,
@@ -58,12 +85,14 @@ export function createSessionService(prisma: PrismaClient) {
         },
         include: { user: { include: { roles: true, adminMember: true } } },
       });
+
+      return markSeen(session);
     },
 
     async resolvePerson(token: string | undefined) {
       if (!token) return null;
 
-      return prisma.session.findFirst({
+      const session = await prisma.session.findFirst({
         where: {
           tokenHash: hashToken(token),
           scope: { in: [...PERSON_SCOPES] },
@@ -72,6 +101,8 @@ export function createSessionService(prisma: PrismaClient) {
         },
         include: { user: { include: { roles: true } } },
       });
+
+      return markSeen(session);
     },
 
     async setActiveDealer(sessionId: string, dealerId: string): Promise<void> {

@@ -37,6 +37,7 @@ export const AdminOverview = z.object({
       label: z.string(),
       value: z.number().int(),
       valueLabel: z.string(),
+      detail: z.string().optional(),
       href: z.string().optional(),
     }),
   ),

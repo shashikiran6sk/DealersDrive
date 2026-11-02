@@ -838,6 +838,38 @@ assisted, by whom, whether phone and email are verified, whether the dealer has
 claimed it, and whether the reviewer is the assistant (in which case the action
 flags are all false and the panel says why).
 
+## `apps/api/src/modules/admin/signed-in-users.ts`
+
+### `export async function countSignedInUsers(`
+
+The overview's "Signed-in users (30d)" box: **distinct people** with a
+`CUSTOMER` or `DEALER` session whose `lastSeenAt` falls in the last 30 days.
+
+- **People, not sessions.** Each device and each fresh sign-in is its own row
+  (a laptop and a phone are two sessions), so counting rows would count
+  devices. Every count is `COUNT(DISTINCT "userId")`.
+- **The split overlaps.** One person can hold both a customer and a dealer
+  session; they are one in `total` and appear in both `buyers` and `dealers`.
+  So `buyers + dealers` can exceed `total`, and that is correct.
+- **Operators are not users.** `ADMIN` sessions are left out entirely.
+- **A merged account is not a second person.** Its sessions are revoked by the
+  merge but may still sit inside the window; excluding `mergedIntoId IS NOT
+NULL` stops one human counting twice.
+- **Revoked and expired sessions still count.** The question is "who was here
+  in the last 30 days", and signing out does not undo having been here.
+
+Guests — visitors with no account — are not in this table at all; they are
+counted by the web analytics, not the API.
+
+`::int` keeps the result out of `BigInt`, which is what `COUNT` otherwise
+arrives as through `$queryRaw`. `now` is a parameter so a test can place the
+window where no other test's rows are.
+
+### `export function signedInUsersStat(counts: SignedInUserCounts)`
+
+No `href`: there is no screen listing these people yet, and a box that links
+to an unrelated list is worse than one that links nowhere.
+
 ## `apps/api/src/modules/admin/yard-visits.service.ts`
 
 ### `export function createYardVisitService({`

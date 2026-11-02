@@ -58,6 +58,8 @@ interface Options {
   configEntries?: { key: string; label: string; type: string; value: unknown }[];
   /** R42 — the `users` rows the admin-access list reads. */
   adminUsers?: Record<string, unknown>[];
+  /** The row the signed-in-users count answers with, or none at all. */
+  signedIn?: { total: number; buyers: number; dealers: number } | null;
 }
 
 const DEALER = '4bafe791-892d-4696-8309-ee23f172211b';
@@ -226,6 +228,10 @@ function setup(options: Options = {}) {
   };
 
   const prisma = {
+    $queryRaw: () =>
+      Promise.resolve(
+        options.signedIn === null ? [] : [options.signedIn ?? { total: 0, buyers: 0, dealers: 0 }],
+      ),
     dealer: {
       count: () => Promise.resolve(counts.shift() ?? 0),
       // Every `findMany` — the page itself and the three facet queries — is
@@ -458,6 +464,27 @@ describe('overview', () => {
     expect(statFor(overview, 'revenue30d')?.value).toBe(0);
   });
 
+  it('counts signed-in people over thirty days, split into buyers and dealers', async () => {
+    const h = setup({ signedIn: { total: 1250, buyers: 1204, dealers: 87 } });
+
+    expect(statFor(await h.service.overview(admin), 'signedInUsers30d')).toEqual({
+      key: 'signedInUsers30d',
+      label: 'Signed-in users (30d)',
+      value: 1250,
+      valueLabel: '1,250',
+      detail: '1,204 buyers · 87 dealers',
+    });
+  });
+
+  it('reports zero signed-in users when the count returns no row', async () => {
+    const h = setup({ signedIn: null });
+
+    expect(statFor(await h.service.overview(admin), 'signedInUsers30d')).toMatchObject({
+      value: 0,
+      detail: '0 buyers · 0 dealers',
+    });
+  });
+
   it('names the signed-in operator from the principal, never from a row', async () => {
     const h = setup();
 
@@ -515,6 +542,7 @@ describe('overview', () => {
       'totalDealers',
       'pendingVerification',
       'activeListings',
+      'signedInUsers30d',
       'payments30d',
       'revenue30d',
       'newEnquiries',
