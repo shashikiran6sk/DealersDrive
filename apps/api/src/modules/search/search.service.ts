@@ -6,6 +6,7 @@ import {
   type DealerVehicleQuery,
   type PublicVehicleDetail,
   type PublicVehicleQuery,
+  type PublicLandingPagesResponse,
   type PublicSitemapResponse,
   type PublicVehiclesResponse,
   type RangePreset,
@@ -50,6 +51,7 @@ import {
   toSitemapListing,
   toVehicleCard,
 } from './search.mapper.js';
+import { buildLandingPages } from './search.landing.js';
 import { DEALER_NOT_FOUND, SUGGEST_COUNT, VEHICLE_NOT_FOUND } from './search.messages.js';
 import type { CardRow, SearchRepository } from './search.repository.js';
 import { rankSimilar, type SimilarTraits } from './search.similar.js';
@@ -237,6 +239,14 @@ export function createSearchService({ repo }: SearchDeps) {
         vehicles: listings.map(toSitemapListing),
         dealers: dealers.map(toSitemapDealer),
       };
+    },
+
+    async landingPages(): Promise<PublicLandingPagesResponse> {
+      const [dealers, listings] = await Promise.all([
+        repo.landingDealers(),
+        repo.landingListings(SITEMAP_ENTRY_LIMIT),
+      ]);
+      return buildLandingPages(dealers, listings);
     },
 
     async suggestCars(query: CarSuggestQuery): Promise<CarSuggestResponse> {

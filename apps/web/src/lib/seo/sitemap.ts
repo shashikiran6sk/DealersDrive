@@ -1,11 +1,13 @@
 import { legalPagesVisible } from '../legal';
 import type {
+  PublicLandingPagesResponse,
   PublicLocations,
   PublicSitemapResponse,
   SitemapEntry,
 } from '@dealers-drive/contracts';
 import type { MetadataRoute } from 'next';
 
+import { isIndexableLanding, landingPath } from '../landing';
 import { directoryPath } from './policy';
 import { dealerPath } from './schemas/dealer';
 import { vehiclePath } from './schemas/vehicle';
@@ -34,14 +36,29 @@ function entityRows(entries: readonly SitemapEntry[], pathOf: (slug: string) => 
     .map((row) => entry(pathOf(row.slug), row.lastModified));
 }
 
+function landingRows(landings: PublicLandingPagesResponse | null): SitemapRow[] {
+  if (!landings) return [];
+  const districts = new Set(
+    landings.places.filter((place) => place.kind === 'DISTRICT').map((place) => place.slug),
+  );
+  return landings.pages
+    .filter(
+      (page) =>
+        isIndexableLanding(landings, page) && !(page.facet === null && districts.has(page.place)),
+    )
+    .map((page) => entry(landingPath(page.place, page.facet), page.lastModified));
+}
+
 export function buildSitemap(
   pages: PublicSitemapResponse,
   locations: PublicLocations,
+  landings: PublicLandingPagesResponse | null = null,
 ): MetadataRoute.Sitemap {
   return [
     ...STATIC_SITEMAP_PATHS.map((path) => entry(path)),
     ...(legalPagesVisible() ? ['/terms', '/privacy'].map((path) => entry(path)) : []),
     ...districtRows(locations),
+    ...landingRows(landings),
     ...entityRows(pages.dealers, dealerPath),
     ...entityRows(pages.vehicles, vehiclePath),
   ];

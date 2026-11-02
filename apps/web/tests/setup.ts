@@ -74,6 +74,10 @@ vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND');
   },
+  // A 308, kept apart from redirect()'s 307 so a test can tell which it got.
+  permanentRedirect: (url: string) => {
+    throw new Error(`NEXT_PERMANENT_REDIRECT:${url}`);
+  },
 }));
 
 export const requestHeaders = new Map<string, string>();

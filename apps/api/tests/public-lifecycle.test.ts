@@ -1,5 +1,7 @@
 import {
+  PublicLandingPagesResponse,
   PublicSitemapResponse,
+  parseLandingFacet,
   type DealerCard,
   type PublicVehiclesResponse,
   type VehicleCardDto,
@@ -301,5 +303,80 @@ describe('/v1/sitemap — what search engines are told to index', () => {
     for (const entry of [...map.vehicles, ...map.dealers]) {
       expect(Object.keys(entry).sort()).toEqual(['lastModified', 'slug']);
     }
+  });
+});
+
+describe('/v1/landing-pages — the SEO landing pages', () => {
+  async function landing(): Promise<PublicLandingPagesResponse> {
+    const response = await h.agent().get('/v1/landing-pages').expect(200);
+    expect(response.headers['cache-control']).toBe('public, max-age=300');
+    return PublicLandingPagesResponse.parse(response.body);
+  }
+
+  it('counts exactly what the marketplace search counts, for every page of a place', async () => {
+    const map = await landing();
+    const places = new Map(map.places.map((place) => [place.slug, place]));
+    const pages = map.pages.filter((page) => page.place === 'vellore' || page.place === 'katpadi');
+    expect(pages.some((page) => page.facet === 'mahindra-thar')).toBe(true);
+
+    for (const page of pages) {
+      const place = places.get(page.place);
+      if (!place) throw new Error(`no place for ${page.place}`);
+      const query = new URLSearchParams({
+        district: place.district.slug,
+        ...(place.kind === 'TOWN' ? { city: place.slug } : {}),
+        ...(page.facet ? parseLandingFacet(page.facet)?.params : {}),
+        limit: '1',
+      });
+      const { body } = await h.agent().get(`/v1/vehicles?${query.toString()}`).expect(200);
+      expect(page.cars, `${page.place}/${page.facet ?? ''}`).toBe(body.available);
+    }
+  });
+
+  it('counts the reserved, sold and withdrawn cars nowhere', async () => {
+    const map = await landing();
+    const thar = map.pages.find(
+      (page) => page.place === 'katpadi' && page.facet === 'mahindra-thar',
+    );
+    const { body } = await h
+      .agent()
+      .get('/v1/vehicles?district=vellore&city=katpadi&brand=mahindra&model=thar&limit=48')
+      .expect(200);
+    const available = (body.data as VehicleCardDto[]).filter(
+      (card) => card.availability === 'AVAILABLE',
+    );
+    expect(thar?.cars).toBe(available.length);
+    expect(available.some((card) => card.slug === cars.RESERVED.slug)).toBe(false);
+  });
+
+  it('lists Katpadi as a town of Vellore, and Vellore once, as the district', async () => {
+    const map = await landing();
+    expect(map.places.filter((place) => place.slug === 'vellore')).toEqual([
+      expect.objectContaining({ kind: 'DISTRICT' }),
+    ]);
+    expect(map.places.find((place) => place.slug === 'katpadi')).toMatchObject({
+      kind: 'TOWN',
+      district: { slug: 'vellore' },
+    });
+  });
+
+  it('refuses a parameter it does not take, by name', async () => {
+    const { body } = await h.agent().get('/v1/landing-pages?district=vellore').expect(400);
+    expect(JSON.stringify(body)).toContain('district');
+  });
+
+  it('carries places, slugs and counts, and nothing about a car or a dealership', async () => {
+    const map = await landing();
+    for (const page of map.pages) {
+      expect(Object.keys(page).sort()).toEqual([
+        'cars',
+        'facet',
+        'kind',
+        'label',
+        'lastModified',
+        'place',
+      ]);
+    }
+    expect(JSON.stringify(map)).not.toContain(a.slug);
   });
 });

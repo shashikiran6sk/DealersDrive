@@ -72,3 +72,13 @@ starts.
 On a district page the `BreadcrumbList` is Home → Cars → the district, built by
 `directoryTrail`, and the `<h1>` reads "Used cars in {district}" to match the
 title "Used Cars in {district}" — the landing page for "used cars in Vellore".
+
+### `districtRelatedSearches(params.district)` and `<RelatedSearches />`
+
+While `feature.seoLandingPages` is on, the district landing view links the
+district's SEO landing pages and its towns at its foot. This is the one change
+to `/cars` the landing pages make: its title, its robots and its canonical are
+exactly what they were, so the page that already ranks for "used cars in
+Vellore" keeps doing so. The links appear only on the unfiltered district view
+— a filtered view is `noindex` and not where a crawler should be sent from —
+and a failure to read the landing pages drops the block rather than the page.

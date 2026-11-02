@@ -14,19 +14,20 @@ what the page already says. Everything below is one of those four.
 
 ## 1. The public surface
 
-| Route                     | Rendering                  | Indexable                                   | In the sitemap                     |
-| ------------------------- | -------------------------- | ------------------------------------------- | ---------------------------------- |
-| `/`                       | ISR, 60 s                  | yes                                         | yes                                |
-| `/cars`                   | dynamic                    | the base, each district, plain later pages  | the base and each stocked district |
-| `/car/[slug]`             | ISR, 60 s, tag-revalidated | ACTIVE and RESERVED; every other state 404s | ACTIVE and RESERVED                |
-| `/dealers`                | dynamic                    | the base, each district, plain later pages  | the base and each district         |
-| `/dealers/[slug]`         | ISR, 60 s, tag-revalidated | an ACTIVE dealership with an available car  | the same                           |
-| `/contact`                | ISR, 10 min                | yes                                         | yes                                |
-| `/terms`, `/privacy`      | static                     | yes, once the legal v1 pages are published  | the same                           |
-| `/support`                | 308 → `/contact`           | —                                           | no                                 |
-| `/login`                  | dynamic                    | `noindex, follow`                           | no                                 |
-| `/saved`, `/enquiries`    | dynamic, signed in         | `noindex, nofollow`                         | no                                 |
-| `/dealer/**`, `/admin/**` | dynamic, signed in         | `noindex, nofollow`                         | no                                 |
+| Route                      | Rendering                  | Indexable                                      | In the sitemap                     |
+| -------------------------- | -------------------------- | ---------------------------------------------- | ---------------------------------- |
+| `/`                        | ISR, 60 s                  | yes                                            | yes                                |
+| `/cars`                    | dynamic                    | the base, each district, plain later pages     | the base and each stocked district |
+| `/car/[slug]`              | ISR, 60 s, tag-revalidated | ACTIVE and RESERVED; every other state 404s    | ACTIVE and RESERVED                |
+| `/dealers`                 | dynamic                    | the base, each district, plain later pages     | the base and each district         |
+| `/dealers/[slug]`          | ISR, 60 s, tag-revalidated | an ACTIVE dealership with an available car     | the same                           |
+| `/used-cars/[...segments]` | dynamic                    | from two available cars, behind a switch (§8a) | the same, behind the switch        |
+| `/contact`                 | ISR, 10 min                | yes                                            | yes                                |
+| `/terms`, `/privacy`       | static                     | yes, once the legal v1 pages are published     | the same                           |
+| `/support`                 | 308 → `/contact`           | —                                              | no                                 |
+| `/login`                   | dynamic                    | `noindex, follow`                              | no                                 |
+| `/saved`, `/enquiries`     | dynamic, signed in         | `noindex, nofollow`                            | no                                 |
+| `/dealer/**`, `/admin/**`  | dynamic, signed in         | `noindex, nofollow`                            | no                                 |
 
 Every public page is a server component that fetches its own data before it
 renders, so the title, the heading, the price, the specifications, the dealer
@@ -156,9 +157,11 @@ or sorted portfolio is `noindex, follow`, canonical to `/dealers/[slug]`.
    legal pages are visible — no `lastmod`; a static page has no honest
    last-changed time and "now" is a lie.
 2. The district landing pages above.
-3. Every indexable dealership, `lastmod` = the later of its approval and the
+3. With `feature.seoLandingPages` on, every SEO landing page (§8a) with two
+   available cars or more, dated by the newest change to one of its cars.
+4. Every indexable dealership, `lastmod` = the later of its approval and the
    newest change to one of its available cars.
-4. Every ACTIVE or RESERVED car, `lastmod` = the later of the listing's and the
+5. Every ACTIVE or RESERVED car, `lastmod` = the later of the listing's and the
    vehicle's `updatedAt`.
 
 The entities come from `GET /v1/sitemap` — slugs and timestamps only, from two
@@ -213,6 +216,7 @@ guessed.
 | `/car/[slug]`     | `Car`+`Product` (+ `Offer`) · `BreadcrumbList` Home → Cars → the car                                                                                                |
 | `/dealers`        | `BreadcrumbList` (Home → Dealers → the district, on a district page) · `ItemList` of the dealerships on the page — indexable views only                             |
 | `/dealers/[slug]` | `AutoDealer` · `BreadcrumbList` Home → Dealers → the dealership · `ItemList` of its available cars — indexable views only                                           |
+| `/used-cars/…`    | `BreadcrumbList` Home → Cars → district → town → the page · `ItemList` of its available cars — indexable pages only                                                 |
 
 **`Car`** (`schemas/vehicle.ts`) is typed `["Car", "Product"]` — Google does
 not treat `Car` as a `Product` by itself, and without `Product` a car page is not
@@ -316,6 +320,53 @@ full address, city/district/state, GSTIN, hours where given, services, the map
 link, and every available car as a crawlable `<a href="/car/…">`. Each car page
 links back with "View dealership".
 
+## 8a. SEO landing pages — `/used-cars/…`
+
+Searches people type — "used Maruti Suzuki cars in Ranipet", "used diesel cars
+in Arcot", "used cars under 5 lakh in Vellore" — each get a page of their own,
+generated from live stock. **They are behind `feature.seoLandingPages`**
+(`/admin/config`, off by default): while it is off, every address below is a
+404, nothing is in the sitemap, and `/cars` is exactly as it was.
+
+| Address                              | What it is                                             |
+| ------------------------------------ | ------------------------------------------------------ |
+| `/used-cars/{town}`                  | a town inside a district — `Used Cars in Arcot`        |
+| `/used-cars/{place}/{brand}`         | `maruti-suzuki`, from the closed make list only        |
+| `/used-cars/{place}/{brand}-{model}` | `maruti-suzuki-swift`                                  |
+| `/used-cars/{place}/{fuel}`          | `petrol`, `diesel`, `cng`, `electric`, `hybrid`, `lpg` |
+| `/used-cars/{place}/{body}`          | `hatchback`, `sedan`, `suv`, `muv`, `luxury`           |
+| `/used-cars/{place}/{transmission}`  | `manual`, `automatic`                                  |
+| `/used-cars/{place}/under-{n}-lakh`  | `n` = 3, 5, 7 or 10                                    |
+
+`{place}` is a district or a town. A **district's own address**
+(`/used-cars/ranipet`) **308s to `/cars?district=ranipet`**: the district page
+that already exists — and already ranks — keeps its address and its canonical.
+
+**Towns and districts with the same name.** A town whose slug is its own
+district's (Vellore town in Vellore district) is not a separate place: the
+district stands for it, `/used-cars/vellore` 308s to `/cars?district=vellore`,
+and `/used-cars/vellore/diesel` is the whole district's diesel cars. A town belongs to
+the district most of its dealerships are in; a town whose name is a different
+district, or that two districts share equally, gets no page.
+
+**The threshold is two available cars** (`LANDING_MIN_CARS`). At two or more a
+page is `index, follow`, in the sitemap and linked from its neighbours; at one
+it renders but is `noindex, follow`, unlisted and unlinked; a fixed facet with
+none renders an empty state, `noindex`; a model with none is a 404. Counts are
+the marketplace search's own: the API's integration suite asserts them against
+`GET /v1/vehicles`.
+
+**Every page is its own canonical** (`?page=N` included), with a title and
+heading led by the count ("3 Used Maruti Suzuki Cars in Ranipet"), an intro
+built from the search's counts (who lists the cars, what is most listed), the
+cars as crawlable links, and a block of related searches. The district view of
+`/cars` gains the same block; nothing else about it changes.
+
+**Turning it on.** Deploy the API, then the web app, with the switch off. In
+`/admin/config` turn on _SEO landing pages_, open two or three `/used-cars/…`
+pages and `/sitemap.xml`, and run one through the Rich Results Test. Turning it
+off withdraws the pages, the sitemap entries and the links at once.
+
 ## 9. Images
 
 Listing photographs are Dealers-Drive's own (R45), served from stable public
@@ -334,7 +385,8 @@ The portfolio's yard photograph is alt-texted `{dealer} dealership yard`.
    whether it is indexable), `cars`/`dealers` for a directory view, `noindex`
    for a utility page, `private` for anything signed in.
 3. If it is indexable and not a directory view, add it to
-   `STATIC_SITEMAP_PATHS`, or to the sitemap read if it is an entity.
+   `STATIC_SITEMAP_PATHS`, or to the sitemap read if it is an entity. A search
+   a buyer types is a landing page (§8a), not a new route.
 4. Structured data: build it in `lib/seo/schemas/`, render it with `<JsonLd>`,
    and only from values the page prints.
 5. Tests: its metadata (title, canonical, robots in production and outside it)

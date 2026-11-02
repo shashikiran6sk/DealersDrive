@@ -1,0 +1,202 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  isIndexableLanding,
+  landingPath,
+  landingSearch,
+  relatedLandingGroups,
+  resolveLanding,
+} from '@/lib/landing';
+
+import { LANDING_MAP } from './landing-fixtures';
+
+function placeOf(slug: string) {
+  const place = LANDING_MAP.places.find((candidate) => candidate.slug === slug);
+  if (!place) throw new Error(`no place ${slug}`);
+  return place;
+}
+
+describe('resolveLanding', () => {
+  it('answers a town with its own page', () => {
+    expect(resolveLanding(LANDING_MAP, ['arcot'])).toMatchObject({
+      kind: 'page',
+      place: { slug: 'arcot', kind: 'TOWN' },
+      facet: null,
+      entry: { cars: 6 },
+    });
+  });
+
+  it('sends a district to the district page that already exists, permanently', () => {
+    expect(resolveLanding(LANDING_MAP, ['ranipet'])).toEqual({
+      kind: 'redirect',
+      to: '/cars?district=ranipet',
+    });
+  });
+
+  it('sends a town that shares its district’s name to that same district page', () => {
+    expect(resolveLanding(LANDING_MAP, ['vellore'])).toEqual({
+      kind: 'redirect',
+      to: '/cars?district=vellore',
+    });
+  });
+
+  it('answers a district or a town with a facet', () => {
+    expect(resolveLanding(LANDING_MAP, ['vellore', 'maruti-suzuki'])).toMatchObject({
+      kind: 'page',
+      place: { kind: 'DISTRICT' },
+      facet: { kind: 'BRAND', params: { brand: 'maruti-suzuki' } },
+      label: 'Maruti Suzuki',
+    });
+    expect(resolveLanding(LANDING_MAP, ['arcot', 'diesel'])).toMatchObject({
+      kind: 'page',
+      label: 'Diesel',
+      entry: { cars: 2 },
+    });
+  });
+
+  it('answers a fixed facet with no cars behind it, so a stale link is not a 404', () => {
+    expect(resolveLanding(LANDING_MAP, ['arcot', 'petrol'])).toMatchObject({
+      kind: 'page',
+      label: 'Petrol',
+      entry: undefined,
+    });
+  });
+
+  it('is a 404 for an unknown place, an unknown facet, a model with no car, or a third segment', () => {
+    for (const segments of [
+      ['nowhere'],
+      ['arcot', 'cheap'],
+      ['arcot', 'tata-nexon'],
+      ['arcot', 'diesel', 'extra'],
+      [],
+    ]) {
+      expect(resolveLanding(LANDING_MAP, segments)).toEqual({ kind: 'not-found' });
+    }
+  });
+});
+
+describe('landingSearch', () => {
+  it('scopes a town by its district and its own slug, as /cars does', () => {
+    const route = resolveLanding(LANDING_MAP, ['arcot', 'diesel']);
+    if (route.kind !== 'page') throw new Error('not a page');
+    expect(landingSearch(route.place, route.facet)).toEqual({
+      district: 'ranipet',
+      city: 'arcot',
+      fuel: 'diesel',
+    });
+  });
+
+  it('scopes a district by itself alone', () => {
+    const route = resolveLanding(LANDING_MAP, ['vellore', 'maruti-suzuki']);
+    if (route.kind !== 'page') throw new Error('not a page');
+    expect(landingSearch(route.place, route.facet)).toEqual({
+      district: 'vellore',
+      brand: 'maruti-suzuki',
+    });
+  });
+});
+
+describe('the paths and the threshold', () => {
+  it('writes the two path shapes', () => {
+    expect(landingPath('arcot')).toBe('/used-cars/arcot');
+    expect(landingPath('arcot', 'maruti-suzuki-swift')).toBe(
+      '/used-cars/arcot/maruti-suzuki-swift',
+    );
+  });
+
+  it('indexes a page from two cars', () => {
+    expect(isIndexableLanding(LANDING_MAP, { cars: 2 })).toBe(true);
+    expect(isIndexableLanding(LANDING_MAP, { cars: 1 })).toBe(false);
+  });
+});
+
+describe('relatedLandingGroups', () => {
+  it('links a town’s indexable searches by kind, and its district and sibling towns', () => {
+    const [searches, towns] = relatedLandingGroups(LANDING_MAP, placeOf('arcot'), null);
+
+    expect(searches?.title).toBe('Popular searches in Arcot');
+    expect(searches?.links).toEqual([
+      { href: '/used-cars/arcot/maruti-suzuki', label: 'Used Maruti Suzuki Cars in Arcot' },
+      {
+        href: '/used-cars/arcot/maruti-suzuki-swift',
+        label: 'Used Maruti Suzuki Swift Cars in Arcot',
+      },
+      { href: '/used-cars/arcot/diesel', label: 'Used Diesel Cars in Arcot' },
+      { href: '/used-cars/arcot/under-5-lakh', label: 'Used Cars Under ₹5 lakh in Arcot' },
+    ]);
+    expect(towns?.title).toBe('Towns in Ranipet district');
+    expect(towns?.links).toEqual([
+      { href: '/cars?district=ranipet', label: 'All used cars in Ranipet district' },
+      { href: '/used-cars/walajapet', label: 'Used Cars in Walajapet' },
+    ]);
+  });
+
+  it('on a facet page, leaves the page itself out and links the same facet nearby', () => {
+    const [searches, towns] = relatedLandingGroups(LANDING_MAP, placeOf('arcot'), 'diesel');
+
+    expect(searches?.links.map((link) => link.href)).not.toContain('/used-cars/arcot/diesel');
+    expect(towns?.links).toEqual([
+      { href: '/used-cars/ranipet/diesel', label: 'Used Diesel Cars in Ranipet' },
+      { href: '/used-cars/walajapet/diesel', label: 'Used Diesel Cars in Walajapet' },
+    ]);
+  });
+
+  it('orders price searches by budget, cheapest first, whatever their counts', () => {
+    const map = {
+      ...LANDING_MAP,
+      pages: [
+        ...LANDING_MAP.pages,
+        {
+          place: 'arcot',
+          facet: 'under-10-lakh',
+          kind: 'PRICE' as const,
+          label: 'Under ₹10 lakh',
+          cars: 6,
+          lastModified: null,
+        },
+      ],
+    };
+    const [searches] = relatedLandingGroups(map, placeOf('arcot'), null);
+    expect(searches?.links.slice(-2).map((link) => link.href)).toEqual([
+      '/used-cars/arcot/under-5-lakh',
+      '/used-cars/arcot/under-10-lakh',
+    ]);
+  });
+
+  it('caps each kind of search, so a big place still links its fuels and budgets', () => {
+    const brands = Array.from({ length: 12 }, (_, index) => ({
+      place: 'arcot',
+      facet: `brand-${String(index)}`,
+      kind: 'BRAND' as const,
+      label: `Brand ${String(index)}`,
+      cars: 20 - index,
+      lastModified: null,
+    }));
+    const map = { ...LANDING_MAP, pages: [...brands, ...LANDING_MAP.pages] };
+    const [searches] = relatedLandingGroups(map, placeOf('arcot'), null);
+    const hrefs = searches?.links.map((link) => link.href) ?? [];
+
+    expect(hrefs.filter((href) => href.includes('/brand-'))).toHaveLength(8);
+    expect(hrefs).toContain('/used-cars/arcot/brand-0');
+    expect(hrefs).not.toContain('/used-cars/arcot/brand-11');
+    expect(hrefs).toContain('/used-cars/arcot/diesel');
+    expect(hrefs).toContain('/used-cars/arcot/under-5-lakh');
+  });
+
+  it('never links a page with one car', () => {
+    const groups = relatedLandingGroups(LANDING_MAP, placeOf('arcot'), null);
+    const hrefs = groups.flatMap((group) => group.links.map((link) => link.href));
+    expect(hrefs).not.toContain('/used-cars/arcot/hyundai-creta');
+  });
+
+  it('links a district’s towns from the district', () => {
+    const [searches, towns] = relatedLandingGroups(LANDING_MAP, placeOf('ranipet'), null);
+    expect(searches?.links).toEqual([
+      { href: '/used-cars/ranipet/diesel', label: 'Used Diesel Cars in Ranipet' },
+    ]);
+    expect(towns?.links.map((link) => link.href)).toEqual([
+      '/used-cars/arcot',
+      '/used-cars/walajapet',
+    ]);
+  });
+});

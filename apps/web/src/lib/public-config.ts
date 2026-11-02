@@ -16,6 +16,7 @@ export const NO_PUBLIC_CONFIG: PublicConfig = {
   photoRequestsEnabled: false,
   rcLookupEnabled: false,
   vehicleReportEnabled: false,
+  landingPagesEnabled: false,
   social: [],
   support: {
     customer: { email: '', phone: '' },

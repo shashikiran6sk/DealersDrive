@@ -2174,6 +2174,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'search-appliedfilters',
   },
   {
+    id: 'C141',
+    name: 'RelatedSearches',
+    source: 'apps/web/src/components/search/related-searches/related-searches.tsx',
+    category: 'Search',
+    ownership: 'Feature-shared',
+    purpose:
+      'A titled block of crawlable link chips to related searches — the SEO landing pages (/used-cars/{place}/{facet}) of a place, its district and its sibling towns. Server-rendered plain anchors with descriptive text, grouped under eyebrows; a group with no links is left out and the whole block renders nothing when every group is empty. Used at the foot of the landing pages and of the /cars district page.',
+    aliases: ['PopularSearches', 'SeoLinks', 'InternalLinks', 'LinkChips', 'related-searches'],
+    features: ['SEO landing pages'],
+    props: ['heading', 'groups (title, links: href + label)', 'className'],
+    states: ['a town', 'a district', 'one group', 'empty (renders nothing)'],
+    reusable: true,
+    storyId: 'search-relatedsearches',
+  },
+  {
     id: 'C081',
     name: 'SearchNavigationProvider',
     source: 'apps/web/src/components/search/search-navigation/search-navigation.tsx',

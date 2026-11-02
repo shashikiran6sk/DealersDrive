@@ -826,10 +826,71 @@ Home → the directory → the district, the district crumb at the district's
 canonical landing URL. One function for `/cars` and `/dealers`, so the two
 trails cannot disagree about what a district page's parent is.
 
-### `sitemap.ts` — `export function buildSitemap(pages, locations)`
+### `sitemap.ts` — `export function buildSitemap(pages, locations, landings)`
 
 No `lastModified` on the static pages: they have no honest last-changed time,
 and "now" on every request teaches a crawler to ignore the field.
+
+`landings` is `null` while `feature.seoLandingPages` is off. With it on, every
+landing page with two available cars or more is listed, dated by the newest
+change to one of its cars. A district's own landing address is left out: it
+redirects to `/cars?district=`, which the district rows already list.
+
+## `apps/web/src/lib/landing.ts`
+
+The web side of the SEO landing pages — fetching what the inventory supports,
+building their addresses, resolving one, and linking them to each other. The
+rules themselves (the facet vocabulary, the two-car threshold, which towns are
+places) are in `@dealers-drive/contracts` and the API, so the web app never
+holds a second copy of them.
+
+### `export const getLandingPages`
+
+`GET /v1/landing-pages`, cached for five minutes and tagged `vehicles` and
+`dealers`, so a car approved, reserved or sold through the app refreshes it.
+A **404 reads as `null`**: a web build deployed before the API that serves the
+read sees no landing pages rather than failing the sitemap. Any other failure is
+thrown, as the sitemap's own read is.
+
+### `export const landingPagesEnabled`
+
+`feature.seoLandingPages`, from the public config. Every surface checks it — the
+route, the sitemap, the `/cars` links — so the switch withdraws all of them at
+once.
+
+### `export function resolveLanding(map, segments)`
+
+Turns a path into a page, a redirect or a 404 (see the table on
+[the page's notes](<app/(public)/used-cars.md>)). A **district's own landing
+address redirects** to `/cars?district=`: that page already ranks and keeps its
+canonical, and two pages answering "used cars in Vellore" would compete. A
+**model** with no car is a 404, because its segment is open-ended text and
+every misspelling would otherwise be a page; a fixed facet with no car renders,
+empty and `noindex`, because its address is one of a closed set.
+
+### `export function relatedLandingGroups(map, place, current)`
+
+Two groups: the place's own indexable searches, ordered brand, model, fuel, body, transmission and price — each by size,
+except price, which reads cheapest budget first — at most eight of each kind,
+so a big district's brands cannot crowd out its fuels and budgets; and the district's
+other towns — with the same facet when the page has one, so "diesel in Arcot"
+links "diesel in Walajapet". A town also links its whole district. **Only pages
+with two cars or more are linked**: a link to a `noindex` page is a crawl spent
+on nothing.
+
+### `export async function districtRelatedSearches(district)`
+
+The `/cars` district view's version, which swallows a failure: the links are a
+garnish on a page that must render without them.
+
+## `apps/web/src/lib/landing.constants.ts`
+
+### `LANDING_TEXT.heading(naming, count)`
+
+"3 Used Maruti Suzuki Cars in Ranipet", "1 Used Diesel Car in Arcot", "2 Used
+Cars Under ₹5 lakh in Vellore" — the count first, as buyers see on the
+marketplaces they compare us with, and singular at one. A price reads after
+"Cars" because "Used Under ₹5 lakh Cars" is not English.
 
 ## `apps/web/src/lib/services.ts`
 

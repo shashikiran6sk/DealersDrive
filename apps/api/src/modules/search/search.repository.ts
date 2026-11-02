@@ -115,6 +115,30 @@ const sitemapListingSelect = {
 
 export type SitemapListingRow = Prisma.ListingGetPayload<{ select: typeof sitemapListingSelect }>;
 
+const landingListingSelect = {
+  updatedAt: true,
+  dealer: { select: { city: true, district: true } },
+  vehicle: {
+    select: {
+      make: true,
+      model: true,
+      fuelType: true,
+      transmission: true,
+      bodyType: true,
+      pricePaise: true,
+      updatedAt: true,
+    },
+  },
+} satisfies Prisma.ListingSelect;
+
+export type LandingListingRow = Prisma.ListingGetPayload<{ select: typeof landingListingSelect }>;
+
+export interface LandingDealerRow {
+  city: string | null;
+  district: string | null;
+  state: string | null;
+}
+
 export interface SitemapDealerRow {
   slug: string;
   approvedAt: Date | null;
@@ -182,6 +206,22 @@ export function createSearchRepository(prisma: PrismaClient) {
         select: sitemapListingSelect,
         orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
         take,
+      });
+    },
+
+    landingListings(take: number): Promise<LandingListingRow[]> {
+      return prisma.listing.findMany({
+        where: PUBLIC_AVAILABLE_LISTING_WHERE,
+        select: landingListingSelect,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        take,
+      });
+    },
+
+    landingDealers(): Promise<LandingDealerRow[]> {
+      return prisma.dealer.findMany({
+        where: { status: PUBLIC_DEALER_STATUS },
+        select: { city: true, district: true, state: true },
       });
     },
 
