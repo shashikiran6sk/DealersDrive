@@ -340,11 +340,15 @@ viewer, and it is not in `heroPhotos` — so the JSON-LD `image` and the social
 images stay empty rather than sharing a picture of somebody else's showroom
 as this dealership's.
 
-It is an SVG with the wordmark already converted to outlines, so it renders
-the same with or without Manrope, scales to any width without a second
-asset, and weighs 14 KB. Its key content sits in the centre so that the
-440px banner (cropped top and bottom) and the 16:9 phone frame (cropped at the
-sides) both keep the building, the sign and the cars.
+It is an SVG that carries the current brand: the fascia and the totem use the
+`DD` mark and the `DealersDrive` wordmark from `public/brand/` (the same
+outlines as `dd-icon-white.svg` and `dealersdrive-wordmark-white.svg`, each
+defined once and placed with `<use>`), so it renders the same with or without
+a web font, scales to any width without a second asset, and weighs about
+20 KB. When the brand changes, those two paths are what change here. Its key
+content sits in the centre so that the 440px banner (cropped top and bottom),
+the 16:9 phone frame (cropped at the sides) and the 112px directory card all
+keep the building, the sign and the cars.
 
 ### `coverAlt` · `photoAlt`
 
