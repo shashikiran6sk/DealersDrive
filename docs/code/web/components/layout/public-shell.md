@@ -12,7 +12,7 @@ sits outside the route group — draws the same shell. Its two reads swallow
 their failures into empty defaults, so the shell renders during an outage and
 the page inside it can say what went wrong.
 
-### `popularSearches()`
+### `footerBrowseLinks()`
 
 Read beside the locations and the public config, so the footer's "Browse
 used cars" row costs one cached read per render, shared with every other

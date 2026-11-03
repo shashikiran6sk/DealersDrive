@@ -36,7 +36,7 @@ export const RELATED_PER_KIND = 8;
 
 export const SIMILAR_LINK_LIMIT = 6;
 
-export const POPULAR_LINK_LIMIT = 10;
+export const BROWSE_LINK_LIMIT = 10;
 
 export const BROWSE_PER_GROUP = 8;
 
@@ -75,12 +75,23 @@ export function isIndexableLanding(
   return page.cars >= map.minCars;
 }
 
+const PAGE_INDEX = new WeakMap<PublicLandingPagesResponse, Map<string, LandingPage>>();
+
+function pageKey(place: string, facet: string | null): string {
+  return `${place}|${facet ?? ''}`;
+}
+
 export function findLandingPage(
   map: PublicLandingPagesResponse,
   place: string,
   facet: string | null,
 ): LandingPage | undefined {
-  return map.pages.find((page) => page.place === place && page.facet === facet);
+  let index = PAGE_INDEX.get(map);
+  if (!index) {
+    index = new Map(map.pages.map((page) => [pageKey(page.place, page.facet), page]));
+    PAGE_INDEX.set(map, index);
+  }
+  return index.get(pageKey(place, facet));
 }
 
 export type LandingRoute =
@@ -349,7 +360,7 @@ export function vehicleRelatedSearches(
 
 type Bucket = LandingFacetKind | 'DISTRICT' | 'TOWN';
 
-const POPULAR_ORDER: readonly Bucket[] = [
+const BROWSE_ORDER: readonly Bucket[] = [
   'DISTRICT',
   'BRAND',
   'TOWN',
@@ -391,15 +402,15 @@ function varied(entries: readonly Placed[], limit: number): RelatedSearchLink[] 
   return picked;
 }
 
-export function popularLandingLinks(
+export function browseLandingLinks(
   map: PublicLandingPagesResponse,
-  limit = POPULAR_LINK_LIMIT,
+  limit = BROWSE_LINK_LIMIT,
 ): RelatedSearchLink[] {
   const buckets = bucketsOf(map);
   const picked: RelatedSearchLink[] = [];
   for (let round = 0; picked.length < limit; round += 1) {
     const before = picked.length;
-    for (const bucket of POPULAR_ORDER) {
+    for (const bucket of BROWSE_ORDER) {
       const entry = buckets.get(bucket)?.[round];
       if (entry && picked.length < limit) picked.push(linkTo(entry.page, entry.place));
     }
@@ -408,8 +419,8 @@ export function popularLandingLinks(
   return picked;
 }
 
-export function popularSearches(): Promise<RelatedSearchLink[] | null> {
-  return withLandingPages('landing.popular_unavailable', (map) => popularLandingLinks(map));
+export function footerBrowseLinks(): Promise<RelatedSearchLink[] | null> {
+  return withLandingPages('landing.browse_links_unavailable', (map) => browseLandingLinks(map));
 }
 
 export function browseLandingGroups(map: PublicLandingPagesResponse): RelatedSearchGroup[] {

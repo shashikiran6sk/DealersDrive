@@ -831,7 +831,8 @@ trails cannot disagree about what a district page's parent is.
 No `lastModified` on the static pages: they have no honest last-changed time,
 and "now" on every request teaches a crawler to ignore the field.
 
-`landings` is `null` while `feature.seoLandingPages` is off. With it on, every
+`landings` is `null` while `feature.seoLandingPages` is off. It is also `null` when
+the landing read fails, which costs the landing entries and nothing else. With it on, every
 landing page with two available cars or more is listed, dated by the newest
 change to one of its cars. A district's own landing address is left out: it
 redirects to `/cars?district=`, which the district rows already list.
@@ -850,7 +851,9 @@ holds a second copy of them.
 `dealers`, so a car approved, reserved or sold through the app refreshes it.
 A **404 reads as `null`**: a web build deployed before the API that serves the
 read sees no landing pages rather than failing the sitemap. Any other failure is
-thrown, as the sitemap's own read is.
+thrown to the caller; the sitemap catches it and publishes everything else —
+the landing entries are an addition, and a 5xx `sitemap.xml` would hide every
+car and dealership from crawlers to protect them.
 
 ### `export const landingPagesEnabled`
 
@@ -903,7 +906,7 @@ aliased (`MARUTI` is Maruti Suzuki) and a body, fuel or gearbox label is read
 back through `parseLandingFacet`, so a label the vocabulary does not know is
 dropped rather than linked to a 404.
 
-### `export function popularLandingLinks(map, limit)`
+### `export function browseLandingLinks(map, limit)`
 
 The footer's list. Pages are bucketed — districts, brands, towns, body types,
 budgets, fuels, models, gearboxes — and taken **one from each bucket in turn**,

@@ -29,7 +29,7 @@ function renderFooter(props: Partial<Parameters<typeof CustomerFooter>[0]> = {})
       social={props.social ?? SOCIAL}
       supportEmail={props.supportEmail ?? 'support@dealers-drive.com'}
       supportPhone={props.supportPhone ?? '+914162248890'}
-      {...(props.popular ? { popular: props.popular } : {})}
+      {...(props.browseLinks ? { browseLinks: props.browseLinks } : {})}
     />,
   );
 }
@@ -192,7 +192,7 @@ describe('the support contacts', () => {
 describe('browse used cars (the landing-page row)', () => {
   it('lists the landing pages it is given, as plain links under their own heading', () => {
     renderFooter({
-      popular: [
+      browseLinks: [
         { href: '/cars?district=vellore', label: 'Used Cars in Vellore' },
         { href: '/used-cars/arcot/diesel', label: 'Used Diesel Cars in Arcot' },
       ],
@@ -207,7 +207,7 @@ describe('browse used cars (the landing-page row)', () => {
   it('is absent when there is nothing to list — the switch is off, or no page has two cars', () => {
     renderFooter();
     expect(screen.queryByRole('navigation', { name: 'Browse used cars' })).toBeNull();
-    renderFooter({ popular: [] });
+    renderFooter({ browseLinks: [] });
     expect(screen.queryByRole('navigation', { name: 'Browse used cars' })).toBeNull();
   });
 });

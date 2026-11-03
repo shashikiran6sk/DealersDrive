@@ -31,7 +31,7 @@ export const LANDING_TEXT = {
   similarHeading: 'Find more cars like this',
   similarIn: (place: string) => `In ${place}`,
   similarAcross: (district: string) => `Across ${district} district`,
-  browseHeading: 'Browse used cars',
+  browseHeading: 'Browse by place, brand and budget',
   byPlace: 'By place',
   byBrand: 'By brand',
   byBudget: 'By budget',

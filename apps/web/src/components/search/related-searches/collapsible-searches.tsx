@@ -14,6 +14,11 @@ export interface CollapsibleSearchesProps {
   className?: string;
 }
 
+function isClipped(target: EventTarget, panel: HTMLElement): boolean {
+  if (!(target instanceof Element)) return false;
+  return target.getBoundingClientRect().bottom > panel.getBoundingClientRect().bottom + 1;
+}
+
 export function CollapsibleSearches({ heading, groups, className }: CollapsibleSearchesProps) {
   const [open, setOpen] = useState(false);
   const [overflowing, setOverflowing] = useState(true);
@@ -37,7 +42,9 @@ export function CollapsibleSearches({ heading, groups, className }: CollapsibleS
         ref={panel}
         id={panelId}
         className={open ? 'flex flex-col gap-5' : cn('flex flex-wrap gap-2', COLLAPSED_ROW_CLASS)}
-        onFocus={() => setOpen(true)}
+        onFocus={(event) => {
+          if (isClipped(event.target, event.currentTarget)) setOpen(true);
+        }}
       >
         <RelatedSearchGroups groups={groups} compact={!open} />
       </div>

@@ -113,9 +113,9 @@ environment default, `+914162248890`) is grouped for reading as
 `+91 41622 48890` (BUG-107); a number an operator typed with their own spacing
 or dashes is shown exactly as typed. `telHref` dials the digits either way.
 
-## `apps/web/src/components/layout/customer-footer/popular-searches-row.tsx`
+## `apps/web/src/components/layout/customer-footer/browse-links-row.tsx`
 
-### `export function PopularSearchesRow({ links })`
+### `export function BrowseLinksRow({ links })`
 
 A short "Browse used cars" row of SEO landing-page links, on every public page,
 so a landing page is one click from anywhere — the home page included — without
@@ -128,7 +128,7 @@ search engines discount links that do; fifty of them reads as a link farm and
 buries the footer's own columns. A short, varied list carries the benefit; the
 contextual links on the car pages and the landing pages do the rest.
 
-The links come from `popularSearches()` in [`lib/landing`](../../lib.md), passed
+The links come from `footerBrowseLinks()` in [`lib/landing`](../../lib.md), passed
 in by [`PublicShell`](public-shell.md); with the switch off, or no page with two
 cars, the prop is empty and the row is not rendered.
 

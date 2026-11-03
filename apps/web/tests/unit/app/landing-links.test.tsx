@@ -135,14 +135,16 @@ describe('a car page', () => {
 describe('the home page', () => {
   it('carries no browse block of its own — the footer row is its link to the landing pages', async () => {
     render(await HomePage());
-    expect(screen.queryByRole('region', { name: 'Browse used cars' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Browse by place, brand and budget' })).toBeNull();
   });
 });
 
 describe('/cars with no district', () => {
   it('offers the browse links collapsed behind See more, and not on a filtered view', async () => {
     const all = render(await CarsPage({ searchParams: Promise.resolve({}) }));
-    expect(hrefsIn('Browse used cars')).toContain('/used-cars/arcot/maruti-suzuki');
+    expect(hrefsIn('Browse by place, brand and budget')).toContain(
+      '/used-cars/arcot/maruti-suzuki',
+    );
     expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -150,6 +152,6 @@ describe('/cars with no district', () => {
     all.unmount();
 
     render(await CarsPage({ searchParams: Promise.resolve({ fuel: 'diesel' }) }));
-    expect(screen.queryByRole('region', { name: 'Browse used cars' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Browse by place, brand and budget' })).toBeNull();
   });
 });

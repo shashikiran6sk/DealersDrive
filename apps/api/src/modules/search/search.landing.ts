@@ -60,11 +60,18 @@ interface PlaceDraft {
   names: Tally;
   states: Tally;
   districts: Map<string, number>;
+  statesByDistrict: Map<string, Tally>;
   cars: number;
 }
 
 function draft(): PlaceDraft {
-  return { names: tally(), states: tally(), districts: new Map(), cars: 0 };
+  return {
+    names: tally(),
+    states: tally(),
+    districts: new Map(),
+    statesByDistrict: new Map(),
+    cars: 0,
+  };
 }
 
 function draftFor(drafts: Map<string, PlaceDraft>, slug: string): PlaceDraft {
@@ -227,7 +234,9 @@ export function buildLandingPages(
     if (!town) continue;
     const townDraft = draftFor(towns, town);
     add(townDraft.names, dealer.city);
-    add(townDraft.states, dealer.state);
+    const statesHere = townDraft.statesByDistrict.get(district) ?? tally();
+    add(statesHere, dealer.state);
+    townDraft.statesByDistrict.set(district, statesHere);
     townDraft.districts.set(district, (townDraft.districts.get(district) ?? 0) + 1);
   }
 
@@ -292,7 +301,7 @@ export function buildLandingPages(
           name: mostCommon(place.names) ?? slug,
           kind: 'TOWN' as const,
           district: { slug: district, name: districtName(district) },
-          state: mostCommon(place.states),
+          state: mostCommon(place.statesByDistrict.get(district) ?? tally()),
           cars: place.cars,
         },
       ];

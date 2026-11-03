@@ -7,7 +7,7 @@ import {
   isIndexableLanding,
   landingPath,
   landingSearch,
-  popularLandingLinks,
+  browseLandingLinks,
   relatedLandingGroups,
   resolveLanding,
   vehicleFacetSlugs,
@@ -343,9 +343,9 @@ describe('vehicleLandingGroups', () => {
   });
 });
 
-describe('popularLandingLinks', () => {
+describe('browseLandingLinks', () => {
   it('takes the largest page of each kind in turn, so the list stays varied', () => {
-    const links = popularLandingLinks(LANDING_MAP);
+    const links = browseLandingLinks(LANDING_MAP);
     expect(links.map((link) => link.href)).toEqual([
       '/cars?district=vellore',
       '/used-cars/vellore/maruti-suzuki',
@@ -362,9 +362,9 @@ describe('popularLandingLinks', () => {
   });
 
   it('stops at the limit, and at the pages there are', () => {
-    expect(popularLandingLinks(LANDING_MAP, 3)).toHaveLength(3);
-    expect(popularLandingLinks(LANDING_MAP, 50).length).toBeLessThan(50);
-    expect(popularLandingLinks(LANDING_MAP, 50).map((link) => link.href)).not.toContain(
+    expect(browseLandingLinks(LANDING_MAP, 3)).toHaveLength(3);
+    expect(browseLandingLinks(LANDING_MAP, 50).length).toBeLessThan(50);
+    expect(browseLandingLinks(LANDING_MAP, 50).map((link) => link.href)).not.toContain(
       '/used-cars/arcot/hyundai-creta',
     );
   });

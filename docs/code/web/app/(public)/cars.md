@@ -91,6 +91,7 @@ A filtered or searched view links nothing: it is `noindex`, and not where a
 crawler should be sent from. The page's title, robots and canonical do not
 change.
 
-Both blocks on `/cars` — the district's and the no-district _Browse used cars_ —
+Both blocks on `/cars` — the district's and the no-district _Browse by place, brand and budget_ (not "Browse used cars",
+which is the footer row's name, so the two never share a heading on one page) —
 are `collapsible`: two rows and a _See more_, so a page that is about searching
 cars does not end in a wall of links. The links are all in the HTML either way.

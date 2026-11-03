@@ -501,7 +501,7 @@ export const registry: RegistryEntry[] = [
       'the dealer is the merchant.',
     aliases: ['PublicFooter', 'SiteFooter', 'Footer', 'customer-footer'],
     features: ['F073', 'R44'],
-    props: ['social', 'supportEmail', 'supportPhone', 'popular (landing-page links, optional)'],
+    props: ['social', 'supportEmail', 'supportPhone', 'browseLinks (landing-page links, optional)'],
     states: [
       'default (six networks, both contacts)',
       'browse used cars (the SEO landing pages, behind feature.seoLandingPages)',

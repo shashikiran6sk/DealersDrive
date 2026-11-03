@@ -5,15 +5,15 @@ import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { SavedVehiclesProvider } from '@/features/saved';
-import { popularSearches } from '@/lib/landing';
+import { footerBrowseLinks } from '@/lib/landing';
 import { getPublicLocations } from '@/lib/locations';
 import { getPublicConfig } from '@/lib/public-config';
 
 export async function PublicShell({ children }: { children: ReactNode }) {
-  const [locations, config, popular] = await Promise.all([
+  const [locations, config, browseLinks] = await Promise.all([
     getPublicLocations(),
     getPublicConfig(),
-    popularSearches(),
+    footerBrowseLinks(),
   ]);
 
   return (
@@ -26,7 +26,7 @@ export async function PublicShell({ children }: { children: ReactNode }) {
           social={config.social}
           supportEmail={config.support.customer.email}
           supportPhone={config.support.customer.phone}
-          popular={popular ?? []}
+          browseLinks={browseLinks ?? []}
         />
       </div>
     </SavedVehiclesProvider>

@@ -101,13 +101,39 @@ describe('RelatedSearches, collapsible', () => {
     );
   });
 
+  function placeAt(element: Element, bottom: number) {
+    element.getBoundingClientRect = () => ({ bottom }) as DOMRect;
+  }
+
   it('opens when a clipped link is reached by keyboard, keeping focus on that link', () => {
     renderCollapsible();
+    const panel = document.getElementById(
+      screen.getByRole('button', { name: 'See more' }).getAttribute('aria-controls') ?? '',
+    );
     const katpadi = screen.getByRole('link', { name: 'Used Cars in Katpadi' });
+    if (panel) placeAt(panel, 76);
+    placeAt(katpadi, 120);
     katpadi.focus();
     fireEvent.focus(katpadi);
 
     expect(screen.getByRole('button', { name: 'See less' })).toBeInTheDocument();
     expect(document.activeElement).toBe(katpadi);
+  });
+
+  it('stays collapsed when a visible link takes focus, so a click on it navigates', () => {
+    renderCollapsible();
+    const panel = document.getElementById(
+      screen.getByRole('button', { name: 'See more' }).getAttribute('aria-controls') ?? '',
+    );
+    const hyundai = screen.getByRole('link', { name: 'Used Hyundai Cars in Vellore' });
+    if (panel) placeAt(panel, 76);
+    placeAt(hyundai, 34);
+    hyundai.focus();
+    fireEvent.focus(hyundai);
+
+    expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 });

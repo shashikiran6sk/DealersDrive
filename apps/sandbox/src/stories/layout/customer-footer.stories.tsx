@@ -25,7 +25,7 @@ const meta = {
     social: { control: 'object' },
     supportEmail: { control: 'text' },
     supportPhone: { control: 'text' },
-    popular: { control: 'object' },
+    browseLinks: { control: 'object' },
   },
 } satisfies Meta<typeof CustomerFooter>;
 
@@ -34,9 +34,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-export const PopularSearches: Story = {
+export const BrowseLinks: Story = {
   args: {
-    popular: [
+    browseLinks: [
       { href: '/cars?district=vellore', label: 'Used Cars in Vellore' },
       { href: '/used-cars/vellore/maruti-suzuki', label: 'Used Maruti Suzuki Cars in Vellore' },
       { href: '/used-cars/katpadi', label: 'Used Cars in Katpadi' },

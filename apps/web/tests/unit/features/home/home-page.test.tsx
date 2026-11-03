@@ -332,6 +332,6 @@ describe('the homepage search — the /cars search box, pointed at /cars', () =>
     expect(paths.some((path) => path.startsWith('/v1/locations'))).toBe(false);
     // The one other read is the public config, for the admin-set hero photograph (R81).
     const others = paths.filter((path) => !path.endsWith('limit=4'));
-    expect([...new Set(others)]).toEqual(['/v1/config/public']);
+    expect(others).toEqual(['/v1/config/public']);
   });
 });

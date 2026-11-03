@@ -322,6 +322,18 @@ describe('/sitemap.xml', () => {
     expect(landing.every((row) => row.lastModified === LANDING_AT)).toBe(true);
   });
 
+  it('still answers with every other page when the landing read fails', async () => {
+    const answer = apiGetParsed.getMockImplementation();
+    apiGetParsed.mockImplementation((schema: unknown, path: string) =>
+      path === '/v1/landing-pages'
+        ? Promise.reject(new Error('down'))
+        : (answer?.(schema, path) as unknown),
+    );
+    const urls = (await sitemap()).map((row) => row.url);
+    expect(urls).toContain('https://www.dealers-drive.com/cars?district=ranipet');
+    expect(urls.some((url) => url.includes('/used-cars/'))).toBe(false);
+  });
+
   it('lists none, and does not ask for them, while the switch is off', async () => {
     enabled = false;
     const urls = (await sitemap()).map((row) => row.url);

@@ -145,6 +145,18 @@ describe('a town that shares its district’s name', () => {
     expect(page(result, 'katpadi', null)?.cars).toBe(2);
   });
 
+  it('takes a town’s state from its own district, not from mis-filed dealerships', () => {
+    const elsewhere = { city: 'Katpadi', district: 'Chittoor', state: 'Andhra Pradesh' };
+    const result = buildLandingPages(
+      [KATPADI, KATPADI, KATPADI, elsewhere, elsewhere],
+      [car(KATPADI), car(KATPADI)],
+    );
+    expect(result.places.find((place) => place.slug === 'katpadi')).toMatchObject({
+      district: { slug: 'vellore' },
+      state: 'Tamil Nadu',
+    });
+  });
+
   it('treats a legacy spelling of the district as the district too', () => {
     const kanchi = buildLandingPages(
       [{ city: 'Kanchipuram', district: 'Kancheepuram', state: 'Tamil Nadu' }],
