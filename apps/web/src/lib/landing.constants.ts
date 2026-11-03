@@ -28,4 +28,13 @@ export const LANDING_TEXT = {
   searchesIn: (place: string) => `Popular searches in ${place}`,
   townsIn: (district: string) => `Towns in ${district} district`,
   wholeDistrict: (district: string) => `All used cars in ${district} district`,
+  similarHeading: 'Find more cars like this',
+  similarIn: (place: string) => `In ${place}`,
+  similarAcross: (district: string) => `Across ${district} district`,
+  browseHeading: 'Browse used cars',
+  byPlace: 'By place',
+  byBrand: 'By brand',
+  byBudget: 'By budget',
+  byBody: 'By body type',
+  byFuelAndGearbox: 'By fuel and gearbox',
 } as const;

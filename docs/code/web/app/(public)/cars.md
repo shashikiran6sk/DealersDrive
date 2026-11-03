@@ -82,3 +82,11 @@ exactly what they were, so the page that already ranks for "used cars in
 Vellore" keeps doing so. The links appear only on the unfiltered district view
 — a filtered view is `noindex` and not where a crawler should be sent from —
 and a failure to read the landing pages drops the block rather than the page.
+
+### `relatedFor(params)` — `browseSearches()` with no district
+
+With no district chosen, the unfiltered `/cars` links the landing pages by
+place, brand, budget, body type and fuel — the same block as the home page.
+A filtered or searched view links nothing: it is `noindex`, and not where a
+crawler should be sent from. The page's title, robots and canonical do not
+change.

@@ -359,8 +359,20 @@ the marketplace search's own: the API's integration suite asserts them against
 **Every page is its own canonical** (`?page=N` included), with a title and
 heading led by the count ("3 Used Maruti Suzuki Cars in Ranipet"), an intro
 built from the search's counts (who lists the cars, what is most listed), the
-cars as crawlable links, and a block of related searches. The district view of
-`/cars` gains the same block; nothing else about it changes.
+cars as crawlable links, and a block of related searches.
+
+**How they are reached** — all behind the same switch, and only ever pages with
+two cars or more:
+
+| Surface                                 | Links                                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| a landing page                          | its place's other searches; the same search in its district's other towns                                   |
+| `/cars?district=`                       | the district's searches and its towns ("More used cars around …")                                           |
+| `/cars` with no district, the home page | "Browse used cars" — by place, brand, budget, body, fuel and gearbox                                        |
+| a car page                              | "Find more cars like this" — its model, brand, body, fuel, gearbox and price band, in its town and district |
+| every public page                       | a "Popular searches" row of ten in the footer                                                               |
+
+None of these changes a page's title, robots or canonical.
 
 **Turning it on.** Deploy the API, then the web app, with the switch off. In
 `/admin/config` turn on _SEO landing pages_, open two or three `/used-cars/…`

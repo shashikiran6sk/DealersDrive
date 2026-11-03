@@ -112,3 +112,22 @@ value, from one cached fetch under one tag, so the admin save that revalidates
 environment default, `+914162248890`) is grouped for reading as
 `+91 41622 48890` (BUG-107); a number an operator typed with their own spacing
 or dashes is shown exactly as typed. `telHref` dials the digits either way.
+
+## `apps/web/src/components/layout/customer-footer/popular-searches-row.tsx`
+
+### `export function PopularSearchesRow({ links })`
+
+A short "Popular searches" row of SEO landing-page links, on every public page,
+so a landing page is one click from anywhere — the home page included — without
+choosing a district first. It is a row under the columns, not a fifth column,
+because its links are long ("Used Cars Under ₹5 lakh in Vellore") and a column
+of them would set the footer's height.
+
+**Short on purpose — ten links at most.** A footer repeats on every page, and
+search engines discount links that do; fifty of them reads as a link farm and
+buries the footer's own columns. A short, varied list carries the benefit; the
+contextual links on the car pages and the landing pages do the rest.
+
+The links come from `popularSearches()` in [`lib/landing`](../../lib.md), passed
+in by [`PublicShell`](public-shell.md); with the switch off, or no page with two
+cars, the prop is empty and the row is not rendered.

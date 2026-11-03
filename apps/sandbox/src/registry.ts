@@ -501,9 +501,10 @@ export const registry: RegistryEntry[] = [
       'the dealer is the merchant.',
     aliases: ['PublicFooter', 'SiteFooter', 'Footer', 'customer-footer'],
     features: ['F073', 'R44'],
-    props: ['social', 'supportEmail', 'supportPhone'],
+    props: ['social', 'supportEmail', 'supportPhone', 'popular (landing-page links, optional)'],
     states: [
       'default (six networks, both contacts)',
+      'popular searches (the SEO landing pages, behind feature.seoLandingPages)',
       'no social accounts published',
       'two networks',
       'API unreachable (no contacts, no social)',
@@ -2180,7 +2181,7 @@ export const registry: RegistryEntry[] = [
     category: 'Search',
     ownership: 'Feature-shared',
     purpose:
-      'A titled block of crawlable link chips to related searches — the SEO landing pages (/used-cars/{place}/{facet}) of a place, its district and its sibling towns. Server-rendered plain anchors with descriptive text, grouped under eyebrows; a group with no links is left out and the whole block renders nothing when every group is empty. Used at the foot of the landing pages and of the /cars district page.',
+      'A titled block of crawlable link chips to related searches — the SEO landing pages (/used-cars/{place}/{facet}) of a place, its district and its sibling towns. Server-rendered plain anchors with descriptive text, grouped under eyebrows; a group with no links is left out and the whole block renders nothing when every group is empty. Used at the foot of the landing pages, the /cars district page and /cars with no district (Browse used cars), on car pages (Find more cars like this) and on the home page.',
     aliases: ['PopularSearches', 'SeoLinks', 'InternalLinks', 'LinkChips', 'related-searches'],
     features: ['SEO landing pages'],
     props: ['heading', 'groups (title, links: href + label)', 'className'],

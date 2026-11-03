@@ -5,6 +5,7 @@ import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT, SUPPORT_LINKS } from './custome
 import type { CustomerFooterProps } from './customer-footer.types';
 import { FooterColumn } from './footer-column';
 import { FooterLinkItem } from './footer-link-item';
+import { PopularSearchesRow } from './popular-searches-row';
 import { SocialRow } from './social-row';
 
 export function CustomerFooter({
@@ -12,6 +13,7 @@ export function CustomerFooter({
   supportEmail,
   supportPhone,
   legalVisible = true,
+  popular = [],
 }: CustomerFooterProps) {
   return (
     <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
@@ -67,6 +69,8 @@ export function CustomerFooter({
           ) : null}
         </FooterColumn>
       </div>
+
+      <PopularSearchesRow links={popular} />
 
       <div className="border-t border-(--color-rule)">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-5 text-[12px] ink-muted sm:px-6 lg:px-10">

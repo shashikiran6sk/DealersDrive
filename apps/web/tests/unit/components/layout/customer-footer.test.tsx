@@ -29,6 +29,7 @@ function renderFooter(props: Partial<Parameters<typeof CustomerFooter>[0]> = {})
       social={props.social ?? SOCIAL}
       supportEmail={props.supportEmail ?? 'support@dealers-drive.com'}
       supportPhone={props.supportPhone ?? '+914162248890'}
+      {...(props.popular ? { popular: props.popular } : {})}
     />,
   );
 }
@@ -185,5 +186,28 @@ describe('the support contacts', () => {
       'href',
       'tel:+914162248890',
     );
+  });
+});
+
+describe('popular searches', () => {
+  it('lists the landing pages it is given, as plain links under their own heading', () => {
+    renderFooter({
+      popular: [
+        { href: '/cars?district=vellore', label: 'Used Cars in Vellore' },
+        { href: '/used-cars/arcot/diesel', label: 'Used Diesel Cars in Arcot' },
+      ],
+    });
+    expect(columnHrefs('Popular searches')).toEqual([
+      '/cars?district=vellore',
+      '/used-cars/arcot/diesel',
+    ]);
+    expect(screen.getByRole('link', { name: 'Used Diesel Cars in Arcot' })).toBeInTheDocument();
+  });
+
+  it('is absent when there is nothing to list — the switch is off, or no page has two cars', () => {
+    renderFooter();
+    expect(screen.queryByRole('navigation', { name: 'Popular searches' })).toBeNull();
+    renderFooter({ popular: [] });
+    expect(screen.queryByRole('navigation', { name: 'Popular searches' })).toBeNull();
   });
 });

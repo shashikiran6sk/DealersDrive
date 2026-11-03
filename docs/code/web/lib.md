@@ -883,6 +883,38 @@ on nothing.
 The `/cars` district view's version, which swallows a failure: the links are a
 garnish on a page that must render without them.
 
+### `function withLandingPages(event, build)`
+
+Every surface that links the landing pages reads them through this: it checks
+the switch, reads the cached landing read, and **swallows any failure** into
+`null` with a warning. The links are an addition to pages that must render
+without them — a car page, the home page, the footer on every page.
+
+### `export function vehicleLandingGroups(map, vehicle)`
+
+The car page's links: the searches the car belongs to (`vehicleFacetSlugs` —
+model, brand, body, fuel, gearbox, the lowest price band it fits, most specific
+first), in its town and across its district, the indexable ones only. A make is
+aliased (`MARUTI` is Maruti Suzuki) and a body, fuel or gearbox label is read
+back through `parseLandingFacet`, so a label the vocabulary does not know is
+dropped rather than linked to a 404.
+
+### `export function popularLandingLinks(map, limit)`
+
+The footer's list. Pages are bucketed — districts, brands, towns, body types,
+budgets, fuels, models, gearboxes — and taken **one from each bucket in turn**,
+largest first, so ten links are ten different kinds of search rather than the
+ten biggest brands of the biggest district. A district links to
+`/cars?district=`, never to its own landing address, which only redirects.
+
+### `export function browseLandingGroups(map)`
+
+The home page's and the unfiltered `/cars`'s block: the same buckets as named
+groups, at most eight links each, and **at most two of the same search** — the
+biggest budget and fuel ("Under ₹10 lakh", "Petrol") are the biggest in every
+place, and without the cap a group was eight copies of one search in eight
+places.
+
 ## `apps/web/src/lib/landing.constants.ts`
 
 ### `LANDING_TEXT.heading(naming, count)`

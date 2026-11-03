@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
+import type { PublicVehicleDetail } from '@dealers-drive/contracts';
+
 import {
+  browseLandingGroups,
   isIndexableLanding,
   landingPath,
   landingSearch,
+  popularLandingLinks,
   relatedLandingGroups,
   resolveLanding,
+  vehicleFacetSlugs,
+  vehicleLandingGroups,
 } from '@/lib/landing';
 
 import { LANDING_MAP } from './landing-fixtures';
@@ -197,6 +203,202 @@ describe('relatedLandingGroups', () => {
     expect(towns?.links.map((link) => link.href)).toEqual([
       '/used-cars/arcot',
       '/used-cars/walajapet',
+    ]);
+  });
+});
+
+function vehicle(
+  facts: Partial<PublicVehicleDetail['facts']> = {},
+  dealer: Partial<PublicVehicleDetail['dealer']> = {},
+): PublicVehicleDetail {
+  return {
+    slug: '2021-maruti-suzuki-swift-vxi-arcot-1a2b3c4d',
+    availability: 'AVAILABLE',
+    title: '2021 Maruti Suzuki Swift VXi',
+    year: 2021,
+    priceLabel: '₹4,50,000',
+    negotiabilityLabel: null,
+    summary: 'Petrol · Manual · 30,000 km',
+    description: null,
+    specs: [],
+    images: [],
+    primaryIndex: 0,
+    publishedLabel: null,
+    facts: {
+      make: 'Maruti Suzuki',
+      model: 'Swift',
+      variant: 'VXi',
+      bodyType: 'Hatchback',
+      fuelType: 'Petrol',
+      transmission: 'Manual',
+      color: 'White',
+      kilometersDriven: 30_000,
+      ownerCount: 1,
+      pricePaise: 45_000_000,
+      ...facts,
+    },
+    dealer: {
+      name: 'Sri Murugan Cars',
+      slug: 'sri-murugan',
+      initials: 'SM',
+      isVerified: true,
+      location: 'Arcot, Ranipet',
+      city: 'Arcot',
+      district: 'Ranipet',
+      state: 'Tamil Nadu',
+      ...dealer,
+    },
+  };
+}
+
+describe('vehicleFacetSlugs', () => {
+  it('names every search the car belongs to, most specific first', () => {
+    expect(vehicleFacetSlugs(vehicle())).toEqual([
+      'maruti-suzuki-swift',
+      'maruti-suzuki',
+      'hatchback',
+      'petrol',
+      'manual',
+      'under-5-lakh',
+    ]);
+  });
+
+  it('files an aliased make under its brand, and the price under the lowest band it fits', () => {
+    expect(
+      vehicleFacetSlugs(vehicle({ make: 'MARUTI', pricePaise: 62_000_000, bodyType: null })),
+    ).toEqual(['maruti-suzuki-swift', 'maruti-suzuki', 'petrol', 'manual', 'under-7-lakh']);
+  });
+
+  it('leaves out what the car does not say, and a price above every band', () => {
+    expect(
+      vehicleFacetSlugs(
+        vehicle({
+          make: 'Premier Padmini',
+          fuelType: null,
+          transmission: null,
+          pricePaise: 150_000_000,
+        }),
+      ),
+    ).toEqual(['hatchback']);
+  });
+});
+
+describe('vehicleLandingGroups', () => {
+  it('links the indexable searches the car belongs to, in its town and across its district', () => {
+    const groups = vehicleLandingGroups(LANDING_MAP, vehicle());
+    expect(groups).toEqual([
+      {
+        title: 'In Arcot',
+        links: [
+          {
+            href: '/used-cars/arcot/maruti-suzuki-swift',
+            label: 'Used Maruti Suzuki Swift Cars in Arcot',
+          },
+          { href: '/used-cars/arcot/maruti-suzuki', label: 'Used Maruti Suzuki Cars in Arcot' },
+          { href: '/used-cars/arcot/under-5-lakh', label: 'Used Cars Under ₹5 lakh in Arcot' },
+        ],
+      },
+      { title: 'Across Ranipet district', links: [] },
+    ]);
+  });
+
+  it('links the same search across the district when the district has it', () => {
+    const groups = vehicleLandingGroups(
+      LANDING_MAP,
+      vehicle({ make: 'Hyundai', model: 'Creta', fuelType: 'Diesel', pricePaise: 120_000_000 }),
+    );
+    expect(groups.flatMap((group) => group.links.map((link) => link.href))).toEqual([
+      '/used-cars/arcot/diesel',
+      '/used-cars/ranipet/diesel',
+    ]);
+  });
+
+  it('links nothing for a car whose place has no landing pages', () => {
+    const groups = vehicleLandingGroups(
+      LANDING_MAP,
+      vehicle({}, { city: 'Madurai', district: 'Madurai' }),
+    );
+    expect(groups).toEqual([]);
+  });
+});
+
+describe('popularLandingLinks', () => {
+  it('takes the largest page of each kind in turn, so the list stays varied', () => {
+    const links = popularLandingLinks(LANDING_MAP);
+    expect(links.map((link) => link.href)).toEqual([
+      '/cars?district=vellore',
+      '/used-cars/vellore/maruti-suzuki',
+      '/used-cars/arcot',
+      '/used-cars/arcot/under-5-lakh',
+      '/used-cars/ranipet/diesel',
+      '/used-cars/arcot/maruti-suzuki-swift',
+      '/cars?district=ranipet',
+      '/used-cars/arcot/maruti-suzuki',
+      '/used-cars/walajapet',
+      '/used-cars/arcot/diesel',
+    ]);
+    expect(links[0]?.label).toBe('Used Cars in Vellore');
+  });
+
+  it('stops at the limit, and at the pages there are', () => {
+    expect(popularLandingLinks(LANDING_MAP, 3)).toHaveLength(3);
+    expect(popularLandingLinks(LANDING_MAP, 50).length).toBeLessThan(50);
+    expect(popularLandingLinks(LANDING_MAP, 50).map((link) => link.href)).not.toContain(
+      '/used-cars/arcot/hyundai-creta',
+    );
+  });
+});
+
+describe('browseLandingGroups', () => {
+  it('shows at most two pages of the same search, so one budget or fuel cannot fill a group', () => {
+    const extra = [0, 1, 2].map((index) => ({
+      place: 'arcot',
+      facet: `under-10-lakh`,
+      kind: 'PRICE' as const,
+      label: 'Under ₹10 lakh',
+      cars: 9 - index,
+      lastModified: null,
+    }));
+    const places = ['x', 'y', 'z'].map((slug) => ({
+      slug,
+      name: slug.toUpperCase(),
+      kind: 'TOWN' as const,
+      district: { slug: 'ranipet', name: 'Ranipet' },
+      state: 'Tamil Nadu',
+      cars: 9,
+    }));
+    const map = {
+      ...LANDING_MAP,
+      places: [...LANDING_MAP.places, ...places],
+      pages: [
+        ...LANDING_MAP.pages,
+        ...extra.map((page, index) => ({ ...page, place: places[index]?.slug ?? '' })),
+      ],
+    };
+    const budget = browseLandingGroups(map).find((group) => group.title === 'By budget');
+    expect(budget?.links.map((link) => link.href)).toEqual([
+      '/used-cars/x/under-10-lakh',
+      '/used-cars/y/under-10-lakh',
+      '/used-cars/arcot/under-5-lakh',
+    ]);
+  });
+
+  it('groups the indexable pages by place, brand, budget, body and fuel', () => {
+    const groups = browseLandingGroups(LANDING_MAP);
+    expect(groups.map((group) => [group.title, group.links.map((link) => link.href)])).toEqual([
+      [
+        'By place',
+        [
+          '/cars?district=vellore',
+          '/cars?district=ranipet',
+          '/used-cars/arcot',
+          '/used-cars/walajapet',
+        ],
+      ],
+      ['By brand', ['/used-cars/vellore/maruti-suzuki', '/used-cars/arcot/maruti-suzuki']],
+      ['By budget', ['/used-cars/arcot/under-5-lakh']],
+      ['By body type', []],
+      ['By fuel and gearbox', ['/used-cars/ranipet/diesel', '/used-cars/arcot/diesel']],
     ]);
   });
 });

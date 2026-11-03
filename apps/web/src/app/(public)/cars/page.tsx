@@ -19,7 +19,7 @@ import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { apiGetParsed, qs } from '@/lib/api';
-import { districtRelatedSearches } from '@/lib/landing';
+import { browseSearches, districtRelatedSearches } from '@/lib/landing';
 import { getPublicLocations } from '@/lib/locations';
 import {
   BREADCRUMB_TEXT,
@@ -60,6 +60,11 @@ async function loadCars(params: VehicleSearchParams) {
   return { listing, locations, place, view: directoryView(params, listing.data.length === 0) };
 }
 
+function relatedFor(params: VehicleSearchParams) {
+  if (directoryView(params, false).narrowed) return Promise.resolve(null);
+  return params.district ? districtRelatedSearches(params.district) : browseSearches();
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -81,9 +86,7 @@ export default async function CarsPage({
   const params = readVehicleSearch(await searchParams);
   const [{ listing, locations, place, view }, related] = await Promise.all([
     loadCars(params),
-    params.district && !directoryView(params, false).narrowed
-      ? districtRelatedSearches(params.district)
-      : Promise.resolve(null),
+    relatedFor(params),
   ]);
 
   const filtered = activeFilterCount(params) > 0 || Boolean(params.q);

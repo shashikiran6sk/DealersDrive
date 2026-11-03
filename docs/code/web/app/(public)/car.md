@@ -69,3 +69,16 @@ only when pressed ([features/enquiry](../../features/enquiry.md)), and
 `?enquire=1` is read under a `Suspense` boundary whose fallback is the same
 button, so the page stays static and one cached copy serves every visitor. The
 bottom padding grows below `lg` by the height of the pinned Enquire bar.
+
+### `vehicleRelatedSearches(vehicle)` and `<RelatedSearches heading="Find more cars like this" />`
+
+While `feature.seoLandingPages` is on, the car page links the SEO landing pages
+the car itself belongs to — its model, its brand, its body type, its fuel, its
+gearbox and the lowest price band it fits — in its town and across its district.
+These are the most valuable links to the landing pages on the site: in context,
+on the pages search engines index and visit most, and they answer the next
+question a buyer looking at one i20 has ("what other i20s are there near
+here?"). Only pages with two cars or more are linked, at most six per place.
+
+It is read alongside the similar cars, not after them, and a failure to read
+the landing pages drops the block rather than the page.

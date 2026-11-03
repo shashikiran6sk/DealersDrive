@@ -91,3 +91,11 @@ sentence; the behaviour is `RouteError`'s.
 A Suspense boundary above a page streams the layout before the page's data
 arrives, and a `notFound()` or a failure after that is answered 200. See
 `docs/errors.md` §3.
+
+### `browseSearches()` — "Browse used cars"
+
+While `feature.seoLandingPages` is on, the home page closes with the SEO landing
+pages grouped by place, brand, budget, body type and fuel and gearbox, each
+group its largest pages first and at most eight. It is the one place a buyer
+browsing — rather than searching — meets the landing pages, and with the footer
+row it makes every landing page two clicks from the home page.

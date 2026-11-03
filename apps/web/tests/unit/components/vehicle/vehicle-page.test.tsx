@@ -8,6 +8,7 @@ import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import type * as ApiModule from '@/lib/api';
 import { ApiError, UpstreamUnavailableError } from '@/lib/api';
+import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 
 const apiGetParsed = vi.fn();
 
@@ -220,9 +221,11 @@ describe('/car/[slug]', () => {
     apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
       path.endsWith('/similar')
         ? Promise.resolve({ data: [] })
-        : new Promise((resolve) => {
-            answerCar = resolve;
-          }),
+        : path === '/v1/config/public'
+          ? Promise.resolve(NO_PUBLIC_CONFIG)
+          : new Promise((resolve) => {
+              answerCar = resolve;
+            }),
     );
 
     const page = VehiclePage({ params: Promise.resolve({ slug: SLUG }) });

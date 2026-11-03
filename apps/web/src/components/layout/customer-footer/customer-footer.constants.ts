@@ -19,6 +19,7 @@ export const FOOTER_TEXT = {
   buyColumn: 'Buy a car',
   dealerColumn: 'For dealers',
   supportColumn: 'Support',
+  popularColumn: 'Popular searches',
   dealerNote: 'Identity and business documents are checked before a dealership can list.',
   disclaimer: 'A marketplace for independent dealers. Dealers-Drive is not a party to any sale.',
   socialNavLabel: 'Dealers-Drive on social media',
