@@ -189,7 +189,7 @@ describe('the support contacts', () => {
   });
 });
 
-describe('popular searches', () => {
+describe('browse used cars (the landing-page row)', () => {
   it('lists the landing pages it is given, as plain links under their own heading', () => {
     renderFooter({
       popular: [
@@ -197,7 +197,7 @@ describe('popular searches', () => {
         { href: '/used-cars/arcot/diesel', label: 'Used Diesel Cars in Arcot' },
       ],
     });
-    expect(columnHrefs('Popular searches')).toEqual([
+    expect(columnHrefs('Browse used cars')).toEqual([
       '/cars?district=vellore',
       '/used-cars/arcot/diesel',
     ]);
@@ -206,8 +206,8 @@ describe('popular searches', () => {
 
   it('is absent when there is nothing to list — the switch is off, or no page has two cars', () => {
     renderFooter();
-    expect(screen.queryByRole('navigation', { name: 'Popular searches' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Browse used cars' })).toBeNull();
     renderFooter({ popular: [] });
-    expect(screen.queryByRole('navigation', { name: 'Popular searches' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Browse used cars' })).toBeNull();
   });
 });

@@ -504,7 +504,7 @@ export const registry: RegistryEntry[] = [
     props: ['social', 'supportEmail', 'supportPhone', 'popular (landing-page links, optional)'],
     states: [
       'default (six networks, both contacts)',
-      'popular searches (the SEO landing pages, behind feature.seoLandingPages)',
+      'browse used cars (the SEO landing pages, behind feature.seoLandingPages)',
       'no social accounts published',
       'two networks',
       'API unreachable (no contacts, no social)',

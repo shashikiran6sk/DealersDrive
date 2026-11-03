@@ -370,7 +370,7 @@ two cars or more:
 | `/cars?district=`        | the district's searches and its towns, two rows with _See more_ (every link is in the HTML)                 |
 | `/cars` with no district | "Browse used cars" — by place, brand, budget, body, fuel and gearbox; two rows with _See more_              |
 | a car page               | "Find more cars like this" — its model, brand, body, fuel, gearbox and price band, in its town and district |
-| every public page        | a "Popular searches" row of ten in the footer                                                               |
+| every public page        | a "Browse used cars" row of ten in the footer (chosen by stock, not by search volume)                       |
 
 None of these changes a page's title, robots or canonical.
 

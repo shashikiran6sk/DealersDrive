@@ -14,6 +14,6 @@ the page inside it can say what went wrong.
 
 ### `popularSearches()`
 
-Read beside the locations and the public config, so the footer's "Popular
-searches" row costs one cached read per render, shared with every other
+Read beside the locations and the public config, so the footer's "Browse
+used cars" row costs one cached read per render, shared with every other
 landing surface. It swallows its own failure: a footer must render without it.

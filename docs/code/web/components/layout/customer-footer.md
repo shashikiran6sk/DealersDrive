@@ -117,7 +117,7 @@ or dashes is shown exactly as typed. `telHref` dials the digits either way.
 
 ### `export function PopularSearchesRow({ links })`
 
-A short "Popular searches" row of SEO landing-page links, on every public page,
+A short "Browse used cars" row of SEO landing-page links, on every public page,
 so a landing page is one click from anywhere — the home page included — without
 choosing a district first. It is a row under the columns, not a fifth column,
 because its links are long ("Used Cars Under ₹5 lakh in Vellore") and a column
@@ -131,3 +131,8 @@ contextual links on the car pages and the landing pages do the rest.
 The links come from `popularSearches()` in [`lib/landing`](../../lib.md), passed
 in by [`PublicShell`](public-shell.md); with the switch off, or no page with two
 cars, the prop is empty and the row is not rendered.
+
+**Why "Browse used cars", not "Popular searches".** The row is chosen by stock —
+the largest page of each kind of search in turn — not by what buyers search for,
+which the site does not measure. "Popular" would claim something the data does
+not say.
