@@ -55,6 +55,7 @@ import { buildLandingPages } from './search.landing.js';
 import { DEALER_NOT_FOUND, SUGGEST_COUNT, VEHICLE_NOT_FOUND } from './search.messages.js';
 import type { CardRow, SearchRepository } from './search.repository.js';
 import { rankSimilar, type SimilarTraits } from './search.similar.js';
+import { snapshotOf } from './search.snapshot.js';
 import { rankSuggestions, suggestWhere } from './search.suggest.js';
 
 export interface SearchDeps {
@@ -91,6 +92,25 @@ export function traitsOf(row: CardRow): SimilarTraits {
 }
 
 export function createSearchService({ repo }: SearchDeps) {
+  const sitemapSnapshot = snapshotOf(async (): Promise<PublicSitemapResponse> => {
+    const [listings, dealers] = await Promise.all([
+      repo.sitemapListings(SITEMAP_ENTRY_LIMIT),
+      repo.sitemapDealers(SITEMAP_ENTRY_LIMIT),
+    ]);
+    return {
+      vehicles: listings.map(toSitemapListing),
+      dealers: dealers.map(toSitemapDealer),
+    };
+  });
+
+  const landingSnapshot = snapshotOf(async (): Promise<PublicLandingPagesResponse> => {
+    const [dealers, listings] = await Promise.all([
+      repo.landingDealers(),
+      repo.landingListings(SITEMAP_ENTRY_LIMIT),
+    ]);
+    return buildLandingPages(dealers, listings);
+  });
+
   async function facetsOf(
     query: VehicleFilterQuery,
     filters: ResolvedFilters,
@@ -231,22 +251,11 @@ export function createSearchService({ repo }: SearchDeps) {
     },
 
     async sitemap(): Promise<PublicSitemapResponse> {
-      const [listings, dealers] = await Promise.all([
-        repo.sitemapListings(SITEMAP_ENTRY_LIMIT),
-        repo.sitemapDealers(SITEMAP_ENTRY_LIMIT),
-      ]);
-      return {
-        vehicles: listings.map(toSitemapListing),
-        dealers: dealers.map(toSitemapDealer),
-      };
+      return sitemapSnapshot(await repo.inventoryFingerprint());
     },
 
     async landingPages(): Promise<PublicLandingPagesResponse> {
-      const [dealers, listings] = await Promise.all([
-        repo.landingDealers(),
-        repo.landingListings(SITEMAP_ENTRY_LIMIT),
-      ]);
-      return buildLandingPages(dealers, listings);
+      return landingSnapshot(await repo.inventoryFingerprint());
     },
 
     async suggestCars(query: CarSuggestQuery): Promise<CarSuggestResponse> {

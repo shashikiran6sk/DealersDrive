@@ -169,6 +169,10 @@ narrow queries (`search.repository.ts`: `sitemapListings`, `sitemapDealers`).
 The read is cached for an hour and tagged `vehicles` + `dealers`, so a listing
 approved, reserved, sold or withdrawn through the app refreshes it.
 
+On the API side, both `GET /v1/sitemap` and `GET /v1/landing-pages` are rebuilt only
+when a fingerprint of the listings, vehicles and dealerships changes, so they
+are cheap to ask for repeatedly and never staler than the data (`search.snapshot.ts`).
+
 If the API is down the sitemap is a **5xx**, not a sitemap missing every car.
 
 **Scale.** One sitemap file holds 50,000 URLs. `SITEMAP_ENTRY_LIMIT` caps each
