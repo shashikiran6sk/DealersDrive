@@ -241,3 +241,12 @@ is committed, and every task still converges within the TTL — so it
 ### `try`
 
 must not turn a successful save into an error for the admin.
+
+### `{ key: 'feature.seoLandingPages', … value: false }`
+
+The switch for the SEO landing pages (`/used-cars/…`), read through
+`GET /v1/config/public` as `landingPagesEnabled`. Off by default, so the
+deployment that adds the pages changes nothing until an admin turns it on in
+`/admin/config` — and turning it off withdraws the pages, their sitemap entries
+and the links to them without a deployment. The contract defaults the field to
+`false`, so a web build that reads it before the API sends it reads "off".

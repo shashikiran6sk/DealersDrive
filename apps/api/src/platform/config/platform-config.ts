@@ -75,6 +75,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     value: true,
   },
   {
+    key: 'feature.seoLandingPages',
+    label: 'SEO landing pages (/used-cars by town, brand, fuel, price)',
+    type: 'boolean',
+    value: false,
+  },
+  {
     key: 'feature.enquiryAutoReply',
     label: 'Automatic enquiry acknowledgement',
     type: 'boolean',
@@ -128,6 +134,7 @@ export const CONFIG_READERS: Record<string, string> = {
   'photoRequests.enabled': 'GET /v1/config/public',
   'feature.rcLookup': 'GET /v1/config/public',
   'feature.vehicleReport': 'GET /v1/config/public',
+  'feature.seoLandingPages': 'GET /v1/config/public — the /used-cars pages and their sitemap',
   'social.instagram': "GET /v1/config/public — the public footer's social row",
   'social.facebook': "GET /v1/config/public — the public footer's social row",
   'social.youtube': "GET /v1/config/public — the public footer's social row",

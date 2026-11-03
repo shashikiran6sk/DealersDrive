@@ -111,7 +111,7 @@ describe('who is public (R71)', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it("declares the public list, the vehicle page, its similar cars, a dealership's list, the typeahead and the sitemap, in that order", () => {
+  it("declares the public list, the vehicle page, its similar cars, a dealership's list, the typeahead, the sitemap and the landing pages, in that order", () => {
     expect(signaturesOf(router)).toEqual([
       'GET /vehicles',
       'GET /vehicles/:slug',
@@ -119,6 +119,7 @@ describe('the router', () => {
       'GET /dealers/:slug/vehicles',
       'GET /search/vehicles',
       'GET /sitemap',
+      'GET /landing-pages',
     ]);
   });
 

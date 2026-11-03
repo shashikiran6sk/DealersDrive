@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache, Suspense } from 'react';
 
+import { RelatedSearches } from '@/components/search/related-searches';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { Plate } from '@/components/ui/primitives';
@@ -20,6 +21,7 @@ import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { apiGetParsed } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
+import { vehicleRelatedSearches } from '@/lib/landing';
 import { isMissingResource } from '@/lib/errors';
 import {
   BREADCRUMB_TEXT,
@@ -110,7 +112,10 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   const vehicle = await loadVehicle(slug);
   if (!vehicle) notFound();
   const available = vehicle.availability === 'AVAILABLE';
-  const similar = vehicle.slug === slug ? await similarForSlug : await loadSimilar(vehicle.slug);
+  const [similar, related] = await Promise.all([
+    vehicle.slug === slug ? similarForSlug : loadSimilar(vehicle.slug),
+    vehicleRelatedSearches(vehicle),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] max-lg:pb-[calc(88px+env(safe-area-inset-bottom))] sm:px-6 lg:pb-[64px]">
@@ -226,6 +231,10 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
         <div className="mt-[44px]">
           <SimilarVehicles vehicles={similar} />
         </div>
+      ) : null}
+
+      {related ? (
+        <RelatedSearches className="mt-[44px]" heading={related.heading} groups={related.groups} />
       ) : null}
     </div>
   );

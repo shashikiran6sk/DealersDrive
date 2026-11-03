@@ -99,6 +99,16 @@ export const PublicConfig = z.object({
   /** Whether listing pages carry a records check at all. */
   vehicleReportEnabled: z.boolean(),
   /**
+   * Whether the SEO landing pages (`/used-cars/…`) are published — their
+   * routes, their sitemap entries and the related-search links to them. Off by
+   * default, so a deployment changes nothing until an admin turns it on in
+   * `/admin/config`.
+   *
+   * Defaulted rather than required, so a web build that reads it before the
+   * API that writes it is deployed reads "off" instead of failing to parse.
+   */
+  landingPagesEnabled: z.boolean().default(false),
+  /**
    * Where the platform can be found off the platform, in the order the footer
    * renders it (**R44**). Empty until an operator publishes one.
    */

@@ -25,6 +25,7 @@ const meta = {
     social: { control: 'object' },
     supportEmail: { control: 'text' },
     supportPhone: { control: 'text' },
+    browseLinks: { control: 'object' },
   },
 } satisfies Meta<typeof CustomerFooter>;
 
@@ -32,6 +33,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const BrowseLinks: Story = {
+  args: {
+    browseLinks: [
+      { href: '/cars?district=vellore', label: 'Used Cars in Vellore' },
+      { href: '/used-cars/vellore/maruti-suzuki', label: 'Used Maruti Suzuki Cars in Vellore' },
+      { href: '/used-cars/katpadi', label: 'Used Cars in Katpadi' },
+      { href: '/used-cars/vellore/suv', label: 'Used SUV Cars in Vellore' },
+      { href: '/used-cars/vellore/under-5-lakh', label: 'Used Cars Under ₹5 lakh in Vellore' },
+      { href: '/used-cars/vellore/diesel', label: 'Used Diesel Cars in Vellore' },
+    ],
+  },
+};
 
 export const NoSocialAccounts: Story = {
   args: { social: [] },

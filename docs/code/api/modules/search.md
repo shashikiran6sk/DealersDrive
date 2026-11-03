@@ -379,3 +379,50 @@ number, because every money field is paise and rupees are the UI's conversion.
 
 A car's page changes when either row does — a price edit touches the vehicle, a
 reservation touches the listing — so its last-modified is the later of the two.
+
+## `apps/api/src/modules/search/search.landing.ts`
+
+### `export function buildLandingPages(dealers, listings)`
+
+Every SEO landing page the live inventory supports, for `GET /v1/landing-pages`.
+A pure function over two narrow reads, so every rule below is a unit test
+rather than a database fixture.
+
+**Counts are the search's counts.** A district is matched by
+`canonicalDistrictFilterSlug(slugify(district))` and a town by `slugify(city)`,
+the keys `locationScope` matches; a brand is the canonical make's slug and a
+model is `slugify(model)` under it, the keys `resolveFilters` matches; a price
+band is `pricePaise <= ceiling`, as the `maxPrice` filter is. Only `ACTIVE`
+listings of `ACTIVE` dealerships are counted (R71). The integration suite
+asserts every Vellore page's count against `GET /v1/vehicles` for the same
+place and filter, so the two cannot drift apart unnoticed.
+
+**Places.** Every district with an `ACTIVE` dealership is a place, even with no
+car. A town is a place unless it is not safe to be one:
+
+- **its slug is its own district's** (Vellore in Vellore, or a legacy spelling
+  such as Kanchipuram in Kancheepuram) — the district stands for it, so there
+  is never a town page and a district page answering the same search;
+- **its slug is another district's**, or **two districts have as many
+  dealerships in a town of that name** — ambiguous, so no page. No page is
+  better than one that shows the wrong town's cars.
+
+Otherwise a town belongs to **the district most of its dealerships are in**. A
+strict "one district only" rule was tried first and failed in the integration
+suite the right way: one dealership filed under a wrong district removed the
+town's page for everyone. By majority, the mis-filed dealership's cars are
+simply not counted under the town, which is what its own district filter would
+show anyway.
+
+**Facets.** A brand only from the closed `VEHICLE_MAKES` list, after aliasing —
+so `Maruti` and `MARUTI` count under Maruti Suzuki and nothing outside the list
+gets a page. A model is named by its most common spelling. A car with no price
+counts in no price band.
+
+**Pages with one car are listed** so a link to one can be answered; whether a
+page is indexable is the client's `cars >= minCars`. `lastModified` is the newest
+change to one of a page's cars, never the time of the request.
+
+The listing read is capped at `SITEMAP_ENTRY_LIMIT`, newest change first, like
+the sitemap's; past that the counts would undercount, which is the point at
+which the sitemap splits too.

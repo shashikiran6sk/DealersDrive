@@ -352,5 +352,80 @@ export const searchDocs: ModuleDocs = {
       ],
       errors: [400, 429],
     },
+    {
+      method: 'get',
+      path: '/v1/landing-pages',
+      operationId: 'getPublicLandingPages',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'Every SEO landing page the live inventory supports',
+      description:
+        'What the web app\u2019s `/used-cars/{place}` and `/used-cars/{place}/{facet}` pages, ' +
+        'their sitemap entries and the related-search links between them are built from.\n\n' +
+        '`places` are the districts and towns that hold an `ACTIVE` dealership, with their ' +
+        'available-car counts. A town whose slug is its own district\u2019s (Vellore in Vellore) ' +
+        'is not listed as a town: the district stands for it. A town belongs to the district ' +
+        'most of its dealerships are in; a tie between districts, or a town whose slug names a ' +
+        'different district, is ambiguous and is not listed.\n\n' +
+        '`pages` are every place, and every place with one facet \u2014 a brand from the closed ' +
+        'make list, a brand and model, a fuel, a body type, a transmission, or a price ceiling ' +
+        '(under \u20b93, 5, 7 or 10 lakh) \u2014 that has at least one available car (**R71**). ' +
+        'A page is indexable when `cars` is at least `minCars` (two); a page with one car is ' +
+        'listed so a link to it is answered, not indexed. Counts are the counts `GET /v1/vehicles` ' +
+        'gives for the same place and filter. `lastModified` is the newest change to one of the ' +
+        'page\u2019s cars.\n\n' +
+        'Slugs and counts only: nothing about a dealership or a car leaves. Capped at 45,000 ' +
+        'pages, the largest first. Cached publicly for five minutes and rate-limited per IP like ' +
+        'every public read. The web app publishes the pages only while ' +
+        '`feature.seoLandingPages` is on.',
+      audience: 'public',
+      query: 'LandingPagesQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'The places and the landing pages, with their counts.',
+          schema: 'PublicLandingPagesResponse',
+          example: {
+            minCars: 2,
+            places: [
+              {
+                slug: 'ranipet',
+                name: 'Ranipet',
+                kind: 'DISTRICT',
+                district: { slug: 'ranipet', name: 'Ranipet' },
+                state: 'Tamil Nadu',
+                cars: 6,
+              },
+              {
+                slug: 'arcot',
+                name: 'Arcot',
+                kind: 'TOWN',
+                district: { slug: 'ranipet', name: 'Ranipet' },
+                state: 'Tamil Nadu',
+                cars: 6,
+              },
+            ],
+            pages: [
+              {
+                place: 'arcot',
+                facet: 'maruti-suzuki',
+                kind: 'BRAND',
+                label: 'Maruti Suzuki',
+                cars: 3,
+                lastModified: '2026-11-01T09:12:44.000Z',
+              },
+              {
+                place: 'ranipet',
+                facet: 'under-5-lakh',
+                kind: 'PRICE',
+                label: 'Under \u20b95 lakh',
+                cars: 4,
+                lastModified: '2026-11-01T09:12:44.000Z',
+              },
+            ],
+          },
+        },
+      ],
+      errors: [400, 429],
+    },
   ],
 };

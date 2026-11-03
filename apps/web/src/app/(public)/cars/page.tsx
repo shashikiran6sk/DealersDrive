@@ -7,6 +7,7 @@ import { AppliedFilters } from '@/components/search/applied-filters';
 import { CarSearchBox } from '@/components/search/car-search-box';
 import { DistrictScope } from '@/components/search/district-scope';
 import { FilterPanel } from '@/components/search/filter-panel';
+import { RelatedSearches } from '@/components/search/related-searches';
 import { MobileFilterSheet } from '@/components/search/mobile-filter-sheet';
 import { SearchToolbar } from '@/components/search/search-toolbar';
 import {
@@ -18,6 +19,7 @@ import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { apiGetParsed, qs } from '@/lib/api';
+import { browseSearches, districtRelatedSearches } from '@/lib/landing';
 import { getPublicLocations } from '@/lib/locations';
 import {
   BREADCRUMB_TEXT,
@@ -58,6 +60,11 @@ async function loadCars(params: VehicleSearchParams) {
   return { listing, locations, place, view: directoryView(params, listing.data.length === 0) };
 }
 
+function relatedFor(params: VehicleSearchParams) {
+  if (directoryView(params, false).narrowed) return Promise.resolve(null);
+  return params.district ? districtRelatedSearches(params.district) : browseSearches();
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -77,7 +84,10 @@ export default async function CarsPage({
   searchParams: Promise<SearchParamsInput>;
 }) {
   const params = readVehicleSearch(await searchParams);
-  const { listing, locations, place, view } = await loadCars(params);
+  const [{ listing, locations, place, view }, related] = await Promise.all([
+    loadCars(params),
+    relatedFor(params),
+  ]);
 
   const filtered = activeFilterCount(params) > 0 || Boolean(params.q);
   const pageHref = (page: number) => searchHref(CARS_PATH, setParam(params, 'page', String(page)));
@@ -233,6 +243,15 @@ export default async function CarsPage({
             ) : null}
           </SearchResultsRegion>
         </div>
+
+        {related ? (
+          <RelatedSearches
+            className="mt-[44px]"
+            heading={related.heading}
+            groups={related.groups}
+            collapsible
+          />
+        ) : null}
       </div>
     </SearchNavigationProvider>
   );

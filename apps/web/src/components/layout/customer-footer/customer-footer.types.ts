@@ -10,4 +10,5 @@ export interface CustomerFooterProps {
   social: PublicConfig['social'];
   supportEmail: string;
   supportPhone: string;
+  browseLinks?: readonly FooterLink[];
 }

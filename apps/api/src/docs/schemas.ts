@@ -100,6 +100,7 @@ const INPUT_SCHEMA_NAMES = [
   'PublicVehicleQuery',
   'CarSuggestQuery',
   'SitemapQuery',
+  'LandingPagesQuery',
   'DealerVehicleQuery',
   'VehicleSlugParam',
   'SelectWorkspaceInput',
