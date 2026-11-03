@@ -62,6 +62,10 @@ export const ADistrict: Story = {
   },
 };
 
+export const Collapsible: Story = {
+  args: { collapsible: true },
+};
+
 export const OneGroup: Story = {
   args: {
     groups: [

@@ -4,4 +4,5 @@ export interface RelatedSearchesProps {
   heading: string;
   groups: readonly RelatedSearchGroup[];
   className?: string;
+  collapsible?: boolean;
 }

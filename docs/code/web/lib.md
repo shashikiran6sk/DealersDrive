@@ -870,6 +870,10 @@ empty and `noindex`, because its address is one of a closed set.
 
 ### `export function relatedLandingGroups(map, place, current)`
 
+**Interleaved by kind** — the biggest brand, then model, fuel, body, gearbox and
+budget, then the second of each — because `/cars` shows the first two rows only,
+and a preview of eight brands says nothing about fuels or budgets.
+
 Two groups: the place's own indexable searches, ordered brand, model, fuel, body, transmission and price — each by size,
 except price, which reads cheapest budget first — at most eight of each kind,
 so a big district's brands cannot crowd out its fuels and budgets; and the district's
@@ -909,7 +913,8 @@ ten biggest brands of the biggest district. A district links to
 
 ### `export function browseLandingGroups(map)`
 
-The home page's and the unfiltered `/cars`'s block: the same buckets as named
+The unfiltered `/cars`'s block (the home page carries none — its link to the
+landing pages is the footer row): the same buckets as named
 groups, at most eight links each, and **at most two of the same search** — the
 biggest budget and fuel ("Under ₹10 lakh", "Petrol") are the biggest in every
 place, and without the cap a group was eight copies of one search in eight

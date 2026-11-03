@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { RelatedSearches } from '@/components/search/related-searches';
@@ -43,5 +43,71 @@ describe('RelatedSearches', () => {
       />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('RelatedSearches, collapsible', () => {
+  const MANY = [
+    {
+      title: 'Popular searches in Vellore',
+      links: [
+        { href: '/used-cars/vellore/hyundai', label: 'Used Hyundai Cars in Vellore' },
+        { href: '/used-cars/vellore/diesel', label: 'Used Diesel Cars in Vellore' },
+      ],
+    },
+    {
+      title: 'Towns in Vellore district',
+      links: [{ href: '/used-cars/katpadi', label: 'Used Cars in Katpadi' }],
+    },
+  ];
+
+  function renderCollapsible() {
+    return render(
+      <RelatedSearches heading="More used cars around Vellore" groups={MANY} collapsible />,
+    );
+  }
+
+  it('starts as a clipped row, with every link already in the page for crawlers', () => {
+    renderCollapsible();
+    const region = within(screen.getByRole('region', { name: 'More used cars around Vellore' }));
+    expect(region.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/used-cars/vellore/hyundai',
+      '/used-cars/vellore/diesel',
+      '/used-cars/katpadi',
+    ]);
+    const toggle = region.getByRole('button', { name: 'See more' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const panel = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+    expect(panel?.className).toContain('max-h-[76px]');
+  });
+
+  it('opens into the titled groups with See more, and closes again with See less', () => {
+    renderCollapsible();
+    fireEvent.click(screen.getByRole('button', { name: 'See more' }));
+
+    const toggle = screen.getByRole('button', { name: 'See less' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Towns in Vellore district' }),
+    ).toHaveClass('eyebrow');
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Towns in Vellore district' }),
+    ).not.toHaveClass('sr-only');
+
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  it('opens when a clipped link is reached by keyboard, keeping focus on that link', () => {
+    renderCollapsible();
+    const katpadi = screen.getByRole('link', { name: 'Used Cars in Katpadi' });
+    katpadi.focus();
+    fireEvent.focus(katpadi);
+
+    expect(screen.getByRole('button', { name: 'See less' })).toBeInTheDocument();
+    expect(document.activeElement).toBe(katpadi);
   });
 });

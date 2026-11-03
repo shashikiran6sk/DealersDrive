@@ -169,6 +169,27 @@ describe('relatedLandingGroups', () => {
     ]);
   });
 
+  it('interleaves the kinds, so the first links are a brand, a model, a fuel and a budget', () => {
+    const brands = ['hyundai', 'tata'].map((facet, index) => ({
+      place: 'arcot',
+      facet,
+      kind: 'BRAND' as const,
+      label: facet,
+      cars: 9 - index,
+      lastModified: null,
+    }));
+    const map = { ...LANDING_MAP, pages: [...brands, ...LANDING_MAP.pages] };
+    const [searches] = relatedLandingGroups(map, placeOf('arcot'), null);
+    expect(searches?.links.map((link) => link.href)).toEqual([
+      '/used-cars/arcot/hyundai',
+      '/used-cars/arcot/maruti-suzuki-swift',
+      '/used-cars/arcot/diesel',
+      '/used-cars/arcot/under-5-lakh',
+      '/used-cars/arcot/tata',
+      '/used-cars/arcot/maruti-suzuki',
+    ]);
+  });
+
   it('caps each kind of search, so a big place still links its fuels and budgets', () => {
     const brands = Array.from({ length: 12 }, (_, index) => ({
       place: 'arcot',

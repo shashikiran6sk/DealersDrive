@@ -133,31 +133,20 @@ describe('a car page', () => {
 });
 
 describe('the home page', () => {
-  it('offers the landing pages by place, brand, budget, body and fuel', async () => {
-    render(await HomePage());
-    const browse = within(screen.getByRole('region', { name: 'Browse used cars' }));
-    expect(browse.getByRole('link', { name: 'Used Cars in Arcot' })).toHaveAttribute(
-      'href',
-      '/used-cars/arcot',
-    );
-    expect(browse.getByRole('link', { name: 'Used Cars in Vellore' })).toHaveAttribute(
-      'href',
-      '/cars?district=vellore',
-    );
-    expect(browse.getByRole('heading', { name: 'By budget' })).toBeInTheDocument();
-  });
-
-  it('offers nothing while the switch is off', async () => {
-    enabled = false;
+  it('carries no browse block of its own — the footer row is its link to the landing pages', async () => {
     render(await HomePage());
     expect(screen.queryByRole('region', { name: 'Browse used cars' })).toBeNull();
   });
 });
 
 describe('/cars with no district', () => {
-  it('offers the same browse links, and not on a filtered view', async () => {
+  it('offers the browse links collapsed behind See more, and not on a filtered view', async () => {
     const all = render(await CarsPage({ searchParams: Promise.resolve({}) }));
     expect(hrefsIn('Browse used cars')).toContain('/used-cars/arcot/maruti-suzuki');
+    expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
     all.unmount();
 
     render(await CarsPage({ searchParams: Promise.resolve({ fuel: 'diesel' }) }));

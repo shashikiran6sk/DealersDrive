@@ -90,3 +90,7 @@ place, brand, budget, body type and fuel — the same block as the home page.
 A filtered or searched view links nothing: it is `noindex`, and not where a
 crawler should be sent from. The page's title, robots and canonical do not
 change.
+
+Both blocks on `/cars` — the district's and the no-district _Browse used cars_ —
+are `collapsible`: two rows and a _See more_, so a page that is about searching
+cars does not end in a wall of links. The links are all in the HTML either way.

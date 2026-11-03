@@ -4,7 +4,6 @@ import type { ComponentType } from 'react';
 
 import { SectionError } from '@/components/errors/section-error';
 import { CarSearchBox } from '@/components/search/car-search-box';
-import { RelatedSearches } from '@/components/search/related-searches';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { AudienceSection } from '@/features/home/audience-section';
 import { DiscoveryBand } from '@/features/home/discovery-row';
@@ -20,7 +19,6 @@ import { JourneySection } from '@/features/home/journey-section';
 import { loadHomeInventory } from '@/features/home/load-home';
 import { TrustSection } from '@/features/home/trust-section';
 import { JsonLd } from '@/components/seo/json-ld';
-import { browseSearches } from '@/lib/landing';
 import { getPublicConfig } from '@/lib/public-config';
 import {
   HOME_TITLE,
@@ -47,11 +45,7 @@ const INFO_SECTIONS: Record<HomeInfoSection, ComponentType> = {
 };
 
 export default async function HomePage() {
-  const [inventory, config, browse] = await Promise.all([
-    loadHomeInventory(),
-    getPublicConfig(),
-    browseSearches(),
-  ]);
+  const [inventory, config] = await Promise.all([loadHomeInventory(), getPublicConfig()]);
   const rows = new Map(inventory.rows.map((row) => [row.id, row]));
 
   return (
@@ -104,12 +98,6 @@ export default async function HomePage() {
         }
         return <DiscoveryBand key={item.key} row={rows.get(discoveryRowId(item.key))} />;
       })}
-
-      {browse ? (
-        <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10 lg:py-12">
-          <RelatedSearches heading={browse.heading} groups={browse.groups} />
-        </div>
-      ) : null}
     </div>
   );
 }

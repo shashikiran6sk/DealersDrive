@@ -249,6 +249,7 @@ export default async function CarsPage({
             className="mt-[44px]"
             heading={related.heading}
             groups={related.groups}
+            collapsible
           />
         ) : null}
       </div>

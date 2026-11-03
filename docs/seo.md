@@ -364,13 +364,13 @@ cars as crawlable links, and a block of related searches.
 **How they are reached** — all behind the same switch, and only ever pages with
 two cars or more:
 
-| Surface                                 | Links                                                                                                       |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| a landing page                          | its place's other searches; the same search in its district's other towns                                   |
-| `/cars?district=`                       | the district's searches and its towns ("More used cars around …")                                           |
-| `/cars` with no district, the home page | "Browse used cars" — by place, brand, budget, body, fuel and gearbox                                        |
-| a car page                              | "Find more cars like this" — its model, brand, body, fuel, gearbox and price band, in its town and district |
-| every public page                       | a "Popular searches" row of ten in the footer                                                               |
+| Surface                  | Links                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| a landing page           | its place's other searches; the same search in its district's other towns                                   |
+| `/cars?district=`        | the district's searches and its towns, two rows with _See more_ (every link is in the HTML)                 |
+| `/cars` with no district | "Browse used cars" — by place, brand, budget, body, fuel and gearbox; two rows with _See more_              |
+| a car page               | "Find more cars like this" — its model, brand, body, fuel, gearbox and price band, in its town and district |
+| every public page        | a "Popular searches" row of ten in the footer                                                               |
 
 None of these changes a page's title, robots or canonical.
 

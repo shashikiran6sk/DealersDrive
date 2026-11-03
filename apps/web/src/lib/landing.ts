@@ -149,29 +149,38 @@ function byKindThenCars(a: LandingPage, b: LandingPage): number {
   return b.cars - a.cars || (a.facet ?? '').localeCompare(b.facet ?? '');
 }
 
+function interleaveByKind(pages: readonly LandingPage[]): LandingPage[] {
+  const byKind = KIND_ORDER.map((kind) => pages.filter((page) => page.kind === kind));
+  const longest = Math.max(0, ...byKind.map((list) => list.length));
+  return Array.from({ length: longest }, (_, round) =>
+    byKind.flatMap((list) => list.slice(round, round + 1)),
+  ).flat();
+}
+
 export function relatedLandingGroups(
   map: PublicLandingPagesResponse,
   place: LandingPlace,
   current: string | null,
 ): RelatedSearchGroup[] {
-  const searches: RelatedSearchLink[] = map.pages
-    .filter(
-      (page) =>
-        page.place === place.slug &&
-        page.facet !== null &&
-        page.facet !== current &&
-        isIndexableLanding(map, page),
-    )
-    .sort(byKindThenCars)
-    .filter(
-      (page, index, sorted) =>
-        sorted.slice(0, index).filter((earlier) => earlier.kind === page.kind).length <
-        RELATED_PER_KIND,
-    )
-    .map((page) => ({
-      href: landingPath(place.slug, page.facet),
-      label: LANDING_TEXT.name(namingOf(page, place)),
-    }));
+  const searches: RelatedSearchLink[] = interleaveByKind(
+    map.pages
+      .filter(
+        (page) =>
+          page.place === place.slug &&
+          page.facet !== null &&
+          page.facet !== current &&
+          isIndexableLanding(map, page),
+      )
+      .sort(byKindThenCars)
+      .filter(
+        (page, index, sorted) =>
+          sorted.slice(0, index).filter((earlier) => earlier.kind === page.kind).length <
+          RELATED_PER_KIND,
+      ),
+  ).map((page) => ({
+    href: landingPath(place.slug, page.facet),
+    label: LANDING_TEXT.name(namingOf(page, place)),
+  }));
 
   const district = map.places.find(
     (candidate) => candidate.kind === 'DISTRICT' && candidate.slug === place.district.slug,
