@@ -336,7 +336,9 @@ export const searchDocs: ModuleDocs = {
         'and the newest change to one of its available cars.\n\n' +
         'Each list is capped at 45,000, newest change first for vehicles; past that the sitemap ' +
         'splits into segments. Cached publicly for five minutes and rate-limited per IP like ' +
-        'every public read.',
+        'every public read. Server-side, the lists are rebuilt only when the inventory changes \u2014 ' +
+        'a cheap fingerprint of listings, vehicles and dealerships is read on every request \u2014 ' +
+        'so a car approved, sold or withdrawn is reflected in the very next answer.',
       audience: 'public',
       query: 'SitemapQuery',
       responses: [
@@ -375,7 +377,9 @@ export const searchDocs: ModuleDocs = {
         'page\u2019s cars.\n\n' +
         'Slugs and counts only: nothing about a dealership or a car leaves. Capped at 45,000 ' +
         'pages, the largest first. Cached publicly for five minutes and rate-limited per IP like ' +
-        'every public read. The web app publishes the pages only while ' +
+        'every public read. Server-side, the answer is rebuilt only when a fingerprint of the ' +
+        'listings, vehicles and dealerships changes, so it is never staler than the data. ' +
+        'The web app publishes the pages only while ' +
         '`feature.seoLandingPages` is on.',
       audience: 'public',
       query: 'LandingPagesQuery',

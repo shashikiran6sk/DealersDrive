@@ -360,6 +360,32 @@ describe('/v1/landing-pages — the SEO landing pages', () => {
     });
   });
 
+  it('answers the very next request with a car just published, and without one just sold', async () => {
+    const thar = async () =>
+      (await landing()).pages.find(
+        (page) => page.place === 'katpadi' && page.facet === 'mahindra-thar',
+      )?.cars ?? 0;
+    const sitemapSlugs = async () =>
+      new Set(
+        (await h.agent().get('/v1/sitemap').expect(200)).body.vehicles.map(
+          (entry: { slug: string }) => entry.slug,
+        ),
+      );
+
+    const before = await thar();
+    const fresh = await kit.published(a, nextPlate(), {
+      make: 'Mahindra',
+      model: 'Thar',
+      variant: 'LX',
+    });
+    expect(await thar()).toBe(before + 1);
+    expect((await sitemapSlugs()).has(fresh.slug)).toBe(true);
+
+    await a.agent.post(`/v1/dealer/vehicles/${fresh.vehicleId}/mark-sold`).expect(200);
+    expect(await thar()).toBe(before);
+    expect((await sitemapSlugs()).has(fresh.slug)).toBe(false);
+  });
+
   it('refuses a parameter it does not take, by name', async () => {
     const { body } = await h.agent().get('/v1/landing-pages?district=vellore').expect(400);
     expect(JSON.stringify(body)).toContain('district');

@@ -426,3 +426,43 @@ change to one of a page's cars, never the time of the request.
 The listing read is capped at `SITEMAP_ENTRY_LIMIT`, newest change first, like
 the sitemap's; past that the counts would undercount, which is the point at
 which the sitemap splits too.
+
+## `apps/api/src/modules/search/search.snapshot.ts`
+
+### `export function snapshotOf(load)`
+
+`GET /v1/sitemap` and `GET /v1/landing-pages` read every public listing — up to
+45,000 rows with their vehicles and dealerships — and `buildLandingPages` walks
+all of them. Both are public, so without a cache any client could make the API
+do that twice a second. A snapshot holds the last answer **keyed by an inventory
+fingerprint** and rebuilds only when the fingerprint moves; requests that arrive
+while a build is running share it, and a failed build is not kept.
+
+**Why a fingerprint and not a TTL.** The web app re-reads both the moment a
+listing changes (its `vehicles`/`dealers` cache tags), then keeps the answer for
+up to an hour. An API cache with even a minute's TTL would hand that re-read the
+old answer, and the web app would then serve it for the hour — a sold car back
+in the sitemap. Keyed by the fingerprint, the answer is never older than the
+data it describes, and no write path has to remember to invalidate it.
+
+**Why in process, and not the `CachePort`.** AGENTS rule 10 is about counts that
+must agree across tasks — a rate limit is N times too permissive in process
+memory. This is not a count: each task holds its own copy, validated against
+the database on every request, so N tasks are N correct copies, built at most
+once each per change. The `CachePort` stores counters and versions, not values,
+so it has nowhere to hold the answer anyway.
+
+## `apps/api/src/modules/search/search.repository.ts` — `inventoryFingerprint()`
+
+### `SELECT concat_ws('/', …) AS "fingerprint"`
+
+One aggregate query, far cheaper than the reads it guards: for `listings` and
+`vehicles`, the row count and the **sum** of `updatedAt` (every Prisma write
+stamps it, and no raw SQL in `src` writes these tables); for `dealers`, which
+have no `updatedAt`, an `md5` of the fields the two answers depend on — status,
+slug, town, district, state and approval time.
+
+The sum rather than the maximum: two API tasks whose clocks differ by a few
+milliseconds could write a row whose `updatedAt` is below the current maximum,
+which would leave a maximum unchanged; it still moves the sum. A deleted draft
+moves the count.

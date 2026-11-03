@@ -218,6 +218,21 @@ export function createSearchRepository(prisma: PrismaClient) {
       });
     },
 
+    async inventoryFingerprint(): Promise<string> {
+      const rows = await prisma.$queryRaw<{ fingerprint: string }[]>`
+        SELECT concat_ws('/',
+          (SELECT count(*)::text || ':' || coalesce(sum(extract(epoch FROM "updatedAt")), 0)::text
+             FROM "listings"),
+          (SELECT count(*)::text || ':' || coalesce(sum(extract(epoch FROM "updatedAt")), 0)::text
+             FROM "vehicles"),
+          (SELECT md5(coalesce(string_agg(
+             concat_ws('|', "id", "slug", "status", "city", "district", "state", "approvedAt"),
+             ',' ORDER BY "id"), ''))
+             FROM "dealers")
+        ) AS "fingerprint"`;
+      return rows[0]?.fingerprint ?? '';
+    },
+
     landingDealers(): Promise<LandingDealerRow[]> {
       return prisma.dealer.findMany({
         where: { status: PUBLIC_DEALER_STATUS },
