@@ -18,7 +18,7 @@ export type ServicesSceneProps = {
 export function ServicesScene({ dealer, duration }: ServicesSceneProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const cover = wipe(frame);
+  const cover = wipe(frame, SERVICES.wipeFrames);
   const leaving = exit(frame, duration, SERVICES.exitFrames);
 
   return (
@@ -74,7 +74,7 @@ export function ServicesScene({ dealer, duration }: ServicesSceneProps) {
               {dealer.services.map((service, index) => {
                 const pop = enter(frame, fps, {
                   delay: SERVICES.chipDelay + index * SERVICES.chipStagger,
-                  damping: 13,
+                  durationInFrames: SERVICES.popFrames,
                 });
                 return (
                   <div

@@ -11,7 +11,7 @@ export type RevealProps = {
 };
 
 const TRAVEL_PERCENT = 115;
-const REVEAL_FRAMES = 16;
+const REVEAL_FRAMES = 12;
 
 export function Reveal({ children, delay = 0, from = 'below', style }: RevealProps) {
   const frame = useCurrentFrame();

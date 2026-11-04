@@ -6,11 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 
+import { reelBedWav, whooshWav } from '../audio';
 import { fetchDealersWithStock, fetchInventory, fetchProfile } from '../data/api';
 import { buildReelProps, hasShowcase } from '../data/build-props';
 import { planMedia } from '../data/media';
 import { IMAGE_WIDTH, REEL_COMPOSITION_ID } from '../reel/reel.constants';
-import type { ReelProps } from '../reel/reel.types';
+import type { ReelProps, ReelSound } from '../reel/reel.types';
 
 import { parseRenderArgs, USAGE } from './args';
 import { downloadAll } from './download';
@@ -20,17 +21,24 @@ const CACHE_DIR = join(APP_DIR, '.cache');
 const PUBLIC_DIR = join(CACHE_DIR, 'public');
 const PROPS_DIR = join(CACHE_DIR, 'props');
 const ENTRY_POINT = join(APP_DIR, 'src/index.ts');
+const BED_FILE = 'audio/reel-bed.wav';
+const WHOOSH_FILE = 'audio/whoosh.wav';
 
 function say(line: string): void {
   process.stdout.write(`${line}\n`);
 }
 
-async function stageMusic(musicPath: string | null): Promise<string | null> {
-  if (musicPath === null) return null;
-  const file = `music/${basename(musicPath)}`;
-  await mkdir(join(PUBLIC_DIR, 'music'), { recursive: true });
-  await copyFile(resolve(process.cwd(), musicPath), join(PUBLIC_DIR, file));
-  return file;
+async function stageSound(musicPath: string | null, silent: boolean): Promise<ReelSound> {
+  if (silent) return { music: null, whoosh: null };
+  await mkdir(join(PUBLIC_DIR, 'audio'), { recursive: true });
+  await writeFile(join(PUBLIC_DIR, WHOOSH_FILE), whooshWav());
+  if (musicPath === null) {
+    await writeFile(join(PUBLIC_DIR, BED_FILE), reelBedWav());
+    return { music: BED_FILE, whoosh: WHOOSH_FILE };
+  }
+  const music = `audio/${basename(musicPath)}`;
+  await copyFile(resolve(process.cwd(), musicPath), join(PUBLIC_DIR, music));
+  return { music, whoosh: WHOOSH_FILE };
 }
 
 async function main(): Promise<void> {
@@ -48,7 +56,7 @@ async function main(): Promise<void> {
   say(`Dealerships to render: ${slugs.length}`);
 
   const media = planMedia(IMAGE_WIDTH);
-  const musicSrc = await stageMusic(options.musicPath);
+  const sound = await stageSound(options.musicPath, options.silent);
   const reels: Array<{ slug: string; props: ReelProps }> = [];
 
   for (const slug of slugs) {
@@ -65,7 +73,7 @@ async function main(): Promise<void> {
       cards: inventory.cards,
       available: inventory.available,
       asOf: options.asOf,
-      musicSrc,
+      sound,
       imageSrc: media.src,
     });
     reels.push({ slug, props });

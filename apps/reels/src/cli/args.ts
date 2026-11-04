@@ -10,6 +10,7 @@ export type RenderOptions = {
   musicPath: string | null;
   asOf: Date;
   propsOnly: boolean;
+  silent: boolean;
   concurrency: number | null;
   help: boolean;
 };
@@ -20,7 +21,8 @@ export const USAGE = [
   '  --dealer <slug>     Render one dealership (repeatable). Default: every dealership with cars.',
   '  --api <url>         API origin. Default: https://api.dealers-drive.com',
   '  --out <dir>         Where the MP4s go. Default: out/',
-  '  --music <file>      An audio track to lay under every reel (faded in and out).',
+  '  --music <file>      Your own audio track instead of the generated one (faded in and out).',
+  '  --silent            No music and no sound effects.',
   '  --as-of <date>      The "prices as of" date, YYYY-MM-DD. Default: today.',
   '  --props-only        Fetch data and images, write props JSON, render nothing.',
   '  --concurrency <n>   Browser tabs per render. Default: Remotion decides.',
@@ -32,9 +34,11 @@ const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 export function parseDate(value: string): Date {
   const match = DATE_PATTERN.exec(value);
   if (match === null) throw new Error(`--as-of must be YYYY-MM-DD, got "${value}"`);
-  const [, year, month, day] = match.map(Number);
-  const date = new Date(Date.UTC(year ?? 0, (month ?? 1) - 1, day ?? 0));
-  if (date.getUTCMonth() !== (month ?? 0) - 1 || date.getUTCDate() !== day) {
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
     throw new Error(`--as-of is not a real date: "${value}"`);
   }
   return date;
@@ -56,6 +60,7 @@ export function parseRenderArgs(argv: readonly string[], now: Date): RenderOptio
       music: { type: 'string' },
       'as-of': { type: 'string' },
       'props-only': { type: 'boolean' },
+      silent: { type: 'boolean' },
       concurrency: { type: 'string' },
       help: { type: 'boolean' },
     },
@@ -73,6 +78,7 @@ export function parseRenderArgs(argv: readonly string[], now: Date): RenderOptio
     musicPath: values.music ?? null,
     asOf: values['as-of'] === undefined ? today(now) : parseDate(values['as-of']),
     propsOnly: values['props-only'] ?? false,
+    silent: values.silent ?? false,
     concurrency,
     help: values.help ?? false,
   };

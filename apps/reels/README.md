@@ -5,13 +5,17 @@ Dealers-Drive with live inventory, rendered with [Remotion](https://www.remotion
 
 Each reel, in English and Tamil:
 
-| Time      | Scene                                                                            |
-| --------- | -------------------------------------------------------------------------------- |
-| 0–2.5s    | The dealer's name, monogram or logo, town, and verified badge if earned          |
-| 2.5–4.5s  | The services the dealer offers                                                   |
-| 4.5–14.5s | Four featured cars across the price range: photo, year, title, price, specs      |
-| 14.5–17s  | A mosaic of the stock, the number of cars available, and the price range         |
-| 17–20s    | A QR code to the dealer's page, the Dealers-Drive wordmark, and the prices' date |
+| Time       | Scene                                                                        |
+| ---------- | ---------------------------------------------------------------------------- |
+| 0–2s       | The dealer's name, monogram or logo, town, and verified badge if earned      |
+| 2–3.5s     | Services offered                                                             |
+| 3.5–15.5s  | Eight featured cars across the price range, 1.5s each                        |
+| 15.5–17.5s | A mosaic of the stock, the number of cars available, and the price range     |
+| 17.5–20s   | A QR code to the dealer's page, the Dealers-Drive wordmark, the prices' date |
+
+Every reel carries a generated 120 BPM soundtrack, with the beat dropping at 2s
+and a whoosh on every cut. `--music <file>` swaps in your own track and
+`--silent` renders without sound.
 
 The reel never shows a phone number. Why each choice was made is in
 [`docs/code/reels`](../../docs/code/reels/README.md).

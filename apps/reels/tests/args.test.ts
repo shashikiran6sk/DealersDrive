@@ -13,6 +13,7 @@ describe('parseRenderArgs', () => {
       musicPath: null,
       asOf: new Date(Date.UTC(2026, 10, 4)),
       propsOnly: false,
+      silent: false,
       concurrency: null,
       help: false,
     });
@@ -35,6 +36,7 @@ describe('parseRenderArgs', () => {
         '--as-of',
         '2026-12-01',
         '--props-only',
+        '--silent',
         '--concurrency',
         '2',
         '--help',
@@ -47,6 +49,7 @@ describe('parseRenderArgs', () => {
       outDir: 'reels',
       musicPath: 'track.mp3',
       propsOnly: true,
+      silent: true,
       concurrency: 2,
       help: true,
     });

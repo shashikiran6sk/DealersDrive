@@ -12,6 +12,12 @@ services listed skips that scene and its two seconds go to the cars, and fewer
 than four cars get longer each — so a short inventory never produces a short or
 padded reel.
 
+Every fixed scene and every car is a whole number of beats of the 120 BPM bed
+(15 frames a beat at 30 fps): 4 beats of opening, 3 of services, 3 per car, 4 of
+stock, 5 of closing. So every cut, and the whoosh on it, lands on the beat. A
+dealer with no services or fewer cars still cuts on the frames the timeline
+gives, which stay close to the grid. A test holds the full reel to the grid.
+
 ## `apps/reels/src/lib/motion.ts`
 
 ### `const cubic = (t: number): number => t * t * t;`
@@ -21,7 +27,7 @@ library's method as a value trips `@typescript-eslint/unbound-method`.
 
 ### `export function enter(frame: number, fps: number, options: EnterOptions = {}): number`
 
-A spring left to settle by itself takes about a second, and a car gets two and a
+A spring left to settle by itself takes about a second, and a car gets one and a
 half. Text that is still moving cannot be read, so reveals pass a fixed
 `durationInFrames` and are finished well inside the first second.
 

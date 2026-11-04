@@ -1,11 +1,13 @@
 import type { Bilingual } from '../reel/reel.types';
 
+import { cyclic } from '../lib/pick';
+
 import { ENGLISH_MONTHS, TAMIL_MONTHS } from './tamil';
 
 export const COPY = {
   kicker: { en: 'Pre-owned cars', ta: 'பயன்படுத்திய கார்கள்' },
   verified: { en: 'Verified dealer', ta: 'சரிபார்க்கப்பட்ட டீலர்' },
-  servicesHeading: { en: 'Services we offer', ta: 'எங்கள் சேவைகள்' },
+  servicesHeading: { en: 'Services offered', ta: 'வழங்கப்படும் சேவைகள்' },
   featured: { en: 'Featured cars', ta: 'சிறப்பு கார்கள்' },
   price: { en: 'Price', ta: 'விலை' },
   priceOnRequest: { en: 'Price on request', ta: 'விலைக்கு விசாரிக்கவும்' },
@@ -31,7 +33,7 @@ export function pricesAsOf(date: Date): Bilingual {
   const month = date.getUTCMonth();
   const year = date.getUTCFullYear();
   return {
-    en: `Prices as of ${day} ${ENGLISH_MONTHS[month] ?? ''} ${year}`,
-    ta: `விலைகள் ${day} ${TAMIL_MONTHS[month] ?? ''} ${year} நிலவரப்படி`,
+    en: `Prices as of ${day} ${cyclic(ENGLISH_MONTHS, month, '')} ${year}`,
+    ta: `விலைகள் ${day} ${cyclic(TAMIL_MONTHS, month, '')} ${year} நிலவரப்படி`,
   };
 }

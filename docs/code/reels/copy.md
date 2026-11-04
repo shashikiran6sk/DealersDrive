@@ -16,6 +16,13 @@ Tamil car buyers commonly use — transliterated trade words such as
 should be read by a native speaker before reels are published widely.
 Everything to review is in this file and `tamil.ts`.
 
+### `servicesHeading`
+
+"Services offered" rather than "Services we offer". The reels are posted from
+Dealers-Drive's own page, not the dealer's, so a first-person "we" would read as
+Dealers-Drive offering the services. The Tamil, வழங்கப்படும் சேவைகள், is the
+same passive phrasing.
+
 ### `export function pricesAsOf(date: Date): Bilingual`
 
 A reel outlives the prices in it. Every reel states the date its prices were

@@ -1,13 +1,11 @@
-import { AbsoluteFill, Audio, interpolate, Sequence } from 'remotion';
+import { AbsoluteFill, Sequence } from 'remotion';
 
-import { buildTimeline } from '../../lib/timeline';
-import { COLORS, FONT_STACK, REEL_DURATION } from '../../reel/reel.constants';
+import { buildTimeline, cutFrames } from '../../lib/timeline';
+import { COLORS, FONT_STACK } from '../../reel/reel.constants';
 import type { ReelProps } from '../../reel/reel.types';
-import { resolveSrc } from '../reel-image';
 
 import { Scene } from './scene';
-
-const MUSIC_FADE_FRAMES = 20;
+import { Soundtrack } from './soundtrack';
 
 export function DealerReel(props: ReelProps) {
   const timeline = buildTimeline({
@@ -27,19 +25,7 @@ export function DealerReel(props: ReelProps) {
           <Scene slot={slot} props={props} cars={timeline.cars} />
         </Sequence>
       ))}
-      {props.musicSrc === null ? null : (
-        <Audio
-          src={resolveSrc(props.musicSrc)}
-          volume={(frame) =>
-            interpolate(
-              frame,
-              [0, MUSIC_FADE_FRAMES, REEL_DURATION - MUSIC_FADE_FRAMES, REEL_DURATION],
-              [0, 1, 1, 0],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-            )
-          }
-        />
-      )}
+      <Soundtrack sound={props.sound} cuts={cutFrames(timeline)} />
     </AbsoluteFill>
   );
 }

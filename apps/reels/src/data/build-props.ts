@@ -2,7 +2,7 @@ import type { DealerPublicProfile, VehicleCardDto } from '@dealers-drive/contrac
 
 import { pricesAsOf } from '../copy/copy';
 import { MAX_FEATURED_CARS, MAX_GALLERY_TILES, MAX_SERVICES } from '../reel/reel.constants';
-import type { ReelCar, ReelProps } from '../reel/reel.types';
+import type { ReelCar, ReelProps, ReelSound } from '../reel/reel.types';
 
 import { withCampaign } from './campaign';
 import { dealerLocation, dealerServices } from './dealer';
@@ -14,9 +14,13 @@ export type BuildReelInput = {
   cards: readonly VehicleCardDto[];
   available: number;
   asOf: Date;
-  musicSrc: string | null;
+  sound: ReelSound;
   imageSrc: (url: string) => string;
 };
+
+export function cardImage(card: VehicleCardDto, imageSrc: (url: string) => string): string | null {
+  return card.image === null ? null : imageSrc(card.image.url);
+}
 
 function toReelCar(card: VehicleCardDto, imageSrc: (url: string) => string): ReelCar {
   return {
@@ -25,7 +29,7 @@ function toReelCar(card: VehicleCardDto, imageSrc: (url: string) => string): Ree
     year: card.year,
     price: card.priceLabel,
     specs: carSpecs(card.metaLabel),
-    imageSrc: card.image === null ? null : imageSrc(card.image.url),
+    imageSrc: cardImage(card, imageSrc),
   };
 }
 
@@ -34,12 +38,13 @@ export function hasShowcase(cards: readonly VehicleCardDto[]): boolean {
 }
 
 export function buildReelProps(input: BuildReelInput): ReelProps {
-  const { profile, cards, available, asOf, musicSrc, imageSrc } = input;
+  const { profile, cards, available, asOf, sound, imageSrc } = input;
   const showcase = showcaseCars(cards);
   const featured = selectFeatured(showcase, MAX_FEATURED_CARS);
-  const gallery = selectGallery(showcase, featured, MAX_GALLERY_TILES).flatMap((card) =>
-    card.image === null ? [] : [imageSrc(card.image.url)],
-  );
+  const gallery = selectGallery(showcase, featured, MAX_GALLERY_TILES).flatMap((card) => {
+    const src = cardImage(card, imageSrc);
+    return src === null ? [] : [src];
+  });
 
   return {
     dealer: {
@@ -56,6 +61,6 @@ export function buildReelProps(input: BuildReelInput): ReelProps {
     priceRange: priceRange(showcase),
     pageUrl: withCampaign(profile.seo.canonical),
     asOf: pricesAsOf(asOf),
-    musicSrc,
+    sound,
   };
 }

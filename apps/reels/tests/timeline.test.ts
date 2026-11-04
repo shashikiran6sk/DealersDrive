@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildTimeline, splitFrames } from '../src/lib/timeline';
+import { buildTimeline, cutFrames, splitFrames } from '../src/lib/timeline';
 import { REEL_DURATION, SCENE_FRAMES } from '../src/reel/reel.constants';
 
 function total(slots: Array<{ duration: number }>): number {
@@ -59,5 +59,29 @@ describe('buildTimeline', () => {
       SCENE_FRAMES.stock,
     );
     expect(total(timeline.scenes)).toBe(REEL_DURATION);
+  });
+});
+
+describe('cutFrames', () => {
+  it('lists every scene change and every car change once, in order', () => {
+    const timeline = buildTimeline({ hasServices: true, carCount: 8 });
+    const cuts = cutFrames(timeline);
+    expect(cuts).toEqual([...new Set(cuts)].sort((a, b) => a - b));
+    expect(cuts).not.toContain(0);
+    expect(cuts).toHaveLength(4 + 7);
+    expect(cuts).toContain(SCENE_FRAMES.opening);
+  });
+
+  it('copes with a reel that has no cars', () => {
+    expect(cutFrames(buildTimeline({ hasServices: false, carCount: 0 }))).toHaveLength(2);
+  });
+});
+
+describe('the beat grid', () => {
+  it('cuts every scene and car on a beat of the 120 BPM bed', () => {
+    const framesPerBeat = 15;
+    for (const cut of cutFrames(buildTimeline({ hasServices: true, carCount: 8 }))) {
+      expect(cut % framesPerBeat).toBe(0);
+    }
   });
 });

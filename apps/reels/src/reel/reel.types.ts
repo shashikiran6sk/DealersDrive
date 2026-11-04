@@ -21,6 +21,11 @@ export type ReelDealer = {
   services: Bilingual[];
 };
 
+export type ReelSound = {
+  music: string | null;
+  whoosh: string | null;
+};
+
 export type ReelProps = {
   dealer: ReelDealer;
   featured: ReelCar[];
@@ -29,5 +34,5 @@ export type ReelProps = {
   priceRange: string | null;
   pageUrl: string;
   asOf: Bilingual;
-  musicSrc: string | null;
+  sound: ReelSound;
 };

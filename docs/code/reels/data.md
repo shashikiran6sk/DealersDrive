@@ -14,9 +14,9 @@ for.
 
 ### `export function selectFeatured(cards: readonly VehicleCardDto[], max: number): VehicleCardDto[]`
 
-Four cars fit into the ten seconds the cars get. They are picked across the
-price range — the cheapest, the dearest and two evenly between — rather than the
-four newest, because the newest four are often the same model twice and say
+Eight cars fit into the twelve seconds the cars get, a second and a half each. They are picked across the
+price range — the cheapest, the dearest and six evenly between — rather than the
+eight newest, because the newest are often the same model twice and say
 nothing about the yard's range, while a spread tells a buyer in one glance
 whether this dealer has a car at their budget. They play cheapest first, so the
 reel builds to its most expensive car.

@@ -30,7 +30,7 @@ const CONTENT_WIDTH = REEL_WIDTH - SAFE_AREA.side * 2;
 export function CarScene({ car, position, total, duration }: CarSceneProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const arrive = enter(frame, fps, { damping: CAR.carDamping });
+  const arrive = enter(frame, fps, { durationInFrames: CAR.carArriveFrames });
   const leave = exit(frame, duration, CAR.exitFrames);
   const carX = (1 - arrive) * CAR.carTravel - leave * CAR.carTravel * 1.15;
   const carScale = drift(frame, duration, 1, CAR.carZoom);
@@ -80,7 +80,7 @@ export function CarScene({ car, position, total, duration }: CarSceneProps) {
           opacity: fade,
         }}
       >
-        <Reveal delay={4}>
+        <Reveal delay={1}>
           <BilingualText
             text={COPY.featured}
             size={30}
@@ -89,7 +89,7 @@ export function CarScene({ car, position, total, duration }: CarSceneProps) {
             taScale={0.95}
           />
         </Reveal>
-        <Reveal delay={4}>
+        <Reveal delay={1}>
           <span
             style={{ fontFamily: FONT_STACK, fontSize: 34, fontWeight: 800, color: COLORS.ink }}
           >

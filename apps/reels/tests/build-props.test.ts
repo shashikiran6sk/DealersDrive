@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildReelProps, hasShowcase } from '../src/data/build-props';
+import { buildReelProps, cardImage, hasShowcase } from '../src/data/build-props';
 import { planMedia } from '../src/data/media';
 
 import { card, profile } from './fixtures';
@@ -18,7 +18,7 @@ describe('buildReelProps', () => {
       cards: [...cars, card({ slug: 'reserved', availability: 'RESERVED' })],
       available: 5,
       asOf: AS_OF,
-      musicSrc: null,
+      sound: { music: null, whoosh: null },
       imageSrc: media.src,
     });
 
@@ -33,7 +33,7 @@ describe('buildReelProps', () => {
       'Loan',
       'RC Transfer',
     ]);
-    expect(props.featured.map((car) => car.slug)).toEqual(['c3', 'c5', 'c9', 'c26']);
+    expect(props.featured.map((car) => car.slug)).toEqual(['c3', 'c5', 'c7', 'c9', 'c26']);
     expect(props.featured[0]).toMatchObject({ title: 'Tata Nexon XZA+ S', year: 2022 });
     expect(props.featured[0]?.imageSrc).toMatch(/^media\//);
     expect(props.gallery).toHaveLength(5);
@@ -50,11 +50,11 @@ describe('buildReelProps', () => {
       cards: [card({ slug: 'only' })],
       available: 1,
       asOf: AS_OF,
-      musicSrc: 'music/track.mp3',
+      sound: { music: 'audio/track.mp3', whoosh: 'audio/whoosh.wav' },
       imageSrc: (url) => url,
     });
     expect(props.dealer.logoSrc).toBeNull();
-    expect(props.musicSrc).toBe('music/track.mp3');
+    expect(props.sound).toEqual({ music: 'audio/track.mp3', whoosh: 'audio/whoosh.wav' });
   });
 });
 
@@ -62,5 +62,12 @@ describe('hasShowcase', () => {
   it('needs at least one available car with a photo', () => {
     expect(hasShowcase([card({ image: null })])).toBe(false);
     expect(hasShowcase([card()])).toBe(true);
+  });
+});
+
+describe('cardImage', () => {
+  it('maps a photo to its public path and a missing photo to null', () => {
+    expect(cardImage(card({ image: null }), (url) => url)).toBeNull();
+    expect(cardImage(card(), () => 'media/x.webp')).toBe('media/x.webp');
   });
 });

@@ -11,6 +11,12 @@ dealer whose data cannot be fetched stops the run before any rendering has
 started, rather than leaving half a batch behind, and the bundle — the slowest
 step after rendering itself — is built once for every reel.
 
+Sound is staged with the images: the generated bed and whoosh are written to
+`.cache/public/audio` on every run (they take about a second and a half, and
+regenerating means a change to the score is never masked by a stale file).
+`--music` replaces the bed but keeps the whooshes; `--silent` drops both, for a
+reel that will be posted with a track from Instagram's own music library.
+
 `REELS_BROWSER_EXECUTABLE` points Remotion at an existing Chrome headless shell.
 Without it Remotion downloads its own, which is right on a workstation and
 impossible in a sandbox with no route to the download host.

@@ -35,6 +35,20 @@ export function splitFrames(total: number, parts: number): Slot[] {
   return slots;
 }
 
+export function cutFrames(timeline: Timeline): number[] {
+  const cuts = new Set<number>();
+  for (const scene of timeline.scenes) {
+    if (scene.from > 0) cuts.add(scene.from);
+  }
+  const cars = timeline.scenes.find((scene) => scene.name === 'cars');
+  if (cars !== undefined) {
+    for (const slot of timeline.cars) {
+      if (slot.from > 0) cuts.add(cars.from + slot.from);
+    }
+  }
+  return [...cuts].sort((a, b) => a - b);
+}
+
 export function buildTimeline({
   hasServices,
   carCount,

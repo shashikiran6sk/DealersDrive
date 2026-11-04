@@ -8,7 +8,13 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/data/**/*.ts', 'src/copy/**/*.ts', 'src/lib/**/*.ts', 'src/cli/args.ts'],
+      include: [
+        'src/data/**/*.ts',
+        'src/copy/**/*.ts',
+        'src/lib/**/*.ts',
+        'src/audio/**/*.ts',
+        'src/cli/args.ts',
+      ],
       reporter: ['text-summary', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       thresholds: {

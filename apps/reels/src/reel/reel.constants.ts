@@ -7,13 +7,13 @@ export const REEL_SECONDS = 20;
 export const REEL_DURATION = REEL_FPS * REEL_SECONDS;
 
 export const SCENE_FRAMES = {
-  opening: 75,
-  services: 60,
-  stock: 75,
-  closing: 90,
+  opening: 60,
+  services: 45,
+  stock: 60,
+  closing: 75,
 } as const;
 
-export const MAX_FEATURED_CARS = 4;
+export const MAX_FEATURED_CARS = 8;
 export const MAX_SERVICES = 6;
 export const MAX_GALLERY_TILES = 9;
 

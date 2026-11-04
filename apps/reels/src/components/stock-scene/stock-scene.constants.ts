@@ -1,10 +1,12 @@
 export const STOCK = {
   gridWidth: 900,
   gap: 18,
-  tileDelay: 6,
-  tileStagger: 3,
-  countDelay: 18,
-  countLength: 30,
-  rangeDelay: 30,
-  exitFrames: 10,
+  tileDelay: 3,
+  tileStagger: 2,
+  countDelay: 12,
+  countLength: 22,
+  rangeDelay: 20,
+  exitFrames: 8,
+  wipeFrames: 9,
+  popFrames: 12,
 } as const;

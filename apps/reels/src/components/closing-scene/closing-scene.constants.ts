@@ -1,6 +1,6 @@
 export const CLOSING = {
   qrSize: 470,
-  cardDelay: 6,
-  scanDelay: 14,
-  brandDelay: 20,
+  cardDelay: 3,
+  scanDelay: 8,
+  brandDelay: 12,
 } as const;

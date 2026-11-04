@@ -20,7 +20,7 @@ export type StockSceneProps = {
 export function StockScene({ gallery, availableCount, priceRange, duration }: StockSceneProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const cover = wipe(frame);
+  const cover = wipe(frame, STOCK.wipeFrames);
   const leaving = exit(frame, duration, STOCK.exitFrames);
   const shape = gridShape(gallery.length, STOCK.gridWidth, STOCK.gap);
   const count = countUp(frame, availableCount, STOCK.countDelay, STOCK.countLength);
@@ -51,7 +51,7 @@ export function StockScene({ gallery, availableCount, priceRange, duration }: St
           {gallery.map((src, index) => {
             const pop = enter(frame, fps, {
               delay: STOCK.tileDelay + index * STOCK.tileStagger,
-              damping: 14,
+              durationInFrames: STOCK.popFrames,
             });
             return (
               <div
