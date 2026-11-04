@@ -13,7 +13,7 @@ export const CAPTION_COPY = {
   instagramHeadline: (name: string, place: string, stock: string, cars: string) =>
     `${name}, ${place} · ${stock} pre-owned ${cars} available on Dealers-Drive 🚗`,
   instagramFind: (name: string) =>
-    `Scan the QR code in the reel, or tap the link in our bio and search "${name}".`,
+    `See every car: tap the link in our bio, go to Dealers, and search "${name}". Or scan the QR code in the reel.`,
   youtubeHeadline: (stock: string, cars: string, name: string, place: string) =>
     `${stock} pre-owned ${cars} at ${name}, ${place}. See every car on Dealers-Drive:`,
   youtubeTitle: (stock: string, cars: string, city: string, from: string, name: string) =>

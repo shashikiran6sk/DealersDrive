@@ -19,8 +19,11 @@ rule 7**).
 The two platforms differ where it matters:
 
 - **Instagram** does not make links in captions clickable, so the caption
-  carries no URL. It points to the QR code in the reel and the link in the
-  Dealers-Drive bio. Instagram suggests three to five hashtags; the caption uses
+  carries no URL. It sends viewers through the link in the Dealers-Drive bio
+  to the site, then to **Dealers** in the header and the directory's
+  "Search dealership name" box, which is the one route to a dealer from the
+  home page, as the home page has no dealer search. The QR code in the reel is
+  offered as the shortcut. Instagram suggests three to five hashtags; the caption uses
   the brand, used-car, town and state tags plus up to three car brands from the
   reel.
 - **YouTube** descriptions do link, so the dealer page is the second line,

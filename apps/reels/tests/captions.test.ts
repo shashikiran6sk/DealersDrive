@@ -113,6 +113,9 @@ describe('buildCaptions', () => {
     expect(captions.instagram).toContain(
       '#DealersDrive #UsedCars #PreOwnedCars #UsedCarsVellore #Vellore #TamilNadu',
     );
+    expect(captions.instagram).toContain(
+      'See every car: tap the link in our bio, go to Dealers, and search "Sample Motors". Or scan the QR code in the reel.',
+    );
     expect(captions.instagram).not.toContain('http');
     expect(captions.instagram.length).toBeLessThan(2200);
   });
