@@ -8,6 +8,7 @@ import { withCampaign } from './campaign';
 import { dealerLocation, dealerServices } from './dealer';
 import { priceRange, selectFeatured, selectGallery, showcaseCars } from './featured';
 import { carSpecs, titleWithoutYear } from './specs';
+import { stockFigure } from './stock';
 
 export type BuildReelInput = {
   profile: DealerPublicProfile;
@@ -57,7 +58,7 @@ export function buildReelProps(input: BuildReelInput): ReelProps {
     },
     featured: featured.map((card) => toReelCar(card, imageSrc)),
     gallery,
-    availableCount: available,
+    stock: stockFigure(available),
     priceRange: priceRange(showcase),
     pageUrl: withCampaign(profile.seo.canonical),
     asOf: pricesAsOf(asOf),

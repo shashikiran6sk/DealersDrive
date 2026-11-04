@@ -13,6 +13,7 @@ export default defineConfig({
         'src/copy/**/*.ts',
         'src/lib/**/*.ts',
         'src/audio/**/*.ts',
+        'src/captions/**/*.ts',
         'src/cli/args.ts',
       ],
       reporter: ['text-summary', 'html', 'json-summary'],

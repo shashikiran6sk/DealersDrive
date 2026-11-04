@@ -46,8 +46,20 @@ was decided here.
 viewer to the dealer's page through a QR code; the number is behind
 reveal-contact, where it is rate-limited and counted as a lead.
 
-`availableCount` is the inventory response's `available`, which is the
-"available" count by **R71** — the same number the dealer page states.
+The stock figure starts from the inventory response's `available`, which is
+the "available" count by **R71** — the same number the dealer page states.
+
+## `apps/reels/src/data/stock.ts`
+
+### `export function stockFigure(available: number): StockFigure`
+
+From ten cars up, the reel says "15+" rather than "19". A reel is shared and
+watched for days after it is rendered, and an exact count is wrong the first
+time a car sells; a figure rounded down to a multiple of five stays true until
+the yard drops below it. An exact multiple of five keeps no "+", because "20+"
+for exactly twenty cars overstates. Under ten cars the exact number is shown:
+"5+" for a dealer with eight cars undersells them, and small counts change
+less often. The "+" appears only once the count-up has reached the figure.
 
 ## `apps/reels/src/data/specs.ts`
 

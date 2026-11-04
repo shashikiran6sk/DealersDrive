@@ -21,6 +21,11 @@ export type ReelDealer = {
   services: Bilingual[];
 };
 
+export type StockFigure = {
+  value: number;
+  plus: boolean;
+};
+
 export type ReelSound = {
   music: string | null;
   whoosh: string | null;
@@ -30,7 +35,7 @@ export type ReelProps = {
   dealer: ReelDealer;
   featured: ReelCar[];
   gallery: string[];
-  availableCount: number;
+  stock: StockFigure;
   priceRange: string | null;
   pageUrl: string;
   asOf: Bilingual;

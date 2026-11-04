@@ -24,7 +24,7 @@ a Remotion company licence before using this commercially.
 
 ## Why the coverage gate covers only part of `src`
 
-`vitest.config.ts` gates `src/data`, `src/copy`, `src/lib`, `src/audio` and `src/cli/args.ts`
+`vitest.config.ts` gates `src/data`, `src/copy`, `src/lib`, `src/audio`, `src/captions` and `src/cli/args.ts`
 at 90 %, like the other packages. The scenes in `src/components` and the
 rendering entry `src/cli/render.ts` are excluded: a scene's correctness is how a
 frame looks, and the check for that is rendering a reel and looking at it, which
@@ -40,6 +40,7 @@ so that it is tested rather than eyeballed.
 - [components](components.md)
 - [cli](cli.md)
 - [audio](audio.md)
+- [captions](captions.md)
 
 ## Why `remotion bundle` warns about `zod`
 

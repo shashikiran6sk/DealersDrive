@@ -43,7 +43,7 @@ export const SAMPLE_PROPS: ReelProps = {
     },
   ],
   gallery: [],
-  availableCount: 12,
+  stock: { value: 10, plus: true },
   priceRange: '₹3.50 Lakh – ₹12.75 Lakh',
   pageUrl: 'https://www.dealers-drive.com/dealers',
   asOf: pricesAsOf(new Date(Date.UTC(2026, 10, 4))),

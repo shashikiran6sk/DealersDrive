@@ -37,7 +37,7 @@ describe('buildReelProps', () => {
     expect(props.featured[0]).toMatchObject({ title: 'Tata Nexon XZA+ S', year: 2022 });
     expect(props.featured[0]?.imageSrc).toMatch(/^media\//);
     expect(props.gallery).toHaveLength(5);
-    expect(props.availableCount).toBe(5);
+    expect(props.stock).toEqual({ value: 5, plus: false });
     expect(props.priceRange).toBe('₹3.00 Lakh – ₹26.00 Lakh');
     expect(props.pageUrl).toContain('utm_source=dealer-reel');
     expect(props.asOf.en).toBe('Prices as of 4 Nov 2026');

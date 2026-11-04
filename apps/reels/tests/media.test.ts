@@ -45,3 +45,11 @@ describe('withCampaign', () => {
     }
   });
 });
+
+describe('withCampaign for a platform', () => {
+  it('overrides the source and keeps the rest of the campaign', () => {
+    const url = new URL(withCampaign('https://www.dealers-drive.com/dealers/x', 'youtube'));
+    expect(url.searchParams.get('utm_source')).toBe('youtube');
+    expect(url.searchParams.get('utm_campaign')).toBe(REEL_CAMPAIGN.utm_campaign);
+  });
+});

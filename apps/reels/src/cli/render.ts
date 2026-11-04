@@ -7,6 +7,7 @@ import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 
 import { reelBedWav, whooshWav } from '../audio';
+import { buildCaptions, youtubeFile } from '../captions';
 import { fetchDealersWithStock, fetchInventory, fetchProfile } from '../data/api';
 import { buildReelProps, hasShowcase } from '../data/build-props';
 import { planMedia } from '../data/media';
@@ -57,7 +58,7 @@ async function main(): Promise<void> {
 
   const media = planMedia(IMAGE_WIDTH);
   const sound = await stageSound(options.musicPath, options.silent);
-  const reels: Array<{ slug: string; props: ReelProps }> = [];
+  const reels: Array<{ slug: string; props: ReelProps; city: string; state: string }> = [];
 
   for (const slug of slugs) {
     const [profile, inventory] = await Promise.all([
@@ -76,7 +77,7 @@ async function main(): Promise<void> {
       sound,
       imageSrc: media.src,
     });
-    reels.push({ slug, props });
+    reels.push({ slug, props, city: profile.address.city, state: profile.address.state });
     say(`  ${slug}: ${inventory.available} available, featuring ${props.featured.length}`);
   }
 
@@ -98,7 +99,7 @@ async function main(): Promise<void> {
   const outDir = resolve(process.cwd(), options.outDir);
   await mkdir(outDir, { recursive: true });
 
-  for (const { slug, props } of reels) {
+  for (const { slug, props, city, state } of reels) {
     const composition = await selectComposition({
       serveUrl,
       id: REEL_COMPOSITION_ID,
@@ -125,7 +126,10 @@ async function main(): Promise<void> {
         }
       },
     });
-    say(`Rendered ${outputLocation}`);
+    const captions = buildCaptions({ props, city, state });
+    await writeFile(join(outDir, `${slug}.instagram.txt`), `${captions.instagram}\n`);
+    await writeFile(join(outDir, `${slug}.youtube.txt`), youtubeFile(captions));
+    say(`Rendered ${outputLocation}, with Instagram and YouTube captions`);
   }
 }
 

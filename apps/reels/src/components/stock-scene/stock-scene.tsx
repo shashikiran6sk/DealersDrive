@@ -3,6 +3,7 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
 import { availableLabel, COPY } from '../../copy/copy';
 import { countUp, enter, exit, wipe } from '../../lib/motion';
 import { COLORS, FONT_STACK, REEL_WIDTH, SAFE_AREA } from '../../reel/reel.constants';
+import type { StockFigure } from '../../reel/reel.types';
 import { BilingualText } from '../bilingual-text';
 import { ReelImage } from '../reel-image';
 import { Reveal } from '../reveal';
@@ -12,18 +13,19 @@ import { gridShape } from './utils';
 
 export type StockSceneProps = {
   gallery: string[];
-  availableCount: number;
+  stock: StockFigure;
   priceRange: string | null;
   duration: number;
 };
 
-export function StockScene({ gallery, availableCount, priceRange, duration }: StockSceneProps) {
+export function StockScene({ gallery, stock, priceRange, duration }: StockSceneProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const cover = wipe(frame, STOCK.wipeFrames);
   const leaving = exit(frame, duration, STOCK.exitFrames);
   const shape = gridShape(gallery.length, STOCK.gridWidth, STOCK.gap);
-  const count = countUp(frame, availableCount, STOCK.countDelay, STOCK.countLength);
+  const count = countUp(frame, stock.value, STOCK.countDelay, STOCK.countLength);
+  const showPlus = stock.plus && count === stock.value;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.photo }}>
@@ -102,9 +104,10 @@ export function StockScene({ gallery, availableCount, priceRange, duration }: St
                 }}
               >
                 {count}
+                {showPlus ? '+' : ''}
               </span>
               <BilingualText
-                text={availableLabel(availableCount)}
+                text={availableLabel(stock.value)}
                 size={50}
                 weight={800}
                 color={COLORS.white}

@@ -48,7 +48,7 @@ export function Scene({ slot, props, cars }: SceneProps) {
       return (
         <StockScene
           gallery={props.gallery}
-          availableCount={props.availableCount}
+          stock={props.stock}
           priceRange={props.priceRange}
           duration={slot.duration}
         />
