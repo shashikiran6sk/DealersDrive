@@ -58,6 +58,59 @@ describe('buildReelProps', () => {
   });
 });
 
+describe('buildReelProps featured cars', () => {
+  const base = {
+    profile: profile(),
+    available: 3,
+    asOf: AS_OF,
+    sound: { music: null, whoosh: null },
+    imageSrc: (url: string) => url,
+  };
+  const cars = [
+    card({
+      slug: 'eeco-15',
+      title: '2015 Maruti Suzuki Eeco',
+      year: 2015,
+      priceLabel: '₹3,75,000',
+    }),
+    card({
+      slug: 'eeco-20',
+      title: '2020 Maruti Suzuki Eeco',
+      year: 2020,
+      priceLabel: '₹5,15,000',
+    }),
+    card({ slug: 'creta', title: '2016 Hyundai Creta', year: 2016, priceLabel: '₹7,25,000' }),
+  ];
+
+  it('skips a repeated model using the brand models from the API', () => {
+    const others = ['Alto', 'Baleno', 'Ciaz', 'Dzire', 'Ertiga', 'Fronx', 'Gypsy'].map(
+      (model, index) =>
+        card({
+          slug: model.toLowerCase(),
+          title: `2019 Maruti Suzuki ${model}`,
+          year: 2019,
+          priceLabel: `₹${index + 4},00,000`,
+        }),
+    );
+    const props = buildReelProps({
+      ...base,
+      cards: [...cars.slice(0, 2), ...others],
+      models: ['Eeco', 'Alto', 'Baleno', 'Ciaz', 'Dzire', 'Ertiga', 'Fronx', 'Gypsy'].map(
+        (model) => ({ brand: 'Maruti Suzuki', model }),
+      ),
+    });
+    const slugs = props.featured.map((car) => car.slug);
+    expect(slugs).toHaveLength(8);
+    expect(slugs).toContain('eeco-20');
+    expect(slugs).not.toContain('eeco-15');
+  });
+
+  it('features exactly the hand-picked cars when named', () => {
+    const props = buildReelProps({ ...base, cards: cars, featureTerms: ['creta', 'eeco'] });
+    expect(props.featured.map((car) => car.slug)).toEqual(['eeco-15', 'creta']);
+  });
+});
+
 describe('hasShowcase', () => {
   it('needs at least one available car with a photo', () => {
     expect(hasShowcase([card({ image: null })])).toBe(false);

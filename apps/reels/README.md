@@ -31,7 +31,12 @@ pnpm --filter @dealers-drive/contracts build
 pnpm --filter @dealers-drive/reels render
 pnpm --filter @dealers-drive/reels render -- --dealer aishwaryas-autos-vellore-tamil-nadu
 pnpm --filter @dealers-drive/reels render -- --music ./track.mp3 --as-of 2026-11-04
+pnpm --filter @dealers-drive/reels render -- --dealer <slug> --feature creta --feature brv
 ```
+
+The eight featured cars are picked automatically, spread across the price range
+with each model shown once. `--feature` (repeatable, up to eight) hand-picks
+them instead, by model name or car slug.
 
 Reels are written to `apps/reels/out/<dealer-slug>.mp4`. `--help` lists every
 option. Set `REELS_BROWSER_EXECUTABLE` to an existing Chrome headless shell to

@@ -6,7 +6,8 @@ import type { ReelCar, ReelProps, ReelSound } from '../reel/reel.types';
 
 import { withCampaign } from './campaign';
 import { dealerLocation, dealerServices } from './dealer';
-import { priceRange, selectFeatured, selectGallery, showcaseCars } from './featured';
+import { pickFeatured, priceRange, selectFeatured, selectGallery, showcaseCars } from './featured';
+import { modelKey, type ModelName } from './models';
 import { carSpecs, titleWithoutYear } from './specs';
 import { stockFigure } from './stock';
 
@@ -17,6 +18,8 @@ export type BuildReelInput = {
   asOf: Date;
   sound: ReelSound;
   imageSrc: (url: string) => string;
+  models?: readonly ModelName[];
+  featureTerms?: readonly string[];
 };
 
 export function cardImage(card: VehicleCardDto, imageSrc: (url: string) => string): string | null {
@@ -39,9 +42,23 @@ export function hasShowcase(cards: readonly VehicleCardDto[]): boolean {
 }
 
 export function buildReelProps(input: BuildReelInput): ReelProps {
-  const { profile, cards, available, asOf, sound, imageSrc } = input;
+  const {
+    profile,
+    cards,
+    available,
+    asOf,
+    sound,
+    imageSrc,
+    models = [],
+    featureTerms = [],
+  } = input;
   const showcase = showcaseCars(cards);
-  const featured = selectFeatured(showcase, MAX_FEATURED_CARS);
+  const featured =
+    featureTerms.length > 0
+      ? pickFeatured(showcase, featureTerms, MAX_FEATURED_CARS)
+      : selectFeatured(showcase, MAX_FEATURED_CARS, (card) =>
+          modelKey(titleWithoutYear(card.title, card.year), models),
+        );
   const gallery = selectGallery(showcase, featured, MAX_GALLERY_TILES).flatMap((card) => {
     const src = cardImage(card, imageSrc);
     return src === null ? [] : [src];

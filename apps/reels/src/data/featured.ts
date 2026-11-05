@@ -1,5 +1,8 @@
 import { formatLakh, type VehicleCardDto } from '@dealers-drive/contracts';
 
+import { matchesTerm } from './models';
+import { titleWithoutYear } from './specs';
+
 const PAISE_PER_RUPEE = 100;
 
 export function priceRupees(label: string | null): number | null {
@@ -25,18 +28,78 @@ export function spreadIndexes(length: number, count: number): number[] {
   return [...picks].sort((a, b) => a - b);
 }
 
-export function selectFeatured(cards: readonly VehicleCardDto[], max: number): VehicleCardDto[] {
-  const priced = cards
-    .map((card) => ({ card, rupees: priceRupees(card.priceLabel) }))
-    .filter((entry): entry is { card: VehicleCardDto; rupees: number } => entry.rupees !== null)
-    .sort((a, b) => a.rupees - b.rupees)
-    .map((entry) => entry.card);
+export function sortByPrice(cards: readonly VehicleCardDto[]): VehicleCardDto[] {
+  const rank = (card: VehicleCardDto) => priceRupees(card.priceLabel) ?? Number.POSITIVE_INFINITY;
+  return [...cards].sort((a, b) => rank(a) - rank(b));
+}
+
+export function spreadByPrice(cards: readonly VehicleCardDto[], max: number): VehicleCardDto[] {
+  const priced = sortByPrice(cards.filter((card) => priceRupees(card.priceLabel) !== null));
   const unpriced = cards.filter((card) => priceRupees(card.priceLabel) === null);
 
   if (priced.length >= max) {
     return spreadIndexes(priced.length, max).flatMap((index) => priced[index] ?? []);
   }
   return [...priced, ...unpriced.slice(0, max - priced.length)];
+}
+
+export type ModelSplit = {
+  distinct: VehicleCardDto[];
+  repeats: VehicleCardDto[];
+};
+
+export function splitByModel(
+  cards: readonly VehicleCardDto[],
+  keyOf: (card: VehicleCardDto) => string,
+): ModelSplit {
+  const newest = new Map<string, VehicleCardDto>();
+  for (const card of cards) {
+    const key = keyOf(card);
+    const current = newest.get(key);
+    if (current === undefined || (card.year ?? 0) > (current.year ?? 0)) newest.set(key, card);
+  }
+  const chosen = new Set(newest.values());
+  return {
+    distinct: cards.filter((card) => chosen.has(card)),
+    repeats: cards.filter((card) => !chosen.has(card)),
+  };
+}
+
+export function selectFeatured(
+  cards: readonly VehicleCardDto[],
+  max: number,
+  keyOf: (card: VehicleCardDto) => string = (card) => card.slug,
+): VehicleCardDto[] {
+  const { distinct, repeats } = splitByModel(cards, keyOf);
+  const chosen = spreadByPrice(distinct, max);
+  const topUp = sortByPrice(repeats).slice(0, Math.max(0, max - chosen.length));
+  return sortByPrice([...chosen, ...topUp]);
+}
+
+export function pickFeatured(
+  cards: readonly VehicleCardDto[],
+  terms: readonly string[],
+  max: number,
+): VehicleCardDto[] {
+  if (terms.length > max) {
+    throw new Error(`At most ${max} cars can be featured; ${terms.length} were named.`);
+  }
+  const used = new Set<string>();
+  const picks = terms.map((term) => {
+    const card = cards.find(
+      (candidate) =>
+        !used.has(candidate.slug) &&
+        (candidate.slug === term ||
+          matchesTerm(titleWithoutYear(candidate.title, candidate.year), term)),
+    );
+    if (card === undefined) {
+      const titles = cards.map((candidate) => candidate.title).join(', ');
+      throw new Error(`No available car with a photo matches "${term}". Available: ${titles}`);
+    }
+    used.add(card.slug);
+    return card;
+  });
+  return sortByPrice(picks);
 }
 
 export function selectGallery(

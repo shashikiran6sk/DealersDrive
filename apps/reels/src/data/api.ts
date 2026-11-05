@@ -6,6 +6,8 @@ import {
   type VehicleCardDto,
 } from '@dealers-drive/contracts';
 
+import type { ModelName } from './models';
+
 export type Fetcher = (url: string) => Promise<Response>;
 
 export type Parser<T> = { parse: (value: unknown) => T };
@@ -13,6 +15,7 @@ export type Parser<T> = { parse: (value: unknown) => T };
 export type Inventory = {
   cards: VehicleCardDto[];
   available: number;
+  models: ModelName[];
 };
 
 const PAGE_LIMIT = 48;
@@ -69,10 +72,12 @@ export async function fetchInventory(
   slug: string,
   fetcher: Fetcher,
 ): Promise<Inventory> {
+  const path = `v1/dealers/${encodeURIComponent(slug)}/vehicles`;
   const cards: VehicleCardDto[] = [];
   let available = 0;
+  let brands: Array<{ value: string; label: string }> = [];
   for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const url = apiUrl(base, `v1/dealers/${encodeURIComponent(slug)}/vehicles`, {
+    const url = apiUrl(base, path, {
       page: String(page),
       limit: String(PAGE_LIMIT),
       sort: 'newest',
@@ -80,7 +85,17 @@ export async function fetchInventory(
     const result = await getJson(fetcher, url, PublicVehiclesResponse);
     cards.push(...result.data);
     available = result.available;
+    if (page === 1) brands = result.facets.brands;
     if (page >= result.page.totalPages) break;
   }
-  return { cards, available };
+
+  const models: ModelName[] = [];
+  for (const brand of brands) {
+    const url = apiUrl(base, path, { limit: '1', brand: brand.value });
+    const result = await getJson(fetcher, url, PublicVehiclesResponse);
+    models.push(
+      ...result.facets.models.map((model) => ({ brand: brand.label, model: model.label })),
+    );
+  }
+  return { cards, available, models };
 }

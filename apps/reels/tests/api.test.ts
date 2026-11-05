@@ -104,3 +104,35 @@ describe('fetchInventory', () => {
     expect(inventory.available).toBe(2);
   });
 });
+
+describe('fetchInventory models', () => {
+  it('asks each brand for its models', async () => {
+    const fetcher = vi.fn((url: string) => {
+      const brand = new URL(url).searchParams.get('brand');
+      const facets =
+        brand === null
+          ? {
+              ...NO_VEHICLE_FACETS,
+              brands: [{ value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 2 }],
+            }
+          : {
+              ...NO_VEHICLE_FACETS,
+              models: [
+                { value: 'swift', label: 'Swift', count: 1 },
+                { value: 'swift-dzire', label: 'Swift Dzire', count: 1 },
+              ],
+            };
+      return Promise.resolve(
+        jsonResponse({ data: [card()], page: page(1, 1), available: 1, facets }),
+      );
+    });
+    const inventory = await fetchInventory(BASE, 'sample', fetcher);
+    expect(inventory.models).toEqual([
+      { brand: 'Maruti Suzuki', model: 'Swift' },
+      { brand: 'Maruti Suzuki', model: 'Swift Dzire' },
+    ]);
+    expect(fetcher).toHaveBeenCalledWith(
+      `${BASE}/v1/dealers/sample/vehicles?limit=1&brand=maruti-suzuki`,
+    );
+  });
+});

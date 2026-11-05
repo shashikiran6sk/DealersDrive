@@ -5,6 +5,7 @@ export const DEFAULT_OUT_DIR = 'out';
 
 export type RenderOptions = {
   dealers: string[];
+  features: string[];
   apiBase: string;
   outDir: string;
   musicPath: string | null;
@@ -19,6 +20,7 @@ export const USAGE = [
   'Usage: pnpm --filter @dealers-drive/reels render -- [options]',
   '',
   '  --dealer <slug>     Render one dealership (repeatable). Default: every dealership with cars.',
+  '  --feature <name>    Hand-pick a featured car by model or slug (repeatable, up to 8; one --dealer only).',
   '  --api <url>         API origin. Default: https://api.dealers-drive.com',
   '  --out <dir>         Where the MP4s go. Default: out/',
   '  --music <file>      Your own audio track instead of the generated one (faded in and out).',
@@ -55,6 +57,7 @@ export function parseRenderArgs(argv: readonly string[], now: Date): RenderOptio
     allowPositionals: false,
     options: {
       dealer: { type: 'string', multiple: true },
+      feature: { type: 'string', multiple: true },
       api: { type: 'string' },
       out: { type: 'string' },
       music: { type: 'string' },
@@ -71,8 +74,15 @@ export function parseRenderArgs(argv: readonly string[], now: Date): RenderOptio
     throw new Error(`--concurrency must be a positive whole number, got "${values.concurrency}"`);
   }
 
+  const dealers = values.dealer ?? [];
+  const features = values.feature ?? [];
+  if (features.length > 0 && dealers.length !== 1) {
+    throw new Error('--feature picks cars for one dealership: pass exactly one --dealer with it.');
+  }
+
   return {
-    dealers: values.dealer ?? [],
+    dealers,
+    features,
     apiBase: values.api ?? DEFAULT_API_BASE,
     outDir: values.out ?? DEFAULT_OUT_DIR,
     musicPath: values.music ?? null,

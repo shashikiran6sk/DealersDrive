@@ -8,6 +8,7 @@ describe('parseRenderArgs', () => {
   it('defaults to every dealership, the production API and today', () => {
     expect(parseRenderArgs([], NOW)).toEqual({
       dealers: [],
+      features: [],
       apiBase: DEFAULT_API_BASE,
       outDir: 'out',
       musicPath: null,
@@ -25,8 +26,6 @@ describe('parseRenderArgs', () => {
         '--',
         '--dealer',
         'a',
-        '--dealer',
-        'b',
         '--api',
         'http://localhost:4000',
         '--out',
@@ -35,6 +34,10 @@ describe('parseRenderArgs', () => {
         'track.mp3',
         '--as-of',
         '2026-12-01',
+        '--feature',
+        'creta',
+        '--feature',
+        'br-v',
         '--props-only',
         '--silent',
         '--concurrency',
@@ -44,7 +47,8 @@ describe('parseRenderArgs', () => {
       NOW,
     );
     expect(options).toMatchObject({
-      dealers: ['a', 'b'],
+      dealers: ['a'],
+      features: ['creta', 'br-v'],
       apiBase: 'http://localhost:4000',
       outDir: 'reels',
       musicPath: 'track.mp3',
@@ -59,6 +63,14 @@ describe('parseRenderArgs', () => {
   it('rejects unknown options and a bad concurrency', () => {
     expect(() => parseRenderArgs(['--dealers', 'a'], NOW)).toThrow();
     expect(() => parseRenderArgs(['--concurrency', '0'], NOW)).toThrow(/positive whole number/);
+  });
+
+  it('takes several dealers, but hand-picked cars only for one', () => {
+    expect(parseRenderArgs(['--dealer', 'a', '--dealer', 'b'], NOW).dealers).toEqual(['a', 'b']);
+    expect(() => parseRenderArgs(['--feature', 'creta'], NOW)).toThrow(/exactly one --dealer/);
+    expect(() =>
+      parseRenderArgs(['--dealer', 'a', '--dealer', 'b', '--feature', 'creta'], NOW),
+    ).toThrow(/exactly one --dealer/);
   });
 
   it('documents itself', () => {

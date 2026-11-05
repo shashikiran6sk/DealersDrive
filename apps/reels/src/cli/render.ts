@@ -76,6 +76,8 @@ async function main(): Promise<void> {
       asOf: options.asOf,
       sound,
       imageSrc: media.src,
+      models: inventory.models,
+      featureTerms: options.features,
     });
     reels.push({ slug, props, city: profile.address.city, state: profile.address.state });
     say(`  ${slug}: ${inventory.available} available, featuring ${props.featured.length}`);

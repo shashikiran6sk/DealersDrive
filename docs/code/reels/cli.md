@@ -28,5 +28,8 @@ Remotion Studio can open (`--props`) to preview or adjust one dealer's reel.
 
 ### `export function parseRenderArgs(argv: readonly string[], now: Date): RenderOptions`
 
+`--feature` is refused unless exactly one `--dealer` is given: a list of car
+names means something only for one yard.
+
 `strict` parsing, like every input in this repository: `--dealers` is an error
 naming the option, not a silent render of every dealership.

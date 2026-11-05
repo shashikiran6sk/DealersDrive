@@ -21,10 +21,36 @@ nothing about the yard's range, while a spread tells a buyer in one glance
 whether this dealer has a car at their budget. They play cheapest first, so the
 reel builds to its most expensive car.
 
-There is no make or model to deduplicate on: a card carries a free-text title
-(**D1**, no catalogue), and splitting it into a make is guesswork
-(`Maruti Suzuki Baleno` is two words of make). The price spread gets diversity
-without guessing. Unpriced cars only top up a list that is short of priced ones.
+Each model is featured once before any model repeats. A yard with three Eecos
+would otherwise show two of them, because a price spread lands on whichever
+cars sit at the right prices. The newest car of each model represents it, and a
+repeat is used only to fill the reel when there are fewer than eight models.
+
+### `export function pickFeatured(cards: readonly VehicleCardDto[], terms: readonly string[], max: number): VehicleCardDto[]`
+
+The automatic choice is a default, not a decision for the dealer. `--feature`
+names the cars outright, by model ("creta", "brv") or by slug, and they play
+cheapest first like an automatic pick. A name that matches nothing stops the
+render and lists the cars there are, rather than quietly featuring something
+else; a name given twice takes the next matching car.
+
+## `apps/reels/src/data/models.ts`
+
+### `export function modelKey(title: string, models: readonly ModelName[]): string`
+
+There is no make or model column to read (**D1**): a card has a free-text
+title, and splitting it on words gets models wrong (`Maruti Suzuki Swift Dzire`
+is not a `Swift`). The model names come from the API instead. The inventory
+facets list the brands, and asking once per brand lists that brand's models,
+already normalised at write time. A car's model is the longest
+"brand + model" its title starts with; a title that starts with none falls back
+to the whole title, so only exact repeats are folded together.
+
+### `export function matchesTerm(title: string, term: string): boolean`
+
+A hand-picked name matches from the start of any word, with spacing and
+punctuation ignored, so "brv" finds `Honda BR-V` and "i10" finds
+`Hyundai i10 Grand Magna`, but "ai" does not find `Hyundai`.
 
 ### `export function priceRange(cards: readonly VehicleCardDto[]): string | null`
 
