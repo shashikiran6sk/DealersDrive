@@ -1,6 +1,5 @@
 import { PhotoCredit, type AdminVehicleImage } from '@dealers-drive/contracts';
 
-import { StatusTag } from '@/components/ui/primitives';
 import { setImageCreditAction } from '@/features/admin/listing-actions';
 
 import { CREDIT_TEXT, LISTING_IMAGES_TEXT } from './listing-images.constants';
@@ -18,7 +17,9 @@ export function CreditLine({ listingId, image, editable }: CreditLineProps) {
       {image.credit ? (
         <span className="ink-subtle">{CREDIT_TEXT[image.credit].tile}</span>
       ) : (
-        <StatusTag tone="warn">{LISTING_IMAGES_TEXT.creditUnknown}</StatusTag>
+        <span className="font-semibold text-(--color-warn)">
+          {LISTING_IMAGES_TEXT.creditUnknown}
+        </span>
       )}
       {editable
         ? others.map((credit) => (

@@ -63,6 +63,7 @@ that of the image it replaces.
 `CreditLine` shows each tile's credit and offers the other value as a one-click
 server-action form, the same pattern as _Make primary_, so a wrong credit is
 corrected in place on a live listing rather than by removing and uploading
-again. Images attached before credit was recorded show a warning tag with both
+again. Images attached before credit was recorded show an amber line (text, not a
+tag, so it wraps in a narrow tile) with both
 choices, and the gallery counts them, since until each one is set the car's
 page credits nobody.

@@ -1,3 +1,5 @@
+import type { PhotoCredit } from '@dealers-drive/contracts';
+
 export interface ListingActionResult {
   ok: boolean;
   message?: string;
@@ -76,6 +78,7 @@ export async function presignListingImageAction(
 export async function commitListingImageAction(
   _listingId: string,
   _mediaId: string,
+  _credit: PhotoCredit,
 ): Promise<ListingActionResult> {
   await new Promise((resolve) => setTimeout(resolve, 300));
   return { ok: true };
@@ -111,6 +114,15 @@ export async function reorderListingImagesAction(formData: FormData): Promise<vo
 }
 
 export async function setPrimaryImageAction(formData: FormData): Promise<void> {
+  const values: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') values[key] = value;
+  }
+  listingActionsStub.calls.push(values);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+}
+
+export async function setImageCreditAction(formData: FormData): Promise<void> {
   const values: Record<string, string> = {};
   for (const [key, value] of formData.entries()) {
     if (typeof value === 'string') values[key] = value;
