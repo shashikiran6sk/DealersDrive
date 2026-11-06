@@ -7,6 +7,7 @@ import {
   removeListingImageAction,
   reorderListingImagesAction,
   replaceListingImageAction,
+  setAllImageCreditsAction,
   setImageCreditAction,
   setPrimaryImageAction,
 } from '../../../../src/features/admin/listing-actions.js';
@@ -61,6 +62,7 @@ describe('image actions', () => {
     ['reorder', () => reorderListingImagesAction(form())],
     ['primary', () => setPrimaryImageAction(form())],
     ['credit', () => setImageCreditAction(creditForm('DEALER'))],
+    ['all credits', () => setAllImageCreditsAction(ID, 'DEALER')],
   ] as const)('invalidates cached public galleries after %s', async (_name, action) => {
     respond();
     await action();
@@ -133,5 +135,29 @@ describe('image actions', () => {
     const fetch = respond();
     expect(await replaceListingImageAction(ID, MEDIA, 'bad')).toMatchObject({ ok: false });
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('marks every image at once with one PUT', async () => {
+    const fetch = respond();
+    expect(await setAllImageCreditsAction(ID, 'DEALERS_DRIVE')).toEqual({ ok: true });
+    expect(fetch.mock.calls[0]![0]).toContain(`/v1/admin/listings/${ID}/images/credit`);
+    expect(fetch.mock.calls[0]![1]?.method).toBe('PUT');
+    expect(JSON.parse(fetch.mock.calls[0]![1]?.body as string)).toEqual({
+      credit: 'DEALERS_DRIVE',
+    });
+  });
+
+  it('refuses a malformed listing or credit without a request, and reports an API refusal', async () => {
+    const fetch = respond();
+    expect((await setAllImageCreditsAction('../../dealer', 'DEALER')).ok).toBe(false);
+    expect((await setAllImageCreditsAction(ID, 'STUDIO' as 'DEALER')).ok).toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+
+    respond(409);
+    expect(await setAllImageCreditsAction(ID, 'DEALER')).toMatchObject({
+      ok: false,
+      message: 'Keep 6 photos.',
+    });
+    expect(revalidations.tags).not.toContain('vehicles');
   });
 });

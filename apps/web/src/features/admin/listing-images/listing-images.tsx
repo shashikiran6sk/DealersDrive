@@ -4,10 +4,14 @@ import { IMAGE_MIME_TYPES, type PhotoCredit } from '@dealers-drive/contracts';
 import { useRef, useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
-import { removeListingImageAction } from '@/features/admin/listing-actions';
+import {
+  removeListingImageAction,
+  setAllImageCreditsAction,
+} from '@/features/admin/listing-actions';
 
 import { CreditChoice } from './credit-choice';
 import { ImageTile } from './image-tile';
+import { MarkAllCredit } from './mark-all-credit';
 import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 import type { ListingImagesProps, UploadProgress } from './listing-images.types';
 import { moved, uploadOne } from './utils';
@@ -21,12 +25,13 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [credit, setCredit] = useState<PhotoCredit | null>(null);
+  const [marking, setMarking] = useState<PhotoCredit | null>(null);
 
   const count = images.items.length;
   const order = images.items.map((image) => image.mediaId);
   const room = Math.max(images.max - count, 0);
   const missing = Math.max(images.min - count, 0);
-  const busy = removing || progress !== null;
+  const busy = removing || progress !== null || marking !== null;
   const uncredited = images.items.filter((image) => image.credit === null).length;
 
   async function replace(file: File): Promise<void> {
@@ -58,6 +63,19 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
       else setNotice(LISTING_IMAGES_TEXT.removed);
     } finally {
       setRemoving(false);
+    }
+  }
+
+  async function markAll(chosen: PhotoCredit): Promise<void> {
+    setMarking(chosen);
+    setErrors([]);
+    setNotice(null);
+    try {
+      const result = await setAllImageCreditsAction(listingId, chosen);
+      if (!result.ok) setErrors([result.message ?? LISTING_IMAGES_TEXT.markAllFailed]);
+      else setNotice(LISTING_IMAGES_TEXT.markedAll(count, chosen));
+    } finally {
+      setMarking(null);
     }
   }
 
@@ -102,6 +120,17 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
         <p className="text-[12px] text-(--color-warn)">
           {LISTING_IMAGES_TEXT.creditUnknownHint(uncredited)}
         </p>
+      ) : null}
+
+      {images.canEdit ? (
+        <MarkAllCredit
+          items={images.items}
+          disabled={busy}
+          marking={marking}
+          onMark={(chosen) => {
+            void markAll(chosen);
+          }}
+        />
       ) : null}
 
       {errors.length > 0 ? (

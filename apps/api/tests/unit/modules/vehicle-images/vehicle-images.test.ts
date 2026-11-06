@@ -13,6 +13,7 @@ describe('the router', () => {
       'POST /listings/:id/images/:mediaId/commit',
       'POST /listings/:id/images/:mediaId/replace',
       'PUT /listings/:id/images/order',
+      'PUT /listings/:id/images/credit',
       'PUT /listings/:id/images/:mediaId/primary',
       'PUT /listings/:id/images/:mediaId/credit',
       'DELETE /listings/:id/images/:mediaId',
@@ -29,7 +30,8 @@ describe('the router', () => {
     for (const route of routesOf(router)) {
       expect(validatedSources(route), `${route.method} ${route.path}`).toContain('params');
     }
-    const [presign, commit, replace, order, , credit] = routesOf(router);
+    const [presign, commit, replace, order, allCredits, , credit] = routesOf(router);
+    expect(validatedSources(allCredits!)).toContain('body');
     expect(validatedSources(presign!)).toContain('body');
     expect(validatedSources(commit!)).toContain('body');
     expect(validatedSources(credit!)).toContain('body');

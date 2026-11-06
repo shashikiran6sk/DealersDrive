@@ -2,6 +2,8 @@ import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES, type PhotoCredit } from '@dealers-dr
 
 import type { FileRule } from '@/lib/upload';
 
+const photos = (count: number) => `${count} ${count === 1 ? 'photo' : 'photos'}`;
+
 export const IMAGE_RULE: FileRule = {
   maxBytes: IMAGE_MAX_BYTES,
   mimeTypes: IMAGE_MIME_TYPES,
@@ -53,8 +55,12 @@ export const LISTING_IMAGES_TEXT = {
   creditLegend: 'Who took these photographs?',
   creditNeeded: 'Choose who took the photographs before uploading.',
   creditUnknown: 'Photographer not recorded',
+  markAll: (count: number) => `Mark all ${photos(count)}:`,
+  markAllFailed: 'The photos could not be marked. Try again.',
+  markedAll: (count: number, credit: PhotoCredit) =>
+    `All ${photos(count)} marked as taken by ${credit === 'DEALER' ? 'the dealer' : 'Dealers-Drive'}.`,
   creditUnknownHint: (count: number) =>
-    `${count} ${count === 1 ? 'image does' : 'images do'} not say who took ${count === 1 ? 'it' : 'them'}, so the car’s page credits nobody. Mark each one below.`,
+    `${count} ${count === 1 ? 'image does' : 'images do'} not say who took ${count === 1 ? 'it' : 'them'}, so the car’s page credits nobody. Mark them all at once, or each one below.`,
 } as const;
 
 export const CREDIT_OPTIONS: readonly {
@@ -76,16 +82,26 @@ export const CREDIT_OPTIONS: readonly {
 
 export const CREDIT_TEXT: Record<
   PhotoCredit,
-  { tile: string; markAs: string; markAsLabel: (position: number) => string }
+  {
+    tile: string;
+    markAs: string;
+    markAsLabel: (position: number) => string;
+    markAll: string;
+    markAllLabel: (count: number) => string;
+  }
 > = {
   DEALERS_DRIVE: {
     tile: 'By Dealers-Drive',
     markAs: 'Dealers-Drive took it',
     markAsLabel: (position) => `Mark image ${position + 1} as taken by Dealers-Drive`,
+    markAll: 'Dealers-Drive took them',
+    markAllLabel: (count) => `Mark all ${photos(count)} as taken by Dealers-Drive`,
   },
   DEALER: {
     tile: 'By the dealer',
     markAs: 'Dealer took it',
     markAsLabel: (position) => `Mark image ${position + 1} as taken by the dealer`,
+    markAll: 'Dealer took them',
+    markAllLabel: (count) => `Mark all ${photos(count)} as taken by the dealer`,
   },
 };

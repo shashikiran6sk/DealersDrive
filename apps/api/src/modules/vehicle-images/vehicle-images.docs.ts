@@ -183,6 +183,38 @@ export const vehicleImagesDocs: ModuleDocs = {
     },
     {
       method: 'put',
+      path: '/v1/admin/listings/:id/images/credit',
+      operationId: 'setListingImagesCredit',
+      tag: DOC_TAGS.media,
+      summary: 'Record who took every image on the vehicle',
+      description:
+        'Sets `credit` on **every** image attached to the listing’s vehicle at once — the ' +
+        'review screen’s _Mark all photos_. It is how a car whose photographs were attached ' +
+        'before credit was recorded is labelled in one step, and how a whole set is corrected. ' +
+        'Images that already carry the credit are left alone; if none changes, nothing is ' +
+        'written and no audit row is recorded. Otherwise one `vehicle.images_credit_set` row ' +
+        'lists every image that changed and what it was before. A vehicle with no images ' +
+        'answers its empty gallery.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'SetVehicleImageCreditInput',
+        description: 'Who took the photographs.',
+        example: { credit: 'DEALER' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle\u2019s images, each with the new credit.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'put',
       path: '/v1/admin/listings/:id/images/:mediaId/primary',
       operationId: 'setListingPrimaryImage',
       tag: DOC_TAGS.media,

@@ -60,6 +60,16 @@ image attached from now on says; a replacement without one inherits the credit o
 the image it replaces, because replacing a blurred shot with a sharper one from
 the same shoot is the common case.
 
+### `async setAllCredits(admin, listingId, credit)`
+
+Sets the credit on every image of the vehicle at once, the review screen's
+_Mark all photos_. Only the images that differ are written. One audit row,
+`vehicle.images_credit_set`, lists each image that changed with its previous
+credit, so the history still says what each one was. When nothing changes,
+nothing is written, so pressing it twice is harmless. It runs under the listing
+lock like every other gallery change, so it cannot interleave with a reorder or
+a replacement.
+
 ### `async setCredit(admin, listingId, mediaId, credit)`
 
 Corrects who took an attached image, and is how an image attached before credit

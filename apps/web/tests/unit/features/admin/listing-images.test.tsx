@@ -9,6 +9,7 @@ const presign = vi.fn();
 const commit = vi.fn();
 const replace = vi.fn();
 const remove = vi.fn();
+const markAll = vi.fn();
 
 vi.mock('@/features/admin/listing-actions', () => ({
   presignListingImageAction: (...args: unknown[]) => presign(...args) as unknown,
@@ -18,6 +19,7 @@ vi.mock('@/features/admin/listing-actions', () => ({
   reorderListingImagesAction: vi.fn(),
   setPrimaryImageAction: vi.fn(),
   setImageCreditAction: vi.fn(),
+  setAllImageCreditsAction: (...args: unknown[]) => markAll(...args) as unknown,
 }));
 
 const LISTING_ID = '11111111-1111-4111-8111-111111111111';
@@ -80,6 +82,7 @@ beforeEach(() => {
   commit.mockResolvedValue({ ok: true });
   replace.mockResolvedValue({ ok: true });
   remove.mockResolvedValue({ ok: true });
+  markAll.mockResolvedValue({ ok: true });
 });
 
 afterEach(() => {
@@ -88,6 +91,7 @@ afterEach(() => {
   commit.mockReset();
   replace.mockReset();
   remove.mockReset();
+  markAll.mockReset();
   fetchMock.mockReset();
 });
 
@@ -410,5 +414,105 @@ describe('who took the photographs', () => {
     expect(screen.getAllByText('By Dealers-Drive')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /Mark image/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Who took these photographs?' })).toBeNull();
+  });
+});
+
+describe('marking every photo at once', () => {
+  function uncredited(count: number) {
+    const gallery = images(count);
+    gallery.items = gallery.items.map((item) => ({ ...item, credit: null }));
+    return gallery;
+  }
+
+  it('offers both choices for a car whose photos say nothing, and marks them all with one call', async () => {
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(6)} live />);
+    expect(screen.getByText('Mark all 6 photos:')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by the dealer' }),
+    );
+    await waitFor(() => expect(markAll).toHaveBeenCalledTimes(1));
+    expect(markAll).toHaveBeenCalledWith(LISTING_ID, 'DEALER');
+    expect(
+      await screen.findByText('All 6 photos marked as taken by the dealer.'),
+    ).toBeInTheDocument();
+  });
+
+  it('disables every gallery control while marking, so a second click cannot race it', async () => {
+    let finish!: (value: unknown) => void;
+    markAll.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(6)} live />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by the dealer' }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+      ).toBeDisabled(),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Mark image 1 as taken by the dealer' }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+    );
+    expect(markAll).toHaveBeenCalledTimes(1);
+
+    finish({ ok: true });
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+      ).toBeEnabled(),
+    );
+  });
+
+  it('offers only the other choice once every photo agrees', () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(3)} />);
+    expect(
+      screen.getByRole('button', { name: 'Mark all 3 photos as taken by the dealer' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Mark all 3 photos as taken by Dealers-Drive' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says one photo in the singular', () => {
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(1)} />);
+    expect(screen.getByText('Mark all 1 photo:')).toBeInTheDocument();
+  });
+
+  it('shows the refusal when marking fails, and is absent when there is nothing to mark or edit', async () => {
+    markAll.mockResolvedValue({ ok: false, message: 'Images can only be changed while…' });
+    const { unmount } = render(<ListingImages listingId={LISTING_ID} images={uncredited(2)} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 2 photos as taken by the dealer' }),
+    );
+    expect(await screen.findByText('Images can only be changed while…')).toBeInTheDocument();
+    unmount();
+
+    markAll.mockResolvedValue({ ok: false });
+    const second = render(<ListingImages listingId={LISTING_ID} images={uncredited(2)} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 2 photos as taken by the dealer' }),
+    );
+    expect(
+      await screen.findByText('The photos could not be marked. Try again.'),
+    ).toBeInTheDocument();
+    second.unmount();
+
+    const empty = render(<ListingImages listingId={LISTING_ID} images={images(0)} />);
+    expect(screen.queryByText(/^Mark all/)).not.toBeInTheDocument();
+    empty.unmount();
+
+    render(<ListingImages listingId={LISTING_ID} images={{ ...uncredited(2), canEdit: false }} />);
+    expect(screen.queryByText(/^Mark all/)).not.toBeInTheDocument();
   });
 });

@@ -2050,7 +2050,7 @@ export const registry: RegistryEntry[] = [
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
-      'Admin upload of the processed StudioCar images for a listing (R45, F035 as reinterpreted): presign → PUT → commit per file, the gallery in order with the primary marked, removal, and the minimum and maximum counts. Before uploading, the admin says who took the photographs (CreditChoice: Dealers-Drive team or the dealership — no default, Upload stays disabled until chosen); each tile shows its credit (CreditLine) with a one-click correction, and images attached before credit was recorded are flagged "Photographer not recorded". Dealers never see it.',
+      'Admin upload of the processed StudioCar images for a listing (R45, F035 as reinterpreted): presign → PUT → commit per file, the gallery in order with the primary marked, removal, and the minimum and maximum counts. Before uploading, the admin says who took the photographs (CreditChoice: Dealers-Drive team or the dealership — no default, Upload stays disabled until chosen); each tile shows its credit (CreditLine) with a one-click correction, "Mark all N photos" (MarkAllCredit) sets every image’s credit in one call while the rest of the gallery is disabled, and images attached before credit was recorded are flagged "Photographer not recorded". Dealers never see it.',
     aliases: [
       'ImageUploader',
       'PhotoUploader',
@@ -2060,6 +2060,8 @@ export const registry: RegistryEntry[] = [
       'ImageTile',
       'CreditChoice',
       'CreditLine',
+      'MarkAllCredit',
+      'MarkAllPhotos',
       'PhotoCreditPicker',
     ],
     features: ['R45', 'F035', 'F070'],
@@ -2074,6 +2076,7 @@ export const registry: RegistryEntry[] = [
       'dealer photographs',
       'mixed credit',
       'photographer not recorded',
+      'mark all photos',
     ],
     reusable: false,
     storyId: 'admin-listingimages',

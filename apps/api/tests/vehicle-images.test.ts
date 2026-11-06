@@ -966,3 +966,100 @@ describe('who took the photograph', () => {
     expect(row.credit).toBeNull();
   });
 });
+
+describe('marking every image at once', () => {
+  async function live(credit: 'DEALERS_DRIVE' | 'DEALER' | null = null, count = 6) {
+    const listing = await submitted();
+    const ids = await seedImages(
+      h.prisma,
+      { vehicleId: listing.vehicleId, dealerId: a.dealerId },
+      count,
+      credit,
+    );
+    await h.prisma.listing.update({ where: { id: listing.listingId }, data: { status: 'ACTIVE' } });
+    return { ...listing, ids };
+  }
+
+  it('labels a car whose images were never credited, in one call and one audit row', async () => {
+    const { listingId, vehicleId, ids } = await live();
+    const route = `/v1/admin/listings/${listingId}/images/credit`;
+
+    const response = await admin.put(route).send({ credit: 'DEALER' }).expect(200);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body.items.map((item: { credit: string }) => item.credit)).toEqual(
+      ids.map(() => 'DEALER'),
+    );
+
+    const audits = await h.prisma.auditLog.findMany({
+      where: { entityId: vehicleId, action: 'vehicle.images_credit_set' },
+    });
+    expect(audits).toHaveLength(1);
+    expect(audits[0]?.after).toMatchObject({ listingId, credit: 'DEALER', mediaIds: ids });
+    expect(audits[0]?.before).toMatchObject({
+      credits: ids.map((mediaId) => ({ mediaId, credit: null })),
+    });
+  });
+
+  it('changes only the images that differ, and writes nothing when none do', async () => {
+    const { listingId, vehicleId, ids } = await live('DEALERS_DRIVE', 3);
+    await h.prisma.vehicleMedia.update({ where: { mediaId: ids[1]! }, data: { credit: 'DEALER' } });
+    const route = `/v1/admin/listings/${listingId}/images/credit`;
+
+    await admin.put(route).send({ credit: 'DEALER' }).expect(200);
+    const [audit] = await h.prisma.auditLog.findMany({
+      where: { entityId: vehicleId, action: 'vehicle.images_credit_set' },
+    });
+    expect(audit?.after).toMatchObject({ mediaIds: [ids[0], ids[2]] });
+
+    await admin.put(route).send({ credit: 'DEALER' }).expect(200);
+    expect(
+      await h.prisma.auditLog.count({
+        where: { entityId: vehicleId, action: 'vehicle.images_credit_set' },
+      }),
+    ).toBe(1);
+  });
+
+  it('turns the public page from crediting nobody to naming the photographer', async () => {
+    const { listingId } = await live();
+    const listing = await h.prisma.listing.update({
+      where: { id: listingId },
+      data: { slug: `mark-all-${listingId.slice(0, 8)}` },
+    });
+    const before = await h.agent().get(`/v1/vehicles/${listing.slug!}`).expect(200);
+    expect(before.body.photoCredit).toBeNull();
+
+    await admin
+      .put(`/v1/admin/listings/${listingId}/images/credit`)
+      .send({ credit: 'DEALERS_DRIVE' })
+      .expect(200);
+    const after = await h.agent().get(`/v1/vehicles/${listing.slug!}`).expect(200);
+    expect(after.body.photoCredit).toBe('DEALERS_DRIVE');
+  });
+
+  it('answers an empty gallery for a vehicle with no images', async () => {
+    const { listingId } = await submitted();
+    const response = await admin
+      .put(`/v1/admin/listings/${listingId}/images/credit`)
+      .send({ credit: 'DEALER' })
+      .expect(200);
+    expect(response.body.items).toEqual([]);
+  });
+
+  it('refuses a bad body, a dealer session, an unknown listing and a closed one', async () => {
+    const { listingId, ids } = await live(null, 1);
+    const route = `/v1/admin/listings/${listingId}/images/credit`;
+
+    await admin.put(route).send({}).expect(400);
+    await admin.put(route).send({ credit: 'DEALER', mediaIds: ids }).expect(400);
+    await a.agent.put(route).send({ credit: 'DEALER' }).expect(401);
+    await admin
+      .put(`/v1/admin/listings/${crypto.randomUUID()}/images/credit`)
+      .send({ credit: 'DEALER' })
+      .expect(404);
+
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'SOLD' } });
+    await admin.put(route).send({ credit: 'DEALER' }).expect(409);
+    const row = await h.prisma.vehicleMedia.findUniqueOrThrow({ where: { mediaId: ids[0]! } });
+    expect(row.credit).toBeNull();
+  });
+});

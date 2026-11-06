@@ -321,6 +321,28 @@ export async function setImageCreditAction(formData: FormData): Promise<void> {
   revalidatePublicVehicles();
 }
 
+export async function setAllImageCreditsAction(
+  listingId: string,
+  credit: PhotoCredit,
+): Promise<ListingActionResult> {
+  const params = IdParam.safeParse({ id: listingId });
+  const body = SetVehicleImageCreditInput.safeParse({ credit });
+  if (!params.success || !body.success) return { ok: false, message: IMAGE_REFUSED };
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'PUT',
+      `/v1/admin/listings/${params.data.id}/images/credit`,
+      body.data,
+    );
+  } catch (error) {
+    return failure(error);
+  }
+  revalidatePath(reviewPath(params.data.id));
+  revalidatePublicVehicles();
+  return { ok: true };
+}
+
 export async function setPrimaryImageAction(formData: FormData): Promise<void> {
   const params = ListingImageParam.safeParse({
     id: formData.get('listingId'),

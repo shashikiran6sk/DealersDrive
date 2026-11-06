@@ -131,6 +131,14 @@ export async function setImageCreditAction(formData: FormData): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 300));
 }
 
+export async function setAllImageCreditsAction(
+  _listingId: string,
+  _credit: PhotoCredit,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}
+
 export async function approveListingAction(_listingId: string): Promise<ListingActionResult> {
   await new Promise((resolve) => setTimeout(resolve, 600));
   return { ok: true };

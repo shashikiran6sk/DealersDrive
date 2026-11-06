@@ -446,6 +446,39 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
       return images(vehicleId, status);
     },
 
+    async setAllCredits(
+      admin: AdminPrincipal,
+      listingId: string,
+      credit: PhotoCredit,
+    ): Promise<AdminVehicleImages> {
+      const { vehicleId, status } = await withTransaction(prisma, async (tx) => {
+        const listing = await lockedOpen(tx, listingId);
+        const rows = await imagesOf(tx, listing.vehicleId);
+        const changed = rows.filter((row) => row.credit !== credit);
+
+        if (changed.length > 0) {
+          await tx.vehicleMedia.updateMany({
+            where: { id: { in: changed.map((row) => row.id) } },
+            data: { credit },
+          });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: listing.dealerId,
+            action: 'vehicle.images_credit_set',
+            entityType: 'Vehicle',
+            entityId: listing.vehicleId,
+            before: {
+              credits: changed.map((row) => ({ mediaId: row.mediaId, credit: row.credit })),
+            },
+            after: { listingId, credit, mediaIds: changed.map((row) => row.mediaId) },
+          });
+        }
+        return { vehicleId: listing.vehicleId, status: listing.status };
+      });
+      return images(vehicleId, status);
+    },
+
     async setPrimary(
       admin: AdminPrincipal,
       listingId: string,
