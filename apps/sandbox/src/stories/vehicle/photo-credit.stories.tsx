@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, userEvent, within } from 'storybook/test';
 
 import { PhotoCredit } from '@/components/vehicle/photo-credit';
 
@@ -35,15 +34,6 @@ export const Dealer: Story = { args: { credit: 'DEALER' } };
 export const Mixed: Story = { args: { credit: 'MIXED' } };
 
 export const Unrecorded: Story = { args: { credit: null } };
-
-export const StandardOpen: Story = {
-  args: { credit: 'DEALER' },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByText('Our photo standard'));
-    await expect(canvas.getByText(/seeing the car in person/)).toBeVisible();
-  },
-};
 
 export const PhoneWidth: Story = {
   args: { credit: 'MIXED' },

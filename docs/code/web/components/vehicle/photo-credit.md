@@ -26,8 +26,8 @@ photographer and states only the standard, which every published photograph
 meets. The car page renders it only when the car has photographs, since a
 "coming soon" slot has no photographer to credit.
 
-"Our photo standard" is a native `<details>`: it opens without JavaScript, so
-this stays a server component, and it keeps the list out of the way for buyers
-who do not need it. The list must name only checks the team actually makes. It
-ends with the advice to see the car in person, because a photograph helps a
-buyer shortlist a car and does not inspect it.
+The caption is the label alone. An expandable "Our photo standard" list was
+tried and removed at the owner's request: the label already says who took the
+photographs and that they were checked, and the page should not grow a second
+block of small print under the gallery. The Terms (§1, §7) still describe the
+photo standard and say that a reviewed photograph does not verify condition.

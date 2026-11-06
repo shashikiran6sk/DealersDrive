@@ -158,14 +158,12 @@ describe('/car/[slug]', () => {
     expect(
       screen.getByText('Supplied by Sri Lakshmi Motors and checked against our photo standard.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Our photo standard')).toBeInTheDocument();
   });
 
   it('credits nobody on a car without photographs', async () => {
     serve(detail({ images: [], primaryIndex: 0, photoCredit: null }));
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
 
-    expect(screen.queryByText('Our photo standard')).not.toBeInTheDocument();
     expect(screen.queryByText(/photo standard/)).not.toBeInTheDocument();
   });
 

@@ -34,14 +34,9 @@ describe('PhotoCredit', () => {
     expect(screen.queryByText(/Photographed by|Dealer photos|Photos by/)).not.toBeInTheDocument();
   });
 
-  it('explains the photo standard behind a disclosure, with the advice to see the car', () => {
-    render(<PhotoCredit credit="DEALER" dealerName={DEALER} />);
-    const summary = screen.getByText('Our photo standard');
-    expect(summary.tagName).toBe('SUMMARY');
-    expect(summary.closest('details')).not.toHaveAttribute('open');
-    expect(screen.getAllByRole('listitem', { hidden: true })).toHaveLength(3);
-    expect(
-      screen.getByText(/We always recommend seeing the car in person before you buy/),
-    ).toBeInTheDocument();
+  it('is the label alone, with no disclosure or list under it', () => {
+    const { container } = render(<PhotoCredit credit="DEALER" dealerName={DEALER} />);
+    expect(container.querySelector('details, summary, ul')).toBeNull();
+    expect(container.querySelectorAll('p')).toHaveLength(2);
   });
 });
