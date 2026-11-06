@@ -86,7 +86,7 @@ export const detailInclude = {
   vehicle: {
     include: {
       images: {
-        select: { mediaId: true, position: true, isPrimary: true },
+        select: { mediaId: true, position: true, isPrimary: true, credit: true },
         orderBy: [{ position: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
       },
     },

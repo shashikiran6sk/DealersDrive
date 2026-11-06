@@ -9,6 +9,7 @@ const presign = vi.fn();
 const commit = vi.fn();
 const replace = vi.fn();
 const remove = vi.fn();
+const markAll = vi.fn();
 
 vi.mock('@/features/admin/listing-actions', () => ({
   presignListingImageAction: (...args: unknown[]) => presign(...args) as unknown,
@@ -17,11 +18,16 @@ vi.mock('@/features/admin/listing-actions', () => ({
   replaceListingImageAction: (...args: unknown[]) => replace(...args) as unknown,
   reorderListingImagesAction: vi.fn(),
   setPrimaryImageAction: vi.fn(),
+  setImageCreditAction: vi.fn(),
+  setAllImageCreditsAction: (...args: unknown[]) => markAll(...args) as unknown,
 }));
 
 const LISTING_ID = '11111111-1111-4111-8111-111111111111';
 
-function image(position: number): AdminVehicleImage {
+function image(
+  position: number,
+  credit: AdminVehicleImage['credit'] = 'DEALERS_DRIVE',
+): AdminVehicleImage {
   return {
     mediaId: `00000000-0000-4000-8000-${String(position).padStart(12, '0')}`,
     position,
@@ -32,6 +38,7 @@ function image(position: number): AdminVehicleImage {
     bytes: 100,
     width: null,
     height: null,
+    credit,
     uploadedAt: '2026-09-26T10:00:00.000Z',
   };
 }
@@ -50,7 +57,8 @@ function jpeg(name: string, bytes = 100): File {
   return new File([new Uint8Array(bytes)], name, { type: 'image/jpeg' });
 }
 
-function choose(files: File[]): void {
+function choose(files: File[], credit: RegExp | null = /Dealers-Drive team/): void {
+  if (credit) fireEvent.click(screen.getByRole('radio', { name: credit }));
   fireEvent.change(screen.getByLabelText('Choose processed images to upload'), {
     target: { files },
   });
@@ -74,6 +82,7 @@ beforeEach(() => {
   commit.mockResolvedValue({ ok: true });
   replace.mockResolvedValue({ ok: true });
   remove.mockResolvedValue({ ok: true });
+  markAll.mockResolvedValue({ ok: true });
 });
 
 afterEach(() => {
@@ -82,6 +91,7 @@ afterEach(() => {
   commit.mockReset();
   replace.mockReset();
   remove.mockReset();
+  markAll.mockReset();
   fetchMock.mockReset();
 });
 
@@ -142,7 +152,7 @@ describe('the gallery', () => {
 
   it('explains the workflow before any image is uploaded', () => {
     render(<ListingImages listingId={LISTING_ID} images={images(0)} />);
-    expect(screen.getByText(/upload the processed StudioCar images here/)).toBeInTheDocument();
+    expect(screen.getByText(/Upload the processed StudioCar images here/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Upload images' })).toBeInTheDocument();
   });
 
@@ -177,7 +187,11 @@ describe('uploading', () => {
       'https://storage.test/uploads?signed',
       expect.objectContaining({ method: 'PUT' }),
     );
-    expect(commit).toHaveBeenCalledWith(LISTING_ID, '99999999-9999-4999-8999-999999999999');
+    expect(commit).toHaveBeenCalledWith(
+      LISTING_ID,
+      '99999999-9999-4999-8999-999999999999',
+      'DEALERS_DRIVE',
+    );
     expect(commit).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
@@ -317,5 +331,188 @@ describe('live editing', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Remove image 1' })).toBeInTheDocument(),
     );
+  });
+});
+
+describe('who took the photographs', () => {
+  it('will not upload until the admin says who took them', () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(0)} />);
+    expect(screen.getByRole('group', { name: 'Who took these photographs?' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upload images' })).toBeDisabled();
+    expect(
+      screen.getByText('Choose who took the photographs before uploading.'),
+    ).toBeInTheDocument();
+
+    choose([jpeg('front.jpg')], null);
+    expect(presign).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('radio', { name: /The dealership/ }));
+    expect(screen.getByRole('button', { name: 'Upload images' })).toBeEnabled();
+    expect(screen.queryByText(/before uploading/)).not.toBeInTheDocument();
+  });
+
+  it('records the dealership on every image of the batch', async () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(0)} />);
+    choose([jpeg('front.jpg'), jpeg('rear.jpg')], /The dealership/);
+
+    await waitFor(() => expect(commit).toHaveBeenCalledTimes(2));
+    expect(commit).toHaveBeenNthCalledWith(1, LISTING_ID, expect.any(String), 'DEALER');
+    expect(commit).toHaveBeenNthCalledWith(2, LISTING_ID, expect.any(String), 'DEALER');
+  });
+
+  it('shows who took each image and offers the other choice', () => {
+    const gallery = images(2);
+    gallery.items[1] = image(1, 'DEALER');
+    render(<ListingImages listingId={LISTING_ID} images={gallery} />);
+    const [first, second] = within(screen.getByRole('list')).getAllByRole('listitem');
+
+    expect(within(first!).getByText('By Dealers-Drive')).toBeInTheDocument();
+    const toDealer = within(first!).getByRole('button', {
+      name: 'Mark image 1 as taken by the dealer',
+    });
+    const data = new FormData(toDealer.closest('form')!);
+    expect(Object.fromEntries(data)).toEqual({
+      listingId: LISTING_ID,
+      mediaId: image(0).mediaId,
+      credit: 'DEALER',
+    });
+
+    expect(within(second!).getByText('By the dealer')).toBeInTheDocument();
+    expect(
+      within(second!).getByRole('button', { name: 'Mark image 2 as taken by Dealers-Drive' }),
+    ).toBeInTheDocument();
+  });
+
+  it('flags images that say nothing, and offers both choices on each', () => {
+    const gallery = images(3);
+    gallery.items[0] = image(0, null);
+    gallery.items[2] = image(2, null);
+    render(<ListingImages listingId={LISTING_ID} images={gallery} />);
+
+    expect(
+      screen.getByText(/2 images do not say who took them, so the car’s page credits nobody/),
+    ).toBeInTheDocument();
+    const [first] = within(screen.getByRole('list')).getAllByRole('listitem');
+    expect(within(first!).getByText('Photographer not recorded')).toBeInTheDocument();
+    expect(
+      within(first!).getByRole('button', { name: 'Mark image 1 as taken by Dealers-Drive' }),
+    ).toBeInTheDocument();
+    expect(
+      within(first!).getByRole('button', { name: 'Mark image 1 as taken by the dealer' }),
+    ).toBeInTheDocument();
+  });
+
+  it('says one image in the singular', () => {
+    const gallery = images(1);
+    gallery.items[0] = image(0, null);
+    render(<ListingImages listingId={LISTING_ID} images={gallery} />);
+    expect(screen.getByText(/1 image does not say who took it/)).toBeInTheDocument();
+  });
+
+  it('shows the credit but offers no correction once read-only', () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(2, { canEdit: false })} />);
+    expect(screen.getAllByText('By Dealers-Drive')).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: /Mark image/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Who took these photographs?' })).toBeNull();
+  });
+});
+
+describe('marking every photo at once', () => {
+  function uncredited(count: number) {
+    const gallery = images(count);
+    gallery.items = gallery.items.map((item) => ({ ...item, credit: null }));
+    return gallery;
+  }
+
+  it('offers both choices for a car whose photos say nothing, and marks them all with one call', async () => {
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(6)} live />);
+    expect(screen.getByText('Mark all 6 photos:')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by the dealer' }),
+    );
+    await waitFor(() => expect(markAll).toHaveBeenCalledTimes(1));
+    expect(markAll).toHaveBeenCalledWith(LISTING_ID, 'DEALER');
+    expect(
+      await screen.findByText('All 6 photos marked as taken by the dealer.'),
+    ).toBeInTheDocument();
+  });
+
+  it('disables every gallery control while marking, so a second click cannot race it', async () => {
+    let finish!: (value: unknown) => void;
+    markAll.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(6)} live />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by the dealer' }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+      ).toBeDisabled(),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Mark image 1 as taken by the dealer' }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+    );
+    expect(markAll).toHaveBeenCalledTimes(1);
+
+    finish({ ok: true });
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Mark all 6 photos as taken by Dealers-Drive' }),
+      ).toBeEnabled(),
+    );
+  });
+
+  it('offers only the other choice once every photo agrees', () => {
+    render(<ListingImages listingId={LISTING_ID} images={images(3)} />);
+    expect(
+      screen.getByRole('button', { name: 'Mark all 3 photos as taken by the dealer' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Mark all 3 photos as taken by Dealers-Drive' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says one photo in the singular', () => {
+    render(<ListingImages listingId={LISTING_ID} images={uncredited(1)} />);
+    expect(screen.getByText('Mark all 1 photo:')).toBeInTheDocument();
+  });
+
+  it('shows the refusal when marking fails, and is absent when there is nothing to mark or edit', async () => {
+    markAll.mockResolvedValue({ ok: false, message: 'Images can only be changed while…' });
+    const { unmount } = render(<ListingImages listingId={LISTING_ID} images={uncredited(2)} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 2 photos as taken by the dealer' }),
+    );
+    expect(await screen.findByText('Images can only be changed while…')).toBeInTheDocument();
+    unmount();
+
+    markAll.mockResolvedValue({ ok: false });
+    const second = render(<ListingImages listingId={LISTING_ID} images={uncredited(2)} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Mark all 2 photos as taken by the dealer' }),
+    );
+    expect(
+      await screen.findByText('The photos could not be marked. Try again.'),
+    ).toBeInTheDocument();
+    second.unmount();
+
+    const empty = render(<ListingImages listingId={LISTING_ID} images={images(0)} />);
+    expect(screen.queryByText(/^Mark all/)).not.toBeInTheDocument();
+    empty.unmount();
+
+    render(<ListingImages listingId={LISTING_ID} images={{ ...uncredited(2), canEdit: false }} />);
+    expect(screen.queryByText(/^Mark all/)).not.toBeInTheDocument();
   });
 });

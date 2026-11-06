@@ -213,3 +213,28 @@ Screenshots show the confirmed V1 text and synthetic/local account data. They ar
 engineering review evidence, not proof of production configuration or final legal
 approval. Real provider/device UAT remains a release-owner task; automated auth
 regressions use the established fake Google/OTP ports and real session/database paths.
+
+## Terms 1.1 — vehicle photography correction
+
+Terms 1.0 §1 said "We currently photograph vehicles and moderate listings before
+publication." Some listings now carry the dealership's own photographs, published
+once checked against the Dealers-Drive photo standard, so that sentence is no
+longer accurate. `terms-v1.1` (`packages/contracts/src/legal-documents/v1-1.ts`)
+is 1.0 with only these paragraphs replaced:
+
+- §1: photographs are taken by us or by the dealership; dealer photographs are
+  checked against the photo standard; the vehicle page says who took them where
+  recorded; a reviewed photograph is not a mechanical certification.
+- §7: what the photo-standard check covers (angles, quality, the listed vehicle,
+  no misleading edits) and that it does not verify condition.
+- §15: a version note saying 1.1 adds no obligation and 1.0 acceptance continues.
+
+1.0 is preserved unchanged under `docs/legal/v1-manifest.json`; 1.1's rendered
+text is locked by `docs/legal/v1-1-manifest.json`. The owner decided that
+acceptances of 1.0 continue to count (`LEGAL_ACCEPTED_TERMS_VERSIONS`), so nobody
+is asked to accept again and nobody is blocked; new acceptances record 1.1. The
+Privacy Policy is unchanged (its §5 already covers vehicle photographs generally).
+
+Before publication: confirm the 1.1 effective date (set to 2026-11-06 in the
+source and manifest) matches the actual publication date, and have counsel
+confirm that a factual correction of this kind does not need renewed agreement.

@@ -27,7 +27,8 @@ export const INVENTORY_TEXT = {
   noPrice: 'No price yet',
   incomplete: 'Details missing',
   emptyTitle: 'No vehicles yet',
-  emptyMessage: 'Add your first vehicle. We photograph it once you submit it for review.',
+  emptyMessage:
+    'Add your first vehicle. Once you submit it for review, we photograph it or check the photographs you send us.',
   emptyFilteredTitle: 'Nothing here',
   emptyFilteredMessage: 'No vehicle matches this filter.',
   addVehicle: 'Add vehicle',

@@ -2,8 +2,13 @@ import { LEGAL_V1_PUBLICATION, type LegalDocument as Document } from '@dealers-d
 
 import { LEGAL_DOCUMENT_TEXT as TEXT } from './legal-document.constants';
 
-export function LegalDocument({ document }: { document: Document }) {
+export interface LegalDocumentProps {
+  document: Document & { effectiveDate?: string; changeSummary?: string };
+}
+
+export function LegalDocument({ document }: LegalDocumentProps) {
   const details = LEGAL_V1_PUBLICATION;
+  const effectiveDate = document.effectiveDate ?? details.effectiveDate;
   return (
     <article className="mx-auto w-full max-w-[860px] px-4 py-10 sm:px-6 sm:py-14">
       <header className="mb-10 border-b border-(--color-rule) pb-8">
@@ -12,13 +17,12 @@ export function LegalDocument({ document }: { document: Document }) {
         </h1>
         <p className="mt-4 text-[14px] ink-muted">
           {TEXT.effective}
-          {details.effectiveDate ? (
-            <time dateTime={details.effectiveDate}>{details.effectiveDate}</time>
-          ) : (
-            TEXT.pending
-          )}
+          {effectiveDate ? <time dateTime={effectiveDate}>{effectiveDate}</time> : TEXT.pending}
         </p>
         <p className="mt-2 text-[13px] ink-muted">{document.version}</p>
+        {document.changeSummary ? (
+          <p className="mt-2 max-w-[68ch] text-[13px] ink-muted">{document.changeSummary}</p>
+        ) : null}
       </header>
       <div className="space-y-9">
         {document.sections.map((section) => (

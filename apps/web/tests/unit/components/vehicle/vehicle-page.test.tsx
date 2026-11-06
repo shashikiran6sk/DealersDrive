@@ -42,6 +42,7 @@ function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDeta
     ],
     images: [image(0), image(1), image(2)],
     primaryIndex: 1,
+    photoCredit: 'DEALERS_DRIVE',
     publishedLabel: 'Listed 26 Sep 2026',
     facts: {
       make: 'Hyundai',
@@ -147,6 +148,23 @@ describe('/car/[slug]', () => {
     const specs = within(screen.getByRole('region', { name: 'Specifications' }));
     expect(specs.getByText('Hyundai')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '← All cars' })).toHaveAttribute('href', '/cars');
+  });
+
+  it('says under the gallery who took the photographs', async () => {
+    serve(detail({ photoCredit: 'DEALER' }));
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(screen.getByText('Dealer photos · Reviewed by Dealers-Drive')).toBeInTheDocument();
+    expect(
+      screen.getByText('Supplied by Sri Lakshmi Motors and checked against our photo standard.'),
+    ).toBeInTheDocument();
+  });
+
+  it('credits nobody on a car without photographs', async () => {
+    serve(detail({ images: [], primaryIndex: 0, photoCredit: null }));
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(screen.queryByText(/photo standard/)).not.toBeInTheDocument();
   });
 
   it('shows a reserved car plainly as reserved, and offers no enquiry (R71)', async () => {

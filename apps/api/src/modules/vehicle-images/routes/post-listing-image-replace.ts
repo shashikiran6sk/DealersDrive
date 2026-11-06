@@ -17,12 +17,10 @@ export const postListingImageReplace: VehicleImagesRoute = (router, service) => 
     handle((req) => {
       const params = validated<ListingImageParamType>(req, 'params');
       const body = validated<ReplaceVehicleImageInputType>(req, 'body');
-      return service.commit(
-        adminPrincipal(req),
-        params.id,
-        body.replacementMediaId,
-        params.mediaId,
-      );
+      return service.commit(adminPrincipal(req), params.id, body.replacementMediaId, {
+        credit: body.credit,
+        replacesMediaId: params.mediaId,
+      });
     }),
   );
 };

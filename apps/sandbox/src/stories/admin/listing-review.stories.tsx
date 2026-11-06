@@ -146,6 +146,7 @@ const DETAIL: AdminListingDetail = {
         bytes: 1_284_512,
         width: 2400,
         height: 1800,
+        credit: 'DEALERS_DRIVE',
         uploadedAt: '2026-09-26T10:00:00.000Z',
       },
       {
@@ -158,6 +159,7 @@ const DETAIL: AdminListingDetail = {
         bytes: 1_104_220,
         width: 2400,
         height: 1800,
+        credit: 'DEALERS_DRIVE',
         uploadedAt: '2026-09-26T10:01:00.000Z',
       },
     ],

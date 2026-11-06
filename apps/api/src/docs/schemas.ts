@@ -97,6 +97,8 @@ const INPUT_SCHEMA_NAMES = [
   'VehicleImagePresignInput',
   'ListingImageParam',
   'ReorderImagesInput',
+  'CommitVehicleImageInput',
+  'SetVehicleImageCreditInput',
   'PublicVehicleQuery',
   'CarSuggestQuery',
   'SitemapQuery',

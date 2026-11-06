@@ -385,7 +385,9 @@ off withdraws the pages, the sitemap entries and the links at once.
 
 ## 9. Images
 
-Listing photographs are Dealers-Drive's own (R45), served from stable public
+Listing photographs are uploaded by Dealers-Drive (R45) — the team's own, or
+the dealership's once checked against the photo standard, and the vehicle page
+says which (`photoCredit`) — served from stable public
 URLs `${MEDIA_BASE_URL}/by-media/{mediaId}/{width}.webp` — never a presigned or
 expiring URL, never a bucket address. Alt text comes from the API: the card's
 is `{title}, the primary photograph`, the gallery's `{title}, photograph n of

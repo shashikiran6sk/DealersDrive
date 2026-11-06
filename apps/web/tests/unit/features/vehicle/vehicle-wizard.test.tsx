@@ -191,9 +191,11 @@ describe('the review step', () => {
     ]);
   });
 
-  it('tells the dealer that Dealers-Drive takes the photographs', () => {
+  it('tells the dealer that Dealers-Drive adds the photographs, its own or theirs', () => {
     render(<VehicleWizard step="review" vehicle={vehicle()} />);
-    expect(screen.getByText(/dealers-drive arranges a shoot/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/either photographs the car or checks the photographs you send us/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -362,7 +364,9 @@ describe('submitting (F065)', () => {
       />,
     );
     expect(screen.getByRole('heading', { name: 'Submitted for review' })).toBeInTheDocument();
-    expect(screen.getByText(/arrange a photo shoot/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/a photo shoot at your yard, or a check of the photographs you send us/i),
+    ).toBeInTheDocument();
     expect(screen.getByText('Pending review')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View inventory' })).toHaveAttribute(
       'href',

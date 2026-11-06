@@ -99,7 +99,7 @@ await send('Network.enable');
 await send('Network.setBlockedURLs', { urls: ['https://*'] });
 await cookie(null);
 for (const [path, title, version] of [
-  ['/terms', 'Terms & Conditions', 'terms-v1.0'],
+  ['/terms', 'Terms & Conditions', 'terms-v1.1'],
   ['/privacy', 'Privacy Policy', 'privacy-v1.0'],
 ]) {
   assert((await fetch(`${base}${path}`)).status === 200, `${path} anonymous HTTP 200`);

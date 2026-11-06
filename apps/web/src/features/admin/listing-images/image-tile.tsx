@@ -6,6 +6,7 @@ import {
   setPrimaryImageAction,
 } from '@/features/admin/listing-actions';
 
+import { CreditLine } from './credit-line';
 import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 
 export interface ImageTileProps {
@@ -90,6 +91,7 @@ export function ImageTile({
           </div>
         ) : null}
       </div>
+      <CreditLine listingId={listingId} image={image} editable={editable} />
       {editable ? (
         <div className="flex flex-wrap items-center justify-between gap-1">
           {image.isPrimary ? (

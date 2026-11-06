@@ -4,7 +4,9 @@ import { deleteListingImage } from './routes/delete-listing-image.js';
 import { postListingImageCommit } from './routes/post-listing-image-commit.js';
 import { postListingImagePresign } from './routes/post-listing-image-presign.js';
 import { postListingImageReplace } from './routes/post-listing-image-replace.js';
+import { putListingImageCredit } from './routes/put-listing-image-credit.js';
 import { putListingImagePrimary } from './routes/put-listing-image-primary.js';
+import { putListingImagesCredit } from './routes/put-listing-images-credit.js';
 import { putListingImagesOrder } from './routes/put-listing-images-order.js';
 import type { VehicleImagesRoute } from './routes/route.js';
 import type { VehicleImagesService } from './vehicle-images.service.js';
@@ -14,7 +16,9 @@ const ROUTES: VehicleImagesRoute[] = [
   postListingImageCommit,
   postListingImageReplace,
   putListingImagesOrder,
+  putListingImagesCredit,
   putListingImagePrimary,
+  putListingImageCredit,
   deleteListingImage,
 ];
 

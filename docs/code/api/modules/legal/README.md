@@ -27,3 +27,24 @@ retroactively removed.
 
 API tests pin preview off so local preview settings do not affect unrelated
 fixtures; acceptance scenarios enable it explicitly.
+
+## `apps/api/src/modules/legal/legal.service.ts`
+
+### `const STILL_ACCEPTED` — Terms 1.1 and acceptances of 1.0
+
+A new acceptance is always recorded against the current versions
+(`LEGAL_TERMS_VERSION`, now `terms-v1.1`). The gates (`hasDealerAcceptance`,
+`hasPersonalAcceptance`) instead accept any Terms version in
+`LEGAL_ACCEPTED_TERMS_VERSIONS` with the current Privacy Policy version.
+
+Terms 1.1 only corrects the description of vehicle photography: 1.0 said "We
+currently photograph vehicles", and some listings now carry the dealership's
+own photographs, checked against the photo standard. It adds no obligation,
+so the owner chose not to make every customer and dealership owner accept it
+again. Had the gates kept requiring an exact match, every customer would have
+been refused enquiries, and every dealership owner refused publication and
+relisting, until they accepted again. A later version that changes what
+anyone agrees to is left out of the list, and so is accepted again. The
+receipts themselves are untouched: a 1.0 receipt still records that 1.0 was
+accepted, and the 1.0 text remains in `legal-documents/v1.ts` under its
+original hash.

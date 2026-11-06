@@ -940,7 +940,8 @@ enum ReactivationRequestStatus {
 
 /// Where Dealers-Drive's own photography of a vehicle has got to (**R45**).
 ///
-/// Dealers-Drive photographs every car after it is submitted, processes the
+/// After a car is submitted, Dealers-Drive photographs it — or checks the
+/// dealership's own photographs against the photo standard — processes the
 /// pictures in StudioCar (a separate product), and an admin uploads the
 /// finished files. This row is the operations team's note of that progress,
 /// set by hand: there is **no StudioCar integration** behind it, and no
@@ -976,6 +977,14 @@ enum VehicleMediaSource {
   ADMIN_UPLOAD
 }
 
+/// Who took a vehicle photograph: the Dealers-Drive team, or the dealership,
+/// whose photographs an admin checks against the photo standard before
+/// uploading them. Separate from `source`, which is how the file arrived.
+enum PhotoCredit {
+  DEALERS_DRIVE
+  DEALER
+}
+
 /// A processed photograph attached to a vehicle, in gallery order (**R45**,
 /// F035 as reinterpreted). Written only through `/v1/admin`.
 model VehicleMedia {
@@ -988,6 +997,9 @@ model VehicleMedia {
   /// At most one per vehicle, by a partial unique index.
   isPrimary Boolean            @default(false)
   source    VehicleMediaSource @default(ADMIN_UPLOAD)
+  /// Null for images attached before credit was recorded: the public page
+  /// then claims neither photographer.
+  credit    PhotoCredit?
   addedBy   String             @db.Uuid
   createdAt DateTime           @default(now())
 

@@ -16,6 +16,7 @@ const IMAGES_EXAMPLE = {
       bytes: 1_284_512,
       width: 2400,
       height: 1600,
+      credit: 'DEALERS_DRIVE',
       uploadedAt: '2026-09-27T10:12:00.000Z',
     },
   ],
@@ -27,9 +28,14 @@ const IMAGES_EXAMPLE = {
 export const vehicleImagesDocs: ModuleDocs = {
   tag: DOC_TAGS.media,
   description:
-    'Vehicle images (**R45**; F035 as reinterpreted). Dealers-Drive photographs every car ' +
-    'itself; the processed files are uploaded here by an admin. **There is no dealer route ' +
-    'that writes vehicle media**, and nothing here talks to StudioCar.\n\n' +
+    'Vehicle images (**R45**; F035 as reinterpreted). A car is photographed either by the ' +
+    'Dealers-Drive team or by the dealership, whose photographs are checked against the ' +
+    'Dealers-Drive photo standard first; either way an admin uploads the files here. **There ' +
+    'is no dealer route that writes vehicle media**, and nothing here talks to StudioCar.\n\n' +
+    '**Every image carries a `credit`** — `DEALERS_DRIVE` or `DEALER` — and the public vehicle ' +
+    'page tells the buyer who took the photographs. An image attached before credit was ' +
+    'recorded has `credit: null`, and the public page claims neither photographer until an ' +
+    'admin sets it.\n\n' +
     '**The upload is three calls.** `POST …/images/presign` returns a signed URL; the ' +
     'console `PUT`s the bytes straight to storage; `POST …/images/{mediaId}/commit` checks ' +
     'the object — its size against the declaration and its first bytes against the JPEG, ' +
@@ -95,10 +101,16 @@ export const vehicleImagesDocs: ModuleDocs = {
         'is `422 UPLOAD_NOT_IMAGE` whatever its name said, and is deleted. The image is ' +
         'appended at the end of the gallery; the first image becomes the primary.\n\n' +
         'An upload made for another listing’s vehicle is a 404. Committing an image that ' +
-        'is already attached returns the gallery unchanged. Audited as `vehicle.image_added`.',
+        'is already attached returns the gallery unchanged. `credit` says who took the ' +
+        'photograph and is required. Audited as `vehicle.image_added`.',
       audience: 'admin',
       permission: 'admin:media:upload',
       params: 'ListingImageParam',
+      requestBody: {
+        schema: 'CommitVehicleImageInput',
+        description: 'Who took the photograph.',
+        example: { credit: 'DEALER' },
+      },
       responses: [
         {
           status: 200,
@@ -118,7 +130,8 @@ export const vehicleImagesDocs: ModuleDocs = {
       description:
         'Verifies replacementMediaId using the same checks as commit, then swaps the attachment ' +
         'atomically, preserving position and primary status. The old photo remains until success. ' +
-        'Works at the image limit. Retries return success without another swap. ' +
+        'Works at the image limit. Retries return success without another swap. Without ' +
+        '`credit` the replacement keeps the credit of the image it replaces. ' +
         'Audited as vehicle.image_replaced; detached files are deleted after commit with durable cleanup retries.',
       audience: 'admin',
       permission: 'admin:media:upload',
@@ -126,7 +139,7 @@ export const vehicleImagesDocs: ModuleDocs = {
       requestBody: {
         schema: 'ReplaceVehicleImageInput',
         description: 'The staged replacement upload.',
-        example: { replacementMediaId: MEDIA_ID },
+        example: { replacementMediaId: MEDIA_ID, credit: 'DEALERS_DRIVE' },
       },
       responses: [
         {
@@ -170,6 +183,38 @@ export const vehicleImagesDocs: ModuleDocs = {
     },
     {
       method: 'put',
+      path: '/v1/admin/listings/:id/images/credit',
+      operationId: 'setListingImagesCredit',
+      tag: DOC_TAGS.media,
+      summary: 'Record who took every image on the vehicle',
+      description:
+        'Sets `credit` on **every** image attached to the listing’s vehicle at once — the ' +
+        'review screen’s _Mark all photos_. It is how a car whose photographs were attached ' +
+        'before credit was recorded is labelled in one step, and how a whole set is corrected. ' +
+        'Images that already carry the credit are left alone; if none changes, nothing is ' +
+        'written and no audit row is recorded. Otherwise one `vehicle.images_credit_set` row ' +
+        'lists every image that changed and what it was before. A vehicle with no images ' +
+        'answers its empty gallery.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'SetVehicleImageCreditInput',
+        description: 'Who took the photographs.',
+        example: { credit: 'DEALER' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle\u2019s images, each with the new credit.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'put',
       path: '/v1/admin/listings/:id/images/:mediaId/primary',
       operationId: 'setListingPrimaryImage',
       tag: DOC_TAGS.media,
@@ -186,6 +231,36 @@ export const vehicleImagesDocs: ModuleDocs = {
         {
           status: 200,
           description: 'The vehicle\u2019s images, with the new primary.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/listings/:id/images/:mediaId/credit',
+      operationId: 'setListingImageCredit',
+      tag: DOC_TAGS.media,
+      summary: 'Record who took an image',
+      description:
+        'Sets an attached image’s `credit` — `DEALERS_DRIVE` for the Dealers-Drive team, ' +
+        '`DEALER` for the dealership’s own photograph — to correct a mistake or to record ' +
+        'credit on an image attached before it was asked. The public vehicle page states it ' +
+        'to the buyer. Setting the credit it already has changes nothing and writes no audit ' +
+        'row; otherwise audited as `vehicle.image_credit_set`.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'ListingImageParam',
+      requestBody: {
+        schema: 'SetVehicleImageCreditInput',
+        description: 'Who took the photograph.',
+        example: { credit: 'DEALER' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle\u2019s images, with the new credit.',
           schema: 'AdminVehicleImages',
           example: IMAGES_EXAMPLE,
         },

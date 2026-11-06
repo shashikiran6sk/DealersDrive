@@ -7,6 +7,8 @@ import {
   removeListingImageAction,
   reorderListingImagesAction,
   replaceListingImageAction,
+  setAllImageCreditsAction,
+  setImageCreditAction,
   setPrimaryImageAction,
 } from '../../../../src/features/admin/listing-actions.js';
 
@@ -20,6 +22,12 @@ function form() {
   data.set('listingId', ID);
   data.set('mediaId', MEDIA);
   data.set('order', MEDIA);
+  return data;
+}
+
+function creditForm(credit: string) {
+  const data = form();
+  data.set('credit', credit);
   return data;
 }
 
@@ -48,16 +56,48 @@ afterEach(() => {
 
 describe('image actions', () => {
   it.each([
-    ['commit', () => commitListingImageAction(ID, MEDIA)],
+    ['commit', () => commitListingImageAction(ID, MEDIA, 'DEALER')],
     ['replace', () => replaceListingImageAction(ID, MEDIA, NEW)],
     ['remove', () => removeListingImageAction(form())],
     ['reorder', () => reorderListingImagesAction(form())],
     ['primary', () => setPrimaryImageAction(form())],
+    ['credit', () => setImageCreditAction(creditForm('DEALER'))],
+    ['all credits', () => setAllImageCreditsAction(ID, 'DEALER')],
   ] as const)('invalidates cached public galleries after %s', async (_name, action) => {
     respond();
     await action();
     expect(revalidations.tags).toContain('vehicles');
     expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+  });
+
+  it('sends who took the photograph at commit and when correcting it', async () => {
+    const fetch = respond();
+    expect(await commitListingImageAction(ID, MEDIA, 'DEALER')).toEqual({ ok: true });
+    expect(fetch.mock.calls[0]![0]).toContain(`/images/${MEDIA}/commit`);
+    expect(JSON.parse(fetch.mock.calls[0]![1]?.body as string)).toEqual({ credit: 'DEALER' });
+
+    await setImageCreditAction(creditForm('DEALERS_DRIVE'));
+    expect(fetch.mock.calls[1]![0]).toContain(`/images/${MEDIA}/credit`);
+    expect(fetch.mock.calls[1]![1]?.method).toBe('PUT');
+    expect(JSON.parse(fetch.mock.calls[1]![1]?.body as string)).toEqual({
+      credit: 'DEALERS_DRIVE',
+    });
+  });
+
+  it('sends no correction for an unknown photographer or a malformed id', async () => {
+    const fetch = respond();
+    await setImageCreditAction(creditForm('STUDIO'));
+    const bad = creditForm('DEALER');
+    bad.set('mediaId', '../../dealer');
+    await setImageCreditAction(bad);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('turns an unreachable API into an error on correction, but not a refusal', async () => {
+    globalThis.fetch = vi.fn<typeof fetch>().mockRejectedValue(new Error('down'));
+    await expect(setImageCreditAction(creditForm('DEALER'))).rejects.toThrow(/unavailable/);
+    respond(409);
+    await expect(setImageCreditAction(creditForm('DEALER'))).resolves.toBeUndefined();
   });
 
   it('sends replacement intent at presign and the new media ID at replace', async () => {
@@ -79,7 +119,7 @@ describe('image actions', () => {
   });
 
   it.each([
-    ['commit', () => commitListingImageAction(ID, MEDIA)],
+    ['commit', () => commitListingImageAction(ID, MEDIA, 'DEALER')],
     ['replace', () => replaceListingImageAction(ID, MEDIA, NEW)],
     ['remove', () => removeListingImageAction(form())],
   ] as const)(
@@ -95,5 +135,29 @@ describe('image actions', () => {
     const fetch = respond();
     expect(await replaceListingImageAction(ID, MEDIA, 'bad')).toMatchObject({ ok: false });
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('marks every image at once with one PUT', async () => {
+    const fetch = respond();
+    expect(await setAllImageCreditsAction(ID, 'DEALERS_DRIVE')).toEqual({ ok: true });
+    expect(fetch.mock.calls[0]![0]).toContain(`/v1/admin/listings/${ID}/images/credit`);
+    expect(fetch.mock.calls[0]![1]?.method).toBe('PUT');
+    expect(JSON.parse(fetch.mock.calls[0]![1]?.body as string)).toEqual({
+      credit: 'DEALERS_DRIVE',
+    });
+  });
+
+  it('refuses a malformed listing or credit without a request, and reports an API refusal', async () => {
+    const fetch = respond();
+    expect((await setAllImageCreditsAction('../../dealer', 'DEALER')).ok).toBe(false);
+    expect((await setAllImageCreditsAction(ID, 'STUDIO' as 'DEALER')).ok).toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+
+    respond(409);
+    expect(await setAllImageCreditsAction(ID, 'DEALER')).toMatchObject({
+      ok: false,
+      message: 'Keep 6 photos.',
+    });
+    expect(revalidations.tags).not.toContain('vehicles');
   });
 });

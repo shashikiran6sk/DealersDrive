@@ -23,7 +23,7 @@ export const LANDING_TEXT = {
   description: (naming: LandingNaming, count: number) =>
     `${countLabel(count, 'used car')} for sale in ${naming.place}${
       naming.label ? ` — ${naming.label}` : ''
-    }, from verified independent dealerships on Dealers-Drive. Every car is photographed by Dealers-Drive and reviewed before it goes live.`,
+    }, from verified independent dealerships on Dealers-Drive. Every listing is reviewed and its photographs checked against the Dealers-Drive photo standard.`,
   related: (place: string) => `More used cars around ${place}`,
   searchesIn: (place: string) => `Popular searches in ${place}`,
   townsIn: (district: string) => `Towns in ${district} district`,

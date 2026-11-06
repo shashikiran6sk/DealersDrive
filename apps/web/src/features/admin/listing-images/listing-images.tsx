@@ -1,12 +1,17 @@
 'use client';
 
-import { IMAGE_MIME_TYPES } from '@dealers-drive/contracts';
+import { IMAGE_MIME_TYPES, type PhotoCredit } from '@dealers-drive/contracts';
 import { useRef, useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
-import { removeListingImageAction } from '@/features/admin/listing-actions';
+import {
+  removeListingImageAction,
+  setAllImageCreditsAction,
+} from '@/features/admin/listing-actions';
 
+import { CreditChoice } from './credit-choice';
 import { ImageTile } from './image-tile';
+import { MarkAllCredit } from './mark-all-credit';
 import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 import type { ListingImagesProps, UploadProgress } from './listing-images.types';
 import { moved, uploadOne } from './utils';
@@ -19,12 +24,15 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
   const [progress, setProgress] = useState<UploadProgress | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [credit, setCredit] = useState<PhotoCredit | null>(null);
+  const [marking, setMarking] = useState<PhotoCredit | null>(null);
 
   const count = images.items.length;
   const order = images.items.map((image) => image.mediaId);
   const room = Math.max(images.max - count, 0);
   const missing = Math.max(images.min - count, 0);
-  const busy = removing || progress !== null;
+  const busy = removing || progress !== null || marking !== null;
+  const uncredited = images.items.filter((image) => image.credit === null).length;
 
   async function replace(file: File): Promise<void> {
     const target = replacementTarget.current;
@@ -33,7 +41,7 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
     setNotice(null);
     setProgress({ done: 0, total: 1 });
     try {
-      const problem = await uploadOne(listingId, file, target);
+      const problem = await uploadOne(listingId, file, { replacesMediaId: target });
       setErrors(problem ? [problem] : []);
       if (!problem) setNotice(LISTING_IMAGES_TEXT.replaced);
     } finally {
@@ -58,7 +66,20 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
     }
   }
 
-  async function upload(files: File[]): Promise<void> {
+  async function markAll(chosen: PhotoCredit): Promise<void> {
+    setMarking(chosen);
+    setErrors([]);
+    setNotice(null);
+    try {
+      const result = await setAllImageCreditsAction(listingId, chosen);
+      if (!result.ok) setErrors([result.message ?? LISTING_IMAGES_TEXT.markAllFailed]);
+      else setNotice(LISTING_IMAGES_TEXT.markedAll(count, chosen));
+    } finally {
+      setMarking(null);
+    }
+  }
+
+  async function upload(files: File[], chosen: PhotoCredit): Promise<void> {
     setErrors([]);
     setNotice(null);
     const accepted = files.slice(0, room);
@@ -66,7 +87,7 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
 
     for (const [index, file] of accepted.entries()) {
       setProgress({ done: index, total: accepted.length });
-      const problem = await uploadOne(listingId, file);
+      const problem = await uploadOne(listingId, file, { credit: chosen });
       if (problem) problems.push(problem);
     }
 
@@ -93,6 +114,23 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
 
       {live && images.canEdit ? (
         <p className="text-[12px] ink-subtle">{LISTING_IMAGES_TEXT.liveHint(images.min)}</p>
+      ) : null}
+
+      {uncredited > 0 && images.canEdit ? (
+        <p className="text-[12px] text-(--color-warn)">
+          {LISTING_IMAGES_TEXT.creditUnknownHint(uncredited)}
+        </p>
+      ) : null}
+
+      {images.canEdit ? (
+        <MarkAllCredit
+          items={images.items}
+          disabled={busy}
+          marking={marking}
+          onMark={(chosen) => {
+            void markAll(chosen);
+          }}
+        />
       ) : null}
 
       {errors.length > 0 ? (
@@ -155,22 +193,28 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
             onChange={(event) => {
               const files = Array.from(event.target.files ?? []);
               event.target.value = '';
-              if (files.length > 0) void upload(files);
+              if (files.length > 0 && credit) void upload(files, credit);
             }}
           />
           {room === 0 ? (
             <p className="text-[12px] ink-subtle">{LISTING_IMAGES_TEXT.full(images.max)}</p>
           ) : (
-            <button
-              type="button"
-              className="btn btn-secondary self-start text-[12px]"
-              disabled={busy}
-              onClick={() => input.current?.click()}
-            >
-              {progress
-                ? LISTING_IMAGES_TEXT.uploading(progress.done, progress.total)
-                : LISTING_IMAGES_TEXT.upload}
-            </button>
+            <>
+              <CreditChoice value={credit} disabled={busy} onChange={setCredit} />
+              {credit ? null : (
+                <p className="text-[12px] ink-subtle">{LISTING_IMAGES_TEXT.creditNeeded}</p>
+              )}
+              <button
+                type="button"
+                className="btn btn-secondary self-start text-[12px]"
+                disabled={busy || credit === null}
+                onClick={() => input.current?.click()}
+              >
+                {progress
+                  ? LISTING_IMAGES_TEXT.uploading(progress.done, progress.total)
+                  : LISTING_IMAGES_TEXT.upload}
+              </button>
+            </>
           )}
         </>
       ) : (

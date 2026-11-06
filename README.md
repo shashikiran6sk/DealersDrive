@@ -25,7 +25,7 @@
 ## Introduction
 
 Dealers-Drive is a B2B2C used-car marketplace. Independent dealerships in Tamil
-Nadu put their inventory online with verified photographs and details; buyers
+Nadu put their inventory online with reviewed photographs and details; buyers
 search by district, compare, save cars and send an enquiry straight to the
 dealer; an admin console approves every dealership and every listing before it
 goes public.

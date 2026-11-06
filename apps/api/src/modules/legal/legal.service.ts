@@ -1,4 +1,5 @@
 import {
+  LEGAL_ACCEPTED_TERMS_VERSIONS,
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,
   LEGAL_REQUIRED,
@@ -32,12 +33,15 @@ export function legalRequired(): ForbiddenError {
   );
 }
 
+const STILL_ACCEPTED = {
+  termsVersion: { in: [...LEGAL_ACCEPTED_TERMS_VERSIONS] },
+  privacyVersion: LEGAL_PRIVACY_VERSION,
+};
+
 export async function hasDealerAcceptance(db: Db, dealerId: string): Promise<boolean> {
   return Boolean(
-    await db.legalAcceptance.findUnique({
-      where: {
-        subjectKey_termsVersion_privacyVersion: { subjectKey: `DEALER:${dealerId}`, ...VERSIONS },
-      },
+    await db.legalAcceptance.findFirst({
+      where: { subjectKey: `DEALER:${dealerId}`, ...STILL_ACCEPTED },
     }),
   );
 }
@@ -52,7 +56,7 @@ async function hasPersonalAcceptance(db: Db, userId: string): Promise<boolean> {
     await db.legalAcceptance.findFirst({
       where: {
         dealerId: null,
-        ...VERSIONS,
+        ...STILL_ACCEPTED,
         user: { OR: [{ id: userId }, { mergedIntoId: userId }] },
       },
     }),

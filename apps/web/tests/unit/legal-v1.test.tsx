@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   LEGAL_CHECKBOX_TEXT,
   TERMS_V1,
+  TERMS_V1_1,
   PRIVACY_V1,
   type AuthSession,
 } from '@dealers-drive/contracts';
@@ -65,7 +66,7 @@ const status = (accepted = false, canAccept = true) => ({
   enabled: true,
   accepted,
   canAccept,
-  termsVersion: 'terms-v1.0',
+  termsVersion: 'terms-v1.1',
   privacyVersion: 'privacy-v1.0',
 });
 
@@ -264,14 +265,18 @@ describe('dealer acceptance before documents', () => {
 });
 
 describe('two public legal documents', () => {
-  it.each([TERMS_V1, PRIVACY_V1])(
-    'renders $title with version, semantic headings and effective-date status without a session',
-    (document) => {
+  it.each([
+    [TERMS_V1, '2026-10-24'],
+    [TERMS_V1_1, '2026-11-06'],
+    [PRIVACY_V1, '2026-10-24'],
+  ] as const)(
+    'renders the document with version, semantic headings and effective-date status without a session',
+    (document, effective) => {
       render(<LegalDocument document={document} />);
       expect(screen.getByRole('article')).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 1, name: document.title })).toBeInTheDocument();
       expect(screen.getByText(document.version)).toBeInTheDocument();
-      expect(screen.getByText(/Effective date:/)).toHaveTextContent('2026-10-24');
+      expect(screen.getByText(/Effective date:/)).toHaveTextContent(effective);
       expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(
         document.sections.length + 1,
       );
@@ -283,7 +288,7 @@ describe('two public legal documents', () => {
     expect(PrivacyPage()).toBeTruthy();
     expect(termsMetadata().alternates?.canonical).toMatch(/\/terms$/);
     expect(privacyMetadata().alternates?.canonical).toMatch(/\/privacy$/);
-    expect(termsMetadata().description).toBe(TERMS_V1.description);
+    expect(termsMetadata().description).toBe(TERMS_V1_1.description);
     const urls = buildSitemap(
       { vehicles: [], dealers: [] },
       { districts: [], total: 0, cars: { total: 0, districts: {} } },
@@ -298,5 +303,16 @@ describe('two public legal documents', () => {
     expect(PrivacyPage()).toBeTruthy();
     expect(await legalStatus('CUSTOMER')).toBeNull();
     expect(api.parsed).not.toHaveBeenCalled();
+  });
+});
+
+describe('Terms version 1.1 (vehicle photography)', () => {
+  it('publishes 1.1 at /terms, says what changed, and no longer claims Dealers-Drive photographs every car', () => {
+    vi.stubEnv('APP_ENV', 'local');
+    render(TermsPage());
+    expect(screen.getByText('terms-v1.1')).toBeInTheDocument();
+    expect(screen.getByText(TERMS_V1_1.changeSummary)).toBeInTheDocument();
+    expect(screen.queryByText(/We currently photograph vehicles/)).not.toBeInTheDocument();
+    expect(screen.getByText(/taken either by us or by the dealership/)).toBeInTheDocument();
   });
 });

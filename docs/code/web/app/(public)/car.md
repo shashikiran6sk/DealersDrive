@@ -70,6 +70,16 @@ only when pressed ([features/enquiry](../../features/enquiry.md)), and
 button, so the page stays static and one cached copy serves every visitor. The
 bottom padding grows below `lg` by the height of the pinned Enquire bar.
 
+### The gallery column and `<PhotoCredit />`
+
+The gallery and the photo credit share one column wrapper (`flex-col`, 12px
+gap) so the credit reads as the gallery's caption rather than as the next
+section, which sits 26px below. The wrapper used to be `lg:contents`, which
+dissolved it into the left column; with only the gallery inside, that made no
+difference, but with two children it would have put the section gap between a
+photograph and its caption. The credit is left out when the car has no
+photographs. See [photo-credit](../../components/vehicle/photo-credit.md).
+
 ### `vehicleRelatedSearches(vehicle)` and `<RelatedSearches heading="Find more cars like this" />`
 
 While `feature.seoLandingPages` is on, the car page links the SEO landing pages

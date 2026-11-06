@@ -248,10 +248,40 @@ export const ListingImageParam = z
   .strict();
 export type ListingImageParam = z.infer<typeof ListingImageParam>;
 
+/**
+ * Who took a vehicle photograph. `DEALERS_DRIVE` is the Dealers-Drive team at
+ * the dealership; `DEALER` is the dealership's own photograph, which an admin
+ * checked against the photo standard before uploading it. The buyer is told
+ * which on the vehicle page, so a dealer's photograph is never passed off as
+ * Dealers-Drive's.
+ */
+export const PhotoCredit = z.enum(['DEALERS_DRIVE', 'DEALER']);
+export type PhotoCredit = z.infer<typeof PhotoCredit>;
+
+export const PHOTO_CREDIT_LABELS: Record<PhotoCredit, string> = {
+  DEALERS_DRIVE: 'Dealers-Drive',
+  DEALER: 'Dealer',
+};
+
+/**
+ * Attaching an uploaded image to the vehicle. `credit` is required: every
+ * image attached from here on says who took it.
+ */
+export const CommitVehicleImageInput = z.object({ credit: PhotoCredit }).strict();
+export type CommitVehicleImageInput = z.infer<typeof CommitVehicleImageInput>;
+
+/**
+ * Replacing one image with another in place. Without `credit` the replacement
+ * keeps the credit of the image it replaces.
+ */
 export const ReplaceVehicleImageInput = z
-  .object({ replacementMediaId: z.string().uuid() })
+  .object({ replacementMediaId: z.string().uuid(), credit: PhotoCredit.optional() })
   .strict();
 export type ReplaceVehicleImageInput = z.infer<typeof ReplaceVehicleImageInput>;
+
+/** Correcting who took an image already attached. */
+export const SetVehicleImageCreditInput = z.object({ credit: PhotoCredit }).strict();
+export type SetVehicleImageCreditInput = z.infer<typeof SetVehicleImageCreditInput>;
 
 /**
  * The gallery order an admin wants (**F035** as reinterpreted by **R45**):
@@ -285,6 +315,8 @@ export const AdminVehicleImage = z.object({
   bytes: z.number().int(),
   width: z.number().int().nullable(),
   height: z.number().int().nullable(),
+  /** Null for an image attached before credit was recorded. */
+  credit: PhotoCredit.nullable(),
   uploadedAt: z.string(),
 });
 export type AdminVehicleImage = z.infer<typeof AdminVehicleImage>;

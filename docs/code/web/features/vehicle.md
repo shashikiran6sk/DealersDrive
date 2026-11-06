@@ -7,8 +7,9 @@ declaration the note sits above.
 
 The dealer's add / edit vehicle wizard (**F060**, **F061**, **F063**, as revised
 by **R45** and **R46**): Registration → Vehicle basics → Vehicle details →
-Pricing → Review. It has **no Photos step** — Dealers-Drive photographs every
-car itself and an admin uploads the processed images — and **no lookup**: every
+Pricing → Review. It has **no Photos step** — Dealers-Drive either photographs
+the car or checks the dealership's own photographs against the photo standard,
+and an admin uploads the processed images — and **no lookup**: every
 field is typed by the dealer.
 
 ## `apps/web/src/features/vehicle/actions.ts`
@@ -87,8 +88,9 @@ full-width on a phone.
 ### `export function SubmittedPanel({ doneHref }: { doneHref: string })`
 
 DESIGN-SPEC §3.14's _Submitted_ screen: a blueprint card with the `Pending
-review` tag and what happens next — the team checks the details and arranges a
-photo shoot. It is reached through `?submitted=1` on the same edit URL and only
+review` tag and what happens next — the team checks the details and sorts out
+the photographs: a photo shoot at the yard, or a check of the dealer's own
+photographs against the photo standard. It is reached through `?submitted=1` on the same edit URL and only
 renders while the listing really is PENDING_REVIEW, so a stale or hand-typed
 link shows the vehicle as it is instead.
 

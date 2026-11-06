@@ -13,6 +13,7 @@ export function toAdminVehicleImage(row: ImageRow, url: string): AdminVehicleIma
     bytes: row.media.bytes,
     width: row.media.width,
     height: row.media.height,
+    credit: row.credit,
     uploadedAt: row.createdAt.toISOString(),
   };
 }
