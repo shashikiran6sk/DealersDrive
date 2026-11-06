@@ -8,6 +8,7 @@ import {
 import { failureMessage, fileRejection, putToStorage } from '@/lib/upload';
 
 import { IMAGE_RULE, LISTING_IMAGES_TEXT } from './listing-images.constants';
+import type { UploadTarget } from './listing-images.types';
 
 export function moved(order: string[], index: number, delta: -1 | 1): string[] | null {
   const target = index + delta;
@@ -22,8 +23,9 @@ export function moved(order: string[], index: number, delta: -1 | 1): string[] |
 export async function uploadOne(
   listingId: string,
   file: File,
-  replacesMediaId?: string,
+  target: UploadTarget,
 ): Promise<string | null> {
+  const replacesMediaId = 'replacesMediaId' in target ? target.replacesMediaId : undefined;
   const rejection = fileRejection(file, IMAGE_RULE);
   if (rejection) return LISTING_IMAGES_TEXT.fileRefused(file.name, rejection);
 
@@ -48,9 +50,10 @@ export async function uploadOne(
     );
   }
 
-  const committed = replacesMediaId
-    ? await replaceListingImageAction(listingId, replacesMediaId, upload.mediaId)
-    : await commitListingImageAction(listingId, upload.mediaId);
+  const committed =
+    'replacesMediaId' in target
+      ? await replaceListingImageAction(listingId, target.replacesMediaId, upload.mediaId)
+      : await commitListingImageAction(listingId, upload.mediaId, target.credit);
   if (!committed.ok) {
     return LISTING_IMAGES_TEXT.fileFailed(file.name, committed.message ?? '');
   }

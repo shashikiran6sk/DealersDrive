@@ -7,8 +7,9 @@ declaration the note sits above.
 
 The dealer's add / edit vehicle wizard (**F060**, **F061**, **F063**, as revised
 by **R45** and **R46**): Registration → Vehicle basics → Vehicle details →
-Pricing → Review. It has **no Photos step** — Dealers-Drive photographs every
-car itself and an admin uploads the processed images — and **no lookup**: every
+Pricing → Review. It has **no Photos step** — Dealers-Drive either photographs
+the car or checks the dealership's own photographs against the photo standard,
+and an admin uploads the processed images — and **no lookup**: every
 field is typed by the dealer.
 
 ## `apps/web/src/features/vehicle/actions.ts`

@@ -95,6 +95,15 @@ The gallery is every attached image in the admin's order, with `primaryIndex`
 naming the one to open on; order and primary are separate decisions (F035), and
 the page honours both. Images are the public media route at 1024 px wide.
 
+`photoCredit` is `summarisePhotoCredit` (contracts) over every image's `credit`:
+one photographer when they all agree, `MIXED` when both took some, and `null`
+when there are none or **any** image is unrecorded. The last rule is the
+important one. A car with one unrecorded image among Dealers-Drive's might still
+have a dealer's photograph in it, and "Photographed by Dealers-Drive" would then
+be a false claim on a public page, so the page claims no photographer until an
+admin has said who took every image. The credit is per image rather than per
+listing because a dealer's set is sometimes topped up with the team's shots.
+
 The registration is shown only as its RTO ("TN 23"). The full number identifies
 an owner, not a car, and nothing about deciding to enquire needs it. As on the
 card, there is no phone number: rule 7 keeps it behind the rate-limited reveal

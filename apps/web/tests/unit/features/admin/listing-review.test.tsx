@@ -130,6 +130,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
           bytes: 1_284_512,
           width: 2400,
           height: 1800,
+          credit: 'DEALERS_DRIVE',
           uploadedAt: '2026-09-26T10:00:00.000Z',
         },
         {
@@ -142,6 +143,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
           bytes: 1_104_220,
           width: 2400,
           height: 1800,
+          credit: 'DEALERS_DRIVE',
           uploadedAt: '2026-09-26T10:01:00.000Z',
         },
       ],
@@ -495,20 +497,24 @@ describe('the image actions', () => {
     expect(full).toEqual({ ok: false, message: 'A vehicle can carry at most 20 images.' });
 
     apiSend.mockRejectedValueOnce(new Error('down'));
-    const down = await commitListingImageAction(ID, MEDIA);
+    const down = await commitListingImageAction(ID, MEDIA, 'DEALERS_DRIVE');
     expect(down.ok).toBe(false);
     expect(down.message).toMatch(/unavailable/);
   });
 
   it('commits an upload by its ids and refuses ids that are not uuids', async () => {
     apiSend.mockResolvedValue({});
-    expect(await commitListingImageAction(ID, MEDIA)).toEqual({ ok: true });
+    expect(await commitListingImageAction(ID, MEDIA, 'DEALERS_DRIVE')).toEqual({ ok: true });
     expect(revalidations.paths).toEqual(
       expect.arrayContaining([`/admin/listings/${ID}`, '/admin/listings']),
     );
-    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/images/${MEDIA}/commit`);
+    expect(apiSend).toHaveBeenCalledWith(
+      'POST',
+      `/v1/admin/listings/${ID}/images/${MEDIA}/commit`,
+      { credit: 'DEALERS_DRIVE' },
+    );
 
-    expect((await commitListingImageAction(ID, '../../dealer')).ok).toBe(false);
+    expect((await commitListingImageAction(ID, '../../dealer', 'DEALERS_DRIVE')).ok).toBe(false);
     expect(apiSend).toHaveBeenCalledTimes(1);
   });
 

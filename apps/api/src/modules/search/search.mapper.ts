@@ -14,6 +14,7 @@ import {
   initialsOf,
   ownerLabel,
   publicAvailabilityOf,
+  summarisePhotoCredit,
   vehicleSummary,
   vehicleTitle,
   type PublicVehicleDetail,
@@ -108,6 +109,7 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
       alt: GALLERY_ALT(title, index, total),
     })),
     primaryIndex,
+    photoCredit: summarisePhotoCredit(vehicle.images.map((image) => image.credit)),
     publishedLabel: row.publishedAt ? PUBLISHED(formatDate(row.publishedAt)) : null,
     facts: factsOf(vehicle),
     dealer: {

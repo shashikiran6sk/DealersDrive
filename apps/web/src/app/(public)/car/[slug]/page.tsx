@@ -9,6 +9,7 @@ import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
+import { PhotoCredit } from '@/components/vehicle/photo-credit';
 import { PriceBlock } from '@/components/vehicle/price-block';
 import { SaveButton } from '@/components/vehicle/save-button';
 import { SimilarVehicles } from '@/components/vehicle/similar-vehicles';
@@ -135,13 +136,16 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">
         <div className="flex min-w-0 flex-col gap-[26px] max-lg:contents">
-          <div className="min-w-0 max-lg:order-1 lg:contents">
+          <div className="flex min-w-0 flex-col gap-[12px] max-lg:order-1">
             <PhotoGallery
               title={vehicle.title}
               photos={vehicle.images}
               startIndex={vehicle.primaryIndex}
               variant="studio"
             />
+            {vehicle.images.length > 0 ? (
+              <PhotoCredit credit={vehicle.photoCredit} dealerName={vehicle.dealer.name} />
+            ) : null}
           </div>
 
           <section

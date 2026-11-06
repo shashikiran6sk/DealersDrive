@@ -1,5 +1,7 @@
 import {
+  CommitVehicleImageInput,
   ListingImageParam,
+  type CommitVehicleImageInput as CommitVehicleImageInputType,
   type ListingImageParam as ListingImageParamType,
 } from '@dealers-drive/contracts';
 
@@ -12,10 +14,13 @@ export const postListingImageCommit: VehicleImagesRoute = (router, service) => {
   router.post(
     '/listings/:id/images/:mediaId/commit',
     requirePermission('admin:media:upload'),
-    validate({ params: ListingImageParam }),
+    validate({ params: ListingImageParam, body: CommitVehicleImageInput }),
     handle((req) => {
       const params = validated<ListingImageParamType>(req, 'params');
-      return service.commit(adminPrincipal(req), params.id, params.mediaId);
+      const body = validated<CommitVehicleImageInputType>(req, 'body');
+      return service.commit(adminPrincipal(req), params.id, params.mediaId, {
+        credit: body.credit,
+      });
     }),
   );
 };

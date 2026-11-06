@@ -28,6 +28,7 @@ const PNG = Buffer.concat([
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
   Buffer.from('a car'),
 ]);
+const DD = { credit: 'DEALERS_DRIVE' } as const;
 const NOT_AN_IMAGE = Buffer.from('#!/bin/sh\necho definitely a jpeg\n');
 
 interface Submitted {
@@ -77,7 +78,10 @@ async function upload(
 ): Promise<request.Response> {
   const signed = await presign(listingId, body, mimeType);
   await put(signed.uploadUrl, body, mimeType);
-  return admin.post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`).expect(200);
+  return admin
+    .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+    .send(DD)
+    .expect(200);
 }
 
 beforeAll(async () => {
@@ -109,6 +113,7 @@ describe('uploading an image', () => {
     await put(signed.uploadUrl, JPEG);
     const first = await admin
       .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
       .expect(200);
     expect(first.headers['cache-control']).toBe('no-store');
     expect(first.body).toMatchObject({ min: 6, max: VEHICLE_IMAGE_MAX, canEdit: true });
@@ -167,8 +172,8 @@ describe('uploading an image', () => {
     await put(signed.uploadUrl, JPEG);
     const commit = `/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`;
 
-    await admin.post(commit).expect(200);
-    const again = await admin.post(commit).expect(200);
+    await admin.post(commit).send(DD).expect(200);
+    const again = await admin.post(commit).send(DD).expect(200);
     expect(again.body.items).toHaveLength(1);
   });
 
@@ -178,7 +183,7 @@ describe('uploading an image', () => {
     await put(signed.uploadUrl, JPEG);
     const commit = `/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`;
 
-    const results = await Promise.all([admin.post(commit), admin.post(commit)]);
+    const results = await Promise.all([admin.post(commit).send(DD), admin.post(commit).send(DD)]);
     expect(results.map((result) => result.status)).toEqual([200, 200]);
     expect(await h.prisma.vehicleMedia.count({ where: { vehicleId } })).toBe(1);
   });
@@ -192,6 +197,7 @@ describe('what an upload must be', () => {
 
     const refused = await admin
       .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
       .expect(422);
     expect(refused.body.code).toBe('UPLOAD_NOT_IMAGE');
 
@@ -207,6 +213,7 @@ describe('what an upload must be', () => {
 
     const refused = await admin
       .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
       .expect(422);
     expect(refused.body.code).toBe('UPLOAD_NOT_IMAGE');
   });
@@ -217,6 +224,7 @@ describe('what an upload must be', () => {
 
     const refused = await admin
       .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
       .expect(422);
     expect(refused.body.code).toBe('UPLOAD_MISSING');
   });
@@ -245,6 +253,7 @@ describe('what an upload must be', () => {
 
     const refused = await admin
       .post(`/v1/admin/listings/${other.listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
       .expect(404);
     expect(refused.body.code).toBe('UPLOAD_NOT_FOUND');
     expect(await h.prisma.vehicleMedia.count({ where: { vehicleId: other.vehicleId } })).toBe(0);
@@ -265,7 +274,10 @@ describe('what an upload must be', () => {
       },
     });
 
-    await admin.post(`/v1/admin/listings/${listingId}/images/${yard.id}/commit`).expect(404);
+    await admin
+      .post(`/v1/admin/listings/${listingId}/images/${yard.id}/commit`)
+      .send(DD)
+      .expect(404);
   });
 
   it(`stops at ${String(VEHICLE_IMAGE_MAX)} images`, async () => {
@@ -709,7 +721,10 @@ describe('editing live galleries', () => {
         .send({ replacementMediaId: newId })
         .expect(409);
       expect(replaced.body.code).toBe('IMAGES_CLOSED');
-      await admin.post(`/v1/admin/listings/${listingId}/images/${newId}/commit`).expect(409);
+      await admin
+        .post(`/v1/admin/listings/${listingId}/images/${newId}/commit`)
+        .send(DD)
+        .expect(409);
       await admin.delete(`/v1/admin/listings/${listingId}/images/${ids[0]!}`).expect(409);
       await admin
         .put(`/v1/admin/listings/${listingId}/images/order`)
@@ -792,7 +807,7 @@ describe('editing live galleries', () => {
       },
       listingId,
       newId,
-      old.id,
+      { replacesMediaId: old.id },
     );
     expect(result.items[0]?.mediaId).toBe(newId);
     expect(attempted).toEqual([old.storageKey, variant]);
@@ -835,12 +850,119 @@ describe('editing live galleries', () => {
         },
         listingId,
         newId,
-        ids[0],
+        { replacesMediaId: ids[0] },
       ),
     ).rejects.toMatchObject({ code: 'IMAGES_CLOSED' });
     expect(await h.prisma.vehicleMedia.count({ where: { mediaId: ids[0] } })).toBe(1);
     expect((await h.prisma.media.findUniqueOrThrow({ where: { id: newId } })).status).toBe(
       'PENDING',
     );
+  });
+});
+
+describe('who took the photograph', () => {
+  async function staged(listingId: string, replacesMediaId?: string): Promise<string> {
+    const signed = await admin
+      .post(`/v1/admin/listings/${listingId}/images/presign`)
+      .send({
+        fileName: 'dealer.jpg',
+        mimeType: 'image/jpeg',
+        bytes: JPEG.length,
+        ...(replacesMediaId ? { replacesMediaId } : {}),
+      })
+      .expect(201);
+    await put(signed.body.uploadUrl as string, JPEG);
+    return signed.body.mediaId as string;
+  }
+
+  it('refuses to attach an image without saying who took it', async () => {
+    const { listingId } = await submitted();
+    const mediaId = await staged(listingId);
+    const commit = `/v1/admin/listings/${listingId}/images/${mediaId}/commit`;
+
+    const missing = await admin.post(commit).send({}).expect(400);
+    expect(JSON.stringify(missing.body)).toContain('credit');
+    await admin.post(commit).send({ credit: 'STUDIO' }).expect(400);
+    await admin.post(commit).send({ credit: 'DEALER', dealerId: a.dealerId }).expect(400);
+    expect(await h.prisma.vehicleMedia.count({ where: { mediaId } })).toBe(0);
+  });
+
+  it('records the credit on the image, in the gallery and in the audit trail', async () => {
+    const { listingId, vehicleId } = await submitted();
+    const mediaId = await staged(listingId);
+
+    const response = await admin
+      .post(`/v1/admin/listings/${listingId}/images/${mediaId}/commit`)
+      .send({ credit: 'DEALER' })
+      .expect(200);
+
+    expect(response.body.items).toEqual([expect.objectContaining({ mediaId, credit: 'DEALER' })]);
+    const audit = await h.prisma.auditLog.findFirstOrThrow({
+      where: { entityId: vehicleId, action: 'vehicle.image_added' },
+    });
+    expect(audit.after).toMatchObject({ mediaId, credit: 'DEALER' });
+  });
+
+  it('keeps the old credit on a replacement unless told otherwise', async () => {
+    const { listingId, vehicleId } = await submitted();
+    const [first, second] = await seedImages(
+      h.prisma,
+      { vehicleId, dealerId: a.dealerId },
+      2,
+      'DEALER',
+    );
+
+    const kept = await staged(listingId, first);
+    const afterKeep = await admin
+      .post(`/v1/admin/listings/${listingId}/images/${first!}/replace`)
+      .send({ replacementMediaId: kept })
+      .expect(200);
+    expect(afterKeep.body.items[0]).toMatchObject({ mediaId: kept, credit: 'DEALER' });
+
+    const changed = await staged(listingId, second);
+    const afterChange = await admin
+      .post(`/v1/admin/listings/${listingId}/images/${second!}/replace`)
+      .send({ replacementMediaId: changed, credit: 'DEALERS_DRIVE' })
+      .expect(200);
+    expect(afterChange.body.items[1]).toMatchObject({ mediaId: changed, credit: 'DEALERS_DRIVE' });
+  });
+
+  it('lets an admin correct the credit, on a live listing too, auditing only a change', async () => {
+    const { listingId, vehicleId } = await submitted();
+    const [mediaId] = await seedImages(h.prisma, { vehicleId, dealerId: a.dealerId }, 1);
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'ACTIVE' } });
+    const route = `/v1/admin/listings/${listingId}/images/${mediaId!}/credit`;
+
+    const first = await admin.put(route).send({ credit: 'DEALER' }).expect(200);
+    expect(first.headers['cache-control']).toBe('no-store');
+    expect(first.body.items[0]).toMatchObject({ mediaId, credit: 'DEALER' });
+    await admin.put(route).send({ credit: 'DEALER' }).expect(200);
+
+    const audits = await h.prisma.auditLog.findMany({
+      where: { entityId: vehicleId, action: 'vehicle.image_credit_set' },
+    });
+    expect(audits).toHaveLength(1);
+    expect(audits[0]?.before).toMatchObject({ mediaId, credit: null });
+    expect(audits[0]?.after).toMatchObject({ listingId, mediaId, credit: 'DEALER' });
+  });
+
+  it('refuses a correction that is unknown, for another vehicle, or on a closed listing', async () => {
+    const { listingId, vehicleId } = await submitted();
+    const [mediaId] = await seedImages(h.prisma, { vehicleId, dealerId: a.dealerId }, 1);
+    const other = await submitted(b);
+    const route = `/v1/admin/listings/${listingId}/images/${mediaId!}/credit`;
+
+    await admin.put(route).send({}).expect(400);
+    await admin.put(route).send({ credit: 'DEALER', extra: true }).expect(400);
+    await admin
+      .put(`/v1/admin/listings/${other.listingId}/images/${mediaId!}/credit`)
+      .send({ credit: 'DEALER' })
+      .expect(404);
+    await a.agent.put(route).send({ credit: 'DEALER' }).expect(401);
+
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'SOLD' } });
+    await admin.put(route).send({ credit: 'DEALER' }).expect(409);
+    const row = await h.prisma.vehicleMedia.findUniqueOrThrow({ where: { mediaId: mediaId! } });
+    expect(row.credit).toBeNull();
   });
 });

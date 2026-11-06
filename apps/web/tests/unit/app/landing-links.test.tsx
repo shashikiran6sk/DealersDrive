@@ -37,6 +37,7 @@ const CAR: PublicVehicleDetail = {
   specs: [],
   images: [],
   primaryIndex: 0,
+  photoCredit: 'DEALERS_DRIVE',
   publishedLabel: null,
   facts: {
     make: 'Hyundai',

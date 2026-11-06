@@ -8,8 +8,8 @@ export const vehiclesDocs: ModuleDocs = {
     'A vehicle starts as a draft created from its registration number and is filled in one ' +
     'wizard step at a time with `PATCH`. Nothing here looks the registration up anywhere: ' +
     'there is no RC, VAHAN or third-party call on this path.\n\n' +
-    '**No photographs.** Dealers-Drive photographs every car itself and an admin uploads the ' +
-    'processed images (**R45**), so no schema on this router accepts an image, a media id or a ' +
+    '**No photographs.** An admin uploads every vehicle image (**R45**) — the Dealers-Drive ' +
+    'team’s, or the dealership’s once checked against the photo standard — so no schema on this router accepts an image, a media id or a ' +
     'storage key, and none accepts a status or a dealer id. Each of those is a 400 naming the ' +
     'field.\n\n' +
     '**Tenant scope.** Every path is looked up as `{ id, dealerId }` with the dealer id taken ' +
@@ -168,8 +168,9 @@ export const vehiclesDocs: ModuleDocs = {
         '**One car on the marketplace once.** Submitting claims the registration across every ' +
         'dealership; if another dealership already has the same car in review or on sale this is ' +
         'a `409 DUPLICATE_REGISTRATION` that does not say which.\n\n' +
-        'The dealership must be ACTIVE (`403 DEALER_NOT_ACTIVE`). After submission Dealers-Drive ' +
-        'photographs the car (**R45**); no image is ever supplied here.',
+        'The dealership must be ACTIVE (`403 DEALER_NOT_ACTIVE`). After submission an admin adds ' +
+        'the photographs — Dealers-Drive’s or the dealership’s, checked against the photo ' +
+        'standard (**R45**); no image is ever supplied here.',
       audience: 'dealer',
       permission: 'listing:submit',
       requiresActiveDealer: true,

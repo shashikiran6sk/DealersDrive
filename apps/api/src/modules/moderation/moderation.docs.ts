@@ -5,8 +5,9 @@ export const moderationDocs: ModuleDocs = {
   tag: DOC_TAGS.moderation,
   description:
     'Listing moderation (**F069**, **F070**, as revised by **R45** and **R47**).\n\n' +
-    'Dealers submit vehicle data; Dealers-Drive photographs the car, an admin uploads and ' +
-    'orders the processed images, verifies the details and decides. Every route here is ' +
+    'Dealers submit vehicle data; the car is photographed by Dealers-Drive or by the ' +
+    'dealership to the photo standard, an admin uploads and orders the processed images, ' +
+    'records who took them, verifies the details and decides. Every route here is ' +
     'admin-only and requires `admin:listing:moderate` (MODERATOR, SUPER_ADMIN); a dealer ' +
     'session is refused at the mount, whatever it holds.\n\n' +
     'Publication, relisting and reactivation require the dealership owner’s current policy acceptance. Administrative dealership approval alone never records agreement. ' +

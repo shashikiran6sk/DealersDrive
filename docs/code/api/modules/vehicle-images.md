@@ -5,9 +5,11 @@ Parent: [api](../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
-Vehicle images (**R45**; F035 as reinterpreted). Dealers-Drive photographs the
-car, StudioCar processes the pictures, and an admin uploads the finished files
-here. Nothing in this module talks to StudioCar.
+Vehicle images (**R45**; F035 as reinterpreted). The car is photographed by
+the Dealers-Drive team or by the dealership — whose photographs are checked
+against the photo standard first — StudioCar processes the pictures, and an
+admin uploads the finished files here. Nothing in this module talks to
+StudioCar.
 
 ## `apps/api/src/modules/vehicle-images/vehicle-images.service.ts`
 
@@ -27,7 +29,7 @@ before creating anything. The `media` row records `ownerType VEHICLE`,
 `uploadedByAdmin`, and the listing's `dealerId` — the vehicle's tenant, so a
 dealer-scoped query over media still sees what belongs to them.
 
-### `async commit(admin, listingId, mediaId)`
+### `async commit(admin, listingId, mediaId, { credit, replacesMediaId })`
 
 The verification happens here, outside the transaction, because it reads the
 object from storage:
@@ -52,6 +54,19 @@ upload short-circuits the same way — commit is idempotent.
 
 The new image goes at `position = count`; the first image on a vehicle is the
 primary.
+
+`credit` records who took the photograph. The commit route requires it, so every
+image attached from now on says; a replacement without one inherits the credit of
+the image it replaces, because replacing a blurred shot with a sharper one from
+the same shoot is the common case.
+
+### `async setCredit(admin, listingId, mediaId, credit)`
+
+Corrects who took an attached image, and is how an image attached before credit
+was recorded gets one. The public vehicle page states the credit to the buyer,
+so a wrong value is a false claim on a live page — hence a route of its own
+that works on a live listing, rather than a remove-and-upload-again. Setting the
+credit an image already has is a no-op with no audit row, like `setPrimary`.
 
 ### `async remove(admin, listingId, mediaId)`
 

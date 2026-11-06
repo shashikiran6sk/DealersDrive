@@ -7,7 +7,7 @@ export const JOURNEY_STEPS = [
   {
     number: '02',
     title: 'Discover the right car',
-    body: 'Search cars Dealers-Drive has photographed and reviewed by make, model or variant.',
+    body: 'Search reviewed cars, every one photographed to the Dealers-Drive standard, by make, model or variant.',
   },
   {
     number: '03',

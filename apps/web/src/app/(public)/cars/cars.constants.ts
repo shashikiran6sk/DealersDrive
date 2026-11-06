@@ -4,7 +4,7 @@ export const CARS_TEXT = {
   metaTitle: (place: string | undefined, page: number) =>
     `${place ? `Used Cars in ${place}` : 'Used Cars for Sale'}${page > 1 ? ` – Page ${page}` : ''}`,
   metaDescription: (place: string | undefined) =>
-    `Browse used cars for sale${place ? ` in ${place}` : ''} from verified independent dealerships on Dealers-Drive. Every car is photographed by Dealers-Drive and reviewed before it goes live.`,
+    `Browse used cars for sale${place ? ` in ${place}` : ''} from verified independent dealerships on Dealers-Drive. Every listing is reviewed and its photographs checked against the Dealers-Drive photo standard.`,
   listName: (place: string | undefined) => (place ? `Used cars in ${place}` : 'Used cars'),
   breadcrumbLabel: 'Breadcrumb',
   home: 'Home',
@@ -14,7 +14,7 @@ export const CARS_TEXT = {
   count: (total: number) => `${countLabel(total, 'car')} available`,
   emptyTitle: 'No cars listed yet',
   emptyMessage:
-    'Every car here is photographed by Dealers-Drive and reviewed before it goes live. The first ones are on their way — meet the dealers in the meantime.',
+    'Every car here is reviewed before it goes live, with photographs that meet the Dealers-Drive photo standard. The first ones are on their way — meet the dealers in the meantime.',
   emptyAction: 'Browse dealers',
   emptyInTitle: (district: string) => `No cars found in ${district}`,
   emptyInMessage: (district: string) =>

@@ -4,7 +4,7 @@ Parent: [web/features/admin](README.md)
 
 ## `apps/web/src/features/admin/listing-images/listing-images.tsx`
 
-### `export function ListingImages({ listingId, images }: ListingImagesProps)`
+### `export function ListingImages({ listingId, images, live }: ListingImagesProps)`
 
 The admin's upload of the processed StudioCar images (**R45**). It is a client
 component only because it holds a file input and upload progress; everything it
@@ -47,3 +47,22 @@ Removal returns an action result so minimum-photo and other errors appear in
 the gallery. Upload/replacement/removal disable competing gallery controls
 while pending. All successful gallery mutations invalidate public vehicle
 caches in addition to refreshing the admin review page.
+
+### Who took the photographs (`credit-choice.tsx`, `credit-line.tsx`)
+
+Every image says who took it, the Dealers-Drive team or the dealership,
+because the public car page says so to the buyer
+([photo-credit](../../components/vehicle/photo-credit.md)). `CreditChoice` asks
+once per batch, above the Upload button, and has **no default**. Upload stays
+disabled until a choice is made, because a default of "Dealers-Drive" is
+exactly the mistake that would put a false claim on a live page, and a
+default of "dealer" would quietly undersell the team's own work. The choice
+applies to every file in the batch. A replacement sends no credit and keeps
+that of the image it replaces.
+
+`CreditLine` shows each tile's credit and offers the other value as a one-click
+server-action form, the same pattern as _Make primary_, so a wrong credit is
+corrected in place on a live listing rather than by removing and uploading
+again. Images attached before credit was recorded show a warning tag with both
+choices, and the gallery counts them, since until each one is set the car's
+page credits nobody.

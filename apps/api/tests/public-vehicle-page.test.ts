@@ -100,6 +100,7 @@ describe('an approved car', () => {
         'facts',
         'images',
         'negotiabilityLabel',
+        'photoCredit',
         'primaryIndex',
         'priceLabel',
         'publishedLabel',
@@ -191,5 +192,38 @@ describe('everything else is a 404', () => {
     await h.prisma.listing.update({ where: { id: car.listingId }, data: { status: 'WITHDRAWN' } });
     await h.agent().get(path).expect(404);
     await h.agent().get(`/v1/vehicles/${car.slug}`).expect(404);
+  });
+});
+
+describe('who took the photographs', () => {
+  async function credited(credits: ('DEALERS_DRIVE' | 'DEALER')[]) {
+    const car = await kit.published(a, nextPlate());
+    await Promise.all(
+      car.mediaIds.map((mediaId, index) =>
+        h.prisma.vehicleMedia.update({
+          where: { mediaId },
+          data: { credit: credits[index % credits.length] ?? null },
+        }),
+      ),
+    );
+    const { body } = await h.agent().get(`/v1/vehicles/${car.slug}`).expect(200);
+    return PublicVehicleDetail.parse(body).photoCredit;
+  }
+
+  it('claims nobody while any photograph is unrecorded', async () => {
+    const { body } = await h.agent().get(`/v1/vehicles/${live.slug}`).expect(200);
+    expect(body.photoCredit).toBeNull();
+  });
+
+  it('names Dealers-Drive only when the team took every photograph', async () => {
+    expect(await credited(['DEALERS_DRIVE'])).toBe('DEALERS_DRIVE');
+  });
+
+  it('names the dealership when it supplied every photograph', async () => {
+    expect(await credited(['DEALER'])).toBe('DEALER');
+  });
+
+  it('says mixed when both took some', async () => {
+    expect(await credited(['DEALERS_DRIVE', 'DEALER'])).toBe('MIXED');
   });
 });

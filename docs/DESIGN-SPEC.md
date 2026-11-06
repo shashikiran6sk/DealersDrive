@@ -363,7 +363,7 @@ Results: `repeat(auto-fill, minmax(258px,1fr))`, `gap:16px`, vehicle cards (§2.
 
 `max-width:1280px; padding:24px 16px|24px 64px`; back ghost ("← All cars"); grid `1.35fr 1fr`, `gap:30px`.
 
-Left: gallery (§2.9) · Specifications (`h2` 22px + a 14px-radius white list, rows `padding:12px 16px` on `#efefec` rules, key muted / value 600 tabular) · Dealer description.
+Left: gallery (§2.9), with the photo credit 12px under it — a 13px bold line naming the photographer ("Photographed by Dealers-Drive", "Dealer photos · Reviewed by Dealers-Drive", or both by name when mixed), a 13px muted line, and an underlined "Our photo standard" disclosure (omitted when the car has no photographs; names no photographer while any photograph's credit is unrecorded) · Specifications (`h2` 22px + a 14px-radius white list, rows `padding:12px 16px` on `#efefec` rules, key muted / value 600 tabular) · Dealer description.
 
 Right, sticky under the header: year chip (+ Reserved pill when reserved) · `h1-vdp` · summary · listed date · PriceBlock · **Enquire now** (44px full-width `btn-primary`, with "Requires login…" note; the form opens inline in a 16px-radius card with read-only name and verified mobile — R64/R65/R68) or, when reserved, the Reserved banner + "Browse available cars" · **Save / Saved** full-width secondary · dealer card (`.card`, 20px padding: 42px logo tile, name, location, `VERIFIED DEALER` chip, "View dealership →") · trust note.
 
@@ -437,7 +437,7 @@ The prototype's photo cards, views and sort are not drawn — the inventory resp
 
 ### 3.14 Add vehicle
 
-Production's five-step wizard (R45–R47): **Registration → Vehicle basics → Vehicle details → Pricing → Review**, no dealer photo upload (Dealers-Drive arranges photography after submission). `max-width:860px`, `h1-app`, stepper, white `.card` steps with the revamped inputs; footer Back / Save draft / Continue or Submit. RC lookup (step 0 plate lookup, confidence chips, records panel) remains deferred by R46; when it lands it takes this styling.
+Production's five-step wizard (R45–R47): **Registration → Vehicle basics → Vehicle details → Pricing → Review**, no dealer photo upload (after submission Dealers-Drive photographs the car, or checks the dealership's own photographs against the photo standard, and an admin uploads them with who took them). `max-width:860px`, `h1-app`, stepper, white `.card` steps with the revamped inputs; footer Back / Save draft / Continue or Submit. RC lookup (step 0 plate lookup, confidence chips, records panel) remains deferred by R46; when it lands it takes this styling.
 
 Submit → Submitted panel (`.blueprint`, 28px padding) with the pending tag, heading, paragraph and "View inventory".
 

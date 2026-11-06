@@ -3,6 +3,8 @@ import { PublicAvailability } from './listing.js';
 import { z } from 'zod';
 
 import { PublicPortfolioPhoto } from './dealer-portfolio.js';
+import type { PhotoCredit } from './moderation.js';
+
 export const STANDARD_DEALER_COVER_PATH = '/brand/dealer-directory-cover.svg';
 
 /**
@@ -896,6 +898,26 @@ export const NO_VEHICLE_FACETS: VehicleFacets = {
   kilometers: [],
 };
 
+/**
+ * Who photographed a car, as its public page states it. `MIXED` when some
+ * photographs are Dealers-Drive's and some the dealership's. The detail
+ * response carries `null` when there are no photographs or any of them was
+ * attached before credit was recorded — the page then claims neither.
+ */
+export const PhotoCreditSummary = z.enum(['DEALERS_DRIVE', 'DEALER', 'MIXED']);
+export type PhotoCreditSummary = z.infer<typeof PhotoCreditSummary>;
+
+export function summarisePhotoCredit(
+  credits: readonly (PhotoCredit | null)[],
+): PhotoCreditSummary | null {
+  if (credits.length === 0) return null;
+  const known = credits.filter((credit): credit is PhotoCredit => credit !== null);
+  if (known.length !== credits.length) return null;
+  const distinct = new Set(known);
+  if (distinct.size > 1) return 'MIXED';
+  return known[0] ?? null;
+}
+
 export const PublicVehicleImage = z.object({
   /** A public media URL at the card width; never a storage key or bucket. */
   url: z.string(),
@@ -996,6 +1018,8 @@ export const PublicVehicleDetail = z.object({
   images: z.array(PublicVehicleImage),
   /** Index of the primary image in `images`, the one shown first; 0 when empty. */
   primaryIndex: z.number().int(),
+  /** Who took `images`; see `PhotoCreditSummary`. */
+  photoCredit: PhotoCreditSummary.nullable(),
   publishedLabel: z.string().nullable(),
   /**
    * The same facts `specs` prints, as values rather than rows (**SEO**).

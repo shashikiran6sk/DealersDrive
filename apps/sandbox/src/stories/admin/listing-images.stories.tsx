@@ -7,7 +7,10 @@ const LISTING_ID = '11111111-1111-4111-8111-111111111111';
 
 const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155', '475569', '111827'];
 
-function image(position: number): AdminVehicleImage {
+function image(
+  position: number,
+  credit: AdminVehicleImage['credit'] = 'DEALERS_DRIVE',
+): AdminVehicleImage {
   const shade = SHADES[position % SHADES.length] ?? '1f2937';
   return {
     mediaId: `00000000-0000-4000-8000-${String(position).padStart(12, '0')}`,
@@ -19,13 +22,18 @@ function image(position: number): AdminVehicleImage {
     bytes: 1_200_000,
     width: 2400,
     height: 1800,
+    credit,
     uploadedAt: '2026-09-26T10:00:00.000Z',
   };
 }
 
-function images(count: number, overrides: Partial<AdminVehicleImages> = {}): AdminVehicleImages {
+function images(
+  count: number,
+  overrides: Partial<AdminVehicleImages> = {},
+  creditOf: (position: number) => AdminVehicleImage['credit'] = () => 'DEALERS_DRIVE',
+): AdminVehicleImages {
   return {
-    items: Array.from({ length: count }, (_, position) => image(position)),
+    items: Array.from({ length: count }, (_, position) => image(position, creditOf(position))),
     min: 6,
     max: 20,
     canEdit: true,
@@ -66,3 +74,18 @@ export const Live: Story = { args: { images: images(8), live: true } };
 export const LiveAtMinimum: Story = { args: { images: images(6), live: true } };
 
 export const ReadOnly: Story = { args: { images: images(8, { canEdit: false }) } };
+
+export const DealerPhotographs: Story = { args: { images: images(6, {}, () => 'DEALER') } };
+
+export const MixedCredit: Story = {
+  args: {
+    images: images(6, {}, (position) => (position % 2 === 0 ? 'DEALERS_DRIVE' : 'DEALER')),
+  },
+};
+
+export const PhotographerNotRecorded: Story = {
+  args: {
+    images: images(6, {}, (position) => (position < 3 ? null : 'DEALERS_DRIVE')),
+    live: true,
+  },
+};

@@ -25,7 +25,7 @@ export const USED_CARS_TEXT = {
       .map((item) => `${item.label} (${String(item.count)})`)
       .join(', ')}.`,
   promise:
-    'Every car is photographed by Dealers-Drive and reviewed before it goes live, and you enquire directly with the dealership.',
+    'Every car is reviewed before it goes live, its photographs meet the Dealers-Drive photo standard, and you enquire directly with the dealership.',
   refine: 'Filter and sort these cars',
   emptyMessage:
     'The cars that were here have been sold or reserved. Every other car nearby is one click away.',

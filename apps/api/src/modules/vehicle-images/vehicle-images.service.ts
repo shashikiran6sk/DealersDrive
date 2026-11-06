@@ -4,6 +4,7 @@ import {
   VEHICLE_IMAGE_MAX,
   isListingPubliclyVisible,
   type AdminVehicleImages,
+  type PhotoCredit,
   type PresignResponse,
   type ReorderImagesInput,
   type VehicleImagePresignInput,
@@ -38,6 +39,11 @@ import {
   UPLOAD_NOT_IMAGE,
 } from './vehicle-images.messages.js';
 import { imageCount, imagesOf, renumber } from './vehicle-images.repository.js';
+
+export interface CommitOptions {
+  credit?: PhotoCredit;
+  replacesMediaId?: string;
+}
 
 export interface VehicleImagesDeps {
   prisma: PrismaClient;
@@ -209,7 +215,7 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
       admin: AdminPrincipal,
       listingId: string,
       mediaId: string,
-      replacesMediaId?: string,
+      { credit, replacesMediaId }: CommitOptions,
     ): Promise<AdminVehicleImages> {
       const listing = await listingOf(listingId);
       assertOpen(listing);
@@ -268,7 +274,12 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
         if (target) {
           await tx.vehicleMedia.update({
             where: { id: target.id },
-            data: { mediaId: media.id, addedBy: admin.userId, createdAt: new Date() },
+            data: {
+              mediaId: media.id,
+              credit: credit ?? target.credit,
+              addedBy: admin.userId,
+              createdAt: new Date(),
+            },
           });
           await tx.media.update({ where: { id: target.mediaId }, data: { status: 'ORPHAN' } });
         } else {
@@ -280,6 +291,7 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
               position: count,
               isPrimary: count === 0,
               source: 'ADMIN_UPLOAD',
+              credit: credit ?? null,
               addedBy: admin.userId,
             },
           });
@@ -293,11 +305,17 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           entityType: 'Vehicle',
           entityId: locked.vehicleId,
           before: target
-            ? { mediaId: target.mediaId, position: target.position, isPrimary: target.isPrimary }
+            ? {
+                mediaId: target.mediaId,
+                credit: target.credit,
+                position: target.position,
+                isPrimary: target.isPrimary,
+              }
             : undefined,
           after: {
             listingId,
             mediaId: media.id,
+            credit: credit ?? target?.credit ?? null,
             position: target?.position ?? count,
             isPrimary: target?.isPrimary ?? count === 0,
           },
@@ -393,6 +411,36 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           before: { mediaIds: rows.map((row) => row.mediaId) },
           after: { listingId, mediaIds: input.mediaIds },
         });
+        return { vehicleId: listing.vehicleId, status: listing.status };
+      });
+      return images(vehicleId, status);
+    },
+
+    async setCredit(
+      admin: AdminPrincipal,
+      listingId: string,
+      mediaId: string,
+      credit: PhotoCredit,
+    ): Promise<AdminVehicleImages> {
+      const { vehicleId, status } = await withTransaction(prisma, async (tx) => {
+        const listing = await lockedOpen(tx, listingId);
+        const rows = await imagesOf(tx, listing.vehicleId);
+        const target = rows.find((row) => row.mediaId === mediaId);
+        if (!target) throw new NotFoundError(IMAGE_NOT_FOUND, { code: 'IMAGE_NOT_FOUND' });
+
+        if (target.credit !== credit) {
+          await tx.vehicleMedia.update({ where: { id: target.id }, data: { credit } });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: listing.dealerId,
+            action: 'vehicle.image_credit_set',
+            entityType: 'Vehicle',
+            entityId: listing.vehicleId,
+            before: { mediaId, credit: target.credit },
+            after: { listingId, mediaId, credit },
+          });
+        }
         return { vehicleId: listing.vehicleId, status: listing.status };
       });
       return images(vehicleId, status);

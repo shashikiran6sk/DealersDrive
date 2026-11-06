@@ -9,8 +9,8 @@ const COPY = (
     </div>
     <h1 className="text-[48px] leading-[1.05] tracking-[-0.04em] text-white">Find your next car</h1>
     <p className="mt-5 max-w-[52ch] text-[15px] leading-[1.8] text-white/85">
-      Used cars from verified independent dealerships, photographed by Dealers-Drive and reviewed
-      before they go live.
+      Used cars from verified independent dealerships, reviewed before they go live, with
+      photographs that meet the Dealers-Drive photo standard.
     </p>
   </>
 );

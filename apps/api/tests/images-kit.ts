@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PhotoCredit, PrismaClient } from '@prisma/client';
 
 import { env } from '../src/config/env.js';
 
@@ -11,6 +11,7 @@ export async function seedImages(
   prisma: PrismaClient,
   vehicle: { vehicleId: string; dealerId: string },
   count: number,
+  credit: PhotoCredit | null = null,
 ): Promise<string[]> {
   const moderator = await prisma.user.findFirstOrThrow({
     where: { email: env.adminAllowlist[0] ?? '' },
@@ -33,6 +34,7 @@ export async function seedImages(
       mediaId: row.id,
       position: existing + index,
       isPrimary: existing === 0 && index === 0,
+      credit,
       addedBy: moderator.id,
     })),
   });

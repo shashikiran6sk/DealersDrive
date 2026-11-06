@@ -53,7 +53,7 @@ export const VEHICLE_WIZARD_TEXT = {
   pageTitle: 'Add vehicle',
   editTitle: 'Edit vehicle',
   intro:
-    'Enter the details as they appear on the registration certificate. Dealers-Drive photographs the car itself once you submit it for review.',
+    'Enter the details as they appear on the registration certificate. Photographs are added by Dealers-Drive once you submit the car for review.',
   back: 'Back',
   saveDraft: 'Save draft',
   continue: 'Continue',
@@ -81,7 +81,7 @@ export const VEHICLE_WIZARD_TEXT = {
   reviewComplete: 'Everything needed for review is filled in.',
   reviewIncomplete: 'A few details are still missing.',
   reviewNoPhotos:
-    'You do not upload photographs. After you submit, Dealers-Drive arranges a shoot and adds the finished pictures itself.',
+    'You do not upload photographs here. After you submit, Dealers-Drive either photographs the car or checks the photographs you send us against the Dealers-Drive photo standard, and adds the finished pictures itself.',
   fix: 'Fix',
   submit: 'Submit for review',
   resubmit: 'Resubmit for review',
@@ -98,7 +98,7 @@ export const VEHICLE_WIZARD_TEXT = {
   lockedTitle: 'This vehicle cannot be edited right now',
   lockedBody: {
     PENDING_REVIEW:
-      'It is with our team for review. We will arrange the photographs and let you know if anything needs changing.',
+      'It is with our team for review. We will sort out the photographs with you and let you know if anything needs changing.',
     ACTIVE: 'It is live on the marketplace.',
     RESERVED: 'It is reserved for a buyer, and still shown on the marketplace.',
     REJECTED: 'It was not approved for the marketplace.',

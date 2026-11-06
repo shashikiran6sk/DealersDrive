@@ -2,6 +2,7 @@
 
 import {
   AdminUpdateVehicleInput,
+  CommitVehicleImageInput,
   IdParam,
   ListingCheckKey,
   ListingImageParam,
@@ -10,10 +11,12 @@ import {
   ReorderImagesInput,
   ReplaceVehicleImageInput,
   SetPhotographyInput,
+  SetVehicleImageCreditInput,
   VehicleImagePresignInput,
   type AdminListingDetail,
   type AdminReactivationRow,
   type AdminVehicleImages,
+  type PhotoCredit,
   type PresignResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -210,14 +213,17 @@ export async function presignListingImageAction(
 export async function commitListingImageAction(
   listingId: string,
   mediaId: string,
+  credit: PhotoCredit,
 ): Promise<ListingActionResult> {
   const params = ListingImageParam.safeParse({ id: listingId, mediaId });
-  if (!params.success) return { ok: false, message: IMAGE_REFUSED };
+  const body = CommitVehicleImageInput.safeParse({ credit });
+  if (!params.success || !body.success) return { ok: false, message: IMAGE_REFUSED };
 
   try {
     await apiSend<AdminVehicleImages>(
       'POST',
       `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}/commit`,
+      body.data,
     );
   } catch (error) {
     return failure(error);
@@ -291,6 +297,27 @@ export async function reorderListingImagesAction(formData: FormData): Promise<vo
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(params.data));
+  revalidatePublicVehicles();
+}
+
+export async function setImageCreditAction(formData: FormData): Promise<void> {
+  const params = ListingImageParam.safeParse({
+    id: formData.get('listingId'),
+    mediaId: formData.get('mediaId'),
+  });
+  const body = SetVehicleImageCreditInput.safeParse({ credit: formData.get('credit') });
+  if (!params.success || !body.success) return;
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'PUT',
+      `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}/credit`,
+      body.data,
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+  }
+  revalidatePath(reviewPath(params.data.id));
   revalidatePublicVehicles();
 }
 
