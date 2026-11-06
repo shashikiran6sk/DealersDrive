@@ -382,3 +382,53 @@ describe('dealer owner acceptance and preserved onboarding', () => {
     );
   });
 });
+
+describe('Terms version 1.1 (vehicle photography correction)', () => {
+  async function receipt(userId: string, dealerId: string | null, termsVersion: string) {
+    await h.prisma.legalAcceptance.create({
+      data: {
+        userId,
+        dealerId,
+        subjectKey: dealerId ? `DEALER:${dealerId}` : `USER:${userId}`,
+        termsVersion,
+        privacyVersion: 'privacy-v1.0',
+      },
+    });
+  }
+
+  it('records a new acceptance as 1.1', async () => {
+    const c = await customer();
+    const status = await accept(c.agent).expect(200);
+    expect(status.body).toMatchObject({ accepted: true, termsVersion: 'terms-v1.1' });
+    const rows = await h.prisma.legalAcceptance.findMany({ where: { userId: c.userId } });
+    expect(rows.map((row) => row.termsVersion)).toEqual(['terms-v1.1']);
+  });
+
+  it('keeps a customer who accepted 1.0 accepted, without asking again or writing a new receipt', async () => {
+    const c = await customer();
+    await receipt(c.userId, null, 'terms-v1.0');
+
+    const status = await c.agent.get('/v1/legal/status?scope=CUSTOMER').expect(200);
+    expect(status.body).toMatchObject({ accepted: true, termsVersion: 'terms-v1.1' });
+    await c.agent.get('/v1/enquiries').expect(200);
+    expect(await h.prisma.legalAcceptance.count({ where: { userId: c.userId } })).toBe(1);
+  });
+
+  it('keeps a dealership whose owner accepted 1.0 working', async () => {
+    const d = await marketplaceFixtures(h, 'legal-v1-1').dealership('ACTIVE');
+    await receipt(d.userId, d.dealerId, 'terms-v1.0');
+    await receipt(d.userId, null, 'terms-v1.0');
+
+    await d.agent.get('/v1/dealer').expect(200);
+    const status = await d.agent.get('/v1/legal/status?scope=DEALER').expect(200);
+    expect(status.body).toMatchObject({ accepted: true });
+  });
+
+  it('does not count an acceptance of a version that was never published', async () => {
+    const c = await customer();
+    await receipt(c.userId, null, 'terms-v0.9');
+    const status = await c.agent.get('/v1/legal/status?scope=CUSTOMER').expect(200);
+    expect(status.body.accepted).toBe(false);
+    await c.agent.get('/v1/enquiries').expect(403);
+  });
+});

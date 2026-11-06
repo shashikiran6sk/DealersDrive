@@ -89,6 +89,11 @@ car photographed on the first visit skips straight to `PHOTOGRAPHED`.
 `PROCESSING` means "in StudioCar", entered by a person; nothing here calls
 StudioCar, and there is no batch id to fabricate.
 
+When the car's photographs come from the dealership instead, the same note
+tracks them (`SCHEDULED` is simply skipped). Who took the published images is
+recorded per image, as `credit`, by the vehicle-images module, not here: this
+status is the team's progress, the credit is what the buyer is told.
+
 It lives in its own table, `vehicle_photography`, one row per vehicle, created
 on first write — a vehicle with no row reads as `NOT_STARTED`. It is keyed on
 the vehicle rather than the listing because the photographs belong to the car:

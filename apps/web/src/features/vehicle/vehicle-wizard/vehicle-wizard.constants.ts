@@ -94,7 +94,7 @@ export const VEHICLE_WIZARD_TEXT = {
   submittedTag: 'Pending review',
   submittedTitle: 'Submitted for review',
   submittedBody:
-    'Our team will check the details and arrange a photo shoot at your yard. We will let you know if anything needs changing before the car goes live.',
+    'Our team will check the details and sort out the photographs — a photo shoot at your yard, or a check of the photographs you send us against our photo standard. We will let you know if anything needs changing before the car goes live.',
   lockedTitle: 'This vehicle cannot be edited right now',
   lockedBody: {
     PENDING_REVIEW:

@@ -2,8 +2,16 @@ import { z } from 'zod';
 import { legalV1Ready, LEGAL_V1_PUBLICATION } from './legal-documents/v1.js';
 
 export * from './legal-documents/v1.js';
+export * from './legal-documents/v1-1.js';
 
-export const LEGAL_TERMS_VERSION = 'terms-v1.0';
+export const LEGAL_TERMS_VERSION = 'terms-v1.1';
+/**
+ * Every Terms version whose acceptance still counts. 1.1 only corrected the
+ * description of vehicle photography, so an acceptance of 1.0 is not asked
+ * for again; a later version that changes obligations is left out of here
+ * and is re-accepted.
+ */
+export const LEGAL_ACCEPTED_TERMS_VERSIONS: readonly string[] = ['terms-v1.0', LEGAL_TERMS_VERSION];
 export const LEGAL_PRIVACY_VERSION = 'privacy-v1.0';
 export const LEGAL_REQUIRED = 'LEGAL_ACCEPTANCE_REQUIRED';
 export const LEGAL_CHECKBOX_TEXT = 'I agree to the Terms & Conditions and Privacy Policy.';

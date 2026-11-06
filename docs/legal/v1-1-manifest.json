@@ -1,0 +1,9 @@
+{
+  "termsVersion": "terms-v1.1",
+  "privacyVersion": "privacy-v1.0",
+  "effectiveDate": "2026-11-06",
+  "basedOn": "terms-v1.0",
+  "acceptedVersions": ["terms-v1.0", "terms-v1.1"],
+  "source": "packages/contracts/src/legal-documents/v1-1.ts",
+  "renderedSha256": "82be93a47b4ae36dbdb69adccb2b71e66c8b732c26103b72e0a6406e8975e685"
+}
