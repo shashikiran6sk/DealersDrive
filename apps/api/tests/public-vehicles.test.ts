@@ -68,6 +68,7 @@ describe('what the marketplace lists', () => {
       title: '2023 Tata Nexon XZ+',
       year: 2023,
       priceLabel: '₹14,50,000',
+      negotiability: 'FIXED',
       metaLabel: expect.stringMatching(/^22,400 km · Petrol · Automatic · /),
       image: {
         url: expect.stringContaining(`/by-media/${live.mediaIds[0]!}/640.webp`),
@@ -82,6 +83,21 @@ describe('what the marketplace lists', () => {
       },
     });
     expect(live.slug).toMatch(/^2023-tata-nexon-xz-.*-[0-9a-f]{8}$/);
+  });
+
+  it('says whether the price is negotiable, as the dealer set it', async () => {
+    const negotiable = await kit.published(a, nextPlate(), { negotiability: 'SLIGHTLY' });
+    const unsaid = await kit.published(a, nextPlate());
+    await h.prisma.vehicle.update({
+      where: { id: unsaid.vehicleId },
+      data: { negotiability: null },
+    });
+
+    const cards = await allCards();
+    const of = (slug: string) => cards.find((entry) => entry.slug === slug)?.negotiability;
+    expect(of(live.slug)).toBe('FIXED');
+    expect(of(negotiable.slug)).toBe('SLIGHTLY');
+    expect(of(unsaid.slug)).toBeNull();
   });
 
   it('shows the image the admin chose as primary', async () => {
@@ -144,6 +160,7 @@ describe('what a card never carries', () => {
         'image',
         'imageCount',
         'metaLabel',
+        'negotiability',
         'priceLabel',
         'slug',
         'title',

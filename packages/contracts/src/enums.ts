@@ -303,6 +303,15 @@ export const NEGOTIABILITY_LABELS: Record<PriceNegotiability, string> = {
   FIXED: 'Fixed price, no hidden charges',
 };
 
+/**
+ * The same choice as `NEGOTIABILITY_LABELS`, in the few words a car card has
+ * room for beside its price. The vehicle page keeps the full sentence.
+ */
+export const NEGOTIABILITY_CARD_LABELS: Record<PriceNegotiability, string> = {
+  SLIGHTLY: 'Negotiable',
+  FIXED: 'Fixed price',
+};
+
 export const DISPLAY_STATUS_LABELS: Record<DisplayStatus, string> = {
   DRAFT: 'Draft',
   PENDING: 'Pending review',

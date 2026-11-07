@@ -246,16 +246,16 @@ The corner marks are retired. `.blueprint` is now a framed surface: `position:re
 
 One structure for every context, so every card in a row lines up whatever its data:
 
-| Part         | Spec                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Card         | `.card`, `p-0`, `h-full`, `border-radius:15px`, `--shadow-sm`; hover border `#c9c7c1` (available cars only)                                      |
-| Image band   | fixed `aspect-ratio:1.75` (`1.6` below `sm`), `#efefec` ground, 1px bottom divider, `object-fit:cover`                                           |
-| Overlays     | year chip TL · save button TR (36px, 10px radius, `--shadow-sm`) · Reserved badge BL                                                             |
-| Body         | `flex:1; padding:13px 14px 14px; gap:8px`                                                                                                        |
-| Title        | `card-title` 14px/800, `line-clamp-2` **and** `min-height:2.5em` — a one-line title reserves the second line                                     |
-| Price        | 20px/700 tabular                                                                                                                                 |
-| Meta         | 12px `#6f6d68` tabular, `line-clamp-2`, `min-height:3em` (km · fuel · transmission · town)                                                       |
-| Dealer strip | `margin-top:auto; min-height:35px`, 1px top divider, `padding-top:10px`: 20px round initials chip, 13px name (ellipsis), `tag-accent` "Verified" |
+| Part         | Spec                                                                                                                                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Card         | `.card`, `p-0`, `h-full`, `border-radius:15px`, `--shadow-sm`; hover border `#c9c7c1` (available cars only)                                                                                                                                              |
+| Image band   | fixed `aspect-ratio:1.75` (`1.6` below `sm`), `#efefec` ground, 1px bottom divider, `object-fit:cover`                                                                                                                                                   |
+| Overlays     | year chip TL · save button TR (36px, 10px radius, `--shadow-sm`) · Reserved badge BL                                                                                                                                                                     |
+| Body         | `flex:1; padding:13px 14px 14px; gap:8px`                                                                                                                                                                                                                |
+| Title        | `card-title` 14px/800, `line-clamp-2` **and** `min-height:2.5em` — a one-line title reserves the second line                                                                                                                                             |
+| Price        | 20px/700 tabular; beside it, right-aligned on the same row, a `tag-outline` 11px negotiability pill — "Fixed price" or "Negotiable" — wrapping under the price when the row is too narrow. No pill when the price is on request or the dealer never said |
+| Meta         | 12px `#6f6d68` tabular, `line-clamp-2`, `min-height:3em` (km · fuel · transmission · town)                                                                                                                                                               |
+| Dealer strip | `margin-top:auto; min-height:35px`, 1px top divider, `padding-top:10px`: 20px round initials chip, 13px name (ellipsis), `tag-accent` "Verified"                                                                                                         |
 
 The title's anchor is stretched over the card (`after:absolute after:inset-0`), so the whole card opens the VDP and the focus ring is drawn on the card. `compact` omits the dealer strip.
 

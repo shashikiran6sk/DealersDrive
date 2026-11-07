@@ -35,6 +35,41 @@ buyer" makes the heading say what the grey photograph shows. The hover border
 goes with the link: it promised a click. The same treatment covers `SOLD` and
 `UNAVAILABLE`, which only a customer's own saved cars will ever send.
 
+### `const negotiability = negotiabilityLabel(vehicle)`
+
+Whether the price is fixed or negotiable used to be on the vehicle page alone,
+so a buyer comparing a grid of cars could not tell which prices were firm
+without opening each one. The card now prints it as a pill on the price's own
+row (DESIGN-SPEC §2.8).
+
+- **Beside the price, not under it.** A line under the price would make every
+  card taller, and a card whose dealer never said would show a blank where its
+  neighbours show a word. On the same row the card keeps its height, so a row
+  of cards still lines up. `flex-wrap` sends the pill under the price only when
+  the two do not fit; at the 258px minimum card width even `₹1,25,00,000` and
+  "Negotiable" share one row.
+- **`tag-outline`, the same for both values.** Neither choice is better than
+  the other, so neither gets a colour that suggests it is. The word carries the
+  meaning.
+- **A reserved card keeps it**, greyed with the rest of the body, because it
+  is still a fact about the car on show.
+
+## `apps/web/src/components/vehicle/vehicle-card/utils.ts`
+
+### `export function negotiabilityLabel(vehicle)`
+
+The card's short label from `NEGOTIABILITY_CARD_LABELS` ("Fixed price",
+"Negotiable"), not the vehicle page's sentence ("Fixed price, no hidden
+charges"), which does not fit beside a price on a card.
+
+`null`, so no pill, in two cases:
+
+- **No price.** "Price on request" that is "Fixed price" contradicts itself.
+- **No answer.** Negotiability is not required to submit a listing
+  (`REQUIRED_VEHICLE_FIELDS`), so some live cars have none. The card does not
+  guess; the wizard's default of `FIXED` is a default for the form, not a
+  statement the dealer made.
+
 ## `apps/web/src/components/vehicle/vehicle-card/vehicle-image.tsx`
 
 ### `export function VehicleImage({ image, className, priority }: VehicleImageProps)`

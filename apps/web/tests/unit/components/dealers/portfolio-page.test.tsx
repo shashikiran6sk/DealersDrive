@@ -102,6 +102,7 @@ function car(slug: string): VehicleCardDto {
     title: '2023 Hyundai Creta SX(O)',
     year: 2023,
     priceLabel: '₹14,50,000',
+    negotiability: 'FIXED',
     metaLabel: '22,400 km · Petrol · Automatic · Vellore',
     image: { url: `https://media.test/${slug}.webp`, alt: '2023 Hyundai Creta SX(O)' },
     imageCount: 8,

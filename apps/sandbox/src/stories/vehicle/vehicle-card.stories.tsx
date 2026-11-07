@@ -9,6 +9,7 @@ const CARD: VehicleCardDto = {
   title: '2023 Hyundai Creta SX(O)',
   year: 2023,
   priceLabel: '₹14,50,000',
+  negotiability: 'FIXED',
   metaLabel: '22,400 km · Petrol · Automatic · Katpadi',
   image: {
     url: 'https://placehold.co/1200x900/1f2937/e5e7eb.png?text=Creta',
@@ -65,6 +66,57 @@ export const PhotographFailsToLoad: Story = {
 
 export const PriceOnRequest: Story = { args: { vehicle: { ...CARD, priceLabel: null } } };
 
+export const FixedPrice: Story = { args: { vehicle: { ...CARD, negotiability: 'FIXED' } } };
+
+export const Negotiable: Story = { args: { vehicle: { ...CARD, negotiability: 'SLIGHTLY' } } };
+
+export const NegotiabilityNotSet: Story = {
+  args: { vehicle: { ...CARD, negotiability: null } },
+};
+
+export const CrorePriceNegotiable: Story = {
+  args: {
+    vehicle: {
+      ...CARD,
+      title: '2022 Toyota Land Cruiser 300 ZX',
+      priceLabel: '₹1,25,00,000',
+      negotiability: 'SLIGHTLY',
+    },
+  },
+};
+
+export const PriceTerms: Story = {
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 1100, margin: '24px auto' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  render: () => (
+    <div
+      style={{
+        display: 'grid',
+        gap: 16,
+        gridTemplateColumns: 'repeat(auto-fill,minmax(258px,1fr))',
+      }}
+    >
+      <VehicleCard vehicle={{ ...CARD, slug: 'fixed', negotiability: 'FIXED' }} />
+      <VehicleCard vehicle={{ ...CARD, slug: 'negotiable', negotiability: 'SLIGHTLY' }} />
+      <VehicleCard vehicle={{ ...CARD, slug: 'unset', negotiability: null }} />
+      <VehicleCard
+        vehicle={{ ...CARD, slug: 'crore', priceLabel: '₹1,25,00,000', negotiability: 'SLIGHTLY' }}
+      />
+      <VehicleCard
+        vehicle={{ ...CARD, slug: 'on-request', priceLabel: null, negotiability: 'FIXED' }}
+      />
+      <VehicleCard
+        vehicle={{ ...CARD, slug: 'reserved', availability: 'RESERVED', negotiability: 'FIXED' }}
+      />
+    </div>
+  ),
+};
+
 export const LongTitle: Story = {
   args: {
     vehicle: {
@@ -106,7 +158,9 @@ export const Grid: Story = {
       }}
     >
       <VehicleCard vehicle={CARD} priority />
-      <VehicleCard vehicle={{ ...CARD, slug: 'b', image: null, year: 2021 }} />
+      <VehicleCard
+        vehicle={{ ...CARD, slug: 'b', image: null, year: 2021, negotiability: 'SLIGHTLY' }}
+      />
       <VehicleCard vehicle={{ ...CARD, slug: 'c', priceLabel: null }} />
       <VehicleCard vehicle={{ ...CARD, slug: 'd', availability: 'RESERVED' }} />
       <VehicleCardSkeleton />

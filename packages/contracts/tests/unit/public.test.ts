@@ -15,6 +15,7 @@ import {
   PublicVehicleQuery,
   TransmissionSlug,
   VEHICLE_SORT_LABELS,
+  VehicleCardDto,
   VehicleFacets,
   VehicleSort,
 } from '../../src/public.js';
@@ -147,5 +148,33 @@ describe('CarSuggestQuery', () => {
     const extra = CarSuggestQuery.safeParse({ search: 'cre', brand: 'hyundai' });
     expect(extra.success).toBe(false);
     expect(extra.error?.issues[0]?.message).toMatch(/brand/);
+  });
+});
+
+describe('VehicleCardDto', () => {
+  const card = {
+    slug: '2023-hyundai-creta-sx-o-katpadi-3f9a1c2b',
+    availability: 'AVAILABLE',
+    title: '2023 Hyundai Creta SX(O)',
+    year: 2023,
+    priceLabel: '₹14,50,000',
+    negotiability: 'FIXED',
+    metaLabel: '22,400 km · Petrol · Automatic · Katpadi',
+    image: null,
+    imageCount: 0,
+    dealer: { name: 'Sri Lakshmi Motors', slug: 'sri', initials: 'SL', isVerified: true },
+  };
+
+  it.each(['FIXED', 'SLIGHTLY', null])('carries negotiability %s', (negotiability) => {
+    expect(VehicleCardDto.parse({ ...card, negotiability }).negotiability).toBe(negotiability);
+  });
+
+  it('requires the key, so an API that stopped sending it is a contract error', () => {
+    const { negotiability: _omitted, ...without } = card;
+    expect(VehicleCardDto.safeParse(without).success).toBe(false);
+  });
+
+  it('refuses a value the dealer could not have chosen', () => {
+    expect(VehicleCardDto.safeParse({ ...card, negotiability: 'VERY' }).success).toBe(false);
   });
 });
