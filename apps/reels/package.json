@@ -1,0 +1,42 @@
+{
+  "name": "@dealers-drive/reels",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "20-second promo reels for every dealership with live inventory, rendered with Remotion",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "tsx src/cli/render.ts",
+    "build": "remotion bundle src/index.ts --out-dir dist/bundle",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist out .cache coverage .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@dealers-drive/contracts": "workspace:*",
+    "@fontsource/manrope": "5.3.0",
+    "@fontsource/noto-sans-tamil": "5.3.0",
+    "@remotion/bundler": "4.0.538",
+    "@remotion/cli": "4.0.538",
+    "@remotion/renderer": "4.0.538",
+    "qrcode": "1.5.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "4.0.538"
+  },
+  "devDependencies": {
+    "@dealers-drive/config": "workspace:*",
+    "@types/node": "^24.13.3",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.0.3",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

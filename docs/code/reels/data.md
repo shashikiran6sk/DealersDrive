@@ -1,0 +1,138 @@
+# reels / data
+
+Parent: [reels](README.md)
+
+## `apps/reels/src/data/featured.ts`
+
+### `export function showcaseCars(cards: readonly VehicleCardDto[]): VehicleCardDto[]`
+
+Only `AVAILABLE` cars with a photograph are ever shown. A `RESERVED` car is
+_visible_ on the site (**R71**) but a reel is shared and re-watched for days, and
+a reserved car in it is a car the buyer cannot have by the time they ask. A car
+with no photograph would leave a blank stage in the one scene the reel exists
+for.
+
+### `export function selectFeatured(cards: readonly VehicleCardDto[], max: number): VehicleCardDto[]`
+
+Eight cars fit into the twelve seconds the cars get, a second and a half each. They are picked across the
+price range — the cheapest, the dearest and six evenly between — rather than the
+eight newest, because the newest are often the same model twice and say
+nothing about the yard's range, while a spread tells a buyer in one glance
+whether this dealer has a car at their budget. They play cheapest first, so the
+reel builds to its most expensive car.
+
+Each model is featured once before any model repeats. A yard with three Eecos
+would otherwise show two of them, because a price spread lands on whichever
+cars sit at the right prices. The newest car of each model represents it, and a
+repeat is used only to fill the reel when there are fewer than eight models.
+
+### `export function pickFeatured(cards: readonly VehicleCardDto[], terms: readonly string[], max: number): VehicleCardDto[]`
+
+The automatic choice is a default, not a decision for the dealer. `--feature`
+names the cars outright, by model ("creta", "brv") or by slug, and they play
+cheapest first like an automatic pick. A name that matches nothing stops the
+render and lists the cars there are, rather than quietly featuring something
+else; a name given twice takes the next matching car.
+
+## `apps/reels/src/data/models.ts`
+
+### `export function modelKey(title: string, models: readonly ModelName[]): string`
+
+There is no make or model column to read (**D1**): a card has a free-text
+title, and splitting it on words gets models wrong (`Maruti Suzuki Swift Dzire`
+is not a `Swift`). The model names come from the API instead. The inventory
+facets list the brands, and asking once per brand lists that brand's models,
+already normalised at write time. A car's model is the longest
+"brand + model" its title starts with; a title that starts with none falls back
+to the whole title, so only exact repeats are folded together.
+
+### `export function matchesTerm(title: string, term: string): boolean`
+
+A hand-picked name matches from the start of any word, with spacing and
+punctuation ignored, so "brv" finds `Honda BR-V` and "i10" finds
+`Hyundai i10 Grand Magna`, but "ai" does not find `Hyundai`.
+
+### `export function priceRange(cards: readonly VehicleCardDto[]): string | null`
+
+The range is computed from the same available cars the reel shows, through
+`formatLakh` from contracts, so it reads like the directory's "from ₹3.75 Lakh".
+The card carries only `priceLabel`, so the rupees are read back out of it —
+the label is exact rupees, never rounded, so nothing is lost.
+
+## `apps/reels/src/data/build-props.ts`
+
+### `export function buildReelProps(input: BuildReelInput): ReelProps`
+
+The one place API shapes become reel shapes. The scenes receive only plain,
+serialisable props: Remotion passes props across the browser boundary as JSON,
+and a scene that reached for a contract type would be tempted to re-derive what
+was decided here.
+
+**No phone number, anywhere** (**AGENTS.md rule 7**). The closing scene sends the
+viewer to the dealer's page through a QR code; the number is behind
+reveal-contact, where it is rate-limited and counted as a lead.
+
+The stock figure starts from the inventory response's `available`, which is
+the "available" count by **R71** — the same number the dealer page states.
+
+## `apps/reels/src/data/stock.ts`
+
+### `export function stockFigure(available: number): StockFigure`
+
+From ten cars up, the reel says "15+" rather than "19". A reel is shared and
+watched for days after it is rendered, and an exact count is wrong the first
+time a car sells; a figure rounded down to a multiple of five stays true until
+the yard drops below it. An exact multiple of five keeps no "+", because "20+"
+for exactly twenty cars overstates. Under ten cars the exact number is shown:
+"5+" for a dealer with eight cars undersells them, and small counts change
+less often. The "+" appears only once the count-up has reached the figure.
+
+## `apps/reels/src/data/specs.ts`
+
+### `export function carSpecs(metaLabel: string): Bilingual[]`
+
+`metaLabel` is the card's `93,304 km · Petrol · Automatic · Vellore`. Only the
+parts the reel can name in Tamil are kept — distance, fuel, gearbox — and
+anything else is dropped rather than shown in one language only. The town is
+dropped deliberately: the opening scene already says where the dealer is.
+
+## `apps/reels/src/data/dealer.ts`
+
+### `export function serviceLabel(raw: string): Bilingual`
+
+Services are typed by dealers: `Rc Transfer`, `Workshop( Wash and Polish)`. A
+known service is matched on its letters only and given a tidy English label and
+its Tamil one. An unknown service keeps the dealer's own words, in English
+only — a guessed translation of a phrase nobody reviewed is worse than none.
+
+## `apps/reels/src/data/media.ts`
+
+### `export function atWidth(url: string, width: number): string`
+
+The public cards point at the 640 px derivative, which is soft on a 1080 px
+frame. The media route accepts any width and answers with the largest derivative
+it holds (1600) or the original, so asking for 1600 gets the best image there is.
+
+### `export function planMedia(width: number, folder = 'media'): MediaPlan`
+
+Every image is downloaded before rendering and served from the bundle's public
+folder, instead of letting the headless browser fetch it mid-render. A render is
+then repeatable, does not depend on the browser's proxy settings, and cannot fail
+at frame 400 because one request timed out. The plan records each URL as it is
+mapped, so the list of downloads is exactly the list of images the props name.
+
+## `apps/reels/src/data/campaign.ts`
+
+### `export const REEL_CAMPAIGN`
+
+The QR code opens the dealer's page tagged `utm_source=dealer-reel`, so visits
+from reels can be counted separately. The dealer page ignores parameters it does
+not read, so the tags cannot break it (checked against production).
+
+## `apps/reels/src/data/api.ts`
+
+### `export async function getJson<T>(fetcher: Fetcher, url: string, parser: Parser<T>): Promise<T>`
+
+Every response is parsed with the contracts schema the web app uses. A field
+renamed in the API breaks the reel loudly at fetch time rather than drawing
+`undefined` into a video someone then posts.
