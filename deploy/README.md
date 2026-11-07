@@ -231,6 +231,27 @@ docker exec dd-postgres pg_dump -U dealersdrive dealersdrive | gzip > ~/dd-$(dat
 ssh -L 9001:127.0.0.1:9001 ubuntu@<elastic-ip>   # then http://localhost:9001
 ```
 
+### Resizing photographs uploaded before F034
+
+Vehicle photographs are resized into 320 / 640 / 1024 / 1600 WebP copies when
+an admin uploads them. Photographs uploaded before that existed are served at
+full size until this has run once. It is safe to run again.
+
+On this box (from the repo):
+
+```bash
+cd ~/dealers-drive/apps/api && NODE_ENV=production node dist/media-backfill.js --dry-run
+cd ~/dealers-drive/apps/api && NODE_ENV=production node dist/media-backfill.js
+```
+
+Where the API runs as a Docker container instead, run it inside that
+container — it already has the database, storage and network settings:
+
+```bash
+docker exec <api-container> node apps/api/dist/media-backfill.js --dry-run
+docker exec <api-container> node apps/api/dist/media-backfill.js
+```
+
 ## When something breaks
 
 | Symptom                                                    | Cause                                                                                                      |

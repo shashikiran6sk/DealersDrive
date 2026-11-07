@@ -115,8 +115,31 @@ deleted, so no object is left that no row names.
 Queues `media.process`. It never throws: the upload that asked has already
 been committed, and refusing it because the queue was down would show the
 admin an error for a photograph that is attached. The image is served as its
-original until the backfill script (`pnpm --filter @dealers-drive/api
-media:process`) or a later job reaches it.
+original until the backfill (below) or a later job reaches it.
+
+## `apps/api/src/modules/media/media.backfill.ts`
+
+### `export async function backfillVehicleMedia({ prisma, processor, dryRun, write })`
+
+The one-off pass for every vehicle photograph committed before the
+`media.process` job existed (**F034**): `READY`, a vehicle's, `variants`
+still `{}`, oldest first. It calls the same `process()` the job does, so it
+is safe to run twice — the second run finds nothing, because a processed row
+no longer has empty `variants`.
+
+A photograph it cannot read is counted and left as it was, still served as
+its original, so one bad file never stops the rest. `--dry-run` lists the
+rows and touches nothing, which is how to see what a production run would do
+before doing it.
+
+It is a function in `src` rather than a script in `scripts/` because it has
+to run **inside the production image**. That image (`apps/api/Dockerfile`,
+target `runner`) carries only `dist/` and production dependencies — no
+`scripts/`, no `tsx` — so a TypeScript script could not run there at all.
+Compiled into `dist/`, it runs with `docker exec` in the API's own container,
+with the database, storage credentials, network and working directory the
+API already has. The working directory matters for `STORAGE_DRIVER=local`,
+whose root is resolved from it.
 
 ## `apps/api/src/modules/media/media.service.ts`
 
