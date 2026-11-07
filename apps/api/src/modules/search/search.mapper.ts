@@ -179,6 +179,7 @@ export function toVehicleCard(row: CardRow): VehicleCardDto {
     title,
     year: vehicle.manufacturingYear,
     priceLabel: vehicle.pricePaise === null ? null : formatRupees(vehicle.pricePaise),
+    negotiability: vehicle.negotiability,
     metaLabel: metaLabelOf(vehicle, dealer.city),
     image: primary
       ? { url: mediaUrl(primary.mediaId, CARD_IMAGE_WIDTH), alt: IMAGE_ALT(title) }

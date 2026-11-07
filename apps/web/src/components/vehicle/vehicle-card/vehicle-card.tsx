@@ -2,14 +2,14 @@ import type { VehicleCardDto } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { LinkPendingIndicator } from '@/components/ui/link-pending';
-import { Plate } from '@/components/ui/primitives';
+import { Plate, Tag } from '@/components/ui/primitives';
 import { SaveButton } from '@/components/vehicle/save-button';
 import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { cn } from '@/lib/cn';
 
 import { DealerStrip } from './dealer-strip';
 import { AvailabilityBadge } from './availability-badge';
-import { availabilityLabel, availabilityNote } from './utils';
+import { availabilityLabel, availabilityNote, negotiabilityLabel } from './utils';
 import { VEHICLE_CARD_TEXT, vehicleHref } from './vehicle-card.constants';
 import { VehicleImage } from './vehicle-image';
 
@@ -29,6 +29,7 @@ export function VehicleCard({
   className,
 }: VehicleCardProps) {
   const unavailable = vehicle.availability !== 'AVAILABLE';
+  const negotiability = negotiabilityLabel(vehicle);
 
   return (
     <article
@@ -84,8 +85,15 @@ export function VehicleCard({
             </Link>
           )}
         </h3>
-        <div className="text-[20px] font-bold tracking-[-0.02em] tnum">
-          {vehicle.priceLabel ?? VEHICLE_CARD_TEXT.priceOnRequest}
+        <div className="flex flex-wrap items-center justify-between gap-x-[8px] gap-y-[4px]">
+          <div className="text-[20px] font-bold tracking-[-0.02em] tnum">
+            {vehicle.priceLabel ?? VEHICLE_CARD_TEXT.priceOnRequest}
+          </div>
+          {negotiability ? (
+            <Tag variant="outline" className="text-[11px]">
+              {negotiability}
+            </Tag>
+          ) : null}
         </div>
         <div className="line-clamp-2 min-h-[3em] text-[12px] leading-[1.5] ink-muted tnum">
           {vehicle.metaLabel}

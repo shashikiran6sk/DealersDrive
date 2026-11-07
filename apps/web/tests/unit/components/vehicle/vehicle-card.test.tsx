@@ -29,6 +29,7 @@ function card(overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
     title: '2023 Hyundai Creta SX(O)',
     year: 2023,
     priceLabel: '₹14,50,000',
+    negotiability: 'FIXED',
     metaLabel: '22,400 km · Petrol · Automatic · Katpadi',
     image: {
       url: 'https://media.test/by-media/m1/640.webp',
@@ -134,6 +135,48 @@ describe('VehicleCard', () => {
     render(<VehicleCard vehicle={card({ priceLabel: null, year: null })} />);
     expect(screen.getByText('Price on request')).toBeInTheDocument();
     expect(document.querySelector('.dd-plate')).toBeNull();
+  });
+
+  it.each([
+    ['FIXED', 'Fixed price'],
+    ['SLIGHTLY', 'Negotiable'],
+  ] as const)('says a %s price is "%s", on the price row', (negotiability, label) => {
+    render(<VehicleCard vehicle={card({ negotiability })} />);
+
+    const article = screen.getByRole('article');
+    const pill = within(article).getByText(label);
+    expect(pill).toHaveClass('tag', 'tag-outline');
+    expect(pill.parentElement).toBe(within(article).getByText('₹14,50,000').parentElement);
+    expect(within(article).queryByText(/no hidden charges|Slightly negotiable/)).toBeNull();
+  });
+
+  it('prints no negotiability when the dealer never said', () => {
+    render(<VehicleCard vehicle={card({ negotiability: null })} />);
+    expect(screen.getByText('₹14,50,000')).toBeInTheDocument();
+    expect(screen.queryByText(/Fixed price|Negotiable/)).toBeNull();
+  });
+
+  it.each(['FIXED', 'SLIGHTLY'] as const)(
+    'prints no %s negotiability beside a price on request',
+    (negotiability) => {
+      render(<VehicleCard vehicle={card({ priceLabel: null, negotiability })} />);
+      expect(screen.getByText('Price on request')).toBeInTheDocument();
+      expect(screen.queryByText(/Fixed price|Negotiable/)).toBeNull();
+    },
+  );
+
+  it('keeps the negotiability on a reserved car, without making it a control (R71)', () => {
+    const { container } = render(
+      <VehicleCard vehicle={card({ availability: 'RESERVED', negotiability: 'SLIGHTLY' })} />,
+    );
+    expect(screen.getByText('Negotiable')).toBeInTheDocument();
+    expect(container.querySelectorAll('a, button, [tabindex]')).toHaveLength(0);
+  });
+
+  it('shows the negotiability on the compact card too', () => {
+    render(<VehicleCard vehicle={card({ negotiability: 'SLIGHTLY' })} variant="compact" />);
+    expect(screen.getByText('Negotiable')).toBeInTheDocument();
+    expect(screen.queryByText('Sri Lakshmi Motors')).toBeNull();
   });
 
   it('marks a dealer that is not verified without the tag', () => {

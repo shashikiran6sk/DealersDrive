@@ -1882,7 +1882,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-shared',
     purpose:
-      'DESIGN-SPEC §2.8 grid and compact cards (F075, R48): 4:3 primary photograph, year plate, title, tabular price, meta row, and the dealer strip on every card. An available card links to the VDP by slug; a reserved one (R71) — or a sold or no-longer-available one in saved cars — is greyed, badged and not a link at all.',
+      'DESIGN-SPEC §2.8 grid and compact cards (F075, R48): 4:3 primary photograph, year plate, title, tabular price with its negotiability pill (Fixed price / Negotiable), meta row, and the dealer strip on every card. An available card links to the VDP by slug; a reserved one (R71) — or a sold or no-longer-available one in saved cars — is greyed, badged and not a link at all.',
     aliases: [
       'CarCard',
       'ListingCard',
@@ -1890,6 +1890,8 @@ export const registry: RegistryEntry[] = [
       'VehicleImage',
       'VehicleCardSkeleton',
       'DealerStrip',
+      'NegotiabilityTag',
+      'PriceTerms',
     ],
     features: ['F075', 'F077', 'R45', 'R48', 'R71'],
     props: ['vehicle', 'variant', 'priority', 'className'],
@@ -1902,6 +1904,10 @@ export const registry: RegistryEntry[] = [
       'without photograph',
       'photograph fails to load',
       'price on request',
+      'fixed price',
+      'negotiable',
+      'negotiability not set',
+      'crore price with negotiability',
       'long title',
       'unverified dealer',
       'skeleton',

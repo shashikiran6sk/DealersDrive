@@ -36,6 +36,7 @@ function card(slug: string, overrides: Partial<VehicleCardDto> = {}): VehicleCar
     title: `2022 Hyundai Creta ${slug}`,
     year: 2022,
     priceLabel: '₹12,00,000',
+    negotiability: 'FIXED',
     metaLabel: '30,000 km · Petrol · Manual · Vellore',
     image: null,
     imageCount: 0,

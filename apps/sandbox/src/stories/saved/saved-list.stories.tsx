@@ -11,6 +11,7 @@ function car(slug: string, availability: VehicleCardDto['availability']): Vehicl
     title: `2021 Maruti Suzuki Swift ${slug}`,
     year: 2021,
     priceLabel: '₹6,10,000',
+    negotiability: 'SLIGHTLY',
     metaLabel: '41,000 km · Petrol · Manual · Arcot',
     image: null,
     imageCount: 0,

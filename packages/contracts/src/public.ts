@@ -3,6 +3,7 @@ import { PublicAvailability } from './listing.js';
 import { z } from 'zod';
 
 import { PublicPortfolioPhoto } from './dealer-portfolio.js';
+import { PriceNegotiability } from './enums.js';
 import type { PhotoCredit } from './moderation.js';
 
 export const STANDARD_DEALER_COVER_PATH = '/brand/dealer-directory-cover.svg';
@@ -952,6 +953,12 @@ export const VehicleCardDto = z.object({
   title: z.string(),
   year: z.number().int().nullable(),
   priceLabel: z.string().nullable(),
+  /**
+   * Whether the dealer will move on the price, as they set it on the listing;
+   * `null` when they never said. The card prints it beside the price through
+   * `NEGOTIABILITY_CARD_LABELS`, and not at all when there is no price.
+   */
+  negotiability: PriceNegotiability.nullable(),
   metaLabel: z.string(),
   image: PublicVehicleImage.nullable(),
   imageCount: z.number().int(),
