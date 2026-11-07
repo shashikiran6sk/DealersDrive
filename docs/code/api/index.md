@@ -189,6 +189,9 @@ when it is false. One function, so the two deployments cannot drift into
 running different handlers — a worker that subscribed to five of the six
 events would be a bug nobody notices until a dealer is not told something.
 
+`mediaProcessor.work()` is registered here with the notifications, so the
+`media.process` job (**F034**) runs wherever the other jobs run.
+
 ### `export async function closeContainer(container: Container): Promise<void>`
 
 Releases everything the container holds open. Called on SIGTERM.

@@ -926,6 +926,18 @@ export const PublicVehicleImage = z.object({
 export type PublicVehicleImage = z.infer<typeof PublicVehicleImage>;
 
 /**
+ * One photograph on a vehicle's page (**F034**): `url` at the page's width,
+ * plus what a phone needs so it never downloads more than its screen can show.
+ */
+export const PublicGalleryImage = PublicVehicleImage.extend({
+  /** The 320-wide derivative, for the thumbnail strip. */
+  thumbUrl: z.string(),
+  /** Every derivative width, for `<img srcset>`; the browser picks the size. */
+  srcset: z.string(),
+});
+export type PublicGalleryImage = z.infer<typeof PublicGalleryImage>;
+
+/**
  * One vehicle on the marketplace, as a buyer's card shows it (**F075**).
  *
  * Only a publicly visible listing (ACTIVE or RESERVED, **R71**) of an ACTIVE
@@ -1015,7 +1027,7 @@ export const PublicVehicleDetail = z.object({
   description: z.string().nullable(),
   specs: z.array(z.object({ label: z.string(), value: z.string() })),
   /** In the admin's gallery order. */
-  images: z.array(PublicVehicleImage),
+  images: z.array(PublicGalleryImage),
   /** Index of the primary image in `images`, the one shown first; 0 when empty. */
   primaryIndex: z.number().int(),
   /** Who took `images`; see `PhotoCreditSummary`. */

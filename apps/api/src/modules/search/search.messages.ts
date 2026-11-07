@@ -4,6 +4,8 @@ export const IMAGE_ALT = (title: string): string => `${title}, the primary photo
 
 export const DETAIL_IMAGE_WIDTH = 1024;
 
+export const THUMB_IMAGE_WIDTH = 320;
+
 export const GALLERY_ALT = (title: string, index: number, total: number): string =>
   `${title}, photograph ${index + 1} of ${total}`;
 

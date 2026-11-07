@@ -62,6 +62,8 @@ describe('an approved car', () => {
     expect(body.specs).toContainEqual({ label: 'Kilometres driven', value: '22,400 km' });
     expect(body.images).toHaveLength(6);
     expect(body.images[0]?.url).toContain(`/by-media/${live.mediaIds[0]!}/1024.webp`);
+    expect(body.images[0]?.thumbUrl).toContain(`/by-media/${live.mediaIds[0]!}/320.webp`);
+    expect(body.images[0]?.srcset).toContain(`/by-media/${live.mediaIds[0]!}/1600.webp 1600w`);
     expect(response.headers['cache-control']).toBe('public, max-age=60');
   });
 

@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn';
 import { GalleryArrow } from './gallery-arrow';
 import { PHOTO_GALLERY_TEXT, STRIP_SCROLL_PX } from './photo-gallery.constants';
 import type { GalleryPhoto } from './photo-gallery.types';
-import { revealOffset, stripEdges } from './utils';
+import { revealOffset, stripEdges, thumbOf } from './utils';
 
 export interface GalleryStripProps {
   photos: readonly GalleryPhoto[];
@@ -76,9 +76,10 @@ export function GalleryStrip({ photos, index, onSelect, onFailed }: GalleryStrip
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={photo.url}
+              src={thumbOf(photo)}
               alt=""
               loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover"
               onError={() => onFailed(photo.url)}
             />

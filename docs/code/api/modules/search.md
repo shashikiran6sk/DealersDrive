@@ -93,7 +93,11 @@ response says nothing about whether a car exists behind it.
 
 The gallery is every attached image in the admin's order, with `primaryIndex`
 naming the one to open on; order and primary are separate decisions (F035), and
-the page honours both. Images are the public media route at 1024 px wide.
+the page honours both. Each image's `url` is the public media route at
+1024 px wide, with `thumbUrl` at 320 for the thumbnail strip and `srcset`
+naming every derivative width (**F034**), so the browser picks the size its
+screen needs instead of every phone downloading the 1024 for a 108 px
+thumbnail. The card keeps its single 640 `url`: it is drawn at one size.
 
 `photoCredit` is `summarisePhotoCredit` (contracts) over every image's `credit`:
 one photographer when they all agree, `MIXED` when both took some, and `null`

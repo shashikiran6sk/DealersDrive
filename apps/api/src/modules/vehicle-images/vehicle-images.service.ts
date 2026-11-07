@@ -50,6 +50,7 @@ export interface VehicleImagesDeps {
   storage: StoragePort;
   audit: AuditService;
   config: PlatformConfigService;
+  processImage: (mediaId: string) => Promise<void>;
 }
 
 export const IMAGE_OPEN_STATUSES: readonly ListingStatus[] = [
@@ -109,7 +110,13 @@ function mediaKeys(media: { storageKey: string; variants: unknown }): string[] {
   ];
 }
 
-export function createVehicleImagesService({ prisma, storage, audit, config }: VehicleImagesDeps) {
+export function createVehicleImagesService({
+  prisma,
+  storage,
+  audit,
+  config,
+  processImage,
+}: VehicleImagesDeps) {
   async function queueCleanup(tx: Tx, admin: AdminPrincipal, listing: Listing, keys: string[]) {
     if (keys.length === 0) return;
     await enqueueOutbox(tx, {
@@ -249,13 +256,13 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
         throw new DomainError('UPLOAD_NOT_IMAGE', UPLOAD_NOT_IMAGE);
       }
 
-      const { status, removedKeys } = await withTransaction(prisma, async (tx) => {
+      const { status, removedKeys, committed } = await withTransaction(prisma, async (tx) => {
         const locked = await lockedOpen(tx, listingId);
         const current = await tx.media.findUniqueOrThrow({
           where: { id: media.id },
           include: { attachment: true },
         });
-        if (current.attachment) return { status: locked.status, removedKeys: [] };
+        if (current.attachment) return { status: locked.status, removedKeys: [], committed: false };
         if (current.status !== 'PENDING') throw uploadNotFound();
         const rows = await imagesOf(tx, locked.vehicleId);
         const target = replacesMediaId
@@ -268,7 +275,9 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           where: { id: media.id, status: 'PENDING' },
           data: { status: 'READY' },
         });
-        if (claimed.count === 0) return { status: locked.status, removedKeys: [] };
+        if (claimed.count === 0) {
+          return { status: locked.status, removedKeys: [], committed: false };
+        }
 
         const count = rows.length;
         if (target) {
@@ -322,10 +331,11 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
         });
         const removedKeys = target ? mediaKeys(target.media) : [];
         await queueCleanup(tx, admin, locked, removedKeys);
-        return { status: locked.status, removedKeys };
+        return { status: locked.status, removedKeys, committed: true };
       });
 
       await deleteStorageObjects(storage, removedKeys);
+      if (committed) await processImage(media.id);
       return images(listing.vehicleId, status);
     },
 

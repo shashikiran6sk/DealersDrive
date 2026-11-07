@@ -26,6 +26,15 @@ function image(index: number) {
   };
 }
 
+function galleryImage(index: number) {
+  const at = (width: number) => `https://media.test/by-media/m${index}/${width}.webp`;
+  return {
+    ...image(index),
+    thumbUrl: at(320),
+    srcset: [320, 640, 1024, 1600].map((width) => `${at(width)} ${width}w`).join(', '),
+  };
+}
+
 function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDetail {
   return {
     slug: SLUG,
@@ -40,7 +49,7 @@ function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDeta
       { label: 'Make', value: 'Hyundai' },
       { label: 'Registered at', value: 'TN 23' },
     ],
-    images: [image(0), image(1), image(2)],
+    images: [galleryImage(0), galleryImage(1), galleryImage(2)],
     primaryIndex: 1,
     photoCredit: 'DEALERS_DRIVE',
     publishedLabel: 'Listed 26 Sep 2026',
@@ -148,6 +157,23 @@ describe('/car/[slug]', () => {
     const specs = within(screen.getByRole('region', { name: 'Specifications' }));
     expect(specs.getByText('Hyundai')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '← All cars' })).toHaveAttribute('href', '/cars');
+  });
+
+  it('lets the phone pick the photograph size, and fills the strip with thumbnails (F034)', async () => {
+    serve(detail());
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    const photos = within(screen.getByRole('region', { name: 'Photographs' }));
+    const stage = within(photos.getByRole('button', { name: /^View all 3 photos/ })).getByRole(
+      'img',
+    );
+    expect(stage).toHaveAttribute('src', galleryImage(1).url);
+    expect(stage).toHaveAttribute('srcset', galleryImage(1).srcset);
+    expect(stage.getAttribute('sizes')).toMatch(/100vw$/);
+    const thumbs = photos
+      .getAllByRole('button', { name: /^Show photo/ })
+      .map((thumb) => thumb.querySelector('img')?.getAttribute('src'));
+    expect(thumbs).toEqual([0, 1, 2].map((index) => galleryImage(index).thumbUrl));
   });
 
   it('says under the gallery who took the photographs', async () => {
