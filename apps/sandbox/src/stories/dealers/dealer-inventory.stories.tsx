@@ -21,6 +21,7 @@ function car(index: number): VehicleCardDto {
       ] ?? '2023 Hyundai Creta SX(O)',
     year: 2023 - (index % 4),
     priceLabel: index % 5 === 4 ? null : '₹14,50,000',
+    negotiability: (['FIXED', 'SLIGHTLY', null] as const)[index % 3] ?? null,
     metaLabel: '22,400 km · Petrol · Automatic · Katpadi',
     image:
       index % 4 === 3

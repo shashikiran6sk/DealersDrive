@@ -82,6 +82,13 @@ describe('the vehicle vocabulary', () => {
     expect(enums.BodyType.options).toEqual(['HATCHBACK', 'SEDAN', 'SUV', 'MUV', 'LUXURY']);
   });
 
+  it('gives a car card a short negotiability label, distinct per choice', () => {
+    expect(enums.NEGOTIABILITY_CARD_LABELS).toEqual({
+      SLIGHTLY: 'Negotiable',
+      FIXED: 'Fixed price',
+    });
+  });
+
   it('lets a price be slightly negotiable or fixed, and nothing vaguer', () => {
     expect(enums.PriceNegotiability.options).toEqual(['SLIGHTLY', 'FIXED']);
   });
@@ -218,6 +225,12 @@ describe('the label maps', () => {
     ['DISPLAY_STATUS_LABELS', enums.DISPLAY_STATUS_LABELS, enums.DisplayStatus.options],
     ['DEALER_STATUS_LABELS', enums.DEALER_STATUS_LABELS, enums.DealerStatus.options],
     ['WITHDRAWAL_REASON_LABELS', enums.WITHDRAWAL_REASON_LABELS, enums.WithdrawalReason.options],
+    ['NEGOTIABILITY_LABELS', enums.NEGOTIABILITY_LABELS, enums.PriceNegotiability.options],
+    [
+      'NEGOTIABILITY_CARD_LABELS',
+      enums.NEGOTIABILITY_CARD_LABELS,
+      enums.PriceNegotiability.options,
+    ],
   ];
 
   it.each(maps)('%s has an entry for every member and no extras', (_name, map, options) => {

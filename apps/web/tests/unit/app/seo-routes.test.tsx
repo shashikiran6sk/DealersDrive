@@ -58,6 +58,7 @@ function card(slug: string, availability: VehicleCardDto['availability'] = 'AVAI
     title: `2022 Maruti Suzuki Brezza ${slug}`,
     year: 2022,
     priceLabel: '₹6,45,000',
+    negotiability: 'FIXED',
     metaLabel: '42,180 km · Petrol · Manual · Vellore',
     image: null,
     imageCount: 0,

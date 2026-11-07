@@ -83,6 +83,7 @@ function similarCard(slug: string): VehicleCardDto {
     title: `2022 Kia Seltos ${slug}`,
     year: 2022,
     priceLabel: '₹13,20,000',
+    negotiability: 'FIXED',
     metaLabel: '28,000 km · Petrol · Manual · Arcot',
     image: null,
     imageCount: 0,

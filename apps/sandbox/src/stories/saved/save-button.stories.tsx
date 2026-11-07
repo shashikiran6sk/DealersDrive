@@ -13,6 +13,7 @@ const CARD: VehicleCardDto = {
   title: '2022 Hyundai Creta SX',
   year: 2022,
   priceLabel: '₹12,40,000',
+  negotiability: 'FIXED',
   metaLabel: '31,000 km · Petrol · Automatic · Katpadi',
   image: null,
   imageCount: 0,

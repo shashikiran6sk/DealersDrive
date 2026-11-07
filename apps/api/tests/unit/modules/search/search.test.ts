@@ -37,6 +37,7 @@ function row(overrides: Partial<CardRow['vehicle']> = {}): CardRow {
       transmission: 'AUTOMATIC',
       kilometersDriven: 22_400,
       pricePaise: 145_000_000n,
+      negotiability: 'FIXED',
       images: [{ mediaId: 'media-1' }],
       _count: { images: 8 },
       ...overrides,
@@ -59,6 +60,7 @@ describe('toVehicleCard', () => {
       title: '2023 Hyundai Creta SX(O)',
       year: 2023,
       priceLabel: '₹14,50,000',
+      negotiability: 'FIXED',
       metaLabel: '22,400 km · Petrol · Automatic · Vellore',
       image: {
         url: expect.stringMatching(/\/by-media\/media-1\/640\.webp$/),
@@ -73,6 +75,13 @@ describe('toVehicleCard', () => {
       },
     });
   });
+
+  it.each(['FIXED', 'SLIGHTLY', null] as const)(
+    'passes the dealer’s negotiability through as it was set: %s',
+    (negotiability) => {
+      expect(toVehicleCard(row({ negotiability })).negotiability).toBe(negotiability);
+    },
+  );
 
   it('says a reserved car is reserved, and nothing more about the lifecycle (R71)', () => {
     const reserved = toVehicleCard({ ...row(), status: 'RESERVED' });

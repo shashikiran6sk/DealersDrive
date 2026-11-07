@@ -63,6 +63,12 @@ listing is ACTIVE.
 
 The meta row drops what is unknown rather than printing an empty separator.
 
+`negotiability` is the enum, not a label, like `availability`: the card words
+it in fewer words than the vehicle page's `negotiabilityLabel` sentence, and
+that wording belongs to the card (`NEGOTIABILITY_CARD_LABELS`). The card query
+already reads every vehicle column, so it costs no extra read. `null` when the
+dealer never set it.
+
 ## `apps/api/src/modules/search/search.service.ts`
 
 ### `async vehicles(query)`

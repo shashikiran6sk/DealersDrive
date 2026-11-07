@@ -7,6 +7,7 @@ const CARD_EXAMPLE = {
   title: '2023 Hyundai Creta SX(O)',
   year: 2023,
   priceLabel: '₹14,50,000',
+  negotiability: 'FIXED',
   metaLabel: '22,400 km · Petrol · Automatic · Katpadi',
   image: {
     url: 'http://localhost:4000/media/by-media/bc7de20d-30a4-41ed-a364-8f34771a20a8/640.webp',

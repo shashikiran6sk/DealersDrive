@@ -10,6 +10,7 @@ function car(index: number, dealer: string): VehicleCardDto {
     title: `2022 Kia Seltos HTX ${String(index)}`,
     year: 2022,
     priceLabel: '₹13,20,000',
+    negotiability: index % 2 === 0 ? 'FIXED' : 'SLIGHTLY',
     metaLabel: '28,000 km · Petrol · Manual · Arcot',
     image: null,
     imageCount: 0,

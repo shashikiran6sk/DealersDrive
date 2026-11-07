@@ -33,6 +33,7 @@ function card(slug: string, availability: VehicleCardDto['availability'] = 'AVAI
     title: `2022 Tata Nexon ${slug}`,
     year: 2022,
     priceLabel: '₹9,50,000',
+    negotiability: 'FIXED',
     metaLabel: '32,000 km · Diesel · Manual · Arcot',
     image: { url: `https://media.test/${slug}/1024.webp`, alt: `2022 Tata Nexon ${slug}` },
     imageCount: 6,

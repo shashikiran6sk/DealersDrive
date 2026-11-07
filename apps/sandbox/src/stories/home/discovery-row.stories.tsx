@@ -10,6 +10,7 @@ function car(index: number): VehicleCardDto {
     title: `2022 Hyundai Creta SX ${String(index)}`,
     year: 2022,
     priceLabel: '₹12,40,000',
+    negotiability: index % 2 === 0 ? 'FIXED' : 'SLIGHTLY',
     metaLabel: '31,000 km · Petrol · Automatic · Katpadi',
     image: null,
     imageCount: 0,
