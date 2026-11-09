@@ -376,7 +376,7 @@ docker exec <api-container> node apps/api/dist/media-backfill.js
 Locally, `pnpm --filter @dealers-drive/api media:process`. It builds only
 what resizing needs — a Prisma client, the configured storage, and an inline
 queue it never sends to — rather than the whole container, so it starts no
-poller and opens no port. The work is `backfillVehicleMedia`; see
+poller and opens no port. The work is `backfillMedia`; see
 [media](modules/media.md). Like `index.ts` and `worker.ts` it is excluded
 from coverage, because importing it runs it.
 

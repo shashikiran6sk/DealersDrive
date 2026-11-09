@@ -258,7 +258,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     storage,
     audit,
     config,
-    processImage: (mediaId) => mediaProcessor.request(mediaId),
   });
   const enquiries = createEnquiriesService({ prisma, audit });
   const savedVehicles = createSavedVehiclesService({ prisma, audit });
@@ -366,6 +365,7 @@ export async function startBackground(container: Container): Promise<void> {
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
+  container.mediaProcessor.subscribe(container.bus);
   await container.mediaProcessor.work();
   container.outbox.start();
 

@@ -31,6 +31,11 @@ Remove the bytes, keep the media row as ORPHAN so a sweeper can reconcile
 it. Always after the transaction commits: a rollback must not leave a row
 pointing at deleted bytes.
 
+"The bytes" is the original and every derivative (`mediaObjectKeys`): a
+portfolio photograph is resized like a vehicle's (**F034**), and deleting only
+`storageKey` would leave four WebP copies behind on every removal, replacement
+and take-down.
+
 ### `async function activeCount(tx: Tx, dealerId: string): Promise<number>`
 
 The limit counts every approved photograph and every pending one that is not a
@@ -53,6 +58,12 @@ photograph of the same dealership, and only one may wait per photograph —
 the partial unique index enforces that even if two commits race.
 
 Idempotent per media id, because a client that lost the response retries.
+
+The transaction that makes the media `READY` also records a `MediaUploaded`
+event (`recordMediaUploaded`), so the photograph is resized (**F034**) while it
+waits for review — by the time a reviewer approves it, the public page has the
+small copies to serve. A retried commit returns before the transaction and
+records nothing a second time.
 
 ### `async remove(dealerId: string, userId: string, photoId: string): Promise<void>`
 

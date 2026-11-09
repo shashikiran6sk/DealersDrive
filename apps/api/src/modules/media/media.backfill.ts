@@ -17,7 +17,7 @@ const OUTCOME_MARK: Record<ProcessOutcome, string> = {
   unreadable: '✗',
 };
 
-export async function backfillVehicleMedia({
+export async function backfillMedia({
   prisma,
   processor,
   dryRun,
@@ -35,9 +35,7 @@ export async function backfillVehicleMedia({
     unreadable: 0,
   };
 
-  write(
-    `${String(pending.length)} vehicle photograph(s) without derivatives${dryRun ? ' (dry run)' : ''}`,
-  );
+  write(`${String(pending.length)} photograph(s) without derivatives${dryRun ? ' (dry run)' : ''}`);
   if (dryRun) {
     for (const media of pending) write(`  ·  ${media.id}  ${media.storageKey}`);
     return counts;

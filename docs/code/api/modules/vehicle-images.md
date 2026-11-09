@@ -55,12 +55,14 @@ upload short-circuits the same way — commit is idempotent.
 The new image goes at `position = count`; the first image on a vehicle is the
 primary.
 
-Once the image is attached and the transaction has committed, `processImage`
-asks the media module to resize it (**F034**; see
-[media](media.md#appsapisrcmodulesmediamediaprocessorts)). It runs only for
-an upload this call attached — not for the idempotent replay or the losing
-side of a race — and after the transaction, so a slow resize never holds the
-listing's row lock.
+In the same transaction that attaches it, the commit records a `MediaUploaded`
+event (`recordMediaUploaded`, see
+[platform/media](../platform/media.md#appsapisrcplatformmediauploadedts)), and
+the media module resizes the image from that (**F034**). Only an upload this
+call claimed records one — not the idempotent replay or the losing side of a
+race — so a retried commit never asks twice. The resize runs in the worker,
+long after the transaction, so it never holds the listing's row lock; and it
+cannot be lost to a queue failure, because the event commits with the image.
 
 `credit` records who took the photograph. The commit route requires it, so every
 image attached from now on says; a replacement without one inherits the credit of

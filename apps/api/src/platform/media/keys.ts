@@ -17,7 +17,3 @@ export function variantMap(variants: unknown): Record<string, string> {
 export function mediaObjectKeys(media: MediaObjects): string[] {
   return [...new Set([media.storageKey, ...Object.values(variantMap(media.variants))])];
 }
-
-export function variantKey(storageKey: string, width: number): string {
-  return `${storageKey.replace(/\.[a-z0-9]+$/i, '')}-${String(width)}.webp`;
-}

@@ -155,6 +155,7 @@ never metric labels.
 | `dealers_drive_db_errors_total`                  | Database error count.                                                                                                            |
 | `dealers_drive_db_slow_operations_total`         | Operations crossing `DB_SLOW_OPERATION_MS`.                                                                                      |
 | `dealers_drive_oauth_attempts_total`             | Dealer/admin OAuth success, expected failure, internal error and bounded failure reason.                                         |
+| `dealers_drive_media_variant_fallbacks_total`    | Public image requests answered without the requested derivative, by `served` (`original` or a larger `variant`). Should be flat. |
 | `dealers_drive_service_up`                       | Scrape heartbeat used for missing-target availability alerts.                                                                    |
 
 Request and database duration histograms carry `trace_id` as an OpenMetrics

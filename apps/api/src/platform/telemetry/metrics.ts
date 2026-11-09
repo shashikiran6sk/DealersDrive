@@ -130,6 +130,17 @@ export function recordNotification(template: string, outcome: NotificationOutcom
   notifications.inc({ template, outcome });
 }
 
+const mediaVariantFallbacks = new Counter({
+  name: 'dealers_drive_media_variant_fallbacks_total',
+  help: 'Public image requests answered without the requested derivative, by what was served instead.',
+  labelNames: ['served'] as const,
+  registers: [metricsRegistry],
+});
+
+export function recordMediaVariantFallback(served: 'original' | 'variant'): void {
+  mediaVariantFallbacks.inc({ served });
+}
+
 export interface HttpObservation {
   method: string;
   route: string;

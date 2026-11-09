@@ -1,8 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createMediaService, toMediaStatus } from '../../../../src/modules/media/media.service.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
+import { logger } from '../../../../src/platform/telemetry/logger.js';
+import { metricsRegistry } from '../../../../src/platform/telemetry/metrics.js';
 
 /**
  * Unit tests for `src/modules/media/media.service.ts`.
@@ -111,6 +113,68 @@ describe('serve', () => {
     const h = setup({ media: { status: 'READY' }, objectBody: null });
 
     expect(await h.service.serve('media-1', 640)).toBeNull();
+  });
+});
+
+describe('locate, when a derivative is missing', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function fallbacks(served: string): Promise<number> {
+    const metric = await metricsRegistry
+      .getSingleMetric('dealers_drive_media_variant_fallbacks_total')
+      ?.get();
+    return metric?.values.find((value) => value.labels.served === served)?.value ?? 0;
+  }
+
+  it('warns and counts when the original is served because nothing was resized', async () => {
+    const warn = vi.spyOn(logger, 'warn');
+    const before = await fallbacks('original');
+    const h = setup({ media: { variants: {} } });
+
+    expect((await h.service.locate('media-1', 640))?.key).toBe(
+      'vehicles/vehicle-1/media-1/original.jpg',
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      { mediaId: 'media-1', width: 640, served: 'original' },
+      'media.variant_missing',
+    );
+    expect(await fallbacks('original')).toBe(before + 1);
+  });
+
+  it('warns when a derivative width was never written, even though a larger one is served', async () => {
+    const warn = vi.spyOn(logger, 'warn');
+    const before = await fallbacks('variant');
+    const h = setup({ media: { variants: { '1024': 'vehicles/v/m/1024.webp' } } });
+
+    expect((await h.service.locate('media-1', 640))?.key).toBe('vehicles/v/m/1024.webp');
+
+    expect(warn).toHaveBeenCalledWith(
+      { mediaId: 'media-1', width: 640, served: 'variant' },
+      'media.variant_missing',
+    );
+    expect(await fallbacks('variant')).toBe(before + 1);
+  });
+
+  it('stays quiet for the width it has, and for an odd width a derivative answers', async () => {
+    const warn = vi.spyOn(logger, 'warn');
+    const h = setup({
+      media: { variants: { '640': 'vehicles/v/m/640.webp', '1600': 'vehicles/v/m/1600.webp' } },
+    });
+
+    expect((await h.service.locate('media-1', 640))?.key).toBe('vehicles/v/m/640.webp');
+    expect((await h.service.locate('media-1', 800))?.key).toBe('vehicles/v/m/1600.webp');
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('says nothing about an image it refuses to serve', async () => {
+    const warn = vi.spyOn(logger, 'warn');
+    const h = setup({ media: { status: 'PENDING', variants: {} } });
+
+    expect(await h.service.locate('media-1', 640)).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
   });
 });
 

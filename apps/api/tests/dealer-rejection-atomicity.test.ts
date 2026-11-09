@@ -499,3 +499,37 @@ it('honors a role downgrade, logout/login and seat revocation on an existing Adm
     }),
   ).toBe(0);
 });
+
+it('deletes the resized copies of a dealership photograph along with the original (F034)', async () => {
+  const { dealer, admin } = await application();
+  const storage = createLocalStorage();
+  const original = `dealers/${dealer.slug}/portfolio/${crypto.randomUUID()}`;
+  const copies = [`${original}-320.webp`, `${original}-640.webp`];
+  for (const key of [original, ...copies]) {
+    await storage.put(key, Buffer.from(key), 'image/webp');
+  }
+  await h.prisma.media.create({
+    data: {
+      dealerId: dealer.dealerId,
+      ownerType: 'DEALER_PORTFOLIO',
+      storageKey: original,
+      mimeType: 'image/jpeg',
+      bytes: 1,
+      status: 'READY',
+      variants: { '320': copies[0], '640': copies[1], '1024': copies[1], '1600': copies[1] },
+    },
+  });
+
+  await admin
+    .post(`/v1/admin/dealers/${dealer.dealerId}/reject`)
+    .send({ reason: 'Invalid supporting documents' })
+    .expect(200);
+
+  const cleanup = await h.prisma.outboxEvent.findFirstOrThrow({
+    where: { aggregateId: dealer.dealerId, eventType: 'StorageObjectsDelete' },
+  });
+  const keys = (cleanup.payload as { payload: { keys: string[] } }).payload.keys;
+  expect(keys).toEqual(expect.arrayContaining([original, ...copies]));
+  expect(keys.filter((key) => key === copies[1])).toHaveLength(1);
+  for (const key of [original, ...copies]) expect(await storage.head(key)).toBeNull();
+});
