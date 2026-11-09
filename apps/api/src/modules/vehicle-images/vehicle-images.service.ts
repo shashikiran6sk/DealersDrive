@@ -23,6 +23,8 @@ import {
   sniffImageType,
   type SniffedImageType,
 } from '../../platform/media/sniff.js';
+import { mediaObjectKeys } from '../../platform/media/keys.js';
+import { recordMediaUploaded } from '../../platform/media/uploaded.js';
 import { UPLOAD_INCOMPLETE, UPLOAD_NOT_FOUND } from '../../platform/messages.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -97,16 +99,6 @@ function assertRoom(count: number): void {
       extra: { max: VEHICLE_IMAGE_MAX },
     });
   }
-}
-
-function mediaKeys(media: { storageKey: string; variants: unknown }): string[] {
-  const variants = media.variants;
-  return [
-    media.storageKey,
-    ...(variants && typeof variants === 'object'
-      ? Object.values(variants).filter((key): key is string => typeof key === 'string')
-      : []),
-  ];
 }
 
 export function createVehicleImagesService({ prisma, storage, audit, config }: VehicleImagesDeps) {
@@ -269,6 +261,12 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           data: { status: 'READY' },
         });
         if (claimed.count === 0) return { status: locked.status, removedKeys: [] };
+        await recordMediaUploaded(tx, {
+          mediaId: media.id,
+          dealerId: locked.dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'vehicle-images',
+        });
 
         const count = rows.length;
         if (target) {
@@ -320,7 +318,7 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
             isPrimary: target?.isPrimary ?? count === 0,
           },
         });
-        const removedKeys = target ? mediaKeys(target.media) : [];
+        const removedKeys = target ? mediaObjectKeys(target.media) : [];
         await queueCleanup(tx, admin, locked, removedKeys);
         return { status: locked.status, removedKeys };
       });
@@ -370,7 +368,7 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
           before: { mediaId, position: target.position, isPrimary: target.isPrimary },
           after: { listingId, primaryMediaId: promoted?.mediaId ?? null },
         });
-        const keys = mediaKeys(target.media);
+        const keys = mediaObjectKeys(target.media);
         await queueCleanup(tx, admin, listing, keys);
         return {
           vehicleId: listing.vehicleId,

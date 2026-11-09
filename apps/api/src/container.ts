@@ -71,6 +71,7 @@ import {
 } from './modules/dealers/dealers.public.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
+import { createMediaProcessor, type MediaProcessor } from './modules/media/media.processor.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createModerationRepository } from './modules/moderation/moderation.repository.js';
 import {
@@ -154,6 +155,7 @@ export interface Container {
   readonly publicConfig: ConfigService;
   readonly serviceLocations: ServiceLocationsService;
   readonly media: MediaService;
+  readonly mediaProcessor: MediaProcessor;
   readonly vehicles: VehiclesService;
   readonly moderation: ModerationService;
   readonly vehicleImages: VehicleImagesService;
@@ -299,6 +301,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     publicConfig,
     serviceLocations: createServiceLocationsService(prisma, audit),
     media,
+    mediaProcessor: createMediaProcessor({ prisma, storage }),
     vehicles,
     moderation,
     vehicleImages,
@@ -356,6 +359,8 @@ export async function startBackground(container: Container): Promise<void> {
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
+  container.mediaProcessor.subscribe(container.bus, container.queue);
+  await container.mediaProcessor.work(container.queue);
   container.outbox.start();
 
   logger.info(
