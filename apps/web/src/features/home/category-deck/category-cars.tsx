@@ -29,7 +29,7 @@ export function CategoryCars({ category }: CategoryCarsProps) {
         <div className="h-[160px] w-full md:h-[300px]">
           <VehicleImage
             image={lead.image}
-            className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+            className="object-contain mix-blend-darken transition-transform duration-500 group-hover:scale-[1.03]"
           />
         </div>
         <span className="absolute bottom-1.5 left-2 flex max-w-[calc(100%-16px)] gap-1.5 truncate rounded-full bg-white px-3 py-1.5 text-[12px] font-bold shadow-sm">

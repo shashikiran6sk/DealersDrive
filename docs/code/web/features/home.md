@@ -170,6 +170,16 @@ offset 16 px lower than the last, as the page scrolls. The stacking is sticky
 positioning, so it works without script; `DeckStack` only adds the scale and
 dim of the card being covered.
 
+## `apps/web/src/features/home/category-deck/category-cars.tsx`
+
+### `mix-blend-darken` on the lead photo
+
+Listing photographs are studio cut-outs on a flat `#f6f6f6`, and the panel is
+`--color-neutral-100` (`#f7f7f5`). One step apart is still a visible box around
+every car. `darken` keeps the darker of the two at each pixel, so the photo's
+ground disappears into the panel while the car, which is always darker than
+either, is unchanged.
+
 ## `apps/web/src/features/home/category-deck/category-card.tsx`
 
 ### `export function CategoryCard({ category, position, total })`
