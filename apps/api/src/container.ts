@@ -70,8 +70,8 @@ import {
   type DealersPublicService,
 } from './modules/dealers/dealers.public.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
-import { createMediaService, type MediaService } from './modules/media/media.service.js';
 import { createMediaProcessor, type MediaProcessor } from './modules/media/media.processor.js';
+import { createMediaService, type MediaService } from './modules/media/media.service.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createModerationRepository } from './modules/moderation/moderation.repository.js';
 import {
@@ -242,6 +242,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage });
+  const mediaProcessor = createMediaProcessor({ prisma, storage, queue });
   const notifications = createNotificationsService({
     prisma,
     queue,
@@ -252,7 +253,13 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     repo: createVehiclesRepository(prisma),
     audit,
   });
-  const vehicleImages = createVehicleImagesService({ prisma, storage, audit, config });
+  const vehicleImages = createVehicleImagesService({
+    prisma,
+    storage,
+    audit,
+    config,
+    processImage: (mediaId) => mediaProcessor.request(mediaId),
+  });
   const enquiries = createEnquiriesService({ prisma, audit });
   const savedVehicles = createSavedVehiclesService({ prisma, audit });
   const moderation = createModerationService({
@@ -301,7 +308,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     publicConfig,
     serviceLocations: createServiceLocationsService(prisma, audit),
     media,
-    mediaProcessor: createMediaProcessor({ prisma, storage }),
+    mediaProcessor,
     vehicles,
     moderation,
     vehicleImages,
@@ -359,8 +366,7 @@ export async function startBackground(container: Container): Promise<void> {
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
-  container.mediaProcessor.subscribe(container.bus, container.queue);
-  await container.mediaProcessor.work(container.queue);
+  await container.mediaProcessor.work();
   container.outbox.start();
 
   logger.info(

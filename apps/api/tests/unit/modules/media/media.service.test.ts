@@ -10,8 +10,8 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * R45 withdrew the dealer's vehicle-photo routes (`/v1/dealer/media/*`): a
  * dealer never writes vehicle media, and the admin upload lives in the
  * `vehicle-images` module with its own tests. What is left here is delivery —
- * `serve()` — and the status mapper. The
- * sharp/blurhash `process()` block stays deferred with F034.
+ * `serve()` — and the status mapper. Resizing (**F034**) is
+ * `media.processor.ts`, tested in `media.processor.test.ts`.
  */
 interface Row {
   id: string;

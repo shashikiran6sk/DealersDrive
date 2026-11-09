@@ -13,6 +13,7 @@ import { GalleryStrip } from './gallery-strip';
 import { GalleryViewer } from './gallery-viewer';
 import {
   DEFAULT_STAGE_CLASS,
+  DEFAULT_STAGE_SIZES,
   PHOTO_GALLERY_TEXT,
   STAGE_VARIANT_CLASS,
 } from './photo-gallery.constants';
@@ -30,6 +31,7 @@ export function PhotoGallery({
   emptyLabel = PHOTO_GALLERY_TEXT.noPhotos,
   fallback,
   variant = 'cover',
+  sizes = DEFAULT_STAGE_SIZES,
 }: PhotoGalleryProps) {
   const [failed, setFailed] = useState<ReadonlySet<string>>(() => new Set());
   const [kinds, setKinds] = useState<ReadonlyMap<string, PhotoKind>>(() => new Map());
@@ -120,6 +122,8 @@ export function PhotoGallery({
           <img
             ref={stageImageRef}
             src={main.url}
+            srcSet={main.srcset}
+            sizes={main.srcset ? sizes : undefined}
             alt={main.alt}
             fetchPriority={current === first ? 'high' : undefined}
             className={cn('h-full w-full', variantClass.image)}

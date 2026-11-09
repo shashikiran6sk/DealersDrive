@@ -22,7 +22,7 @@ import {
   type VehicleCardDto,
 } from '@dealers-drive/contracts';
 
-import { mediaUrl } from '../../platform/media/urls.js';
+import { mediaUrl, srcsetFor } from '../../platform/media/urls.js';
 import type {
   CardRow,
   DetailRow,
@@ -32,6 +32,7 @@ import type {
 import {
   CARD_IMAGE_WIDTH,
   DETAIL_IMAGE_WIDTH,
+  THUMB_IMAGE_WIDTH,
   GALLERY_ALT,
   IMAGE_ALT,
   PUBLISHED,
@@ -106,6 +107,8 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
     specs: specsOf(vehicle),
     images: vehicle.images.map((image, index) => ({
       url: mediaUrl(image.mediaId, DETAIL_IMAGE_WIDTH),
+      thumbUrl: mediaUrl(image.mediaId, THUMB_IMAGE_WIDTH),
+      srcset: srcsetFor(image.mediaId),
       alt: GALLERY_ALT(title, index, total),
     })),
     primaryIndex,

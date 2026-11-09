@@ -55,6 +55,13 @@ upload short-circuits the same way — commit is idempotent.
 The new image goes at `position = count`; the first image on a vehicle is the
 primary.
 
+Once the image is attached and the transaction has committed, `processImage`
+asks the media module to resize it (**F034**; see
+[media](media.md#appsapisrcmodulesmediamediaprocessorts)). It runs only for
+an upload this call attached — not for the idempotent replay or the losing
+side of a race — and after the transaction, so a slow resize never holds the
+listing's row lock.
+
 `credit` records who took the photograph. The commit route requires it, so every
 image attached from now on says; a replacement without one inherits the credit of
 the image it replaces, because replacing a blurred shot with a sharper one from

@@ -189,6 +189,9 @@ when it is false. One function, so the two deployments cannot drift into
 running different handlers — a worker that subscribed to five of the six
 events would be a bug nobody notices until a dealer is not told something.
 
+`mediaProcessor.work()` is registered here with the notifications, so the
+`media.process` job (**F034**) runs wherever the other jobs run.
+
 ### `export async function closeContainer(container: Container): Promise<void>`
 
 Releases everything the container holds open. Called on SIGTERM.
@@ -359,6 +362,23 @@ to sign anything, and a signing secret here would imply a guarantee the
 ### `app.use(cookieParser())`
 
 session design does not rely on.
+
+## `apps/api/src/media-backfill.ts`
+
+The third process entry point: the one-off resize of photographs uploaded
+before **F034**. In production, from the host running the API container:
+
+```bash
+docker exec <api-container> node apps/api/dist/media-backfill.js --dry-run
+docker exec <api-container> node apps/api/dist/media-backfill.js
+```
+
+Locally, `pnpm --filter @dealers-drive/api media:process`. It builds only
+what resizing needs — a Prisma client, the configured storage, and an inline
+queue it never sends to — rather than the whole container, so it starts no
+poller and opens no port. The work is `backfillVehicleMedia`; see
+[media](modules/media.md). Like `index.ts` and `worker.ts` it is excluded
+from coverage, because importing it runs it.
 
 ## `apps/api/src/worker.ts`
 

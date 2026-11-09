@@ -104,6 +104,39 @@ the largest thing above the fold when it shows) and `unoptimized`, as an SVG
 has nothing for the optimiser to do. The car page passes no fallback and keeps
 its slot.
 
+### `thumbUrl` · `srcset` on `GalleryPhoto`, and `sizes?: string`
+
+**A phone must never download the camera original for a 108px thumbnail
+(F034).** Before the API wrote derivatives, every `<img>` here — ten
+thumbnails, the stage, the viewer rail — asked for one URL, and that URL
+answered with the full-resolution original. Each one decoded to about 60 MB
+of pixels on the phone, and the gallery stuttered when scrolled however fast
+the network was.
+
+So a photograph may now carry two optional fields, which the car page
+receives straight from `PublicGalleryImage` in contracts:
+
+- **`thumbUrl`** — the 320 derivative. The strip and the viewer rail draw it,
+  through `thumbOf()` in `utils.ts`, which falls back to `url` for a
+  photograph that has none (the dealer page's portfolio photographs, today).
+  Thumbnails are `decoding="async"` as well as lazy, so decoding one never
+  holds up a tap.
+- **`srcset`** — every derivative width. The stage and the viewer stage hand
+  it to the browser with a `sizes`, and the browser picks the smallest file
+  that is sharp at that width on that screen. `url` stays the `src`, for a
+  browser that ignores `srcset`.
+
+`sizes` describes how wide the _page_ draws the stage, which only the page
+knows; the default, `100vw`, is right for a full-width gallery and merely
+generous for a narrower one. The car page passes its own (see
+[car](<../../app/(public)/car.md>)). The viewer's is fixed, `VIEWER_SIZES`,
+because the viewer is the same fullscreen frame on every page: up to 1100px
+wide from 768px, the full width below. A photograph without a `srcset` gets
+neither attribute — a `sizes` with nothing to choose between is meaningless.
+
+The stage's `src` still keys everything else — a failed photograph is dropped
+by `url`, whichever candidate the browser chose.
+
 ### `variant?: PhotoGalleryVariant` — `'cover'` (default) or `'studio'`
 
 **The car page floats its StudioCar exteriors on the page.** Every vehicle
@@ -111,8 +144,9 @@ photograph is a StudioCar output, and StudioCar's default background,
 Premium White / Plain, is a flat `#F5F5F5` PNG
 (`workers/image-processing/assets/backgrounds/premium-white-plain.png` in
 StudioCar). Its lossy WebP encoder rounds that to **`#F6F6F6`** at every
-quality, and that is what reaches the browser — the API serves the stored file
-and re-encodes nothing. So the photograph is a light-grey rectangle, and on a
+quality, and that is what reaches the browser. The API's derivatives
+(**F034**) are re-encoded WebP, and at their quality the backdrop stays exactly
+`#F6F6F6` at every width — `derive.test.ts` in the API pins it. So the photograph is a light-grey rectangle, and on a
 white page no stage colour can hide it: a `#F6F6F6` stage only moves the edge
 from the photograph to the stage.
 

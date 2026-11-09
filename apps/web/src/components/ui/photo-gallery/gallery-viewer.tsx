@@ -10,7 +10,7 @@ import { cn } from '@/lib/cn';
 import { GalleryArrow } from './gallery-arrow';
 import { GalleryRail } from './gallery-rail';
 import { GalleryZoomControls } from './gallery-zoom-controls';
-import { PHOTO_GALLERY_TEXT } from './photo-gallery.constants';
+import { PHOTO_GALLERY_TEXT, VIEWER_SIZES } from './photo-gallery.constants';
 import type { GalleryPhoto, GalleryStep } from './photo-gallery.types';
 import { useSwipe } from './use-swipe';
 import { useZoom } from './use-zoom';
@@ -114,6 +114,8 @@ export function GalleryViewer({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={current.url}
+              srcSet={current.srcset}
+              sizes={current.srcset ? VIEWER_SIZES : undefined}
               alt={current.alt}
               draggable={false}
               style={{ transform: zoomTransform(zoom.view) }}
