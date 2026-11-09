@@ -1,24 +1,27 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import type { ComponentType } from 'react';
+import type { CSSProperties } from 'react';
 
 import { SectionError } from '@/components/errors/section-error';
 import { CarSearchBox } from '@/components/search/car-search-box';
-import { LinkPendingLabel } from '@/components/ui/link-pending';
+import { JsonLd } from '@/components/seo/json-ld';
 import { AudienceSection } from '@/features/home/audience-section';
+import { CategoryDeck } from '@/features/home/category-deck';
+import { CategoryShortcuts } from '@/features/home/category-shortcuts';
 import { DiscoveryBand } from '@/features/home/discovery-row';
 import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
 import {
-  HOME_FLOW,
+  HOME_CATEGORIES,
   HOME_SEARCH_PATH,
   HOME_TEXT,
-  discoveryRowId,
-  type HomeInfoSection,
+  RECENT_ROW_COUNT,
+  RECENT_ROW_ID,
 } from '@/features/home/home.constants';
 import { JourneySection } from '@/features/home/journey-section';
 import { loadHomeInventory } from '@/features/home/load-home';
+import { MakesStrip } from '@/features/home/makes-strip';
+import { STOCK_STREAM_MIN_CARS, StockStream } from '@/features/home/stock-stream';
 import { TrustSection } from '@/features/home/trust-section';
-import { JsonLd } from '@/components/seo/json-ld';
+import { categoryHref } from '@/features/home/utils';
 import { getPublicConfig } from '@/lib/public-config';
 import {
   HOME_TITLE,
@@ -38,31 +41,39 @@ export function generateMetadata(): Metadata {
   });
 }
 
-const INFO_SECTIONS: Record<HomeInfoSection, ComponentType> = {
-  journey: JourneySection,
-  trust: TrustSection,
-  audience: AudienceSection,
-};
+function rise(index: number): CSSProperties & { '--rise-index': number } {
+  return { '--rise-index': index };
+}
+
+const SHORTCUTS = HOME_CATEGORIES.map((category) => ({
+  ...category,
+  href: categoryHref(category),
+}));
 
 export default async function HomePage() {
   const [inventory, config] = await Promise.all([loadHomeInventory(), getPublicConfig()]);
-  const rows = new Map(inventory.rows.map((row) => [row.id, row]));
+  const streaming = inventory.recent.length >= STOCK_STREAM_MIN_CARS;
 
   return (
     <div>
       <JsonLd nodes={[organizationSchema(config), websiteSchema()]} />
-      <HeroBanner image={heroImageFrom(config.heroImage)}>
-        <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
+      <HeroBanner
+        image={heroImageFrom(config.heroImage)}
+        aside={streaming ? <StockStream cars={inventory.recent} /> : null}
+      >
+        <div className="dd-rise eyebrow mb-4" style={rise(0)}>
           {HOME_TEXT.eyebrow}
         </div>
-        <h1 className="max-w-[14ch] text-[40px] leading-[1.05] tracking-[-0.04em] text-white sm:text-[48px] lg:text-[56px]">
+        <h1 className="max-w-[14ch] text-[42px] leading-none tracking-[-0.05em] sm:text-[56px] lg:text-[clamp(56px,5.4vw,80px)]">
           {HOME_TEXT.title}
         </h1>
-        <p className="mt-5 max-w-[52ch] text-[15px] leading-[1.8] text-white/85">
+        <p
+          className="dd-rise mt-5 max-w-[46ch] text-[16px] leading-[1.75] ink-secondary"
+          style={rise(1)}
+        >
           {HOME_TEXT.lede}
         </p>
-
-        <div className="mt-7 text-(--color-ink)">
+        <div className="dd-rise mt-7" style={rise(2)}>
           <CarSearchBox
             params={{}}
             basePath={HOME_SEARCH_PATH}
@@ -70,15 +81,7 @@ export default async function HomePage() {
             className="sm:max-w-[560px]"
           />
         </div>
-
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Link href="/cars" className="relative dd-chip">
-            <LinkPendingLabel>{HOME_TEXT.browseAll}</LinkPendingLabel>
-          </Link>
-          <Link href="/dealers" className="relative dd-chip">
-            <LinkPendingLabel>{HOME_TEXT.browseDealers}</LinkPendingLabel>
-          </Link>
-        </div>
+        <CategoryShortcuts categories={SHORTCUTS} className="mt-5" />
       </HeroBanner>
 
       {inventory.unavailable ? (
@@ -91,13 +94,19 @@ export default async function HomePage() {
         </div>
       ) : null}
 
-      {HOME_FLOW.map((item) => {
-        if (item.kind === 'info') {
-          const Section = INFO_SECTIONS[item.key];
-          return <Section key={item.key} />;
-        }
-        return <DiscoveryBand key={item.key} row={rows.get(discoveryRowId(item.key))} />;
-      })}
+      <MakesStrip makes={inventory.makes} />
+      <CategoryDeck categories={inventory.categories} />
+      <DiscoveryBand
+        row={{
+          id: RECENT_ROW_ID,
+          title: HOME_TEXT.recentTitle,
+          href: HOME_SEARCH_PATH,
+          cars: inventory.recent.slice(0, RECENT_ROW_COUNT),
+        }}
+      />
+      <JourneySection />
+      <TrustSection />
+      <AudienceSection />
     </div>
   );
 }

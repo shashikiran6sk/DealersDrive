@@ -37,18 +37,37 @@ no reason.
 
 ## `apps/web/src/app/(public)/page.tsx`
 
-### The page is `HOME_FLOW`, in order (R83)
+### The page order (Homepage Deck, revising R83)
 
-Below the hero, car rows and informational sections take turns — Recently
-added, the journey, SUVs, why Dealers-Drive, automatic cars, built for both
-sides, under ₹10 lakh — rather than every explainer waiting at the bottom. The
-order is data (`HOME_FLOW` in `home.constants.ts`), so the page is one map and
-a test can hold the sequence. Moving a section is moving a line.
+Hero (search, category shortcuts, the stock stream) · makes strip · the
+category deck · Recently added · the journey · why Dealers-Drive · built for
+both sides. The redesign replaced the four alternating car rows of **R83**: the
+SUV, Automatic and Under ₹10 lakh rows became cards in the deck, so there is
+one car row left and nothing to alternate with. The three explainers keep their
+content and follow the cars. The order is the JSX; a test holds it through each
+section's `data-home-section`.
 
-The rows are still the four `loadHomeInventory()` reads, fetched once, in
-parallel, and looked up by id; composition never adds a read. A row with no cars
-renders nothing at all (`DiscoveryBand`), padding included, so an empty row
-closes up rather than leaving a gap between two explainers.
+Every read is `loadHomeInventory()`, made once, in parallel, before anything
+renders. A section with no cars renders nothing at all (`DiscoveryBand`,
+`MakesStrip`), padding included, so it closes up rather than leaving a gap.
+
+### `SHORTCUTS` are built from the constants, not the inventory
+
+The five hero shortcuts link straight to their `/cars` searches and are made
+from `HOME_CATEGORIES` at module load, so they render when the API is down,
+which is exactly when a buyer most needs a way into the marketplace.
+
+### `aside={streaming ? <StockStream /> : null}`
+
+The stream needs four cars to look like a stream; with fewer, the hero shows
+the admin-set photograph instead (**R81**), so that setting still does
+something on a small or empty marketplace.
+
+### `rise(index)` — the `dd-rise` stagger
+
+The eyebrow, lede, search and shortcuts rise in on load, 70 ms apart. The `h1`
+does not: it is the page's largest paint, and an element that starts at
+opacity 0 delays Largest Contentful Paint until its first visible frame.
 
 ### The hero search is `CarSearchBox` (R79)
 

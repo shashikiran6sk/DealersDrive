@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { HeroBanner, heroImageFrom, HOME_HERO_IMAGE } from '@/features/home/hero-banner';
 
 /**
- * The homepage's single hero banner (**R81**). The photograph is one value,
- * `image`, so that a later admin setting can supply it without touching the
- * layout; until a photograph is committed the banner draws its dark ground
- * and the copy still reads, white on black.
+ * The homepage hero: the copy on the left, and on the right either what the
+ * page gives it (the stream of recent cars) or the photograph (**R81**). The
+ * photograph is one value, `image`, so the admin setting supplies it without
+ * touching the layout; with none, the frame draws its dark ground.
  */
 describe('HeroBanner', () => {
-  it('shows the photograph it is given, described', () => {
+  it('shows the photograph beside the copy when it is given nothing else', () => {
     render(
       <HeroBanner image={{ src: '/images/home-hero.jpg', alt: 'A dealer with customers' }}>
         <h1>Find your next car</h1>
@@ -20,6 +20,17 @@ describe('HeroBanner', () => {
     const photo = screen.getByRole('img', { name: 'A dealer with customers' });
     expect(photo).toHaveAttribute('src', '/images/home-hero.jpg');
     expect(screen.getByRole('heading', { level: 1, name: 'Find your next car' })).toBeVisible();
+  });
+
+  it('shows what it is given in place of the photograph', () => {
+    render(
+      <HeroBanner image={HOME_HERO_IMAGE} aside={<p>Cars listed now</p>}>
+        <h1>Find your next car</h1>
+      </HeroBanner>,
+    );
+
+    expect(screen.getByText('Cars listed now')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
   it('draws a plain ground, and no broken image, when there is no photograph', () => {

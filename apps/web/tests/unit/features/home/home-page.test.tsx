@@ -12,7 +12,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import HomePage from '@/app/(public)/page';
 import { AUDIENCE_TEXT } from '@/features/home/audience-section';
+import { DECK_TEXT } from '@/features/home/category-deck';
+import { SHORTCUTS_TEXT } from '@/features/home/category-shortcuts';
+import { HOME_HERO_IMAGE } from '@/features/home/hero-banner';
+import { HOME_CATEGORIES } from '@/features/home/home.constants';
 import { JOURNEY_TEXT } from '@/features/home/journey-section';
+import { MAKES_STRIP_TEXT } from '@/features/home/makes-strip';
+import { STOCK_STREAM_TEXT } from '@/features/home/stock-stream';
 import { TRUST_TEXT } from '@/features/home/trust-section';
 import type * as ApiModule from '@/lib/api';
 import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
@@ -20,11 +26,10 @@ import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 import { navigationState } from '../../../setup.js';
 
 /**
- * R72 — the homepage is an entry into `/cars`, not a second search. The hero
- * builds a `/cars` URL with the same parameters the results page reads, the
- * model list comes from the marketplace's own facets once a brand is chosen,
- * and the four rows are `/v1/vehicles` with ordinary filters, showing only cars
- * a buyer can act on.
+ * The homepage is an entry into `/cars`, not a second search (R72). The hero is
+ * the `/cars` search box and five shortcuts; a stream of recent cars sits beside
+ * it; five shopping categories stack below, each an ordinary `/v1/vehicles`
+ * request with a filter; then "Recently added" and the three explainers.
  */
 const apiGetParsed = vi.fn();
 
@@ -36,6 +41,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
 const BRANDS: FacetOption[] = [
   { value: 'hyundai', label: 'Hyundai', count: 9 },
   { value: 'tata', label: 'Tata', count: 4 },
+  { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 3 },
 ];
 
 function card(slug: string, overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
@@ -54,12 +60,20 @@ function card(slug: string, overrides: Partial<VehicleCardDto> = {}): VehicleCar
   };
 }
 
-function response(data: VehicleCardDto[], available = data.length): PublicVehiclesResponse {
+function cards(prefix: string, count: number): VehicleCardDto[] {
+  return Array.from({ length: count }, (_, index) => card(`${prefix}-${String(index)}`));
+}
+
+function response(
+  data: VehicleCardDto[],
+  available = data.length,
+  brands = BRANDS,
+): PublicVehiclesResponse {
   return {
     data,
-    page: { page: 1, limit: 4, total: data.length, totalPages: 1 },
+    page: { page: 1, limit: 10, total: data.length, totalPages: 1 },
     available,
-    facets: { ...NO_VEHICLE_FACETS, brands: BRANDS },
+    facets: { ...NO_VEHICLE_FACETS, brands },
   };
 }
 
@@ -69,68 +83,179 @@ function serve(byPath: (path: string) => PublicVehiclesResponse) {
   );
 }
 
+function vehicleReads(): string[] {
+  return apiGetParsed.mock.calls
+    .map((call) => String(call[1]))
+    .filter((path) => path.startsWith('/v1/vehicles'));
+}
+
+function category(name: string) {
+  return within(screen.getByRole('article', { name }));
+}
+
 afterEach(() => {
   apiGetParsed.mockReset();
   vi.unstubAllGlobals();
 });
 
-describe('the homepage', () => {
-  it('asks the marketplace for four rows through ordinary filters, four cars each', async () => {
+describe('the homepage reads', () => {
+  it('asks once for recent cars and once per category, through ordinary filters', async () => {
     serve(() => response([card('a')]));
     render(await HomePage());
 
-    const paths = apiGetParsed.mock.calls
-      .map((call) => String(call[1]))
-      .filter((path) => path.startsWith('/v1/vehicles'));
-    expect(paths.sort()).toEqual(
+    expect(vehicleReads().sort()).toEqual(
       [
-        '/v1/vehicles?limit=4',
-        '/v1/vehicles?bodyType=suv&limit=4',
-        '/v1/vehicles?transmission=automatic&limit=4',
-        '/v1/vehicles?maxPrice=100000000&limit=4',
+        '/v1/vehicles?limit=10',
+        '/v1/vehicles?bodyType=suv&limit=3',
+        '/v1/vehicles?transmission=automatic&limit=3',
+        '/v1/vehicles?maxPrice=100000000&sort=price_asc&limit=3',
+        '/v1/vehicles?bodyType=muv&limit=3',
+        '/v1/vehicles?maxKm=100000&limit=3',
       ].sort(),
     );
   });
 
-  it('shows each row with its cards and a link to the same search on /cars', async () => {
-    serve((path) =>
-      path.includes('bodyType=suv')
-        ? response([card('suv-1'), card('suv-2')], 17)
-        : response([card(path)], 40),
-    );
+  it('defines family cars as MUVs', () => {
+    expect(HOME_CATEGORIES.find((entry) => entry.key === 'family')?.params).toEqual({
+      bodyType: 'muv',
+    });
+  });
+});
+
+describe('the hero', () => {
+  it('keeps the headline and offers the five categories as shortcuts to /cars', async () => {
+    serve(() => response(cards('r', 6)));
     render(await HomePage());
 
     expect(screen.getByRole('heading', { level: 1, name: 'Find your next car' })).toBeVisible();
-    const suvs = within(screen.getByRole('region', { name: 'SUVs' }));
-    expect(suvs.getAllByRole('article')).toHaveLength(2);
-    expect(suvs.getByRole('link', { name: 'View all →' })).toHaveAttribute(
-      'href',
-      '/cars?bodyType=suv',
-    );
+    const shortcuts = within(screen.getByRole('navigation', { name: SHORTCUTS_TEXT.label }));
+    expect(shortcuts.getAllByRole('link')).toHaveLength(5);
     for (const [name, href] of [
-      ['Recently added', '/cars'],
-      ['Automatic cars', '/cars?transmission=automatic'],
-      ['Under ₹10 lakh', '/cars?maxPrice=100000000'],
+      ['SUVs', '/cars?bodyType=suv'],
+      ['Automatic', '/cars?transmission=automatic'],
+      ['Under ₹10L', '/cars?maxPrice=100000000&sort=price_asc'],
+      ['Family cars', '/cars?bodyType=muv'],
+      ['Low km', '/cars?maxKm=100000'],
     ] as const) {
-      const row = within(screen.getByRole('region', { name }));
-      expect(row.getByRole('link', { name: /View all/ })).toHaveAttribute('href', href);
+      expect(shortcuts.getByRole('link', { name })).toHaveAttribute('href', href);
     }
   });
 
-  it('never says how many cars the marketplace holds', async () => {
+  it('streams the recent cars beside the search, each a link to its page', async () => {
+    serve((path) => (path === '/v1/vehicles?limit=10' ? response(cards('r', 6)) : response([])));
+    render(await HomePage());
+
+    const stream = screen.getByRole('region', { name: STOCK_STREAM_TEXT.label });
+    expect(within(stream).getAllByRole('link')).toHaveLength(6);
+    expect(within(stream).getByRole('link', { name: /Creta r-0/ })).toHaveAttribute(
+      'href',
+      '/car/r-0',
+    );
+    expect(screen.queryByRole('img', { name: HOME_HERO_IMAGE.alt })).not.toBeInTheDocument();
+  });
+
+  it('shows the hero photograph in place of the stream when too few cars are listed', async () => {
+    serve(() => response(cards('r', 3)));
+    render(await HomePage());
+
+    expect(screen.queryByRole('region', { name: STOCK_STREAM_TEXT.label })).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: HOME_HERO_IMAGE.alt })).toBeInTheDocument();
+  });
+});
+
+describe('the makes strip', () => {
+  it('links each make on the marketplace to its search, without a count', async () => {
+    serve(() => response([card('a')]));
+    render(await HomePage());
+
+    const strip = within(screen.getByRole('navigation', { name: MAKES_STRIP_TEXT.label }));
+    expect(strip.getByRole('link', { name: 'Maruti Suzuki' })).toHaveAttribute(
+      'href',
+      '/cars?brand=maruti-suzuki',
+    );
+    expect(strip.getAllByRole('link')).toHaveLength(3);
+  });
+
+  it('is left out when fewer than three makes are listed', async () => {
+    serve(() => response([card('a')], 1, BRANDS.slice(0, 2)));
+    render(await HomePage());
+    expect(
+      screen.queryByRole('navigation', { name: MAKES_STRIP_TEXT.label }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('the category deck', () => {
+  it('stacks the five categories in order under one heading', async () => {
+    serve(() => response([card('a')]));
+    render(await HomePage());
+
+    const deck = within(screen.getByRole('region', { name: DECK_TEXT.title }));
+    expect(deck.getAllByRole('article').map((article) => article.id)).toEqual([
+      'home-category-suv',
+      'home-category-automatic',
+      'home-category-under-10-lakh',
+      'home-category-family',
+      'home-category-low-km',
+    ]);
+    expect(deck.getByText('01 / 05')).toBeInTheDocument();
+  });
+
+  it('shows a category’s cars and links its button to the same search on /cars', async () => {
     serve((path) =>
-      path.includes('bodyType=suv') ? response([card('suv-1')], 17) : response([card(path)], 40),
+      path.includes('bodyType=suv') ? response(cards('suv', 3)) : response([card(path)]),
     );
     render(await HomePage());
 
-    const links = screen.getAllByRole('link', { name: /View all/ });
-    expect(links).toHaveLength(4);
-    for (const link of links) expect(link).toHaveTextContent(/^View all →$/);
+    const suvs = category('SUVs');
+    expect(suvs.getByRole('link', { name: 'Browse SUVs' })).toHaveAttribute(
+      'href',
+      '/cars?bodyType=suv',
+    );
+    expect(suvs.getByRole('link', { name: /Creta suv-0/ })).toHaveAttribute('href', '/car/suv-0');
+    expect(suvs.getByRole('link', { name: /Creta suv-2/ })).toHaveAttribute('href', '/car/suv-2');
+    expect(suvs.getByText('Underbody condition, tyre wear')).toBeInTheDocument();
+  });
+
+  it('keeps an empty category, says so, and sends the buyer to every car instead', async () => {
+    serve((path) => (path.includes('bodyType=muv') ? response([]) : response([card(path)])));
+    render(await HomePage());
+
+    const family = category('Family cars');
+    expect(family.getByText(/No family cars are listed right now/)).toBeInTheDocument();
+    expect(family.queryByRole('link', { name: 'Browse family cars' })).not.toBeInTheDocument();
+    expect(family.getByRole('link', { name: DECK_TEXT.seeEveryCar })).toHaveAttribute(
+      'href',
+      '/cars',
+    );
+  });
+
+  it('marks only the featured category', async () => {
+    serve(() => response([card('a')]));
+    render(await HomePage());
+
+    expect(category('Low kilometres').getByText(DECK_TEXT.featured)).toBeInTheDocument();
+    expect(category('SUVs').queryByText(DECK_TEXT.featured)).not.toBeInTheDocument();
+  });
+});
+
+describe('what the homepage promotes', () => {
+  it('never says how many cars the marketplace holds', async () => {
+    serve(() => response(cards('c', 6), 9876));
+    render(await HomePage());
+
+    expect(document.body.textContent).not.toContain('9876');
+    expect(document.body.textContent).not.toContain('9,876');
+    const viewAll = screen.getByRole('link', { name: /View all/ });
+    expect(viewAll).toHaveTextContent(/^View all →$/);
   });
 
   it('promotes only cars a buyer can act on — never a reserved one', async () => {
     serve(() =>
-      response([card('open'), card('held', { availability: 'RESERVED', title: 'Held car' })], 1),
+      response([
+        ...cards('open', 5),
+        card('held', { availability: 'RESERVED', title: 'Held car' }),
+      ]),
     );
     render(await HomePage());
 
@@ -138,34 +263,13 @@ describe('the homepage', () => {
     expect(screen.queryByText('Reserved')).not.toBeInTheDocument();
   });
 
-  it('leaves out a row with nothing in it', async () => {
-    serve((path) => (path.includes('transmission') ? response([]) : response([card(path)])));
-    render(await HomePage());
-    expect(screen.queryByRole('region', { name: 'Automatic cars' })).not.toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'SUVs' })).toBeInTheDocument();
-  });
-
-  /**
-   * A section failing is not the page failing: the hero, the search and the
-   * rest of the homepage still render, and the rows' place says what happened
-   * and offers to try again, rather than silently disappearing.
-   */
-  it('still offers the search when the marketplace cannot be reached, and says the rows failed', async () => {
-    apiGetParsed.mockRejectedValue(new Error('down'));
+  it('shows the four newest cars as "Recently added", linked to /cars', async () => {
+    serve(() => response(cards('r', 8)));
     render(await HomePage());
 
-    expect(screen.getByRole('search')).toBeInTheDocument();
-    const region = within(screen.getByRole('region', { name: 'Cars on Dealers-Drive now' }));
-    expect(region.getByRole('alert')).toHaveTextContent(
-      'We couldn’t load these vehicles right now',
-    );
-    expect(region.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
-    expect(region.queryByRole('article')).not.toBeInTheDocument();
-    expect(document.body.textContent).not.toContain('down');
-    expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: AUDIENCE_TEXT.title })).toBeInTheDocument();
+    const recent = within(screen.getByRole('region', { name: 'Recently added' }));
+    expect(recent.getAllByRole('article')).toHaveLength(4);
+    expect(recent.getByRole('link', { name: 'View all →' })).toHaveAttribute('href', '/cars');
   });
 
   it('no longer claims search or enquiries are coming soon', async () => {
@@ -176,9 +280,32 @@ describe('the homepage', () => {
   });
 });
 
-function precedes(first: HTMLElement, second: HTMLElement): boolean {
-  return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
-}
+describe('when the marketplace cannot be reached', () => {
+  /**
+   * A section failing is not the page failing: the hero, the search, the
+   * shortcuts and the explainers still render, and the cars' place says what
+   * happened and offers to try again, rather than silently disappearing.
+   */
+  it('still offers the search and shortcuts, and says the cars failed', async () => {
+    apiGetParsed.mockRejectedValue(new Error('down'));
+    render(await HomePage());
+
+    expect(screen.getByRole('search')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: SHORTCUTS_TEXT.label })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: HOME_HERO_IMAGE.alt })).toBeInTheDocument();
+    const region = within(screen.getByRole('region', { name: 'Cars on Dealers-Drive now' }));
+    expect(region.getByRole('alert')).toHaveTextContent(
+      'We couldn’t load these vehicles right now',
+    );
+    expect(region.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('down');
+    expect(screen.queryByRole('region', { name: DECK_TEXT.title })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: AUDIENCE_TEXT.title })).toBeInTheDocument();
+  });
+});
 
 function sectionOrder(container: HTMLElement): string[] {
   return Array.from(container.querySelectorAll<HTMLElement>('[data-home-section]')).map(
@@ -186,64 +313,25 @@ function sectionOrder(container: HTMLElement): string[] {
   );
 }
 
-describe('the page rhythm — cars and information take turns', () => {
-  it('alternates a car row with an informational section, top to bottom', async () => {
-    serve((path) => response([card(path)]));
-    render(await HomePage());
-
-    const order = [
-      screen.getByRole('region', { name: 'Recently added' }),
-      screen.getByRole('region', { name: JOURNEY_TEXT.title }),
-      screen.getByRole('region', { name: 'SUVs' }),
-      screen.getByRole('region', { name: TRUST_TEXT.title }),
-      screen.getByRole('region', { name: 'Automatic cars' }),
-      screen.getByRole('region', { name: AUDIENCE_TEXT.title }),
-      screen.getByRole('region', { name: 'Under ₹10 lakh' }),
-    ];
-    for (let at = 1; at < order.length; at += 1) {
-      const [before, after] = [order[at - 1], order[at]];
-      if (!before || !after) throw new Error('missing section');
-      expect(precedes(before, after), `${String(at - 1)} before ${String(at)}`).toBe(true);
-    }
-  });
-
-  it('never groups the informational sections together at the bottom', async () => {
+describe('the page order', () => {
+  it('runs makes, categories, recent cars, then the three explainers', async () => {
     serve((path) => response([card(path)]));
     const { container } = render(await HomePage());
 
     expect(sectionOrder(container)).toEqual([
+      'makes',
+      'categories',
       'home-recent',
       'journey',
-      'home-suv',
       'trust',
-      'home-automatic',
       'audience',
-      'home-under-10-lakh',
     ]);
   });
 
-  it('closes up around a row with nothing in it rather than leaving an empty band', async () => {
-    serve((path) => (path.includes('bodyType=suv') ? response([]) : response([card(path)])));
+  it('closes up around an empty "Recently added" row rather than leaving a band', async () => {
+    serve(() => response([]));
     const { container } = render(await HomePage());
-
-    expect(sectionOrder(container)).toEqual([
-      'home-recent',
-      'journey',
-      'trust',
-      'home-automatic',
-      'audience',
-      'home-under-10-lakh',
-    ]);
-  });
-
-  it('still asks for each row once, however the page is ordered', async () => {
-    serve((path) => response([card(path)]));
-    render(await HomePage());
-    const reads = apiGetParsed.mock.calls
-      .map((call) => String(call[1]))
-      .filter((path) => path.startsWith('/v1/vehicles'));
-    expect(reads).toHaveLength(4);
-    expect(new Set(reads).size).toBe(4);
+    expect(sectionOrder(container)).not.toContain('home-recent');
   });
 });
 
@@ -332,7 +420,6 @@ describe('the homepage search — the /cars search box, pointed at /cars', () =>
     const paths = apiGetParsed.mock.calls.map((call) => String(call[1]));
     expect(paths.some((path) => path.startsWith('/v1/locations'))).toBe(false);
     // The one other read is the public config, for the admin-set hero photograph (R81).
-    const others = paths.filter((path) => !path.endsWith('limit=4'));
-    expect(others).toEqual(['/v1/config/public']);
+    expect(paths.filter((path) => !path.startsWith('/v1/vehicles'))).toEqual(['/v1/config/public']);
   });
 });
