@@ -96,7 +96,7 @@ const ENV = {
  * would *raise* the percentage. Here every file under `src/` counts whether or
  * not it is imported.
  *
- * Three files are excluded, and only these three:
+ * Four files are excluded, and only these four:
  *   · `types/express.d.ts` — a declaration file. It emits no JavaScript, so
  *     there is nothing to execute or to count.
  *   · `index.ts` — the process entry point. It calls `listen()`, registers
@@ -109,6 +109,11 @@ const ENV = {
  *     Everything it does is `startWorker(await buildContainer())` plus the same
  *     shutdown wiring, and `startWorker` itself is covered through
  *     `container.test.ts`.
+ *   · `media-backfill.ts` — the one-off resize command (**F034**), run with
+ *     `node apps/api/dist/media-backfill.js` inside the production image. It
+ *     opens a database pool and resizes photographs at import time. What it
+ *     does is `backfillVehicleMedia(...)`, covered by `media.backfill.test.ts`
+ *     and `vehicle-images.test.ts`; the file only wires real dependencies in.
  */
 const COVERAGE_THRESHOLD = 90;
 
@@ -132,7 +137,7 @@ export default defineConfig({
        * `include` subsumes it.)
        */
       include: ['src/**/*.ts'],
-      exclude: ['src/types/**', 'src/index.ts', 'src/worker.ts'],
+      exclude: ['src/types/**', 'src/index.ts', 'src/worker.ts', 'src/media-backfill.ts'],
       reporter: ['text-summary', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       thresholds: {

@@ -34,7 +34,7 @@ import {
 } from '@/lib/seo';
 import { logger } from '@/lib/logger';
 
-import { VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
+import { GALLERY_SIZES, VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
 
 export const revalidate = 60;
 
@@ -142,6 +142,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
               photos={vehicle.images}
               startIndex={vehicle.primaryIndex}
               variant="studio"
+              sizes={GALLERY_SIZES}
             />
             {vehicle.images.length > 0 ? (
               <PhotoCredit credit={vehicle.photoCredit} dealerName={vehicle.dealer.name} />

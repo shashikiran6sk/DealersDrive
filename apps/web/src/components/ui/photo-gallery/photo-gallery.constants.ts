@@ -60,6 +60,9 @@ export const ZOOM_RESET_KEY = '0';
 
 export const DEFAULT_STAGE_CLASS = 'aspect-[4/3]';
 
+export const DEFAULT_STAGE_SIZES = '100vw';
+export const VIEWER_SIZES = '(min-width: 768px) min(1100px, 100vw), 100vw';
+
 export const STAGE_VARIANT_CLASS: Record<PhotoGalleryVariant, { stage: string; image: string }> = {
   cover: { stage: 'bg-(--color-surface)', image: 'object-cover' },
   studio: { stage: 'border-0 bg-(--color-page)', image: 'object-contain' },

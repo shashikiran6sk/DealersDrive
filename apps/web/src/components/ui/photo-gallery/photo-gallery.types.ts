@@ -2,6 +2,8 @@ export interface GalleryPhoto {
   url: string;
   alt: string;
   caption?: string | null;
+  thumbUrl?: string;
+  srcset?: string;
 }
 
 export interface GalleryFallbackImage {
@@ -20,6 +22,7 @@ export interface PhotoGalleryProps {
   emptyLabel?: string;
   fallback?: GalleryFallbackImage;
   variant?: PhotoGalleryVariant;
+  sizes?: string;
 }
 
 export type GalleryStep = -1 | 1;

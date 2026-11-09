@@ -30,6 +30,7 @@
     "verify:s3": "tsx scripts/verify-s3.ts",
     "storage:relocate": "tsx scripts/relocate-dealer-storage.ts",
     "maps:backfill": "tsx scripts/backfill-dealer-pins.ts",
+    "media:process": "tsx src/media-backfill.ts",
     "test": "vitest run --coverage",
     "test:watch": "vitest --project unit"
   },

@@ -66,6 +66,81 @@ checking that the dealer owned it. Rather than repair a route the product no
 longer has a use for, it was removed: there is no dealer path that writes
 vehicle media at all.
 
+## `apps/api/src/modules/media/media.processor.ts`
+
+### `export function createMediaProcessor({ prisma, storage, queue }: MediaProcessorDeps)`
+
+Restores the processing step the reconstruction cut (**F034**; `CONTEXT.md`
+§7b on the `docs` branch). A committed upload is `READY` straight away and
+served as its original; this writes `320`, `640`, `1024` and `1600` WebP
+derivatives beside it and records them in `media.variants`, which `locate()`
+in `media.service.ts` already prefers. Nothing about delivery changed: the
+URL, the visibility check and the ETag scheme are the same, and the ETag is
+derived from the key, so a browser holding the original is sent the
+derivative on its next revalidation.
+
+**It is not on the facade.** The facade test forbids any pipeline operation
+crossing the module boundary. `vehicle-images` receives `request` as an
+injected `processImage` function, wired in `container.ts`, so it can ask for
+a photograph to be processed without being able to see how.
+
+### `export const PROCESSED_OWNERS: readonly MediaOwner[] = ['VEHICLE']`
+
+Only vehicle photographs, for now. Removing or replacing a vehicle image
+deletes every key in its `variants` (`mediaKeys` in
+`vehicle-images.service.ts`), so a derivative never outlives its photograph.
+The dealer-portfolio removal path deletes only `storageKey`; processing
+portfolio photographs before that is fixed would leak four objects per
+removal.
+
+### `async function process(mediaId: string): Promise<ProcessOutcome>`
+
+`skipped` for anything that is not a `READY` vehicle photograph without
+derivatives, so a duplicate job, a retry and the backfill script all find
+nothing to do the second time.
+
+`unreadable` — a missing original, or bytes sharp cannot decode — is logged
+and returned, not thrown. pg-boss retries a thrown job, and decoding the same
+bytes again cannot succeed; the photograph keeps being served as its
+original, exactly as before this existed. A storage _error_ does throw, and
+that is the case a retry can fix.
+
+The derivatives are written first and recorded second, with the same
+conditional `updateMany` the commit uses: if the image was removed while it
+was being resized, nothing is recorded and the files just written are
+deleted, so no object is left that no row names.
+
+### `async request(mediaId: string): Promise<void>`
+
+Queues `media.process`. It never throws: the upload that asked has already
+been committed, and refusing it because the queue was down would show the
+admin an error for a photograph that is attached. The image is served as its
+original until the backfill (below) or a later job reaches it.
+
+## `apps/api/src/modules/media/media.backfill.ts`
+
+### `export async function backfillVehicleMedia({ prisma, processor, dryRun, write })`
+
+The one-off pass for every vehicle photograph committed before the
+`media.process` job existed (**F034**): `READY`, a vehicle's, `variants`
+still `{}`, oldest first. It calls the same `process()` the job does, so it
+is safe to run twice — the second run finds nothing, because a processed row
+no longer has empty `variants`.
+
+A photograph it cannot read is counted and left as it was, still served as
+its original, so one bad file never stops the rest. `--dry-run` lists the
+rows and touches nothing, which is how to see what a production run would do
+before doing it.
+
+It is a function in `src` rather than a script in `scripts/` because it has
+to run **inside the production image**. That image (`apps/api/Dockerfile`,
+target `runner`) carries only `dist/` and production dependencies — no
+`scripts/`, no `tsx` — so a TypeScript script could not run there at all.
+Compiled into `dist/`, it runs with `docker exec` in the API's own container,
+with the database, storage credentials, network and working directory the
+API already has. The working directory matters for `STORAGE_DRIVER=local`,
+whose root is resolved from it.
+
 ## `apps/api/src/modules/media/media.service.ts`
 
 ### `async serve`

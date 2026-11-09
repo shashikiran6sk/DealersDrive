@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 
 import { PHOTO_GALLERY_TEXT } from './photo-gallery.constants';
 import type { GalleryPhoto } from './photo-gallery.types';
-import { railNumber } from './utils';
+import { railNumber, thumbOf } from './utils';
 
 export interface GalleryRailProps {
   photos: readonly GalleryPhoto[];
@@ -43,7 +43,13 @@ export function GalleryRail({ photos, index, onSelect }: GalleryRailProps) {
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img
+              src={thumbOf(photo)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
             <span
               aria-hidden="true"
               className="absolute bottom-0 left-0 z-[3] bg-[rgba(13,16,23,0.75)] px-[5px] py-px font-mono text-[10px] text-white"

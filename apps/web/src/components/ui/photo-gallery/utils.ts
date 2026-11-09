@@ -73,6 +73,10 @@ export function swipeStep(
   return deltaX < 0 ? 1 : -1;
 }
 
+export function thumbOf(photo: GalleryPhoto): string {
+  return photo.thumbUrl ?? photo.url;
+}
+
 export function captionOf(photo: GalleryPhoto): string {
   return photo.caption?.trim() || photo.alt;
 }
