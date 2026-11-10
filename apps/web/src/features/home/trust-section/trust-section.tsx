@@ -21,7 +21,7 @@ export function TrustSection() {
           {TRUST_POINTS.map((point) => (
             <div
               key={point.number}
-              className="border-t border-white/25 pt-4 max-md:last:col-span-2"
+              className="dd-trust-point relative pt-4 before:absolute before:inset-x-0 before:top-0 before:h-px before:origin-left before:bg-white/25 before:content-[''] max-md:last:col-span-2"
             >
               <div className="font-mono text-[11px] text-white/60">{point.number}</div>
               <h3 className="mt-5 text-[17px] max-md:mt-3 max-md:text-[15px] text-white">

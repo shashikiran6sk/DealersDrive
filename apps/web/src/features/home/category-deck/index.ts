@@ -9,5 +9,6 @@ export type {
   HomeCategoryView,
 } from './category-deck.types';
 export { CategoryIcon } from './category-icon';
+export { DeckProgress } from './deck-progress';
 export { DeckStack } from './deck-stack';
-export { coverProgress } from './utils';
+export { coverProgress, isBeside, nearestToCentre } from './utils';
