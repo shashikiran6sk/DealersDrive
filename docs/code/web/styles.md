@@ -201,6 +201,37 @@ The `@media (prefers-reduced-motion: reduce)` block in `@layer base`
 zeroes every animation duration in the document, so there is nothing to
 opt out of here.
 
+### `.dd-deck-card`
+
+The homepage deck's stacking (DESIGN-SPEC §1.7, _Homepage motion_).
+`DeckStack` writes `--deck-cover`, 0 to 1, as the next card slides over this
+one; the card scales to 95 % and an `::after` veil darkens it to 18 %. The veil
+is in `@layer components` so it applies whatever the motion setting, but at
+reduced motion `DeckStack` writes 0 and it stays clear. `transform-origin` is
+the top edge, so a shrinking card stays tucked under the header instead of
+pulling away from it.
+
+### `@media (prefers-reduced-motion: no-preference)` — the homepage motion
+
+Every homepage animation is declared only inside this query, not merely
+shortened by the base layer's reduced-motion rule. That rule sets
+`animation-duration: 0ms`, which ends a time-based animation instantly but
+means nothing to a scroll-driven one, whose progress comes from the scroll
+position, not the clock. Declaring the animations only where motion is welcome
+is the one way that holds for both kinds.
+
+The scroll-driven ones (`dd-drift`, `dd-slide-in`, the `dd-reveal-group`
+stagger) also sit behind `@supports (animation-timeline: view())`. Where that
+is unsupported they never apply, and the page is the finished, still layout.
+Their keyframes all end at the element's resting state, so nothing is left
+invisible if a timeline never starts.
+
+### `.dd-stream-col`
+
+40 s and 46 s, so the two columns never line up and the stream does not read
+as one block sliding. `translateY(-50%)` is exactly one copy of the column's
+cars (see `StockStream`).
+
 ### `.tnum`
 
 Mandatory on prices, EMIs, KM, credit counts, stat values, filter counts,

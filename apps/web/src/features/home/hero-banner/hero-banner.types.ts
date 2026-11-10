@@ -7,5 +7,10 @@ export interface HeroImage {
 
 export interface HeroBannerProps {
   image: HeroImage | null;
+  aside?: ReactNode;
   children: ReactNode;
+}
+
+export interface HeroPhotoProps {
+  image: HeroImage | null;
 }
