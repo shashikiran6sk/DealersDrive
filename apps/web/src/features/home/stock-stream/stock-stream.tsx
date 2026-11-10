@@ -14,6 +14,7 @@ export function StockStream({ cars, className }: StockStreamProps) {
       role="region"
       aria-label={STOCK_STREAM_TEXT.label}
       data-stock-stream
+      data-pausable
       className={cn('relative', className)}
     >
       <div className="dd-stream grid h-[360px] grid-cols-2 gap-3.5 overflow-hidden rounded-[28px] bg-(--color-neutral-100) px-3.5 [mask-image:linear-gradient(transparent,#000_12%,#000_88%,transparent)] md:h-[600px]">

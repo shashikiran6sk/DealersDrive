@@ -7,19 +7,22 @@ import { cn } from '@/lib/cn';
 import { STOCK_STREAM_TEXT } from './stock-stream.constants';
 import type { StreamPauseButtonProps } from './stock-stream.types';
 
-export function StreamPauseButton({ className }: StreamPauseButtonProps) {
+export function StreamPauseButton({
+  className,
+  label = STOCK_STREAM_TEXT.pause,
+}: StreamPauseButtonProps) {
   const [paused, setPaused] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    ref.current?.closest('[data-stock-stream]')?.toggleAttribute('data-paused', paused);
+    ref.current?.closest('[data-pausable]')?.toggleAttribute('data-paused', paused);
   }, [paused]);
 
   return (
     <button
       ref={ref}
       type="button"
-      aria-label={STOCK_STREAM_TEXT.pause}
+      aria-label={label}
       aria-pressed={paused}
       onClick={() => setPaused((value) => !value)}
       className={cn(

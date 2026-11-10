@@ -7,8 +7,11 @@ import {
   CategoryIcon,
   coverProgress,
   DECK_TEXT,
+  DeckProgress,
   DeckStack,
   type HomeCategoryView,
+  isBeside,
+  nearestToCentre,
 } from '@/features/home/category-deck';
 import { HOME_CATEGORIES, type HomeCategoryIcon } from '@/features/home/home.constants';
 
@@ -47,6 +50,42 @@ describe('coverProgress — how far the next card has slid over this one', () =>
 
   it('never divides by a zero height', () => {
     expect(coverProgress({ top: 0, height: 0 }, { top: 0 })).toBe(1);
+  });
+});
+
+describe('isBeside — whether the deck is laid out as a swipe row', () => {
+  it('is true only when the next card starts to the right of this one', () => {
+    expect(isBeside({ left: 35 }, { left: 369 })).toBe(true);
+    expect(isBeside({ left: 40 }, { left: 40 })).toBe(false);
+    expect(isBeside({ left: 40 }, { left: 40.5 })).toBe(false);
+  });
+});
+
+describe('nearestToCentre — which card the swipe row is showing', () => {
+  const row = { left: 0, width: 390 };
+
+  it('picks the card whose middle is closest to the middle of the row', () => {
+    const cards = [
+      { left: -633, width: 320 },
+      { left: -299, width: 320 },
+      { left: 35, width: 320 },
+      { left: 369, width: 320 },
+    ];
+    expect(nearestToCentre(row, cards)).toBe(2);
+  });
+
+  it('answers the first card when there is nothing to measure', () => {
+    expect(nearestToCentre(row, [])).toBe(0);
+  });
+});
+
+describe('DeckProgress', () => {
+  it('shows the position and fills the bar by the same share, as decoration', () => {
+    const { container } = render(<DeckProgress current={2} total={5} />);
+    const progress = container.querySelector('[data-deck-progress]');
+    expect(progress).toHaveAttribute('aria-hidden', 'true');
+    expect(progress).toHaveTextContent('03 / 05');
+    expect(progress?.querySelector('[style]')).toHaveStyle({ transform: 'scaleX(0.6)' });
   });
 });
 
@@ -133,6 +172,47 @@ describe('DeckStack', () => {
     const { first, second } = deck();
     expect(first.style.getPropertyValue('--deck-cover')).toBe('0.500');
     expect(second.style.getPropertyValue('--deck-cover')).toBe('0.000');
+  });
+
+  it('shows no progress bar unless it is told how many cards there are', () => {
+    const { container } = render(
+      <DeckStack>
+        <article data-deck-card>only</article>
+      </DeckStack>,
+    );
+    expect(container.querySelector('[data-deck-progress]')).toBeNull();
+  });
+
+  it('as a swipe row, follows the card in the middle and never dims a card', () => {
+    const { container } = render(
+      <DeckStack total={3}>
+        <article data-deck-card>first</article>
+        <article data-deck-card>second</article>
+        <article data-deck-card>third</article>
+      </DeckStack>,
+    );
+    const row = container.firstElementChild;
+    const cards = screen.getAllByRole('article');
+    if (!row) throw new Error('missing row');
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ left: 0, width: 390 } as DOMRect);
+    [-299, 35, 369].forEach((left, index) => {
+      const card = cards[index];
+      if (!card) throw new Error('missing card');
+      vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+        top: 100,
+        height: 500,
+        left,
+        width: 320,
+      } as DOMRect);
+    });
+    expect(container.querySelector('[data-deck-progress]')).toHaveTextContent('01 / 03');
+    act(() => {
+      flushFrames();
+      row.dispatchEvent(new Event('scroll'));
+      flushFrames();
+    });
+    expect(container.querySelector('[data-deck-progress]')).toHaveTextContent('02 / 03');
+    for (const card of cards) expect(card.style.getPropertyValue('--deck-cover')).toBe('0.000');
   });
 
   it('leaves every card flat for a visitor who asked for less motion', () => {
