@@ -664,8 +664,12 @@
     opacity: calc(var(--deck-cover) * 0.18);
     pointer-events: none;
   }
-  .dd-makes {
-    view-timeline: --dd-makes block;
+  .dd-makes-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dd-makes-scroll::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -682,37 +686,151 @@
     animation-duration: 46s;
   }
   .dd-stream:hover .dd-stream-col,
-  .dd-stream:focus-within .dd-stream-col,
   [data-paused] .dd-stream-col {
+    animation-play-state: paused;
+  }
+  .dd-stream:focus-within .dd-stream-col {
+    animation: none;
+  }
+  .dd-makes:not([data-paused], :focus-within) .dd-makes-scroll {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+  .dd-makes:not([data-paused], :focus-within) .dd-makes-track {
+    animation: dd-loop 44s linear infinite;
+  }
+  .dd-makes:not([data-paused], :focus-within) [data-loop-copy] {
+    display: flex;
+  }
+  .dd-makes:hover .dd-makes-track {
     animation-play-state: paused;
   }
   .dd-deck-card {
     transform: scale(calc(1 - var(--deck-cover) * 0.05));
   }
 
+  .dd-tile :is(.dd-icon-car, .dd-icon-wheel, .dd-icon-knob, .dd-icon-needle, .dd-icon-price) {
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+    animation-fill-mode: backwards;
+    animation-delay: calc(var(--rise-index, 0) * 70ms + 250ms);
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .dd-tile .dd-icon-car {
+    animation-name: dd-icon-drive;
+    animation-duration: 700ms;
+  }
+  .dd-tile .dd-icon-wheel {
+    animation-name: dd-icon-roll;
+    animation-duration: 700ms;
+  }
+  .dd-tile .dd-icon-knob {
+    animation-name: dd-icon-shift;
+    animation-duration: 650ms;
+  }
+  .dd-tile .dd-icon-needle {
+    animation-name: dd-icon-sweep;
+    animation-duration: 900ms;
+  }
+  .dd-tile .dd-icon-price {
+    animation-name: dd-icon-pop;
+    animation-duration: 600ms;
+  }
+  .dd-tile:hover .dd-icon-car {
+    transform: translateX(2px);
+  }
+  .dd-tile:hover .dd-icon-wheel {
+    transform: rotate(360deg);
+  }
+  .dd-tile:hover .dd-icon-needle {
+    transform: rotate(55deg);
+  }
+  .dd-tile:hover :is(.dd-icon-knob, .dd-icon-price) {
+    transform: scale(1.12);
+  }
+
   @supports (animation-timeline: view()) {
-    .dd-makes-row {
-      animation: dd-drift linear both;
-      animation-timeline: --dd-makes;
+    .dd-journey {
+      view-timeline: --dd-journey block;
     }
-    .dd-deck-photo {
-      animation: dd-slide-in linear both;
+    .dd-journey-line > span {
+      animation: dd-draw-y linear both;
+      animation-timeline: --dd-journey;
+      animation-range: entry 50% cover 62%;
+    }
+    .dd-journey-num {
+      animation: dd-light linear both;
+      animation-timeline: --dd-journey;
+    }
+    .dd-journey-step:nth-child(1) .dd-journey-num {
+      animation-range: entry 50% entry 70%;
+    }
+    .dd-journey-step:nth-child(2) .dd-journey-num {
+      animation-range: cover 36% cover 42%;
+    }
+    .dd-journey-step:nth-child(3) .dd-journey-num {
+      animation-range: cover 56% cover 62%;
+    }
+    .dd-trust-point::before {
+      animation: dd-draw-x linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 80%;
+      animation-range: entry 10% entry 90%;
     }
-    .dd-reveal-group > * {
-      animation: dd-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 5% entry 80%;
+    .dd-trust-point:nth-child(2)::before {
+      animation-range: entry 25% entry 105%;
     }
-    .dd-reveal-group > :nth-child(2) {
-      animation-range: entry 12% entry 87%;
+    .dd-trust-point:nth-child(3)::before {
+      animation-range: entry 40% entry 120%;
     }
-    .dd-reveal-group > :nth-child(3) {
-      animation-range: entry 19% entry 94%;
+    .dd-trust-point:nth-child(4)::before {
+      animation-range: entry 55% entry 135%;
     }
-    .dd-reveal-group > :nth-child(4) {
-      animation-range: entry 26% entry 100%;
+    .dd-trust-point:nth-child(5)::before {
+      animation-range: entry 70% entry 150%;
+    }
+
+    @media (width < 48rem) {
+      .dd-deck-card {
+        view-timeline: --dd-deck-card inline;
+        animation: dd-focus-card linear both;
+        animation-timeline: --dd-deck-card;
+      }
+      .dd-deck-photo > :first-child {
+        animation: dd-pan linear both;
+        animation-timeline: --dd-deck-card;
+      }
+      .dd-reveal-group > * {
+        view-timeline: --dd-row-card inline;
+        animation: dd-focus-soft linear both;
+        animation-timeline: --dd-row-card;
+      }
+    }
+
+    @media (width >= 48rem) {
+      .dd-deck-photo {
+        animation: dd-slide-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 80%;
+      }
+      .dd-reveal-group > * {
+        animation: dd-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 5% entry 80%;
+      }
+      .dd-reveal-group > :nth-child(2) {
+        animation-range: entry 12% entry 87%;
+      }
+      .dd-reveal-group > :nth-child(3) {
+        animation-range: entry 19% entry 94%;
+      }
+      .dd-reveal-group > :nth-child(4) {
+        animation-range: entry 26% entry 100%;
+      }
+      .dd-journey-line > span {
+        animation-name: dd-draw-x;
+      }
+      .dd-journey-step:nth-child(2) .dd-journey-num {
+        animation-range: cover 34% cover 40%;
+      }
     }
   }
 }
@@ -743,12 +861,9 @@
   }
 }
 
-@keyframes dd-drift {
-  from {
-    transform: translateX(4%);
-  }
+@keyframes dd-loop {
   to {
-    transform: translateX(-10%);
+    transform: translateX(-50%);
   }
 }
 
@@ -760,6 +875,93 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes dd-focus-card {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dd-focus-soft {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  30%,
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dd-pan {
+  from {
+    transform: translateX(9%);
+  }
+  to {
+    transform: translateX(-9%);
+  }
+}
+
+@keyframes dd-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes dd-draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes dd-light {
+  from {
+    opacity: 0.3;
+  }
+}
+
+@keyframes dd-icon-drive {
+  from {
+    opacity: 0.2;
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes dd-icon-roll {
+  from {
+    transform: rotate(-300deg);
+  }
+}
+
+@keyframes dd-icon-shift {
+  from {
+    transform: translateX(-34px);
+  }
+}
+
+@keyframes dd-icon-sweep {
+  0% {
+    transform: rotate(-70deg);
+  }
+  60% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes dd-icon-pop {
+  from {
+    opacity: 0.2;
+    transform: translateY(9px) scale(0.8);
   }
 }
 

@@ -198,7 +198,7 @@ describe('the category deck', () => {
       'home-category-family',
       'home-category-low-km',
     ]);
-    expect(deck.getByText('01 / 05')).toBeInTheDocument();
+    expect(deck.getAllByText('01 / 05')).toHaveLength(2);
   });
 
   it('shows a category’s cars and links its button to the same search on /cars', async () => {

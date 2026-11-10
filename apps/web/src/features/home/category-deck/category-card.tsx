@@ -22,7 +22,7 @@ export function CategoryCard({ category, position, total }: CategoryCardProps) {
       aria-labelledby={heading}
       data-deck-card
       style={style}
-      className="dd-deck-card relative overflow-clip rounded-[28px] border border-(--color-divider) bg-white shadow-lg md:sticky md:top-[calc(var(--header-height)+var(--deck-top))] [@media(max-height:640px)]:static"
+      className="dd-deck-card relative overflow-clip rounded-[28px] border border-(--color-divider) bg-white shadow-lg max-md:w-[min(82vw,360px)] max-md:flex-none max-md:snap-center md:sticky md:top-[calc(var(--header-height)+var(--deck-top))] [@media(max-height:640px)]:static"
     >
       <div className="grid h-full md:min-h-[min(560px,calc(100svh-var(--header-height)-120px))] md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div className="flex flex-col gap-4 p-5 max-md:gap-3 md:p-9">

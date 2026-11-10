@@ -29,10 +29,21 @@ export interface CategoryIconProps {
 
 export interface DeckStackProps {
   children: ReactNode;
+  total?: number;
   className?: string;
+}
+
+export interface DeckProgressProps {
+  current: number;
+  total: number;
 }
 
 export interface DeckEdge {
   top: number;
   height: number;
+}
+
+export interface DeckSpan {
+  left: number;
+  width: number;
 }

@@ -21,7 +21,7 @@ export function CategoryDeck({ categories }: CategoryDeckProps) {
         </h2>
         <p className="max-w-[44ch] text-[15px] ink-muted">{DECK_TEXT.body}</p>
       </div>
-      <DeckStack>
+      <DeckStack total={categories.length}>
         {categories.map((category, position) => (
           <CategoryCard
             key={category.key}

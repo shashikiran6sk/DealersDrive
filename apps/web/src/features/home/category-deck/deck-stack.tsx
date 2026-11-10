@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 
 import type { DeckStackProps } from './category-deck.types';
-import { coverProgress } from './utils';
+import { DeckProgress } from './deck-progress';
+import { coverProgress, isBeside, nearestToCentre } from './utils';
 
-export function DeckStack({ children, className }: DeckStackProps) {
+export function DeckStack({ children, total, className }: DeckStackProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const root = ref.current;
@@ -19,14 +21,16 @@ export function DeckStack({ children, className }: DeckStackProps) {
 
     const update = () => {
       frame = 0;
+      const rects = cards.map((card) => card.getBoundingClientRect());
+      const [first, second] = rects;
+      const swiping = first !== undefined && second !== undefined && isBeside(first, second);
       cards.forEach((card, index) => {
-        const next = cards[index + 1];
-        const cover =
-          next && !reduce.matches
-            ? coverProgress(card.getBoundingClientRect(), next.getBoundingClientRect())
-            : 0;
+        const rect = rects[index];
+        const next = rects[index + 1];
+        const cover = rect && next && !swiping && !reduce.matches ? coverProgress(rect, next) : 0;
         card.style.setProperty('--deck-cover', cover.toFixed(3));
       });
+      if (swiping) setCurrent(nearestToCentre(root.getBoundingClientRect(), rects));
     };
     const schedule = () => {
       if (frame === 0) frame = window.requestAnimationFrame(update);
@@ -35,18 +39,29 @@ export function DeckStack({ children, className }: DeckStackProps) {
     schedule();
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
+    root.addEventListener('scroll', schedule, { passive: true });
     reduce.addEventListener('change', schedule);
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
+      root.removeEventListener('scroll', schedule);
       reduce.removeEventListener('change', schedule);
     };
   }, []);
 
   return (
-    <div ref={ref} className={cn('flex flex-col gap-7', className)}>
-      {children}
-    </div>
+    <>
+      <div
+        ref={ref}
+        className={cn(
+          'flex flex-col gap-7 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:flex-row max-md:gap-3.5 max-md:overflow-x-auto max-md:px-[calc(50%+1rem-min(41vw,180px))] max-md:pt-2 max-md:pb-6 max-md:[scrollbar-width:none] sm:max-md:-mx-6 sm:max-md:px-[calc(50%+1.5rem-min(41vw,180px))] max-md:[&::-webkit-scrollbar]:hidden',
+          className,
+        )}
+      >
+        {children}
+      </div>
+      {total ? <DeckProgress current={current} total={total} /> : null}
+    </>
   );
 }

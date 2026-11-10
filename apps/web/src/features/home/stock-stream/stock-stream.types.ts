@@ -18,4 +18,5 @@ export interface StreamCardProps {
 
 export interface StreamPauseButtonProps {
   className?: string;
+  label?: string;
 }

@@ -77,6 +77,27 @@ describe('MakesStrip', () => {
     expect(strip.getByRole('link', { name: 'Honda' })).toHaveAttribute('href', '/cars?brand=honda');
   });
 
+  it('draws a hidden, inert second copy so the strip loops without a seam', () => {
+    const { container } = render(<MakesStrip makes={makes} />);
+    const copy = container.querySelector('[data-loop-copy]');
+    expect(copy).toHaveAttribute('aria-hidden', 'true');
+    expect(copy).toHaveAttribute('inert');
+    expect(container.querySelectorAll('a')).toHaveLength(6);
+    expect(screen.getAllByRole('link')).toHaveLength(3);
+  });
+
+  it('can be paused, which is what makes it a row to scroll by hand', async () => {
+    const user = userEvent.setup();
+    render(<MakesStrip makes={makes} />);
+    const strip = screen.getByRole('navigation', { name: MAKES_STRIP_TEXT.label });
+    const pause = screen.getByRole('button', { name: MAKES_STRIP_TEXT.pause });
+
+    expect(strip).not.toHaveAttribute('data-paused');
+    await user.click(pause);
+    expect(pause).toHaveAttribute('aria-pressed', 'true');
+    expect(strip).toHaveAttribute('data-paused');
+  });
+
   it('renders nothing for fewer than three makes', () => {
     const { container } = render(<MakesStrip makes={makes.slice(0, 2)} />);
     expect(container).toBeEmptyDOMElement();
