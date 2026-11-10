@@ -42,6 +42,20 @@ function images(count: number, size = '1200x900'): GalleryPhoto[] {
   }));
 }
 
+function sizedImages(count: number): GalleryPhoto[] {
+  return Array.from({ length: count }, (_, index) => {
+    const shade = SHADES[index % SHADES.length] ?? '1f2937';
+    const at = (width: number) =>
+      `https://placehold.co/${width}x${(width * 3) / 4}/${shade}/e5e7eb.png?text=${width}w+Photo+${index + 1}`;
+    return {
+      url: at(1024),
+      thumbUrl: at(320),
+      srcset: [320, 640, 1024, 1600].map((width) => `${at(width)} ${width}w`).join(', '),
+      alt: `2023 Hyundai Creta SX(O), photograph ${index + 1} of ${count}`,
+    };
+  });
+}
+
 function dealerPhotos(count: number): GalleryPhoto[] {
   return Array.from({ length: count }, (_, index) => {
     const photo = PUBLIC_PORTFOLIO[index % PUBLIC_PORTFOLIO.length];
@@ -72,6 +86,7 @@ const meta = {
     emptyLabel: { control: 'text' },
     fallback: { control: 'object' },
     variant: { control: 'inline-radio', options: ['cover', 'studio'] },
+    sizes: { control: 'text' },
   },
   args: { title: '2023 Hyundai Creta SX(O)', photos: images(8), startIndex: 0, strip: true },
 } satisfies Meta<typeof PhotoGallery>;
@@ -82,6 +97,10 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {};
 
 export const StartNotFirst: Story = { args: { startIndex: 3 } };
+
+export const SizedPhotographs: Story = {
+  args: { photos: sizedImages(6), sizes: '(min-width: 1024px) 690px, 100vw' },
+};
 
 export const WideHero: Story = {
   args: {

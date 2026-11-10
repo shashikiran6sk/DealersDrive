@@ -1,4 +1,5 @@
 import { VEHICLE_IMAGE_MAX } from '@dealers-drive/contracts';
+import sharp from 'sharp';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -6,7 +7,10 @@ import { env } from '../src/config/env.js';
 import { createAuditService } from '../src/platform/audit/audit.service.js';
 import { createMemoryCache } from '../src/platform/cache/memory.adapter.js';
 import { createPlatformConfig } from '../src/platform/config/platform-config.js';
+import { createInlineQueue } from '../src/platform/jobs/queue.js';
 import { createLocalStorage } from '../src/platform/storage/local.adapter.js';
+import { backfillVehicleMedia } from '../src/modules/media/media.backfill.js';
+import { createMediaProcessor } from '../src/modules/media/media.processor.js';
 import { createVehicleImagesService } from '../src/modules/vehicle-images/vehicle-images.service.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { seedImages } from './images-kit.js';
@@ -789,6 +793,7 @@ describe('editing live galleries', () => {
       prisma: h.prisma,
       audit: createAuditService(h.prisma),
       config: createPlatformConfig(h.prisma, createMemoryCache()),
+      processImage: () => Promise.resolve(),
       storage: {
         ...createLocalStorage(),
         async delete(key) {
@@ -830,6 +835,7 @@ describe('editing live galleries', () => {
       prisma: h.prisma,
       audit: createAuditService(h.prisma),
       config: createPlatformConfig(h.prisma, createMemoryCache()),
+      processImage: () => Promise.resolve(),
       storage: {
         ...storage,
         async get(key) {
@@ -1061,5 +1067,126 @@ describe('marking every image at once', () => {
     await admin.put(route).send({ credit: 'DEALER' }).expect(409);
     const row = await h.prisma.vehicleMedia.findUniqueOrThrow({ where: { mediaId: ids[0]! } });
     expect(row.credit).toBeNull();
+  });
+});
+
+describe('resizing an uploaded image (F034)', () => {
+  async function commitThroughWorker(listingId: string, mediaId: string) {
+    const queue = createInlineQueue();
+    const storage = createLocalStorage();
+    const processor = createMediaProcessor({ prisma: h.prisma, storage, queue });
+    await processor.work();
+    const service = createVehicleImagesService({
+      prisma: h.prisma,
+      audit: createAuditService(h.prisma),
+      config: createPlatformConfig(h.prisma, createMemoryCache()),
+      storage,
+      processImage: (mediaId) => processor.request(mediaId),
+    });
+    const user = await h.prisma.user.findFirstOrThrow({
+      where: { email: env.adminAllowlist[0] ?? '' },
+    });
+    return service.commit(
+      {
+        kind: 'ADMIN',
+        userId: user.id,
+        email: env.adminAllowlist[0] ?? '',
+        adminRole: 'SUPER_ADMIN',
+        permissions: [],
+      },
+      listingId,
+      mediaId,
+      DD,
+    );
+  }
+
+  it('writes every width once committed, and serves each at its own size', async () => {
+    const { listingId, vehicleId } = await submitted();
+    const photo = await sharp({
+      create: { width: 2400, height: 1800, channels: 3, background: '#7a1f2b' },
+    })
+      .jpeg()
+      .toBuffer();
+    const signed = await presign(listingId, photo);
+    await put(signed.uploadUrl, photo);
+
+    await commitThroughWorker(listingId, signed.mediaId);
+
+    const media = await h.prisma.media.findUniqueOrThrow({ where: { id: signed.mediaId } });
+    const dir = `vehicles/${vehicleId}/${signed.mediaId}`;
+    expect(media).toMatchObject({ width: 2400, height: 1800 });
+    expect(media.variants).toEqual({
+      '320': `${dir}/320.webp`,
+      '640': `${dir}/640.webp`,
+      '1024': `${dir}/1024.webp`,
+      '1600': `${dir}/1600.webp`,
+    });
+
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'ACTIVE' } });
+    for (const width of [320, 640, 1024, 1600]) {
+      const served = await h
+        .agent()
+        .get(`/media/by-media/${signed.mediaId}/${String(width)}.webp`)
+        .expect(200);
+      expect(served.headers['content-type']).toBe('image/webp');
+      const meta = await sharp(Buffer.from(served.body as Buffer)).metadata();
+      expect(meta).toMatchObject({ format: 'webp', width });
+    }
+  });
+
+  it('keeps the upload, served as it was, when the bytes cannot be resized', async () => {
+    const { listingId } = await submitted();
+    const signed = await presign(listingId, JPEG);
+    await put(signed.uploadUrl, JPEG);
+
+    const result = await commitThroughWorker(listingId, signed.mediaId);
+
+    expect(result.items.map((item) => item.mediaId)).toEqual([signed.mediaId]);
+    const media = await h.prisma.media.findUniqueOrThrow({ where: { id: signed.mediaId } });
+    expect(media).toMatchObject({ status: 'READY', variants: {} });
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'ACTIVE' } });
+    const served = await h.agent().get(`/media/by-media/${signed.mediaId}/320.webp`).expect(200);
+    expect(Buffer.from(served.body as Buffer).equals(JPEG)).toBe(true);
+  });
+
+  it('resizes, in the one-off backfill, a photograph uploaded before the job existed', async () => {
+    const { listingId } = await submitted();
+    const photo = await sharp({
+      create: { width: 1800, height: 1200, channels: 3, background: '#7a1f2b' },
+    })
+      .jpeg()
+      .toBuffer();
+    const signed = await presign(listingId, photo);
+    await put(signed.uploadUrl, photo);
+    await admin
+      .post(`/v1/admin/listings/${listingId}/images/${signed.mediaId}/commit`)
+      .send(DD)
+      .expect(200);
+    expect(
+      (await h.prisma.media.findUniqueOrThrow({ where: { id: signed.mediaId } })).variants,
+    ).toEqual({});
+
+    const storage = createLocalStorage();
+    const processor = createMediaProcessor({
+      prisma: h.prisma,
+      storage,
+      queue: createInlineQueue(),
+    });
+    const lines: string[] = [];
+    const write = (line: string) => lines.push(line);
+
+    await backfillVehicleMedia({ prisma: h.prisma, processor, dryRun: true, write });
+    expect(lines.some((line) => line.includes(signed.mediaId))).toBe(true);
+    expect(
+      (await h.prisma.media.findUniqueOrThrow({ where: { id: signed.mediaId } })).variants,
+    ).toEqual({});
+
+    await backfillVehicleMedia({ prisma: h.prisma, processor, dryRun: false, write });
+    const media = await h.prisma.media.findUniqueOrThrow({ where: { id: signed.mediaId } });
+    expect(Object.keys(media.variants ?? {})).toEqual(['320', '640', '1024', '1600']);
+
+    lines.length = 0;
+    await backfillVehicleMedia({ prisma: h.prisma, processor, dryRun: true, write });
+    expect(lines.some((line) => line.includes(signed.mediaId))).toBe(false);
   });
 });

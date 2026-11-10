@@ -12,6 +12,7 @@ import {
   revealOffset,
   stripEdges,
   swipeStep,
+  thumbOf,
   wrapIndex,
 } from '@/components/ui/photo-gallery/utils';
 
@@ -947,5 +948,80 @@ describe('the fallback image', () => {
     expect(fallbackImage()).toBeNull();
     expect(heroSrc()).toBe(src(0));
     expect(screen.queryByText('Photographs coming soon')).toBeNull();
+  });
+});
+
+describe('sized photographs (F034)', () => {
+  function sized(count: number): GalleryPhoto[] {
+    return images(count).map((photo, index) => ({
+      ...photo,
+      thumbUrl: `https://media.test/by-media/m${index}/320.webp`,
+      srcset: `https://media.test/by-media/m${index}/640.webp 640w, https://media.test/by-media/m${index}/1600.webp 1600w`,
+    }));
+  }
+
+  function stageImage() {
+    return within(gallery().getByRole('button', { name: /^View all/ })).getByRole('img');
+  }
+
+  it('offers the stage every width and lets the page say how wide it is drawn', () => {
+    render(
+      <PhotoGallery title={TITLE} photos={sized(3)} sizes="(min-width: 1024px) 690px, 100vw" />,
+    );
+
+    expect(stageImage()).toHaveAttribute('src', 'https://media.test/by-media/m0/1024.webp');
+    expect(stageImage()).toHaveAttribute('srcset', sized(3)[0]?.srcset);
+    expect(stageImage()).toHaveAttribute('sizes', '(min-width: 1024px) 690px, 100vw');
+  });
+
+  it('assumes the full viewport when the page does not say', () => {
+    render(<PhotoGallery title={TITLE} photos={sized(2)} />);
+
+    expect(stageImage()).toHaveAttribute('sizes', '100vw');
+  });
+
+  it('sends no srcset or sizes for a photograph that has only one width', () => {
+    render(<PhotoGallery title={TITLE} photos={images(2)} sizes="50vw" />);
+
+    expect(stageImage()).not.toHaveAttribute('srcset');
+    expect(stageImage()).not.toHaveAttribute('sizes');
+  });
+
+  it('fills the strip with thumbnails, decoded off the main thread', () => {
+    render(<PhotoGallery title={TITLE} photos={sized(3)} />);
+
+    const thumbs = gallery()
+      .getAllByRole('button', { name: /^Show photo/ })
+      .map((thumb) => thumb.querySelector('img'));
+    expect(thumbs.map((img) => img?.getAttribute('src'))).toEqual([
+      'https://media.test/by-media/m0/320.webp',
+      'https://media.test/by-media/m1/320.webp',
+      'https://media.test/by-media/m2/320.webp',
+    ]);
+    expect(thumbs.every((img) => img?.getAttribute('decoding') === 'async')).toBe(true);
+  });
+
+  it('uses thumbnails in the viewer rail and every width on the viewer stage', async () => {
+    const user = userEvent.setup();
+    render(<PhotoGallery title={TITLE} photos={sized(3)} />);
+    const dialog = await openViewer(user, /^View all/);
+
+    const rail = within(within(dialog).getByRole('navigation', { name: 'All photos' }));
+    expect(
+      rail.getAllByRole('button').map((cell) => cell.querySelector('img')?.getAttribute('src')),
+    ).toEqual([0, 1, 2].map((index) => `https://media.test/by-media/m${index}/320.webp`));
+    const shown = within(dialog)
+      .getAllByRole('img')
+      .find((img) => img.getAttribute('alt') === sized(3)[0]?.alt);
+    expect(shown).toHaveAttribute('srcset', sized(3)[0]?.srcset);
+    expect(shown?.getAttribute('sizes')).toMatch(/1100px/);
+  });
+
+  it('falls back to the photograph itself when there is no thumbnail', () => {
+    const [photo] = images(1);
+    expect(photo && thumbOf(photo)).toBe('https://media.test/by-media/m0/1024.webp');
+    expect(
+      thumbOf({ url: 'https://a.test/1024.webp', alt: '', thumbUrl: 'https://a.test/320.webp' }),
+    ).toBe('https://a.test/320.webp');
   });
 });

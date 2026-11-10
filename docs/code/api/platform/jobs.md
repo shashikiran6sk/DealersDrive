@@ -28,6 +28,14 @@ separating work with different shapes: a different concurrency, a
 different retry budget, a different priority. Eight transactional emails
 have none of that; they are one kind of work with eight bodies.
 
+### `'media.process'`
+
+**F034.** Resizes one committed vehicle photograph into its derivatives; the
+payload is `{ mediaId }`. Its handler is `createMediaProcessor` in the media
+module, and `vehicle-images` sends it after a commit. Priority 50: behind a
+lead notification, ahead of housekeeping, because until it runs the car page
+serves the camera original.
+
 ### `const PRIORITIES: Partial<Record<JobName, number>> =`
 
 Highest priority is the lead notification. It is the product (§14.5).

@@ -80,6 +80,19 @@ difference, but with two children it would have put the section gap between a
 photograph and its caption. The credit is left out when the car has no
 photographs. See [photo-credit](../../components/vehicle/photo-credit.md).
 
+### `export const GALLERY_SIZES` — `<PhotoGallery sizes={GALLERY_SIZES} />`
+
+How wide the page draws the gallery stage, so the browser can choose a
+derivative from the photograph's `srcset` (**F034**). From 1024px the stage
+is the wider of two grid columns (`1.35fr 1fr`, 30px gap) inside a 1280px
+container with 24px padding: about 690px at full width, about 54% of the
+viewport below that. Under 1024px the columns stack and the stage is the
+full width. A phone at 3× density therefore asks for about 1080 device
+pixels and gets the 1600 derivative, roughly 70 KB, where it used to get the
+camera original. If the grid changes, this changes with it — a `sizes` that
+is too small makes the photograph soft, one that is too large only costs
+bytes.
+
 ### `vehicleRelatedSearches(vehicle)` and `<RelatedSearches heading="Find more cars like this" />`
 
 While `feature.seoLandingPages` is on, the car page links the SEO landing pages

@@ -194,6 +194,17 @@ describe('toPublicVehicleDetail', () => {
     expect(detail.primaryIndex).toBe(1);
   });
 
+  it('gives every photograph a 320 thumbnail and a srcset of each width (F034)', () => {
+    const [first] = toPublicVehicleDetail(detailRow()).images;
+    expect(first?.thumbUrl).toMatch(/\/by-media\/m-a\/320\.webp$/);
+    expect(first?.srcset.split(', ')).toEqual([
+      expect.stringMatching(/\/by-media\/m-a\/320\.webp 320w$/),
+      expect.stringMatching(/\/by-media\/m-a\/640\.webp 640w$/),
+      expect.stringMatching(/\/by-media\/m-a\/1024\.webp 1024w$/),
+      expect.stringMatching(/\/by-media\/m-a\/1600\.webp 1600w$/),
+    ]);
+  });
+
   it('shows the registration only as its RTO', () => {
     const detail = toPublicVehicleDetail(detailRow());
     expect(detail.specs).toContainEqual({ label: 'Registered at', value: 'TN 23' });

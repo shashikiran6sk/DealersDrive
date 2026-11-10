@@ -10,6 +10,8 @@ export interface VehicleDescriptionInput {
   reserved: boolean;
 }
 
+export const GALLERY_SIZES = '(min-width: 1280px) 690px, (min-width: 1024px) 54vw, 100vw';
+
 export const VEHICLE_PAGE_TEXT = {
   back: '← All cars',
   specifications: 'Specifications',
