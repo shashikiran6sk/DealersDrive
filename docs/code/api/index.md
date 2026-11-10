@@ -266,6 +266,19 @@ F016/F018, `/uploads` plus the first router under `/v1/dealer` as of F033,
 the docs router as of F098, the dealers router as of F040, the public dealer
 directory as of F085 and the admin router as of F049.
 
+### Route-boundary test completion
+
+`tests/router-dispatch.ts` waits for a response-ending method or Express's
+final callback. A final callback without an error means the route was
+unmatched; a response or a forwarded error means a handler was reached.
+Response headers and status setters alone do not complete dispatch.
+
+The former 20 ms sleep could expire before Express finished unwinding nested
+routers under CI load, reporting an absent dealer media route as reachable.
+Waiting for completion also prevents unfinished requests from changing guard
+counters in the next test. The helper's regression tests cover delayed
+fallthrough, asynchronous responses, and input errors without a database.
+
 ### `router.use(createMetricsRouter(env.METRICS_SCRAPE_TOKEN!))`
 
 The cross-field env validation guarantees this whenever metrics are on.
