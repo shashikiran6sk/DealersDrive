@@ -26,6 +26,18 @@ describe('derivativeKey', () => {
     expect(derivativeKey(KEY, 640)).toBe('vehicles/vehicle-1/media-1/640.webp');
     expect(derivativeKey('vehicles/v/m/original.webp', 320)).toBe('vehicles/v/m/320.webp');
   });
+
+  it('gives a dealership photograph keyed by its media id copies of its own', () => {
+    expect(derivativeKey('dealers/a.b-motors/portfolio/media-1', 640)).toBe(
+      'dealers/a.b-motors/portfolio/media-1-640.webp',
+    );
+    expect(derivativeKey('dealers/a.b-motors/portfolio/media-2', 640)).not.toBe(
+      derivativeKey('dealers/a.b-motors/portfolio/media-1', 640),
+    );
+    expect(derivativeKey('dealers/a-motors/yard/media-3', 320)).toBe(
+      'dealers/a-motors/yard/media-3-320.webp',
+    );
+  });
 });
 
 describe('deriveImages', () => {

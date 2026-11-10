@@ -80,18 +80,23 @@ derived from the key, so a browser holding the original is sent the
 derivative on its next revalidation.
 
 **It is not on the facade.** The facade test forbids any pipeline operation
-crossing the module boundary. `vehicle-images` receives `request` as an
-injected `processImage` function, wired in `container.ts`, so it can ask for
-a photograph to be processed without being able to see how.
+crossing the module boundary. A committing module records a `MediaUploaded`
+event instead (`recordMediaUploaded` in `platform/media/uploaded.ts`), and
+`subscribe` below turns it into a job.
 
-### `export const PROCESSED_OWNERS: readonly MediaOwner[] = ['VEHICLE']`
+### `export const PROCESSED_OWNERS: readonly MediaOwner[]`
 
-Only vehicle photographs, for now. Removing or replacing a vehicle image
-deletes every key in its `variants` (`mediaKeys` in
-`vehicle-images.service.ts`), so a derivative never outlives its photograph.
-The dealer-portfolio removal path deletes only `storageKey`; processing
-portfolio photographs before that is fixed would leak four objects per
-removal.
+The owners whose images are delivered publicly: vehicle photographs, and
+dealership photographs (`DEALER_PORTFOLIO`, and the legacy `DEALER_COVER` rows
+#299 carried over), which are served by the same route at the same widths.
+Yard-visit evidence and KYC documents have no public path and are never
+resized.
+
+#373 started with vehicles only, because the portfolio removal path deleted only
+`storageKey` and would have left four derivatives behind per removal. Every
+delete path now goes through `mediaObjectKeys` (`platform/media/keys.ts`), and
+a portfolio key gets its own derivative names (`derivativeKey` in
+`platform/media/derive.ts`), so dealership photographs are resized too.
 
 ### `async function process(mediaId: string): Promise<ProcessOutcome>`
 
@@ -110,20 +115,23 @@ conditional `updateMany` the commit uses: if the image was removed while it
 was being resized, nothing is recorded and the files just written are
 deleted, so no object is left that no row names.
 
-### `async request(mediaId: string): Promise<void>`
+### `subscribe(bus: EventBus): void`
 
-Queues `media.process`. It never throws: the upload that asked has already
-been committed, and refusing it because the queue was down would show the
-admin an error for a photograph that is attached. The image is served as its
-original until the backfill (below) or a later job reaches it.
+Turns a `MediaUploaded` event into a `media.process` job. A required
+subscriber: when the queue refuses the job the publish fails and the outbox
+row is retried, rather than the request being logged and dropped. The upload
+that raised the event has long since been answered, so a retry costs the admin
+nothing. A payload without a media id is refused, which leaves the row for
+someone to look at rather than marking it handled.
 
 ## `apps/api/src/modules/media/media.backfill.ts`
 
-### `export async function backfillVehicleMedia({ prisma, processor, dryRun, write })`
+### `export async function backfillMedia({ prisma, processor, dryRun, write })`
 
-The one-off pass for every vehicle photograph committed before the
-`media.process` job existed (**F034**): `READY`, a vehicle's, `variants`
-still `{}`, oldest first. It calls the same `process()` the job does, so it
+The one-off pass for every public photograph committed before the
+`media.process` job existed (**F034**): `READY`, one of `PROCESSED_OWNERS`,
+`variants` still `{}`, oldest first. Dealership photographs became eligible
+after #373, so a run after this change picks them up as well. It calls the same `process()` the job does, so it
 is safe to run twice — the second run finds nothing, because a processed row
 no longer has empty `variants`.
 
@@ -184,6 +192,22 @@ other gets the largest one there is, then the original. The reference used to
 say every other width was a 404, which a client could have coded around; it
 now describes the route as it behaves.
 
+**A missing derivative is logged, not hidden.** When `locate()` answers without
+the width it was asked for, it logs `media.variant_missing` at warn with the
+media id, the width and what it served, and counts
+`dealers_drive_media_variant_fallbacks_total{served}`: `original` when nothing
+was resized and the full upload goes out, `variant` when a derivative width
+(320, 640, 1024, 1600) is missing and a larger copy stands in. A width outside
+that list answered by a derivative is the route working as designed and says
+nothing.
+
+The fallback itself stays. A heavy image is a slow page; a 404 is a car with
+no photograph, and it would also turn every hiccup in processing into a broken
+gallery. What was wrong in production was that the fallback was silent: every
+card on the homepage served a 450 KB–1 MB original behind a URL that said
+`640`, for as long as F034 was missing, and nothing showed it. The warning
+makes that state visible in Loki and the counter makes it alertable.
+
 The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
 
 **Revalidate, do not re-download (R108).** `no-store` on a successful response
@@ -206,6 +230,18 @@ the derivation. No `max-age` or `immutable`: a bounded lifetime would let a
 browser show a suspended dealer's car without asking. Private reads
 (`GET /private`, KYC documents, yard previews) are unchanged — `private,
 no-store` — and KYC documents never reach this route at all.
+
+**Reviewed again with F034 (no change).** The derivatives are immutable per
+media id and width, so a `max-age` would be safe for the _bytes_. It would not
+be safe for _visibility_, which is the reason above: a withdrawn listing or a
+suspended dealership has to stop showing on the next view, and nothing but a
+revalidation tells the browser that. The cost of `no-cache` was never the
+revalidation, which is a 304 with no storage read; it was the size of the
+bytes behind a 200, and F034 is what fixed that. Moving the ETag from the
+original's key to the derivative's key (`imageEtag(mediaId, key)`) is also
+what delivers the derivative to a browser that cached the original: its
+`If-None-Match` no longer matches, so it gets a 200 with the small file. No
+cache needs purging.
 
 ### `export function toMediaStatus(status: string): 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'`
 

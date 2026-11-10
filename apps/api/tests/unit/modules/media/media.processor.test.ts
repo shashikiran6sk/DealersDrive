@@ -6,6 +6,7 @@ import {
   createMediaProcessor,
   hasVariants,
 } from '../../../../src/modules/media/media.processor.js';
+import { createEventBus } from '../../../../src/platform/events/bus.js';
 import { createInlineQueue, type Queue } from '../../../../src/platform/jobs/queue.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 
@@ -109,7 +110,7 @@ describe('process', () => {
     ['there is no such media', null],
     ['the upload was never committed', { status: 'PENDING' }],
     ['the image was removed', { status: 'ORPHAN' }],
-    ['it is not a vehicle photograph', { ownerType: 'DEALER_PORTFOLIO' }],
+    ['it is never shown publicly', { ownerType: 'DEALER_YARD_VISIT' }],
     ['it was already processed', { variants: { '320': `${DIR}/320.webp` } }],
   ] as const)('leaves it alone when %s', async (_, media) => {
     const { processor, get, put, updateMany } = setup({ media, body: await jpeg() });
@@ -171,20 +172,68 @@ describe('work', () => {
   });
 });
 
-describe('request', () => {
-  it('queues a media.process job for the media', async () => {
+describe('subscribe', () => {
+  function published(payload: unknown) {
+    return {
+      id: 'event-1',
+      type: 'MediaUploaded' as const,
+      version: 1 as const,
+      occurredAt: new Date(0).toISOString(),
+      aggregateType: 'Media',
+      aggregateId: MEDIA_ID,
+      actor: { type: 'ADMIN' as const },
+      traceId: 'trace',
+      payload,
+    };
+  }
+
+  it('turns a MediaUploaded event into a media.process job', async () => {
     const send = vi.fn(() => Promise.resolve());
     const { processor } = setup({ queue: { send } as unknown as Queue });
+    const bus = createEventBus();
+    processor.subscribe(bus);
 
-    await processor.request(MEDIA_ID);
+    await bus.publish(published({ mediaId: MEDIA_ID }));
 
     expect(send).toHaveBeenCalledWith('media.process', { mediaId: MEDIA_ID });
   });
 
-  it('never fails the upload that asked, when the queue is unavailable', async () => {
+  it('fails the event when the queue refuses it, so the outbox tries again', async () => {
     const queue = { send: () => Promise.reject(new Error('queue down')) } as unknown as Queue;
     const { processor } = setup({ queue });
+    const bus = createEventBus();
+    processor.subscribe(bus);
 
-    await expect(processor.request(MEDIA_ID)).resolves.toBeUndefined();
+    await expect(bus.publish(published({ mediaId: MEDIA_ID }))).rejects.toThrow('queue down');
+  });
+
+  it('refuses an event that names no media', async () => {
+    const send = vi.fn(() => Promise.resolve());
+    const { processor } = setup({ queue: { send } as unknown as Queue });
+    const bus = createEventBus();
+    processor.subscribe(bus);
+
+    await expect(bus.publish(published({}))).rejects.toThrow('Invalid MediaUploaded payload');
+    expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe('a dealership photograph (#299)', () => {
+  it('is resized into copies named for its own media id', async () => {
+    const key = `dealers/a-motors/portfolio/${MEDIA_ID}`;
+    const { processor, put, updateMany } = setup({
+      media: { ownerType: 'DEALER_PORTFOLIO', storageKey: key },
+      body: await jpeg(),
+    });
+
+    await expect(processor.process(MEDIA_ID)).resolves.toBe('processed');
+
+    expect(put.mock.calls.map(([written]) => written)).toEqual([
+      `${key}-320.webp`,
+      `${key}-640.webp`,
+      `${key}-1024.webp`,
+      `${key}-1600.webp`,
+    ]);
+    expect(updateMany).toHaveBeenCalledTimes(1);
   });
 });

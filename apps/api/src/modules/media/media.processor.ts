@@ -2,13 +2,18 @@ import type { MediaOwner, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
 import { isRecord } from '../../platform/errors.js';
+import type { EventBus } from '../../platform/events/bus.js';
 import type { Queue } from '../../platform/jobs/queue.js';
 import { DERIVATIVE_TYPE, deriveImages, type DerivedImage } from '../../platform/media/derive.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 
-export const PROCESSED_OWNERS: readonly MediaOwner[] = ['VEHICLE'];
+export const PROCESSED_OWNERS: readonly MediaOwner[] = [
+  'VEHICLE',
+  'DEALER_PORTFOLIO',
+  'DEALER_COVER',
+];
 
 export type ProcessOutcome = 'processed' | 'skipped' | 'unreadable';
 
@@ -74,12 +79,16 @@ export function createMediaProcessor({ prisma, storage, queue }: MediaProcessorD
   return {
     process,
 
-    async request(mediaId: string): Promise<void> {
-      try {
-        await queue.send('media.process', { mediaId });
-      } catch (error) {
-        logger.warn({ err: error, mediaId }, 'media.process_enqueue_failed');
-      }
+    subscribe(bus: EventBus): void {
+      bus.on(
+        'MediaUploaded',
+        async (event) => {
+          const job = MediaJob.safeParse(event.payload);
+          if (!job.success) throw new Error('Invalid MediaUploaded payload');
+          await queue.send('media.process', { mediaId: job.data.mediaId });
+        },
+        { required: true },
+      );
     },
 
     async work(): Promise<void> {

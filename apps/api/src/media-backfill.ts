@@ -1,6 +1,6 @@
 import process from 'node:process';
 
-import { backfillVehicleMedia } from './modules/media/media.backfill.js';
+import { backfillMedia } from './modules/media/media.backfill.js';
 import { createMediaProcessor } from './modules/media/media.processor.js';
 import { createPrisma } from './platform/db/prisma.js';
 import { createInlineQueue } from './platform/jobs/queue.js';
@@ -9,7 +9,7 @@ import { createStorage } from './platform/storage/factory.js';
 const prisma = createPrisma();
 
 try {
-  await backfillVehicleMedia({
+  await backfillMedia({
     prisma,
     processor: createMediaProcessor({
       prisma,
