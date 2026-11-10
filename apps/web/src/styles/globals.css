@@ -650,6 +650,117 @@
   .dd-sheet[data-state='open'] {
     animation: dd-sheet-up 200ms ease-out;
   }
+
+  .dd-deck-card {
+    --deck-cover: 0;
+    transform-origin: 50% 0;
+  }
+  .dd-deck-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--color-neutral-900);
+    opacity: calc(var(--deck-cover) * 0.18);
+    pointer-events: none;
+  }
+  .dd-makes {
+    view-timeline: --dd-makes block;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dd-rise {
+    animation: dd-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--rise-index, 0) * 70ms);
+  }
+  .dd-stream-col {
+    animation: dd-stream-up 40s linear infinite;
+  }
+  .dd-stream-col[data-direction='down'] {
+    animation-name: dd-stream-down;
+    animation-duration: 46s;
+  }
+  .dd-stream:hover .dd-stream-col,
+  .dd-stream:focus-within .dd-stream-col,
+  [data-paused] .dd-stream-col {
+    animation-play-state: paused;
+  }
+  .dd-deck-card {
+    transform: scale(calc(1 - var(--deck-cover) * 0.05));
+  }
+
+  @supports (animation-timeline: view()) {
+    .dd-makes-row {
+      animation: dd-drift linear both;
+      animation-timeline: --dd-makes;
+    }
+    .dd-deck-photo {
+      animation: dd-slide-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+    .dd-reveal-group > * {
+      animation: dd-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 80%;
+    }
+    .dd-reveal-group > :nth-child(2) {
+      animation-range: entry 12% entry 87%;
+    }
+    .dd-reveal-group > :nth-child(3) {
+      animation-range: entry 19% entry 94%;
+    }
+    .dd-reveal-group > :nth-child(4) {
+      animation-range: entry 26% entry 100%;
+    }
+  }
+}
+
+@keyframes dd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dd-stream-up {
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes dd-stream-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes dd-drift {
+  from {
+    transform: translateX(4%);
+  }
+  to {
+    transform: translateX(-10%);
+  }
+}
+
+@keyframes dd-slide-in {
+  from {
+    opacity: 0.2;
+    transform: translateX(-14%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes dd-sheet-up {

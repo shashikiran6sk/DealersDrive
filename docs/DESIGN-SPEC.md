@@ -154,7 +154,18 @@ Elevation stays quiet: borders do most of the separating; shadows only lift thin
 | `sheet`   | 200ms                            | `ease-out` | Mobile filter sheet slide-up, dialog fade-in                  |
 | `scroll`  | native `scroll-behavior: smooth` | browser    | Thumbnail strip paging, lightbox rail auto-centre             |
 
-`prefers-reduced-motion: reduce` zeroes every transition and animation. No entrance animations, no skeleton shimmer.
+`prefers-reduced-motion: reduce` zeroes every transition and animation. No entrance animations, no skeleton shimmer — **except on the homepage** (below).
+
+**Homepage motion** (the Deck redesign). The homepage is the one marketing surface, and the one place motion is allowed to carry the design. The consoles, `/cars`, car pages and every form stay motion-free. Every homepage animation is declared only under `prefers-reduced-motion: no-preference`; the scroll-linked ones also only under `@supports (animation-timeline: view())`, so an unsupporting browser sees the finished, still page. Only `transform` and `opacity` animate.
+
+| Motion     | Trigger                                  | What moves                                                                                 | Reduced motion       |
+| ---------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------- |
+| `rise`     | page load, once                          | hero eyebrow, lede, search, shortcuts: 14px rise + fade, 700ms, 70ms apart; never the H1   | shown at rest        |
+| `stream`   | continuous                               | two columns of recent cars, 40s / 46s, opposite directions; paused on hover, focus, button | still; button hidden |
+| `drift`    | scroll (the strip crossing the viewport) | the makes strip slides ~14% sideways                                                       | still                |
+| `deck`     | scroll                                   | a deck card scales to 95% and darkens 18% as the next card slides over it                  | flat                 |
+| `slide-in` | scroll (card entering)                   | a deck card's lead photo slides in from the left                                           | at rest              |
+| `reveal`   | scroll (row entering)                    | Recently added cards rise in, left to right                                                | at rest              |
 
 ---
 
@@ -341,13 +352,17 @@ Account corner (production behaviour, R67/R76): signed out → one `Login` pill 
 
 ### 3.2 Homepage
 
-1. **Hero banner** (`HeroBanner`) — a **single full-width banner**: one photograph of an Indian dealership — dealer, customers and the yard — `object-fit:cover`, under a black scrim (`black/80 → black/50 → black/10` left to right from `md`, a flat `black/55` on phones). `min-height:560px` (500px mobile), content `max-width:640px` left-aligned inside the 1440px frame: white eyebrow · `display` H1 in white · 15px/1.8 paragraph at 85% white · the production `CarSearchBox` (R79: suggestions open `/cars`, Enter opens `/cars?q=`) · `.dd-chip` shortcuts "Browse every car" / "Explore verified dealers". It replaces the MVP's two-column hero and the "How it works" trust panel. The default photograph is committed at `apps/web/public/images/home-hero.webp` (a salesperson with an Indian family in a showroom). **It is editable in `/admin/config`**: _Homepage hero image URL_ (`home.heroImageUrl`, an `https:` URL or a `/images/…` path) and _Homepage hero image description_ (`home.heroImageAlt`); the page falls back to the committed photograph when none is set, and the banner can also draw a dark `#0c0c0b` radial ground (`image: null`), never a broken image.
-2. **Discovery rows** (R72/R78) — `max-width:1440px`, `gap:48px`; each row: `h2` + "View all →" ghost, grid `repeat(auto-fill, minmax(262px,1fr))`, `gap:18px`, `items-stretch`, vehicle cards (§2.8). Available cars only; no counts.
-3. **Your journey** — three `.blueprint` cards (mono index, 20px title, muted body).
-4. **Built for both sides** — two 16px-radius `#f7f7f5` panels with ghost links (wrap on narrow widths).
-5. **Why Dealers-Drive** — full-bleed `#0c0c0b`, white type, five items with a `rgba(255,255,255,0.25)` top rule.
+The Deck redesign. Order: hero · makes strip · category deck · Recently added · Your journey · Why Dealers-Drive · Built for both sides. Motion is §1.7 _Homepage motion_.
 
-768: discovery rows 2-up. 375: everything 1-up; H1 40px; the banner stays full-bleed with the flat scrim.
+1. **Hero** (`HeroBanner`) — white ground, `max-width:1440px`, two columns from `lg` (one below). Left: eyebrow · H1 "Find your next car" (`clamp(56px,5.4vw,80px)`, 42px phone, `-0.05em`) · 16px/1.75 lede · the production `CarSearchBox` (R79: suggestions open `/cars`, Enter opens `/cars?q=`) · **category shortcuts** (`CategoryShortcuts`): five 14px-radius bordered buttons in one row, a 52×26 line icon over a 12px/700 label (40×20 and 10.5px on phones), each a link straight to its `/cars` search. Right: the **stock stream** (`StockStream`), a 28px-radius `#f7f7f5` panel 600px tall (360px phone), two columns of mini car cards (4:3 photo, title, price, meta) drifting in opposite directions, top and bottom edges faded with a mask, a 44px round pause button bottom-right. With fewer than four cars listed, or the API unreachable, the right column is the **hero photograph** in a 28px-radius frame instead (`HeroPhoto`, 4:3, 600px tall from `lg`). The photograph is still the committed `apps/web/public/images/home-hero.webp` unless set in `/admin/config` (_Homepage hero image URL_ `home.heroImageUrl`, _description_ `home.heroImageAlt`); `image: null` draws a dark `#0c0c0b` radial ground, never a broken image.
+2. **Makes strip** (`MakesStrip`) — a full-width row under a bottom rule: the makes on the marketplace, 800-weight `clamp(22px,2.6vw,36px)`, alternating ink and `--color-neutral-600`, each a link to `/cars?brand=`. Scrolls sideways; no count. Hidden under three makes.
+3. **Category deck** (`CategoryDeck`) — heading "Shop the way you search" (`clamp(32px,4vw,56px)`) with a muted line beside it, then five **category cards** (`CategoryCard`) in this order: SUVs (`bodyType=suv`), Automatic (`transmission=automatic`), Under ₹10 lakh (`maxPrice=100000000&sort=price_asc`), Family cars (`bodyType=muv`), Low kilometres (`maxKm=100000`, badged _Featured_). Each card: 28px radius, `--shadow-lg`, white; from `md` sticky under the header, each 16px lower than the last, `min-height:min(560px, 100svh − header − 120px)`, two columns. Left: mono position "02 / 05" · title (`clamp(40px,4.4vw,64px)`) · 16px description · three `#f7f7f5` fact pills · `btn-primary` "Browse …". Right, on `#f7f7f5`: the first available car large (contained on the studio ground, a white pill with title and price), the next two as small linked rows. An empty category shows its icon and "No … are listed right now", and its button becomes "See every car" (`/cars`). Phones: not sticky, photo on top, small rows and the third fact hidden.
+4. **Recently added** (R72/R78) — one discovery row: `h2` + "View all →" ghost to `/cars`, the four newest available cars, grid `repeat(auto-fill, minmax(262px,1fr))`, `gap:18px`, vehicle cards (§2.8); a horizontal scroller below `md`. No counts.
+5. **Your journey** — three `.blueprint` cards (mono index, 20px title, muted body).
+6. **Why Dealers-Drive** — full-bleed `#0c0c0b`, white type, five items with a `rgba(255,255,255,0.25)` top rule.
+7. **Built for both sides** — two 16px-radius `#f7f7f5` panels with ghost links (wrap on narrow widths).
+
+Available cars only, everywhere on the page; no counts anywhere (R71, R78).
 
 ### 3.3 Search results (`/cars`)
 
