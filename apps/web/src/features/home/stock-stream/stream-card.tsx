@@ -6,7 +6,7 @@ export function StreamCard({ car }: StreamCardProps) {
   return (
     <article className="flex flex-col overflow-hidden rounded-[18px] border border-(--color-divider) bg-white">
       <div className="aspect-[4/3] bg-(--color-neutral-150)">
-        <VehicleImage image={car.image} />
+        <VehicleImage image={car.image} priority />
       </div>
       <div className="flex flex-col gap-0.5 px-3.5 pt-2.5 pb-3.5">
         <span className="text-[13px] font-bold">{car.title}</span>

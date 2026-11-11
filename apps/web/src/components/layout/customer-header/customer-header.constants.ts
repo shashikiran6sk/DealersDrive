@@ -33,3 +33,5 @@ export const LOCATION_SELECTOR_PATHS: readonly string[] = [
   HEADER_NAV.cars,
   HEADER_NAV.dealers,
 ];
+
+export const HOME_PATH_ALIAS = '/index';

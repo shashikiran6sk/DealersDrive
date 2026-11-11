@@ -134,6 +134,22 @@ technology reads each car once. Neither copy has interactive descendants.
 Animation is declared only under `prefers-reduced-motion: no-preference`;
 reduced-motion users get the still content.
 
+## `apps/web/src/features/home/stock-stream/stream-card.tsx`
+
+### `<VehicleImage image={car.image} priority />`
+
+The stream's photos load eagerly. `VehicleImage` is lazy by default, and the
+browser decides when a lazy image is "near the viewport" from layout, which a
+CSS `transform` animation running on the compositor does not move. Measured on
+production after #378: 16 of the 20 stream photos were still unloaded four
+seconds in, and a card scrolled into view blank every few seconds, its photo
+arriving only after it had been on screen for a while. A tap forced a main-thread
+frame, the lazy check ran, and the waiting photos loaded together, which read as
+the grid refreshing and jerking.
+
+Eager costs little: ten cars at the 640-wide derivative (F034) is about 200 KB,
+and the loop copy requests the same URLs, so the browser fetches each once.
+
 ## `apps/web/src/features/home/makes-strip/makes-strip.tsx`
 
 ### `export function MakesStrip({ makes })`
