@@ -19,7 +19,6 @@ import { HOME_CATEGORIES } from '@/features/home/home.constants';
 import { JOURNEY_TEXT } from '@/features/home/journey-section';
 import { MAKES_STRIP_TEXT } from '@/features/home/makes-strip';
 import { STOCK_STREAM_TEXT } from '@/features/home/stock-stream';
-import { TRUST_TEXT } from '@/features/home/trust-section';
 import type * as ApiModule from '@/lib/api';
 import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 
@@ -29,7 +28,7 @@ import { navigationState } from '../../../setup.js';
  * The homepage is an entry into `/cars`, not a second search (R72). The hero is
  * the `/cars` search box and five shortcuts; a stream of recent cars sits beside
  * it; five shopping categories stack below, each an ordinary `/v1/vehicles`
- * request with a filter; then "Recently added" and the three explainers.
+ * request with a filter; then "Recently added" and the two explainers.
  */
 const apiGetParsed = vi.fn();
 
@@ -296,7 +295,6 @@ describe('when the marketplace cannot be reached', () => {
     expect(screen.queryByRole('region', { name: DECK_TEXT.title })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: AUDIENCE_TEXT.title })).toBeInTheDocument();
   });
 });
@@ -308,7 +306,7 @@ function sectionOrder(container: HTMLElement): string[] {
 }
 
 describe('the page order', () => {
-  it('runs makes, categories, recent cars, then the three explainers', async () => {
+  it('runs makes, categories, recent cars, then the two explainers', async () => {
     serve((path) => response([card(path)]));
     const { container } = render(await HomePage());
 
@@ -317,7 +315,6 @@ describe('the page order', () => {
       'categories',
       'home-recent',
       'journey',
-      'trust',
       'audience',
     ]);
   });

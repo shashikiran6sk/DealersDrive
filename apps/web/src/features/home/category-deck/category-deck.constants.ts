@@ -3,6 +3,9 @@ export const DECK_TEXT = {
   body: 'Five quick ways into the marketplace, each with the cars dealers have listed in it right now.',
   featured: 'Featured',
   seeEveryCar: 'See every car',
+  swipe: 'Swipe',
+  previous: 'Previous category',
+  next: 'Next category',
   position: (position: number, total: number) =>
     `${String(position + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`,
 } as const;

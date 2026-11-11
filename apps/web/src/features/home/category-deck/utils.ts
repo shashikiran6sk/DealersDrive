@@ -9,12 +9,11 @@ export function isBeside(card: Pick<DeckSpan, 'left'>, next: Pick<DeckSpan, 'lef
   return next.left - card.left > 1;
 }
 
-export function nearestToCentre(row: DeckSpan, cards: readonly DeckSpan[]): number {
-  const centre = row.left + row.width / 2;
+export function nearestToStart(row: Pick<DeckSpan, 'left'>, cards: readonly DeckSpan[]): number {
   let nearest = 0;
   let distance = Number.POSITIVE_INFINITY;
   cards.forEach((card, index) => {
-    const away = Math.abs(card.left + card.width / 2 - centre);
+    const away = Math.abs(card.left - row.left);
     if (away < distance) {
       distance = away;
       nearest = index;

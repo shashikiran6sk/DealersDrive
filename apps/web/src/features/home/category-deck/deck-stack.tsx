@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 
 import type { DeckStackProps } from './category-deck.types';
 import { DeckProgress } from './deck-progress';
-import { coverProgress, isBeside, nearestToCentre } from './utils';
+import { coverProgress, isBeside, nearestToStart } from './utils';
 
 export function DeckStack({ children, total, className }: DeckStackProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ export function DeckStack({ children, total, className }: DeckStackProps) {
         const cover = rect && next && !swiping && !reduce.matches ? coverProgress(rect, next) : 0;
         card.style.setProperty('--deck-cover', cover.toFixed(3));
       });
-      if (swiping) setCurrent(nearestToCentre(root.getBoundingClientRect(), rects));
+      if (swiping) setCurrent(nearestToStart(root.getBoundingClientRect(), rects));
     };
     const schedule = () => {
       if (frame === 0) frame = window.requestAnimationFrame(update);
@@ -50,18 +50,27 @@ export function DeckStack({ children, total, className }: DeckStackProps) {
     };
   }, []);
 
+  const step = (by: -1 | 1) => {
+    const cards = ref.current?.querySelectorAll<HTMLElement>('[data-deck-card]');
+    cards?.[current + by]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'start',
+      block: 'nearest',
+    });
+  };
+
   return (
     <>
+      {total ? <DeckProgress current={current} total={total} onStep={step} /> : null}
       <div
         ref={ref}
         className={cn(
-          'flex flex-col gap-7 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:flex-row max-md:gap-3.5 max-md:overflow-x-auto max-md:px-[calc(50%+1rem-min(41vw,180px))] max-md:pt-2 max-md:pb-6 max-md:[scrollbar-width:none] sm:max-md:-mx-6 sm:max-md:px-[calc(50%+1.5rem-min(41vw,180px))] max-md:[&::-webkit-scrollbar]:hidden',
+          'flex flex-col gap-7 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:flex-row max-md:gap-3.5 max-md:overflow-x-auto max-md:px-4 max-md:pt-3 max-md:pb-6 max-md:[scrollbar-width:none] sm:max-md:-mx-6 sm:max-md:scroll-px-6 sm:max-md:px-6 max-md:[&::-webkit-scrollbar]:hidden',
           className,
         )}
       >
         {children}
       </div>
-      {total ? <DeckProgress current={current} total={total} /> : null}
     </>
   );
 }

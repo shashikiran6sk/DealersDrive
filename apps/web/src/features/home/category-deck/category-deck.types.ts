@@ -36,6 +36,14 @@ export interface DeckStackProps {
 export interface DeckProgressProps {
   current: number;
   total: number;
+  onStep?: (step: -1 | 1) => void;
+}
+
+export interface DeckArrowProps {
+  label: string;
+  disabled: boolean;
+  flipped?: boolean;
+  onClick: () => void;
 }
 
 export interface DeckEdge {

@@ -40,11 +40,10 @@ no reason.
 ### The page order (Homepage Deck, revising R83)
 
 Hero (search, category shortcuts, the stock stream) · makes strip · the
-category deck · Recently added · the journey · why Dealers-Drive · built for
-both sides. The redesign replaced the four alternating car rows of **R83**: the
+category deck · Recently added · the journey · built for both sides. The redesign replaced the four alternating car rows of **R83**: the
 SUV, Automatic and Under ₹10 lakh rows became cards in the deck, so there is
-one car row left and nothing to alternate with. The three explainers keep their
-content and follow the cars. The order is the JSX; a test holds it through each
+one car row left and nothing to alternate with. The two explainers follow the
+cars; "Why Dealers-Drive" was removed and its black band moved to the journey. The order is the JSX; a test holds it through each
 section's `data-home-section`.
 
 Every read is `loadHomeInventory()`, made once, in parallel, before anything
