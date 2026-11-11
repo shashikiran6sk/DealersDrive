@@ -42,6 +42,23 @@ describe('StockStream', () => {
     expect(stream.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  /**
+   * The columns move by CSS animation, which the browser's lazy-load check
+   * notices late: a lazy photo started downloading only once its card was
+   * already on screen, so cars drifted into view blank. Every photo in the
+   * stream is fetched up front instead; the loop copy reuses the same URLs.
+   */
+  it('loads every photo straight away rather than lazily', () => {
+    const withPhotos = cars.map((entry) => ({
+      ...entry,
+      image: { url: `https://media.example.org/${entry.slug}/640.webp`, alt: entry.title },
+    }));
+    const { container } = render(<StockStream cars={withPhotos} />);
+    const photos = container.querySelectorAll('img');
+    expect(photos).toHaveLength(8);
+    for (const photo of photos) expect(photo).toHaveAttribute('loading', 'eager');
+  });
+
   it('hides only the duplicate loop content from assistive technology', () => {
     const { container } = render(<StockStream cars={cars} />);
     const copies = container.querySelectorAll('[data-loop-copy]');
