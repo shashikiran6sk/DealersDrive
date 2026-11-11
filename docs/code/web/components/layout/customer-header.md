@@ -62,6 +62,17 @@ Every dealership's page starts with `/dealers`, and `/car/…` shares four
 letters with `/cars`; a prefix rule would put the selector on exactly the
 pages it is meant to leave.
 
+### `HOME_PATH_ALIAS` — `/index` is the homepage
+
+On Vercel the homepage is a cached page refreshed in the background, and the
+copy it serves is rendered with the path `/index`, not `/` (its page data
+records `"c":["","index"]`). An exact match on `/` said no on the server and
+yes in the browser, so the server sent no selector, not even its fallback, and
+every homepage load failed hydration (React #418) and was rebuilt in the
+browser. `next start` renders `/` as `/`, so it never showed up locally. `/index`
+is not a route of its own, so treating it as Home cannot put the selector
+anywhere it should not be.
+
 ### `{account ?? (<Link href={HEADER_NAV.login} …>)}`
 
 One door, `Login` (**R35**, renamed at **R63**), visible at every width

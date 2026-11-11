@@ -330,6 +330,8 @@ describe('the district selector', () => {
     ['/dealers', true],
     ['/dealers/', true],
     ['/', true],
+    ['/index', true],
+    ['/index/', true],
     ['/car', false],
     ['/car/', false],
     [CAR_PAGE, false],
