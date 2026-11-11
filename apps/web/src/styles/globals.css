@@ -685,25 +685,15 @@
     animation-name: dd-stream-down;
     animation-duration: 46s;
   }
-  .dd-stream:hover .dd-stream-col,
-  [data-paused] .dd-stream-col {
-    animation-play-state: paused;
-  }
-  .dd-stream:focus-within .dd-stream-col {
-    animation: none;
-  }
-  .dd-makes:not([data-paused], :focus-within) .dd-makes-scroll {
+  .dd-makes .dd-makes-scroll {
     overflow: hidden;
     mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
   }
-  .dd-makes:not([data-paused], :focus-within) .dd-makes-track {
+  .dd-makes .dd-makes-track {
     animation: dd-loop 44s linear infinite;
   }
-  .dd-makes:not([data-paused], :focus-within) [data-loop-copy] {
+  .dd-makes [data-loop-copy] {
     display: flex;
-  }
-  .dd-makes:hover .dd-makes-track {
-    animation-play-state: paused;
   }
   .dd-deck-card {
     transform: scale(calc(1 - var(--deck-cover) * 0.05));

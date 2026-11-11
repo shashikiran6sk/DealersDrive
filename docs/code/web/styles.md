@@ -235,12 +235,11 @@ timeline they name on themselves, and from `md` they use the page's.
 
 ### `.dd-makes` — the loop and its still state
 
-The loop's four parts (clipped overflow, edge mask, the second copy made
-visible, the animation) share one selector,
-`.dd-makes:not([data-paused], :focus-within)`. They must switch together: a
-clipped strip with no animation would hide most of the makes, and an animated
-one that can also be scrolled runs off the end of its second copy. Outside that
-selector `.dd-makes-scroll` is a plain `overflow-x: auto` row.
+Clipped overflow, the edge mask, the visible second copy and the animation
+are enabled together under `prefers-reduced-motion: no-preference`. The strip
+is non-interactive and has no hover, focus or pause state, so touches cannot
+reset or stop its loop. Outside that media query the single list is a plain
+`overflow-x: auto` row.
 
 ### `.dd-tile .dd-icon-*`
 

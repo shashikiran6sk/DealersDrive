@@ -73,7 +73,7 @@ export default async function HomePage() {
         >
           {HOME_TEXT.lede}
         </p>
-        <div className="dd-rise mt-7" style={rise(2)}>
+        <div className="dd-rise relative z-10 mt-7" style={rise(2)}>
           <CarSearchBox
             params={{}}
             basePath={HOME_SEARCH_PATH}

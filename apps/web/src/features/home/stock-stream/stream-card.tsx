@@ -1,15 +1,10 @@
-import Link from 'next/link';
-
-import { VehicleImage, vehicleHref } from '@/components/vehicle/vehicle-card';
+import { VehicleImage } from '@/components/vehicle/vehicle-card';
 
 import type { StreamCardProps } from './stock-stream.types';
 
 export function StreamCard({ car }: StreamCardProps) {
   return (
-    <Link
-      href={vehicleHref(car.slug)}
-      className="flex flex-col overflow-hidden rounded-[18px] border border-(--color-divider) bg-white transition-colors duration-150 hover:border-(--color-neutral-400)"
-    >
+    <article className="flex flex-col overflow-hidden rounded-[18px] border border-(--color-divider) bg-white">
       <div className="aspect-[4/3] bg-(--color-neutral-150)">
         <VehicleImage image={car.image} />
       </div>
@@ -20,6 +15,6 @@ export function StreamCard({ car }: StreamCardProps) {
         ) : null}
         <span className="text-[11px] ink-muted">{car.metaLabel}</span>
       </div>
-    </Link>
+    </article>
   );
 }

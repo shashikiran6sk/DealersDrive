@@ -9,7 +9,7 @@ export function StreamColumn({ cars, direction }: StreamColumnProps) {
           <StreamCard key={car.slug} car={car} />
         ))}
       </div>
-      <div className="flex flex-col gap-3.5 pb-3.5" aria-hidden="true" inert>
+      <div className="flex flex-col gap-3.5 pb-3.5" aria-hidden="true" data-loop-copy>
         {cars.map((car) => (
           <StreamCard key={car.slug} car={car} />
         ))}
