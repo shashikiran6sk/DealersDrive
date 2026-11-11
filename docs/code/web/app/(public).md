@@ -110,3 +110,11 @@ sentence; the behaviour is `RouteError`'s.
 A Suspense boundary above a page streams the layout before the page's data
 arrives, and a `notFound()` or a failure after that is answered 200. See
 `docs/errors.md` §3.
+
+### Hero search stacking
+
+The animated search wrapper has a positioned z-index above the category
+shortcuts and the stock stream. The rise animation creates a stacking context
+even after its entrance finishes. Raising only the dropdown inside that context
+leaves its options behind later animated shortcuts, and behind the stream on
+phones. The integrated hero story checks pointer hit testing on an open option.

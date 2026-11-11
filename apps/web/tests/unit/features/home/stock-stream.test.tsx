@@ -1,6 +1,5 @@
 import type { VehicleCardDto } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { MakesStrip, MAKES_STRIP_TEXT } from '@/features/home/makes-strip';
@@ -34,34 +33,22 @@ describe('splitColumns', () => {
 describe('StockStream', () => {
   const cars = ['a', 'b', 'c', 'd'].map(car);
 
-  it('offers each car once to the keyboard and to assistive technology', () => {
+  it('shows cars as non-interactive content with no pause control', () => {
     render(<StockStream cars={cars} />);
     const stream = within(screen.getByRole('region', { name: STOCK_STREAM_TEXT.label }));
-    expect(stream.getAllByRole('link')).toHaveLength(4);
-    expect(stream.getByRole('link', { name: /i10 c/ })).toHaveAttribute('href', '/car/c');
+    expect(stream.getAllByRole('article')).toHaveLength(4);
+    expect(stream.getAllByText(/2013 Hyundai i10/)).toHaveLength(8);
+    expect(stream.queryByRole('link')).not.toBeInTheDocument();
+    expect(stream.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('draws a hidden, inert second copy so the columns loop without a seam', () => {
+  it('hides only the duplicate loop content from assistive technology', () => {
     const { container } = render(<StockStream cars={cars} />);
-    const copies = container.querySelectorAll('[inert]');
+    const copies = container.querySelectorAll('[data-loop-copy]');
     expect(copies).toHaveLength(2);
     for (const copy of copies) expect(copy).toHaveAttribute('aria-hidden', 'true');
-    expect(container.querySelectorAll('a')).toHaveLength(8);
-  });
-
-  it('can be paused, and says so', async () => {
-    const user = userEvent.setup();
-    render(<StockStream cars={cars} />);
-    const region = screen.getByRole('region', { name: STOCK_STREAM_TEXT.label });
-    const pause = screen.getByRole('button', { name: STOCK_STREAM_TEXT.pause });
-
-    expect(pause).toHaveAttribute('aria-pressed', 'false');
-    expect(region).not.toHaveAttribute('data-paused');
-    await user.click(pause);
-    expect(pause).toHaveAttribute('aria-pressed', 'true');
-    expect(region).toHaveAttribute('data-paused');
-    await user.click(pause);
-    expect(region).not.toHaveAttribute('data-paused');
+    expect(container.querySelectorAll('article')).toHaveLength(8);
+    expect(container.querySelectorAll('a, button, [tabindex]')).toHaveLength(0);
   });
 });
 
@@ -71,31 +58,19 @@ describe('MakesStrip', () => {
     href: `/cars?brand=${label.toLowerCase()}`,
   }));
 
-  it('links every make to its search', () => {
+  it('displays the makes without links or a pause control', () => {
     render(<MakesStrip makes={makes} />);
-    const strip = within(screen.getByRole('navigation', { name: MAKES_STRIP_TEXT.label }));
-    expect(strip.getByRole('link', { name: 'Honda' })).toHaveAttribute('href', '/cars?brand=honda');
+    const strip = within(screen.getByRole('region', { name: MAKES_STRIP_TEXT.label }));
+    expect(strip.getAllByRole('listitem')).toHaveLength(3);
+    expect(strip.getAllByText('Honda')).toHaveLength(2);
+    expect(strip.queryByRole('link')).not.toBeInTheDocument();
+    expect(strip.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('draws a hidden, inert second copy so the strip loops without a seam', () => {
+  it('hides the duplicate list from assistive technology', () => {
     const { container } = render(<MakesStrip makes={makes} />);
-    const copy = container.querySelector('[data-loop-copy]');
-    expect(copy).toHaveAttribute('aria-hidden', 'true');
-    expect(copy).toHaveAttribute('inert');
-    expect(container.querySelectorAll('a')).toHaveLength(6);
-    expect(screen.getAllByRole('link')).toHaveLength(3);
-  });
-
-  it('can be paused, which is what makes it a row to scroll by hand', async () => {
-    const user = userEvent.setup();
-    render(<MakesStrip makes={makes} />);
-    const strip = screen.getByRole('navigation', { name: MAKES_STRIP_TEXT.label });
-    const pause = screen.getByRole('button', { name: MAKES_STRIP_TEXT.pause });
-
-    expect(strip).not.toHaveAttribute('data-paused');
-    await user.click(pause);
-    expect(pause).toHaveAttribute('aria-pressed', 'true');
-    expect(strip).toHaveAttribute('data-paused');
+    expect(container.querySelector('[data-loop-copy]')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelectorAll('a, button, [tabindex]')).toHaveLength(0);
   });
 
   it('renders nothing for fewer than three makes', () => {

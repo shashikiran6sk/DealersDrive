@@ -121,73 +121,36 @@ listed or the API is unreachable; with stock, the stream takes its place.
 
 ### `export function StockStream({ cars, className })`
 
-Two columns of real listings drifting in opposite directions: the first thing
-the homepage says is what is for sale. Cars are dealt alternately
-(`splitColumns`) so neighbouring cards differ.
+Two columns of recent listings drift in opposite directions. The strip is a
+visual showcase: its cards are articles rather than links, and it has no pause
+button. Hover, clicks and touches do not interrupt the animation. The category
+deck and Recently added remain the ways to open cars from the homepage.
 
-**The loop is two copies, and the second is `inert` and `aria-hidden`.** Each
-column holds its cars twice and translates by exactly half its height, so the
-end meets the start without a jump. Each copy carries its own bottom padding
-rather than a gap between copies; with a gap, half the height would be off by
-half the gap and the loop would jump by that much. The second copy exists only
-to be seen: a keyboard user tabs through each car once and a screen reader reads
-each once.
+`splitColumns` deals cars alternately so neighbouring cards differ. Each column
+holds two copies with matching bottom padding, making `translateY(-50%)` one
+complete pass without a jump. The second copy is `aria-hidden`, so assistive
+technology reads each car once. Neither copy has interactive descendants.
 
-### `export function StreamPauseButton({ className, label })`
-
-Anything that moves on its own for more than five seconds needs a way to stop
-it (WCAG 2.2.2). Hover already pauses the columns; the button is the way that
-does not depend on the pointer staying put. It sets `data-paused` on the
-nearest `[data-pausable]` ancestor from `closest()`, so what it pauses stays a
-server component. The stream and the makes strip both carry that attribute and
-each gets its own button, which is why the accessible name is a prop. The name
-is fixed and `aria-pressed` carries the state; a label that flipped between
-Pause and Play while also pressed would announce the state twice. It is hidden
-under reduced motion, where nothing moves.
-
-### Keyboard focus stops the stream, it does not pause it
-
-`.dd-stream:focus-within` sets `animation: none`, not
-`animation-play-state: paused`. Paused, the columns freeze wherever they had
-drifted to, and a card that receives focus may sit outside the panel: at
-1440 px, four of the ten cards were focused out of sight. With no animation the
-columns return to their natural position, where the browser's own
-scroll-into-view can reach every card.
+Animation is declared only under `prefers-reduced-motion: no-preference`;
+reduced-motion users get the still content.
 
 ## `apps/web/src/features/home/makes-strip/makes-strip.tsx`
 
 ### `export function MakesStrip({ makes })`
 
-The makes on the marketplace, each a link to `/cars?brand=`, in a slow loop.
-The first version drifted a few percent with the page scroll. That left six of
-thirteen makes off-screen at 1440 px with the scrollbar hidden, and on a phone
-it pushed the first make past the left edge where no scroll could bring it
-back. A loop shows every make at every width.
-
-**It has two states, and the still one is the default.** Without the motion
-rules the strip is an ordinary sideways scroller holding one list, so reduced
-motion and a browser without the stylesheet both get every make by scroll. The
-loop (clipped overflow, the edge fade, the visible second copy, the animation)
-is declared together under `prefers-reduced-motion: no-preference`, and only
-while the strip is neither paused nor focused. Pausing or tabbing in therefore
-does more than stop it: it turns the strip back into the scroller, which is
-what a keyboard or touch user needs once it stops.
-
-Hover holds the loop in place. The pause button is the same
-`StreamPauseButton` the stream uses, with its own name.
-
-Below three makes it renders nothing: two names in a full-width strip read as
-a mistake.
+The marketplace's makes form a display strip, not navigation. They are plain
+text, with no links or pause button. The two copies loop continuously; pointer
+hover and touch do not change the animation. Below three makes the strip renders
+nothing. Under reduced motion it becomes an ordinary horizontal scroller.
 
 ## `apps/web/src/features/home/makes-strip/makes-list.tsx`
 
 ### `export function MakesList({ makes, copy })`
 
-One pass of the makes. The strip draws it twice and translates by half, as the
-stream does. The second pass is `inert`, `aria-hidden` and `hidden`; the motion
-rules reveal it by `[data-loop-copy]`, so it never exists for a visitor whose
-strip is not moving. The side padding belongs to each list, not the track, so
-half the track is exactly one list and the loop has no jump.
+A pass through the makes. The second pass is `aria-hidden` and hidden by default;
+the motion stylesheet reveals it only when the strip animates. Matching side
+padding makes half the track exactly one list. Text spans preserve alternating
+make colours without creating navigation targets.
 
 ## `apps/web/src/features/home/category-deck/category-card.tsx`
 
