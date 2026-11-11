@@ -1,5 +1,6 @@
 import type { VehicleCardDto } from '@dealers-drive/contracts';
 import { act, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -11,7 +12,7 @@ import {
   DeckStack,
   type HomeCategoryView,
   isBeside,
-  nearestToCentre,
+  nearestToStart,
 } from '@/features/home/category-deck';
 import { HOME_CATEGORIES, type HomeCategoryIcon } from '@/features/home/home.constants';
 
@@ -61,21 +62,30 @@ describe('isBeside — whether the deck is laid out as a swipe row', () => {
   });
 });
 
-describe('nearestToCentre — which card the swipe row is showing', () => {
-  const row = { left: 0, width: 390 };
+describe('nearestToStart — which card the swipe row is showing', () => {
+  const row = { left: 0 };
 
-  it('picks the card whose middle is closest to the middle of the row', () => {
+  it('picks the card whose left edge is closest to the start of the row', () => {
     const cards = [
-      { left: -633, width: 320 },
-      { left: -299, width: 320 },
-      { left: 35, width: 320 },
-      { left: 369, width: 320 },
+      { left: -620, width: 304 },
+      { left: -302, width: 304 },
+      { left: 16, width: 304 },
+      { left: 334, width: 304 },
     ];
-    expect(nearestToCentre(row, cards)).toBe(2);
+    expect(nearestToStart(row, cards)).toBe(2);
+  });
+
+  it('picks the last card when the row is scrolled to its end', () => {
+    const cards = [
+      { left: -566, width: 304 },
+      { left: -248, width: 304 },
+      { left: 70, width: 304 },
+    ];
+    expect(nearestToStart(row, cards)).toBe(2);
   });
 
   it('answers the first card when there is nothing to measure', () => {
-    expect(nearestToCentre(row, [])).toBe(0);
+    expect(nearestToStart(row, [])).toBe(0);
   });
 });
 
@@ -83,9 +93,27 @@ describe('DeckProgress', () => {
   it('shows the position and fills the bar by the same share, as decoration', () => {
     const { container } = render(<DeckProgress current={2} total={5} />);
     const progress = container.querySelector('[data-deck-progress]');
-    expect(progress).toHaveAttribute('aria-hidden', 'true');
     expect(progress).toHaveTextContent('03 / 05');
     expect(progress?.querySelector('[style]')).toHaveStyle({ transform: 'scaleX(0.6)' });
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('says which way to go and steps a card at a time', async () => {
+    const user = userEvent.setup();
+    const onStep = vi.fn();
+    render(<DeckProgress current={1} total={3} onStep={onStep} />);
+    expect(screen.getByText(DECK_TEXT.swipe)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: DECK_TEXT.next }));
+    await user.click(screen.getByRole('button', { name: DECK_TEXT.previous }));
+    expect(onStep.mock.calls).toEqual([[1], [-1]]);
+  });
+
+  it('stops at both ends', () => {
+    const { rerender } = render(<DeckProgress current={0} total={3} onStep={vi.fn()} />);
+    expect(screen.getByRole('button', { name: DECK_TEXT.previous })).toBeDisabled();
+    expect(screen.getByRole('button', { name: DECK_TEXT.next })).toBeEnabled();
+    rerender(<DeckProgress current={2} total={3} onStep={vi.fn()} />);
+    expect(screen.getByRole('button', { name: DECK_TEXT.next })).toBeDisabled();
   });
 });
 
@@ -183,7 +211,8 @@ describe('DeckStack', () => {
     expect(container.querySelector('[data-deck-progress]')).toBeNull();
   });
 
-  it('as a swipe row, follows the card in the middle and never dims a card', () => {
+  it('as a swipe row, follows the card at the start, never dims a card, and steps on request', async () => {
+    const user = userEvent.setup();
     const { container } = render(
       <DeckStack total={3}>
         <article data-deck-card>first</article>
@@ -191,18 +220,20 @@ describe('DeckStack', () => {
         <article data-deck-card>third</article>
       </DeckStack>,
     );
-    const row = container.firstElementChild;
+    const row = container.querySelector('[data-deck-card]')?.parentElement;
     const cards = screen.getAllByRole('article');
     if (!row) throw new Error('missing row');
     vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ left: 0, width: 390 } as DOMRect);
-    [-299, 35, 369].forEach((left, index) => {
+    const reveal = vi.fn();
+    [-302, 16, 334].forEach((left, index) => {
       const card = cards[index];
       if (!card) throw new Error('missing card');
+      card.scrollIntoView = reveal;
       vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({
         top: 100,
         height: 500,
         left,
-        width: 320,
+        width: 304,
       } as DOMRect);
     });
     expect(container.querySelector('[data-deck-progress]')).toHaveTextContent('01 / 03');
@@ -213,6 +244,10 @@ describe('DeckStack', () => {
     });
     expect(container.querySelector('[data-deck-progress]')).toHaveTextContent('02 / 03');
     for (const card of cards) expect(card.style.getPropertyValue('--deck-cover')).toBe('0.000');
+
+    await user.click(screen.getByRole('button', { name: DECK_TEXT.next }));
+    expect(reveal.mock.contexts).toEqual([cards[2]]);
+    expect(reveal).toHaveBeenCalledWith({ behavior: 'smooth', inline: 'start', block: 'nearest' });
   });
 
   it('leaves every card flat for a visitor who asked for less motion', () => {

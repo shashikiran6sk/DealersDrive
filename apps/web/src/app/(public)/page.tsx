@@ -20,7 +20,6 @@ import { JourneySection } from '@/features/home/journey-section';
 import { loadHomeInventory } from '@/features/home/load-home';
 import { MakesStrip } from '@/features/home/makes-strip';
 import { STOCK_STREAM_MIN_CARS, StockStream } from '@/features/home/stock-stream';
-import { TrustSection } from '@/features/home/trust-section';
 import { categoryHref } from '@/features/home/utils';
 import { getPublicConfig } from '@/lib/public-config';
 import {
@@ -105,7 +104,6 @@ export default async function HomePage() {
         }}
       />
       <JourneySection />
-      <TrustSection />
       <AudienceSection />
     </div>
   );

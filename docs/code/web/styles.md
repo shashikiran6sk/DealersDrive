@@ -221,7 +221,7 @@ position, not the clock. Declaring the animations only where motion is welcome
 is the one way that holds for both kinds.
 
 The scroll-driven ones (`dd-slide-in`, the `dd-reveal-group` stagger, the
-swipe-row focus, the journey line and the trust rules) also sit behind
+swipe-row focus and the journey line) also sit behind
 `@supports (animation-timeline: view())`. Where that is unsupported they never
 apply, and the page is the finished, still layout. Their keyframes all end at
 the element's resting state, so nothing is left invisible if a timeline never

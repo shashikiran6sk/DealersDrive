@@ -174,11 +174,17 @@ on any screen under 640 px tall (`max-height`, a landscape phone).
 
 **Below `md` the deck is a swipe row.** Five full cards stacked down a phone
 were about 2,700 px of scrolling with none of the deck's motion. Each card is
-now `min(82vw, 360px)` wide and snaps to the centre, so the next one always
-shows at the edge. The cards drop their small photos and third fact there.
+`min(78vw, 340px)` wide and snaps to the start of the row, in line with the
+page gutter. The cards drop their small photos and third fact there.
 `dd-deck-card` names an inline view timeline on itself, and the card grows to
-full size and opacity as it crosses the middle of the row; its photo slides a
-few percent the other way on the same timeline.
+full size and opacity as it crosses the row; its photo slides a few percent the
+other way on the same timeline.
+
+**The card starts at the gutter, not the centre, so the next one shows.** The
+first version centred each card, which left about 20 px of the next card at
+the edge. Scrolling down the page, a visitor saw one card and no sign that
+there were four more, or which way they lay. Aligned to the start, roughly a
+seventh of the screen is the next card, cut off mid-photo, which is the cue.
 
 ### `--deck-top`
 
@@ -199,12 +205,14 @@ burst of scroll events.
 **It asks the layout which deck it is, not the viewport.** Below `md` the same
 cards sit side by side (`isBeside`). There every card has the same top, which
 `coverProgress` would read as fully covered, so in the row it writes 0 and
-tracks the card nearest the middle instead (`nearestToCentre`). Measuring the
+tracks the card nearest the start instead (`nearestToStart`). Measuring the
 cards keeps the breakpoint in one place, the class names, rather than repeating
 it in a media query here.
 
 The current card is the only React state, and it changes when a different card
-reaches the middle, not on every scroll frame. It listens to its own scroll as
+reaches the start, not on every scroll frame. The arrows call
+`scrollIntoView` on the neighbouring card, which honours the row's snap and
+scroll padding, so a tap lands exactly where a swipe would. It listens to its own scroll as
 well as the window's, because the row scrolls sideways inside it.
 
 It writes 0 under reduced motion, and does nothing at all where `matchMedia` is
@@ -212,14 +220,26 @@ missing (as in the unit-test DOM), the same guard as `MobileNav`.
 
 ## `apps/web/src/features/home/category-deck/deck-progress.tsx`
 
-### `export function DeckProgress({ current, total })`
+### `export function DeckProgress({ current, total, onStep })`
 
-The "03 / 05" and bar under the swipe row. A row that shows one card and the
-edge of the next gives no sense of how many there are; this does. It is
-`aria-hidden` because every card already states its own position in its
-heading group, and it is hidden from `md`, where the stack shows all five.
-`DeckStack` draws it only when given `total`, so a bare stack in a story or a
-test has none.
+The row above the swipe deck: "03 / 05", a bar, the word "Swipe" and two arrow
+buttons. It sits above the cards, not below, because it is met on the way down
+the page, before the cards, and it is what says there is more to the side. The
+count and bar say how many; "Swipe" and the arrows say which way. The word
+nudges sideways three times and then rests.
+
+The count, bar and word are `aria-hidden`: every card states its own position.
+The arrows are real buttons, named "Previous category" and "Next category", and
+each is disabled at its end of the row. Hidden from `md`, where the stack shows
+all five. `DeckStack` draws it only when given `total`; without `onStep` it is
+the count and bar alone.
+
+## `apps/web/src/features/home/category-deck/deck-arrow.tsx`
+
+### `export function DeckArrow({ label, disabled, flipped, onClick })`
+
+One arrow drawn once and turned round for "previous", so the two cannot drift
+apart.
 
 ## `apps/web/src/features/home/category-deck/utils.ts`
 
@@ -233,11 +253,11 @@ function of two rectangles, so the arithmetic is tested without a browser.
 Whether the next card starts to the right of this one, which is the swipe row.
 More than a pixel, so sub-pixel rounding in a column never reads as a row.
 
-### `export function nearestToCentre(row, cards)`
+### `export function nearestToStart(row, cards)`
 
-The index of the card whose middle is closest to the middle of the row. The
-first and last cards can reach the middle because the row is padded by half its
-spare width.
+The index of the card whose left edge is closest to the start of the row. At
+the end of the row the last card cannot reach the start, but it is still the
+closest, so the count reaches "05 / 05".
 
 ## `apps/web/src/features/home/category-deck/category-icon.tsx`
 
@@ -288,11 +308,24 @@ The page-width band the Recently added row sits in. It exists so the empty case
 is decided in one place: `DiscoveryRow` already renders nothing when it has no
 cars, but the band's own padding would still have drawn an empty stripe.
 
-## `journey-section/` · `trust-section/` · `audience-section/`
+## `journey-section/` · `audience-section/`
 
-The homepage's three explainers, lifted out of `page.tsx` (R83). Each heading
+The homepage's two explainers, lifted out of `page.tsx` (R83). Each heading
 carries an id the section is labelled by, so each is a named region — which is
 what the order tests find them by.
+
+A third, "Why Dealers-Drive", sat between them on the page's one black band.
+It was removed: its five points repeated what the hero lede, the journey steps
+and the footer already say. The black band moved up to the journey so the page
+keeps one dark break between the car rows and the closing section.
+
+### The journey's black band
+
+The section is full-width black with the content held to the page width inside
+it, so the ground runs edge to edge while the text keeps the page's gutters.
+The step cards stay white: they are the content, and white on black is what
+makes three small cards read as the subject of the band. Each card sets the ink
+colour itself, because it sits inside a section whose text is white.
 
 ### `dd-journey` — the line through the three steps
 
@@ -300,14 +333,9 @@ The steps are numbered because they are a sequence, and the line is what says
 so. It draws as the section crosses the viewport and each number comes to full
 strength as the line reaches it: across the top from `md`, down the left side
 on a phone, where the steps stack. The timeline is named on the wrapper
-(`--dd-journey`) so the line and all three numbers share one progress.
+(`--dd-journey`) so the line and all three numbers share one progress. On the
+black band the track is a quarter-strength white and the drawn part full white.
 
 Only the line and the number badges change. The step text is never hidden, so
 the section reads the same wherever the visitor stops scrolling, and with no
 scroll-driven animation support the line is simply drawn.
-
-### `dd-trust-point` — the rule above each point
-
-The hairline above each of the five points is a `::before`, not a border, so
-it can draw in from the left with `scaleX`; a border cannot be scaled apart
-from its box. The five start one after another as the band enters.
