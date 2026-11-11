@@ -15,7 +15,3 @@ export interface StreamColumnProps {
 export interface StreamCardProps {
   car: VehicleCardDto;
 }
-
-export interface StreamPauseButtonProps {
-  className?: string;
-}

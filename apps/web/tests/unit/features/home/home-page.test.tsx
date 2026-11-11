@@ -19,7 +19,6 @@ import { HOME_CATEGORIES } from '@/features/home/home.constants';
 import { JOURNEY_TEXT } from '@/features/home/journey-section';
 import { MAKES_STRIP_TEXT } from '@/features/home/makes-strip';
 import { STOCK_STREAM_TEXT } from '@/features/home/stock-stream';
-import { TRUST_TEXT } from '@/features/home/trust-section';
 import type * as ApiModule from '@/lib/api';
 import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 
@@ -29,7 +28,7 @@ import { navigationState } from '../../../setup.js';
  * The homepage is an entry into `/cars`, not a second search (R72). The hero is
  * the `/cars` search box and five shortcuts; a stream of recent cars sits beside
  * it; five shopping categories stack below, each an ordinary `/v1/vehicles`
- * request with a filter; then "Recently added" and the three explainers.
+ * request with a filter; then "Recently added" and the two explainers.
  */
 const apiGetParsed = vi.fn();
 
@@ -141,16 +140,14 @@ describe('the hero', () => {
     }
   });
 
-  it('streams the recent cars beside the search, each a link to its page', async () => {
+  it('streams recent cars beside the search as display-only cards', async () => {
     serve((path) => (path === '/v1/vehicles?limit=10' ? response(cards('r', 6)) : response([])));
     render(await HomePage());
 
     const stream = screen.getByRole('region', { name: STOCK_STREAM_TEXT.label });
-    expect(within(stream).getAllByRole('link')).toHaveLength(6);
-    expect(within(stream).getByRole('link', { name: /Creta r-0/ })).toHaveAttribute(
-      'href',
-      '/car/r-0',
-    );
+    expect(within(stream).getAllByRole('article')).toHaveLength(6);
+    expect(within(stream).queryByRole('link')).not.toBeInTheDocument();
+    expect(within(stream).queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('img', { name: HOME_HERO_IMAGE.alt })).not.toBeInTheDocument();
   });
 
@@ -164,24 +161,20 @@ describe('the hero', () => {
 });
 
 describe('the makes strip', () => {
-  it('links each make on the marketplace to its search, without a count', async () => {
+  it('displays each make without links or a pause control', async () => {
     serve(() => response([card('a')]));
     render(await HomePage());
 
-    const strip = within(screen.getByRole('navigation', { name: MAKES_STRIP_TEXT.label }));
-    expect(strip.getByRole('link', { name: 'Maruti Suzuki' })).toHaveAttribute(
-      'href',
-      '/cars?brand=maruti-suzuki',
-    );
-    expect(strip.getAllByRole('link')).toHaveLength(3);
+    const strip = within(screen.getByRole('region', { name: MAKES_STRIP_TEXT.label }));
+    expect(strip.getAllByText('Maruti Suzuki')).toHaveLength(2);
+    expect(strip.queryByRole('link')).not.toBeInTheDocument();
+    expect(strip.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('is left out when fewer than three makes are listed', async () => {
     serve(() => response([card('a')], 1, BRANDS.slice(0, 2)));
     render(await HomePage());
-    expect(
-      screen.queryByRole('navigation', { name: MAKES_STRIP_TEXT.label }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: MAKES_STRIP_TEXT.label })).not.toBeInTheDocument();
   });
 });
 
@@ -198,7 +191,7 @@ describe('the category deck', () => {
       'home-category-family',
       'home-category-low-km',
     ]);
-    expect(deck.getByText('01 / 05')).toBeInTheDocument();
+    expect(deck.getAllByText('01 / 05')).toHaveLength(2);
   });
 
   it('shows a category’s cars and links its button to the same search on /cars', async () => {
@@ -302,7 +295,6 @@ describe('when the marketplace cannot be reached', () => {
     expect(screen.queryByRole('region', { name: DECK_TEXT.title })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: AUDIENCE_TEXT.title })).toBeInTheDocument();
   });
 });
@@ -314,7 +306,7 @@ function sectionOrder(container: HTMLElement): string[] {
 }
 
 describe('the page order', () => {
-  it('runs makes, categories, recent cars, then the three explainers', async () => {
+  it('runs makes, categories, recent cars, then the two explainers', async () => {
     serve((path) => response([card(path)]));
     const { container } = render(await HomePage());
 
@@ -323,7 +315,6 @@ describe('the page order', () => {
       'categories',
       'home-recent',
       'journey',
-      'trust',
       'audience',
     ]);
   });

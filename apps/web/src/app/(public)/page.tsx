@@ -20,7 +20,6 @@ import { JourneySection } from '@/features/home/journey-section';
 import { loadHomeInventory } from '@/features/home/load-home';
 import { MakesStrip } from '@/features/home/makes-strip';
 import { STOCK_STREAM_MIN_CARS, StockStream } from '@/features/home/stock-stream';
-import { TrustSection } from '@/features/home/trust-section';
 import { categoryHref } from '@/features/home/utils';
 import { getPublicConfig } from '@/lib/public-config';
 import {
@@ -73,7 +72,7 @@ export default async function HomePage() {
         >
           {HOME_TEXT.lede}
         </p>
-        <div className="dd-rise mt-7" style={rise(2)}>
+        <div className="dd-rise relative z-10 mt-7" style={rise(2)}>
           <CarSearchBox
             params={{}}
             basePath={HOME_SEARCH_PATH}
@@ -105,7 +104,6 @@ export default async function HomePage() {
         }}
       />
       <JourneySection />
-      <TrustSection />
       <AudienceSection />
     </div>
   );

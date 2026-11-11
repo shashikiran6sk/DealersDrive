@@ -3,7 +3,11 @@ import { createHash } from 'node:crypto';
 import { isListingPubliclyVisible } from '@dealers-drive/contracts';
 import type { DealerStatus, ListingStatus, MediaOwner, PrismaClient } from '@prisma/client';
 
+import { variantMap } from '../../platform/media/keys.js';
+import { DERIVATIVE_WIDTHS } from '../../platform/media/urls.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
+import { logger } from '../../platform/telemetry/logger.js';
+import { recordMediaVariantFallback } from '../../platform/telemetry/metrics.js';
 import { PUBLIC_DEALER_STATUS } from '../search/search.facade.js';
 
 interface ServableMedia {
@@ -25,6 +29,10 @@ export interface LocatedImage {
 export function imageEtag(mediaId: string, key: string): string {
   const digest = createHash('sha256').update(`${mediaId}:${key}`).digest('base64url');
   return `"m1-${digest.slice(0, 32)}"`;
+}
+
+function isDerivativeWidth(width: number): boolean {
+  return DERIVATIVE_WIDTHS.some((candidate) => candidate === width);
 }
 
 export interface MediaDeps {
@@ -71,14 +79,15 @@ export function createMediaService({ prisma, storage }: MediaDeps) {
     if (!media || media.status !== 'READY') return null;
     if (!(await isPubliclyServable(media))) return null;
 
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
-    const variants = media.variants as Record<string, string>;
+    const variants = variantMap(media.variants);
+    const exact = variants[String(width)];
     const key =
-      variants[String(width)] ??
-      variants['1600'] ??
-      variants['1024'] ??
-      variants['640'] ??
-      media.storageKey;
+      exact ?? variants['1600'] ?? variants['1024'] ?? variants['640'] ?? media.storageKey;
+    if (!exact && (key === media.storageKey || isDerivativeWidth(width))) {
+      const served = key === media.storageKey ? 'original' : 'variant';
+      recordMediaVariantFallback(served);
+      logger.warn({ mediaId: media.id, width, served }, 'media.variant_missing');
+    }
 
     return {
       key,

@@ -19,8 +19,13 @@ export interface DerivedImage {
   derivatives: Derivative[];
 }
 
+const ORIGINAL_NAME = /^original\.[a-z0-9]+$/i;
+
 export function derivativeKey(storageKey: string, width: number): string {
-  return posix.join(posix.dirname(storageKey), `${String(width)}.webp`);
+  if (ORIGINAL_NAME.test(posix.basename(storageKey))) {
+    return posix.join(posix.dirname(storageKey), `${String(width)}.webp`);
+  }
+  return `${storageKey}-${String(width)}.webp`;
 }
 
 export async function deriveImages(

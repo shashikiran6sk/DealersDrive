@@ -30,9 +30,11 @@ have none of that; they are one kind of work with eight bodies.
 
 ### `'media.process'`
 
-**F034.** Resizes one committed vehicle photograph into its derivatives; the
-payload is `{ mediaId }`. Its handler is `createMediaProcessor` in the media
-module, and `vehicle-images` sends it after a commit. Priority 50: behind a
+**F034.** Resizes one committed public photograph — a vehicle's or a
+dealership's — into its derivatives; the payload is `{ mediaId }`. Its handler
+is `createMediaProcessor` in the media module, which also sends it, from the
+`MediaUploaded` event `vehicle-images` and `dealers` record when they commit an
+image. Priority 50: behind a
 lead notification, ahead of housekeeping, because until it runs the car page
 serves the camera original.
 

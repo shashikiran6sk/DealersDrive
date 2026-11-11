@@ -69,6 +69,7 @@ import {
   NotFoundError,
   isRecord,
 } from '../../platform/errors.js';
+import { mediaObjectKeys } from '../../platform/media/keys.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -778,7 +779,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         const media = await tx.media.findMany({ where: { dealerId } });
         const keys = [
           ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
-          ...media.map((row) => row.storageKey),
+          ...media.flatMap((row) => mediaObjectKeys(row)),
         ];
 
         const purgedAt = new Date();

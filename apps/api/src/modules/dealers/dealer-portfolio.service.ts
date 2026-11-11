@@ -24,7 +24,10 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../platform/errors.js';
+import { getContext } from '../../middleware/request-context.js';
+import { mediaObjectKeys } from '../../platform/media/keys.js';
 import { sniffImageType } from '../../platform/media/sniff.js';
+import { recordMediaUploaded } from '../../platform/media/uploaded.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import { portfolioKey } from './dealer-storage-keys.js';
@@ -97,7 +100,7 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
     const media = await prisma.media.findUnique({ where: { id: mediaId } });
     if (!media) return;
     await prisma.media.update({ where: { id: mediaId }, data: { status: 'ORPHAN' } });
-    await storage.delete(media.storageKey);
+    await Promise.all(mediaObjectKeys(media).map((key) => storage.delete(key)));
   }
 
   function assertModerator(admin: AdminPrincipal): void {
@@ -229,6 +232,12 @@ export function createDealerPortfolioService({ prisma, storage, audit }: Portfol
           position = await nextPosition(tx, dealerId);
         }
         await tx.media.update({ where: { id: media.id }, data: { status: 'READY' } });
+        await recordMediaUploaded(tx, {
+          mediaId: media.id,
+          dealerId,
+          actor: { type: 'DEALER', id: userId },
+          traceId: getContext()?.traceId ?? 'dealer-portfolio',
+        });
         const row = await tx.dealerPortfolioPhoto.create({
           data: {
             dealerId,

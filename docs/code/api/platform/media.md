@@ -48,6 +48,16 @@ A derivative lives in the same folder as the original it came from
 that already deletes a photograph's folder or its `variants` keys deletes its
 derivatives too, and `original.webp` can never collide with one.
 
+**A key without a folder of its own gets a suffix instead.** A dealership
+photograph is stored at `dealers/<slug>/portfolio/<mediaId>` (and a legacy yard
+photograph at `…/yard/<mediaId>`): the media id is the file name, not a folder.
+The folder rule would put every photograph of one dealership at the same
+`portfolio/640.webp`, each overwriting the last, so a key whose file name is not
+`original.<ext>` gets `<key>-640.webp`. A folder `<key>/` is not an option: on
+the local storage driver a file and a directory cannot share a name. Vehicle
+keys keep the folder form, so derivatives already written by #373 stay where
+their `variants` say.
+
 ### `export async function deriveImages(storageKey, body, widths = DERIVATIVE_WIDTHS): Promise<DerivedImage>`
 
 The resizing half of **F034**: one WebP per width in `DERIVATIVE_WIDTHS`, and
@@ -76,3 +86,46 @@ however fast the network was.
 - **One width at a time.** Each pass decodes the original again rather than
   holding four pipelines open at once, so a 15-megapixel upload costs one
   decode's memory at a time on a worker that is also serving requests.
+
+## `apps/api/src/platform/media/keys.ts`
+
+### `export function variantMap(variants: unknown): Record<string, string>`
+
+`media.variants` is a Prisma `Json` column, so it arrives typed as anything.
+This reads it as a width → key map, keeping only non-empty string keys, so
+`locate()` and every cleanup path read it the same way without an `as`.
+
+### `export function mediaObjectKeys(media: MediaObjects): string[]`
+
+Every object a media row owns: the original and each distinct derivative.
+Distinct, because a photograph smaller than a width maps two widths to one
+file, and the same key twice in a `StorageObjectsDelete` payload is a second
+delete that can only fail.
+
+This is the one list the delete paths use (a vehicle image removed or replaced,
+a portfolio photograph removed, replaced or taken down, a rejected dealership
+purged), so a derivative never outlives its photograph. It replaces
+`mediaKeys`, which lived in `vehicle-images.service.ts` while only vehicle
+images had derivatives.
+
+## `apps/api/src/platform/media/uploaded.ts`
+
+### `export async function recordMediaUploaded(tx, { mediaId, dealerId, actor, traceId })`
+
+Announces, in the committing transaction, that an image is now `READY`: a
+`MediaUploaded` outbox event. The media module turns it into a `media.process`
+job (`subscribe` in `media.processor.ts`).
+
+**Why an event and not a call after the commit.** #373 queued the job after
+the transaction with an injected `processImage`, and swallowed a queue failure
+so the upload still succeeded. That was right about the upload and lossy about
+the resize: a queue hiccup, or a process stopping between commit and send, left
+a `READY` image with no derivatives and nothing to retry it. The outbox row
+commits or rolls back with the upload, and the publisher retries a failed
+publish up to `MAX_ATTEMPTS`, the same guarantee storage cleanup and every
+email already have.
+
+It is a fact, not a command, which is also why it lives here rather than on the
+media facade: the facade test forbids any pipeline operation crossing the
+module boundary, and `vehicle-images` and `dealers` say what happened without
+being able to say what should be done about it.

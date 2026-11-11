@@ -324,7 +324,9 @@ D4 reject — and it is a **purge**, not a status change.
 A rejection says "this is not a dealership we will trade with", and the
 product's answer to that is to keep nothing: the KYC scans, portfolio
 photographs, yard-visit evidence and any legacy yard photograph are deleted
-from object storage, and the `dealers` row
+from object storage — each media row's original and every derivative
+(`mediaObjectKeys`), so a resized portfolio photograph leaves nothing behind
+— and the `dealers` row
 goes with them — taking its documents and its OWNER membership by
 cascade. The person keeps their verified Google account and nothing else,
 so signing in again finds no membership and drops them at step one of

@@ -233,9 +233,13 @@ ssh -L 9001:127.0.0.1:9001 ubuntu@<elastic-ip>   # then http://localhost:9001
 
 ### Resizing photographs uploaded before F034
 
-Vehicle photographs are resized into 320 / 640 / 1024 / 1600 WebP copies when
-an admin uploads them. Photographs uploaded before that existed are served at
-full size until this has run once. It is safe to run again.
+Vehicle and dealership photographs are resized into 320 / 640 / 1024 / 1600
+WebP copies when they are uploaded. Photographs uploaded before that existed are
+served at full size until this has run once, and dealership photographs became
+eligible after the first release of it, so run it again after deploying that
+change. It is safe to run again. A missing copy is logged as
+`media.variant_missing` and counted in
+`dealers_drive_media_variant_fallbacks_total`.
 
 On this box (from the repo):
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Container } from '../../src/container.js';
 import { createRoutes } from '../../src/routes.js';
+import { dispatchRoute } from '../router-dispatch.js';
 
 /**
  * One file to read to know the whole surface area of the API — and one file
@@ -94,53 +95,19 @@ function harness() {
 
   const routes = createRoutes(container);
 
-  /**
-   * Express 5 unwinds a nested router asynchronously, so the final `next` —
-   * the one that says "nothing matched" — arrives well after the synchronous
-   * call returns, and deeper mounts take more turns than shallow ones.
-   * Draining the queue is what makes "nothing matched" distinguishable from
-   * "a handler is still working".
-   */
   async function dispatch(method: string, url: string): Promise<Dispatch> {
     calls.dealer = 0;
     calls.signedIn = 0;
     calls.admin = 0;
     calls.customer = 0;
-    let unmatched = false;
-
-    const req = {
-      method,
-      url,
-      originalUrl: url,
-      baseUrl: '',
-      path: url.split('?')[0],
-      query: {},
-      body: {},
-      params: {},
-      headers: {},
-      get: () => undefined,
-    } as unknown as Request;
-
-    const res = new Proxy({} as Response, {
-      get: (_target, key) => {
-        if (key === 'headersSent') return false;
-        return () => res;
-      },
-    });
-
-    routes(req, res, (error?: unknown) => {
-      // An error means a handler ran and refused its input — reached, not missing.
-      if (error === undefined) unmatched = true;
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    const reached = await dispatchRoute(routes, method, url);
 
     return {
       dealerGuard: calls.dealer > 0,
       signedInGuard: calls.signedIn > 0,
       adminGuard: calls.admin > 0,
       customerGuard: calls.customer > 0,
-      reached: !unmatched,
+      reached,
     };
   }
 

@@ -220,11 +220,33 @@ means nothing to a scroll-driven one, whose progress comes from the scroll
 position, not the clock. Declaring the animations only where motion is welcome
 is the one way that holds for both kinds.
 
-The scroll-driven ones (`dd-drift`, `dd-slide-in`, the `dd-reveal-group`
-stagger) also sit behind `@supports (animation-timeline: view())`. Where that
-is unsupported they never apply, and the page is the finished, still layout.
-Their keyframes all end at the element's resting state, so nothing is left
-invisible if a timeline never starts.
+The scroll-driven ones (`dd-slide-in`, the `dd-reveal-group` stagger, the
+swipe-row focus and the journey line) also sit behind
+`@supports (animation-timeline: view())`. Where that is unsupported they never
+apply, and the page is the finished, still layout. Their keyframes all end at
+the element's resting state, so nothing is left invisible if a timeline never
+starts.
+
+**The two widths get different scroll-driven rules, split at `48rem`.** That is
+Tailwind's `md`, where the deck changes from a swipe row to a stack and
+Recently added from a scroller to a grid. A block-axis `view()` inside a
+horizontal scroller never advances, so below `md` those cards use an inline
+timeline they name on themselves, and from `md` they use the page's.
+
+### `.dd-makes` — the loop and its still state
+
+Clipped overflow, the edge mask, the visible second copy and the animation
+are enabled together under `prefers-reduced-motion: no-preference`. The strip
+is non-interactive and has no hover, focus or pause state, so touches cannot
+reset or stop its loop. Outside that media query the single list is a plain
+`overflow-x: auto` row.
+
+### `.dd-tile .dd-icon-*`
+
+The shortcut icons' arrival uses `animation-fill-mode: backwards`, not `both`.
+Held forwards, the finished animation would keep owning `transform` and the
+hover transition on the same part could not show. The delay follows the tile's
+`--rise-index`, so each icon moves just after its tile has risen.
 
 ### `.dd-stream-col`
 

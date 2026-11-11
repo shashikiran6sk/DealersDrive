@@ -3,7 +3,6 @@ import { cn } from '@/lib/cn';
 import { STOCK_STREAM_TEXT } from './stock-stream.constants';
 import type { StockStreamProps } from './stock-stream.types';
 import { StreamColumn } from './stream-column';
-import { StreamPauseButton } from './stream-pause-button';
 import { splitColumns } from './utils';
 
 export function StockStream({ cars, className }: StockStreamProps) {
@@ -20,7 +19,6 @@ export function StockStream({ cars, className }: StockStreamProps) {
         <StreamColumn cars={left} direction="up" />
         <StreamColumn cars={right} direction="down" />
       </div>
-      <StreamPauseButton className="absolute right-3 bottom-3" />
     </div>
   );
 }

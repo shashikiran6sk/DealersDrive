@@ -121,64 +121,36 @@ listed or the API is unreachable; with stock, the stream takes its place.
 
 ### `export function StockStream({ cars, className })`
 
-Two columns of real listings drifting in opposite directions: the first thing
-the homepage says is what is for sale. Cars are dealt alternately
-(`splitColumns`) so neighbouring cards differ.
+Two columns of recent listings drift in opposite directions. The strip is a
+visual showcase: its cards are articles rather than links, and it has no pause
+button. Hover, clicks and touches do not interrupt the animation. The category
+deck and Recently added remain the ways to open cars from the homepage.
 
-**The loop is two copies, and the second is `inert` and `aria-hidden`.** Each
-column holds its cars twice and translates by exactly half its height, so the
-end meets the start without a jump. Each copy carries its own bottom padding
-rather than a gap between copies; with a gap, half the height would be off by
-half the gap and the loop would jump by that much. The second copy exists only
-to be seen: a keyboard user tabs through each car once and a screen reader reads
-each once.
+`splitColumns` deals cars alternately so neighbouring cards differ. Each column
+holds two copies with matching bottom padding, making `translateY(-50%)` one
+complete pass without a jump. The second copy is `aria-hidden`, so assistive
+technology reads each car once. Neither copy has interactive descendants.
 
-### `export function StreamPauseButton({ className })`
-
-Anything that moves on its own for more than five seconds needs a way to stop
-it (WCAG 2.2.2). Hover and focus already pause the columns; the button is the
-way that does not depend on the pointer staying put. It sets `data-paused` on
-the stream from `closest()`, so the stream itself stays a server component. The
-name is fixed and `aria-pressed` carries the state; a label that flipped
-between Pause and Play while also pressed would announce the state twice. It is
-hidden under reduced motion, where nothing moves.
+Animation is declared only under `prefers-reduced-motion: no-preference`;
+reduced-motion users get the still content.
 
 ## `apps/web/src/features/home/makes-strip/makes-strip.tsx`
 
 ### `export function MakesStrip({ makes })`
 
-The makes on the marketplace, each a link to `/cars?brand=`. It scrolls
-sideways like any overflowing row, so every make stays reachable by keyboard
-and touch. The drift is scroll-linked rather than automatic: it moves only when
-the visitor scrolls, so it needs no pause control.
+The marketplace's makes form a display strip, not navigation. They are plain
+text, with no links or pause button. The two copies loop continuously; pointer
+hover and touch do not change the animation. Below three makes the strip renders
+nothing. Under reduced motion it becomes an ordinary horizontal scroller.
 
-**The drift's timeline is named on the `<nav>`, not taken from the row.** The
-row sits inside the horizontal scroller, and `view()` would bind to that
-scroller, which never scrolls vertically, so the animation would never run.
-`.dd-makes` declares `view-timeline: --dd-makes` on the element outside the
-scroller and the row animates on that.
+## `apps/web/src/features/home/makes-strip/makes-list.tsx`
 
-Below three makes it renders nothing: two names in a full-width strip read as
-a mistake.
+### `export function MakesList({ makes, copy })`
 
-## `apps/web/src/features/home/category-deck/category-deck.tsx`
-
-### `export function CategoryDeck({ categories })`
-
-The five categories as cards that stick under the header and stack, each
-offset 16 px lower than the last, as the page scrolls. The stacking is sticky
-positioning, so it works without script; `DeckStack` only adds the scale and
-dim of the card being covered.
-
-## `apps/web/src/features/home/category-deck/category-cars.tsx`
-
-### `mix-blend-darken` on the lead photo
-
-Listing photographs are studio cut-outs on a flat `#f6f6f6`, and the panel is
-`--color-neutral-100` (`#f7f7f5`). One step apart is still a visible box around
-every car. `darken` keeps the darker of the two at each pixel, so the photo's
-ground disappears into the panel while the car, which is always darker than
-either, is unchanged.
+A pass through the makes. The second pass is `aria-hidden` and hidden by default;
+the motion stylesheet reveals it only when the strip animates. Matching side
+padding makes half the track exactly one list. Text spans preserve alternating
+make colours without creating navigation targets.
 
 ## `apps/web/src/features/home/category-deck/category-card.tsx`
 
@@ -197,9 +169,22 @@ would never run.
 
 **Sticky from `md` up, and never on a short screen.** On a phone the card is
 taller than what is left of the viewport under the header. Stuck, the next
-card would slide over its button before the visitor reached it. On phones the
-cards scroll normally and drop their small photos and third fact. The same
-holds on any screen under 640 px tall (`max-height`, a landscape phone).
+card would slide over its button before the visitor reached it. The same holds
+on any screen under 640 px tall (`max-height`, a landscape phone).
+
+**Below `md` the deck is a swipe row.** Five full cards stacked down a phone
+were about 2,700 px of scrolling with none of the deck's motion. Each card is
+`min(78vw, 340px)` wide and snaps to the start of the row, in line with the
+page gutter. The cards drop their small photos and third fact there.
+`dd-deck-card` names an inline view timeline on itself, and the card grows to
+full size and opacity as it crosses the row; its photo slides a few percent the
+other way on the same timeline.
+
+**The card starts at the gutter, not the centre, so the next one shows.** The
+first version centred each card, which left about 20 px of the next card at
+the edge. Scrolling down the page, a visitor saw one card and no sign that
+there were four more, or which way they lay. Aligned to the start, roughly a
+seventh of the screen is the next card, cut off mid-photo, which is the cue.
 
 ### `--deck-top`
 
@@ -209,16 +194,52 @@ stack.
 
 ## `apps/web/src/features/home/category-deck/deck-stack.tsx`
 
-### `export function DeckStack({ children, className })`
+### `export function DeckStack({ children, total, className })`
 
 The one piece of the deck that needs script: how far the next card has slid
 over this one (`coverProgress`) is a relation between two elements, and no CSS
 timeline expresses it. It writes the number to `--deck-cover` and the CSS does
 the rest (`.dd-deck-card` in `globals.css`). One `requestAnimationFrame` per
-burst of scroll events, nothing in React state, so a scroll never re-renders.
+burst of scroll events.
+
+**It asks the layout which deck it is, not the viewport.** Below `md` the same
+cards sit side by side (`isBeside`). There every card has the same top, which
+`coverProgress` would read as fully covered, so in the row it writes 0 and
+tracks the card nearest the start instead (`nearestToStart`). Measuring the
+cards keeps the breakpoint in one place, the class names, rather than repeating
+it in a media query here.
+
+The current card is the only React state, and it changes when a different card
+reaches the start, not on every scroll frame. The arrows call
+`scrollIntoView` on the neighbouring card, which honours the row's snap and
+scroll padding, so a tap lands exactly where a swipe would. It listens to its own scroll as
+well as the window's, because the row scrolls sideways inside it.
 
 It writes 0 under reduced motion, and does nothing at all where `matchMedia` is
 missing (as in the unit-test DOM), the same guard as `MobileNav`.
+
+## `apps/web/src/features/home/category-deck/deck-progress.tsx`
+
+### `export function DeckProgress({ current, total, onStep })`
+
+The row above the swipe deck: "03 / 05", a bar, the word "Swipe" and two arrow
+buttons. It sits above the cards, not below, because it is met on the way down
+the page, before the cards, and it is what says there is more to the side. The
+count and bar say how many; "Swipe" and the arrows say which way. The word
+nudges sideways three times and then rests.
+
+The count, bar and word are `aria-hidden`: every card states its own position.
+The arrows are real buttons, named "Previous category" and "Next category", and
+each is disabled at its end of the row. Hidden from `md`, where the stack shows
+all five. `DeckStack` draws it only when given `total`; without `onStep` it is
+the count and bar alone.
+
+## `apps/web/src/features/home/category-deck/deck-arrow.tsx`
+
+### `export function DeckArrow({ label, disabled, flipped, onClick })`
+
+One arrow drawn once and turned round for "previous", so the two cannot drift
+apart.
 
 ## `apps/web/src/features/home/category-deck/utils.ts`
 
@@ -226,6 +247,17 @@ missing (as in the unit-test DOM), the same guard as `MobileNav`.
 
 0 while the next card is a full card-height below, 1 once it sits on top. A pure
 function of two rectangles, so the arithmetic is tested without a browser.
+
+### `export function isBeside(card, next)`
+
+Whether the next card starts to the right of this one, which is the swipe row.
+More than a pixel, so sub-pixel rounding in a column never reads as a row.
+
+### `export function nearestToStart(row, cards)`
+
+The index of the card whose left edge is closest to the start of the row. At
+the end of the row the last card cannot reach the start, but it is still the
+closest, so the count reaches "05 / 05".
 
 ## `apps/web/src/features/home/category-deck/category-icon.tsx`
 
@@ -236,6 +268,22 @@ scales with the button. Always `aria-hidden`: the label beside it names the
 link. The lettering inside the automatic and price icons ("PRN", "D", "₹10L")
 is drawing, not text, and is excluded from the accessible name.
 
+## `apps/web/src/features/home/category-deck/category-glyph.tsx`
+
+### `dd-icon-*` — the parts that move
+
+Inside a hero shortcut (`.dd-tile`) each icon acts out its category once as the
+tile arrives: the cars drive in on turning wheels, the selector slides to D,
+the price pops, the needle sweeps. The classes only name the parts; the motion
+is in `globals.css` and applies nowhere else, so the same icon in an empty deck
+card stays still.
+
+Each part sets `transform-box: fill-box` so it turns about its own middle; an
+SVG element otherwise turns about the corner of the drawing. The needle is the
+exception: it pivots on the dial's hub, a point in the drawing's own
+coordinates, so it uses `view-box` and that point. The white dot on each wheel
+is what makes a turning disc visibly turn.
+
 ## `apps/web/src/features/home/discovery-row/discovery-row.tsx`
 
 ### `export function DiscoveryRow(props)`
@@ -245,10 +293,12 @@ with an empty grid beneath it. "View all →" carries no number (**R78**).
 
 ### `dd-reveal-group`
 
-The cards rise in one after another as the row enters the viewport, where
-scroll-driven animation is supported. On phones the row is a horizontal
-scroller, which becomes the cards' timeline source and never scrolls
-vertically, so they stay put there, which is what a swipeable row should do.
+From `md` the cards rise in one after another as the row enters the viewport.
+On phones the row is a horizontal scroller, which becomes the cards' timeline
+source and never scrolls vertically, so that reveal could not run there.
+Instead each card names an inline view timeline on itself and comes to full
+size and opacity as it is swiped into the middle of the row. Both sit behind
+the same support check, and both rest at the finished card.
 
 ## `apps/web/src/features/home/discovery-row/discovery-band.tsx`
 
@@ -258,8 +308,34 @@ The page-width band the Recently added row sits in. It exists so the empty case
 is decided in one place: `DiscoveryRow` already renders nothing when it has no
 cars, but the band's own padding would still have drawn an empty stripe.
 
-## `journey-section/` · `trust-section/` · `audience-section/`
+## `journey-section/` · `audience-section/`
 
-The homepage's three explainers, lifted out of `page.tsx` unchanged (R83). Each
-heading carries an id the section is labelled by, so each is a named region —
-which is what the order tests find them by.
+The homepage's two explainers, lifted out of `page.tsx` (R83). Each heading
+carries an id the section is labelled by, so each is a named region — which is
+what the order tests find them by.
+
+A third, "Why Dealers-Drive", sat between them on the page's one black band.
+It was removed: its five points repeated what the hero lede, the journey steps
+and the footer already say. The black band moved up to the journey so the page
+keeps one dark break between the car rows and the closing section.
+
+### The journey's black band
+
+The section is full-width black with the content held to the page width inside
+it, so the ground runs edge to edge while the text keeps the page's gutters.
+The step cards stay white: they are the content, and white on black is what
+makes three small cards read as the subject of the band. Each card sets the ink
+colour itself, because it sits inside a section whose text is white.
+
+### `dd-journey` — the line through the three steps
+
+The steps are numbered because they are a sequence, and the line is what says
+so. It draws as the section crosses the viewport and each number comes to full
+strength as the line reaches it: across the top from `md`, down the left side
+on a phone, where the steps stack. The timeline is named on the wrapper
+(`--dd-journey`) so the line and all three numbers share one progress. On the
+black band the track is a quarter-strength white and the drawn part full white.
+
+Only the line and the number badges change. The step text is never hidden, so
+the section reads the same wherever the visitor stops scrolling, and with no
+scroll-driven animation support the line is simply drawn.

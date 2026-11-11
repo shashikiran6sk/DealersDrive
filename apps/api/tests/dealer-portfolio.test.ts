@@ -1,10 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
 import { PORTFOLIO_PHOTO_LIMIT } from '@dealers-drive/contracts';
+import sharp from 'sharp';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { portfolioKey } from '../src/modules/dealers/dealer-storage-keys.js';
+import { createMediaProcessor } from '../src/modules/media/media.processor.js';
+import { createEventBus, type DomainEvent } from '../src/platform/events/bus.js';
+import { createInlineQueue } from '../src/platform/jobs/queue.js';
 import { createLocalStorage } from '../src/platform/storage/local.adapter.js';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
@@ -465,5 +469,77 @@ describe('BUG-NEW-009 carried forward — public only while the dealership is AC
     await storage.put(key, JPEG, 'image/jpeg');
 
     await served(mediaId).expect(404);
+  });
+});
+
+describe('resizing (F034)', () => {
+  async function uploadedEvents(mediaId: string) {
+    return h.prisma.outboxEvent.findMany({
+      where: { eventType: 'MediaUploaded', aggregateId: mediaId },
+    });
+  }
+
+  async function processThroughWorker(mediaId: string): Promise<void> {
+    const processor = createMediaProcessor({
+      prisma: h.prisma,
+      storage,
+      queue: createInlineQueue(),
+    });
+    const bus = createEventBus();
+    processor.subscribe(bus);
+    await processor.work();
+    for (const row of await uploadedEvents(mediaId)) {
+      await bus.publish(row.payload as unknown as DomainEvent);
+    }
+  }
+
+  it('records one MediaUploaded event with the commit', async () => {
+    const dealer = await fixtures.dealership();
+    const mediaId = await mediaOf(await upload(dealer));
+
+    const events = await uploadedEvents(mediaId);
+    expect(events).toHaveLength(1);
+    expect(events[0]?.payload).toMatchObject({
+      type: 'MediaUploaded',
+      dealerId: dealer.dealerId,
+      actor: { type: 'DEALER' },
+      payload: { mediaId },
+    });
+  });
+
+  it('serves an approved photograph at the width asked for, and deletes the copies on removal', async () => {
+    const dealer = await fixtures.dealership();
+    const photo = await sharp({
+      create: { width: 2000, height: 1500, channels: 3, background: '#3b5f7a' },
+    })
+      .jpeg()
+      .toBuffer();
+    const id = await upload(dealer, { body: photo });
+    const mediaId = await mediaOf(id);
+
+    await processThroughWorker(mediaId);
+
+    const media = await h.prisma.media.findUniqueOrThrow({ where: { id: mediaId } });
+    const variants = media.variants as Record<string, string>;
+    expect(variants).toEqual({
+      '320': `${media.storageKey}-320.webp`,
+      '640': `${media.storageKey}-640.webp`,
+      '1024': `${media.storageKey}-1024.webp`,
+      '1600': `${media.storageKey}-1600.webp`,
+    });
+
+    await served(mediaId).expect(404);
+    await reviewer.post(`/v1/admin/portfolio/${id}/approve`).send({}).expect(200);
+    const image = await served(mediaId).expect(200);
+    expect(image.headers['content-type']).toBe('image/webp');
+    expect(await sharp(Buffer.from(image.body as Buffer)).metadata()).toMatchObject({
+      format: 'webp',
+      width: 640,
+    });
+
+    await dealer.agent.delete(`/v1/dealer/portfolio/${id}`).expect(204);
+    for (const key of [media.storageKey, ...Object.values(variants)]) {
+      expect(await storage.head(key)).toBeNull();
+    }
   });
 });
