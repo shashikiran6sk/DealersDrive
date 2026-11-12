@@ -1,4 +1,4 @@
-import { canDealer, DealerVehicle } from '@dealers-drive/contracts';
+import { DealerVehicle, DealerVehiclePhotos, canDealer } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -13,6 +13,12 @@ import { currentSession } from '@/lib/session';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: VEHICLE_WIZARD_TEXT.editTitle };
+
+const FRESH = { revalidate: false } as const;
+
+function optional<T>(read: Promise<T>): Promise<T | null> {
+  return read.catch(() => null);
+}
 
 export default async function EditVehiclePage({
   params,
@@ -33,7 +39,10 @@ export default async function EditVehiclePage({
     throw error;
   }
 
-  const step = isWizardStep(query.step) ? query.step : 'basics';
+  const path = `/v1/dealer/vehicles/${encodeURIComponent(id)}`;
+  const photos = await optional(apiGetParsed(DealerVehiclePhotos, `${path}/photos`, FRESH));
+  const known = isWizardStep(query.step) && (query.step !== 'photos' || photos?.enabled === true);
+  const step = known && isWizardStep(query.step) ? query.step : 'basics';
 
   return (
     <div className="flex max-w-[860px] flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
@@ -50,6 +59,7 @@ export default async function EditVehiclePage({
         saved={query.saved === '1'}
         submitted={query.submitted === '1'}
         mayPublish={canDealer(session?.permissions, 'listing:submit')}
+        photos={photos}
       />
     </div>
   );

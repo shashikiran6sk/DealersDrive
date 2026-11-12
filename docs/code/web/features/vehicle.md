@@ -114,3 +114,30 @@ decides two things only: which API the server actions call (a hidden
 dealer's own routes, and the API authorizes either way), and where links and
 redirects point. In the Sales scope the dealer's lifecycle panel (reserve, sell,
 withdraw) is not offered, and a submission that waits for approval says so.
+
+## `apps/web/src/features/vehicle/photo-step/photo-step.tsx`
+
+The wizard's Photos step, between Pricing and Review, shown only when the API says
+`feature.dealerPhotos` is on (`DealerVehiclePhotos.enabled`). The edit page treats
+`?step=photos` as an unknown step while it is off, so a stale link lands on Basics
+as before. The flag is read from the dealer's own photos endpoint rather than the
+public config, which stays a buyer-facing subset.
+
+Uploads go presign → PUT → commit through the BFF, one slot at a time, and the
+step keeps the API's answer as its state so a replace or remove re-renders from
+the server's view. A photograph over the 10 MB limit — a 48–50 MP phone mode — is
+resized in the browser to a 4096 px long edge first (`fitForUpload`), which keeps
+it well above what StudioCar needs.
+
+## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
+
+### `export function submissionNeeds(vehicle, photos)`
+
+The Review step's checklist and the Submit button's disabled reason come from one
+computation, so they cannot disagree. The API enforces the same rule; this only
+saves the dealer a round trip.
+
+## `apps/web/src/app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`
+
+The photos read is optional: a failure — or an API a release behind the web app —
+renders the wizard as it was, never an error page.

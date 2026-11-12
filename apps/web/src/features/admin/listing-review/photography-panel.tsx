@@ -66,6 +66,7 @@ export function PhotographyPanel({ detail }: { detail: AdminListingDetail }) {
         listingId={listing.id}
         images={detail.images}
         live={isListingPubliclyVisible(listing.status)}
+        defaultCredit={detail.submittedPhotos?.plan ?? null}
       />
     </section>
   );

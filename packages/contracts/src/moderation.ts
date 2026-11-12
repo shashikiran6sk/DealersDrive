@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { CursorPage } from './common.js';
 import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES } from './dealer.js';
+import { AdminSubmittedPhotos } from './dealer-photos.js';
 import { ListingStatus, StatusTone } from './enums.js';
 import { ReactivationRequestStatus } from './listing.js';
 import { DealerVehicle, UpdateVehicleInput } from './vehicle.js';
@@ -399,6 +400,12 @@ export const AdminListingDetail = z.object({
     canUpdate: z.boolean(),
   }),
   images: AdminVehicleImages,
+  /**
+   * The dealer's own photographs, when the dealer chose to photograph the car
+   * (**R45** as revised). Raw material for StudioCar, never public. Optional
+   * so a console built before it still parses a newer API, and vice versa.
+   */
+  submittedPhotos: AdminSubmittedPhotos.optional(),
   checks: z.array(
     z.object({
       key: ListingCheckKey,
