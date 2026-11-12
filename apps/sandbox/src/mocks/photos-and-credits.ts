@@ -1,0 +1,220 @@
+import {
+  PHOTO_SLOT_LABELS,
+  STANDARD_PHOTO_SLOTS,
+  type AdminDealerCredits,
+  type AdminSubmittedPhotos,
+  type BillingSummary,
+  type CreditLedgerEntry,
+  type CreditOrderRow,
+  type CreditPacksResponse,
+  type DealerSubmissionPhoto,
+  type DealerVehiclePhotos,
+} from '@dealers-drive/contracts';
+
+const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155'];
+
+function photo(index: number, slot: DealerSubmissionPhoto['slot']): DealerSubmissionPhoto {
+  const shade = SHADES[index % SHADES.length] ?? '1f2937';
+  return {
+    mediaId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    slot,
+    slotLabel: PHOTO_SLOT_LABELS[slot],
+    url: `https://placehold.co/800x600/${shade}/e5e7eb.png?text=${encodeURIComponent(PHOTO_SLOT_LABELS[slot])}`,
+    fileName: `IMG_20${String(index)}.jpg`,
+    bytes: 2_400_000,
+    uploadedAt: '2026-11-11T09:00:00.000Z',
+  };
+}
+
+export function mockPhotos(
+  overrides: Partial<DealerVehiclePhotos> = {},
+  uploaded = 0,
+): DealerVehiclePhotos {
+  return {
+    enabled: true,
+    plan: null,
+    canEdit: true,
+    photoshoot: { available: true, district: 'Vellore' },
+    slots: STANDARD_PHOTO_SLOTS.map((slot, index) => ({
+      slot,
+      label: PHOTO_SLOT_LABELS[slot],
+      photo: index < uploaded ? photo(index, slot) : null,
+    })),
+    extras: [],
+    extrasMax: 6,
+    missing: STANDARD_PHOTO_SLOTS.slice(uploaded),
+    ready: uploaded === 10,
+    ...overrides,
+  };
+}
+
+export function mockBilling(overrides: Partial<BillingSummary> = {}): BillingSummary {
+  return {
+    enabled: true,
+    balance: 6,
+    held: 1,
+    available: 5,
+    costs: { DEALER: 1, DEALERS_DRIVE: 2, UNPLANNED: 1 },
+    creditPriceLabel: '₹500',
+    canPurchase: true,
+    ...overrides,
+  };
+}
+
+export const MOCK_PACKS: CreditPacksResponse = {
+  data: [
+    {
+      id: 'pack-1',
+      credits: 1,
+      pricePaise: 50_000,
+      priceLabel: '₹500',
+      totalPaise: 59_000,
+      totalLabel: '₹590',
+      perCreditLabel: '₹500 per credit',
+      savingsLabel: null,
+    },
+    {
+      id: 'pack-5',
+      credits: 5,
+      pricePaise: 225_000,
+      priceLabel: '₹2,250',
+      totalPaise: 265_500,
+      totalLabel: '₹2,655',
+      perCreditLabel: '₹450 per credit',
+      savingsLabel: 'Save 10%',
+    },
+    {
+      id: 'pack-10',
+      credits: 10,
+      pricePaise: 400_000,
+      priceLabel: '₹4,000',
+      totalPaise: 472_000,
+      totalLabel: '₹4,720',
+      perCreditLabel: '₹400 per credit',
+      savingsLabel: 'Save 20%',
+    },
+  ],
+  gstPercent: 18,
+  taxNote: 'Prices are before 18% GST, which is added at checkout.',
+  purchasable: true,
+};
+
+export const MOCK_LEDGER: CreditLedgerEntry[] = [
+  {
+    id: '4',
+    reason: 'CONSUME_APPROVE',
+    label: 'Used — listing approved',
+    delta: -1,
+    heldDelta: -1,
+    changeLabel: '−1',
+    tone: 'neutral',
+    balanceAfter: 6,
+    availableAfter: 5,
+    listingId: null,
+    orderId: null,
+    note: 'Used — the listing went live',
+    createdAt: '2026-11-11T12:00:00.000Z',
+    dateLabel: '11 Nov 2026',
+  },
+  {
+    id: '3',
+    reason: 'HOLD_SUBMIT',
+    label: 'Held for a listing in review',
+    delta: 0,
+    heldDelta: 1,
+    changeLabel: '1 held',
+    tone: 'warn',
+    balanceAfter: 7,
+    availableAfter: 6,
+    listingId: null,
+    orderId: null,
+    note: 'Held while the listing is reviewed',
+    createdAt: '2026-11-10T10:00:00.000Z',
+    dateLabel: '10 Nov 2026',
+  },
+  {
+    id: '2',
+    reason: 'PURCHASE',
+    label: 'Credits purchased',
+    delta: 5,
+    heldDelta: 0,
+    changeLabel: '+5',
+    tone: 'ok',
+    balanceAfter: 7,
+    availableAfter: 7,
+    listingId: null,
+    orderId: null,
+    note: '₹2,655',
+    createdAt: '2026-11-09T09:00:00.000Z',
+    dateLabel: '09 Nov 2026',
+  },
+  {
+    id: '1',
+    reason: 'ADMIN_GRANT',
+    label: 'Credits added by Dealers-Drive',
+    delta: 2,
+    heldDelta: 0,
+    changeLabel: '+2',
+    tone: 'ok',
+    balanceAfter: 2,
+    availableAfter: 2,
+    listingId: null,
+    orderId: null,
+    note: 'Launch offer',
+    createdAt: '2026-11-01T09:00:00.000Z',
+    dateLabel: '01 Nov 2026',
+  },
+];
+
+export const MOCK_ORDERS: CreditOrderRow[] = [
+  {
+    id: '0b7a4f0e-6a39-4b8a-9d55-2f1c3b8e7a10',
+    credits: 5,
+    totalPaise: 265_500,
+    totalLabel: '₹2,655',
+    status: 'PAID',
+    statusLabel: 'Paid',
+    statusTone: 'ok',
+    failureReason: null,
+    createdAt: '2026-11-09T09:00:00.000Z',
+    dateLabel: '09 Nov 2026',
+    paidAt: '2026-11-09T09:01:00.000Z',
+  },
+  {
+    id: '1c8b5f1f-7b4a-4c9b-8e66-3a2d4c9f8b21',
+    credits: 1,
+    totalPaise: 59_000,
+    totalLabel: '₹590',
+    status: 'FAILED',
+    statusLabel: 'Failed',
+    statusTone: 'err',
+    failureReason: 'Payment declined by the issuing bank.',
+    createdAt: '2026-11-08T09:00:00.000Z',
+    dateLabel: '08 Nov 2026',
+    paidAt: null,
+  },
+];
+
+export function mockSubmitted(overrides: Partial<AdminSubmittedPhotos> = {}): AdminSubmittedPhotos {
+  return {
+    plan: 'DEALER',
+    planLabel: 'Dealer uploads the photographs',
+    items: STANDARD_PHOTO_SLOTS.map((slot, index) => ({
+      ...photo(index, slot),
+      downloadName: `TN23AB1234-${String(index + 1).padStart(2, '0')}-${slot.toLowerCase().replaceAll('_', '-')}.jpg`,
+      mimeType: 'image/jpeg',
+    })),
+    missing: [],
+    ...overrides,
+  };
+}
+
+export const MOCK_DEALER_CREDITS: AdminDealerCredits = {
+  enabled: true,
+  balance: 6,
+  held: 1,
+  available: 5,
+  ledger: MOCK_LEDGER,
+  orders: MOCK_ORDERS,
+  canAdjust: true,
+};

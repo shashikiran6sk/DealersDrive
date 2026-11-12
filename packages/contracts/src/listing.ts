@@ -257,5 +257,11 @@ export const DealerListing = z.object({
    * pending one, or a decided one on a listing still reserved or withdrawn.
    */
   reactivation: ListingReactivation.nullable(),
+  /**
+   * Who photographs the car, and the credits its current submission holds.
+   * Optional so a console and an API one release apart still agree.
+   */
+  photoPlan: z.enum(['DEALER', 'DEALERS_DRIVE']).nullable().optional(),
+  creditsHeld: z.number().int().optional(),
 });
 export type DealerListing = z.infer<typeof DealerListing>;

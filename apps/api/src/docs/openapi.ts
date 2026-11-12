@@ -25,6 +25,8 @@ import { supportAdminDocs } from '../modules/support/support.admin.docs.js';
 import { supportDocs } from '../modules/support/support.docs.js';
 import { teamDocs } from '../modules/team/team.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
+import { billingDocs } from '../modules/billing/billing.docs.js';
+import { dealerPhotosDocs } from '../modules/dealer-photos/dealer-photos.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
 import { buildSchemaCatalogue, type JsonSchema, type SchemaCatalogue } from './schemas.js';
@@ -39,6 +41,8 @@ const MODULES: ModuleDocs[] = [
   searchDocs,
   dealersDocs,
   vehiclesDocs,
+  dealerPhotosDocs,
+  billingDocs,
   enquiriesDocs,
   teamDocs,
   savedVehiclesDocs,

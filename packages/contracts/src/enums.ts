@@ -175,15 +175,15 @@ export type EnquiryStatus = z.infer<typeof EnquiryStatus>;
 export const CloseReason = z.enum(['SOLD', 'NOT_INTERESTED', 'UNREACHABLE', 'OTHER']);
 export type CloseReason = z.infer<typeof CloseReason>;
 
+/** Why a dealer's credits moved. Mirrors the Prisma enum; see `billing.ts`. */
 export const CreditReason = z.enum([
   'PURCHASE',
   'ADMIN_GRANT',
+  'ADMIN_DEDUCT',
   'HOLD_SUBMIT',
+  'HOLD_ADJUST',
   'RELEASE_REJECT',
-  'RELEASE_EXPIRED_UNREVIEWED',
   'CONSUME_APPROVE',
-  'ADMIN_ADJUSTMENT',
-  'REVERSAL',
 ]);
 export type CreditReason = z.infer<typeof CreditReason>;
 

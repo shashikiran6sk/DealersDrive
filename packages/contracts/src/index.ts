@@ -59,3 +59,6 @@ export * from './dealer-yard-visits.js';
 export * from './dealer-contact.js';
 export * from './call-lead.js';
 export * from './legal.js';
+
+export * from './dealer-photos.js';
+export * from './billing.js';

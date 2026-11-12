@@ -326,3 +326,20 @@ The status select lists the current status and only the moves
 the reason. Save sends only the fields that changed. Assign to me appears when
 the signed-in operator is assignable, matched by the email the console header
 already reads.
+
+## `apps/web/src/features/admin/listing-review/submitted-photos-panel.tsx`
+
+The dealer's raw photographs, for StudioCar. Downloads go through
+`/api/admin/listings/[id]/submitted-photos/[mediaId]`, which re-reads the listing,
+fetches the signed URL server-side and answers with `Content-Disposition:
+attachment` and the batch file name — a cross-origin signed URL would ignore the
+`download` attribute and open in a tab. "Download all" starts the downloads a
+moment apart, which browsers accept after one permission prompt.
+
+## `apps/web/src/features/admin/listing-images/listing-images.tsx`
+
+### `defaultCredit`
+
+Pre-selects the credit from the dealer's plan — `DEALER` photographs are credited
+to the dealer, a photoshoot to Dealers-Drive — so the reviewer confirms rather
+than chooses. Without a plan there is still no default, as before.

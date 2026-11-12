@@ -114,6 +114,15 @@ import { createStorage } from './platform/storage/factory.js';
 import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
 import { logger } from './platform/telemetry/logger.js';
+import { createPaymentGateway } from './platform/payments/factory.js';
+import type { PaymentGatewayPort } from './platform/payments/payment.port.js';
+import { createBillingService, type BillingService } from './modules/billing/billing.facade.js';
+import {
+  createDealerPhotosService,
+  releaseSubmissionPhotos,
+  type DealerPhotosService,
+} from './modules/dealer-photos/dealer-photos.facade.js';
+import { createSubmissionGate } from './modules/vehicles/submission-gate.js';
 
 export interface Container {
   readonly env: Env;
@@ -160,6 +169,9 @@ export interface Container {
   readonly moderation: ModerationService;
   readonly vehicleImages: VehicleImagesService;
   readonly search: SearchService;
+  readonly payments: PaymentGatewayPort;
+  readonly billing: BillingService;
+  readonly dealerPhotos: DealerPhotosService;
 }
 
 export interface ContainerOverrides {
@@ -173,6 +185,7 @@ export interface ContainerOverrides {
   readonly sessions?: SessionResolver;
   readonly oauth?: OAuthProvider;
   readonly phoneOtp?: PhoneOtpPort;
+  readonly payments?: PaymentGatewayPort;
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await -- see above
@@ -248,11 +261,16 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     queue,
     mailer,
   });
+  const payments = overrides.payments ?? createPaymentGateway();
+  const billing = createBillingService({ prisma, config, gateway: payments, audit });
   const vehicles = createVehiclesService({
     prisma,
     repo: createVehiclesRepository(prisma),
     audit,
+    gate: createSubmissionGate(config),
+    photos: { release: releaseSubmissionPhotos, storage },
   });
+  const dealerPhotos = createDealerPhotosService({ prisma, storage, audit, config });
   const vehicleImages = createVehicleImagesService({
     prisma,
     storage,
@@ -267,6 +285,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     audit,
     images: vehicleImages,
     vehicles,
+    dealerPhotos,
   });
 
   return {
@@ -330,6 +349,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     adminNotifications: createAdminNotificationsService({ prisma }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
+    payments,
+    billing,
+    dealerPhotos,
   };
 }
 

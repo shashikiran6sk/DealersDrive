@@ -56,6 +56,7 @@ import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import {
   CONFIG_READERS,
+  CONFIG_VALIDATORS,
   type ConfigDefinition,
   type PlatformConfigService,
 } from '../../platform/config/platform-config.js';
@@ -1488,6 +1489,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           `${key} is a ${before.type}, and this value is not one.`,
         );
       }
+
+      const invalid = CONFIG_VALIDATORS[key]?.(value);
+      if (invalid) throw new DomainError('CONFIG_VALUE_INVALID', `${key}: ${invalid}`);
 
       await config.set(key, value, admin.userId);
 

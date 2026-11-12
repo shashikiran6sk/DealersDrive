@@ -1,4 +1,4 @@
-import type { WizardStep } from './vehicle-wizard.types';
+import type { FieldStep, WizardStep } from './vehicle-wizard.types';
 
 export const WIZARD_STEPS: readonly WizardStep[] = [
   'registration',
@@ -8,11 +8,21 @@ export const WIZARD_STEPS: readonly WizardStep[] = [
   'review',
 ];
 
+export const PHOTO_WIZARD_STEPS: readonly WizardStep[] = [
+  'registration',
+  'basics',
+  'details',
+  'pricing',
+  'photos',
+  'review',
+];
+
 export const STEP_LABELS: Record<WizardStep, string> = {
   registration: 'Registration',
   basics: 'Vehicle basics',
   details: 'Vehicle details',
   pricing: 'Pricing',
+  photos: 'Photos',
   review: 'Review',
 };
 
@@ -21,10 +31,11 @@ export const STEP_HEADINGS: Record<WizardStep, string> = {
   basics: 'What is it?',
   details: 'Its history and condition',
   pricing: 'Price and description',
+  photos: 'How will the car be photographed?',
   review: 'Review the details',
 };
 
-export const STEP_FIELDS: Record<Exclude<WizardStep, 'review'>, readonly string[]> = {
+export const STEP_FIELDS: Record<FieldStep, readonly string[]> = {
   registration: ['registrationNumber'],
   basics: [
     'make',
@@ -48,6 +59,10 @@ export const NUMBER_FIELDS = new Set([
 ]);
 
 export const FORM_FIELD_OF: Record<string, string> = { pricePaise: 'priceRupees' };
+
+export const PHOTO_FIELDS = new Set(['photoPlan']);
+
+export const PHOTO_FIELD_PREFIX = 'photos.';
 
 export const VEHICLE_WIZARD_TEXT = {
   pageTitle: 'Add vehicle',
@@ -80,6 +95,8 @@ export const VEHICLE_WIZARD_TEXT = {
     'Service history, recent work, anything a buyer should know. No phone numbers.',
   reviewComplete: 'Everything needed for review is filled in.',
   reviewIncomplete: 'A few details are still missing.',
+  reviewWithPhotoPlan:
+    'Photographs: you chose how the car will be photographed on the Photos step. Nothing you upload is published as it is — our team checks it against the photo standard and finishes it in the studio first.',
   reviewNoPhotos:
     'You do not upload photographs here. After you submit, Dealers-Drive either photographs the car or checks the photographs you send us against the Dealers-Drive photo standard, and adds the finished pictures itself.',
   fix: 'Fix',
@@ -132,3 +149,21 @@ export const FIELD_LABELS: Record<string, string> = {
 };
 
 export const OWNER_OPTIONS = [1, 2, 3, 4, 5] as const;
+
+export const CHECKLIST_TEXT = {
+  title: 'Before you submit',
+  photosReady: 'Photographs: ready',
+  photosMissing: 'Photographs: not ready yet',
+  photosPlanStudio: 'Photographs: Dealers-Drive photoshoot',
+  goToPhotos: 'Go to Photos',
+  credits: (needed: string, available: string) =>
+    `Credits: this car needs ${needed} · you have ${available} available`,
+  creditsNone: 'Credits: nothing more to pay for this resubmission',
+  buyCredits: 'Buy credits',
+  buyTitle: 'Buy listing credits',
+  buyDescription: 'Credits are held when you submit and used only if the car goes live.',
+  heldNote:
+    'Credits are held while our team reviews the car, used if it goes live and returned if it does not.',
+  blockedPhotos: 'Finish the Photos step to submit.',
+  blockedCredits: (short: string) => `Buy ${short} more to submit.`,
+} as const;

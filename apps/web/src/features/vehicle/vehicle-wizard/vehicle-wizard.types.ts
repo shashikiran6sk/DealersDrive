@@ -1,6 +1,8 @@
 import type { DealerVehicle, UpdateVehicleInput } from '@dealers-drive/contracts';
 
-export type WizardStep = 'registration' | 'basics' | 'details' | 'pricing' | 'review';
+export type WizardStep = 'registration' | 'basics' | 'details' | 'pricing' | 'photos' | 'review';
+
+export type FieldStep = Exclude<WizardStep, 'photos' | 'review'>;
 
 export type WizardIntent = 'continue' | 'back' | 'draft';
 

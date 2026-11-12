@@ -1,0 +1,18 @@
+export const DEALER_CREDITS_TEXT = {
+  title: 'Listing credits',
+  off: 'Listing credits are switched off (feature.listingCredits); balances are kept but nothing is charged.',
+  available: 'Available',
+  held: 'Held',
+  balance: 'Total',
+  adjustTitle: 'Add or remove credits',
+  creditsLabel: 'Credits',
+  creditsHint: 'Negative to remove',
+  noteLabel: 'Note to the dealer',
+  notePlaceholder: 'e.g. Launch offer — three free listings',
+  submit: 'Save',
+  saved: 'Credits updated.',
+  failed: 'The credits could not be changed.',
+  invalid: 'Enter a whole number of credits other than 0, and a note.',
+  recent: 'Recent movements',
+  orders: 'Payments',
+} as const;

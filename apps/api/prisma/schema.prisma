@@ -405,11 +405,11 @@ model Dealer {
   callLeads          CallLead[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
+  creditLedger       CreditTransaction[]
+  creditOrders       CreditOrder[]
+  submissionPhotos   VehicleSubmissionPhoto[]
   serviceState       ServiceState?                @relation(fields: [serviceStateId], references: [id], onDelete: Restrict)
   serviceDistrict    ServiceDistrict?             @relation(fields: [serviceDistrictId, serviceStateId], references: [id, stateId], onDelete: Restrict)
-  // ledger      CreditTransaction[]    ← returns with F050
-  // orders      Order[]                ← returns with F051
-  // payments    Payment[]              ← returns with F052
   // invoices    Invoice[]              ← returns with F053
   // photoReqs   PhotoRequest[]         ← returns with its own feature
   // viewsDaily  ListingViewDaily[]     ← returns with its own feature
@@ -787,11 +787,12 @@ model Vehicle {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  dealer          Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  createdByMember AdminMember?        @relation("VehicleCreatedByMember", fields: [createdByMemberId], references: [id], onDelete: Restrict)
-  listing         Listing?
-  photography     VehiclePhotography?
-  images          VehicleMedia[]
+  dealer           Dealer                   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  createdByMember  AdminMember?             @relation("VehicleCreatedByMember", fields: [createdByMemberId], references: [id], onDelete: Restrict)
+  listing          Listing?
+  photography      VehiclePhotography?
+  images           VehicleMedia[]
+  submissionPhotos VehicleSubmissionPhoto[]
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
@@ -862,6 +863,17 @@ model Listing {
   /// The Sales Representative who made the latest submission on the dealer's
   /// behalf (**R114**); NULL when the dealer submitted it themselves.
   submittedByMemberId String?   @db.Uuid
+
+  /// How the car will be photographed, chosen by the dealer before submitting
+  /// (DEALER: their own photographs, checked and processed by Dealers-Drive;
+  /// DEALERS_DRIVE: the team shoots it). NULL for every listing that predates
+  /// the choice. See docs/code/api/modules/dealer-photos.md.
+  photoPlan    PhotoPlan?
+  /// Listing credits reserved by the current submission, released on a
+  /// rejection and consumed on approval — always through `moveCredits`.
+  creditsHeld  Int        @default(0)
+  /// Credits this listing has consumed over its life. Reporting only.
+  creditsSpent Int        @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1395,6 +1407,7 @@ model Media {
   createdAt       DateTime    @default(now())
 
   attachment VehicleMedia?
+  submission VehicleSubmissionPhoto?
 
   @@index([status, createdAt])
   @@map("media")
@@ -1407,6 +1420,8 @@ enum MediaOwner {
   DEALER_DOCUMENT
   DEALER_PORTFOLIO
   DEALER_YARD_VISIT
+  /// A dealer's own, unprocessed vehicle photograph. Never publicly served.
+  VEHICLE_SUBMISSION
 }
 
 enum PortfolioPhotoStatus {
@@ -1737,4 +1752,151 @@ model LegalAcceptance {
   @@unique([subjectKey, termsVersion, privacyVersion])
   @@index([userId])
   @@map("legal_acceptances")
+}
+
+// ─────────── DEALER PHOTOGRAPHS & LISTING CREDITS ────────────────────────────
+
+/// Who photographs a car for its listing. Mirrors `PhotoPlan` in contracts.
+enum PhotoPlan {
+  DEALER
+  DEALERS_DRIVE
+}
+
+/// The ten shots of the Dealers-Drive photo standard, plus optional extras.
+/// Mirrors `VehiclePhotoSlot` in contracts.
+enum VehiclePhotoSlot {
+  FRONT_THREE_QUARTER
+  FRONT
+  LEFT_SIDE
+  REAR_THREE_QUARTER
+  REAR
+  RIGHT_SIDE
+  DASHBOARD
+  FRONT_SEATS
+  REAR_SEATS
+  ODOMETER
+  EXTRA
+}
+
+/// A dealer's own photograph of a car, uploaded for the review team.
+///
+/// **Never public.** It is raw material: an admin downloads it, checks it
+/// against the photo standard, processes it in StudioCar and uploads the
+/// finished file through `/v1/admin/listings/:id/images` with credit DEALER.
+/// The media row's owner type is VEHICLE_SUBMISSION, which the public media
+/// route refuses by default.
+///
+/// ⚠️ A partial unique index Prisma cannot express keeps one photograph per
+/// standard slot: UNIQUE (vehicleId, slot) WHERE slot <> 'EXTRA'.
+model VehicleSubmissionPhoto {
+  id         String           @id @default(uuid()) @db.Uuid
+  vehicleId  String           @db.Uuid
+  dealerId   String           @db.Uuid
+  mediaId    String           @unique @db.Uuid
+  slot       VehiclePhotoSlot
+  uploadedBy String?          @db.Uuid
+  createdAt  DateTime         @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  media   Media   @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, slot])
+  @@index([dealerId])
+  @@map("vehicle_submission_photos")
+}
+
+/// Why a dealer's credits moved. Mirrors `CreditReason` in contracts.
+enum CreditReason {
+  PURCHASE
+  ADMIN_GRANT
+  ADMIN_DEDUCT
+  HOLD_SUBMIT
+  HOLD_ADJUST
+  RELEASE_REJECT
+  CONSUME_APPROVE
+}
+
+/// The append-only credit ledger (**F050**, rule 4).
+///
+/// Written only by `moveCredits()` in `modules/billing/credits.ts`, with the
+/// dealer row locked FOR UPDATE, in the transaction that caused the movement.
+/// `balanceAfter`/`heldAfter` are read, never summed; `dealers.creditBalance`
+/// and `dealers.creditsHeld` mirror the newest row. Available = balance − held.
+///
+/// ⚠️ A partial unique index makes a paid order credit once, whoever reports
+/// it first: UNIQUE (orderId) WHERE reason = 'PURCHASE'.
+model CreditTransaction {
+  id           BigInt       @id @default(autoincrement())
+  dealerId     String       @db.Uuid
+  reason       CreditReason
+  /// Change to the balance (credits owned).
+  delta        Int
+  /// Change to the credits held for listings in review.
+  heldDelta    Int          @default(0)
+  balanceAfter Int
+  heldAfter    Int
+  listingId    String?      @db.Uuid
+  orderId      String?      @db.Uuid
+  actorType    String
+  actorId      String?      @db.Uuid
+  note         String?
+  createdAt    DateTime     @default(now())
+
+  dealer Dealer       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  order  CreditOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([dealerId, id])
+  @@index([listingId])
+  @@map("credit_transactions")
+}
+
+enum CreditOrderStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+/// A credit-pack purchase (**F051/F052**). The amount is computed by the
+/// server from the pack and GST at creation and snapshotted here, so a price
+/// change in the admin console never alters an order in flight.
+model CreditOrder {
+  id               String            @id @db.Uuid
+  dealerId         String            @db.Uuid
+  credits          Int
+  amountPaise      BigInt
+  taxPaise         BigInt
+  totalPaise       BigInt
+  currency         String            @default("INR")
+  gateway          String
+  gatewayOrderId   String            @unique
+  gatewayPaymentId String?           @unique
+  status           CreditOrderStatus @default(CREATED)
+  failureReason    String?
+  createdBy        String?           @db.Uuid
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  dealer       Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  transactions CreditTransaction[]
+
+  @@index([dealerId, createdAt])
+  @@index([status, createdAt])
+  @@map("credit_orders")
+}
+
+/// Every payment-gateway webhook received, once (the gateway's event id is
+/// the key), whatever it said. Deduplication and the evidence for support.
+model PaymentWebhookEvent {
+  id          String    @id
+  gateway     String
+  event       String
+  payload     Json
+  outcome     String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([receivedAt])
+  @@map("payment_webhook_events")
 }

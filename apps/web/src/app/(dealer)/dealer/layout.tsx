@@ -1,6 +1,6 @@
 import { LegalGate } from '@/features/legal/legal-gate';
 import { legalStatus } from '@/lib/legal';
-import type { AuthSession, DealerProfile } from '@dealers-drive/contracts';
+import { BillingSummary, type AuthSession, type DealerProfile } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -22,7 +22,7 @@ import { ConsoleUtilities } from '@/components/dealer/console-utilities';
 import { BrandLogo } from '@/components/brand-logo';
 import { StatusTag } from '@/components/ui/primitives';
 import { customerAccountAction } from '@/features/auth/customer-account-actions';
-import { apiGet } from '@/lib/api';
+import { apiGet, apiGetParsed } from '@/lib/api';
 import { currentSession, hasSession } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
 
@@ -48,7 +48,10 @@ export default async function DealerLayout({ children }: { children: ReactNode }
       </main>
     );
   const { dealer, permissions } = await requireDealer(session);
-  const nav = consoleNavFor(permissions);
+  const billing = await apiGetParsed(BillingSummary, '/v1/dealer/billing/summary', {
+    revalidate: false,
+  }).catch(() => null);
+  const nav = consoleNavFor(permissions, billing?.enabled === true);
   const navigation = <ConsoleNav items={nav} footer={<ConsoleUtilities account={account} />} />;
 
   return (

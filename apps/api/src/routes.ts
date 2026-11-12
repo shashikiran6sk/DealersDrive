@@ -37,6 +37,11 @@ import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicl
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createAdminMembersRouter } from './modules/admin-members/admin-members.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
+import {
+  createAdminBillingRouter,
+  createBillingRouter,
+  createBillingWebhookRouter,
+} from './modules/billing/billing.routes.js';
 import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
@@ -45,6 +50,7 @@ import { createModerationRouter } from './modules/moderation/moderation.routes.j
 import { createSearchRouter } from './modules/search/search.routes.js';
 import { createVehicleImagesRouter } from './modules/vehicle-images/vehicle-images.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
+import { createDealerPhotosRouter } from './modules/dealer-photos/dealer-photos.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
 export function createRoutes(container: Container): Router {
@@ -70,6 +76,7 @@ export function createRoutes(container: Container): Router {
 
   v1.use(createPublicServiceLocationsRouter(container.serviceLocations));
   v1.use(createConfigRouter(container.publicConfig));
+  v1.use(createBillingWebhookRouter(container.billing));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
   v1.use(createSearchRouter(container.search, container.rateLimit));
 
@@ -135,8 +142,10 @@ export function createRoutes(container: Container): Router {
   dealer.use(dealerLegalGate(legal));
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
+  dealer.use(createDealerPhotosRouter(container.dealerPhotos));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
   dealer.use(createTeamRouter(container.team));
+  dealer.use(createBillingRouter(container.billing));
   v1.use('/dealer', dealer);
 
   const admin = Router();
@@ -151,6 +160,7 @@ export function createRoutes(container: Container): Router {
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
   admin.use(createAdminSupportRouter(container.adminSupport));
   admin.use(createAdminNotificationsRouter(container.adminNotifications));
+  admin.use(createAdminBillingRouter(container.billing));
   v1.use('/admin', admin);
 
   const sales = Router();
