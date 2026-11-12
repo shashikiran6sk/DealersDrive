@@ -1,7 +1,6 @@
 export const CARD_HEIGHT = 'h-[330px]';
 
 export const COVER_HEIGHT = 'h-[112px]';
-export const TILE_SIZE = 48;
 
 export const SERVICES_SHOWN = 3;
 

@@ -208,37 +208,20 @@ describe('DirectoryCard', () => {
   });
 
   /**
-   * R24, kept — and **R28**, which retired the way it was fixed.
-   *
-   * The reported bug was a logo tile that slid down the card when the
-   * dealership's name wrapped to two lines: the tile shared a flex row with the
-   * heading and was bottom-aligned to it, so the name's own height set where
-   * the tile landed. R24 pinned the row to `items-start`.
-   *
-   * R28 took the tile out of that row altogether. It sits with the VERIFIED
-   * DEALER plate in a row of their own, straddling the cover's bottom edge, and
-   * the name begins underneath both — so the tile is positioned against the
-   * *cover* and there is no longer any path by which a name can move it. That
-   * is what is asserted, because it is the property that makes the bug
-   * unavailable rather than merely corrected: **the tile and the heading are
-   * not in the same row.**
+   * A dealership carries no initials mark. The card used to show two letters
+   * cut from the brand name ("SL"); they read as a placeholder and repeated
+   * the name beside them. With no tile, nothing sits in the heading's row
+   * either, so R24's bug — a tile pushed down by a wrapping name — has no
+   * way back.
    */
-  it('positions the logo tile against the cover, not against the name', () => {
+  it('shows no initials tile, only the name', () => {
     const { container } = render(
       <DirectoryCard dealer={{ ...DEALER, brandName: 'Sri Venkateswara '.repeat(4) }} />,
     );
 
-    const tile = container.querySelector('span[aria-hidden="true"]');
-    const row = tile?.parentElement;
-
-    expect(row).not.toBeNull();
-    // Nothing in the tile's row varies with the dealership's data, so nothing
-    // in it can push the tile anywhere.
-    expect(row?.querySelector('h3')).toBeNull();
-    expect(container.querySelector('h3')).not.toBeNull();
-    // And the row is pulled up over the cover by half the tile, which is the
-    // straddle itself rather than a decoration on top of it.
-    expect(row?.getAttribute('style')).toContain('-24px');
+    expect(screen.queryByText(DEALER.initials)).toBeNull();
+    expect(container.querySelector('span[aria-hidden="true"]')).toBeNull();
+    expect(screen.getByText('Dealer Verified')).toBeInTheDocument();
   });
 
   it('uses the shared conceptual image when there is no uploaded photograph', () => {

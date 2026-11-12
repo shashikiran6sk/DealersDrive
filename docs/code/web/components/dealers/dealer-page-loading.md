@@ -8,8 +8,7 @@ Parent: [web/components/dealers](README.md)
 
 `app/(public)/dealers/[slug]/loading.tsx` (**R101**). The dealership page is
 rendered on demand, so a directory card's click had nothing to show until the
-page was built. The skeleton follows the page's own sections — back link, logo
-tile and name, the yard photograph's slot at its three heights, then the
+page was built. The skeleton follows the page's own sections — back link, name, the yard photograph's slot at its three heights, then the
 inventory grid as `VehicleCardSkeleton`s — so the page lands where it was drawn.
 
 `/dealers` and `/cars` deliberately have no `loading.tsx`: their filters change

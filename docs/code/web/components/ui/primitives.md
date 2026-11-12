@@ -58,12 +58,6 @@ The primitives. Nothing here knows what a vehicle is — anything that imports
 a domain type belongs in `components/vehicle/` instead, which is what keeps
 `ui/` promotable to `packages/ui` later (ARCHITECTURE §16.4).
 
-## `apps/web/src/components/ui/primitives/logo-tile.tsx`
-
-### `export function LogoTile({ initials, size = 42, className }: LogoTileProps)`
-
-The larger logo tile variant, on a lighter tint with a hairline.
-
 ## `apps/web/src/components/ui/primitives/plate.tsx`
 
 ### `year: ''`

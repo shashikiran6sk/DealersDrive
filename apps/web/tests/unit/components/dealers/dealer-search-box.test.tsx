@@ -180,6 +180,16 @@ describe('the recommendations', () => {
     expect(screen.getByText('3 matching yards')).toBeInTheDocument();
   });
 
+  it('shows no initials monogram on a row', async () => {
+    const user = userEvent.setup();
+    const { input } = renderBox();
+
+    await user.type(input, 'vel');
+
+    await waitFor(() => expect(options()).toHaveLength(3));
+    expect(options()[0]).not.toHaveTextContent('VC');
+  });
+
   /** The default that makes "type, pause, Enter" work without arrowing. */
   it('highlights the first recommendation', async () => {
     const user = userEvent.setup();

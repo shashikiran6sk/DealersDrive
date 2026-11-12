@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { Avatar, Blueprint, ImageSlot, LogoTile, StatCard } from '@/components/ui/primitives';
+import { Avatar, Blueprint, ImageSlot, StatCard } from '@/components/ui/primitives';
 
 const meta = {
   title: 'Primitives/Structure',
@@ -29,21 +29,13 @@ export const BlueprintAsSection: Story = {
 
 export const IdentityTiles: Story = {
   render: () => (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <Avatar initials="A" size={20} />
-        <Avatar initials="SK" size={20} />
-        <Avatar initials="SKM" size={20} />
-        <Avatar initials="A" size={22} />
-        <Avatar initials="SK" size={22} />
-        <Avatar initials="SKM" size={22} />
-      </div>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <LogoTile initials="A" size={42} />
-        <LogoTile initials="VM" size={42} />
-        <LogoTile initials="VMS" size={42} />
-        <LogoTile initials="VM" size={44} />
-      </div>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Avatar initials="A" size={20} />
+      <Avatar initials="SK" size={20} />
+      <Avatar initials="SKM" size={20} />
+      <Avatar initials="A" size={22} />
+      <Avatar initials="SK" size={22} />
+      <Avatar initials="SKM" size={22} />
     </div>
   ),
 };

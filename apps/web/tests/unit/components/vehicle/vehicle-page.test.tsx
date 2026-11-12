@@ -133,6 +133,12 @@ describe('the price, specifications and dealer', () => {
       '/dealers/sri-lakshmi-motors',
     );
   });
+
+  it('shows no initials tile beside the dealership name', () => {
+    const dealer = detail().dealer;
+    render(<VdpDealerCard dealer={dealer} />);
+    expect(screen.queryByText(dealer.initials)).toBeNull();
+  });
 });
 
 describe('/car/[slug]', () => {

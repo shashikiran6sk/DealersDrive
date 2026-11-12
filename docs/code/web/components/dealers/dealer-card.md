@@ -23,10 +23,8 @@ A plain `<img>` rather than `next/image` because the bytes come from
 
 ### `<div`
 
-A wash into the bottom edge, so the white logo tile that straddles it
-has something to sit against — a yard photograph is often a bright
-forecourt, and a white tile on white sky is the one place the overlap
-stops reading as one. Only over a photograph: the `ImageSlot` is a
+A wash into the bottom edge, so the photograph ends in a tone rather than
+a hard line — a yard photograph is often a bright forecourt. Only over a photograph: the `ImageSlot` is a
 flat panel that would only be dirtied by it.
 
 ### `<ImageSlot label={DEALER_CARD_TEXT.coverAlt(dealer.brandName)} />`
@@ -79,7 +77,7 @@ type scale, the tag padding or the cover.
 
 ### `export const COVER_HEIGHT = 'h-[128px]'`
 
-The cover band, and the distance the logo tile is pulled up over it.
+The cover band.
 
 ### `export const SERVICES_SHOWN = 3`
 
@@ -91,8 +89,18 @@ At most three, so one verbose dealership cannot spend the whole prose box.
 
 DESIGN-SPEC §3.5 — the directory card.
 
-A 128px cover band, then an identity plate row that straddles its bottom edge,
-then the dealership's own words, then a footer pinned to the bottom.
+A cover band, then the VERIFIED DEALER plate when there is one, then the
+name and the dealership's own words, then a footer pinned to the bottom.
+
+No mark beside the dealership's name. The tile this card used to carry
+showed two letters cut from the brand name — "SC", "AA", "CV" — because no
+dealer has a logo (`logoUrl` is always `null`). Two letters read as a
+placeholder rather than an identity, collide whenever two dealerships share
+initials, and repeat a name printed right beside them. The owner chose no mark
+over a generic icon or a generated one. The same rule holds on the car card's
+dealer strip, the vehicle page's "Sold by" card, the dealership page header,
+the dealer search suggestions and the admin dealer page. If dealers can one
+day upload a logo, show that and nothing in its place.
 
 The whole card is the link to the portfolio; "View inventory →" is an
 affordance, not a second destination, so it is not a nested anchor — the

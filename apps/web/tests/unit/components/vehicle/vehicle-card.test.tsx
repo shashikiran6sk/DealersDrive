@@ -88,6 +88,12 @@ describe('VehicleCard', () => {
     expect(within(article).getByText('Dealer Verified')).toBeInTheDocument();
   });
 
+  it('names the dealer without an initials avatar', () => {
+    render(<VehicleCard vehicle={card()} />);
+
+    expect(within(screen.getByRole('article')).queryByText('SL')).toBeNull();
+  });
+
   it('shows the year once, in the plate — never again in the visible title', () => {
     render(<VehicleCard vehicle={card()} />);
 

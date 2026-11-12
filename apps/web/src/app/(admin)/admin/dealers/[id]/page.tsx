@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
-import { LogoTile, StatusTag } from '@/components/ui/primitives';
+import { StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 import { DealerPortfolioSummary } from '@/features/admin/dealer-portfolio-summary';
 import { CustomerContactApproval } from '@/features/admin/customer-contact-approval';
@@ -65,7 +65,6 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       </Link>
 
       <div className="flex flex-wrap items-center gap-3">
-        <LogoTile initials={dealer.initials} size={48} />
         <div className="min-w-0">
           <h1 className="text-[24px] leading-[1.15]">{dealer.brandName}</h1>
           <p className="text-[13px] ink-muted">
