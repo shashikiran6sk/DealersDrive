@@ -88,3 +88,20 @@ to debug.
 ### `function mapApiFields(errors: Record<string, string>): Record<string, string>`
 
 `validate()` has already stripped the `body.` prefix; the shape is the same.
+
+## `apps/web/src/features/dealer/billing/credit-packs.tsx`
+
+The purchase runs order → Razorpay Checkout → verify. The order and verify are
+Server Actions, so the API session cookie never reaches the browser; Checkout's
+script is loaded on first use from `checkout.razorpay.com` and opened with the
+server's order id, key id and amount — the browser never chooses a price. Where
+the API runs the `fake` gateway the checkout carries a simulation and the panel
+offers a test payment instead of loading the script.
+
+## `apps/web/src/components/dealer/console-nav/utils.ts`
+
+### `consoleNavFor(permissions, billing)`
+
+The Billing item has existed since the nav was drawn, hidden as not yet built. It
+appears now only when listing credits are on and the member may read billing; the
+layout's read of the summary is optional, so the console renders without it.

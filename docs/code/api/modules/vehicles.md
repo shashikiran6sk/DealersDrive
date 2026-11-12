@@ -243,10 +243,9 @@ Sales — assisting with onboarding is not a licence to read a business's stock.
 ### `export function createSubmissionGate(config)`
 
 What a submission needs beyond complete details, run inside the submit
-transaction after the listing is locked: with `feature.dealerPhotos` on, a photo
-plan and — for the dealer's own plan — all ten standard photographs. Dealer
-submissions only; a Sales Representative is Dealers-Drive staff at the yard.
-Injected — `OPEN_GATE` is the default — so the service and its unit tests
-construct without configuration, and the flag off is exactly the previous
-behaviour. Because it runs before `claimedAt` is set and before `transition()`,
-a refusal leaves the draft untouched. It is the hook listing credits attach to.
+transaction after the listing is locked: the dealer's photographs or photoshoot
+(`feature.dealerPhotos`, dealer submissions only) and the credit hold
+(`feature.listingCredits`). Injected — `OPEN_GATE` is the default — so the service
+and its unit tests construct without configuration, and both flags off is
+exactly the previous behaviour. Because it runs before `claimedAt` is set and
+before `transition()`, a refusal leaves the draft untouched.

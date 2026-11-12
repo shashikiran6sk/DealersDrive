@@ -1,5 +1,6 @@
 import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification';
 import {
+  AdminDealerCredits,
   DealerVerificationReview,
   YardVisitsResponse,
   type AdminDealerDetail,
@@ -12,6 +13,7 @@ import { notFound } from 'next/navigation';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
+import { DealerCredits } from '@/features/admin/dealer-credits';
 import { DealerPortfolioSummary } from '@/features/admin/dealer-portfolio-summary';
 import { CustomerContactApproval } from '@/features/admin/customer-contact-approval';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
@@ -57,6 +59,9 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
     : null;
 
   const yardVisits = await yardVisitsFor(id);
+  const credits = await apiGetParsed(AdminDealerCredits, `/v1/admin/dealers/${id}/credits`, {
+    revalidate: false,
+  }).catch(() => null);
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-4 p-5">
@@ -149,6 +154,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
       </section>
 
       <DealerAdminActions dealer={dealer} />
+
+      {credits ? <DealerCredits dealerId={dealer.id} credits={credits} /> : null}
 
       <YardVisitsPanel dealerId={dealer.id} visits={yardVisits} />
 

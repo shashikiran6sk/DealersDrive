@@ -123,6 +123,14 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/enquiry-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/dealer/billing/billing-actions',
+        replacement: new URL('../src/mocks/billing-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/admin/credit-actions',
+        replacement: new URL('../src/mocks/credit-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/vehicle/actions',
         replacement: new URL('../src/mocks/vehicle-actions.ts', import.meta.url).pathname,
       },

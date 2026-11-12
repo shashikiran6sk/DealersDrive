@@ -14,6 +14,7 @@ Parent: [api](../README.md)
 
 - [admin](admin.md)
 - [admin-members](admin-members.md)
+- [billing](billing.md)
 - [auth](auth.md)
 - [config](config.md)
 - [dealer-photos](dealer-photos.md)

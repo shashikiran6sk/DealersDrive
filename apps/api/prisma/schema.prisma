@@ -405,12 +405,11 @@ model Dealer {
   callLeads          CallLead[]
   reactivations      ListingReactivationRequest[]
   emailVerifications DealerEmailVerification[]
+  creditLedger       CreditTransaction[]
+  creditOrders       CreditOrder[]
   submissionPhotos   VehicleSubmissionPhoto[]
   serviceState       ServiceState?                @relation(fields: [serviceStateId], references: [id], onDelete: Restrict)
   serviceDistrict    ServiceDistrict?             @relation(fields: [serviceDistrictId, serviceStateId], references: [id, stateId], onDelete: Restrict)
-  // ledger      CreditTransaction[]    ← returns with F050
-  // orders      Order[]                ← returns with F051
-  // payments    Payment[]              ← returns with F052
   // invoices    Invoice[]              ← returns with F053
   // photoReqs   PhotoRequest[]         ← returns with its own feature
   // viewsDaily  ListingViewDaily[]     ← returns with its own feature
@@ -869,7 +868,12 @@ model Listing {
   /// (DEALER: their own photographs, checked and processed by Dealers-Drive;
   /// DEALERS_DRIVE: the team shoots it). NULL for every listing that predates
   /// the choice. See docs/code/api/modules/dealer-photos.md.
-  photoPlan PhotoPlan?
+  photoPlan    PhotoPlan?
+  /// Listing credits reserved by the current submission, released on a
+  /// rejection and consumed on approval — always through `moveCredits`.
+  creditsHeld  Int        @default(0)
+  /// Credits this listing has consumed over its life. Reporting only.
+  creditsSpent Int        @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1800,4 +1804,99 @@ model VehicleSubmissionPhoto {
   @@index([vehicleId, slot])
   @@index([dealerId])
   @@map("vehicle_submission_photos")
+}
+
+/// Why a dealer's credits moved. Mirrors `CreditReason` in contracts.
+enum CreditReason {
+  PURCHASE
+  ADMIN_GRANT
+  ADMIN_DEDUCT
+  HOLD_SUBMIT
+  HOLD_ADJUST
+  RELEASE_REJECT
+  CONSUME_APPROVE
+}
+
+/// The append-only credit ledger (**F050**, rule 4).
+///
+/// Written only by `moveCredits()` in `modules/billing/credits.ts`, with the
+/// dealer row locked FOR UPDATE, in the transaction that caused the movement.
+/// `balanceAfter`/`heldAfter` are read, never summed; `dealers.creditBalance`
+/// and `dealers.creditsHeld` mirror the newest row. Available = balance − held.
+///
+/// ⚠️ A partial unique index makes a paid order credit once, whoever reports
+/// it first: UNIQUE (orderId) WHERE reason = 'PURCHASE'.
+model CreditTransaction {
+  id           BigInt       @id @default(autoincrement())
+  dealerId     String       @db.Uuid
+  reason       CreditReason
+  /// Change to the balance (credits owned).
+  delta        Int
+  /// Change to the credits held for listings in review.
+  heldDelta    Int          @default(0)
+  balanceAfter Int
+  heldAfter    Int
+  listingId    String?      @db.Uuid
+  orderId      String?      @db.Uuid
+  actorType    String
+  actorId      String?      @db.Uuid
+  note         String?
+  createdAt    DateTime     @default(now())
+
+  dealer Dealer       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  order  CreditOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([dealerId, id])
+  @@index([listingId])
+  @@map("credit_transactions")
+}
+
+enum CreditOrderStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+/// A credit-pack purchase (**F051/F052**). The amount is computed by the
+/// server from the pack and GST at creation and snapshotted here, so a price
+/// change in the admin console never alters an order in flight.
+model CreditOrder {
+  id               String            @id @db.Uuid
+  dealerId         String            @db.Uuid
+  credits          Int
+  amountPaise      BigInt
+  taxPaise         BigInt
+  totalPaise       BigInt
+  currency         String            @default("INR")
+  gateway          String
+  gatewayOrderId   String            @unique
+  gatewayPaymentId String?           @unique
+  status           CreditOrderStatus @default(CREATED)
+  failureReason    String?
+  createdBy        String?           @db.Uuid
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  dealer       Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  transactions CreditTransaction[]
+
+  @@index([dealerId, createdAt])
+  @@index([status, createdAt])
+  @@map("credit_orders")
+}
+
+/// Every payment-gateway webhook received, once (the gateway's event id is
+/// the key), whatever it said. Deduplication and the evidence for support.
+model PaymentWebhookEvent {
+  id          String    @id
+  gateway     String
+  event       String
+  payload     Json
+  outcome     String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([receivedAt])
+  @@map("payment_webhook_events")
 }

@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { PhotoPlanChoice, PhotoStep, planOptions } from '@/features/vehicle/photo-step';
 
 import { mockPhotos } from '../../mocks/dealer-photos';
+import { mockBilling } from '../../mocks/listing-credits';
 
 const meta = {
   title: 'Vehicle/PhotoStep',
@@ -15,10 +16,11 @@ const meta = {
       </div>
     ),
   ],
-  argTypes: { photos: { control: 'object' } },
+  argTypes: { photos: { control: 'object' }, billing: { control: 'object' } },
   args: {
     vehicleId: '22222222-2222-4222-8222-222222222222',
     photos: mockPhotos(),
+    billing: mockBilling(),
     backHref: '#pricing',
     nextHref: '#review',
   },
@@ -41,6 +43,8 @@ export const PhotoshootUnavailable: Story = {
   args: { photos: mockPhotos({ photoshoot: { available: false, district: 'Krishnagiri' } }) },
 };
 
+export const CreditsOff: Story = { args: { billing: mockBilling({ enabled: false }) } };
+
 export const Locked: Story = {
   args: { photos: mockPhotos({ plan: 'DEALER', canEdit: false }, 10) },
 };
@@ -48,8 +52,9 @@ export const Locked: Story = {
 export const PlanChoiceOnly: Story = {
   render: () => (
     <PhotoPlanChoice
-      options={planOptions(mockPhotos())}
+      options={planOptions(mockPhotos(), mockBilling())}
       selected="DEALER"
+      creditPrice="₹500"
       onChoose={() => undefined}
     />
   ),

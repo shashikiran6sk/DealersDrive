@@ -156,5 +156,14 @@ export const CHECKLIST_TEXT = {
   photosMissing: 'Photographs: not ready yet',
   photosPlanStudio: 'Photographs: Dealers-Drive photoshoot',
   goToPhotos: 'Go to Photos',
+  credits: (needed: string, available: string) =>
+    `Credits: this car needs ${needed} · you have ${available} available`,
+  creditsNone: 'Credits: nothing more to pay for this resubmission',
+  buyCredits: 'Buy credits',
+  buyTitle: 'Buy listing credits',
+  buyDescription: 'Credits are held when you submit and used only if the car goes live.',
+  heldNote:
+    'Credits are held while our team reviews the car, used if it goes live and returned if it does not.',
   blockedPhotos: 'Finish the Photos step to submit.',
+  blockedCredits: (short: string) => `Buy ${short} more to submit.`,
 } as const;
