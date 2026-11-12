@@ -14,7 +14,7 @@ import { SectionError } from '@/components/errors/section-error';
 import { JsonLd } from '@/components/seo/json-ld';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { type GalleryPhoto, PhotoGallery } from '@/components/ui/photo-gallery';
-import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
+import { Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
 import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
@@ -193,31 +193,23 @@ export default async function DealerPortfolioPage({
           </Link>
         </div>
 
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px] max-md:grid max-md:grid-cols-[60px_minmax(0,1fr)] max-md:gap-x-3 max-md:gap-y-1.5 max-md:px-4">
-          <LogoTile
-            initials={dealer.initials}
-            size={78}
-            className="max-md:h-[60px]! max-md:w-[60px]! max-md:col-start-1 max-md:row-start-1"
-          />
-
-          <div className="min-w-[260px] flex-1 max-md:contents max-md:[overflow-wrap:anywhere]">
-            <div className="flex flex-wrap items-center gap-3 max-md:col-start-2 max-md:row-start-1 max-md:gap-2 max-md:self-center">
-              <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
-                {dealer.brandName}
-              </h1>
-              {dealer.isVerified ? <Plate size="chip">Dealer Verified</Plate> : null}
-            </div>
-            {dealer.tagline ? (
-              <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5] max-md:col-span-2 max-md:row-start-3 max-md:mt-2">
-                {dealer.tagline}
-              </p>
-            ) : null}
-            {dealer.address.full ? (
-              <p className="mt-[6px] text-[14px] ink-secondary max-md:col-span-2 max-md:row-start-2 max-md:mt-0">
-                {dealer.address.full}
-              </p>
-            ) : null}
+        <div className="mx-auto flex max-w-[1280px] flex-col px-6 pb-[20px] max-md:px-4 max-md:[overflow-wrap:anywhere]">
+          <div className="flex flex-wrap items-center gap-3 max-md:gap-2">
+            <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] max-sm:text-[22px] sm:text-[34px]">
+              {dealer.brandName}
+            </h1>
+            {dealer.isVerified ? <Plate size="chip">Dealer Verified</Plate> : null}
           </div>
+          {dealer.tagline ? (
+            <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5] max-md:order-3 max-md:mt-2">
+              {dealer.tagline}
+            </p>
+          ) : null}
+          {dealer.address.full ? (
+            <p className="mt-[6px] text-[14px] ink-secondary max-md:order-2 max-md:mt-1.5">
+              {dealer.address.full}
+            </p>
+          ) : null}
         </div>
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pb-[20px]">

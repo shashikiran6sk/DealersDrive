@@ -6,5 +6,4 @@ export {
   COVER_HEIGHT,
   DEALER_CARD_TEXT,
   SERVICES_SHOWN,
-  TILE_SIZE,
 } from './dealer-card.constants';

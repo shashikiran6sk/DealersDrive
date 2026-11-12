@@ -9,13 +9,10 @@ export function DealerPageLoading() {
         <div className="mx-auto max-w-[1280px] px-4 pt-[22px] sm:px-6">
           <div className="mb-[14px] h-[40px] w-[132px] rounded-[10px] bg-(--color-neutral-150)" />
         </div>
-        <div className="mx-auto flex max-w-[1280px] items-start gap-[18px] px-6 pb-[20px]">
-          <div className="h-[72px] w-[72px] flex-none rounded-[14px] bg-(--color-neutral-150) max-md:h-[60px] max-md:w-[60px]" />
-          <div className="flex min-w-0 flex-1 flex-col gap-[10px] pt-[6px]">
-            <div className="skeleton h-[30px] w-[280px] max-w-full" />
-            <div className="skeleton w-[60%]" />
-            <div className="skeleton w-[45%]" />
-          </div>
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-[10px] px-6 pb-[20px] max-md:px-4">
+          <div className="skeleton h-[30px] w-[280px] max-w-full" />
+          <div className="skeleton w-[60%]" />
+          <div className="skeleton w-[45%]" />
         </div>
         <div className="mx-auto max-w-[1280px] px-4 pb-[20px] sm:px-6">
           <div className="h-[440px] rounded-[14px] bg-(--color-neutral-150) max-lg:h-[340px] max-md:h-[240px]" />

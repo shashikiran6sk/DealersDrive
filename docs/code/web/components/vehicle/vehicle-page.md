@@ -23,6 +23,9 @@ Who is selling, and a way to see the rest of their yard. No phone number and no
 Call or Enquire button: the reveal route (rule 7) and enquiries are deferred,
 and a button that cannot work is worse than none.
 
+No logo tile beside the name, for the reason in
+[`DirectoryCard`](../dealers/dealer-card.md).
+
 ## `apps/web/src/components/vehicle/vehicle-name/vehicle-name.tsx`
 
 ### `export function VehicleName({ title, year })`
