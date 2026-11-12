@@ -3654,6 +3654,21 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'home-categorydeck',
   },
+  {
+    id: 'C154',
+    name: 'PageSlot',
+    source: 'apps/web/src/components/layout/page-slot/page-slot.tsx',
+    category: 'Layout',
+    ownership: 'Shared',
+    purpose:
+      'Where every layout puts its page: a keyed Fragment around `children`, adding no element. A page that is a bare child of `<main>` and resolves a moment late during hydration made React re-run `<main>` from the wrong place in the server HTML and rebuild the whole document (#418, about 1 load in 6 on a slow connection). Used by PublicShell and the admin, dealer, sales and auth layouts.',
+    aliases: ['LayoutSlot', 'PageOutlet', 'ChildrenSlot', 'page-slot'],
+    features: ['Hydration #418'],
+    props: ['children'],
+    states: ['inside main'],
+    reusable: true,
+    storyId: 'layout-pageslot',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

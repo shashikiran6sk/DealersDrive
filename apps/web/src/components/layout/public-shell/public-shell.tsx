@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+
+import { PageSlot } from '@/components/layout/page-slot';
 import { legalPagesVisible } from '@/lib/legal';
 
 import { CustomerFooter } from '@/components/layout/customer-footer';
@@ -20,7 +22,9 @@ export async function PublicShell({ children }: { children: ReactNode }) {
     <SavedVehiclesProvider>
       <div className="flex min-h-dvh flex-col">
         <CustomerHeader locations={locations} account={<HeaderAccount />} />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PageSlot>{children}</PageSlot>
+        </main>
         <CustomerFooter
           legalVisible={legalPagesVisible()}
           social={config.social}
