@@ -111,3 +111,43 @@ describe('the Razorpay adapter', () => {
     });
   });
 });
+
+describe('the Razorpay adapter, less common answers', () => {
+  it('does not capture a payment that is already captured, and reports one that failed', async () => {
+    const captured = vi.fn(async () =>
+      reply(200, { id: 'pay_1', status: 'captured', order_id: 'order_1', amount: 59_000 }),
+    );
+    expect(await gateway(captured).confirmPayment('pay_1', 59_000)).toMatchObject({
+      captured: true,
+    });
+    expect(captured).toHaveBeenCalledTimes(1);
+
+    const failed = vi.fn(async () => reply(200, { id: 'pay_2', status: 'failed' }));
+    expect(await gateway(failed).confirmPayment('pay_2', 59_000)).toEqual({
+      captured: false,
+      gatewayOrderId: null,
+      amountPaise: 0,
+      status: 'failed',
+    });
+  });
+
+  it('treats an order answer with no id, or an unreadable body, as unavailable', async () => {
+    const noId = gateway(vi.fn(async () => reply(200, { status: 'created' })));
+    await expect(
+      noId.createOrder({ amountPaise: 1, receipt: 'r', notes: {} }),
+    ).rejects.toMatchObject({ status: 503 });
+    const garbled = gateway(vi.fn(async () => new Response('not json', { status: 502 })));
+    await expect(
+      garbled.createOrder({ amountPaise: 1, receipt: 'r', notes: {} }),
+    ).rejects.toMatchObject({ status: 503 });
+    const odd = gateway(vi.fn(async () => reply(200, 'a string')));
+    expect(await odd.confirmPayment('pay_3', 1)).toMatchObject({
+      status: 'unknown',
+      amountPaise: 0,
+    });
+  });
+
+  it('never simulates a payment', () => {
+    expect(gateway(vi.fn()).simulate('order_1')).toBeNull();
+  });
+});

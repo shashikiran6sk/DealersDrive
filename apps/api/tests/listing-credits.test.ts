@@ -23,7 +23,6 @@ let h: AuthHarness;
 let admin: request.Agent;
 let fixtures: ReturnType<typeof marketplaceFixtures>;
 let a: Dealership;
-let b: Dealership;
 let plate = 7000;
 
 function nextPlate(): string {
@@ -102,7 +101,6 @@ beforeAll(async () => {
   h = await createAuthHarness(createFakeGoogle());
   fixtures = marketplaceFixtures(h, 'credits');
   a = await fixtures.dealership();
-  b = await fixtures.dealership();
   admin = await fixtures.moderator();
 });
 
