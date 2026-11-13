@@ -15,5 +15,4 @@ square. Nearby words remain unchanged. The image alt text is “Dealers Drive”
 
 The app has fixed light page surfaces and two dark consumers; it has no
 page-wide theme toggle or scrolling background change. Choose `variant`
-from the surface when adding a consumer. Dealer-specific LogoTile initials
-are business identities, and are not the platform logo.
+from the surface when adding a consumer.

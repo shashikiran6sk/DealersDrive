@@ -5,7 +5,6 @@ export { Corners } from './corners';
 export { EmptyState, type EmptyStateProps } from './empty-state';
 export { DEFAULT_ERROR_TITLE, ErrorState, type ErrorStateProps } from './error-state';
 export { ImageSlot, type ImageSlotProps } from './image-slot';
-export { LogoTile, type LogoTileProps } from './logo-tile';
 export { Plate, type PlateProps } from './plate';
 export { SkeletonLines } from './skeleton-lines';
 export { StatCard, type StatCardProps } from './stat-card';

@@ -22,10 +22,10 @@ what the `aliases` field is for.
 The composition changed; the rules that hold it together did not. What is
 new to look at:
 
-· **The identity plate row straddles the cover's bottom edge.** A 48px
-white logo tile pulled up 24px on the left, the VERIFIED DEALER plate on
-the right, and the name starting underneath both rather than sharing a
-line with the plate.
+· **The VERIFIED DEALER plate sits above the name**, not on a line with
+it. (R28 also put a 48px white initials tile here, straddling the cover
+edge. It has since been removed: dealerships carry no initials mark — see
+`DirectoryCard` in `web/components/dealers/dealer-card.md`.)
 · **YARD VERIFIED sits on the cover**, top right, on an ink wash. There is
 no year on it — nothing on the platform records when a yard was audited,
 so the reference's "· 2024" is deliberately absent.
@@ -49,17 +49,17 @@ Three things to check by eye:
 · **The whole card is one link — including the two places that used to be
 holes in it** (**R29**). The heading's anchor is stretched over the card
 with `after:absolute after:inset-0`, and nothing is lifted above it.
-"View inventory →" and the logo-tile row both carried `z-[2]`, which took
+"View inventory →" and the identity row both carried `z-[2]`, which took
 them out of the link rather than putting them in it: clicking the words
 "View inventory" did nothing while clicking the gap beside them opened
-the portfolio. Click the affordance, and click the tile, and check both
+the portfolio. Click the affordance and the plate, and check both
 navigate. They are affordances for the card's own link, not second
 destinations — a nested anchor would be invalid HTML and would give a
 screen reader two links to the same page.
-· **The logo tile does not move when the name wraps.** That was **R24**,
-and R28 retired the fix by retiring the cause: the tile is no longer in
-the heading's row at all, so its position is fixed against the cover.
-`ShortAndLongName` is still the story — the two tiles must start level.
+· **Nothing moves when the name wraps.** That was **R24**, when a tile
+shared the heading's row; the plate now sits above the name and the tile
+is gone. `ShortAndLongName` is still the story — the two names must start
+level.
 · **The card is one fixed size** (R21), and nothing on it changes that:
 not a missing tagline, not a third service, not a fifty-character name.
 `SameDataTwice` is the story that proves it — two directories, one
@@ -140,12 +140,11 @@ The long-name case. Indian dealership names run long — "Sri Venkateswara
 Automobiles and Finance Private Limited" is not unusual — and the heading has
 to wrap beside the VERIFIED plate without pushing it off the card.
 
-**This is the R24 story, and R28 is why it now passes trivially.** The thing
-to check is the logo tile: its top edge must be exactly where it is in
-`Default`, because it is positioned against the cover rather than against the
-name. It used to slide down to the second line, when the tile shared a row
-with the heading and was aligned to the bottom of it. `ShortAndLongName` puts
-the two side by side so the tile is either level across both or is not.
+**This is the R24 story.** The thing to check is the name's top edge: it
+must be exactly where it is in `Default`. It used to slide down, when a logo
+tile shared a row with the heading and was aligned to the bottom of it.
+`ShortAndLongName` puts the two side by side so the names either start level
+or do not.
 
 With the plate out of the heading's row, the name also has the full width of
 the card to wrap in — which is the other half of what this story shows.
@@ -155,14 +154,11 @@ the card to wrap in — which is the other half of what this story shows.
 **R24, and the comparison the bug was reported as.** A one-word name and a
 name that wraps, side by side, at the width the grid actually gives a card.
 
-The logo tiles must start at the same height. They did not: the left card's
-tile sat beside "Chennai cars" and the right card's sat beside "CARS", the
-second line of "GOWTHAM CARS" — a 21px drop that made a row of cards look
-ragged for no reason a reader could see.
-
-Under **R28** the tiles are straddling the cover's bottom edge, which is a
-fixed distance from the top of the card, so this is now a check that the
-structure is still what it claims rather than a check on an alignment rule.
+The names must start at the same height. Under R24 they did not: a logo
+tile sat beside "Chennai cars" on one card and beside "CARS", the second line
+of "GOWTHAM CARS", on the other — a 21px drop that made a row of cards look
+ragged for no reason a reader could see. With no tile left, this is a check
+that the structure is still what it claims.
 
 ### `export const Unverified: Story = { args: { dealer: { ...BASE, isVerified: false } } }`
 
@@ -174,9 +170,8 @@ branch is worth being able to see.
 ### `export const WithCover: Story =`
 
 A dealership that has uploaded one. The photograph is cropped into the 104px
-band with `object-cover`, so the thing to check by eye is that the logo tile
-still reads against it — the tile crosses the divider, and a busy photograph
-is where that crossing either works or does not.
+band with `object-cover`, so the thing to check by eye is that a busy
+photograph still ends cleanly at the divider.
 
 ### `export const InTheGrid: Story =`
 

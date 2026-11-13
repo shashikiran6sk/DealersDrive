@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { PageSlot } from '@/components/layout/page-slot';
+
 import {
   ADD_VEHICLE_HREF,
   ADD_VEHICLE_LABEL,
@@ -95,7 +97,9 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           </ButtonLink>
         </header>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1">
+          <PageSlot>{children}</PageSlot>
+        </main>
       </div>
     </div>
   );

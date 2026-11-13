@@ -16,7 +16,7 @@ Stack: Next.js 15 App Router + Tailwind v4 `@theme` + CVA, Radix primitives.
 
 | Token                 | Hex       | Used for                                                                           |
 | --------------------- | --------- | ---------------------------------------------------------------------------------- |
-| `--color-neutral-100` | `#f7f7f5` | Subtle surface: tag fill, hover fill, story ground, icon tiles, logo tiles         |
+| `--color-neutral-100` | `#f7f7f5` | Subtle surface: tag fill, hover fill, story ground, icon tiles                     |
 | `--color-neutral-150` | `#efefec` | Selected nav item, image-slot ground, pressed secondary, selected segment          |
 | `--color-neutral-200` | `#ececea` | Canvas, skeleton bars                                                              |
 | `--color-neutral-300` | `#e4e3df` | Border (same value as `--color-divider`), stepper inactive bar, switch track (off) |
@@ -120,17 +120,17 @@ Page gutters: **16px** below `sm`, **24px** from `sm`, **40px** for full-bleed m
 
 ### 1.5 Radius
 
-| Token          | Value | Applies to                                                                     |
-| -------------- | ----- | ------------------------------------------------------------------------------ |
-| `--radius-sm`  | 8px   | Menu items, small icon tiles, suggestion avatars                               |
-| `--radius-md`  | 10px  | Buttons, inputs, selects, segmented control, nav items, logo tiles, thumbnails |
-| (14px)         | 14px  | Tables, stat cards, dropdown/popover panels, sidebar credits card              |
-| (15px)         | 15px  | Vehicle cards                                                                  |
-| `--radius-lg`  | 16px  | Cards, blueprint frames, filter panel, support cards, dealer cards             |
-| `--radius-xl`  | 20px  | Dialogs, bottom-sheet top corners                                              |
-| `--radius-2xl` | 26px  | Reserved (large feature panels)                                                |
-| `--radius-tag` | 999px | Tags, badges, chips, the header Login button, avatars, switch                  |
-| (6px)          | 6px   | Year/verified chips (`.dd-plate`), skeleton bars                               |
+| Token          | Value | Applies to                                                         |
+| -------------- | ----- | ------------------------------------------------------------------ |
+| `--radius-sm`  | 8px   | Menu items, small icon tiles, suggestion avatars                   |
+| `--radius-md`  | 10px  | Buttons, inputs, selects, segmented control, nav items, thumbnails |
+| (14px)         | 14px  | Tables, stat cards, dropdown/popover panels, sidebar credits card  |
+| (15px)         | 15px  | Vehicle cards                                                      |
+| `--radius-lg`  | 16px  | Cards, blueprint frames, filter panel, support cards, dealer cards |
+| `--radius-xl`  | 20px  | Dialogs, bottom-sheet top corners                                  |
+| `--radius-2xl` | 26px  | Reserved (large feature panels)                                    |
+| `--radius-tag` | 999px | Tags, badges, chips, the header Login button, avatars, switch      |
+| (6px)          | 6px   | Year/verified chips (`.dd-plate`), skeleton bars                   |
 
 Rounded is the product default; nothing authored is square except full-bleed bands and the lightbox stage.
 
@@ -221,7 +221,7 @@ Not interactive.
 
 Label (`.field > label`): 12px/700, `margin-bottom:6px`, `#56534e`. Placeholder `#9a9892`.
 
-Search/typeahead (`AutocompletePanel`): the `.input` shell at 42px with a leading search glyph and a clear button; suggestions open in a 14px-radius `--shadow-md` panel with an 8px-radius initials tile per row. Behaviour (debounce, suggestions, Enter → `/cars?q=`) is production's.
+Search/typeahead (`AutocompletePanel`): the `.input` shell at 42px with a leading search glyph and a clear button; suggestions open in a 14px-radius `--shadow-md` panel with the name and place on each row (no initials tile). Behaviour (debounce, suggestions, Enter → `/cars?q=`) is production's.
 
 OTP cells and the `+91` phone field keep their production behaviour and take the input styling above.
 
@@ -269,7 +269,7 @@ One structure for every context, so every card in a row lines up whatever its da
 | Title        | `card-title` 14px/800, `line-clamp-2` **and** `min-height:2.5em` — a one-line title reserves the second line                                                                                                                                             |
 | Price        | 20px/700 tabular; beside it, right-aligned on the same row, a `tag-outline` 11px negotiability pill — "Fixed price" or "Negotiable" — wrapping under the price when the row is too narrow. No pill when the price is on request or the dealer never said |
 | Meta         | 12px `#6f6d68` tabular, `line-clamp-2`, `min-height:3em` (km · fuel · transmission · town)                                                                                                                                                               |
-| Dealer strip | `margin-top:auto; min-height:35px`, 1px top divider, `padding-top:10px`: 20px round initials chip, 13px name (ellipsis), `tag-accent` "Verified"                                                                                                         |
+| Dealer strip | `margin-top:auto; min-height:35px`, 1px top divider, `padding-top:10px`: 13px name (ellipsis), `tag-accent` "Verified"                                                                                                                                   |
 
 The title's anchor is stretched over the card (`after:absolute after:inset-0`), so the whole card opens the VDP and the focus ring is drawn on the card. `compact` omits the dealer strip.
 
@@ -382,7 +382,7 @@ Results: `repeat(auto-fill, minmax(258px,1fr))`, `gap:16px`, vehicle cards (§2.
 
 Left: gallery (§2.9), with the photo credit 12px under it — a 13px bold line naming the photographer ("Photographed by Dealers-Drive", "Dealer photos · Reviewed by Dealers-Drive", or both by name when mixed) and a 13px muted line under it (omitted when the car has no photographs; names no photographer while any photograph's credit is unrecorded) · Specifications (`h2` 22px + a 14px-radius white list, rows `padding:12px 16px` on `#efefec` rules, key muted / value 600 tabular) · Dealer description.
 
-Right, sticky under the header: year chip (+ Reserved pill when reserved) · `h1-vdp` · summary · listed date · PriceBlock · **Enquire now** (44px full-width `btn-primary`, with "Requires login…" note; the form opens inline in a 16px-radius card with read-only name and verified mobile — R64/R65/R68) or, when reserved, the Reserved banner + "Browse available cars" · **Save / Saved** full-width secondary · dealer card (`.card`, 20px padding: 42px logo tile, name, location, `VERIFIED DEALER` chip, "View dealership →") · trust note.
+Right, sticky under the header: year chip (+ Reserved pill when reserved) · `h1-vdp` · summary · listed date · PriceBlock · **Enquire now** (44px full-width `btn-primary`, with "Requires login…" note; the form opens inline in a 16px-radius card with read-only name and verified mobile — R64/R65/R68) or, when reserved, the Reserved banner + "Browse available cars" · **Save / Saved** full-width secondary · dealer card (`.card`, 20px padding: name, location, `VERIFIED DEALER` chip, "View dealership →") · trust note.
 
 The prototype's Call and EMI actions are not part of production and are not drawn. Mobile: single column with the sticky bottom enquiry bar.
 
@@ -393,7 +393,7 @@ The prototype's Call and EMI actions are not part of production and are not draw
 **Directory card (R81):** fixed height **330px**, 16px radius, `--shadow-sm`, hover border `#c9c7c1` + `--shadow-md`.
 
 - 112px cover (`coverUrl` or a named image slot) with a white "YARD VERIFIED" pill top-right when verified.
-- 48px white logo tile straddling the cover edge (`margin-top:-24px`), `VERIFIED DEALER` chip on the same row.
+- `VERIFIED DEALER` chip above the name, 14px below the cover. Dealerships carry no initials or logo tile.
 - Name 17px/800 (`line-clamp-2`), "town, state · n years" 12px muted.
 - Up to three service tags (first `tag-accent`, rest `tag-neutral`).
 - Footer on a 1px top divider: "n cars listed" 13px/700 tabular, "from ₹x" right-aligned.
@@ -404,7 +404,7 @@ The prototype's Call and EMI actions are not part of production and are not draw
 
 ### 3.6 Dealer portfolio (`/dealers/[slug]`)
 
-1. **Header** (white, bottom divider): back ghost · identity row: 78px logo tile (60px mobile), `h1-portfolio` name + `VERIFIED DEALER` chip, the **tagline** (16px/500, R25), address · 440px `.blueprint` cover (340 / 240 at smaller widths).
+1. **Header** (white, bottom divider): back ghost · identity block (no logo tile): `h1-portfolio` name + `VERIFIED DEALER` chip, the **tagline** (16px/500, R25), address · 440px `.blueprint` cover (340 / 240 at smaller widths).
 2. **Info row** — `repeat(auto-fit, minmax(260px,1fr))`, `gap:16px`: Dealership details `.card` (18px padding, key/value rows on `#efefec` rules, service tags) and the Location card (map + Get directions).
 3. **Inventory** — grid `234px 1fr`: sticky filter rail (as §3.3, per-dealer counts) and the results (`h2` "Inventory" + count, sort, applied chips, vehicle cards, pagination).
 

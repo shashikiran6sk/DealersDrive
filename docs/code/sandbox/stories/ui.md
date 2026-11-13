@@ -237,8 +237,9 @@ It can render as a section or article without losing its marks.
 
 ### `export const IdentityTiles: Story =`
 
-`Avatar` and `LogoTile` at the sizes the product actually uses — 20 and 22
-for avatars, 42 and 44 for logo tiles — with one, two and three letters.
+`Avatar` at the sizes the product actually uses — 20 and 22 — with one, two
+and three letters. Avatars are for people only; dealerships carry no initials
+mark, so `LogoTile` was removed.
 Three letters at 20px is where the initials overflow if the font scaling
 is wrong.
 

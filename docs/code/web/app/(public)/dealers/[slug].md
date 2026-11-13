@@ -129,13 +129,14 @@ nothing in it is a page a search engine should not send anybody to.
 
 ── 1. Header block ───────────────────────────────────────────────
 
-### `max-md:self-center` on the name row
+### `<div className="mx-auto flex max-w-[1280px] flex-col px-6 pb-[20px] max-md:px-4 max-md:[overflow-wrap:anywhere]">`
 
-**R118.** On a phone the header is a two-column grid with the 60px logo tile
-beside the name. The grid aligns to the top (`items-start`) so the address and
-tagline rows below line up with each other, which left a one-line name stuck
-to the top edge of the tile. The name row alone is centred on the tile, and a
-name that wraps still centres as a block.
+The identity block is the name, the plate, the tagline and the address. There
+is no logo tile: the initials tile it held is gone everywhere, for the reason in
+[`DirectoryCard`](../../../components/dealers/dealer-card.md). On a phone the
+address comes before the tagline (`max-md:order-2` / `order-3`), the order the
+old two-column grid gave them (**R118**), so a buyer sees where the yard is
+before the pitch.
 
 ### `{dealer.tagline ?`
 

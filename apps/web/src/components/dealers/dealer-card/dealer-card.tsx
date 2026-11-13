@@ -2,12 +2,12 @@ import type { DealerCard as DealerCardDto } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { LinkPendingIndicator } from '@/components/ui/link-pending';
-import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
+import { Plate, Tag } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
 import { DealerCardCover } from './dealer-card-cover';
 import { DealerCardFooter } from './dealer-card-footer';
-import { CARD_HEIGHT, DEALER_CARD_TEXT, SERVICES_SHOWN, TILE_SIZE } from './dealer-card.constants';
+import { CARD_HEIGHT, DEALER_CARD_TEXT, SERVICES_SHOWN } from './dealer-card.constants';
 
 export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
   return (
@@ -21,18 +21,12 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
     >
       <DealerCardCover dealer={dealer} />
 
-      <div className="flex min-h-0 flex-1 flex-col px-[18px] pb-[14px]">
-        <div
-          className="relative mb-[10px] flex items-end justify-between gap-2"
-          style={{ marginTop: -TILE_SIZE / 2 }}
-        >
-          <LogoTile initials={dealer.initials} size={TILE_SIZE} className="bg-white shadow-sm" />
-          {dealer.isVerified ? (
-            <Plate size="chip" className="bg-white">
-              {DEALER_CARD_TEXT.verifiedDealer}
-            </Plate>
-          ) : null}
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col px-[18px] pt-[14px] pb-[14px]">
+        {dealer.isVerified ? (
+          <Plate size="chip" className="mb-[8px] self-start bg-white">
+            {DEALER_CARD_TEXT.verifiedDealer}
+          </Plate>
+        ) : null}
 
         <h3 className="line-clamp-2 font-heading text-[17px] font-extrabold leading-[1.25] tracking-[-0.02em]">
           <Link
