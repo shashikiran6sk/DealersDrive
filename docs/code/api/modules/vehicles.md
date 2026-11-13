@@ -237,3 +237,16 @@ dealer's: it is in their inventory and they can edit or submit it themselves.
 
 Only vehicles this member created. The dealer's own inventory is never shown to
 Sales — assisting with onboarding is not a licence to read a business's stock.
+
+## `apps/api/src/modules/vehicles/submission-gate.ts`
+
+### `export function createSubmissionGate(config)`
+
+What a submission needs beyond complete details, run inside the submit
+transaction after the listing is locked: with `feature.dealerPhotos` on, a photo
+plan and — for the dealer's own plan — all ten standard photographs. Dealer
+submissions only; a Sales Representative is Dealers-Drive staff at the yard.
+Injected — `OPEN_GATE` is the default — so the service and its unit tests
+construct without configuration, and the flag off is exactly the previous
+behaviour. Because it runs before `claimedAt` is set and before `transition()`,
+a refusal leaves the draft untouched. It is the hook listing credits attach to.

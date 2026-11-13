@@ -19,6 +19,7 @@ import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import type { VehiclesService } from '../vehicles/vehicles.facade.js';
 import type { VehicleImagesService } from '../vehicle-images/vehicle-images.facade.js';
+import type { DealerPhotosService } from '../dealer-photos/dealer-photos.facade.js';
 import {
   LISTING_NOT_FOUND,
   REACTIVATION_NOT_FOUND,
@@ -56,6 +57,7 @@ export interface ModerationDeps {
   audit: AuditService;
   vehicles: Pick<VehiclesService, 'adminUpdate'>;
   images: Pick<VehicleImagesService, 'images' | 'minimum'>;
+  dealerPhotos?: Pick<DealerPhotosService, 'adminSubmitted'>;
 }
 
 function notFound(): NotFoundError {
@@ -66,16 +68,28 @@ function reactivationNotFound(): NotFoundError {
   return new NotFoundError(REACTIVATION_NOT_FOUND, { code: 'REACTIVATION_NOT_FOUND' });
 }
 
-export function createModerationService({ prisma, repo, audit, images, vehicles }: ModerationDeps) {
+export function createModerationService({
+  prisma,
+  repo,
+  audit,
+  images,
+  vehicles,
+  dealerPhotos,
+}: ModerationDeps) {
   async function detail(listingId: string, viewer?: AdminPrincipal): Promise<AdminListingDetail> {
     const listing = await repo.detail(listingId);
     if (!listing) throw notFound();
-    const [history, gallery, dealerPoliciesAccepted] = await Promise.all([
+    const [history, gallery, dealerPoliciesAccepted, submitted] = await Promise.all([
       repo.history(listingId, Object.keys(HISTORY_LABELS)),
       images.images(listing.vehicleId, listing.status),
       !legalEnabled() || hasDealerAcceptance(prisma, listing.dealerId),
+      dealerPhotos?.adminSubmitted({
+        vehicleId: listing.vehicleId,
+        photoPlan: listing.photoPlan,
+        registrationNumber: listing.vehicle.registrationNumber,
+      }),
     ]);
-    return toAdminListingDetail(
+    const detailed = toAdminListingDetail(
       listing,
       history,
       gallery,
@@ -83,6 +97,7 @@ export function createModerationService({ prisma, repo, audit, images, vehicles 
       viewer?.memberId ?? null,
       dealerPoliciesAccepted,
     );
+    return submitted ? { ...detailed, submittedPhotos: submitted } : detailed;
   }
 
   async function assertNotAssistant(tx: Tx, listing: Listing, admin: AdminPrincipal) {

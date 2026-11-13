@@ -45,6 +45,7 @@ import { createModerationRouter } from './modules/moderation/moderation.routes.j
 import { createSearchRouter } from './modules/search/search.routes.js';
 import { createVehicleImagesRouter } from './modules/vehicle-images/vehicle-images.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
+import { createDealerPhotosRouter } from './modules/dealer-photos/dealer-photos.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
 export function createRoutes(container: Container): Router {
@@ -135,6 +136,7 @@ export function createRoutes(container: Container): Router {
   dealer.use(dealerLegalGate(legal));
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
+  dealer.use(createDealerPhotosRouter(container.dealerPhotos));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
   dealer.use(createTeamRouter(container.team));
   v1.use('/dealer', dealer);

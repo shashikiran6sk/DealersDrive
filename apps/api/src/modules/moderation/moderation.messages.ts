@@ -14,6 +14,7 @@ export const HISTORY_LABELS: Record<string, string> = {
   'listing.reactivation_approved': 'Reactivation approved',
   'listing.reactivation_rejected': 'Reactivation declined',
   'listing.removed': 'Removed from the marketplace',
+  'listing.photo_plan_set': 'Photo plan chosen',
 };
 
 export const ACTOR_LABELS: Record<string, string> = {

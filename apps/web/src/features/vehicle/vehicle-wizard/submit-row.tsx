@@ -8,7 +8,7 @@ import { submitVehicleAction } from '@/features/vehicle/actions';
 import { useNavigationSafeFormAction } from '@/lib/use-navigation-safe-action';
 
 import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
-import type { WizardState } from './vehicle-wizard.types';
+import type { WizardState, WizardStep } from './vehicle-wizard.types';
 import { editPath } from './utils';
 import { useWizardScope } from './wizard-scope';
 
@@ -34,10 +34,14 @@ export function SubmitRow({
   vehicle,
   cancelHref,
   mayPublish = true,
+  backStep = 'pricing',
+  blocked = null,
 }: {
   vehicle: DealerVehicle;
   cancelHref: string;
   mayPublish?: boolean;
+  backStep?: WizardStep;
+  blocked?: string | null;
 }) {
   const [state, onSubmit, pending] = useNavigationSafeFormAction(submitVehicleAction, EMPTY);
   const scope = useWizardScope();
@@ -51,7 +55,7 @@ export function SubmitRow({
       ) : null}
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
       <div className="flex flex-wrap items-center gap-[9px] border-t border-(--color-divider) pt-[16px] max-[480px]:[&>*]:w-full">
-        <ButtonLink href={editPath(vehicle.id, 'pricing', '', scope)} variant="secondary">
+        <ButtonLink href={editPath(vehicle.id, backStep, '', scope)} variant="secondary">
           {VEHICLE_WIZARD_TEXT.back}
         </ButtonLink>
         <ButtonLink href={cancelHref} variant="secondary" className="ml-auto max-[480px]:ml-0">
@@ -60,7 +64,7 @@ export function SubmitRow({
         {mayPublish ? (
           <SubmitButton
             label={resubmit ? VEHICLE_WIZARD_TEXT.resubmit : VEHICLE_WIZARD_TEXT.submit}
-            disabled={!vehicle.listing.canSubmit}
+            disabled={!vehicle.listing.canSubmit || blocked !== null}
             pending={pending}
           />
         ) : null}
@@ -71,9 +75,11 @@ export function SubmitRow({
             ? VEHICLE_WIZARD_TEXT.submitAfterApproval
             : VEHICLE_WIZARD_TEXT.submitByManager}
         </p>
-      ) : vehicle.listing.canSubmit ? null : (
+      ) : !vehicle.listing.canSubmit ? (
         <p className="text-[12px] ink-subtle">{VEHICLE_WIZARD_TEXT.submitBlocked}</p>
-      )}
+      ) : blocked ? (
+        <p className="text-[12px] ink-subtle">{blocked}</p>
+      ) : null}
     </form>
   );
 }

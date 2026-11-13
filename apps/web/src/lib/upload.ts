@@ -1,4 +1,4 @@
-import type { PresignResponse } from '@dealers-drive/contracts';
+import { ProblemDetails, type PresignResponse } from '@dealers-drive/contracts';
 
 import { readJson } from './fetch-json';
 
@@ -47,4 +47,10 @@ export async function putToStorage(signed: PresignResponse, file: File): Promise
 
 export function failureMessage(caught: unknown, fallback: string): string {
   return caught instanceof UploadFailure ? caught.message : fallback;
+}
+
+export async function problemMessage(response: Response, fallback: string): Promise<string> {
+  const body: unknown = await response.json().catch(() => null);
+  const problem = ProblemDetails.safeParse(body);
+  return problem.success && problem.data.detail ? problem.data.detail : fallback;
 }

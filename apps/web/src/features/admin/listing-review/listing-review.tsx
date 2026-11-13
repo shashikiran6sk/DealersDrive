@@ -9,6 +9,7 @@ import { AvailabilityPanel } from './availability-panel';
 import { CheckRow } from './check-row';
 import { DecisionPanel } from './decision-panel';
 import { PhotographyPanel } from './photography-panel';
+import { SubmittedPhotosPanel } from './submitted-photos-panel';
 import { LISTING_REVIEW_TEXT } from './listing-review.constants';
 import { ReviewSection } from './review-section';
 
@@ -118,6 +119,9 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
           <AvailabilityPanel detail={detail} />
           <DecisionPanel detail={detail} />
 
+          {detail.submittedPhotos?.plan || detail.submittedPhotos?.items.length ? (
+            <SubmittedPhotosPanel listingId={detail.listing.id} photos={detail.submittedPhotos} />
+          ) : null}
           <PhotographyPanel detail={detail} />
 
           <section aria-labelledby="checklist-heading" className="card gap-[4px] bg-white p-4">
