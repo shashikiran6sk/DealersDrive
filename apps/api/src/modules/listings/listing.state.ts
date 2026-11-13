@@ -1,4 +1,5 @@
 import { requireDealerAcceptance } from '../legal/legal.facade.js';
+import { settleListingCredits } from '../billing/billing.facade.js';
 import type { Listing, ListingStatus, WithdrawalReason } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
@@ -237,6 +238,13 @@ export async function transition(
 
   if (to === 'PENDING_REVIEW') {
     await tx.listingCheck.deleteMany({ where: { listingId: listing.id } });
+  }
+
+  if (event === 'approve' || event === 'reject') {
+    await settleListingCredits(tx, listing, event === 'approve' ? 'consume' : 'release', {
+      type: actor.type,
+      id: actor.id,
+    });
   }
 
   if (REACTIVATION_SOURCES.includes(listing.status)) {

@@ -170,7 +170,7 @@ const DRAIN_TICKS = 40;
 export async function createAuthHarness(
   google = createFakeGoogle(),
   mailer: RecordingMailer = createRecordingMailer(),
-  overrides: Pick<ContainerOverrides, 'phoneOtp' | 'cache'> = {},
+  overrides: Pick<ContainerOverrides, 'phoneOtp' | 'cache' | 'payments'> = {},
 ): Promise<AuthHarness> {
   /*
    * No Maps lookup, for the same reason the OAuth provider above is a fake:

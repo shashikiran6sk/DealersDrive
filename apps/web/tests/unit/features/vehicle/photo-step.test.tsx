@@ -6,7 +6,7 @@ import { VehicleWizard } from '@/features/vehicle/vehicle-wizard';
 import { stepAfter, stepBefore, stepOfField } from '@/features/vehicle/vehicle-wizard/utils';
 import { submissionBlocker, submissionNeeds } from '@/features/vehicle/vehicle-wizard/submission';
 
-import { VEHICLE_ID, photos, vehicle } from './fixtures';
+import { VEHICLE_ID, billing, photos, vehicle } from './fixtures';
 
 describe('the Photos step in the wizard', () => {
   it('slots in after Pricing only when the feature is on', () => {
@@ -18,7 +18,7 @@ describe('the Photos step in the wizard', () => {
   });
 
   it('shows Photos in the stepper and the step itself when enabled', () => {
-    render(<VehicleWizard step="photos" vehicle={vehicle()} photos={photos()} />);
+    render(<VehicleWizard step="photos" vehicle={vehicle()} photos={photos()} billing={null} />);
     expect(screen.getByText('Photos')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
       'How will the car be photographed?',
@@ -33,13 +33,14 @@ describe('the Photos step in the wizard', () => {
 });
 
 describe('choosing who photographs the car', () => {
-  it('offers the photoshoot only where the district has it', () => {
+  it('offers the photoshoot only where the district has it, and shows each plan’s credits', () => {
     const options = planOptions(
       photos({ photoshoot: { available: false, district: 'Krishnagiri' } }),
+      billing(),
     );
-    expect(options.map((option) => [option.plan, option.available])).toEqual([
-      ['DEALER', true],
-      ['DEALERS_DRIVE', false],
+    expect(options.map((option) => [option.plan, option.available, option.credits])).toEqual([
+      ['DEALER', true, 1],
+      ['DEALERS_DRIVE', false, 2],
     ]);
     expect(options[1]?.note).toBe('Not yet available in Krishnagiri');
   });
@@ -49,6 +50,7 @@ describe('choosing who photographs the car', () => {
       <PhotoStep
         vehicleId={VEHICLE_ID}
         photos={photos({ plan: 'DEALER' }, 3)}
+        billing={null}
         backHref="/back"
         nextHref="/next"
       />,
@@ -63,6 +65,7 @@ describe('choosing who photographs the car', () => {
       <PhotoStep
         vehicleId={VEHICLE_ID}
         photos={photos({ plan: 'DEALERS_DRIVE', ready: true })}
+        billing={null}
         backHref="/back"
         nextHref="/next"
       />,
@@ -73,22 +76,47 @@ describe('choosing who photographs the car', () => {
 });
 
 describe('what stands between a car and Submit', () => {
-  it('asks for the photographs until they are ready', () => {
-    expect(submissionBlocker(submissionNeeds(photos()))).toBe('Finish the Photos step to submit.');
-    expect(submissionBlocker(submissionNeeds(photos({ plan: 'DEALER', ready: true })))).toBeNull();
+  it('asks for photographs first, then for the credits that are short', () => {
+    const none = submissionNeeds(vehicle(), photos(), billing());
+    expect(submissionBlocker(none)).toBe('Finish the Photos step to submit.');
+
+    const shortOfCredits = submissionNeeds(
+      vehicle(),
+      photos({ plan: 'DEALERS_DRIVE', ready: true }),
+      billing({ available: 1 }),
+    );
+    expect(shortOfCredits).toMatchObject({ creditsNeeded: 2, creditsReady: false });
+    expect(submissionBlocker(shortOfCredits)).toBe('Buy 1 credit more to submit.');
   });
 
-  it('asks for nothing while the feature is off', () => {
-    expect(submissionBlocker(submissionNeeds(photos({ enabled: false })))).toBeNull();
-    expect(submissionBlocker(submissionNeeds(null))).toBeNull();
+  it('counts credits a resubmission already holds', () => {
+    const held = submissionNeeds(
+      vehicle({ status: 'CHANGES_REQUESTED', creditsHeld: 1 }),
+      photos({ plan: 'DEALER', ready: true }),
+      billing({ available: 0, held: 1, balance: 1 }),
+    );
+    expect(held).toMatchObject({ creditsNeeded: 0, creditsReady: true });
+    expect(submissionBlocker(held)).toBeNull();
   });
 
-  it('disables Submit on the Review step until the photographs are in', () => {
+  it('asks for nothing while both features are off', () => {
+    const off = submissionNeeds(vehicle(), photos({ enabled: false }), billing({ enabled: false }));
+    expect(submissionBlocker(off)).toBeNull();
+  });
+
+  it('disables Submit and offers to buy credits on the Review step', () => {
     render(
-      <VehicleWizard step="review" vehicle={vehicle()} photos={photos({ plan: 'DEALER' }, 6)} />,
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle()}
+        photos={photos({ plan: 'DEALER', ready: true, missing: [] }, 10)}
+        billing={billing()}
+        packs={{ data: [], gstPercent: 18, taxNote: '', purchasable: true }}
+      />,
     );
     expect(screen.getByRole('button', { name: 'Submit for review' })).toBeDisabled();
-    expect(screen.getByRole('link', { name: 'Go to Photos' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Buy credits' })).toBeInTheDocument();
+    expect(screen.getByText('Buy 1 credit more to submit.')).toBeInTheDocument();
   });
 });
 

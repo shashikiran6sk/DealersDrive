@@ -19,6 +19,8 @@ const NOT_YET_BUILT = new Set(['/dealer/billing']);
 
 export const LANDED_NAV: NavItem[] = DEALER_NAV.filter((item) => !NOT_YET_BUILT.has(item.href));
 
+export const BILLING_NAV_ITEM: NavItem = { href: '/dealer/billing', label: 'Billing & credits' };
+
 export const PHOTOS_NAV_ITEM: NavItem = { href: '/dealer/photos', label: 'Photos' };
 
 export const DOCUMENTS_NAV_ITEM: NavItem = { href: '/dealer/documents', label: 'Documents' };

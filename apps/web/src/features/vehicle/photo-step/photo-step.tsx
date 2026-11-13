@@ -21,7 +21,13 @@ import { planOptions } from './plan-options';
 import { ShotUploadCard } from './shot-upload-card';
 import { choosePlan, removePhoto, uploadPhoto } from './utils';
 
-export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: PhotoStepProps) {
+export function PhotoStep({
+  vehicleId,
+  photos: initial,
+  billing,
+  backHref,
+  nextHref,
+}: PhotoStepProps) {
   const [photos, setPhotos] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ key: string; message: string } | null>(null);
@@ -55,9 +61,10 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
       {photos.canEdit ? null : <Banner tone="warn">{PHOTO_STEP_TEXT.locked}</Banner>}
 
       <PhotoPlanChoice
-        options={planOptions(photos)}
+        options={planOptions(photos, billing)}
         selected={photos.plan}
         disabled={!photos.canEdit || busy !== null}
+        creditPrice={billing?.enabled ? billing.creditPriceLabel : null}
         onChoose={choose}
       />
 

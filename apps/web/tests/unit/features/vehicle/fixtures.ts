@@ -1,4 +1,4 @@
-import type { DealerVehicle, DealerVehiclePhotos } from '@dealers-drive/contracts';
+import type { BillingSummary, DealerVehicle, DealerVehiclePhotos } from '@dealers-drive/contracts';
 import { STANDARD_PHOTO_SLOTS, PHOTO_SLOT_LABELS } from '@dealers-drive/contracts';
 
 export const VEHICLE_ID = '22222222-2222-4222-8222-222222222222';
@@ -83,6 +83,19 @@ export function photos(
     extrasMax: 6,
     missing: STANDARD_PHOTO_SLOTS.slice(uploaded),
     ready: false,
+    ...overrides,
+  };
+}
+
+export function billing(overrides: Partial<BillingSummary> = {}): BillingSummary {
+  return {
+    enabled: true,
+    balance: 0,
+    held: 0,
+    available: 0,
+    costs: { DEALER: 1, DEALERS_DRIVE: 2, UNPLANNED: 1 },
+    creditPriceLabel: '₹500',
+    canPurchase: true,
     ...overrides,
   };
 }

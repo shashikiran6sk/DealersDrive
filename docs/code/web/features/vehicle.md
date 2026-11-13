@@ -131,13 +131,15 @@ it well above what StudioCar needs.
 
 ## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
 
-### `export function submissionNeeds(vehicle, photos)`
+### `export function submissionNeeds(vehicle, photos, billing)`
 
 The Review step's checklist and the Submit button's disabled reason come from one
-computation, so they cannot disagree. The API enforces the same rule; this only
+computation, so they cannot disagree. Credits needed are net of what the listing
+already holds (`DealerListing.creditsHeld`), so a resubmission after a request for
+changes is not asked to pay twice. The API enforces the same rules; this only
 saves the dealer a round trip.
 
 ## `apps/web/src/app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`
 
-The photos read is optional: a failure — or an API a release behind the web app —
-renders the wizard as it was, never an error page.
+The photos, billing summary and packs are optional reads: a failure — or an API a
+release behind the web app — renders the wizard as it was, never an error page.

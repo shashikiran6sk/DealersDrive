@@ -192,3 +192,13 @@ transaction that makes them, so an email can never describe a decision that was
 rolled back, and a decision can never lose its email. Selling, reserving and
 withdrawing publish nothing: nobody is emailed about them. Reactivation requests
 and decisions publish from `listing-reactivation.ts`, for the same reason.
+
+## `apps/api/src/modules/listings/listing.state.ts` — listing credits
+
+### `transition()` settles credits
+
+`approve` consumes and `reject` releases whatever the listing holds
+(`settleListingCredits` in `modules/billing`), in the same transaction as the
+status change. It is here, at the one place a status changes, so no path into
+`ACTIVE` or `REJECTED` can forget it. Holding happens before `transition()`, in
+the submission gate, because the cost depends on configuration and the photo plan.

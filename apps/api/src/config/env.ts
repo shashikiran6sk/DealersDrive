@@ -116,6 +116,12 @@ const envSchema = z.object({
 
   CLIENT_IP_FORWARD_SECRET: optional(z.string().min(32)),
 
+  PAYMENTS_DRIVER: z.enum(['none', 'fake', 'razorpay']).default(isProduction ? 'none' : 'fake'),
+  RAZORPAY_KEY_ID: optional(z.string().regex(/^rzp_(test|live)_[A-Za-z0-9]+$/)),
+  RAZORPAY_KEY_SECRET: optional(z.string().min(8)),
+  RAZORPAY_WEBHOOK_SECRET: optional(z.string().min(8)),
+  RAZORPAY_API_BASE: z.string().url().default('https://api.razorpay.com'),
+
   CACHE_DRIVER: z.enum(['memory', 'postgres']).default(isProduction ? 'postgres' : 'memory'),
 
   CONFIG_VERSION_POLL_MS: z.coerce.number().int().positive().default(10_000),
@@ -224,6 +230,18 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
+  if (value.PAYMENTS_DRIVER === 'razorpay') {
+    if (!value.RAZORPAY_KEY_ID) {
+      require('RAZORPAY_KEY_ID', 'is required when PAYMENTS_DRIVER=razorpay.');
+    }
+    if (!value.RAZORPAY_KEY_SECRET) {
+      require('RAZORPAY_KEY_SECRET', 'is required when PAYMENTS_DRIVER=razorpay.');
+    }
+    if (!value.RAZORPAY_WEBHOOK_SECRET) {
+      require('RAZORPAY_WEBHOOK_SECRET', 'is required when PAYMENTS_DRIVER=razorpay.');
+    }
+  }
+
   if (value.PHONE_OTP_DRIVER === 'msg91') {
     if (!value.MSG91_AUTH_KEY) {
       require('MSG91_AUTH_KEY', 'is required when PHONE_OTP_DRIVER=msg91.');
@@ -273,6 +291,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.CACHE_DRIVER === 'memory') {
     require('CACHE_DRIVER', 'must be `postgres` in production — an in-process counter behind N tasks permits N times every rate limit, silently.');
+  }
+
+  if (value.PAYMENTS_DRIVER === 'fake') {
+    require('PAYMENTS_DRIVER', 'must be `razorpay` or `none` in production — `fake` accepts a payment nobody made.');
   }
 
   if (value.PHONE_OTP_DRIVER === 'fake') {
