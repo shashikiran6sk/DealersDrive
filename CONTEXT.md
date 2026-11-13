@@ -1254,6 +1254,25 @@ wanted of it.
 
 ---
 
+## 8f. A dealer's photograph and a published photograph are different tables on purpose (R119, R120)
+
+R119 lets a dealer upload photographs again, and the obvious implementation —
+put them in `vehicle_media` with a flag — would have been one forgotten `WHERE`
+away from publishing an unchecked phone photo. Every public read (the search
+mapper, the vehicle page, the media route) reads `vehicle_media`. So raw uploads
+live in `vehicle_submission_photos`, and their `media` rows carry owner type
+`VEHICLE_SUBMISSION`, which `isPubliclyServable()` refuses because it does not
+name it. Default-deny means a new public read path is safe without anyone
+remembering this paragraph. An integration test asserts a raw photograph 404s
+publicly even after its car is live; keep it.
+
+Credits (R120) have the opposite trap. The cost of a car is configuration, and
+it is tempting to compute it again at approval. Don't: approval and rejection
+settle `listings.creditsHeld` — what _this_ listing holds — never the configured
+cost. That is what makes the rollout safe (a car submitted before credits holds
+0, so its approval charges 0), and what makes a price change harmless to cars
+already in review. `moveCredits()` remains the only writer of a balance (rule 4).
+
 ## 9. Where to look when you are stuck
 
 | Question                               | Answer lives in                                   |

@@ -1609,6 +1609,8 @@ review it in.
 
 # TIER 8 — Billing & credits
 
+⚠️ **Landed by R120** — revised: credits are integer listing credits held at submit, consumed on approval, released on rejection; the cost depends on the photo plan (R119). F053 (invoices) is not built. See R120.
+
 ### F050 — Credit ledger & balance
 
 The append-only credit ledger and the derived balance. Credits gate RC lookups, reports and listing submissions, so this must exist before any of them.
@@ -1853,6 +1855,8 @@ KMs, owners, colour, RTO, insurance, location, seats, airbags, features. Eight r
 
 ⛔ **Withdrawn by R45.** Dealers never upload listing photographs; admins upload the processed StudioCar images (F035 as reinterpreted, F070).
 
+↩ **Partly reinstated by R119**, in a different shape: a dealer may upload their own photographs to the ten-shot standard, but only as raw material for the review team — never to the public gallery. See R119.
+
 Drag, drop, reorder, delete, and the minimum-photo gate.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F033, F034, F035, F029
@@ -1863,6 +1867,8 @@ Drag, drop, reorder, delete, and the minimum-photo gate.
 ### F063 — Vehicle wizard shell & step routing
 
 ⚠️ **Revised by R45/R46** — Registration → Basics → Details → Pricing → Review. No Photos step, no lookup.
+
+⚠️ **Revised by R119** — with `feature.dealerPhotos` on, a Photos step sits between Pricing and Review.
 
 The frame that sequences F059 → F060 → F061 → F062 → review, gated by the API's completeness answer so the front end can never be more permissive than the back end.
 
@@ -7067,3 +7073,54 @@ survives would otherwise show one error page per cached URL.
   - the second request sends no session cookie
   - the old shape from the API itself still throws, naming the field
   - an uncached read is not retried
+
+## R119 — A dealer may photograph their own car; Dealers-Drive still decides what is published
+
+**Partially revises R45** · reinstates F062 in a new shape · revises F063, F070
+
+R45 made Dealers-Drive the only photographer. That does not scale beyond the
+districts the team can drive to, so a dealer may now photograph the car
+themselves — but **a dealer's photograph is never published as it is**. It is
+raw material.
+
+```
+Dealer enters details → Photos step: choose a plan
+  DEALER        → ten photographs to the Dealers-Drive standard (+ up to six extras)
+  DEALERS_DRIVE → only where the district has photographyAvailable (today, Vellore)
+→ Submit → Review team downloads the dealer's set (named as a StudioCar batch)
+  → checks it against the standard → processes it in StudioCar
+  → uploads the finished files through the R45 admin routes with credit DEALER
+  → approves → the public page says the dealer took the photographs
+```
+
+- Raw files live in `vehicle_submission_photos`, not `vehicle_media`, with media
+  owner type `VEHICLE_SUBMISSION`, which the public media route refuses by
+  default. No public read path has to remember to exclude them.
+- One photograph per standard slot (partial unique index); a re-upload replaces.
+- Submission needs a plan, and all ten shots for the `DEALER` plan. Sales
+  Representatives' submissions are not checked: they are Dealers-Drive staff.
+- Behind `feature.dealerPhotos`, shipped off. Off, nothing changes.
+- ⚠️ The seed turned `photographyAvailable` on for every Tamil Nadu district;
+  operations must narrow it to where the team actually shoots.
+
+## R120 — Listing credits and Razorpay
+
+**Lands F050, F051, F052 and F054 (revised), deferred by R47** · F053 stays unbuilt
+
+A credit is the unit a listing is paid in. Submitting **holds** the car's cost;
+approval **consumes** it; rejection **releases** it. A request for changes keeps
+the hold and a resubmission adjusts it to the current photo plan (`HOLD_ADJUST`).
+Settlement lives in `transition()`; the hold is taken by the submission gate.
+
+| Was (baseline spec)                        | Is now                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| one credit per listing                     | `billing.listingCredits` (+ `billing.photoshootCredits` for a photoshoot)                       |
+| packs in a `CreditPack` table              | `billing.creditPacks` platform config, validated on save                                        |
+| verify "never credits — webhook only"      | verify confirms with Razorpay and fulfils; the webhook does the same; one idempotent `fulfil()` |
+| `development.provider.ts`, no real gateway | Razorpay REST adapter (no SDK) + `fake` for development, refused in production                  |
+
+Defaults: dealer photographs 1 credit (₹500), Dealers-Drive photoshoot 2 credits
+(₹1,000), before 18% GST; packs 1/5/10 at ₹500/₹450/₹400 a credit. Behind
+`feature.listingCredits`, shipped off; `PAYMENTS_DRIVER` defaults to `none` in
+production. Listings submitted before the switch hold nothing and are approved
+without a charge.
