@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { BrandLogo } from '@/components/brand-logo';
 import { ConsoleNav, ConsoleTabBar } from '@/components/dealer/console-nav';
 import { MobileNav } from '@/components/layout/mobile-nav';
+import { PageSlot } from '@/components/layout/page-slot';
 import { ButtonLink } from '@/components/ui/button';
 import { SignOutButton } from '@/features/auth/sign-out';
 import {
@@ -55,7 +56,7 @@ export default async function SalesLayout({ children }: { children: ReactNode })
           <SignOutButton scope="admin" />
         </header>
         <main className="min-w-0 flex-1 pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
-          {children}
+          <PageSlot>{children}</PageSlot>
         </main>
       </div>
 

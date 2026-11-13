@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { PageSlot } from '@/components/layout/page-slot';
+
 import { redirect } from 'next/navigation';
 
 import { MobileNav } from '@/components/layout/mobile-nav';
@@ -71,7 +73,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </header>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1">
+          <PageSlot>{children}</PageSlot>
+        </main>
       </div>
     </div>
   );

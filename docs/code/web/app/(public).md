@@ -110,6 +110,12 @@ A Suspense boundary above a page streams the layout before the page's data
 arrives, and a `notFound()` or a failure after that is answered 200. See
 `docs/errors.md` §3.
 
+Measured again for the #418 hydration fix: a plain `<Suspense>` around the page
+in `PublicShell` turned `/car/…`, `/dealers/…` and `/used-cars/…` misses from
+404 into 200, even with `htmlLimitedBots` making every response wait for the
+whole page. The fix for that error is a keyed Fragment instead; see
+[`page-slot`](../components/layout/page-slot.md).
+
 ### Hero search stacking
 
 The animated search wrapper has a positioned z-index above the category
