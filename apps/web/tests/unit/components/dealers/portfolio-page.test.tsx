@@ -150,13 +150,18 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
   });
 
-  /** R118 — on a phone the name sits beside the 60px logo tile, centred on it. */
-  it('centres the name on the logo tile on mobile', async () => {
+  /**
+   * No initials tile beside the name. On a phone the address still comes
+   * before the tagline (R118's order), now by flex order rather than grid rows.
+   */
+  it('shows no initials tile and puts the address before the tagline on mobile', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params, searchParams }));
 
-    const row = screen.getByRole('heading', { level: 1 }).parentElement;
-    expect(row).toHaveClass('max-md:col-start-2', 'max-md:row-start-1', 'max-md:self-center');
+    expect(screen.queryByText(DEALER.initials)).toBeNull();
+    expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toHaveClass(
+      'max-md:order-2',
+    );
   });
 
   /**

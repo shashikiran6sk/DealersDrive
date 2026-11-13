@@ -34,33 +34,25 @@ export function DealerSuggestionRow({
           'border-l-[3px] border-l-(--color-accent) bg-(--color-accent-100) pl-[9px]',
       )}
     >
-      <span className="flex min-w-0 items-center gap-[10px]">
+      <span className="flex min-w-0 flex-col gap-px">
         <span
-          className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[8px] bg-(--color-accent-200) text-[11px] font-extrabold text-(--color-accent-800) font-heading"
-          aria-hidden="true"
+          className={cn(
+            'truncate text-[13.5px]',
+            isHighlighted && 'font-semibold text-(--color-accent-800)',
+          )}
         >
-          {item.initials}
+          {item.matchedOn === 'brandName' ? (
+            <HighlightedText text={item.brandName} match={search} />
+          ) : (
+            item.brandName
+          )}
         </span>
-        <span className="flex min-w-0 flex-col gap-px">
-          <span
-            className={cn(
-              'truncate text-[13.5px]',
-              isHighlighted && 'font-semibold text-(--color-accent-800)',
-            )}
-          >
-            {item.matchedOn === 'brandName' ? (
-              <HighlightedText text={item.brandName} match={search} />
-            ) : (
-              item.brandName
-            )}
-          </span>
-          <span className="truncate text-[11px] ink-subtle tnum">
-            {item.matchedOn === 'brandName' ? (
-              item.metaLabel
-            ) : (
-              <HighlightedText text={item.metaLabel} match={search} />
-            )}
-          </span>
+        <span className="truncate text-[11px] ink-subtle tnum">
+          {item.matchedOn === 'brandName' ? (
+            item.metaLabel
+          ) : (
+            <HighlightedText text={item.metaLabel} match={search} />
+          )}
         </span>
       </span>
 

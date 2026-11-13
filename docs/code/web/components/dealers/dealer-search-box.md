@@ -74,7 +74,9 @@ Apply a search term, or clear it. `DirectoryFilters` owns the URL.
 
 ### `export function DealerSuggestionRow(`
 
-One row of the dropdown: monogram, name, the place, and what Enter will do.
+One row of the dropdown: name, the place, and what Enter will do. No
+initials monogram, for the reason in
+[`DirectoryCard`](dealer-card.md).
 
 ### `{item.matchedOn === 'brandName' ?`
 
