@@ -93,11 +93,11 @@ revision · `[⛔]` withdrawn
 > Deferred behind the marketplace core by **R47**. The listing lifecycle lands
 > without a ledger; the credit movements attach to its transitions later.
 
-- [~] F050 — Credit ledger & balance · **landed by R120** · PR2_LINK
-- [~] F051 — Credit packs & purchase orders · **landed by R120**, packs in platform config · PR2_LINK
-- [~] F052 — Payment verification · **landed by R120**, Razorpay · PR2_LINK
+- [~] F050 — Credit ledger & balance · **landed by R120** · [#384](https://github.com/shashikiran6sk/DealersDrive/pull/384)
+- [~] F051 — Credit packs & purchase orders · **landed by R120**, packs in platform config · [#384](https://github.com/shashikiran6sk/DealersDrive/pull/384)
+- [~] F052 — Payment verification · **landed by R120**, Razorpay · [#384](https://github.com/shashikiran6sk/DealersDrive/pull/384)
 - [ ] F053 — Invoices & PDF delivery
-- [~] F054 — Admin credit grants & payments view · **landed by R120**, grant/deduct on the admin dealer page · PR2_LINK
+- [~] F054 — Admin credit grants & payments view · **landed by R120**, grant/deduct on the admin dealer page · [#384](https://github.com/shashikiran6sk/DealersDrive/pull/384)
 
 ## Tier 9 — Vehicle intake
 
@@ -290,7 +290,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R117 — Enquiry and support emails · revises R40/R90/R91/R115 · `EnquiryCreated` now published → dealership owner (buyer's first name, message, inbox link; never the buyer's phone); new `SupportTicketCreated` → support desk (`admin:support:manage`) + customer acknowledgement; new `SupportTicketStatusChanged` (support's status changes only) → customer; customer mail to verified addresses only; ticket deliveries carry no dealership; customer text never in a subject line
 - [x] R118 — The mobile drawer carries the brand, and a dealership with no approved photograph shows the shared yard illustration · revises R97/#299 · `MobileNav` `brand` slot (DD logo + wordmark left, close right, label kept as the hidden dialog name) via a shared `HeaderBrand`; one illustration at `/brand/dealer-directory-cover.svg` (replacing the #289 drawing, so `STANDARD_DEALER_COVER_PATH` is unchanged) on every directory card and behind `PhotoGallery` `fallback` on `/dealers/[slug]` when nothing approved or every photo fails to load (broken URLs skipped once, fallback failure ends at the labelled slot); not in JSON-LD or social images; API and contracts unchanged
 - [~] R119 — A dealer may photograph their own car; Dealers-Drive still decides what is published · partially revises R45, reinstates F062 in a new shape, revises F063/F070 · `feature.dealerPhotos` (off) · Photos step (plan: dealer uploads to the ten-shot standard, or a Dealers-Drive photoshoot where the district has `photographyAvailable`); illustrated guide at `/dealer/photo-guide`; ⚠️ new table `vehicle_submission_photos`, media owner `VEHICLE_SUBMISSION` (never publicly served), `listings.photoPlan`; review screen downloads the set as a StudioCar batch; image credit defaults from the plan · [#383](https://github.com/shashikiran6sk/DealersDrive/pull/383)
-- [~] R120 — Listing credits and Razorpay · lands F050/F051/F052/F054 (revised), deferred by R47 · `feature.listingCredits` (off), `PAYMENTS_DRIVER` (none in production) · ⚠️ new tables `credit_transactions`, `credit_orders`, `payment_webhook_events`, `listings.creditsHeld/creditsSpent`; hold at submit, consume on approve, release on reject; costs and packs in platform config; Razorpay Orders + Checkout + verify + signed webhooks; dealer Billing page, inline Buy credits, admin grant/deduct · stacked on #383 · PR2_LINK
+- [~] R120 — Listing credits and Razorpay · lands F050/F051/F052/F054 (revised), deferred by R47 · `feature.listingCredits` (off), `PAYMENTS_DRIVER` (none in production) · ⚠️ new tables `credit_transactions`, `credit_orders`, `payment_webhook_events`, `listings.creditsHeld/creditsSpent`; hold at submit, consume on approve, release on reject; costs and packs in platform config; Razorpay Orders + Checkout + verify + signed webhooks; dealer Billing page, inline Buy credits, admin grant/deduct · stacked on #383 · [#384](https://github.com/shashikiran6sk/DealersDrive/pull/384)
 
 ---
 
