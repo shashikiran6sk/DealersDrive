@@ -124,7 +124,7 @@ export const RECENT_ROW_ID = 'home-recent';
 
 export const HOME_TEXT = {
   eyebrow: 'Independent dealers · one trusted platform',
-  title: 'Find your next car',
+  title: 'Find your perfect car',
   lede: 'Used cars from independent dealerships across Tamil Nadu. Reviewed before they go live, priced by the dealer.',
   recentTitle: 'Recently added',
   viewAll: 'View all →',

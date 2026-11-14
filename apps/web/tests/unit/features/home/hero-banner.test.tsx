@@ -13,19 +13,19 @@ describe('HeroBanner', () => {
   it('shows the photograph beside the copy when it is given nothing else', () => {
     render(
       <HeroBanner image={{ src: '/images/home-hero.jpg', alt: 'A dealer with customers' }}>
-        <h1>Find your next car</h1>
+        <h1>Find your perfect car</h1>
       </HeroBanner>,
     );
 
     const photo = screen.getByRole('img', { name: 'A dealer with customers' });
     expect(photo).toHaveAttribute('src', '/images/home-hero.jpg');
-    expect(screen.getByRole('heading', { level: 1, name: 'Find your next car' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 1, name: 'Find your perfect car' })).toBeVisible();
   });
 
   it('shows what it is given in place of the photograph', () => {
     render(
       <HeroBanner image={HOME_HERO_IMAGE} aside={<p>Cars listed now</p>}>
-        <h1>Find your next car</h1>
+        <h1>Find your perfect car</h1>
       </HeroBanner>,
     );
 
@@ -36,7 +36,7 @@ describe('HeroBanner', () => {
   it('draws a plain ground, and no broken image, when there is no photograph', () => {
     const { container } = render(
       <HeroBanner image={null}>
-        <h1>Find your next car</h1>
+        <h1>Find your perfect car</h1>
       </HeroBanner>,
     );
 

@@ -99,6 +99,32 @@ The committed default: `apps/web/public/images/home-hero.webp`, a showroom
 scene of a salesperson with an Indian family, supplied for R81. It is what the
 hero shows, when it shows a photograph, whenever no operator has set one.
 
+## `apps/web/src/features/home/hero-keys/hero-keys.tsx`
+
+### `export function HeroKeys({ className })`
+
+The photograph under the category shortcuts: a car key and remote on one ring
+with a red ribbon bow. The hero's left column was text and controls only, and
+read as plain beside the stream; the keys add one warm, coloured object
+without displacing the live stock, which stays the right column.
+
+**Decorative, so `aria-hidden` and `alt=""`.** It says nothing the headline
+does not; a screen reader skips it.
+
+**White ground, no frame.** The file is a studio shot on pure white, so it sits
+on the hero's white ground with no visible edge. It would show as a box on any
+other ground, which is why it lives in the hero and is not a shared component.
+
+**Fixed box height, intrinsic `width`/`height` on the `<img>`.** The box
+reserves 260px (190px below `lg`) before the file arrives, so the stream below
+it on a phone does not jump when it loads.
+
+## `apps/web/src/features/home/hero-keys/hero-keys.constants.ts` — `HERO_KEYS_IMAGE`
+
+`apps/web/public/images/home-keys.webp`, 535×560, twice the largest size it is
+drawn at. Unlike `HOME_HERO_IMAGE` it is not an admin setting: it is part of
+the layout, not a campaign photograph.
+
 ## `apps/web/src/features/home/hero-banner/utils.ts` — `heroImageFrom(configured)`
 
 **The photograph is admin-editable.** Two platform-config keys, edited in
