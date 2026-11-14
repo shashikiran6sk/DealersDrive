@@ -137,6 +137,47 @@ neither attribute — a `sizes` with nothing to choose between is meaningless.
 The stage's `src` still keys everything else — a failed photograph is dropped
 by `url`, whichever candidate the browser chose.
 
+### `usePreloadNeighbours({ photos: shown, index: current, sizes, enabled })` — and `loadedUrl`
+
+**An arrow or a swipe should show a photograph the browser already has.**
+Before this, the next photograph was only requested when the arrow was
+pressed, so every step waited for a download: on the live site about a
+second, during which the counter had already moved and the old photograph
+stayed on the stage.
+
+So once the stage photograph has loaded, the next and the previous one
+(wrapping, as the arrows do) are fetched in the background by
+`preloadPhoto()`, with the stage's own `srcset` and `sizes`. The browser
+picks a candidate for an `Image` by the same rules as for the stage `<img>`,
+so the preload is the very file the stage will ask for, and the stage then
+takes it from the document's list of available images with **no second
+request** — measured in Chromium against a server that sends
+`Cache-Control: no-cache` and an `ETag`, which is what
+`/media/by-media/…` sends: a preloaded photograph is on screen in about 1 ms
+with nothing on the wire, where one that was not preloaded waits for the
+full download. In the sandbox, with every image delayed 800 ms, a step
+went from about 900 ms to about 40 ms.
+
+- **It waits for the stage photograph** (`loadedUrl === mainUrl`), so the
+  two preloads never compete with the image a buyer is looking at — on first
+  load that is the page's largest image. A photograph that finished before
+  hydration fires no `onLoad`, so the same effect that catches a failed one
+  also marks a complete one loaded.
+- **Only the two neighbours are held.** Each `Image` is kept in a ref so the
+  browser keeps its entry, and dropped when it stops being a neighbour.
+  Holding every photograph would bring back the memory pressure F034 removed.
+  `decode()` is asked for, so the swap paints without decoding on the tap.
+- **Nothing is preloaded when the phone asks to save data**
+  (`navigator.connection.saveData`, read by `saveDataRequested()` in
+  `utils.ts`): a buyer who turned on Data Saver gets only what they look at.
+- **The viewer preloads too, at `VIEWER_SIZES`,** while it is open — on a
+  laptop that is a larger file than the page stage's, so it is a separate
+  preload rather than a reuse. On a phone both are the full width and the
+  browser finds the same file.
+
+A preload that fails is ignored; the photograph is dropped by `onError` if it
+fails again when it is actually shown, exactly as before.
+
 ### `variant?: PhotoGalleryVariant` — `'cover'` (default) or `'studio'`
 
 **The car page floats its StudioCar exteriors on the page.** Every vehicle
