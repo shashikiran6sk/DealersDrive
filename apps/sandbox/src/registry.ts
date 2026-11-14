@@ -3655,6 +3655,21 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'layout-pageslot',
   },
+  {
+    id: 'C155',
+    name: 'HeroKeys',
+    source: 'apps/web/src/features/home/hero-keys/hero-keys.tsx',
+    category: 'Layout',
+    ownership: 'Page-specific',
+    purpose:
+      'The decorative photograph under the homepage hero copy: a car key and remote on one ring with a red ribbon bow, on a white ground so it sits on the hero without a frame. Hidden from assistive technology; 260px tall from lg, 190px below, centred in the 560px copy column.',
+    aliases: ['HeroKey', 'KeyPhoto', 'HomeKeys', 'HeroAccent', 'hero-keys'],
+    features: ['Homepage Deck'],
+    props: ['className'],
+    states: ['desktop', 'phone width'],
+    reusable: false,
+    storyId: 'home-herokeys',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {
