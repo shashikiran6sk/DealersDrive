@@ -106,12 +106,18 @@ it alongside `EXTRA`, and up to `DEALER_PHOTO_UNSORTED_MAX` (sixteen: the ten pl
 the extras) may stack. In the admin's download it sorts after the named shots and
 before the extras, oldest first, as `…-11-photo.jpg`.
 
-It arrives by two migrations of its own, `20261115120000_dealer_photos_unsorted`
-and `…120100_dealer_photos_unsorted_index`, not by editing
-`20261111090000_dealer_photos`: databases that had already run that one would
-never see the edit, because Prisma does not re-run an applied migration. Two,
-because Postgres refuses to use an enum value in the transaction that added it,
-and the index predicate names `UNSORTED`.
+The slot list reaches its final shape by migrations added on top of
+`20261111090000_dealer_photos`, never by editing it: a database that has run a
+migration never runs it again, so an edit reaches fresh databases and silently
+misses every other. While this feature was in review the first migration shipped
+with an earlier slot list (`FRONT_THREE_QUARTER`, `REAR_THREE_QUARTER`), and
+development databases ran it. `20261115120000_dealer_photos_unsorted` and its
+index migration add `UNSORTED`; `20261115130000_dealer_photo_slots_guide` then
+rebuilds the type as the guide's list and converts rows by name, so it fits every
+earlier state: `FRONT_THREE_QUARTER` becomes `FRONT_THREE_QUARTER_RIGHT` (photo 1)
+and `REAR_THREE_QUARTER`, which the guide dropped, becomes `UNSORTED` for the
+review team to place. The type is rebuilt rather than altered because Postgres can
+neither drop an enum value nor use one in the transaction that added it.
 
 ## `apps/api/src/modules/dealer-photos/submission-readiness.ts`
 
