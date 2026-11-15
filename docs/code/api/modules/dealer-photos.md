@@ -50,9 +50,51 @@ file is queued for deletion. Up to `DEALER_PHOTO_EXTRAS_MAX` extras.
 
 ### `async adminSubmitted(listing)`
 
-For the review screen, ordered by slot and named as a StudioCar batch —
-`TN23AB1234-01-front-three-quarter.jpg` — so a folder of downloads is already in
-order. The URLs are 15-minute signed reads.
+For the review screen, in the guide's shooting order and named for the car as the
+dealer listed it — `2016-hyundai-creta-sx-01-front-three-quarter-driver-side.jpg`
+(`vehicleFileBase` and `submittedPhotoDownloadName` in contracts) — so a folder of
+downloads is already a StudioCar batch in order. A car with no make or model yet
+falls back to its registration number, so a file is never called `-01-….jpg`. The
+thumbnail URLs are 15-minute signed reads.
+
+### `async adminDownload(admin, listingId, input)`
+
+Downloads are links straight to storage, not bytes through an app: a Vercel
+function answers at most 4.5 MB and a set of ten phone photographs is 25–40 MB,
+and in production `API_BASE_URL` is the public web origin, so an API route the
+browser fetches directly is not reachable either. The answer is a five-minute
+signed read whose `ResponseContentDisposition` saves it under its StudioCar name —
+without that a cross-origin signed URL opens the image in a tab, because browsers
+ignore the `download` attribute across origins.
+
+With `mediaId` it is that one photograph. Without, it is every photograph as one
+zip, `2016-hyundai-creta-sx.zip`, built once (`storedZip`) and kept at
+`archives/submitted-photos/{listingId}/{fingerprint}.zip`. The fingerprint is a
+hash of the archive name and each entry's media id and name, so a replaced photo,
+a new extra or a renamed car is a new archive and an unchanged set is served from
+storage without rebuilding. Every download is audit-logged
+(`listing.submitted_photos_downloaded`) through `recordDetached`, because the
+download is a read and has no transaction of its own to join.
+
+`422 NO_SUBMITTED_PHOTOS` when there is nothing to zip; `404 PHOTO_NOT_FOUND` for
+a `mediaId` that is not one of this listing's photographs, so a moderator cannot
+sign a read for some other object by guessing an id.
+
+### `export function submittedPhotosArchiveKey(listingId, contents)`
+
+Archives are derived data: deleting the `archives/` prefix loses nothing, since
+the next download rebuilds them. An R2 lifecycle rule expiring it after a few
+days keeps it from growing.
+
+## Where the files live
+
+One bucket, private, three prefixes:
+
+| Prefix                                                               | Written by                                                         | What                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------- |
+| `vehicles/{vehicleId}/submitted/{mediaId}/{slot}.{ext}`              | the dealer's browser, by presigned PUT                             | raw photographs — never public          |
+| `vehicles/{vehicleId}/{mediaId}/…` (the existing vehicle-image keys) | the admin's browser, by presigned PUT, in `modules/vehicle-images` | the finished StudioCar files buyers see |
+| `archives/submitted-photos/{listingId}/{fingerprint}.zip`            | the API                                                            | "Download all" zips                     |
 
 ## `apps/api/src/modules/dealer-photos/submission-readiness.ts`
 

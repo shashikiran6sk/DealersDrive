@@ -6,6 +6,8 @@ import {
   STANDARD_PHOTO_SLOTS,
   VehiclePhotoSlot,
   submittedPhotoDownloadName,
+  submittedPhotosArchiveName,
+  vehicleFileBase,
 } from '../../src/index.js';
 
 describe('the Dealers-Drive photo standard', () => {
@@ -15,13 +17,49 @@ describe('the Dealers-Drive photo standard', () => {
     for (const slot of VehiclePhotoSlot.options) expect(PHOTO_SLOT_LABELS[slot]).toBeTruthy();
   });
 
-  it('names downloads as an ordered StudioCar batch', () => {
-    expect(submittedPhotoDownloadName('TN23AB1234', 0, 'FRONT_THREE_QUARTER', 'image/jpeg')).toBe(
-      'TN23AB1234-01-front-three-quarter.jpg',
+  it('follows the confirmed guide: two front three-quarters, seats before the dashboard', () => {
+    expect(STANDARD_PHOTO_SLOTS).toEqual([
+      'FRONT_THREE_QUARTER_RIGHT',
+      'FRONT',
+      'FRONT_THREE_QUARTER_LEFT',
+      'LEFT_SIDE',
+      'REAR',
+      'RIGHT_SIDE',
+      'FRONT_SEATS',
+      'REAR_SEATS',
+      'DASHBOARD',
+      'ODOMETER',
+    ]);
+  });
+
+  it('names files for the car as the dealer listed it, in shooting order', () => {
+    const base = vehicleFileBase({
+      manufacturingYear: 2016,
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX(O)',
+      registrationNumber: 'TN23AB1234',
+    });
+    expect(base).toBe('2016-hyundai-creta-sx-o');
+    expect(submittedPhotoDownloadName(base, 0, 'FRONT_THREE_QUARTER_RIGHT', 'image/jpeg')).toBe(
+      '2016-hyundai-creta-sx-o-01-front-three-quarter-driver-side.jpg',
     );
-    expect(submittedPhotoDownloadName('TN23AB1234', 9, 'ODOMETER', 'image/png')).toBe(
-      'TN23AB1234-10-odometer-reading.png',
+    expect(submittedPhotoDownloadName(base, 9, 'ODOMETER', 'image/png')).toBe(
+      '2016-hyundai-creta-sx-o-10-odometer.png',
     );
+    expect(submittedPhotosArchiveName(base)).toBe('2016-hyundai-creta-sx-o.zip');
+  });
+
+  it('falls back to the registration for a car with no name yet', () => {
+    expect(
+      vehicleFileBase({
+        manufacturingYear: 2016,
+        make: null,
+        model: null,
+        variant: null,
+        registrationNumber: 'TN23AB1234',
+      }),
+    ).toBe('tn23ab1234');
   });
 
   it('takes a slot and a file, never a path or a vehicle', () => {

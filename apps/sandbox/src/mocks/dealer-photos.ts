@@ -1,20 +1,24 @@
 import {
   PHOTO_SLOT_LABELS,
   STANDARD_PHOTO_SLOTS,
+  submittedPhotoDownloadName,
   type AdminSubmittedPhotos,
   type DealerSubmissionPhoto,
   type DealerVehiclePhotos,
 } from '@dealers-drive/contracts';
 
-const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155'];
+function sampleUrl(slot: DealerSubmissionPhoto['slot']): string {
+  const shot = STANDARD_PHOTO_SLOTS.findIndex((standard) => standard === slot);
+  const number = String(shot < 0 ? 1 : shot + 1).padStart(2, '0');
+  return `/photo-guide/shot-${number}-result.webp`;
+}
 
 function photo(index: number, slot: DealerSubmissionPhoto['slot']): DealerSubmissionPhoto {
-  const shade = SHADES[index % SHADES.length] ?? '1f2937';
   return {
     mediaId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
     slot,
     slotLabel: PHOTO_SLOT_LABELS[slot],
-    url: `https://placehold.co/800x600/${shade}/e5e7eb.png?text=${encodeURIComponent(PHOTO_SLOT_LABELS[slot])}`,
+    url: sampleUrl(slot),
     fileName: `IMG_20${String(index)}.jpg`,
     bytes: 2_400_000,
     uploadedAt: '2026-11-11T09:00:00.000Z',
@@ -47,9 +51,10 @@ export function mockSubmitted(overrides: Partial<AdminSubmittedPhotos> = {}): Ad
   return {
     plan: 'DEALER',
     planLabel: 'Dealer uploads the photographs',
+    archiveName: '2016-hyundai-creta-sx.zip',
     items: STANDARD_PHOTO_SLOTS.map((slot, index) => ({
       ...photo(index, slot),
-      downloadName: `TN23AB1234-${String(index + 1).padStart(2, '0')}-${slot.toLowerCase().replaceAll('_', '-')}.jpg`,
+      downloadName: submittedPhotoDownloadName('2016-hyundai-creta-sx', index, slot, 'image/jpeg'),
       mimeType: 'image/jpeg',
     })),
     missing: [],

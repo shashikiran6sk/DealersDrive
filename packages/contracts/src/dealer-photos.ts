@@ -24,20 +24,23 @@ export const PHOTO_PLAN_LABELS: Record<PhotoPlan, string> = {
 };
 
 /**
- * The ten shots of the Dealers-Drive photo standard, in the order a
- * photographer walks round the car, then `EXTRA` for anything else worth
- * showing (engine bay, boot, a scratch the buyer should know about).
+ * The ten shots of the Dealers-Drive photo guide (the confirmed dealer
+ * handbook, `/photo-guide/dealers-drive-photo-guide.pdf`), in shooting order:
+ * one lap round the car for 1–6, then 7–10 inside. `EXTRA` is anything else
+ * worth showing (engine bay, boot, a scratch the buyer should know about).
+ * Right is the driver's side, left the passenger's — Indian cars are
+ * right-hand drive.
  */
 export const VehiclePhotoSlot = z.enum([
-  'FRONT_THREE_QUARTER',
+  'FRONT_THREE_QUARTER_RIGHT',
   'FRONT',
+  'FRONT_THREE_QUARTER_LEFT',
   'LEFT_SIDE',
-  'REAR_THREE_QUARTER',
   'REAR',
   'RIGHT_SIDE',
-  'DASHBOARD',
   'FRONT_SEATS',
   'REAR_SEATS',
+  'DASHBOARD',
   'ODOMETER',
   'EXTRA',
 ]);
@@ -49,21 +52,21 @@ export function isStandardPhotoSlot(slot: VehiclePhotoSlot): slot is StandardPho
   return slot !== 'EXTRA';
 }
 
-/** The ten required shots, in walk-round order. */
+/** The ten required shots, in shooting order. */
 export const STANDARD_PHOTO_SLOTS: readonly StandardPhotoSlot[] =
   VehiclePhotoSlot.options.filter(isStandardPhotoSlot);
 
 export const PHOTO_SLOT_LABELS: Record<VehiclePhotoSlot, string> = {
-  FRONT_THREE_QUARTER: 'Front three-quarter',
-  FRONT: 'Front',
-  LEFT_SIDE: 'Left side',
-  REAR_THREE_QUARTER: 'Rear three-quarter',
-  REAR: 'Rear',
-  RIGHT_SIDE: 'Right side',
-  DASHBOARD: 'Dashboard and steering',
+  FRONT_THREE_QUARTER_RIGHT: 'Front three-quarter · driver side',
+  FRONT: 'Straight front',
+  FRONT_THREE_QUARTER_LEFT: 'Front three-quarter · passenger side',
+  LEFT_SIDE: 'Side profile · passenger side',
+  REAR: 'Straight rear',
+  RIGHT_SIDE: 'Side profile · driver side',
   FRONT_SEATS: 'Front seats',
   REAR_SEATS: 'Rear seats',
-  ODOMETER: 'Odometer reading',
+  DASHBOARD: 'Dashboard',
+  ODOMETER: 'Odometer',
   EXTRA: 'Extra photograph',
 };
 
@@ -133,9 +136,9 @@ export type DealerVehiclePhotos = z.infer<typeof DealerVehiclePhotos>;
 
 /**
  * The dealer's photographs as the review team sees them, for download and
- * processing. `downloadName` is ordered and named for StudioCar —
- * `TN23AB1234-01-front-three-quarter.jpg` — so a folder of downloads is
- * already a batch.
+ * processing. Files are named for the car as the dealer listed it, in
+ * shooting order — `2016-hyundai-creta-sx-01-front-three-quarter-driver-side.jpg`
+ * — so a folder of downloads is already a StudioCar batch.
  */
 export const AdminSubmittedPhoto = z.object({
   mediaId: Uuid,
@@ -153,19 +156,72 @@ export type AdminSubmittedPhoto = z.infer<typeof AdminSubmittedPhoto>;
 export const AdminSubmittedPhotos = z.object({
   plan: PhotoPlan.nullable(),
   planLabel: z.string().nullable(),
+  /** `2016-hyundai-creta-sx.zip` — what "Download all" saves. */
+  archiveName: z.string(),
   items: z.array(AdminSubmittedPhoto),
   missing: z.array(VehiclePhotoSlot),
 });
 export type AdminSubmittedPhotos = z.infer<typeof AdminSubmittedPhotos>;
 
-/** `TN23AB1234-01-front-three-quarter.jpg` — the StudioCar batch name. */
+/** What a car is called in a file name: its year and name as the dealer listed them. */
+export interface VehicleFileParts {
+  manufacturingYear: number | null;
+  make: string | null;
+  model: string | null;
+  variant: string | null;
+  registrationNumber: string;
+}
+
+function slug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * `2016-hyundai-creta-sx` — year, make, model and variant as the dealer
+ * listed them. Falls back to the registration number when the car has no
+ * name yet, so a file is never called just `-01-front.jpg`.
+ */
+export function vehicleFileBase(vehicle: VehicleFileParts): string {
+  const named = slug(
+    [vehicle.manufacturingYear, vehicle.make, vehicle.model, vehicle.variant]
+      .filter((part) => part !== null && part !== '')
+      .join(' '),
+  );
+  return named.length > 0 && (vehicle.make || vehicle.model)
+    ? named
+    : slug(vehicle.registrationNumber);
+}
+
+/** `2016-hyundai-creta-sx-01-front-three-quarter-driver-side.jpg`. */
 export function submittedPhotoDownloadName(
-  registrationNumber: string,
+  base: string,
   index: number,
   slot: VehiclePhotoSlot,
   mimeType: string,
 ): string {
   const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
-  const name = PHOTO_SLOT_LABELS[slot].toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  return `${registrationNumber}-${String(index + 1).padStart(2, '0')}-${name}.${extension}`;
+  return `${base}-${String(index + 1).padStart(2, '0')}-${slug(PHOTO_SLOT_LABELS[slot])}.${extension}`;
 }
+
+/** `2016-hyundai-creta-sx.zip`. */
+export function submittedPhotosArchiveName(base: string): string {
+  return `${base}.zip`;
+}
+
+/**
+ * Downloading the dealer's photographs: one, or (no `mediaId`) all of them
+ * as a zip. The answer is a short-lived link straight to storage that saves
+ * the file under its StudioCar name.
+ */
+export const SubmittedPhotosDownloadInput = z.object({ mediaId: Uuid.optional() }).strict();
+export type SubmittedPhotosDownloadInput = z.infer<typeof SubmittedPhotosDownloadInput>;
+
+export const SubmittedPhotosDownload = z.object({
+  url: z.string(),
+  fileName: z.string(),
+  expiresInSeconds: z.number().int(),
+});
+export type SubmittedPhotosDownload = z.infer<typeof SubmittedPhotosDownload>;

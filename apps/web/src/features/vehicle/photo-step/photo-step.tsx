@@ -7,9 +7,10 @@ import { useState } from 'react';
 import { ButtonLink } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import {
-  PhotoWalkround,
+  BeforeYouShoot,
+  GuideDownloadLink,
+  GuideWalkround,
   SHOT_GUIDES,
-  PHOTO_STANDARD_TEXT,
 } from '@/components/vehicle/photo-standard';
 import { failureMessage } from '@/lib/upload';
 
@@ -18,6 +19,7 @@ import { PhotoPlanChoice } from './photo-plan-choice';
 import { PHOTO_GUIDE_HREF, PHOTO_STEP_TEXT } from './photo-step.constants';
 import type { PhotoStepProps } from './photo-step.types';
 import { planOptions } from './plan-options';
+import { ShotProgress } from './shot-progress';
 import { ShotUploadCard } from './shot-upload-card';
 import { choosePlan, removePhoto, uploadPhoto } from './utils';
 
@@ -44,9 +46,9 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
   const remove = (mediaId: string) => void run(mediaId, () => removePhoto(vehicleId, mediaId));
 
   const done = photos.slots.filter((slot) => slot.photo !== null).length;
-  const doneNumbers = SHOT_GUIDES.filter((shot) =>
-    photos.slots.some((slot) => slot.slot === shot.slot && slot.photo),
-  ).map((shot) => shot.number);
+  const doneSlots = new Set(
+    photos.slots.filter((slot) => slot.photo !== null).map((slot) => slot.slot),
+  );
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -74,35 +76,44 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
 
       {photos.plan === 'DEALER' ? (
         <>
-          <section className="card grid gap-[16px] p-[16px] md:grid-cols-[200px_1fr]">
-            <PhotoWalkround done={doneNumbers} className="h-auto w-full max-w-[220px]" />
-            <div className="flex flex-col gap-2">
-              <h3 className="text-[17px]">{PHOTO_STEP_TEXT.guideTitle}</h3>
-              <p className="text-[13px] ink-body">{PHOTO_STANDARD_TEXT.intro}</p>
-              <ul className="flex list-disc flex-col gap-1 pl-5 text-[13px] ink-body">
-                {PHOTO_STANDARD_TEXT.tips.slice(0, 4).map((tip) => (
-                  <li key={tip}>{tip}</li>
-                ))}
-              </ul>
-              <Link
-                href={PHOTO_GUIDE_HREF}
-                target="_blank"
-                className="text-[13px] font-medium underline"
-              >
-                {PHOTO_STEP_TEXT.guideLink}
-              </Link>
-              <div className="mt-auto pt-2">
-                <div className="h-[8px] overflow-hidden rounded-full bg-(--color-accent-200)">
-                  <div
-                    className="h-full rounded-full bg-(--color-ok) transition-[width]"
-                    style={{ width: `${String(done * 10)}%` }}
-                  />
+          <section className="card flex flex-col gap-[14px] p-[16px]">
+            <div className="grid gap-[16px] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+              <GuideWalkround />
+              <div className="flex flex-col gap-2">
+                <h3 className="text-[19px]">{PHOTO_STEP_TEXT.guideTitle}</h3>
+                <p className="text-[13px] ink-body">{PHOTO_STEP_TEXT.guideBody}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <GuideDownloadLink />
+                  <Link
+                    href={PHOTO_GUIDE_HREF}
+                    target="_blank"
+                    className="text-[13px] font-medium underline"
+                  >
+                    {PHOTO_STEP_TEXT.guideLink}
+                  </Link>
                 </div>
-                <p className="mt-1 text-[12px] font-medium tnum" aria-live="polite">
-                  {done === 10 ? PHOTO_STEP_TEXT.progressDone : PHOTO_STEP_TEXT.progress(done)}
-                </p>
+                <div className="mt-auto pt-2">
+                  <div className="h-[8px] overflow-hidden rounded-full bg-(--color-accent-200)">
+                    <div
+                      className="h-full rounded-full bg-(--color-ok) transition-[width]"
+                      style={{ width: `${String(done * 10)}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-[12px] font-medium tnum" aria-live="polite">
+                    {done === 10 ? PHOTO_STEP_TEXT.progressDone : PHOTO_STEP_TEXT.progress(done)}
+                  </p>
+                </div>
               </div>
             </div>
+            <ShotProgress done={doneSlots} />
+            <details open={done === 0} className="border-t border-(--color-divider) pt-3">
+              <summary className="cursor-pointer text-[14px] font-semibold">
+                {PHOTO_STEP_TEXT.beforeYouShoot}
+              </summary>
+              <div className="pt-3">
+                <BeforeYouShoot />
+              </div>
+            </details>
           </section>
 
           <ol className="flex flex-col gap-[12px]">

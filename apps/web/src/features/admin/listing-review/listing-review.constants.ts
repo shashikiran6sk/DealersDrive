@@ -54,10 +54,12 @@ export const SUBMITTED_PHOTOS_TEXT = {
   planDealer: 'The dealer photographed this car',
   planStudio: 'Dealers-Drive photographs this car',
   dealerSteps:
-    'Download the dealer’s photographs, check each against the photo standard, process them in StudioCar, then upload the finished files below with credit “Dealer”. The raw photographs are never published.',
+    'Download the dealer’s photographs, check each against the photo guide, process them in StudioCar, then upload the finished files below with credit “Dealer”. The raw photographs are never published.',
   studioSteps:
     'Book a photoshoot with the dealer, then upload the finished files below with credit “Dealers-Drive”.',
-  downloadAll: (count: number) => `Download all ${String(count)}`,
+  downloadAll: (count: number) => `Download all ${String(count)} as a zip`,
+  preparing: 'Preparing the zip…',
+  zipHint: (name: string) => `Saves as ${name}`,
   download: 'Download',
   missing: (count: number) =>
     `${String(count)} standard ${count === 1 ? 'shot is' : 'shots are'} missing from the dealer’s set.`,
@@ -65,5 +67,3 @@ export const SUBMITTED_PHOTOS_TEXT = {
   alt: (label: string) => `Dealer’s photograph: ${label}`,
   sizeLabel: (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`,
 } as const;
-
-export const DOWNLOAD_GAP_MS = 350;

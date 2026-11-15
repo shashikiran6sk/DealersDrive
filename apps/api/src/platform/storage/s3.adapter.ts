@@ -7,6 +7,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
+import { attachmentDisposition } from './disposition.js';
+
 import { env } from '../../config/env.js';
 import type { PresignedUpload, StoragePort, StoredObject } from './storage.port.js';
 import { awsStatusCode, errorString } from '../errors.js';
@@ -84,10 +86,15 @@ export function createS3Storage(client: S3Client = createS3Client()): StoragePor
       return `${env.MEDIA_BASE_URL}/${key}`;
     },
 
-    signedReadUrl(key, expiresInSeconds) {
-      return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: key }), {
-        expiresIn: expiresInSeconds,
-      });
+    signedReadUrl(key, expiresInSeconds, options) {
+      const attachment = options?.downloadName
+        ? { ResponseContentDisposition: attachmentDisposition(options.downloadName) }
+        : {};
+      return getSignedUrl(
+        client,
+        new GetObjectCommand({ Bucket: bucket, Key: key, ...attachment }),
+        { expiresIn: expiresInSeconds },
+      );
     },
   };
 }

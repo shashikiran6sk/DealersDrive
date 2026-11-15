@@ -34,3 +34,5 @@ export const PHOTOS_INCOMPLETE = (count: number): string =>
 
 export const SLOT_MISSING = (slot: VehiclePhotoSlot): string =>
   `Add the ${PHOTO_SLOT_LABELS[slot].toLowerCase()} photograph.`;
+
+export const NO_SUBMITTED_PHOTOS = 'The dealer has not uploaded any photographs for this car.';

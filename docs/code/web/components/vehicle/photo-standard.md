@@ -2,25 +2,45 @@
 
 Parent: [web/components/vehicle](README.md)
 
+The confirmed Dealers-Drive photo guide ("Ten photos that sell a car", the PDF in
+`apps/web/public/photo-guide/`) on screen. It replaced hand-drawn SVG diagrams:
+the handbook's own photographs of someone kneeling at each spot say "where" and
+"how low" better than any plan, and dealers will have seen the same pictures in
+the PDF.
+
 ## `apps/web/src/components/vehicle/photo-standard/photo-standard.constants.ts`
 
 ### `SHOT_GUIDES`
 
-The Dealers-Drive photo standard as data: ten shots in the order a photographer
-walks round the car, each with where to stand (a point on a top-down plan, the car
-facing up), what to aim at, the posture (stand, kneel on one knee, inside the car)
-and plain-language how/check lines. The illustrations are drawn from it, so
-moving a position is a data change. Positions assume a right-hand-drive car: the
-steering wheel is on the right, "left side" is the passenger side, and the seat
-shots open the left (kerb-side) doors.
+The guide as data, one entry per photo in its order: the title and side, why the
+shot matters, pose, phone height, distance, how to hold the phone, step by step,
+what to check and what to avoid — the PDF's words. The order and the slot names
+match `VehiclePhotoSlot` in contracts, so photo 7 in the guide is upload card 7
+and file `…-07-front-seats.jpg` in the admin's zip. Right is the driver's side:
+Indian cars are right-hand drive.
 
-Exterior shots kneel so the phone is at headlight or door-handle height — the
-single change that most improves a phone photograph of a car, and the one most
-often missed.
+### `PHOTO_GUIDE_ASSETS`
 
-## `apps/web/src/components/vehicle/photo-standard/shot-diagram.tsx`
+The pictures were cut from the PDF once and saved as WebP — per photo a
+"how to position yourself" photo, the reference result and the top-down plan,
+plus the four poses and the walk-round — about 1 MB for the lot, against 8 MB for
+the PDF. They are static files served by the web app, not media: they never
+change per car and need no signed URL.
 
-Pure SVG on theme tokens, server-rendered, no images to load: it costs nothing on
-a dealer's mobile data and prints. Each shot pairs a top-down position
-(`ShotDiagram`) with a side-view posture (`PostureFigure`) because "where" and
-"how low" are the two things a written instruction fails to convey.
+## `apps/web/src/components/vehicle/photo-standard/guide-image.tsx`
+
+### `GuideImage`
+
+A plain `<img>`, lazy by default. These are small static WebPs already cut to
+the size the card shows, so `next/image` would add a loader round trip for
+nothing, and lazy loading means a dealer on mobile data only fetches the
+pictures they scroll to. The walk-round is `eager` because it is the first
+thing on screen.
+
+## `apps/web/src/components/vehicle/photo-standard/shot-illustration.tsx`
+
+### `compact`
+
+On the guide page a shot shows all three pictures. In the wizard the upload tile
+takes the result's place and the reference result sits under it as "aim for
+this", so `compact` shows the positioning photo alone.

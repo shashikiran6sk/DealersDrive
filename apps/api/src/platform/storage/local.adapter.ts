@@ -74,10 +74,15 @@ export function createLocalStorage(): StoragePort {
       return `${env.MEDIA_BASE_URL}/${key}`;
     },
 
-    signedReadUrl(key, expiresInSeconds) {
+    signedReadUrl(key, expiresInSeconds, options) {
       const expiresAt = Date.now() + expiresInSeconds * 1000;
       const signature = sign({ key, contentType: 'read', contentLength: 0, expiresAt });
-      const params = new URLSearchParams({ key, expiresAt: String(expiresAt), signature });
+      const params = new URLSearchParams({
+        key,
+        expiresAt: String(expiresAt),
+        signature,
+        ...(options?.downloadName ? { download: options.downloadName } : {}),
+      });
       return Promise.resolve(`${env.API_BASE_URL}/private?${params.toString()}`);
     },
   };

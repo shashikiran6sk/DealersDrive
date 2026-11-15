@@ -129,6 +129,15 @@ the server's view. A photograph over the 10 MB limit — a 48–50 MP phone mode
 resized in the browser to a 4096 px long edge first (`fitForUpload`), which keeps
 it well above what StudioCar needs.
 
+The guide is the step itself, not a link away from it: each upload card is that
+photo's page of the guide — the positioning photo, pose, height, distance and how
+to hold the phone, with the step-by-step and checks one tap down — and the
+reference result sits under the upload tile as "aim for this". The strip of
+result thumbnails (`ShotProgress`) ticks off as photos land and jumps to the card,
+since ten cards is a long scroll on a phone. "Before you shoot" opens by itself
+until the first photo is uploaded, then folds away. The full guide and the PDF
+are linked for anyone who wants to read it before going out to the car.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
 
 ### `export function submissionNeeds(vehicle, photos)`
