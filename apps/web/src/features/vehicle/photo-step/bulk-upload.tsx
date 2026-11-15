@@ -14,7 +14,7 @@ import { failureMessage } from '@/lib/upload';
 import { BulkUploadRow } from './bulk-upload-row';
 import { inCaptureOrder } from './capture-time';
 import { PHOTO_STEP_TEXT } from './photo-step.constants';
-import { photoCount, removePhoto, uploadPhoto } from './utils';
+import { photoCount, photoRoom, removePhoto, uploadPhoto } from './utils';
 
 export interface BulkUploadProps {
   vehicleId: string;
@@ -41,7 +41,10 @@ export function BulkUpload({ vehicleId, photos, onPhotos, onUploadingChange }: B
   const editable = photos.canEdit && !uploading && removing === null;
   const count = photoCount(photos);
   const shots = photos.slots.filter((slot) => slot.photo !== null).length;
-  const room = Math.max(0, photos.unsortedMax - photos.unsorted.length);
+  const room = Math.min(
+    Math.max(0, photos.unsortedMax - photos.unsorted.length),
+    photoRoom(photos),
+  );
 
   function update(id: string, change: Partial<QueuedFile>): void {
     setQueue((items) => items.map((item) => (item.id === id ? { ...item, ...change } : item)));
@@ -76,7 +79,7 @@ export function BulkUpload({ vehicleId, photos, onPhotos, onUploadingChange }: B
     setError(null);
     setNotices([
       ...(skipped > 0 ? [PHOTO_STEP_TEXT.skippedType(skipped)] : []),
-      ...(leftOut > 0 ? [PHOTO_STEP_TEXT.leftOut(leftOut, photos.unsortedMax)] : []),
+      ...(leftOut > 0 ? [PHOTO_STEP_TEXT.leftOut(leftOut, photos.photosMax)] : []),
     ]);
     const items = taken.map((file): QueuedFile => ({
       id: crypto.randomUUID(),
@@ -130,6 +133,9 @@ export function BulkUpload({ vehicleId, photos, onPhotos, onUploadingChange }: B
           });
         }}
       />
+      {room - queue.length <= 0 && photos.canEdit ? (
+        <p className="text-[13px] font-medium">{PHOTO_STEP_TEXT.photosFull(photos.photosMax)}</p>
+      ) : null}
       <label
         htmlFor={inputId}
         className="flex min-h-[112px] cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed border-(--color-accent-400) bg-(--color-accent-100) p-[16px] text-center"

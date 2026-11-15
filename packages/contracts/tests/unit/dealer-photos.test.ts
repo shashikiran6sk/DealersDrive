@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEALER_PHOTOS_MAX,
+  DEALER_PHOTO_UNSORTED_MAX,
   DealerPhotoPresignInput,
   PHOTO_SLOT_LABELS,
   STANDARD_PHOTO_SLOTS,
@@ -95,5 +97,10 @@ describe('photoShortfall', () => {
     expect(isStandardPhotoSlot('EXTRA')).toBe(false);
     expect(STANDARD_PHOTO_SLOTS).toHaveLength(10);
     expect(STANDARD_PHOTO_SLOTS).not.toContain('UNSORTED');
+  });
+
+  it('caps a car at sixteen photographs: the ten and the six extras', () => {
+    expect(DEALER_PHOTOS_MAX).toBe(16);
+    expect(DEALER_PHOTO_UNSORTED_MAX).toBe(DEALER_PHOTOS_MAX);
   });
 });

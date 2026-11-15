@@ -93,8 +93,10 @@ export const PHOTO_STEP_TEXT = {
       : `${String(count)} files were not JPEG, PNG or WebP photos and were left out.`,
   leftOut: (count: number, max: number) =>
     count === 1
-      ? `One photo was left out: you can upload up to ${String(max)} at once.`
-      : `${String(count)} photos were left out: you can upload up to ${String(max)} at once.`,
+      ? `One photo was left out: a car can have at most ${String(max)} photos.`
+      : `${String(count)} photos were left out: a car can have at most ${String(max)} photos.`,
+  photosFull: (max: number) =>
+    `This car has ${String(max)} photos, the most it can have. Remove one to add another.`,
 } as const;
 
 export const BULK_UPLOAD_ANCHOR = 'bulk-upload';

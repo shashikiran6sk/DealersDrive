@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import {
   DEALER_PHOTO_EXTRAS_MAX,
+  DEALER_PHOTOS_MAX,
   DEALER_PHOTO_UNSORTED_MAX,
   PHOTO_PLAN_LABELS,
   PHOTO_SLOT_LABELS,
@@ -51,10 +52,10 @@ import {
   PHOTOSHOOT_UNAVAILABLE,
   PHOTOS_CLOSED,
   PHOTOS_DISABLED,
+  PHOTOS_FULL,
   PHOTO_NOT_FOUND,
   PLAN_NOT_DEALER,
   SLOT_TAKEN,
-  UNSORTED_FULL,
   UPLOAD_MISMATCH,
   UPLOAD_NOT_IMAGE,
   VEHICLE_NOT_FOUND,
@@ -117,17 +118,20 @@ export function missingSlots(rows: readonly { slot: VehiclePhotoSlot }[]): Stand
   return photoShortfall(rows.map((row) => row.slot)).missing;
 }
 
-const SHARED_SLOT_LIMITS: Partial<Record<VehiclePhotoSlot, number>> = {
-  EXTRA: DEALER_PHOTO_EXTRAS_MAX,
-  UNSORTED: DEALER_PHOTO_UNSORTED_MAX,
-};
-
-export function assertRoomFor(slot: VehiclePhotoSlot, alreadyThere: number): void {
-  const max = SHARED_SLOT_LIMITS[slot];
-  if (max === undefined || alreadyThere < max) return;
-  throw slot === 'EXTRA'
-    ? new ConflictError('PHOTO_EXTRAS_FULL', EXTRAS_FULL(max))
-    : new ConflictError('PHOTO_UNSORTED_FULL', UNSORTED_FULL(max));
+export function assertRoomFor(
+  slot: VehiclePhotoSlot,
+  rows: readonly { slot: VehiclePhotoSlot }[],
+): void {
+  if (isStandardPhotoSlot(slot) && rows.some((row) => row.slot === slot)) return;
+  if (rows.length >= DEALER_PHOTOS_MAX) {
+    throw new ConflictError('PHOTOS_FULL', PHOTOS_FULL(DEALER_PHOTOS_MAX));
+  }
+  if (
+    slot === 'EXTRA' &&
+    rows.filter((row) => row.slot === 'EXTRA').length >= DEALER_PHOTO_EXTRAS_MAX
+  ) {
+    throw new ConflictError('PHOTO_EXTRAS_FULL', EXTRAS_FULL(DEALER_PHOTO_EXTRAS_MAX));
+  }
 }
 
 function vehicleNotFound(): NotFoundError {
@@ -216,6 +220,7 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       extrasMax: DEALER_PHOTO_EXTRAS_MAX,
       unsorted: photos.filter((photo) => photo.slot === 'UNSORTED'),
       unsortedMax: DEALER_PHOTO_UNSORTED_MAX,
+      photosMax: DEALER_PHOTOS_MAX,
       missing,
       needed,
       ready:
@@ -267,12 +272,13 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       assertEditable(listing);
       if (listing.photoPlan !== 'DEALER')
         throw new ConflictError('PHOTO_PLAN_NOT_DEALER', PLAN_NOT_DEALER);
-      if (!isStandardPhotoSlot(input.slot)) {
-        const alreadyThere = await prisma.vehicleSubmissionPhoto.count({
-          where: { vehicleId, slot: input.slot },
-        });
-        assertRoomFor(input.slot, alreadyThere);
-      }
+      assertRoomFor(
+        input.slot,
+        await prisma.vehicleSubmissionPhoto.findMany({
+          where: { vehicleId },
+          select: { slot: true },
+        }),
+      );
 
       const mediaId = randomUUID();
       const key = submissionPhotoKey(vehicleId, mediaId, input.slot, input.mimeType);
@@ -350,9 +356,7 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
           const replaced = isStandardPhotoSlot(slot)
             ? rows.find((row) => row.slot === slot)
             : undefined;
-          if (!isStandardPhotoSlot(slot)) {
-            assertRoomFor(slot, rows.filter((row) => row.slot === slot).length);
-          }
+          assertRoomFor(slot, rows);
           if (replaced) {
             await tx.vehicleSubmissionPhoto.delete({ where: { id: replaced.id } });
             await tx.media.update({ where: { id: replaced.mediaId }, data: { status: 'ORPHAN' } });

@@ -100,6 +100,14 @@ export function photoCount(photos: DealerVehiclePhotos): number {
   return uploadedSlots(photos).length;
 }
 
+export function photoTotal(photos: DealerVehiclePhotos): number {
+  return photoCount(photos) + photos.extras.length;
+}
+
+export function photoRoom(photos: DealerVehiclePhotos): number {
+  return Math.max(0, photos.photosMax - photoTotal(photos));
+}
+
 export function photosNeeded(photos: DealerVehiclePhotos): number {
   return photoShortfall(uploadedSlots(photos)).needed;
 }

@@ -14,4 +14,4 @@ export type { PhotoStepProps, PlanOption, UploadMode } from './photo-step.types'
 export { PhotoUploadTile, type PhotoUploadTileProps } from './photo-upload-tile';
 export { ShotUploadCard, type ShotUploadCardProps } from './shot-upload-card';
 export { UploadModeSwitch, type UploadModeSwitchProps } from './upload-mode-switch';
-export { fitForUpload, photoCount, photosNeeded, scaledSize } from './utils';
+export { fitForUpload, photoCount, photoRoom, photoTotal, photosNeeded, scaledSize } from './utils';

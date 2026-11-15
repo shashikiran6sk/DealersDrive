@@ -382,9 +382,32 @@ describe('the edges of uploading', () => {
       .post(`/v1/dealer/vehicles/${id}/photos/presign`)
       .send({ slot: 'UNSORTED', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
       .expect(409);
-    expect(full.body.code).toBe('PHOTO_UNSORTED_FULL');
+    expect(full.body.code).toBe('PHOTOS_FULL');
     const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
     expect(photos.body.unsorted).toHaveLength(16);
+  });
+
+  it('caps a car at sixteen photographs across both ways of uploading', async () => {
+    const id = await dealerPlan();
+    for (const slot of STANDARD_PHOTO_SLOTS) await uploadPhoto(a, id, slot);
+    for (let index = 0; index < 6; index += 1) await uploadPhoto(a, id, 'UNSORTED');
+
+    const full = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'UNSORTED', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(full.body.code).toBe('PHOTOS_FULL');
+    const extra = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'EXTRA', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(extra.body.code).toBe('PHOTOS_FULL');
+
+    expect((await uploadPhoto(a, id, 'DASHBOARD')).status).toBe(200);
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body.photosMax).toBe(16);
+    expect(photos.body.unsorted).toHaveLength(6);
+    expect(photos.body.slots.filter((slot: { photo: unknown }) => slot.photo)).toHaveLength(10);
   });
 
   it('answers a photograph that is not on the car as not found', async () => {

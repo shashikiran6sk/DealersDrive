@@ -79,8 +79,14 @@ export const DEALER_PHOTO_EXTRAS_MAX = 6;
 /** How many photographs a dealer must upload: the ten shots, or ten "all at once". */
 export const DEALER_PHOTOS_REQUIRED = 10;
 
-/** The most photographs a dealer may upload "all at once": the ten plus the extras. */
-export const DEALER_PHOTO_UNSORTED_MAX = DEALER_PHOTOS_REQUIRED + DEALER_PHOTO_EXTRAS_MAX;
+/**
+ * The most photographs one car may have, however they were uploaded: named
+ * shots, extras and "all at once" together. The ten plus the extras.
+ */
+export const DEALER_PHOTOS_MAX = DEALER_PHOTOS_REQUIRED + DEALER_PHOTO_EXTRAS_MAX;
+
+/** The most photographs a dealer may upload "all at once" — all of them. */
+export const DEALER_PHOTO_UNSORTED_MAX = DEALER_PHOTOS_MAX;
 
 /**
  * What a set of photographs still lacks. Uploaded shot by shot, it is the
@@ -160,6 +166,7 @@ export const DealerVehiclePhotos = z.object({
   extrasMax: z.number().int(),
   unsorted: z.array(DealerSubmissionPhoto).default([]),
   unsortedMax: z.number().int().default(DEALER_PHOTO_UNSORTED_MAX),
+  photosMax: z.number().int().default(DEALER_PHOTOS_MAX),
   missing: z.array(VehiclePhotoSlot),
   needed: z.number().int().optional(),
   ready: z.boolean(),

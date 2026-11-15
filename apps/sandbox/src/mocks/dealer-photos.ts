@@ -43,6 +43,7 @@ export function mockPhotos(
     extrasMax: 6,
     unsorted: [],
     unsortedMax: 16,
+    photosMax: 16,
     missing: STANDARD_PHOTO_SLOTS.slice(uploaded),
     ready: uploaded === 10,
     ...overrides,

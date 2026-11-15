@@ -23,7 +23,7 @@ import { planOptions } from './plan-options';
 import { ShotProgress } from './shot-progress';
 import { ShotUploadCard } from './shot-upload-card';
 import { UploadModeSwitch } from './upload-mode-switch';
-import { choosePlan, photosNeeded, removePhoto, uploadPhoto } from './utils';
+import { choosePlan, photoRoom, photosNeeded, removePhoto, uploadPhoto } from './utils';
 
 export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: PhotoStepProps) {
   const [photos, setPhotos] = useState(initial);
@@ -55,6 +55,7 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
 
   const bulk = mode === 'all' && photos.canEdit;
   const done = 10 - photosNeeded(photos);
+  const full = photoRoom(photos) === 0;
   const doneSlots = new Set(
     photos.slots.filter((slot) => slot.photo !== null).map((slot) => slot.slot),
   );
@@ -148,6 +149,11 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
           ) : (
             <>
               {guide}
+              {full && photos.canEdit ? (
+                <p className="text-[13px] font-medium">
+                  {PHOTO_STEP_TEXT.photosFull(photos.photosMax)}
+                </p>
+              ) : null}
               {photos.unsorted.length > 0 ? (
                 <p className="text-[13px] font-medium">
                   {PHOTO_STEP_TEXT.unsortedKept(photos.unsorted.length)}
@@ -160,7 +166,12 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
                     shot={shot}
                     photo={photos.slots.find((slot) => slot.slot === shot.slot)?.photo ?? null}
                     busy={busy === shot.slot}
-                    editable={photos.canEdit && busy === null}
+                    editable={
+                      photos.canEdit &&
+                      busy === null &&
+                      (!full ||
+                        photos.slots.some((slot) => slot.slot === shot.slot && slot.photo !== null))
+                    }
                     error={error?.key === shot.slot ? error.message : null}
                     onFile={(file) => upload(shot.slot, file)}
                   />
@@ -172,6 +183,7 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
                 max={photos.extrasMax}
                 busyKey={busy}
                 editable={photos.canEdit && busy === null}
+                canAdd={!full}
                 onAdd={(file) => upload('EXTRA', file)}
                 onRemove={remove}
               />

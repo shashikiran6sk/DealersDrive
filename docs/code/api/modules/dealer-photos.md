@@ -80,6 +80,16 @@ download is a read and has no transaction of its own to join.
 a `mediaId` that is not one of this listing's photographs, so a moderator cannot
 sign a read for some other object by guessing an id.
 
+### `export function assertRoomFor(slot, rows)`
+
+A car holds at most `DEALER_PHOTOS_MAX` (sixteen: the ten shots plus the six
+extras) photographs, counted across every kind, because the two ways of uploading
+are independent and each kind's own limit let a dealer who used both reach 32.
+Replacing a named shot the car already has is always allowed, since the total does
+not grow; otherwise a full car is `409 PHOTOS_FULL`. Extras keep their own limit of
+six inside that. The check runs at presign, so the dealer is refused before the
+upload, and again at commit under the listing lock, where it is authoritative.
+
 ### `export function submittedPhotosArchiveKey(listingId, contents)`
 
 Archives are derived data: deleting the `archives/` prefix loses nothing, since
@@ -102,8 +112,7 @@ A photo uploaded "all at once" names no shot: the dealer picks a gallery's worth
 in one go and the review team places them, which is the reason the option exists.
 It is a slot value rather than a null so the server-chosen key, the one-per-shot
 index and the readiness rule all keep working: the partial unique index excludes
-it alongside `EXTRA`, and up to `DEALER_PHOTO_UNSORTED_MAX` (sixteen: the ten plus
-the extras) may stack. In the admin's download it sorts after the named shots and
+it alongside `EXTRA`, and any number may stack up to the car's cap. In the admin's download it sorts after the named shots and
 before the extras, oldest first, as `…-11-photo.jpg`.
 
 The slot list reaches its final shape by migrations added on top of

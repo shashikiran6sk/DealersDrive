@@ -156,6 +156,11 @@ at a time, because each commit answers with the whole photo set and two in fligh
 could each answer without the other's photo. A photo that fails stays in the list
 with its reason, for Try again or Remove.
 
+The picker takes no more than the car has room for — `photosMax` less every
+photo already on it, shots and extras included — and says how many it left out;
+the API enforces the same cap (`assertRoomFor`). At the cap, "one shot at a time"
+closes the empty shots and the extras tile but keeps Replace on the shots it has.
+
 ## `apps/web/src/features/vehicle/photo-step/capture-time.ts`
 
 ### `export async function inCaptureOrder(files)`

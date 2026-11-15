@@ -18,8 +18,8 @@ export const PHOTOSHOOT_UNAVAILABLE = (district: string | null): string =>
 export const EXTRAS_FULL = (max: number): string =>
   `You can add at most ${String(max)} extra photographs. Remove one first.`;
 
-export const UNSORTED_FULL = (max: number): string =>
-  `You can upload at most ${String(max)} photographs at once. Remove one first.`;
+export const PHOTOS_FULL = (max: number): string =>
+  `A car can have at most ${String(max)} photographs. Remove one before adding another.`;
 
 export const PHOTO_NOT_FOUND = 'That photograph is not on this vehicle.';
 

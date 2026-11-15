@@ -50,6 +50,18 @@ vi.mock('@/features/vehicle/photo-step/utils', async (importOriginal) => {
   };
 });
 
+function unsortedPhotos(count: number): DealerSubmissionPhoto[] {
+  return Array.from({ length: count }, (_, index) => ({
+    mediaId: `10000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    slot: 'UNSORTED' as const,
+    slotLabel: 'Photo',
+    url: `/u/old-${String(index)}.jpg`,
+    fileName: `old-${String(index)}.jpg`,
+    bytes: 1,
+    uploadedAt: '2026-11-15T09:00:00.000Z',
+  }));
+}
+
 function pictures(count: number): File[] {
   return Array.from(
     { length: count },
@@ -163,5 +175,42 @@ describe('uploading every photo at once', () => {
       await Promise.resolve();
     });
     await waitFor(() => expect(listedNames()).toEqual(['IMG_2.png']));
+  });
+
+  it('stops at sixteen photos for the car, counting the shots already uploaded', async () => {
+    const existing = unsortedPhotos(4);
+    render(
+      <PhotoStep
+        vehicleId={VEHICLE_ID}
+        photos={photos({ plan: 'DEALER', unsorted: existing }, 10)}
+        backHref="/back"
+        nextHref="/review"
+      />,
+    );
+    await choose(pictures(5));
+    await waitFor(() => expect(server.calls).toHaveLength(2));
+    expect(
+      screen.getByText('3 photos were left out: a car can have at most 16 photos.'),
+    ).toBeInTheDocument();
+  });
+
+  it('closes the empty shots and extras once the car has sixteen, but still lets a shot be replaced', () => {
+    render(
+      <PhotoStep
+        vehicleId={VEHICLE_ID}
+        photos={photos({ plan: 'DEALER', unsorted: unsortedPhotos(12) }, 4)}
+        backHref="/back"
+        nextHref="/review"
+      />,
+    );
+    expect(
+      screen.getByText('This car has 16 photos, the most it can have. Remove one to add another.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Choose photos')).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('radio', { name: /One shot at a time/ }));
+    expect(screen.getAllByRole('button', { name: 'Replace' })).toHaveLength(4);
+    expect(screen.getByLabelText(/^Upload photo: Straight rear/)).toBeDisabled();
+    expect(screen.queryByLabelText(/^Upload photo: Add a photograph/)).not.toBeInTheDocument();
   });
 });

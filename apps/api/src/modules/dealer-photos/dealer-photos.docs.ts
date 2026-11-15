@@ -19,8 +19,10 @@ export const dealerPhotosDocs: ModuleDocs = {
     '`CHANGES_REQUESTED`. Uploads are presign → PUT → commit, and the commit checks the size ' +
     'and the JPEG/PNG/WebP signature before attaching the file. One photograph per standard ' +
     'slot (a new one replaces the old); up to six `EXTRA`. Photographs uploaded "all at once" ' +
-    'go to `UNSORTED` (up to sixteen) and the review team places them; once any is unsorted, ' +
-    'submission needs ten photographs in total rather than the ten named shots.',
+    'go to `UNSORTED` and the review team places them; once any is unsorted, ' +
+    'submission needs ten photographs in total rather than the ten named shots. A car holds at ' +
+    'most sixteen photographs however they were uploaded (`409 PHOTOS_FULL`); replacing a ' +
+    'named shot it already has is always allowed.',
   operations: [
     {
       method: 'get',

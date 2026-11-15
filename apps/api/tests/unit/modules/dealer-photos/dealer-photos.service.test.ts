@@ -1,4 +1,4 @@
-import { STANDARD_PHOTO_SLOTS } from '@dealers-drive/contracts';
+import { STANDARD_PHOTO_SLOTS, type VehiclePhotoSlot } from '@dealers-drive/contracts';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -36,16 +36,31 @@ describe('what is missing', () => {
 });
 
 describe('room for more', () => {
-  it('limits extras and unsorted photographs, never a standard shot', () => {
-    expect(() => assertRoomFor('FRONT', 99)).not.toThrow();
-    expect(() => assertRoomFor('EXTRA', 5)).not.toThrow();
-    expect(() => assertRoomFor('EXTRA', 6)).toThrow(
+  const rows = (...slots: VehiclePhotoSlot[]) => slots.map((slot) => ({ slot }));
+  const many = (count: number, slot: VehiclePhotoSlot) =>
+    Array.from({ length: count }, () => ({ slot }));
+
+  it('limits extras to six and unsorted photographs to sixteen', () => {
+    expect(() => assertRoomFor('EXTRA', many(5, 'EXTRA'))).not.toThrow();
+    expect(() => assertRoomFor('EXTRA', many(6, 'EXTRA'))).toThrow(
       expect.objectContaining({ code: 'PHOTO_EXTRAS_FULL' }),
     );
-    expect(() => assertRoomFor('UNSORTED', 15)).not.toThrow();
-    expect(() => assertRoomFor('UNSORTED', 16)).toThrow(
-      expect.objectContaining({ code: 'PHOTO_UNSORTED_FULL' }),
-    );
+    expect(() => assertRoomFor('UNSORTED', many(15, 'UNSORTED'))).not.toThrow();
+  });
+
+  it('caps a car at sixteen photographs however they were uploaded', () => {
+    const full = [...rows(...STANDARD_PHOTO_SLOTS.slice(0, 4)), ...many(12, 'UNSORTED')];
+    for (const slot of ['UNSORTED', 'EXTRA', 'DASHBOARD'] as const) {
+      expect(() => assertRoomFor(slot, full)).toThrow(
+        expect.objectContaining({ code: 'PHOTOS_FULL' }),
+      );
+    }
+  });
+
+  it('still lets a full car replace a shot it already has', () => {
+    const full = [...rows(...STANDARD_PHOTO_SLOTS.slice(0, 4)), ...many(12, 'UNSORTED')];
+    expect(() => assertRoomFor(STANDARD_PHOTO_SLOTS[0] ?? 'FRONT', full)).not.toThrow();
+    expect(() => assertRoomFor('FRONT', many(3, 'EXTRA'))).not.toThrow();
   });
 });
 
