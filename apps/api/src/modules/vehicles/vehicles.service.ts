@@ -58,6 +58,9 @@ import {
   VEHICLE_NOT_FOUND,
 } from './vehicles.messages.js';
 import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.repository.js';
+import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
+import type { StoragePort } from '../../platform/storage/storage.port.js';
+import { OPEN_GATE, type SubmissionGate } from './submission-gate.js';
 
 export interface VehicleActor extends DealerWriteActor {
   permissions?: readonly string[];
@@ -81,6 +84,13 @@ export interface VehiclesDeps {
   prisma: PrismaClient;
   repo: VehiclesRepository;
   audit: AuditService;
+  gate?: SubmissionGate;
+  photos?: DraftPhotoCleanup;
+}
+
+export interface DraftPhotoCleanup {
+  release(tx: Tx, vehicle: { id: string; dealerId: string }, actorId: string): Promise<string[]>;
+  storage: StoragePort;
 }
 
 export const SUGGESTION_LIMIT = 8;
@@ -126,7 +136,13 @@ function auditValue(vehicle: object, field: string): string | number | null {
   return typeof value === 'number' || typeof value === 'string' ? value : null;
 }
 
-export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
+export function createVehiclesService({
+  prisma,
+  repo,
+  audit,
+  gate = OPEN_GATE,
+  photos,
+}: VehiclesDeps) {
   async function requireOwned(dealerId: string, vehicleId: string): Promise<VehicleRow> {
     const vehicle = await repo.findOwned(dealerId, vehicleId);
     if (!vehicle) throw notFound();
@@ -459,7 +475,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     async remove(actor: VehicleActor, vehicleId: string): Promise<void> {
       const current = await requireOwned(actor.dealerId, vehicleId);
 
-      await withTransaction(prisma, async (tx) => {
+      const releasedKeys = await withTransaction(prisma, async (tx) => {
         const listing = await lockListingForVehicle(tx, vehicleId);
         await authorizeDealerWrite(tx, actor, 'vehicle:delete');
         if (listing && !isListingDeletable(listing.status)) {
@@ -467,6 +483,9 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
             extra: { listingStatus: listing.status },
           });
         }
+        const keys = photos
+          ? await photos.release(tx, { id: vehicleId, dealerId: actor.dealerId }, actor.userId)
+          : [];
         const deleted = await repo.deleteOwned(actor.dealerId, vehicleId, tx);
         if (!deleted) throw notFound();
         await audit.record(tx, {
@@ -478,7 +497,9 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           entityId: vehicleId,
           before: { registrationNumber: current.registrationNumber },
         });
+        return keys;
       });
+      if (photos) await deleteStorageObjects(photos.storage, releasedKeys);
     },
 
     async submit(actor: VehicleActor, vehicleId: string): Promise<DealerVehicle> {
@@ -504,6 +525,8 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
               })),
             });
           }
+
+          await gate.prepare(tx, listing, { type: 'DEALER', id: actor.userId });
 
           const claimedAt = vehicle.claimedAt ?? new Date();
           if (!vehicle.claimedAt) {
@@ -646,6 +669,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           assertTransition(listing.status, event, 'SALES');
           const refusal = incomplete(vehicle);
           if (refusal) throw refusal;
+          await gate.prepare(tx, listing, { type: 'SALES', id: actor.userId });
 
           const claimedAt = vehicle.claimedAt ?? new Date();
           if (!vehicle.claimedAt) {

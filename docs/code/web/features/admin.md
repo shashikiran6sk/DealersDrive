@@ -326,3 +326,24 @@ The status select lists the current status and only the moves
 the reason. Save sends only the fields that changed. Assign to me appears when
 the signed-in operator is assignable, matched by the email the console header
 already reads.
+
+## `apps/web/src/features/admin/listing-review/submitted-photos-panel.tsx`
+
+The dealer's raw photographs, for StudioCar. "Download all" saves one zip named
+for the car (`2016-hyundai-creta-sx.zip`); each photo also downloads on its own.
+Both call `submittedPhotosDownloadAction`, a server action that asks the API for a
+signed link and hands back only the URL, which the page then navigates to. The
+bytes go from storage to the browser and never through Vercel, whose functions
+answer at most 4.5 MB — a set of phone photographs is several times that. The
+link saves under its name because the API signs `Content-Disposition: attachment`
+into it (`api/modules/dealer-photos`, `adminDownload`). This replaced a BFF route
+that proxied each photo and a "Download all" that started ten downloads a moment
+apart, which browsers stopped after the first without a permission prompt.
+
+## `apps/web/src/features/admin/listing-images/listing-images.tsx`
+
+### `defaultCredit`
+
+Pre-selects the credit from the dealer's plan — `DEALER` photographs are credited
+to the dealer, a photoshoot to Dealers-Drive — so the reviewer confirms rather
+than chooses. Without a plan there is still no default, as before.

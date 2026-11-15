@@ -7,6 +7,7 @@ import {
   sniffContentType,
   verifySignature,
 } from '../../../platform/storage/local.adapter.js';
+import { attachmentDisposition } from '../../../platform/storage/disposition.js';
 
 import type { StorageRoute } from './route.js';
 import { PrivateReadQuery } from './schemas.js';
@@ -29,6 +30,8 @@ export const getPrivate: StorageRoute = (router, { storage }) => {
 
         res.setHeader('Cache-Control', 'private, no-store');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        if (query.download)
+          res.setHeader('Content-Disposition', attachmentDisposition(query.download));
         res.type(sniffContentType(body) ?? contentTypeOf(query.key)).send(body);
       } catch (error) {
         next(error);

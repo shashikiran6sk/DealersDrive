@@ -4,6 +4,7 @@ export interface ListingImagesProps {
   listingId: string;
   images: AdminVehicleImages;
   live?: boolean;
+  defaultCredit?: PhotoCredit | null;
 }
 
 export interface UploadProgress {

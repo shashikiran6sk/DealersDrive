@@ -81,6 +81,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     value: false,
   },
   {
+    key: 'feature.dealerPhotos',
+    label: 'Dealers choose who photographs a car, and may upload their own photographs',
+    type: 'boolean',
+    value: false,
+  },
+  {
     key: 'feature.enquiryAutoReply',
     label: 'Automatic enquiry acknowledgement',
     type: 'boolean',
@@ -128,6 +134,7 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
 
 export const CONFIG_READERS: Record<string, string> = {
   'billing.gstPercent': "the admin console's revenue figure",
+  'feature.dealerPhotos': 'the vehicle wizard’s Photos step and listing submission',
   'listing.minPhotos': 'GET /v1/config/public',
   'listing.durationDays': 'GET /v1/config/public',
   'enquiry.rateLimitPerHour': 'GET /v1/config/public',

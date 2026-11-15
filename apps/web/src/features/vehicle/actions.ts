@@ -99,12 +99,13 @@ export async function saveVehicleStepAction(
 ): Promise<WizardState> {
   const vehicleId = text(formData, 'vehicleId');
   const step = text(formData, 'step');
-  if (!vehicleId || !isWizardStep(step) || step === 'review') {
+  if (!vehicleId || !isWizardStep(step) || step === 'review' || step === 'photos') {
     return { message: VEHICLE_WIZARD_TEXT.notSaved };
   }
 
   const intent = intentOf(formData);
   const scope = scopeOf(formData);
+  const photos = scope.kind === 'dealer' && text(formData, 'photosStep') === '1';
   const fields = STEP_FIELDS[step];
   const values = Object.fromEntries(fields.map((field) => [field, text(formData, field)]));
 
@@ -136,7 +137,7 @@ export async function saveVehicleStepAction(
   }
 
   if (intent === 'draft') redirect(editPath(saved.id, step, '&saved=1', scope));
-  if (intent === 'back') redirect(editPath(saved.id, stepBefore(step), '', scope));
+  if (intent === 'back') redirect(editPath(saved.id, stepBefore(step, photos), '', scope));
 
   const blocking = saved.issues.filter((issue) => stepOfField(issue.field) === step);
   if (blocking.length > 0) {
@@ -145,7 +146,7 @@ export async function saveVehicleStepAction(
     return { errors, values };
   }
 
-  redirect(editPath(saved.id, stepAfter(step), '', scope));
+  redirect(editPath(saved.id, stepAfter(step, photos), '', scope));
 }
 
 export async function submitVehicleAction(

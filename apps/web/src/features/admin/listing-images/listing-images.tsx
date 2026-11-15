@@ -16,7 +16,12 @@ import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 import type { ListingImagesProps, UploadProgress } from './listing-images.types';
 import { moved, uploadOne } from './utils';
 
-export function ListingImages({ listingId, images, live = false }: ListingImagesProps) {
+export function ListingImages({
+  listingId,
+  images,
+  live = false,
+  defaultCredit = null,
+}: ListingImagesProps) {
   const input = useRef<HTMLInputElement>(null);
   const replacementInput = useRef<HTMLInputElement>(null);
   const replacementTarget = useRef<string | null>(null);
@@ -24,7 +29,7 @@ export function ListingImages({ listingId, images, live = false }: ListingImages
   const [progress, setProgress] = useState<UploadProgress | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
-  const [credit, setCredit] = useState<PhotoCredit | null>(null);
+  const [credit, setCredit] = useState<PhotoCredit | null>(defaultCredit);
   const [marking, setMarking] = useState<PhotoCredit | null>(null);
 
   const count = images.items.length;

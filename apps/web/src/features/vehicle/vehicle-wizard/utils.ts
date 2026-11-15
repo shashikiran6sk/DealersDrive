@@ -1,18 +1,31 @@
-import { WIZARD_STEPS, STEP_FIELDS, FORM_FIELD_OF } from './vehicle-wizard.constants';
+import {
+  FORM_FIELD_OF,
+  PHOTO_FIELDS,
+  PHOTO_FIELD_PREFIX,
+  PHOTO_WIZARD_STEPS,
+  STEP_FIELDS,
+  WIZARD_STEPS,
+} from './vehicle-wizard.constants';
 import type { VehicleFormValues, WizardScope, WizardStep } from './vehicle-wizard.types';
 
 export function isWizardStep(value: unknown): value is WizardStep {
-  return typeof value === 'string' && WIZARD_STEPS.some((step) => step === value);
+  return typeof value === 'string' && PHOTO_WIZARD_STEPS.some((step) => step === value);
 }
 
-export function stepAfter(step: WizardStep): WizardStep {
-  const index = WIZARD_STEPS.indexOf(step);
-  return WIZARD_STEPS[Math.min(index + 1, WIZARD_STEPS.length - 1)] ?? step;
+export function stepsFor(photos: boolean): readonly WizardStep[] {
+  return photos ? PHOTO_WIZARD_STEPS : WIZARD_STEPS;
 }
 
-export function stepBefore(step: WizardStep): WizardStep {
-  const index = WIZARD_STEPS.indexOf(step);
-  return WIZARD_STEPS[Math.max(index - 1, 0)] ?? step;
+export function stepAfter(step: WizardStep, photos = false): WizardStep {
+  const steps = stepsFor(photos);
+  const index = steps.indexOf(step);
+  return steps[Math.min(index + 1, steps.length - 1)] ?? step;
+}
+
+export function stepBefore(step: WizardStep, photos = false): WizardStep {
+  const steps = stepsFor(photos);
+  const index = steps.indexOf(step);
+  return steps[Math.max(index - 1, 0)] ?? step;
 }
 
 export function formField(apiField: string): string {
@@ -22,6 +35,7 @@ export function formField(apiField: string): string {
 
 export function stepOfField(apiField: string): WizardStep {
   const field = formField(apiField);
+  if (PHOTO_FIELDS.has(field) || field.startsWith(PHOTO_FIELD_PREFIX)) return 'photos';
   for (const [step, fields] of Object.entries(STEP_FIELDS)) {
     if (isWizardStep(step) && fields.includes(field)) return step;
   }

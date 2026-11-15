@@ -8,6 +8,10 @@ type ZodSchema = z.ZodType;
 const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 const INPUT_SCHEMA_NAMES = [
+  'SetPhotoPlanInput',
+  'DealerPhotoPresignInput',
+  'VehiclePhotoParam',
+  'SubmittedPhotosDownloadInput',
   'LegalAcceptInput',
   'LegalStatusQuery',
   'DealerLegalSubmitInput',

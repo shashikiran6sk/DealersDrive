@@ -1,0 +1,93 @@
+import { STANDARD_PHOTO_SLOTS, type VehiclePhotoSlot } from '@dealers-drive/contracts';
+import { describe, expect, it } from 'vitest';
+
+import {
+  assertRoomFor,
+  inShootingOrder,
+  missingSlots,
+  slotOfKey,
+  submissionPhotoKey,
+  submittedPhotosArchiveKey,
+} from '../../../../src/modules/dealer-photos/dealer-photos.service.js';
+
+const VEHICLE = '11111111-1111-4111-8111-111111111111';
+const MEDIA = '22222222-2222-4222-8222-222222222222';
+
+describe('submitted photograph keys', () => {
+  it('carries the slot in a key the server chose, and reads it back', () => {
+    const key = submissionPhotoKey(VEHICLE, MEDIA, 'FRONT_THREE_QUARTER_LEFT', 'image/jpeg');
+    expect(key).toBe(`vehicles/${VEHICLE}/submitted/${MEDIA}/front_three_quarter_left.jpg`);
+    expect(slotOfKey(key)).toBe('FRONT_THREE_QUARTER_LEFT');
+  });
+
+  it('reads no slot from a key that is not a submission', () => {
+    expect(slotOfKey(`vehicles/${VEHICLE}/${MEDIA}/original.jpg`)).toBeNull();
+    expect(slotOfKey(`vehicles/${VEHICLE}/submitted/${MEDIA}/sunroof.jpg`)).toBeNull();
+  });
+});
+
+describe('what is missing', () => {
+  it('lists every standard slot without a photograph, in walk-round order, ignoring extras', () => {
+    expect(missingSlots([])).toEqual(STANDARD_PHOTO_SLOTS);
+    expect(missingSlots([{ slot: 'FRONT' }, { slot: 'EXTRA' }])).toEqual(
+      STANDARD_PHOTO_SLOTS.filter((slot) => slot !== 'FRONT'),
+    );
+  });
+});
+
+describe('room for more', () => {
+  const rows = (...slots: VehiclePhotoSlot[]) => slots.map((slot) => ({ slot }));
+  const many = (count: number, slot: VehiclePhotoSlot) =>
+    Array.from({ length: count }, () => ({ slot }));
+
+  it('limits extras to six and unsorted photographs to sixteen', () => {
+    expect(() => assertRoomFor('EXTRA', many(5, 'EXTRA'))).not.toThrow();
+    expect(() => assertRoomFor('EXTRA', many(6, 'EXTRA'))).toThrow(
+      expect.objectContaining({ code: 'PHOTO_EXTRAS_FULL' }),
+    );
+    expect(() => assertRoomFor('UNSORTED', many(15, 'UNSORTED'))).not.toThrow();
+  });
+
+  it('caps a car at sixteen photographs however they were uploaded', () => {
+    const full = [...rows(...STANDARD_PHOTO_SLOTS.slice(0, 4)), ...many(12, 'UNSORTED')];
+    for (const slot of ['UNSORTED', 'EXTRA', 'DASHBOARD'] as const) {
+      expect(() => assertRoomFor(slot, full)).toThrow(
+        expect.objectContaining({ code: 'PHOTOS_FULL' }),
+      );
+    }
+  });
+
+  it('still lets a full car replace a shot it already has', () => {
+    const full = [...rows(...STANDARD_PHOTO_SLOTS.slice(0, 4)), ...many(12, 'UNSORTED')];
+    expect(() => assertRoomFor(STANDARD_PHOTO_SLOTS[0] ?? 'FRONT', full)).not.toThrow();
+    expect(() => assertRoomFor('FRONT', many(3, 'EXTRA'))).not.toThrow();
+  });
+});
+
+describe('shooting order', () => {
+  it('sorts by the guide’s order, then unsorted, extras last in the order they came', () => {
+    const at = (minute: number) => new Date(Date.UTC(2026, 10, 15, 9, minute));
+    const ordered = inShootingOrder([
+      { slot: 'EXTRA' as const, createdAt: at(1) },
+      { slot: 'UNSORTED' as const, createdAt: at(4) },
+      { slot: 'ODOMETER' as const, createdAt: at(2) },
+      { slot: 'EXTRA' as const, createdAt: at(0) },
+      { slot: 'FRONT_THREE_QUARTER_RIGHT' as const, createdAt: at(3) },
+    ]);
+    expect(ordered.map((row) => `${row.slot}@${String(row.createdAt.getUTCMinutes())}`)).toEqual([
+      'FRONT_THREE_QUARTER_RIGHT@3',
+      'ODOMETER@2',
+      'UNSORTED@4',
+      'EXTRA@0',
+      'EXTRA@1',
+    ]);
+  });
+
+  it('keys an archive by what is in it, so a changed set is a new archive', () => {
+    const listing = '33333333-3333-4333-8333-333333333333';
+    const one = submittedPhotosArchiveKey(listing, ['a:x.jpg']);
+    expect(one).toMatch(new RegExp(`^archives/submitted-photos/${listing}/[0-9a-f]{24}\\.zip$`));
+    expect(submittedPhotosArchiveKey(listing, ['a:x.jpg'])).toBe(one);
+    expect(submittedPhotosArchiveKey(listing, ['a:x.jpg', 'b:y.jpg'])).not.toBe(one);
+  });
+});

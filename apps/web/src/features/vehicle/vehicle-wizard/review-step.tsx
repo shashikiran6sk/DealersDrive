@@ -96,9 +96,11 @@ function sections(vehicle: DealerVehicle): { step: WizardStep; rows: Row[] }[] {
 export function ReviewStep({
   vehicle,
   readOnly = false,
+  photoPlanStep = false,
 }: {
   vehicle: DealerVehicle;
   readOnly?: boolean;
+  photoPlanStep?: boolean;
 }) {
   const scope = useWizardScope();
   return (
@@ -163,7 +165,11 @@ export function ReviewStep({
         </section>
       ))}
 
-      <p className="text-[12px] ink-subtle">{VEHICLE_WIZARD_TEXT.reviewNoPhotos}</p>
+      <p className="text-[12px] ink-subtle">
+        {photoPlanStep
+          ? VEHICLE_WIZARD_TEXT.reviewWithPhotoPlan
+          : VEHICLE_WIZARD_TEXT.reviewNoPhotos}
+      </p>
     </div>
   );
 }

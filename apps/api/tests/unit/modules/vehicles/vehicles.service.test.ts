@@ -27,6 +27,7 @@ function listing(status: ListingStatus = 'DRAFT'): Listing {
     decidedBy: null,
     decidedAt: null,
     submittedByMemberId: null,
+    photoPlan: null,
     createdAt: new Date('2026-09-01T00:00:00Z'),
     updatedAt: new Date('2026-09-01T00:00:00Z'),
   };
