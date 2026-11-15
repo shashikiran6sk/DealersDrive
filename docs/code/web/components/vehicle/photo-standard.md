@@ -27,6 +27,14 @@ plus the four poses and the walk-round — about 1 MB for the lot, against 8 MB 
 the PDF. They are static files served by the web app, not media: they never
 change per car and need no signed URL.
 
+The two seat results, `shot-07-result.webp` and `shot-08-result.webp`, are not
+from the PDF: its seat pictures were too dark to show what a good seat photo
+looks like. They are the finished front- and rear-seat photographs of a live
+Dealers-Drive listing (a 2011 Maruti Suzuki Ritz VDI, Vellore), cut to the same
+800 × 1030 frame. The PDF carries the same two photographs: its shared seat
+images were swapped in place, so the cover, both shot pages and the quick
+reference card changed together.
+
 ## `apps/web/src/components/vehicle/photo-standard/guide-image.tsx`
 
 ### `GuideImage`

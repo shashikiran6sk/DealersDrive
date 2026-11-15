@@ -41,6 +41,8 @@ export function mockPhotos(
     })),
     extras: [],
     extrasMax: 6,
+    unsorted: [],
+    unsortedMax: 16,
     missing: STANDARD_PHOTO_SLOTS.slice(uploaded),
     ready: uploaded === 10,
     ...overrides,
@@ -60,4 +62,11 @@ export function mockSubmitted(overrides: Partial<AdminSubmittedPhotos> = {}): Ad
     missing: [],
     ...overrides,
   };
+}
+
+export function mockUnsorted(count: number): DealerSubmissionPhoto[] {
+  return Array.from({ length: count }, (_, index) => ({
+    ...photo(index, 'UNSORTED'),
+    fileName: `IMG_2026111${String(5 + Math.floor(index / 10))}_10${String(index).padStart(2, '0')}12.jpg`,
+  }));
 }

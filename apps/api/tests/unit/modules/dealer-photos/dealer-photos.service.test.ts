@@ -2,6 +2,7 @@ import { STANDARD_PHOTO_SLOTS } from '@dealers-drive/contracts';
 import { describe, expect, it } from 'vitest';
 
 import {
+  assertRoomFor,
   inShootingOrder,
   missingSlots,
   slotOfKey,
@@ -34,11 +35,26 @@ describe('what is missing', () => {
   });
 });
 
+describe('room for more', () => {
+  it('limits extras and unsorted photographs, never a standard shot', () => {
+    expect(() => assertRoomFor('FRONT', 99)).not.toThrow();
+    expect(() => assertRoomFor('EXTRA', 5)).not.toThrow();
+    expect(() => assertRoomFor('EXTRA', 6)).toThrow(
+      expect.objectContaining({ code: 'PHOTO_EXTRAS_FULL' }),
+    );
+    expect(() => assertRoomFor('UNSORTED', 15)).not.toThrow();
+    expect(() => assertRoomFor('UNSORTED', 16)).toThrow(
+      expect.objectContaining({ code: 'PHOTO_UNSORTED_FULL' }),
+    );
+  });
+});
+
 describe('shooting order', () => {
-  it('sorts by the guide’s order, extras last in the order they came', () => {
+  it('sorts by the guide’s order, then unsorted, extras last in the order they came', () => {
     const at = (minute: number) => new Date(Date.UTC(2026, 10, 15, 9, minute));
     const ordered = inShootingOrder([
       { slot: 'EXTRA' as const, createdAt: at(1) },
+      { slot: 'UNSORTED' as const, createdAt: at(4) },
       { slot: 'ODOMETER' as const, createdAt: at(2) },
       { slot: 'EXTRA' as const, createdAt: at(0) },
       { slot: 'FRONT_THREE_QUARTER_RIGHT' as const, createdAt: at(3) },
@@ -46,6 +62,7 @@ describe('shooting order', () => {
     expect(ordered.map((row) => `${row.slot}@${String(row.createdAt.getUTCMinutes())}`)).toEqual([
       'FRONT_THREE_QUARTER_RIGHT@3',
       'ODOMETER@2',
+      'UNSORTED@4',
       'EXTRA@0',
       'EXTRA@1',
     ]);

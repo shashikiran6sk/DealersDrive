@@ -138,6 +138,36 @@ describe('dealer photographs', () => {
     await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
   });
 
+  it('takes photographs uploaded all at once and submits once there are ten', async () => {
+    const id = await draft();
+    await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);
+    await uploadPhoto(a, id, 'FRONT');
+    for (let index = 0; index < 7; index += 1) await uploadPhoto(a, id, 'UNSORTED');
+
+    const short = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(short.body).toMatchObject({ needed: 2, ready: false });
+    expect(short.body.unsorted).toHaveLength(7);
+    const refused = await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(422);
+    expect(refused.body.code).toBe('PHOTOS_INCOMPLETE');
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: 'photos', code: 'REQUIRED' }),
+    ]);
+
+    await uploadPhoto(a, id, 'UNSORTED');
+    await uploadPhoto(a, id, 'UNSORTED');
+    const enough = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(enough.body).toMatchObject({ needed: 0, missing: [], ready: true });
+    const submitted = await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
+
+    const review = await admin
+      .get(`/v1/admin/listings/${String(submitted.body.listing.id)}`)
+      .expect(200);
+    const items = review.body.submittedPhotos.items as { slot: string; downloadName: string }[];
+    expect(items.map((item) => item.slot)).toEqual(['FRONT', ...Array(9).fill('UNSORTED')]);
+    expect(items[1]?.downloadName).toMatch(/-02-photo\.jpg$/);
+    expect(review.body.submittedPhotos.missing).toEqual([]);
+  });
+
   it('replaces a shot rather than stacking two in one slot', async () => {
     const id = await draft();
     await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);
@@ -341,6 +371,20 @@ describe('the edges of uploading', () => {
       .delete(`/v1/dealer/vehicles/${id}/photos/${photos.body.extras[0].mediaId}`)
       .expect(200);
     expect(removed.body.extras).toHaveLength(5);
+  });
+
+  it('takes up to sixteen photographs at once, without replacing one another', async () => {
+    const id = await dealerPlan();
+    for (let index = 0; index < 16; index += 1) {
+      expect((await uploadPhoto(a, id, 'UNSORTED')).status).toBe(200);
+    }
+    const full = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'UNSORTED', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(full.body.code).toBe('PHOTO_UNSORTED_FULL');
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body.unsorted).toHaveLength(16);
   });
 
   it('answers a photograph that is not on the car as not found', async () => {

@@ -26,8 +26,9 @@ export const PHOTO_PLAN_LABELS: Record<PhotoPlan, string> = {
 /**
  * The ten shots of the Dealers-Drive photo guide (the confirmed dealer
  * handbook, `/photo-guide/dealers-drive-photo-guide.pdf`), in shooting order:
- * one lap round the car for 1–6, then 7–10 inside. `EXTRA` is anything else
- * worth showing (engine bay, boot, a scratch the buyer should know about).
+ * one lap round the car for 1–6, then 7–10 inside. `UNSORTED` is a photo
+ * uploaded "all at once", which the review team places; `EXTRA` is anything
+ * else worth showing (engine bay, boot, a scratch the buyer should know about).
  * Right is the driver's side, left the passenger's — Indian cars are
  * right-hand drive.
  */
@@ -42,14 +43,15 @@ export const VehiclePhotoSlot = z.enum([
   'REAR_SEATS',
   'DASHBOARD',
   'ODOMETER',
+  'UNSORTED',
   'EXTRA',
 ]);
 export type VehiclePhotoSlot = z.infer<typeof VehiclePhotoSlot>;
 
-export type StandardPhotoSlot = Exclude<VehiclePhotoSlot, 'EXTRA'>;
+export type StandardPhotoSlot = Exclude<VehiclePhotoSlot, 'EXTRA' | 'UNSORTED'>;
 
 export function isStandardPhotoSlot(slot: VehiclePhotoSlot): slot is StandardPhotoSlot {
-  return slot !== 'EXTRA';
+  return slot !== 'EXTRA' && slot !== 'UNSORTED';
 }
 
 /** The ten required shots, in shooting order. */
@@ -67,11 +69,38 @@ export const PHOTO_SLOT_LABELS: Record<VehiclePhotoSlot, string> = {
   REAR_SEATS: 'Rear seats',
   DASHBOARD: 'Dashboard',
   ODOMETER: 'Odometer',
+  UNSORTED: 'Photo',
   EXTRA: 'Extra photograph',
 };
 
 /** The most extra photographs a dealer may add beyond the ten. */
 export const DEALER_PHOTO_EXTRAS_MAX = 6;
+
+/** How many photographs a dealer must upload: the ten shots, or ten "all at once". */
+export const DEALER_PHOTOS_REQUIRED = 10;
+
+/** The most photographs a dealer may upload "all at once": the ten plus the extras. */
+export const DEALER_PHOTO_UNSORTED_MAX = DEALER_PHOTOS_REQUIRED + DEALER_PHOTO_EXTRAS_MAX;
+
+/**
+ * What a set of photographs still lacks. Uploaded shot by shot, it is the
+ * shots not yet taken. Once any photo was uploaded "all at once" the review
+ * team does the sorting, so all that counts is ten photographs in total.
+ */
+export function photoShortfall(slots: readonly VehiclePhotoSlot[]): {
+  missing: StandardPhotoSlot[];
+  needed: number;
+} {
+  const present = new Set(slots);
+  const missing = STANDARD_PHOTO_SLOTS.filter((slot) => !present.has(slot));
+  const unsorted = slots.filter((slot) => slot === 'UNSORTED').length;
+  if (unsorted === 0) return { missing, needed: missing.length };
+  const needed = Math.max(
+    0,
+    DEALER_PHOTOS_REQUIRED - (STANDARD_PHOTO_SLOTS.length - missing.length) - unsorted,
+  );
+  return { missing: needed === 0 ? [] : missing, needed };
+}
 
 /** Choosing who photographs the car. Only while the listing is editable. */
 export const SetPhotoPlanInput = z.object({ plan: PhotoPlan }).strict();
@@ -129,7 +158,10 @@ export const DealerVehiclePhotos = z.object({
   ),
   extras: z.array(DealerSubmissionPhoto),
   extrasMax: z.number().int(),
+  unsorted: z.array(DealerSubmissionPhoto).default([]),
+  unsortedMax: z.number().int().default(DEALER_PHOTO_UNSORTED_MAX),
   missing: z.array(VehiclePhotoSlot),
+  needed: z.number().int().optional(),
   ready: z.boolean(),
 });
 export type DealerVehiclePhotos = z.infer<typeof DealerVehiclePhotos>;

@@ -81,6 +81,8 @@ export function photos(
     })),
     extras: [],
     extrasMax: 6,
+    unsorted: [],
+    unsortedMax: 16,
     missing: STANDARD_PHOTO_SLOTS.slice(uploaded),
     ready: false,
     ...overrides,

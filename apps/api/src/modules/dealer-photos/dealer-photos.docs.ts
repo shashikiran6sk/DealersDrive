@@ -18,7 +18,9 @@ export const dealerPhotosDocs: ModuleDocs = {
     'Every write is refused unless `feature.dealerPhotos` is on and the listing is `DRAFT` or ' +
     '`CHANGES_REQUESTED`. Uploads are presign → PUT → commit, and the commit checks the size ' +
     'and the JPEG/PNG/WebP signature before attaching the file. One photograph per standard ' +
-    'slot (a new one replaces the old); up to six `EXTRA`.',
+    'slot (a new one replaces the old); up to six `EXTRA`. Photographs uploaded "all at once" ' +
+    'go to `UNSORTED` (up to sixteen) and the review team places them; once any is unsorted, ' +
+    'submission needs ten photographs in total rather than the ten named shots.',
   operations: [
     {
       method: 'get',
@@ -29,7 +31,8 @@ export const dealerPhotosDocs: ModuleDocs = {
       description:
         'Everything the wizard’s Photos step renders: the plan, whether a Dealers-Drive ' +
         'photoshoot covers the dealership’s district, the ten standard slots with any photograph ' +
-        'in each (short-lived signed URLs), the extras, what is missing, and `ready` — whether ' +
+        'in each (short-lived signed URLs), the unsorted photographs, the extras, what is missing, ' +
+        '`needed` (how many more photographs submission wants) and `ready` — whether ' +
         'submission would pass as far as photographs go.',
       audience: 'dealer',
       permission: 'vehicle:read',

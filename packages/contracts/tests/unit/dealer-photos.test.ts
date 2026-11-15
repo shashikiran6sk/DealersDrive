@@ -5,13 +5,15 @@ import {
   PHOTO_SLOT_LABELS,
   STANDARD_PHOTO_SLOTS,
   VehiclePhotoSlot,
+  isStandardPhotoSlot,
+  photoShortfall,
   submittedPhotoDownloadName,
   submittedPhotosArchiveName,
   vehicleFileBase,
 } from '../../src/index.js';
 
 describe('the Dealers-Drive photo standard', () => {
-  it('is ten shots, every slot but EXTRA, each labelled', () => {
+  it('is ten shots, every slot but UNSORTED and EXTRA, each labelled', () => {
     expect(STANDARD_PHOTO_SLOTS).toHaveLength(10);
     expect(STANDARD_PHOTO_SLOTS).not.toContain('EXTRA');
     for (const slot of VehiclePhotoSlot.options) expect(PHOTO_SLOT_LABELS[slot]).toBeTruthy();
@@ -69,5 +71,29 @@ describe('the Dealers-Drive photo standard', () => {
     expect(DealerPhotoPresignInput.safeParse({ ...upload, mimeType: 'image/gif' }).success).toBe(
       false,
     );
+  });
+});
+
+describe('photoShortfall', () => {
+  it('asks for every missing shot while the photos are uploaded shot by shot', () => {
+    expect(photoShortfall(['FRONT', 'EXTRA'])).toEqual({
+      missing: STANDARD_PHOTO_SLOTS.filter((slot) => slot !== 'FRONT'),
+      needed: 9,
+    });
+    expect(photoShortfall([...STANDARD_PHOTO_SLOTS])).toEqual({ missing: [], needed: 0 });
+  });
+
+  it('counts ten photographs in total once any was uploaded all at once', () => {
+    const unsorted = (count: number) => Array.from({ length: count }, () => 'UNSORTED' as const);
+    expect(photoShortfall(unsorted(7)).needed).toBe(3);
+    expect(photoShortfall([...unsorted(8), 'FRONT', 'REAR'])).toEqual({ missing: [], needed: 0 });
+    expect(photoShortfall([...unsorted(9), 'EXTRA']).needed).toBe(1);
+  });
+
+  it('never treats an unsorted or extra photo as one of the ten shots', () => {
+    expect(isStandardPhotoSlot('UNSORTED')).toBe(false);
+    expect(isStandardPhotoSlot('EXTRA')).toBe(false);
+    expect(STANDARD_PHOTO_SLOTS).toHaveLength(10);
+    expect(STANDARD_PHOTO_SLOTS).not.toContain('UNSORTED');
   });
 });

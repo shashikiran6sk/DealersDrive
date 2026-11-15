@@ -1,6 +1,7 @@
 import {
   DealerVehiclePhotos,
   PresignResponse,
+  photoShortfall,
   type PhotoPlan,
   type VehiclePhotoSlot,
 } from '@dealers-drive/contracts';
@@ -86,4 +87,19 @@ export async function removePhoto(
     method: 'DELETE',
   });
   return parsed(response, PHOTO_STEP_TEXT.failed);
+}
+
+function uploadedSlots(photos: DealerVehiclePhotos) {
+  return [
+    ...photos.slots.flatMap((slot) => (slot.photo ? [slot.slot] : [])),
+    ...photos.unsorted.map((photo) => photo.slot),
+  ];
+}
+
+export function photoCount(photos: DealerVehiclePhotos): number {
+  return uploadedSlots(photos).length;
+}
+
+export function photosNeeded(photos: DealerVehiclePhotos): number {
+  return photoShortfall(uploadedSlots(photos)).needed;
 }

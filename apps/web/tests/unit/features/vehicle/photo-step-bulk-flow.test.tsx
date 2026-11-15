@@ -1,37 +1,56 @@
-import type { VehiclePhotoSlot } from '@dealers-drive/contracts';
+import type { DealerSubmissionPhoto, VehiclePhotoSlot } from '@dealers-drive/contracts';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PhotoStep } from '@/features/vehicle/photo-step';
 import type * as PhotoStepUtils from '@/features/vehicle/photo-step/utils';
 import { UploadFailure } from '@/lib/upload';
 
-import { navigationState } from '../../../setup';
 import { VEHICLE_ID, photos } from './fixtures';
 
-const revoke = vi.fn();
-
-const uploads = vi.hoisted(() => ({
+const server = vi.hoisted(() => ({
   calls: [] as { slot: VehiclePhotoSlot; name: string }[],
-  failOn: null as string | null,
+  removed: [] as string[],
+  failOn: new Set<string>(),
 }));
 
 vi.mock('@/features/vehicle/photo-step/utils', async (importOriginal) => {
   const actual = await importOriginal<typeof PhotoStepUtils>();
   const { photos: fixture } = await import('./fixtures');
+  function current() {
+    const unsorted: DealerSubmissionPhoto[] = server.calls
+      .filter((call) => !server.removed.includes(call.name))
+      .map((call, index) => ({
+        mediaId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+        slot: call.slot,
+        slotLabel: 'Photo',
+        url: `/u/${call.name}`,
+        fileName: call.name,
+        bytes: 1,
+        uploadedAt: '2026-11-15T09:00:00.000Z',
+      }));
+    return fixture({ plan: 'DEALER', unsorted }, 0);
+  }
   return {
     ...actual,
     uploadPhoto: (_vehicleId: string, slot: VehiclePhotoSlot, file: File) => {
-      if (file.name === uploads.failOn)
+      if (server.failOn.has(file.name)) {
+        server.failOn.delete(file.name);
         return Promise.reject(new UploadFailure('Storage said no.'));
-      uploads.calls.push({ slot, name: file.name });
-      const standard = uploads.calls.filter((call) => call.slot !== 'EXTRA').length;
-      return Promise.resolve(fixture({ plan: 'DEALER' }, standard));
+      }
+      server.calls.push({ slot, name: file.name });
+      return Promise.resolve(current());
+    },
+    removePhoto: (_vehicleId: string, mediaId: string) => {
+      const index = Number(mediaId.slice(-12));
+      const name = server.calls.filter((call) => !server.removed.includes(call.name))[index]?.name;
+      if (name) server.removed.push(name);
+      return Promise.resolve(current());
     },
   };
 });
 
-function shots(count: number): File[] {
+function pictures(count: number): File[] {
   return Array.from(
     { length: count },
     (_, index) =>
@@ -57,20 +76,17 @@ function renderStep(uploaded = 0) {
   );
 }
 
-beforeEach(() => {
-  uploads.calls = [];
-  uploads.failOn = null;
-  let next = 0;
-  URL.createObjectURL = vi.fn(() => {
-    next += 1;
-    return `blob:preview-${String(next)}`;
-  });
-  revoke.mockClear();
-  URL.revokeObjectURL = revoke;
-});
+function listedNames(): string[] {
+  const list = screen.getByRole('list', { name: 'Uploaded photos' });
+  return within(list)
+    .getAllByRole('listitem')
+    .map((item) => item.querySelector('.truncate')?.textContent ?? '');
+}
 
-afterEach(() => {
-  vi.restoreAllMocks();
+beforeEach(() => {
+  server.calls = [];
+  server.removed = [];
+  server.failOn = new Set();
 });
 
 describe('uploading every photo at once', () => {
@@ -87,7 +103,7 @@ describe('uploading every photo at once', () => {
     expect(screen.getAllByRole('img', { name: /^a dealer in position/i })).toHaveLength(10);
   });
 
-  it('keeps one shot at a time for a car that already has photos', () => {
+  it('keeps one shot at a time for a car that already has shots', () => {
     renderStep(3);
     expect(screen.getByRole('radio', { name: /One shot at a time/ })).toHaveAttribute(
       'aria-checked',
@@ -95,81 +111,57 @@ describe('uploading every photo at once', () => {
     );
   });
 
-  it('puts the photos in order, lets the dealer swap two, uploads them and moves on to review', async () => {
+  it('uploads the photos straight away, unsorted, oldest first, and lists their names', async () => {
     renderStep();
-    await choose(shots(11).reverse());
+    await choose(pictures(10).reverse());
 
-    expect(screen.getByRole('heading', { name: 'Check the order' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^Select the photo for 1 · / }));
-    expect(screen.getByText(/Now tap where your front three-quarter/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^Move the selected photo to 2 · / }));
-
-    const upload = screen.getByRole('button', { name: 'Upload 11 photos and continue' });
-    await act(async () => {
-      fireEvent.click(upload);
-      await Promise.resolve();
-    });
-
-    await waitFor(() => expect(navigationState.pushed).toContain('/review'));
-    expect(uploads.calls.map((call) => [call.slot, call.name])).toEqual([
-      ['FRONT_THREE_QUARTER_RIGHT', 'IMG_2.png'],
-      ['FRONT', 'IMG_1.png'],
-      ['FRONT_THREE_QUARTER_LEFT', 'IMG_3.png'],
-      ['LEFT_SIDE', 'IMG_4.png'],
-      ['REAR', 'IMG_5.png'],
-      ['RIGHT_SIDE', 'IMG_6.png'],
-      ['FRONT_SEATS', 'IMG_7.png'],
-      ['REAR_SEATS', 'IMG_8.png'],
-      ['DASHBOARD', 'IMG_9.png'],
-      ['ODOMETER', 'IMG_10.png'],
-      ['EXTRA', 'IMG_11.png'],
-    ]);
+    await waitFor(() => expect(server.calls).toHaveLength(10));
+    expect(server.calls.every((call) => call.slot === 'UNSORTED')).toBe(true);
+    expect(server.calls.map((call) => call.name)).toEqual(pictures(10).map((file) => file.name));
+    await waitFor(() => expect(listedNames()).toHaveLength(10));
+    expect(listedNames()[0]).toBe('IMG_1.png');
+    expect(
+      screen.getByText('10 photos uploaded. You can continue to review and submit the car.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Check the order/)).not.toBeInTheDocument();
   });
 
-  it('says what is missing, leaves out what is not a photo, and only uploads when short', async () => {
+  it('counts towards ten and leaves out a file that is not a photo', async () => {
     renderStep();
-    await choose([...shots(8), new File(['x'], 'notes.pdf', { type: 'application/pdf' })]);
-
+    await choose([...pictures(4), new File(['x'], 'notes.pdf', { type: 'application/pdf' })]);
+    await waitFor(() => expect(server.calls).toHaveLength(4));
     expect(screen.getByText(/One file was not a JPEG, PNG or WebP photo/)).toBeInTheDocument();
-    expect(screen.getByText('Still missing: Dashboard, Odometer.')).toBeInTheDocument();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Upload 8 photos' }));
-      await Promise.resolve();
-    });
-    await waitFor(() => expect(uploads.calls).toHaveLength(8));
-    expect(navigationState.pushed).not.toContain('/review');
-    expect(
-      screen.getByText(
-        '8 of the ten are already uploaded. New photos fill the shots still missing.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('4 of 10 photos uploaded')).toBeInTheDocument();
   });
 
-  it('keeps a photo that failed to upload, so the dealer can try again', async () => {
-    uploads.failOn = 'IMG_2.png';
+  it('keeps a photo that failed, tries it again, or drops it', async () => {
+    server.failOn = new Set(['IMG_2.png', 'IMG_3.png']);
     renderStep();
-    await choose(shots(2));
+    await choose(pictures(3));
+    await waitFor(() => expect(screen.getAllByText('Storage said no.')).toHaveLength(2));
+
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Upload 2 photos' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
       await Promise.resolve();
     });
-    await waitFor(() =>
-      expect(screen.getByText(/One photo could not be uploaded/)).toBeInTheDocument(),
-    );
-    const failed = screen.getByRole('button', { name: /^Select the photo for 2 · / }).parentElement;
-    expect(within(failed ?? document.body).getByText('Not uploaded')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Upload 1 photo' })).toBeEnabled();
+    await waitFor(() => expect(server.calls.map((call) => call.name)).toContain('IMG_3.png'));
+    expect(screen.queryByText('Storage said no.')).not.toBeInTheDocument();
+
+    server.failOn = new Set(['IMG_9.png']);
+    await choose([new File(['x'], 'IMG_9.png', { type: 'image/png' })]);
+    await waitFor(() => expect(screen.getByText('Storage said no.')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Remove IMG_9.png' }));
+    expect(screen.queryByText('IMG_9.png')).not.toBeInTheDocument();
   });
 
-  it('removes a photo and starts over', async () => {
+  it('removes an uploaded photo', async () => {
     renderStep();
-    await choose(shots(2));
-    fireEvent.click(screen.getByRole('button', { name: /^Remove the photo for 2 · / }));
-    expect(screen.getByRole('button', { name: 'Upload 1 photo' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Start over' }));
-    expect(
-      screen.getByRole('heading', { name: 'Upload all your photos at once' }),
-    ).toBeInTheDocument();
-    expect(revoke).toHaveBeenCalledTimes(2);
+    await choose(pictures(2));
+    await waitFor(() => expect(listedNames()).toEqual(['IMG_1.png', 'IMG_2.png']));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Remove IMG_1.png' }));
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(listedNames()).toEqual(['IMG_2.png']));
   });
 });

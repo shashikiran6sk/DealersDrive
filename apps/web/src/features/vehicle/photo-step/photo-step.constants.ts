@@ -66,45 +66,35 @@ export const PHOTO_STEP_TEXT = {
   modeOneHint: 'Upload beside each step of the guide',
   bulkTitle: 'Upload all your photos at once',
   bulkBody:
-    'Choose the ten photos, and any extras, from your gallery in one go. We put them in the guide’s order by the time each was taken, so shoot them 1 to 10. You check the order before anything uploads.',
+    'Choose at least ten photos from your gallery in one go — the ten shots in the guide, and any extras. Our team puts them in order when they process them.',
   bulkChoose: 'Choose photos',
-  bulkAlreadyIn: (count: number) =>
-    `${String(count)} of the ten are already uploaded. New photos fill the shots still missing.`,
-  arrangeTitle: 'Check the order',
-  arrangeBody:
-    'Each photo should match the example under it. If two are the wrong way round, tap one and then the other to swap them.',
-  arrangeSelected: (label: string) => `Now tap where your ${label.toLowerCase()} photo should go.`,
-  arrangeExtras: 'Extras',
-  arrangeExtrasEmpty: 'Photos beyond the ten land here. Tap one to move it into a shot.',
-  arrangeMissing: (labels: readonly string[]) => `Still missing: ${labels.join(', ')}.`,
-  cellEmpty: 'No photo yet',
-  cellUploaded: 'Uploaded',
-  cellFailed: 'Not uploaded',
-  cellSelect: (position: string) => `Select the photo for ${position}`,
-  cellMoveHere: (position: string) => `Move the selected photo to ${position}`,
-  cellRemove: (position: string) => `Remove the photo for ${position}`,
-  cellPosition: (number: number, label: string) => `${String(number)} · ${label}`,
-  extraPosition: (number: number) => `Extra ${String(number)}`,
-  addMore: 'Add more photos',
-  startOver: 'Start over',
-  uploadAll: (count: number) => (count === 1 ? 'Upload 1 photo' : `Upload ${String(count)} photos`),
-  uploadAllAndContinue: (count: number) =>
-    count === 1 ? 'Upload 1 photo and continue' : `Upload ${String(count)} photos and continue`,
-  uploadingProgress: (done: number, total: number) =>
-    `Uploading ${String(done)} of ${String(total)}…`,
-  uploadFailedCount: (count: number) =>
+  bulkCount: (count: number, required: number) =>
+    `${String(count)} of ${String(required)} photos uploaded`,
+  bulkReady: (count: number) =>
+    `${String(count)} photos uploaded. You can continue to review and submit the car.`,
+  bulkShotsAlsoCount: (count: number) =>
     count === 1
-      ? 'One photo could not be uploaded. It is still here: try again.'
-      : `${String(count)} photos could not be uploaded. They are still here: try again.`,
+      ? 'The 1 shot you uploaded one at a time counts too.'
+      : `The ${String(count)} shots you uploaded one at a time count too.`,
+  bulkUploaded: 'Uploaded',
+  bulkWaiting: 'Waiting…',
+  bulkFailed: 'Not uploaded',
+  bulkRetry: 'Try again',
+  bulkUnnamed: (number: number) => `Photo ${String(number)}`,
+  bulkRemove: (name: string) => `Remove ${name}`,
+  bulkListLabel: 'Uploaded photos',
+  unsortedKept: (count: number) =>
+    count === 1
+      ? '1 photo uploaded all at once is kept. Our team will place it.'
+      : `${String(count)} photos uploaded all at once are kept. Our team will place them.`,
   skippedType: (count: number) =>
     count === 1
       ? 'One file was not a JPEG, PNG or WebP photo and was left out.'
       : `${String(count)} files were not JPEG, PNG or WebP photos and were left out.`,
   leftOut: (count: number, max: number) =>
     count === 1
-      ? `One photo was left out: there is room for ten shots and ${String(max)} extras.`
-      : `${String(count)} photos were left out: there is room for ten shots and ${String(max)} extras.`,
-  bulkDone: 'All your photos are uploaded.',
+      ? `One photo was left out: you can upload up to ${String(max)} at once.`
+      : `${String(count)} photos were left out: you can upload up to ${String(max)} at once.`,
 } as const;
 
 export const BULK_UPLOAD_ANCHOR = 'bulk-upload';

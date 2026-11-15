@@ -1,17 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import {
-  BulkArrangement,
-  EMPTY_ARRANGEMENT,
+  BulkUploadRow,
   PhotoPlanChoice,
   PhotoStep,
   UploadModeSwitch,
-  arrange,
   planOptions,
-  type LocalPhoto,
 } from '@/features/vehicle/photo-step';
 
-import { mockPhotos } from '../../mocks/dealer-photos';
+import { mockPhotos, mockUnsorted } from '../../mocks/dealer-photos';
 
 const meta = {
   title: 'Vehicle/PhotoStep',
@@ -40,62 +37,31 @@ export const NoPlanYet: Story = {};
 
 export const DealerAllAtOnce: Story = { args: { photos: mockPhotos({ plan: 'DEALER' }, 0) } };
 
-function guidePhoto(number: number): LocalPhoto {
-  const padded = String(number).padStart(2, '0');
-  return {
-    id: `local-${padded}`,
-    file: new File([], `IMG_${padded}.jpg`, { type: 'image/jpeg' }),
-    previewUrl: `/photo-guide/shot-${padded}-result.webp`,
-  };
-}
-
-const twelve = [2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 4, 7].map((number, index) =>
-  index >= 10 ? { ...guidePhoto(number), id: `extra-${String(index)}` } : guidePhoto(number),
-);
-
-export const BulkCheckTheOrder: Story = {
-  render: () => (
-    <div className="card p-[16px]">
-      <BulkArrangement
-        arrangement={arrange(EMPTY_ARRANGEMENT, twelve, new Set(), 6).arrangement}
-        photos={mockPhotos({ plan: 'DEALER' }, 0)}
-        selected={{ area: 'slot', index: 0 }}
-        failed={new Set(['local-09'])}
-        disabled={false}
-        onPress={() => undefined}
-        onRemove={() => undefined}
-      />
-    </div>
-  ),
+export const AllAtOnceUploading: Story = {
+  args: {
+    photos: mockPhotos({ plan: 'DEALER', unsorted: mockUnsorted(6) }, 0),
+  },
 };
 
-export const BulkAddingToUploaded: Story = {
+export const AllAtOnceReady: Story = {
+  args: {
+    photos: mockPhotos({ plan: 'DEALER', unsorted: mockUnsorted(12), missing: [], ready: true }, 0),
+  },
+};
+
+export const UploadRows: Story = {
   render: () => (
-    <div className="card p-[16px]">
-      <BulkArrangement
-        arrangement={
-          arrange(
-            EMPTY_ARRANGEMENT,
-            [guidePhoto(7), guidePhoto(8)],
-            new Set([
-              'FRONT_THREE_QUARTER_RIGHT',
-              'FRONT',
-              'FRONT_THREE_QUARTER_LEFT',
-              'LEFT_SIDE',
-              'REAR',
-              'RIGHT_SIDE',
-            ] as const),
-            6,
-          ).arrangement
-        }
-        photos={mockPhotos({ plan: 'DEALER' }, 6)}
-        selected={null}
-        failed={new Set()}
-        disabled={false}
-        onPress={() => undefined}
+    <ul className="card flex flex-col divide-y divide-(--color-divider) px-[16px]">
+      <BulkUploadRow name="IMG_20261115_100012.jpg" status="uploaded" onRemove={() => undefined} />
+      <BulkUploadRow name="IMG_20261115_100112.jpg" status="uploading" />
+      <BulkUploadRow name="IMG_20261115_100212.jpg" status="waiting" />
+      <BulkUploadRow
+        name="IMG_20261115_100312.jpg"
+        status="failed"
+        message="The upload was rejected by storage."
         onRemove={() => undefined}
       />
-    </div>
+    </ul>
   ),
 };
 

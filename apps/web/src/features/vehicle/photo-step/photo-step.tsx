@@ -23,14 +23,16 @@ import { planOptions } from './plan-options';
 import { ShotProgress } from './shot-progress';
 import { ShotUploadCard } from './shot-upload-card';
 import { UploadModeSwitch } from './upload-mode-switch';
-import { choosePlan, removePhoto, uploadPhoto } from './utils';
+import { choosePlan, photosNeeded, removePhoto, uploadPhoto } from './utils';
 
 export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: PhotoStepProps) {
   const [photos, setPhotos] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ key: string; message: string } | null>(null);
   const [mode, setMode] = useState<UploadMode>(
-    initial.slots.some((slot) => slot.photo !== null) ? 'one' : 'all',
+    initial.slots.some((slot) => slot.photo !== null) && initial.unsorted.length === 0
+      ? 'one'
+      : 'all',
   );
   const [bulkUploading, setBulkUploading] = useState(false);
 
@@ -52,7 +54,7 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
   const remove = (mediaId: string) => void run(mediaId, () => removePhoto(vehicleId, mediaId));
 
   const bulk = mode === 'all' && photos.canEdit;
-  const done = photos.slots.filter((slot) => slot.photo !== null).length;
+  const done = 10 - photosNeeded(photos);
   const doneSlots = new Set(
     photos.slots.filter((slot) => slot.photo !== null).map((slot) => slot.slot),
   );
@@ -138,7 +140,6 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
               <BulkUpload
                 vehicleId={vehicleId}
                 photos={photos}
-                nextHref={nextHref}
                 onPhotos={setPhotos}
                 onUploadingChange={setBulkUploading}
               />
@@ -147,6 +148,11 @@ export function PhotoStep({ vehicleId, photos: initial, backHref, nextHref }: Ph
           ) : (
             <>
               {guide}
+              {photos.unsorted.length > 0 ? (
+                <p className="text-[13px] font-medium">
+                  {PHOTO_STEP_TEXT.unsortedKept(photos.unsorted.length)}
+                </p>
+              ) : null}
               <ol className="flex flex-col gap-[12px]">
                 {SHOT_GUIDES.map((shot) => (
                   <ShotUploadCard

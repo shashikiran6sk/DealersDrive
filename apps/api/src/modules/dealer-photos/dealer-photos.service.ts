@@ -2,11 +2,14 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import {
   DEALER_PHOTO_EXTRAS_MAX,
+  DEALER_PHOTO_UNSORTED_MAX,
   PHOTO_PLAN_LABELS,
   PHOTO_SLOT_LABELS,
   STANDARD_PHOTO_SLOTS,
   VehiclePhotoSlot,
   isListingEditable,
+  isStandardPhotoSlot,
+  photoShortfall,
   submittedPhotoDownloadName,
   submittedPhotosArchiveName,
   vehicleFileBase,
@@ -51,6 +54,7 @@ import {
   PHOTO_NOT_FOUND,
   PLAN_NOT_DEALER,
   SLOT_TAKEN,
+  UNSORTED_FULL,
   UPLOAD_MISMATCH,
   UPLOAD_NOT_IMAGE,
   VEHICLE_NOT_FOUND,
@@ -110,8 +114,20 @@ export function slotOfKey(key: string): VehiclePhotoSlot | null {
 }
 
 export function missingSlots(rows: readonly { slot: VehiclePhotoSlot }[]): StandardPhotoSlot[] {
-  const present = new Set(rows.map((row) => row.slot));
-  return STANDARD_PHOTO_SLOTS.filter((slot) => !present.has(slot));
+  return photoShortfall(rows.map((row) => row.slot)).missing;
+}
+
+const SHARED_SLOT_LIMITS: Partial<Record<VehiclePhotoSlot, number>> = {
+  EXTRA: DEALER_PHOTO_EXTRAS_MAX,
+  UNSORTED: DEALER_PHOTO_UNSORTED_MAX,
+};
+
+export function assertRoomFor(slot: VehiclePhotoSlot, alreadyThere: number): void {
+  const max = SHARED_SLOT_LIMITS[slot];
+  if (max === undefined || alreadyThere < max) return;
+  throw slot === 'EXTRA'
+    ? new ConflictError('PHOTO_EXTRAS_FULL', EXTRAS_FULL(max))
+    : new ConflictError('PHOTO_UNSORTED_FULL', UNSORTED_FULL(max));
 }
 
 function vehicleNotFound(): NotFoundError {
@@ -184,7 +200,7 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       photoshootCoverage(prisma, dealerId),
     ]);
     const photos = await Promise.all(rows.map(signed));
-    const missing = missingSlots(rows);
+    const { missing, needed } = photoShortfall(rows.map((row) => row.slot));
     const plan = listing.photoPlan;
     return {
       enabled,
@@ -198,10 +214,13 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       })),
       extras: photos.filter((photo) => photo.slot === 'EXTRA'),
       extrasMax: DEALER_PHOTO_EXTRAS_MAX,
+      unsorted: photos.filter((photo) => photo.slot === 'UNSORTED'),
+      unsortedMax: DEALER_PHOTO_UNSORTED_MAX,
       missing,
+      needed,
       ready:
         !enabled ||
-        (plan === 'DEALER' && missing.length === 0) ||
+        (plan === 'DEALER' && needed === 0) ||
         (plan === 'DEALERS_DRIVE' && photoshoot.available),
     };
   }
@@ -248,13 +267,11 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       assertEditable(listing);
       if (listing.photoPlan !== 'DEALER')
         throw new ConflictError('PHOTO_PLAN_NOT_DEALER', PLAN_NOT_DEALER);
-      if (input.slot === 'EXTRA') {
-        const extras = await prisma.vehicleSubmissionPhoto.count({
-          where: { vehicleId, slot: 'EXTRA' },
+      if (!isStandardPhotoSlot(input.slot)) {
+        const alreadyThere = await prisma.vehicleSubmissionPhoto.count({
+          where: { vehicleId, slot: input.slot },
         });
-        if (extras >= DEALER_PHOTO_EXTRAS_MAX) {
-          throw new ConflictError('PHOTO_EXTRAS_FULL', EXTRAS_FULL(DEALER_PHOTO_EXTRAS_MAX));
-        }
+        assertRoomFor(input.slot, alreadyThere);
       }
 
       const mediaId = randomUUID();
@@ -330,12 +347,11 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
           if (claimed.count === 0) return [];
 
           const rows = await submissionPhotosOf(tx, vehicleId);
-          const replaced = slot === 'EXTRA' ? undefined : rows.find((row) => row.slot === slot);
-          if (
-            slot === 'EXTRA' &&
-            rows.filter((row) => row.slot === 'EXTRA').length >= DEALER_PHOTO_EXTRAS_MAX
-          ) {
-            throw new ConflictError('PHOTO_EXTRAS_FULL', EXTRAS_FULL(DEALER_PHOTO_EXTRAS_MAX));
+          const replaced = isStandardPhotoSlot(slot)
+            ? rows.find((row) => row.slot === slot)
+            : undefined;
+          if (!isStandardPhotoSlot(slot)) {
+            assertRoomFor(slot, rows.filter((row) => row.slot === slot).length);
           }
           if (replaced) {
             await tx.vehicleSubmissionPhoto.delete({ where: { id: replaced.id } });

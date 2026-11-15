@@ -96,13 +96,25 @@ One bucket, private, three prefixes:
 | `vehicles/{vehicleId}/{mediaId}/…` (the existing vehicle-image keys) | the admin's browser, by presigned PUT, in `modules/vehicle-images` | the finished StudioCar files buyers see |
 | `archives/submitted-photos/{listingId}/{fingerprint}.zip`            | the API                                                            | "Download all" zips                     |
 
+### `UNSORTED`
+
+A photo uploaded "all at once" names no shot: the dealer picks a gallery's worth
+in one go and the review team places them, which is the reason the option exists.
+It is a slot value rather than a null so the server-chosen key, the one-per-shot
+index and the readiness rule all keep working: the partial unique index excludes
+it alongside `EXTRA`, and up to `DEALER_PHOTO_UNSORTED_MAX` (sixteen: the ten plus
+the extras) may stack. In the admin's download it sorts after the named shots and
+before the extras, oldest first, as `…-11-photo.jpg`.
+
 ## `apps/api/src/modules/dealer-photos/submission-readiness.ts`
 
 ### `export async function assertPhotosReady(tx, listing)`
 
 Inside the submit transaction: a plan is required (`422 PHOTO_PLAN_REQUIRED`); a
 `DEALER` plan needs all ten standard shots (`422 PHOTOS_INCOMPLETE`, one field
-error per missing slot, `photos.<SLOT>`); a `DEALERS_DRIVE` plan needs coverage
+error per missing slot, `photos.<SLOT>`) — or, once any photo was uploaded "all at
+once", ten photographs in total (`422 PHOTOS_INCOMPLETE`, one error on `photos`
+saying how many more); a `DEALERS_DRIVE` plan needs coverage
 still to be there (`422 PHOTOSHOOT_UNAVAILABLE`). Only dealer submissions are
 checked — a Sales Representative is Dealers-Drive staff at the yard.
 
