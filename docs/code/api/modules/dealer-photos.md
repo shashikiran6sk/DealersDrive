@@ -132,6 +132,13 @@ neither drop an enum value nor use one in the transaction that added it.
 
 ### `export async function assertPhotosReady(tx, listing)`
 
+A car that already has finished photographs (`vehicle_media`, the gallery the
+review team uploads) is asked for nothing: no plan, no dealer photographs. Such a
+car is one the team sent back for changes after photographing it, and asking the
+dealer to photograph it again — or to pick a photoshoot their district may not
+have — would block a resubmission that works today. `view` reports it `ready` for
+the same reason.
+
 Inside the submit transaction: a plan is required (`422 PHOTO_PLAN_REQUIRED`); a
 `DEALER` plan needs all ten standard shots (`422 PHOTOS_INCOMPLETE`, one field
 error per missing slot, `photos.<SLOT>`) — or, once any photo was uploaded "all at

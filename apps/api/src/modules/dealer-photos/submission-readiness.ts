@@ -14,13 +14,18 @@ import {
   PLAN_REQUIRED,
   SLOT_MISSING,
 } from './dealer-photos.messages.js';
-import { photoshootCoverage, submissionPhotosOf } from './dealer-photos.repository.js';
+import {
+  hasFinishedPhotos,
+  photoshootCoverage,
+  submissionPhotosOf,
+} from './dealer-photos.repository.js';
 
 export async function dealerPhotosEnabled(config: PlatformConfigService): Promise<boolean> {
   return config.flag('feature.dealerPhotos');
 }
 
 export async function assertPhotosReady(tx: Tx, listing: Listing): Promise<void> {
+  if (await hasFinishedPhotos(tx, listing.vehicleId)) return;
   if (!listing.photoPlan) {
     throw new DomainError('PHOTO_PLAN_REQUIRED', PLAN_REQUIRED, {
       errors: [{ field: 'photoPlan', code: 'REQUIRED', message: PLAN_REQUIRED }],

@@ -138,6 +138,14 @@ describe('dealer photographs', () => {
     await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
   });
 
+  it('asks nothing of a car that already has finished photos, so changes can go back as before', async () => {
+    const id = await draft();
+    await seedImages(h.prisma, { vehicleId: id, dealerId: a.dealerId }, 6, 'DEALERS_DRIVE');
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body).toMatchObject({ plan: null, ready: true });
+    await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
+  });
+
   it('takes photographs uploaded all at once and submits once there are ten', async () => {
     const id = await draft();
     await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);

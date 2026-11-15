@@ -61,6 +61,7 @@ import {
   VEHICLE_NOT_FOUND,
 } from './dealer-photos.messages.js';
 import {
+  hasFinishedPhotos,
   photoshootCoverage,
   submissionPhotosOf,
   type SubmissionPhotoRow,
@@ -198,10 +199,11 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
 
   async function view(dealerId: string, vehicleId: string): Promise<DealerVehiclePhotos> {
     const listing = await ownedListing(dealerId, vehicleId);
-    const [enabled, rows, photoshoot] = await Promise.all([
+    const [enabled, rows, photoshoot, finished] = await Promise.all([
       config.flag('feature.dealerPhotos'),
       submissionPhotosOf(prisma, vehicleId),
       photoshootCoverage(prisma, dealerId),
+      hasFinishedPhotos(prisma, vehicleId),
     ]);
     const photos = await Promise.all(rows.map(signed));
     const { missing, needed } = photoShortfall(rows.map((row) => row.slot));
@@ -225,6 +227,7 @@ export function createDealerPhotosService({ prisma, storage, audit, config }: De
       needed,
       ready:
         !enabled ||
+        finished ||
         (plan === 'DEALER' && needed === 0) ||
         (plan === 'DEALERS_DRIVE' && photoshoot.available),
     };
