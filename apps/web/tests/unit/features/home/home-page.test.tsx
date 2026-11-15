@@ -126,7 +126,7 @@ describe('the hero', () => {
     serve(() => response(cards('r', 6)));
     render(await HomePage());
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Find your next car' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 1, name: 'Find your perfect car' })).toBeVisible();
     const shortcuts = within(screen.getByRole('navigation', { name: SHORTCUTS_TEXT.label }));
     expect(shortcuts.getAllByRole('link')).toHaveLength(5);
     for (const [name, href] of [

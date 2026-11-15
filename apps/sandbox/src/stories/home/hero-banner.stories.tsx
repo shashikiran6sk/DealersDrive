@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 
 import { HeroBanner, HOME_HERO_IMAGE } from '@/features/home/hero-banner';
+import { HeroKeys } from '@/features/home/hero-keys';
 import { StockStream } from '@/features/home/stock-stream';
 import { CarSearchBox } from '@/components/search/car-search-box';
 import { CategoryShortcuts } from '@/features/home/category-shortcuts';
@@ -12,7 +13,7 @@ import { categoryHref } from '@/features/home/utils';
 const COPY = (
   <>
     <div className="eyebrow mb-4">Independent dealers · one trusted platform</div>
-    <h1 className="text-[56px] leading-none tracking-[-0.05em]">Find your next car</h1>
+    <h1 className="text-[56px] leading-none tracking-[-0.05em]">Find your perfect car</h1>
     <p className="mt-5 max-w-[46ch] text-[16px] leading-[1.75] ink-secondary">
       Used cars from independent dealerships across Tamil Nadu. Reviewed before they go live, priced
       by the dealer.
@@ -68,6 +69,7 @@ export const WithSearchAndShortcuts: Story = {
           }))}
           className="mt-5"
         />
+        <HeroKeys className="mt-6 lg:mt-8" />
       </>
     ),
     aside: <StockStream cars={Array.from({ length: 8 }, (_, index) => car(index))} />,

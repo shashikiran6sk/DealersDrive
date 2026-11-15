@@ -9,6 +9,7 @@ import { CategoryDeck } from '@/features/home/category-deck';
 import { CategoryShortcuts } from '@/features/home/category-shortcuts';
 import { DiscoveryBand } from '@/features/home/discovery-row';
 import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
+import { HeroKeys } from '@/features/home/hero-keys';
 import {
   HOME_CATEGORIES,
   HOME_SEARCH_PATH,
@@ -81,6 +82,7 @@ export default async function HomePage() {
           />
         </div>
         <CategoryShortcuts categories={SHORTCUTS} className="mt-5" />
+        <HeroKeys className="mt-6 lg:mt-8" />
       </HeroBanner>
 
       {inventory.unavailable ? (
