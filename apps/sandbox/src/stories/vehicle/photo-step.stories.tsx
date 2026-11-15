@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { PhotoPlanChoice, PhotoStep, planOptions } from '@/features/vehicle/photo-step';
+import {
+  BulkArrangement,
+  EMPTY_ARRANGEMENT,
+  PhotoPlanChoice,
+  PhotoStep,
+  UploadModeSwitch,
+  arrange,
+  planOptions,
+  type LocalPhoto,
+} from '@/features/vehicle/photo-step';
 
 import { mockPhotos } from '../../mocks/dealer-photos';
 
@@ -28,6 +37,71 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NoPlanYet: Story = {};
+
+export const DealerAllAtOnce: Story = { args: { photos: mockPhotos({ plan: 'DEALER' }, 0) } };
+
+function guidePhoto(number: number): LocalPhoto {
+  const padded = String(number).padStart(2, '0');
+  return {
+    id: `local-${padded}`,
+    file: new File([], `IMG_${padded}.jpg`, { type: 'image/jpeg' }),
+    previewUrl: `/photo-guide/shot-${padded}-result.webp`,
+  };
+}
+
+const twelve = [2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 4, 7].map((number, index) =>
+  index >= 10 ? { ...guidePhoto(number), id: `extra-${String(index)}` } : guidePhoto(number),
+);
+
+export const BulkCheckTheOrder: Story = {
+  render: () => (
+    <div className="card p-[16px]">
+      <BulkArrangement
+        arrangement={arrange(EMPTY_ARRANGEMENT, twelve, new Set(), 6).arrangement}
+        photos={mockPhotos({ plan: 'DEALER' }, 0)}
+        selected={{ area: 'slot', index: 0 }}
+        failed={new Set(['local-09'])}
+        disabled={false}
+        onPress={() => undefined}
+        onRemove={() => undefined}
+      />
+    </div>
+  ),
+};
+
+export const BulkAddingToUploaded: Story = {
+  render: () => (
+    <div className="card p-[16px]">
+      <BulkArrangement
+        arrangement={
+          arrange(
+            EMPTY_ARRANGEMENT,
+            [guidePhoto(7), guidePhoto(8)],
+            new Set([
+              'FRONT_THREE_QUARTER_RIGHT',
+              'FRONT',
+              'FRONT_THREE_QUARTER_LEFT',
+              'LEFT_SIDE',
+              'REAR',
+              'RIGHT_SIDE',
+            ] as const),
+            6,
+          ).arrangement
+        }
+        photos={mockPhotos({ plan: 'DEALER' }, 6)}
+        selected={null}
+        failed={new Set()}
+        disabled={false}
+        onPress={() => undefined}
+        onRemove={() => undefined}
+      />
+    </div>
+  ),
+};
+
+export const ModeSwitch: Story = {
+  render: () => <UploadModeSwitch mode="all" onChange={() => undefined} />,
+};
 
 export const DealerUploading: Story = { args: { photos: mockPhotos({ plan: 'DEALER' }, 4) } };
 

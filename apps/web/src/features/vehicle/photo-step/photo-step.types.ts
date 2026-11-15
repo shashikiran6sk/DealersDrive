@@ -14,3 +14,5 @@ export interface PlanOption {
   note: string | null;
   available: boolean;
 }
+
+export type UploadMode = 'all' | 'one';

@@ -138,6 +138,48 @@ since ten cards is a long scroll on a phone. "Before you shoot" opens by itself
 until the first photo is uploaded, then folds away. The full guide and the PDF
 are linked for anyone who wants to read it before going out to the car.
 
+## `apps/web/src/features/vehicle/photo-step/bulk-upload.tsx`
+
+### `BulkUpload`
+
+"All at once": every photo from one multi-select picker, instead of ten pickers.
+It is the default while the car has no photo, because most dealers shoot first and
+upload afterwards; a car with photos already opens on "one shot at a time", which
+is where a single replacement is easiest. Either way the API is the same — each
+photo is presigned, PUT and committed into its own slot — so bulk upload needs no
+new route and the submission rule (all ten shots) is unchanged.
+
+The order is settled **before** anything uploads: the dealer sees the photos laid
+into the ten shots beside the guide's example for each, and taps two to swap
+them. A slot is fixed at presign (it is in the storage key), so a swap after
+upload would need a new route and a second copy; a swap before upload is an array
+operation. Uploads run one at a time, because each commit answers with the whole
+photo set and two in flight could each answer without the other's photo. A
+photo that fails stays in the grid, marked, for another try; when everything is
+in and nothing is missing, the step moves on to Review. Shots already uploaded
+are shown and locked — new photos fill the gaps rather than replacing them.
+
+## `apps/web/src/features/vehicle/photo-step/capture-time.ts`
+
+### `export async function inCaptureOrder(files)`
+
+The guide is a fixed walk-round, 1 to 10, so the order the photos were taken is
+the order of the shots. The capture time is read from the JPEG's EXIF
+`DateTimeOriginal` (with `SubSecTimeOriginal`, for photos taken in the same
+second) by a small reader of the first 128 KB rather than a library: one tag is
+needed. Without EXIF — a PNG, a stripped file — it falls back to the file's own
+time, then to the name in natural order (`IMG_9` before `IMG_10`), which is how
+phones number photos. A wrong guess costs a swap in the grid, not a wrong upload.
+
+## `apps/web/src/features/vehicle/photo-step/arrangement.ts`
+
+### `export function arrange(current, incoming, uploaded, extrasRoom)`
+
+Fills the first free shot in guide order, skipping shots already uploaded, then
+the extras, and reports what did not fit rather than dropping it silently. "Add
+more photos" runs the same function on the current arrangement, so adding the
+two photos the dealer forgot lands them in the gaps.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
 
 ### `export function submissionNeeds(vehicle, photos)`
