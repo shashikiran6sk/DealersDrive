@@ -4,6 +4,7 @@ Parent: [api](../README.md)
 
 ## Pages
 
+- [archive](archive.md)
 - [audit](audit.md)
 - [cache](cache.md)
 - [config](config.md)

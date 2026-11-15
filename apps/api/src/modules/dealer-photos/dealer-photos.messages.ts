@@ -18,6 +18,9 @@ export const PHOTOSHOOT_UNAVAILABLE = (district: string | null): string =>
 export const EXTRAS_FULL = (max: number): string =>
   `You can add at most ${String(max)} extra photographs. Remove one first.`;
 
+export const PHOTOS_FULL = (max: number): string =>
+  `A car can have at most ${String(max)} photographs. Remove one before adding another.`;
+
 export const PHOTO_NOT_FOUND = 'That photograph is not on this vehicle.';
 
 export const SLOT_TAKEN = 'Another upload for this shot finished first. Reload the page to see it.';
@@ -32,5 +35,10 @@ export const PLAN_REQUIRED = 'Choose who will photograph the car before submitti
 export const PHOTOS_INCOMPLETE = (count: number): string =>
   `${String(count)} of the 10 standard photographs ${count === 1 ? 'is' : 'are'} still missing.`;
 
+export const PHOTOS_TOO_FEW = (needed: number, required: number): string =>
+  `Upload at least ${String(required)} photographs: ${String(needed)} more ${needed === 1 ? 'is' : 'are'} needed.`;
+
 export const SLOT_MISSING = (slot: VehiclePhotoSlot): string =>
   `Add the ${PHOTO_SLOT_LABELS[slot].toLowerCase()} photograph.`;
+
+export const NO_SUBMITTED_PHOTOS = 'The dealer has not uploaded any photographs for this car.';

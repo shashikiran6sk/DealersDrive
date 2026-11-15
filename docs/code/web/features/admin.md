@@ -329,12 +329,16 @@ already reads.
 
 ## `apps/web/src/features/admin/listing-review/submitted-photos-panel.tsx`
 
-The dealer's raw photographs, for StudioCar. Downloads go through
-`/api/admin/listings/[id]/submitted-photos/[mediaId]`, which re-reads the listing,
-fetches the signed URL server-side and answers with `Content-Disposition:
-attachment` and the batch file name — a cross-origin signed URL would ignore the
-`download` attribute and open in a tab. "Download all" starts the downloads a
-moment apart, which browsers accept after one permission prompt.
+The dealer's raw photographs, for StudioCar. "Download all" saves one zip named
+for the car (`2016-hyundai-creta-sx.zip`); each photo also downloads on its own.
+Both call `submittedPhotosDownloadAction`, a server action that asks the API for a
+signed link and hands back only the URL, which the page then navigates to. The
+bytes go from storage to the browser and never through Vercel, whose functions
+answer at most 4.5 MB — a set of phone photographs is several times that. The
+link saves under its name because the API signs `Content-Disposition: attachment`
+into it (`api/modules/dealer-photos`, `adminDownload`). This replaced a BFF route
+that proxied each photo and a "Download all" that started ten downloads a moment
+apart, which browsers stopped after the first without a permission prompt.
 
 ## `apps/web/src/features/admin/listing-images/listing-images.tsx`
 

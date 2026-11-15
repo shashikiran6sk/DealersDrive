@@ -113,6 +113,11 @@ layout can change without invalidating a single cached page.
 The only way a KYC document is ever served, and how a moderator previews a
 vehicle image before its listing is public. Minutes, not hours.
 
+`downloadName` becomes `ResponseContentDisposition`, signed into the URL, so the
+store itself answers `Content-Disposition: attachment` and the browser saves the
+file under that name. It has to come from the server: a cross-origin link's
+`download` attribute is ignored.
+
 ### `accessKeyId: env.S3_ACCESS_KEY_ID ?? ''`
 
 Guaranteed present: `env.ts` refuses to start with a non-local storage
@@ -172,7 +177,19 @@ Public delivery URL. Never called for KYC documents — they have no route.
 ### `signedReadUrl(key: string, expiresInSeconds: number): Promise<string>`
 
 Short-lived signed read. The only way a KYC document is ever served, and
-every issue of one is audit-logged (§26.6).
+every issue of one is audit-logged (§26.6). `options.downloadName` asks for an
+attachment saved under that name.
+
+## `apps/api/src/platform/storage/disposition.ts`
+
+### `export function isSafeDownloadName(name: string): boolean`
+
+A download name goes into a header, so it is held to letters, digits, `.`, `_` and
+`-`: no quote, semicolon or newline can reach `Content-Disposition`, and no
+RFC 5987 encoding is needed. The names this codebase makes (`vehicleFileBase`) are
+already slugs; anything else is refused rather than escaped. The local adapter
+checks the `download` query parameter with it too, since that one arrives from a
+URL.
 
 ## `apps/api/src/platform/storage/cleanup.ts`
 

@@ -50,7 +50,10 @@ import { createModerationRouter } from './modules/moderation/moderation.routes.j
 import { createSearchRouter } from './modules/search/search.routes.js';
 import { createVehicleImagesRouter } from './modules/vehicle-images/vehicle-images.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
-import { createDealerPhotosRouter } from './modules/dealer-photos/dealer-photos.routes.js';
+import {
+  createAdminDealerPhotosRouter,
+  createDealerPhotosRouter,
+} from './modules/dealer-photos/dealer-photos.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
 export function createRoutes(container: Container): Router {
@@ -157,6 +160,7 @@ export function createRoutes(container: Container): Router {
   admin.use(createAdminMembersRouter(container.adminMembers));
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));
+  admin.use(createAdminDealerPhotosRouter(container.dealerPhotos));
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
   admin.use(createAdminSupportRouter(container.adminSupport));
   admin.use(createAdminNotificationsRouter(container.adminNotifications));

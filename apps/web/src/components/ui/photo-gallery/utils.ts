@@ -122,6 +122,26 @@ export function studioFilterId(reactId: string): string {
   return `${STUDIO_BACKDROP.filterIdPrefix}${reactId.replace(/[^A-Za-z0-9_-]/g, '')}`;
 }
 
+export function neighbourIndexes(index: number, total: number): number[] {
+  if (total <= 1) return [];
+  const next = wrapIndex(index + 1, total);
+  const previous = wrapIndex(index - 1, total);
+  return next === previous ? [next] : [next, previous];
+}
+
+export function saveDataRequested(navigator: unknown): boolean {
+  if (typeof navigator !== 'object' || navigator === null || !('connection' in navigator)) {
+    return false;
+  }
+  const { connection } = navigator;
+  return (
+    typeof connection === 'object' &&
+    connection !== null &&
+    'saveData' in connection &&
+    connection.saveData === true
+  );
+}
+
 export function indexAfterRemoval(index: number, removedAt: number): number {
   return removedAt < index ? index - 1 : index;
 }

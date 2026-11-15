@@ -131,6 +131,10 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/credit-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/admin/submitted-photos-actions',
+        replacement: new URL('../src/mocks/submitted-photos-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/vehicle/actions',
         replacement: new URL('../src/mocks/vehicle-actions.ts', import.meta.url).pathname,
       },

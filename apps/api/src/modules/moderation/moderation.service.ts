@@ -86,7 +86,7 @@ export function createModerationService({
       dealerPhotos?.adminSubmitted({
         vehicleId: listing.vehicleId,
         photoPlan: listing.photoPlan,
-        registrationNumber: listing.vehicle.registrationNumber,
+        vehicle: listing.vehicle,
       }),
     ]);
     const detailed = toAdminListingDetail(

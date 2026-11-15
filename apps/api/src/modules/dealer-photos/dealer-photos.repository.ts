@@ -18,6 +18,10 @@ export function submissionPhotosOf(db: Db, vehicleId: string): Promise<Submissio
   });
 }
 
+export async function hasFinishedPhotos(db: Db, vehicleId: string): Promise<boolean> {
+  return (await db.vehicleMedia.count({ where: { vehicleId } })) > 0;
+}
+
 export interface PhotoshootCoverage {
   available: boolean;
   district: string | null;

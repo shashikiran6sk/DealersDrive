@@ -12,13 +12,17 @@ export const dealerPhotosDocs: ModuleDocs = {
     'photographs it — only where the dealership’s district has `photographyAvailable`).\n\n' +
     '**A dealer’s photograph is never published.** It is stored with owner type ' +
     '`VEHICLE_SUBMISSION`, which the public media route refuses, and reaches the review team ' +
-    'only, through `GET /v1/admin/listings/{id}` → `submittedPhotos`. They check it, process ' +
+    'only, through `GET /v1/admin/listings/{id}` → `submittedPhotos` and the download route below. They check it, process ' +
     'it in StudioCar and upload the finished file through the admin image routes with credit ' +
     '`DEALER`; only that file can go live.\n\n' +
     'Every write is refused unless `feature.dealerPhotos` is on and the listing is `DRAFT` or ' +
     '`CHANGES_REQUESTED`. Uploads are presign → PUT → commit, and the commit checks the size ' +
     'and the JPEG/PNG/WebP signature before attaching the file. One photograph per standard ' +
-    'slot (a new one replaces the old); up to six `EXTRA`.',
+    'slot (a new one replaces the old); up to six `EXTRA`. Photographs uploaded "all at once" ' +
+    'go to `UNSORTED` and the review team places them; once any is unsorted, ' +
+    'submission needs ten photographs in total rather than the ten named shots. A car holds at ' +
+    'most sixteen photographs however they were uploaded (`409 PHOTOS_FULL`); replacing a ' +
+    'named shot it already has is always allowed.',
   operations: [
     {
       method: 'get',
@@ -29,7 +33,8 @@ export const dealerPhotosDocs: ModuleDocs = {
       description:
         'Everything the wizard’s Photos step renders: the plan, whether a Dealers-Drive ' +
         'photoshoot covers the dealership’s district, the ten standard slots with any photograph ' +
-        'in each (short-lived signed URLs), the extras, what is missing, and `ready` — whether ' +
+        'in each (short-lived signed URLs), the unsorted photographs, the extras, what is missing, ' +
+        '`needed` (how many more photographs submission wants) and `ready` — whether ' +
         'submission would pass as far as photographs go.',
       audience: 'dealer',
       permission: 'vehicle:read',
@@ -93,6 +98,44 @@ export const dealerPhotosDocs: ModuleDocs = {
       params: 'VehiclePhotoParam',
       responses: [{ status: 200, description: 'The photographs.', schema: 'DealerVehiclePhotos' }],
       errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/submitted-photos/download',
+      operationId: 'downloadSubmittedPhotos',
+      tag: DOC_TAGS.dealerPhotos,
+      summary: 'Download the dealer’s photographs — one, or all as a zip',
+      description:
+        'For the review team, ahead of StudioCar. Without `mediaId` the API zips every ' +
+        'photograph in shooting order (stored, not recompressed), keeps the archive under ' +
+        '`archives/submitted-photos/{listingId}/{fingerprint}.zip` — so a second click on an ' +
+        'unchanged set reuses it — and answers with a 5-minute signed link straight to storage. ' +
+        'Files are named for the car as the dealer listed it: ' +
+        '`2016-hyundai-creta-sx.zip`, containing ' +
+        '`2016-hyundai-creta-sx-01-front-three-quarter-driver-side.jpg` and so on. With ' +
+        '`mediaId`, the link is to that one photograph under the same naming. The link saves ' +
+        'the file as an attachment; the bytes never pass through the web app. Audited.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'SubmittedPhotosDownloadInput',
+        description: 'Empty for every photograph as a zip, or one `mediaId`.',
+        example: {},
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'A short-lived download link.',
+          schema: 'SubmittedPhotosDownload',
+          example: {
+            url: 'https://…r2.cloudflarestorage.com/…/archives/submitted-photos/…zip?X-Amz-…',
+            fileName: '2016-hyundai-creta-sx.zip',
+            expiresInSeconds: 300,
+          },
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
     },
     {
       method: 'delete',

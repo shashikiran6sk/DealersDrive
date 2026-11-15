@@ -14,6 +14,7 @@ const INPUT_SCHEMA_NAMES = [
   'CreateCreditOrderInput',
   'VerifyCreditOrderInput',
   'AdminCreditAdjustmentInput',
+  'SubmittedPhotosDownloadInput',
   'LegalAcceptInput',
   'LegalStatusQuery',
   'DealerLegalSubmitInput',

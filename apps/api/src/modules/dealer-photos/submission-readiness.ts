@@ -1,3 +1,4 @@
+import { DEALER_PHOTOS_REQUIRED, photoShortfall } from '@dealers-drive/contracts';
 import type { Listing } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
@@ -6,20 +7,25 @@ import type { Tx } from '../../platform/db/prisma.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { DomainError } from '../../platform/errors.js';
 import { mediaObjectKeys } from '../../platform/media/keys.js';
-import { missingSlots } from './dealer-photos.service.js';
 import {
   PHOTOSHOOT_UNAVAILABLE,
   PHOTOS_INCOMPLETE,
+  PHOTOS_TOO_FEW,
   PLAN_REQUIRED,
   SLOT_MISSING,
 } from './dealer-photos.messages.js';
-import { photoshootCoverage, submissionPhotosOf } from './dealer-photos.repository.js';
+import {
+  hasFinishedPhotos,
+  photoshootCoverage,
+  submissionPhotosOf,
+} from './dealer-photos.repository.js';
 
 export async function dealerPhotosEnabled(config: PlatformConfigService): Promise<boolean> {
   return config.flag('feature.dealerPhotos');
 }
 
 export async function assertPhotosReady(tx: Tx, listing: Listing): Promise<void> {
+  if (await hasFinishedPhotos(tx, listing.vehicleId)) return;
   if (!listing.photoPlan) {
     throw new DomainError('PHOTO_PLAN_REQUIRED', PLAN_REQUIRED, {
       errors: [{ field: 'photoPlan', code: 'REQUIRED', message: PLAN_REQUIRED }],
@@ -32,14 +38,22 @@ export async function assertPhotosReady(tx: Tx, listing: Listing): Promise<void>
     }
     return;
   }
-  const missing = missingSlots(await submissionPhotosOf(tx, listing.vehicleId));
-  if (missing.length > 0) {
+  const rows = await submissionPhotosOf(tx, listing.vehicleId);
+  const { missing, needed } = photoShortfall(rows.map((row) => row.slot));
+  const uploadedAllAtOnce = rows.some((row) => row.slot === 'UNSORTED');
+  if (needed > 0 && !uploadedAllAtOnce) {
     throw new DomainError('PHOTOS_INCOMPLETE', PHOTOS_INCOMPLETE(missing.length), {
       errors: missing.map((slot) => ({
         field: `photos.${slot}`,
         code: 'REQUIRED',
         message: SLOT_MISSING(slot),
       })),
+    });
+  }
+  if (needed > 0) {
+    const message = PHOTOS_TOO_FEW(needed, DEALER_PHOTOS_REQUIRED);
+    throw new DomainError('PHOTOS_INCOMPLETE', message, {
+      errors: [{ field: 'photos', code: 'REQUIRED', message }],
     });
   }
 }

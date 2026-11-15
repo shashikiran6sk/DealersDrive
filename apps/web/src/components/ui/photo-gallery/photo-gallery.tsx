@@ -19,6 +19,7 @@ import {
 } from './photo-gallery.constants';
 import type { GalleryStep, PhotoGalleryProps, PhotoKind } from './photo-gallery.types';
 import { StudioWhiteFilter } from './studio-white-filter';
+import { usePreloadNeighbours } from './use-preload-neighbours';
 import { useSwipe } from './use-swipe';
 import { indexAfterRemoval, initialIndex, studioFilterId, wrapIndex } from './utils';
 
@@ -44,6 +45,7 @@ export function PhotoGallery({
   const [open, setOpen] = useState(false);
   const openerRef = useRef<HTMLElement | null>(null);
   const stageImageRef = useRef<HTMLImageElement | null>(null);
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
 
   const step = useCallback(
     (delta: GalleryStep) => setIndex((currentIndex) => wrapIndex(currentIndex + delta, total)),
@@ -95,7 +97,15 @@ export function PhotoGallery({
     const image = stageImageRef.current;
     if (mainUrl && image?.complete && image.naturalWidth === 0) markFailed(mainUrl);
     else if (mainUrl && image) classify(mainUrl, image);
+    if (mainUrl && image?.complete && image.naturalWidth > 0) setLoadedUrl(mainUrl);
   }, [mainUrl, markFailed, classify]);
+
+  usePreloadNeighbours({
+    photos: shown,
+    index: current,
+    sizes,
+    enabled: mainUrl !== undefined && loadedUrl === mainUrl,
+  });
 
   if (!main) {
     return (
@@ -128,7 +138,10 @@ export function PhotoGallery({
             fetchPriority={current === first ? 'high' : undefined}
             className={cn('h-full w-full', variantClass.image)}
             style={whitened ? { filter: `url(#${filterId})` } : undefined}
-            onLoad={(event) => classify(main.url, event.currentTarget)}
+            onLoad={(event) => {
+              setLoadedUrl(main.url);
+              classify(main.url, event.currentTarget);
+            }}
             onError={() => markFailed(main.url)}
           />
           <Tag className="absolute right-[10px] bottom-[10px] z-[3] gap-[6px] bg-white text-[11px] tnum">

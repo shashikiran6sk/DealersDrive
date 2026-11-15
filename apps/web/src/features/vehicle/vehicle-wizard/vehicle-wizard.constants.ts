@@ -60,7 +60,7 @@ export const NUMBER_FIELDS = new Set([
 
 export const FORM_FIELD_OF: Record<string, string> = { pricePaise: 'priceRupees' };
 
-export const PHOTO_FIELDS = new Set(['photoPlan']);
+export const PHOTO_FIELDS = new Set(['photoPlan', 'photos']);
 
 export const PHOTO_FIELD_PREFIX = 'photos.';
 

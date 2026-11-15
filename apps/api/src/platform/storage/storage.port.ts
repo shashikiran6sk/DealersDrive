@@ -10,6 +10,10 @@ export interface StoredObject {
   contentType: string;
 }
 
+export interface SignedReadOptions {
+  downloadName?: string;
+}
+
 export interface StoragePort {
   presignPut(input: {
     key: string;
@@ -26,5 +30,9 @@ export interface StoragePort {
 
   publicUrl(key: string): string;
 
-  signedReadUrl(key: string, expiresInSeconds: number): Promise<string>;
+  signedReadUrl(
+    key: string,
+    expiresInSeconds: number,
+    options?: SignedReadOptions,
+  ): Promise<string>;
 }

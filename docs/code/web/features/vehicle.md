@@ -129,6 +129,50 @@ the server's view. A photograph over the 10 MB limit — a 48–50 MP phone mode
 resized in the browser to a 4096 px long edge first (`fitForUpload`), which keeps
 it well above what StudioCar needs.
 
+The guide is the step itself, not a link away from it: each upload card is that
+photo's page of the guide — the positioning photo, pose, height, distance and how
+to hold the phone, with the step-by-step and checks one tap down — and the
+reference result sits under the upload tile as "aim for this". The strip of
+result thumbnails (`ShotProgress`) ticks off as photos land and jumps to the card,
+since ten cards is a long scroll on a phone. "Before you shoot" opens by itself
+until the first photo is uploaded, then folds away. The full guide and the PDF
+are linked for anyone who wants to read it before going out to the car.
+
+## `apps/web/src/features/vehicle/photo-step/bulk-upload.tsx`
+
+### `BulkUpload`
+
+"All at once": every photo from one multi-select picker, uploaded straight away
+and listed by file name. It is the default while the car has no shot uploaded,
+because most dealers shoot first and upload afterwards; a car with shots already
+opens on "one shot at a time", which is where a single replacement is easiest.
+
+The dealer does not sort anything. Each photo goes up as `UNSORTED` and the
+review team places it when they process the set, so ten photographs in total are
+enough to submit (`photoShortfall` in contracts). An earlier version laid the
+photos into the ten shots and asked the dealer to swap any that were wrong; it was
+taken out as more work than it saved. Uploads still go presign → PUT → commit, one
+at a time, because each commit answers with the whole photo set and two in flight
+could each answer without the other's photo. A photo that fails stays in the list
+with its reason, for Try again or Remove.
+
+The picker takes no more than the car has room for — `photosMax` less every
+photo already on it, shots and extras included — and says how many it left out;
+the API enforces the same cap (`assertRoomFor`). At the cap, "one shot at a time"
+closes the empty shots and the extras tile but keeps Replace on the shots it has.
+
+## `apps/web/src/features/vehicle/photo-step/capture-time.ts`
+
+### `export async function inCaptureOrder(files)`
+
+Photos are uploaded oldest first, so the review team's download arrives in
+roughly the guide's 1-to-10 order: the guide is a fixed walk-round. The capture time is read from the JPEG's EXIF
+`DateTimeOriginal` (with `SubSecTimeOriginal`, for photos taken in the same
+second) by a small reader of the first 128 KB rather than a library: one tag is
+needed. Without EXIF — a PNG, a stripped file — it falls back to the file's own
+time, then to the name in natural order (`IMG_9` before `IMG_10`), which is how
+phones number photos. A wrong guess only changes the order of the admin's files.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
 
 ### `export function submissionNeeds(vehicle, photos, billing)`

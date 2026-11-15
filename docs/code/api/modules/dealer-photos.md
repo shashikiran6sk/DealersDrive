@@ -50,17 +50,100 @@ file is queued for deletion. Up to `DEALER_PHOTO_EXTRAS_MAX` extras.
 
 ### `async adminSubmitted(listing)`
 
-For the review screen, ordered by slot and named as a StudioCar batch —
-`TN23AB1234-01-front-three-quarter.jpg` — so a folder of downloads is already in
-order. The URLs are 15-minute signed reads.
+For the review screen, in the guide's shooting order and named for the car as the
+dealer listed it — `2016-hyundai-creta-sx-01-front-three-quarter-driver-side.jpg`
+(`vehicleFileBase` and `submittedPhotoDownloadName` in contracts) — so a folder of
+downloads is already a StudioCar batch in order. A car with no make or model yet
+falls back to its registration number, so a file is never called `-01-….jpg`. The
+thumbnail URLs are 15-minute signed reads.
+
+### `async adminDownload(admin, listingId, input)`
+
+Downloads are links straight to storage, not bytes through an app: a Vercel
+function answers at most 4.5 MB and a set of ten phone photographs is 25–40 MB,
+and in production `API_BASE_URL` is the public web origin, so an API route the
+browser fetches directly is not reachable either. The answer is a five-minute
+signed read whose `ResponseContentDisposition` saves it under its StudioCar name —
+without that a cross-origin signed URL opens the image in a tab, because browsers
+ignore the `download` attribute across origins.
+
+With `mediaId` it is that one photograph. Without, it is every photograph as one
+zip, `2016-hyundai-creta-sx.zip`, built once (`storedZip`) and kept at
+`archives/submitted-photos/{listingId}/{fingerprint}.zip`. The fingerprint is a
+hash of the archive name and each entry's media id and name, so a replaced photo,
+a new extra or a renamed car is a new archive and an unchanged set is served from
+storage without rebuilding. Every download is audit-logged
+(`listing.submitted_photos_downloaded`) through `recordDetached`, because the
+download is a read and has no transaction of its own to join.
+
+`422 NO_SUBMITTED_PHOTOS` when there is nothing to zip; `404 PHOTO_NOT_FOUND` for
+a `mediaId` that is not one of this listing's photographs, so a moderator cannot
+sign a read for some other object by guessing an id.
+
+### `export function assertRoomFor(slot, rows)`
+
+A car holds at most `DEALER_PHOTOS_MAX` (sixteen: the ten shots plus the six
+extras) photographs, counted across every kind, because the two ways of uploading
+are independent and each kind's own limit let a dealer who used both reach 32.
+Replacing a named shot the car already has is always allowed, since the total does
+not grow; otherwise a full car is `409 PHOTOS_FULL`. Extras keep their own limit of
+six inside that. The check runs at presign, so the dealer is refused before the
+upload, and again at commit under the listing lock, where it is authoritative.
+
+### `export function submittedPhotosArchiveKey(listingId, contents)`
+
+Archives are derived data: deleting the `archives/` prefix loses nothing, since
+the next download rebuilds them. An R2 lifecycle rule expiring it after a few
+days keeps it from growing.
+
+## Where the files live
+
+One bucket, private, three prefixes:
+
+| Prefix                                                               | Written by                                                         | What                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------- |
+| `vehicles/{vehicleId}/submitted/{mediaId}/{slot}.{ext}`              | the dealer's browser, by presigned PUT                             | raw photographs — never public          |
+| `vehicles/{vehicleId}/{mediaId}/…` (the existing vehicle-image keys) | the admin's browser, by presigned PUT, in `modules/vehicle-images` | the finished StudioCar files buyers see |
+| `archives/submitted-photos/{listingId}/{fingerprint}.zip`            | the API                                                            | "Download all" zips                     |
+
+### `UNSORTED`
+
+A photo uploaded "all at once" names no shot: the dealer picks a gallery's worth
+in one go and the review team places them, which is the reason the option exists.
+It is a slot value rather than a null so the server-chosen key, the one-per-shot
+index and the readiness rule all keep working: the partial unique index excludes
+it alongside `EXTRA`, and any number may stack up to the car's cap. In the admin's download it sorts after the named shots and
+before the extras, oldest first, as `…-11-photo.jpg`.
+
+The slot list reaches its final shape by migrations added on top of
+`20261111090000_dealer_photos`, never by editing it: a database that has run a
+migration never runs it again, so an edit reaches fresh databases and silently
+misses every other. While this feature was in review the first migration shipped
+with an earlier slot list (`FRONT_THREE_QUARTER`, `REAR_THREE_QUARTER`), and
+development databases ran it. `20261115120000_dealer_photos_unsorted` and its
+index migration add `UNSORTED`; `20261115130000_dealer_photo_slots_guide` then
+rebuilds the type as the guide's list and converts rows by name, so it fits every
+earlier state: `FRONT_THREE_QUARTER` becomes `FRONT_THREE_QUARTER_RIGHT` (photo 1)
+and `REAR_THREE_QUARTER`, which the guide dropped, becomes `UNSORTED` for the
+review team to place. The type is rebuilt rather than altered because Postgres can
+neither drop an enum value nor use one in the transaction that added it.
 
 ## `apps/api/src/modules/dealer-photos/submission-readiness.ts`
 
 ### `export async function assertPhotosReady(tx, listing)`
 
+A car that already has finished photographs (`vehicle_media`, the gallery the
+review team uploads) is asked for nothing: no plan, no dealer photographs. Such a
+car is one the team sent back for changes after photographing it, and asking the
+dealer to photograph it again — or to pick a photoshoot their district may not
+have — would block a resubmission that works today. `view` reports it `ready` for
+the same reason.
+
 Inside the submit transaction: a plan is required (`422 PHOTO_PLAN_REQUIRED`); a
 `DEALER` plan needs all ten standard shots (`422 PHOTOS_INCOMPLETE`, one field
-error per missing slot, `photos.<SLOT>`); a `DEALERS_DRIVE` plan needs coverage
+error per missing slot, `photos.<SLOT>`) — or, once any photo was uploaded "all at
+once", ten photographs in total (`422 PHOTOS_INCOMPLETE`, one error on `photos`
+saying how many more); a `DEALERS_DRIVE` plan needs coverage
 still to be there (`422 PHOTOSHOOT_UNAVAILABLE`). Only dealer submissions are
 checked — a Sales Representative is Dealers-Drive staff at the yard.
 

@@ -10,11 +10,20 @@ export interface ExtraPhotosProps {
   max: number;
   busyKey: string | null;
   editable: boolean;
+  canAdd?: boolean;
   onAdd: (file: File) => void;
   onRemove: (mediaId: string) => void;
 }
 
-export function ExtraPhotos({ extras, max, busyKey, editable, onAdd, onRemove }: ExtraPhotosProps) {
+export function ExtraPhotos({
+  extras,
+  max,
+  busyKey,
+  editable,
+  canAdd = true,
+  onAdd,
+  onRemove,
+}: ExtraPhotosProps) {
   return (
     <section className="card flex flex-col gap-3 p-[16px]">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -37,7 +46,7 @@ export function ExtraPhotos({ extras, max, busyKey, editable, onAdd, onRemove }:
             />
           </li>
         ))}
-        {editable && extras.length < max ? (
+        {editable && canAdd && extras.length < max ? (
           <li>
             <PhotoUploadTile
               label={PHOTO_STEP_TEXT.addExtra}

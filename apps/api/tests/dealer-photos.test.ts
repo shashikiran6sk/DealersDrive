@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { seedImages } from './images-kit.js';
 import { COMPLETE_VEHICLE, marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
+import { readZip } from './zip-reader.js';
 
 /**
  * Dealer photographs, end to end, on the real API.
@@ -137,6 +138,44 @@ describe('dealer photographs', () => {
     await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
   });
 
+  it('asks nothing of a car that already has finished photos, so changes can go back as before', async () => {
+    const id = await draft();
+    await seedImages(h.prisma, { vehicleId: id, dealerId: a.dealerId }, 6, 'DEALERS_DRIVE');
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body).toMatchObject({ plan: null, ready: true });
+    await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
+  });
+
+  it('takes photographs uploaded all at once and submits once there are ten', async () => {
+    const id = await draft();
+    await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);
+    await uploadPhoto(a, id, 'FRONT');
+    for (let index = 0; index < 7; index += 1) await uploadPhoto(a, id, 'UNSORTED');
+
+    const short = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(short.body).toMatchObject({ needed: 2, ready: false });
+    expect(short.body.unsorted).toHaveLength(7);
+    const refused = await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(422);
+    expect(refused.body.code).toBe('PHOTOS_INCOMPLETE');
+    expect(refused.body.errors).toEqual([
+      expect.objectContaining({ field: 'photos', code: 'REQUIRED' }),
+    ]);
+
+    await uploadPhoto(a, id, 'UNSORTED');
+    await uploadPhoto(a, id, 'UNSORTED');
+    const enough = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(enough.body).toMatchObject({ needed: 0, missing: [], ready: true });
+    const submitted = await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
+
+    const review = await admin
+      .get(`/v1/admin/listings/${String(submitted.body.listing.id)}`)
+      .expect(200);
+    const items = review.body.submittedPhotos.items as { slot: string; downloadName: string }[];
+    expect(items.map((item) => item.slot)).toEqual(['FRONT', ...Array(9).fill('UNSORTED')]);
+    expect(items[1]?.downloadName).toMatch(/-02-photo\.jpg$/);
+    expect(review.body.submittedPhotos.missing).toEqual([]);
+  });
+
   it('replaces a shot rather than stacking two in one slot', async () => {
     const id = await draft();
     await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);
@@ -166,9 +205,10 @@ describe('dealer photographs', () => {
     const detail = await admin.get(`/v1/admin/listings/${listingId}`).expect(200);
     expect(detail.body.submittedPhotos.plan).toBe('DEALER');
     expect(detail.body.submittedPhotos.items).toHaveLength(10);
-    expect(detail.body.submittedPhotos.items[0].downloadName).toMatch(
-      /^TN23DP\d+-01-front-three-quarter\.jpg$/,
+    expect(detail.body.submittedPhotos.items[0].downloadName).toBe(
+      '2023-hyundai-creta-sx-o-01-front-three-quarter-driver-side.jpg',
     );
+    expect(detail.body.submittedPhotos.archiveName).toBe('2023-hyundai-creta-sx-o.zip');
 
     await verifyAll(listingId);
     await seedImages(h.prisma, { vehicleId: id, dealerId: a.dealerId }, 6, 'DEALER');
@@ -341,6 +381,43 @@ describe('the edges of uploading', () => {
     expect(removed.body.extras).toHaveLength(5);
   });
 
+  it('takes up to sixteen photographs at once, without replacing one another', async () => {
+    const id = await dealerPlan();
+    for (let index = 0; index < 16; index += 1) {
+      expect((await uploadPhoto(a, id, 'UNSORTED')).status).toBe(200);
+    }
+    const full = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'UNSORTED', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(full.body.code).toBe('PHOTOS_FULL');
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body.unsorted).toHaveLength(16);
+  });
+
+  it('caps a car at sixteen photographs across both ways of uploading', async () => {
+    const id = await dealerPlan();
+    for (const slot of STANDARD_PHOTO_SLOTS) await uploadPhoto(a, id, slot);
+    for (let index = 0; index < 6; index += 1) await uploadPhoto(a, id, 'UNSORTED');
+
+    const full = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'UNSORTED', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(full.body.code).toBe('PHOTOS_FULL');
+    const extra = await a.agent
+      .post(`/v1/dealer/vehicles/${id}/photos/presign`)
+      .send({ slot: 'EXTRA', fileName: 'x.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(409);
+    expect(extra.body.code).toBe('PHOTOS_FULL');
+
+    expect((await uploadPhoto(a, id, 'DASHBOARD')).status).toBe(200);
+    const photos = await a.agent.get(`/v1/dealer/vehicles/${id}/photos`).expect(200);
+    expect(photos.body.photosMax).toBe(16);
+    expect(photos.body.unsorted).toHaveLength(6);
+    expect(photos.body.slots.filter((slot: { photo: unknown }) => slot.photo)).toHaveLength(10);
+  });
+
   it('answers a photograph that is not on the car as not found', async () => {
     const id = await dealerPlan();
     const missing = await a.agent
@@ -405,8 +482,128 @@ describe('the edges of uploading', () => {
     expect(detail.body.submittedPhotos).toEqual({
       plan: null,
       planLabel: null,
+      archiveName: '2023-hyundai-creta-sx-o.zip',
       items: [],
       missing: [],
     });
+  });
+});
+
+describe('downloading the dealer’s set for StudioCar', () => {
+  beforeAll(async () => {
+    await flag('feature.dealerPhotos', true);
+  });
+
+  async function submittedSet(extras = 0): Promise<{ listingId: string; vehicleId: string }> {
+    const id = await draft();
+    await a.agent.put(`/v1/dealer/vehicles/${id}/photo-plan`).send({ plan: 'DEALER' }).expect(200);
+    await uploadAll(a, id);
+    for (let index = 0; index < extras; index += 1) await uploadPhoto(a, id, 'EXTRA');
+    const submitted = await a.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(200);
+    return { listingId: submitted.body.listing.id as string, vehicleId: id };
+  }
+
+  function fetchLink(url: string) {
+    const link = new URL(url);
+    return h
+      .agent()
+      .get(link.pathname + link.search)
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      });
+  }
+
+  it('zips every photograph in shooting order, named for the car, and saves it as an attachment', async () => {
+    const { listingId } = await submittedSet(1);
+    const answer = await admin
+      .post(`/v1/admin/listings/${listingId}/submitted-photos/download`)
+      .send({})
+      .expect(200);
+    expect(answer.body).toMatchObject({
+      fileName: '2023-hyundai-creta-sx-o.zip',
+      expiresInSeconds: 300,
+    });
+
+    const zip = await fetchLink(answer.body.url as string).expect(200);
+    expect(zip.headers['content-disposition']).toBe(
+      'attachment; filename="2023-hyundai-creta-sx-o.zip"',
+    );
+    const entries = readZip(zip.body as Buffer);
+    expect(entries.map((entry) => entry.name)).toEqual([
+      '2023-hyundai-creta-sx-o-01-front-three-quarter-driver-side.jpg',
+      '2023-hyundai-creta-sx-o-02-straight-front.jpg',
+      '2023-hyundai-creta-sx-o-03-front-three-quarter-passenger-side.jpg',
+      '2023-hyundai-creta-sx-o-04-side-profile-passenger-side.jpg',
+      '2023-hyundai-creta-sx-o-05-straight-rear.jpg',
+      '2023-hyundai-creta-sx-o-06-side-profile-driver-side.jpg',
+      '2023-hyundai-creta-sx-o-07-front-seats.jpg',
+      '2023-hyundai-creta-sx-o-08-rear-seats.jpg',
+      '2023-hyundai-creta-sx-o-09-dashboard.jpg',
+      '2023-hyundai-creta-sx-o-10-odometer.jpg',
+      '2023-hyundai-creta-sx-o-11-extra-photograph.jpg',
+    ]);
+    expect(entries.every((entry) => entry.data.equals(JPEG))).toBe(true);
+
+    const again = await admin
+      .post(`/v1/admin/listings/${listingId}/submitted-photos/download`)
+      .send({})
+      .expect(200);
+    expect(new URL(again.body.url as string).searchParams.get('key')).toBe(
+      new URL(answer.body.url as string).searchParams.get('key'),
+    );
+    expect(
+      await h.prisma.auditLog.count({
+        where: { action: 'listing.submitted_photos_downloaded', entityId: listingId },
+      }),
+    ).toBe(2);
+  });
+
+  it('downloads one photograph under its StudioCar name', async () => {
+    const { listingId } = await submittedSet();
+    const detail = await admin.get(`/v1/admin/listings/${listingId}`).expect(200);
+    const odometer = detail.body.submittedPhotos.items[9];
+    const answer = await admin
+      .post(`/v1/admin/listings/${listingId}/submitted-photos/download`)
+      .send({ mediaId: odometer.mediaId })
+      .expect(200);
+    expect(answer.body.fileName).toBe('2023-hyundai-creta-sx-o-10-odometer.jpg');
+    const photo = await fetchLink(answer.body.url as string).expect(200);
+    expect(photo.headers['content-disposition']).toBe(
+      'attachment; filename="2023-hyundai-creta-sx-o-10-odometer.jpg"',
+    );
+    expect((photo.body as Buffer).equals(JPEG)).toBe(true);
+  });
+
+  it('refuses a photograph that is not on the car, a car with none, and a dealer', async () => {
+    const { listingId } = await submittedSet();
+    const missing = await admin
+      .post(`/v1/admin/listings/${listingId}/submitted-photos/download`)
+      .send({ mediaId: '00000000-0000-4000-8000-000000000000' })
+      .expect(404);
+    expect(missing.body.code).toBe('PHOTO_NOT_FOUND');
+
+    const bare = await draft();
+    await a.agent
+      .put(`/v1/dealer/vehicles/${bare}/photo-plan`)
+      .send({ plan: 'DEALERS_DRIVE' })
+      .expect(200);
+    const submitted = await a.agent.post(`/v1/dealer/vehicles/${bare}/submit`).expect(200);
+    const none = await admin
+      .post(`/v1/admin/listings/${submitted.body.listing.id}/submitted-photos/download`)
+      .send({})
+      .expect(422);
+    expect(none.body.code).toBe('NO_SUBMITTED_PHOTOS');
+
+    await admin
+      .post('/v1/admin/listings/00000000-0000-4000-8000-000000000000/submitted-photos/download')
+      .send({})
+      .expect(404);
+    await a.agent
+      .post(`/v1/admin/listings/${listingId}/submitted-photos/download`)
+      .send({})
+      .expect(401);
   });
 });

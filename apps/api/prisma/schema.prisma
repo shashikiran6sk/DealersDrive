@@ -1762,19 +1762,21 @@ enum PhotoPlan {
   DEALERS_DRIVE
 }
 
-/// The ten shots of the Dealers-Drive photo standard, plus optional extras.
+/// The ten shots of the confirmed Dealers-Drive photo guide, in shooting
+/// order, plus optional extras.
 /// Mirrors `VehiclePhotoSlot` in contracts.
 enum VehiclePhotoSlot {
-  FRONT_THREE_QUARTER
+  FRONT_THREE_QUARTER_RIGHT
   FRONT
+  FRONT_THREE_QUARTER_LEFT
   LEFT_SIDE
-  REAR_THREE_QUARTER
   REAR
   RIGHT_SIDE
-  DASHBOARD
   FRONT_SEATS
   REAR_SEATS
+  DASHBOARD
   ODOMETER
+  UNSORTED
   EXTRA
 }
 

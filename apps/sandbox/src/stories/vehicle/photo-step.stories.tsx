@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { PhotoPlanChoice, PhotoStep, planOptions } from '@/features/vehicle/photo-step';
+import {
+  BulkUploadRow,
+  PhotoPlanChoice,
+  PhotoStep,
+  UploadModeSwitch,
+  planOptions,
+} from '@/features/vehicle/photo-step';
 
-import { mockPhotos } from '../../mocks/dealer-photos';
+import { mockPhotos, mockUnsorted } from '../../mocks/dealer-photos';
 import { mockBilling } from '../../mocks/listing-credits';
 
 const meta = {
@@ -30,6 +36,40 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NoPlanYet: Story = {};
+
+export const DealerAllAtOnce: Story = { args: { photos: mockPhotos({ plan: 'DEALER' }, 0) } };
+
+export const AllAtOnceUploading: Story = {
+  args: {
+    photos: mockPhotos({ plan: 'DEALER', unsorted: mockUnsorted(6) }, 0),
+  },
+};
+
+export const AllAtOnceReady: Story = {
+  args: {
+    photos: mockPhotos({ plan: 'DEALER', unsorted: mockUnsorted(12), missing: [], ready: true }, 0),
+  },
+};
+
+export const UploadRows: Story = {
+  render: () => (
+    <ul className="card flex flex-col divide-y divide-(--color-divider) px-[16px]">
+      <BulkUploadRow name="IMG_20261115_100012.jpg" status="uploaded" onRemove={() => undefined} />
+      <BulkUploadRow name="IMG_20261115_100112.jpg" status="uploading" />
+      <BulkUploadRow name="IMG_20261115_100212.jpg" status="waiting" />
+      <BulkUploadRow
+        name="IMG_20261115_100312.jpg"
+        status="failed"
+        message="The upload was rejected by storage."
+        onRemove={() => undefined}
+      />
+    </ul>
+  ),
+};
+
+export const ModeSwitch: Story = {
+  render: () => <UploadModeSwitch mode="all" onChange={() => undefined} />,
+};
 
 export const DealerUploading: Story = { args: { photos: mockPhotos({ plan: 'DEALER' }, 4) } };
 

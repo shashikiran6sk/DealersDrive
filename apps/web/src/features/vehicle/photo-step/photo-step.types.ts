@@ -16,3 +16,5 @@ export interface PlanOption {
   available: boolean;
   credits: number | null;
 }
+
+export type UploadMode = 'all' | 'one';

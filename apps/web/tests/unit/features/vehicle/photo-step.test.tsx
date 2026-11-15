@@ -55,7 +55,8 @@ describe('choosing who photographs the car', () => {
         nextHref="/next"
       />,
     );
-    expect(screen.getAllByRole('img', { name: /^where to stand for the/i })).toHaveLength(10);
+    expect(screen.getAllByRole('img', { name: /^a dealer in position/i })).toHaveLength(10);
+    expect(screen.getByRole('link', { name: 'Download the guide (PDF)' })).toBeInTheDocument();
     expect(screen.getByText('3 of 10 photographs')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Replace' })).toHaveLength(3);
   });

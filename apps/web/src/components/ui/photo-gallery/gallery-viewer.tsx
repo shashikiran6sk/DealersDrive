@@ -12,6 +12,7 @@ import { GalleryRail } from './gallery-rail';
 import { GalleryZoomControls } from './gallery-zoom-controls';
 import { PHOTO_GALLERY_TEXT, VIEWER_SIZES } from './photo-gallery.constants';
 import type { GalleryPhoto, GalleryStep } from './photo-gallery.types';
+import { usePreloadNeighbours } from './use-preload-neighbours';
 import { useSwipe } from './use-swipe';
 import { useZoom } from './use-zoom';
 import { arrowPan, arrowStep, captionOf, hasModifier, zoomKey, zoomTransform } from './utils';
@@ -42,6 +43,7 @@ export function GalleryViewer({
   const zoom = useZoom(`${open}:${current?.url ?? ''}`);
   const { zoomed, act, pan } = zoom;
   const swipe = useSwipe(onStep, several && !zoomed);
+  usePreloadNeighbours({ photos, index, sizes: VIEWER_SIZES, enabled: open });
 
   useEffect(() => {
     if (!open) return;

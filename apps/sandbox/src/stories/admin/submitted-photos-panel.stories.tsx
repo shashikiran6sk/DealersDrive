@@ -39,6 +39,7 @@ export const DealersDrivePhotoshoot: Story = {
     photos: {
       plan: 'DEALERS_DRIVE',
       planLabel: 'Dealers-Drive photoshoot',
+      archiveName: '2016-hyundai-creta-sx.zip',
       items: [],
       missing: [],
     },

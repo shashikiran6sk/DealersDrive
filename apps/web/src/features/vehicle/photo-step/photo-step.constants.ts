@@ -28,16 +28,21 @@ export const PHOTO_STEP_TEXT = {
   chosen: 'Selected',
   choose: 'Choose',
   planFailed: 'That choice could not be saved. Try again.',
-  guideTitle: 'The Dealers-Drive photo standard',
+  guideTitle: 'Ten photos that sell a car',
+  guideBody:
+    'Follow the Dealers-Drive photo guide: one lap round the car for photos 1 to 6, kneeling at every stop, then 7 to 10 inside. About ten minutes per car, nothing but a phone.',
+  beforeYouShoot: 'Before you shoot',
+  aimFor: 'Aim for this',
+  aimForAlt: (title: string) => `Example of a good ${title.toLowerCase()} photo`,
+  jumpTo: (number: number, title: string) => `Photo ${String(number)}: ${title}`,
   guideLink: 'Open the full guide',
   progress: (done: number) => `${String(done)} of 10 photographs`,
   progressDone: 'All ten photographs are in. You can submit the car.',
-  shotLabel: (number: number) => `${String(number)}.`,
   upload: 'Upload photo',
   uploading: 'Uploading…',
   replace: 'Replace',
   remove: 'Remove',
-  howToShoot: 'How to take it',
+  howToShoot: 'Step by step, what to check and what to avoid',
   extrasTitle: 'Anything else worth showing',
   extrasBody:
     'Optional: the engine bay, the boot, the tyres, or a scratch the buyer should know about.',
@@ -56,4 +61,44 @@ export const PHOTO_STEP_TEXT = {
   wrongType: 'Choose a JPEG, PNG or WebP photograph.',
   locked: 'The photographs can be changed again if our team asks for changes.',
   thumbnailAlt: (label: string) => `Your ${label.toLowerCase()} photograph`,
+  modeLabel: 'How do you want to upload?',
+  modeAll: 'All at once',
+  modeAllHint: 'Pick every photo in one go',
+  modeOne: 'One shot at a time',
+  modeOneHint: 'Upload beside each step of the guide',
+  bulkTitle: 'Upload all your photos at once',
+  bulkBody:
+    'Choose at least ten photos from your gallery in one go — the ten shots in the guide, and any extras. Our team puts them in order when they process them.',
+  bulkChoose: 'Choose photos',
+  bulkCount: (count: number, required: number) =>
+    `${String(count)} of ${String(required)} photos uploaded`,
+  bulkReady: (count: number) =>
+    `${String(count)} photos uploaded. You can continue to review and submit the car.`,
+  bulkShotsAlsoCount: (count: number) =>
+    count === 1
+      ? 'The 1 shot you uploaded one at a time counts too.'
+      : `The ${String(count)} shots you uploaded one at a time count too.`,
+  bulkUploaded: 'Uploaded',
+  bulkWaiting: 'Waiting…',
+  bulkFailed: 'Not uploaded',
+  bulkRetry: 'Try again',
+  bulkUnnamed: (number: number) => `Photo ${String(number)}`,
+  bulkRemove: (name: string) => `Remove ${name}`,
+  bulkListLabel: 'Uploaded photos',
+  unsortedKept: (count: number) =>
+    count === 1
+      ? '1 photo uploaded all at once is kept. Our team will place it.'
+      : `${String(count)} photos uploaded all at once are kept. Our team will place them.`,
+  skippedType: (count: number) =>
+    count === 1
+      ? 'One file was not a JPEG, PNG or WebP photo and was left out.'
+      : `${String(count)} files were not JPEG, PNG or WebP photos and were left out.`,
+  leftOut: (count: number, max: number) =>
+    count === 1
+      ? `One photo was left out: a car can have at most ${String(max)} photos.`
+      : `${String(count)} photos were left out: a car can have at most ${String(max)} photos.`,
+  photosFull: (max: number) =>
+    `This car has ${String(max)} photos, the most it can have. Remove one to add another.`,
 } as const;
+
+export const BULK_UPLOAD_ANCHOR = 'bulk-upload';

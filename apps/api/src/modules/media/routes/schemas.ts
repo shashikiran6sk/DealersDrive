@@ -19,5 +19,6 @@ export const PrivateReadQuery = z
     key: z.string().min(1).max(300),
     expiresAt: z.coerce.number().int(),
     signature: z.string().min(16).max(256),
+    download: z.string().min(1).max(200).optional(),
   })
   .strict();
