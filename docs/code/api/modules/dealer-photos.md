@@ -106,6 +106,13 @@ it alongside `EXTRA`, and up to `DEALER_PHOTO_UNSORTED_MAX` (sixteen: the ten pl
 the extras) may stack. In the admin's download it sorts after the named shots and
 before the extras, oldest first, as `…-11-photo.jpg`.
 
+It arrives by two migrations of its own, `20261115120000_dealer_photos_unsorted`
+and `…120100_dealer_photos_unsorted_index`, not by editing
+`20261111090000_dealer_photos`: databases that had already run that one would
+never see the edit, because Prisma does not re-run an applied migration. Two,
+because Postgres refuses to use an enum value in the transaction that added it,
+and the index predicate names `UNSORTED`.
+
 ## `apps/api/src/modules/dealer-photos/submission-readiness.ts`
 
 ### `export async function assertPhotosReady(tx, listing)`
