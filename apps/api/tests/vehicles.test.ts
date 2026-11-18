@@ -131,6 +131,66 @@ describe('the vehicles table', () => {
   });
 });
 
+describe('models and variants in use under a make', () => {
+  const make = `Scoped ${Date.now()}`;
+  let plate = 1000;
+
+  async function car(
+    owner: string,
+    details: { model: string; variant?: string },
+    publishedAt: Date | null,
+  ): Promise<void> {
+    plate += 1;
+    const repo = createVehiclesRepository(prisma);
+    const vehicle = await repo.create({
+      dealerId: owner,
+      registrationNumber: `TN09ZZ${plate}`,
+      rtoCode: 'TN09',
+      createdBy: null,
+    });
+    await repo.updateOwned(owner, vehicle.id, { make, ...details });
+    await prisma.listing.create({
+      data: {
+        vehicleId: vehicle.id,
+        dealerId: owner,
+        status: publishedAt ? 'ACTIVE' : 'DRAFT',
+        publishedAt,
+      },
+    });
+  }
+
+  beforeAll(async () => {
+    const live = new Date();
+    await car(otherDealerId, { model: 'Popular', variant: 'LX' }, live);
+    await car(otherDealerId, { model: 'Popular', variant: 'ZX' }, live);
+    await car(otherDealerId, { model: 'Popular', variant: 'ZX' }, live);
+    await car(otherDealerId, { model: 'Rare', variant: 'Base' }, live);
+    await car(otherDealerId, { model: 'Someone Elses Draft' }, null);
+    await car(dealerId, { model: 'My Own Draft' }, null);
+  });
+
+  it('offers vetted models and the asking dealership’s own, most used first', async () => {
+    const repo = createVehiclesRepository(prisma);
+    await expect(repo.scopedValues('model', { make, dealerId }, 100)).resolves.toEqual([
+      'Popular',
+      'My Own Draft',
+      'Rare',
+    ]);
+  });
+
+  it('never offers another dealership’s unreviewed draft', async () => {
+    const repo = createVehiclesRepository(prisma);
+    await expect(repo.scopedValues('model', { make }, 100)).resolves.toEqual(['Popular', 'Rare']);
+  });
+
+  it('scopes variants to the model, compared case-insensitively', async () => {
+    const repo = createVehiclesRepository(prisma);
+    await expect(
+      repo.scopedValues('variant', { make: make.toUpperCase(), model: 'popular' }, 100),
+    ).resolves.toEqual(['ZX', 'LX']);
+  });
+});
+
 describe('one registration per dealership (F056)', () => {
   it('refuses a second vehicle holding the same number, at the database', async () => {
     const repo = createVehiclesRepository(prisma);

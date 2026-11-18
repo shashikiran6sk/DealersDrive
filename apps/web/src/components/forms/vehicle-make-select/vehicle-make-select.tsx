@@ -16,6 +16,7 @@ export function VehicleMakeSelect({
   placeholder,
   required = false,
   disabled = false,
+  onValueChange,
   ...aria
 }: VehicleMakeSelectProps) {
   const initial = defaultValue.trim();
@@ -28,6 +29,7 @@ export function VehicleMakeSelect({
   const matches = matchMakes(search === make ? '' : search, saved);
 
   function choose(value: string) {
+    if (value !== make) onValueChange?.(value);
     setMake(value);
     setSearch(value);
     setOpen(false);

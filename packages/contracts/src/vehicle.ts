@@ -65,6 +65,26 @@ export function normaliseVehicleText(input: string): string {
   return input.trim().replace(/\s+/g, ' ');
 }
 
+/**
+ * `"i-20 N Line"` -> `"i20nline"`: the key two spellings of one model or
+ * variant share. Case, accents, spaces and punctuation are noise in a model
+ * name; letters and digits are not, so `XUV300` and `XUV 3XO` stay apart.
+ */
+export function vehicleTextKey(input: string): string {
+  return input
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+/** The existing value a typed one is another spelling of, or `null`. */
+export function existingVehicleSpelling(typed: string, known: readonly string[]): string | null {
+  const key = vehicleTextKey(typed);
+  if (!key) return null;
+  return known.find((value) => vehicleTextKey(value) === key) ?? null;
+}
+
 const VehicleText = (max: number) =>
   z
     .string()
@@ -296,16 +316,40 @@ export const UpdateVehicleInput = z
   .strict();
 export type UpdateVehicleInput = z.infer<typeof UpdateVehicleInput>;
 
-export const VehicleSuggestField = z.enum(['make', 'model']);
+export const VehicleSuggestField = z.enum(['make', 'model', 'variant']);
 export type VehicleSuggestField = z.infer<typeof VehicleSuggestField>;
 
-/** "What have other dealers called this?" — the suggest-existing guard rail (D1, R46). */
+/**
+ * "What have other dealers called this?" — the suggest-existing guard rail (D1, R46).
+ *
+ * Two shapes. Unscoped (`field` + `q`) matches by prefix across the marketplace.
+ * Scoped — `make` for models, `make` and `model` for variants — returns the
+ * values already in use under that parent, most used first, and `q` becomes an
+ * optional filter, so the form can offer the whole list before a key is pressed.
+ */
 export const VehicleSuggestQuery = z
   .object({
     field: VehicleSuggestField,
-    q: z.string().trim().min(1).max(VEHICLE_LIMITS.textMax),
+    q: z.string().trim().max(VEHICLE_LIMITS.textMax).optional(),
+    make: VehicleFieldSchemas.make.optional(),
+    model: VehicleFieldSchemas.model.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((query, ctx) => {
+    if (query.field === 'variant' && (!query.make || !query.model)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [query.make ? 'model' : 'make'],
+        message: 'Variants are suggested for a make and a model.',
+      });
+    }
+    if (query.field === 'make' && (query.make || query.model)) {
+      ctx.addIssue({ code: 'custom', path: ['make'], message: 'Makes are not scoped.' });
+    }
+    if (!query.make && !query.q) {
+      ctx.addIssue({ code: 'custom', path: ['q'], message: 'Type something to search for.' });
+    }
+  });
 export type VehicleSuggestQuery = z.infer<typeof VehicleSuggestQuery>;
 
 export const VehicleSuggestions = z.object({
