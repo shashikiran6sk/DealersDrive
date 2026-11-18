@@ -284,6 +284,21 @@ export const salesDocs: ModuleDocs = {
     },
     {
       method: 'get',
+      path: '/v1/sales/dealers/:id/vehicles/suggestions',
+      operationId: 'suggestAssistedVehicleValues',
+      tag: DOC_TAGS.sales,
+      summary: 'Models or variants in use, for this dealership’s form',
+      description:
+        'The dealer’s own `GET /v1/dealer/vehicles/suggestions`, answered as that dealership would see it: values from cars that have passed moderation, plus its own. Only for a dealership this member is assisting (**R114**).',
+      audience: 'admin',
+      permission: 'sales:listing:read',
+      params: 'IdParam',
+      query: 'VehicleSuggestQuery',
+      responses: [{ status: 200, description: 'Suggestions.', schema: 'VehicleSuggestions' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
       path: '/v1/sales/dealers/:id/vehicles/:vehicleId',
       operationId: 'getAssistedVehicle',
       tag: DOC_TAGS.sales,

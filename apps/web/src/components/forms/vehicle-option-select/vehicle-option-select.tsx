@@ -4,7 +4,7 @@ import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 
 import { cn } from '@/lib/cn';
 
-import { VEHICLE_OPTION_TEXT } from './vehicle-option-select.constants';
+import { VEHICLE_OPTION_TEXT, VEHICLE_SUGGESTIONS_PATH } from './vehicle-option-select.constants';
 import type { VehicleOptionSelectProps, VehicleOptionStatus } from './vehicle-option-select.types';
 import { fetchVehicleOptions, resolveVehicleOption, vehicleOptionRows } from './utils';
 
@@ -13,6 +13,7 @@ export function VehicleOptionSelect({
   field,
   make,
   model = '',
+  source = VEHICLE_SUGGESTIONS_PATH.dealer,
   name = id,
   defaultValue = '',
   placeholder,
@@ -37,7 +38,7 @@ export function VehicleOptionSelect({
     if (!ready) return;
     const controller = new AbortController();
     setStatus('loading');
-    fetchVehicleOptions(model ? { field, make, model } : { field, make }, controller.signal)
+    fetchVehicleOptions(source, model ? { field, make, model } : { field, make }, controller.signal)
       .then((values) => {
         setOptions(values);
         setStatus('ready');
@@ -46,7 +47,7 @@ export function VehicleOptionSelect({
         if (!controller.signal.aborted) setStatus('failed');
       });
     return () => controller.abort();
-  }, [field, make, model, ready]);
+  }, [field, make, model, ready, source]);
 
   function commit(value: string) {
     setCommitted(value);

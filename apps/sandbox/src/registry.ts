@@ -383,21 +383,6 @@ export const registry: RegistryEntry[] = [
     storyId: 'forms-plateinput',
   },
   {
-    id: 'C019c',
-    name: 'SuggestInput',
-    source: 'apps/web/src/components/forms/suggest-input/suggest-input.tsx',
-    category: 'Forms',
-    ownership: 'Shared',
-    purpose:
-      'A text input that offers models already in use (a datalist), never a closed list. The write-time fragmentation guard D1 and R46 ask for. Makes use VehicleMakeSelect instead.',
-    aliases: ['Combobox', 'Typeahead', 'ModelInput', 'SuggestExisting'],
-    features: ['F060', 'F063'],
-    props: ['id', 'field', 'name', 'defaultValue', 'placeholder', 'maxLength', 'disabled'],
-    states: ['empty', 'prefilled', 'model', 'disabled', 'lookup failed (offers nothing)'],
-    reusable: true,
-    storyId: 'forms-suggestinput',
-  },
-  {
     id: 'C019f',
     name: 'VehicleOptionSelect',
     source: 'apps/web/src/components/forms/vehicle-option-select/vehicle-option-select.tsx',
@@ -414,6 +399,8 @@ export const registry: RegistryEntry[] = [
       'CascadingSelect',
       'IdentityFields',
       'SuggestExisting',
+      'SuggestInput',
+      'ModelInput',
     ],
     features: ['F060', 'D1'],
     props: [

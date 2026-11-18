@@ -12,6 +12,7 @@ import { postReactivationRequestReject } from './routes/post-reactivation-reques
 import { putListingCheck } from './routes/put-listing-check.js';
 import { putListingPhotography } from './routes/put-listing-photography.js';
 import type { ModerationRoute } from './routes/route.js';
+import { getListingVehicleSuggestions } from './routes/get-listing-vehicle-suggestions.js';
 import { patchListingVehicle } from './routes/patch-listing-vehicle.js';
 import { postListingReserve } from './routes/post-listing-reserve.js';
 import { postListingMarkSold } from './routes/post-listing-mark-sold.js';
@@ -21,6 +22,7 @@ const ROUTES: ModerationRoute[] = [
   getListing,
   postListingMarkSold,
   postListingReserve,
+  getListingVehicleSuggestions,
   patchListingVehicle,
   putListingCheck,
   putListingPhotography,

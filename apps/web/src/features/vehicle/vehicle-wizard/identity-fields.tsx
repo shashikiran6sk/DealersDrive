@@ -13,9 +13,10 @@ import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
 export interface IdentityFieldsProps {
   errors: Record<string, string>;
   initial: { make: string; model: string; variant: string };
+  suggestionsPath?: string;
 }
 
-export function IdentityFields({ errors, initial }: IdentityFieldsProps) {
+export function IdentityFields({ errors, initial, suggestionsPath }: IdentityFieldsProps) {
   const initialMake = canonicalVehicleMake(initial.make) ?? initial.make.trim();
   const [make, setMake] = useState(initialMake);
   const [model, setModel] = useState(initial.model.trim());
@@ -45,6 +46,7 @@ export function IdentityFields({ errors, initial }: IdentityFieldsProps) {
           id="model"
           field="model"
           make={make}
+          source={suggestionsPath}
           defaultValue={keepModel ? initial.model : ''}
           placeholder={VEHICLE_WIZARD_TEXT.modelPlaceholder}
           maxLength={VEHICLE_LIMITS.textMax}
@@ -60,6 +62,7 @@ export function IdentityFields({ errors, initial }: IdentityFieldsProps) {
           field="variant"
           make={make}
           model={model}
+          source={suggestionsPath}
           defaultValue={keepVariant ? initial.variant : ''}
           placeholder={VEHICLE_WIZARD_TEXT.variantPlaceholder}
           maxLength={VEHICLE_LIMITS.textMax}

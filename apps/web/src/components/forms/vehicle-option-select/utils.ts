@@ -5,8 +5,6 @@ import {
   vehicleTextKey,
 } from '@dealers-drive/contracts';
 
-import { SUGGESTIONS_PATH } from '@/components/forms/suggest-input';
-
 import type { VehicleOptionRow, VehicleOptionScope } from './vehicle-option-select.types';
 
 export function filterVehicleOptions(options: readonly string[], typed: string): string[] {
@@ -35,12 +33,13 @@ export function vehicleOptionRows(
 }
 
 export async function fetchVehicleOptions(
+  source: string,
   scope: VehicleOptionScope,
   signal: AbortSignal,
 ): Promise<string[]> {
   const params = new URLSearchParams({ field: scope.field, make: scope.make });
   if (scope.model) params.set('model', scope.model);
-  const response = await fetch(`${SUGGESTIONS_PATH}?${params.toString()}`, { signal });
+  const response = await fetch(`${source}?${params.toString()}`, { signal });
   if (!response.ok) throw new Error(String(response.status));
   return VehicleSuggestions.parse(await response.json()).values;
 }

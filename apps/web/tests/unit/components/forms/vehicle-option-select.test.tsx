@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { VehicleOptionSelect } from '@/components/forms/vehicle-option-select';
 import { IdentityFields } from '@/features/vehicle/vehicle-wizard/identity-fields';
+import { suggestionsPathFor } from '@/features/vehicle/vehicle-wizard/utils';
 
 const ORIGINAL_FETCH = globalThis.fetch;
 
@@ -170,6 +171,33 @@ describe('IdentityFields', () => {
       expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
         'Nexon',
         'Punch',
+      ]),
+    );
+  });
+});
+
+describe('the suggestions endpoint follows who is filling the form', () => {
+  it('is the dealer route for a dealer and the dealership’s Sales route for a representative', () => {
+    expect(suggestionsPathFor({ kind: 'dealer' })).toBe('/api/dealer/vehicles/suggestions');
+    expect(suggestionsPathFor({ kind: 'sales', dealerId: 'd-1' })).toBe(
+      '/api/sales/dealers/d-1/vehicles/suggestions',
+    );
+  });
+
+  it('asks the endpoint it is given, for models and variants alike', async () => {
+    const fetchMock = serve();
+    render(
+      <IdentityFields
+        errors={{}}
+        suggestionsPath="/api/admin/listings/l-1/vehicle/suggestions"
+        initial={{ make: 'Hyundai', model: 'Creta', variant: '' }}
+      />,
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(
+      expect.arrayContaining([
+        '/api/admin/listings/l-1/vehicle/suggestions?field=model&make=Hyundai',
+        '/api/admin/listings/l-1/vehicle/suggestions?field=variant&make=Hyundai&model=Creta',
       ]),
     );
   });

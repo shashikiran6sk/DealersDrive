@@ -60,6 +60,18 @@ and another dealership's unlisted stock is never visible in a competitor's
 dropdown. `groupBy` with a count orders by popularity, so the spelling most
 dealers use is the first one offered and the one adopted.
 
+The make is compared exactly, the model case-insensitively. Every make reaching
+here has been through `canonicalVehicleMake` in the contract, and an exact
+comparison lets PostgreSQL use the `(make, model)` index, which `ILIKE` would
+not.
+
+Sales (`GET /v1/sales/dealers/:id/vehicles/suggestions`) and the moderator's
+listing editor (`GET /v1/admin/listings/:id/vehicle/suggestions`) reach the same
+`suggestions` through their own modules, with the dealership they act for as
+`dealerId`. The dealer route alone was not enough: an admin session is refused
+under `/v1/dealer`, so before these existed Sales and moderators were offered
+nothing at all.
+
 ### `async heldRegistration(dealerId, registrationNumber, exceptVehicleId?)`
 
 The read in front of the partial unique index

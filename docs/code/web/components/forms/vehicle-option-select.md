@@ -29,6 +29,12 @@ What is posted is the hidden field, resolved through `existingVehicleSpelling`:
 the same resolution on write, so a client that skips this still cannot add a
 second spelling.
 
+`source` is the endpoint, because three audiences fill this form and each
+has its own session: the dealer, a Sales representative for a dealership they
+assist (`suggestionsPathFor` in the wizard's `utils.ts`), and a moderator in
+the listing editor. All three answer the same question for the same dealership;
+only the route and the cookie differ (`VEHICLE_SUGGESTIONS_PATH`).
+
 When its parent is empty it is disabled and says which field to fill first.
 When the list cannot load it still takes typed text, so a failed lookup never
 blocks a listing.

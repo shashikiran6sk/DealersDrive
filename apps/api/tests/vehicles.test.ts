@@ -185,9 +185,17 @@ describe('models and variants in use under a make', () => {
 
   it('scopes variants to the model, compared case-insensitively', async () => {
     const repo = createVehiclesRepository(prisma);
-    await expect(
-      repo.scopedValues('variant', { make: make.toUpperCase(), model: 'popular' }, 100),
-    ).resolves.toEqual(['ZX', 'LX']);
+    await expect(repo.scopedValues('variant', { make, model: 'popular' }, 100)).resolves.toEqual([
+      'ZX',
+      'LX',
+    ]);
+  });
+
+  it('matches the make exactly, since the contract has already made it canonical', async () => {
+    const repo = createVehiclesRepository(prisma);
+    await expect(repo.scopedValues('model', { make: make.toUpperCase() }, 100)).resolves.toEqual(
+      [],
+    );
   });
 });
 

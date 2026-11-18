@@ -18,7 +18,12 @@ import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
 import type { StepProps } from './vehicle-wizard.types';
 import { formValue } from './utils';
 
-export function BasicsStep({ vehicle, errors, values }: StepProps) {
+export function BasicsStep({
+  vehicle,
+  errors,
+  values,
+  suggestionsPath,
+}: StepProps & { suggestionsPath?: string }) {
   const value = (field: string) => formValue(values, vehicle, field);
   const maxYear = maxVehicleYear();
 
@@ -26,6 +31,7 @@ export function BasicsStep({ vehicle, errors, values }: StepProps) {
     <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
       <IdentityFields
         errors={errors}
+        suggestionsPath={suggestionsPath}
         initial={{ make: value('make'), model: value('model'), variant: value('variant') }}
       />
       <StepField name="manufacturingYear" errors={errors}>

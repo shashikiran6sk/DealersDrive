@@ -8,6 +8,8 @@ import type {
   AdminReactivationsResponse,
   ListingCheckKey,
   SetPhotographyInput,
+  VehicleSuggestQuery,
+  VehicleSuggestions,
 } from '@dealers-drive/contracts';
 import type { Listing, PrismaClient } from '@prisma/client';
 
@@ -55,7 +57,7 @@ export interface ModerationDeps {
   prisma: PrismaClient;
   repo: ModerationRepository;
   audit: AuditService;
-  vehicles: Pick<VehiclesService, 'adminUpdate'>;
+  vehicles: Pick<VehiclesService, 'adminUpdate' | 'suggestions'>;
   images: Pick<VehicleImagesService, 'images' | 'minimum'>;
   dealerPhotos?: Pick<DealerPhotosService, 'adminSubmitted'>;
 }
@@ -174,6 +176,18 @@ export function createModerationService({
 
   return {
     detail,
+
+    async vehicleSuggestions(
+      listingId: string,
+      query: VehicleSuggestQuery,
+    ): Promise<VehicleSuggestions> {
+      const listing = await prisma.listing.findUnique({
+        where: { id: listingId },
+        select: { dealerId: true },
+      });
+      if (!listing) throw notFound();
+      return vehicles.suggestions(query, listing.dealerId);
+    },
 
     async updateVehicle(admin: AdminPrincipal, listingId: string, input: AdminUpdateVehicleInput) {
       await vehicles.adminUpdate(admin, listingId, input);

@@ -47,7 +47,7 @@ function isText(value: unknown): value is string {
 function scopeWhere(field: ScopedField, scope: ValueScope): Prisma.VehicleWhereInput {
   const vetted: Prisma.VehicleWhereInput = { listing: { is: { publishedAt: { not: null } } } };
   return {
-    make: { equals: scope.make, mode: 'insensitive' },
+    make: scope.make,
     ...(field === 'variant' ? { model: { equals: scope.model ?? '', mode: 'insensitive' } } : {}),
     [field]: { not: null },
     ...(scope.dealerId ? { OR: [{ dealerId: scope.dealerId }, vetted] } : vetted),

@@ -1,3 +1,5 @@
+import { VEHICLE_SUGGESTIONS_PATH } from '@/components/forms/vehicle-option-select';
+
 import {
   FORM_FIELD_OF,
   PHOTO_FIELDS,
@@ -81,4 +83,10 @@ export function formValue(
   field: string,
 ): string {
   return values[field] ?? storedValue(vehicle, field);
+}
+
+export function suggestionsPathFor(scope: WizardScope): string {
+  return scope.kind === 'sales'
+    ? VEHICLE_SUGGESTIONS_PATH.sales(scope.dealerId)
+    : VEHICLE_SUGGESTIONS_PATH.dealer;
 }

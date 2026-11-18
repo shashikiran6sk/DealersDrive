@@ -1,5 +1,11 @@
 import type { VehicleOptionField } from './vehicle-option-select.types';
 
+export const VEHICLE_SUGGESTIONS_PATH = {
+  dealer: '/api/dealer/vehicles/suggestions',
+  sales: (dealerId: string) => `/api/sales/dealers/${dealerId}/vehicles/suggestions`,
+  admin: (listingId: string) => `/api/admin/listings/${listingId}/vehicle/suggestions`,
+} as const;
+
 const NOUN: Record<VehicleOptionField, string> = { model: 'model', variant: 'variant' };
 
 export const VEHICLE_OPTION_TEXT = {
