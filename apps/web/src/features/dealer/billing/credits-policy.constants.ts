@@ -22,7 +22,7 @@ export const CREDITS_POLICY: LegalDocument & { effectiveDate: string } = {
       id: 'prices-and-payment',
       heading: '2. Prices and payment',
       paragraphs: [
-        'The price of each pack and the GST on it are shown before payment. Payments are made through Razorpay, by UPI, card or net banking. Dealers-Drive does not see or store card or bank details.',
+        'The price of each pack, and any GST on it, is shown before payment. Payments are made through Razorpay, by UPI, card or net banking. Dealers-Drive does not see or store card or bank details.',
         'Only the owner of a dealership account can buy credits.',
       ],
     },

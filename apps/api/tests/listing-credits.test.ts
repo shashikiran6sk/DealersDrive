@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
 import { seedImages } from './images-kit.js';
 import { COMPLETE_VEHICLE, marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
+import { holdForSubmission } from '../src/modules/billing/billing.facade.js';
 import { FAKE_WEBHOOK_SECRET } from '../src/platform/payments/fake.adapter.js';
 
 /**
@@ -265,7 +266,35 @@ describe('listing credits', () => {
   });
 });
 
+describe('pricing without GST — the default while Dealers-Drive is not GST-registered', () => {
+  it('charges the pack price and says no GST is charged', async () => {
+    const packs = await a.agent.get('/v1/dealer/billing/packs').expect(200);
+    expect(packs.body).toMatchObject({
+      gstPercent: 0,
+      taxNote: 'Prices are final — no GST is charged.',
+    });
+    expect(packs.body.data[0]).toMatchObject({ pricePaise: 50000, totalPaise: 50000 });
+    const summary = await a.agent.get('/v1/dealer/billing/summary').expect(200);
+    expect(summary.body).toMatchObject({ gstPercent: 0, creditPriceLabel: '₹500' });
+
+    const owner = await fixtures.dealership();
+    const checkout = await owner.agent
+      .post('/v1/dealer/billing/orders')
+      .send({ packId: 'pack-1' })
+      .expect(201);
+    expect(checkout.body.totalPaise).toBe(50000);
+  });
+});
+
 describe('buying credits', () => {
+  beforeAll(async () => {
+    await flag('billing.gstPercent', 18);
+  });
+
+  afterAll(async () => {
+    await flag('billing.gstPercent', 0);
+  });
+
   it('lists packs with GST and refuses an amount from the client', async () => {
     const packs = await a.agent.get('/v1/dealer/billing/packs').expect(200);
     expect(packs.body.data[0]).toMatchObject({
@@ -379,5 +408,48 @@ describe('buying credits', () => {
   it('keeps purchase to the owner', async () => {
     const manager = await fixtures.member(a, 'MANAGER');
     await manager.agent.post('/v1/dealer/billing/orders').send({ packId: 'pack-1' }).expect(403);
+  });
+});
+
+describe('a sales rep submitting for a dealership', () => {
+  async function listingOf(owner: Dealership) {
+    const vehicleId = await draft(owner);
+    return h.prisma.listing.findUniqueOrThrow({ where: { vehicleId } });
+  }
+
+  function hold(listing: Awaited<ReturnType<typeof listingOf>>, type: 'SALES' | 'DEALER') {
+    return h.prisma.$transaction((tx) =>
+      holdForSubmission(tx, h.container.config, listing, null, { type, id: null }),
+    );
+  }
+
+  it('tells the rep the dealership has no credits and who can add them, and tells a dealer as before', async () => {
+    const owner = await fixtures.dealership();
+    const listing = await listingOf(owner);
+
+    const forRep = hold(listing, 'SALES');
+    await expect(forRep).rejects.toMatchObject({ code: 'INSUFFICIENT_CREDITS' });
+    await expect(forRep).rejects.toThrow(
+      "This dealership doesn't have enough credits for this car — it needs 1 credit and has 0 credits available. Ask the dealership's owner to buy credits from Billing in their dealer console, or ask a Dealers-Drive super admin to add credits.",
+    );
+    const forDealer = hold(listing, 'DEALER');
+    await expect(forDealer).rejects.toMatchObject({ code: 'INSUFFICIENT_CREDITS' });
+    await expect(forDealer).rejects.toThrow(
+      'Submitting this car needs 1 credit. You have 0 credits available.',
+    );
+    expect(await h.prisma.creditTransaction.count({ where: { dealerId: owner.dealerId } })).toBe(0);
+  });
+
+  it('holds the dealership’s credits when it has enough', async () => {
+    const owner = await fixtures.dealership();
+    await admin
+      .post(`/v1/admin/dealers/${owner.dealerId}/credits`)
+      .send({ credits: 2, note: 'For the rep' })
+      .expect(200);
+    const listing = await listingOf(owner);
+    await hold(listing, 'SALES');
+    expect(await h.prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).toMatchObject({
+      creditsHeld: 1,
+    });
   });
 });

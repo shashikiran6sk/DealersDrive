@@ -13,6 +13,7 @@ export interface PhotoPlanChoiceProps {
   selected: PhotoPlan | null;
   disabled?: boolean;
   creditPrice?: string | null;
+  gstPercent?: number;
   onChoose: (plan: PhotoPlan) => void;
 }
 
@@ -21,6 +22,7 @@ export function PhotoPlanChoice({
   selected,
   disabled = false,
   creditPrice = null,
+  gstPercent = 0,
   onChoose,
 }: PhotoPlanChoiceProps) {
   return (
@@ -61,7 +63,7 @@ export function PhotoPlanChoice({
             </span>
             {option.credits !== null && creditPrice ? (
               <span className="text-[11px] ink-subtle">
-                {PHOTO_STEP_TEXT.creditPrice(creditPrice)}
+                {PHOTO_STEP_TEXT.creditPrice(creditPrice, gstPercent)}
               </span>
             ) : null}
           </button>

@@ -24,7 +24,8 @@ export const PHOTO_STEP_TEXT = {
   studioUnavailable: (district: string | null) =>
     district ? `Not yet available in ${district}` : 'Not yet available for your location',
   cost: (credits: number) => creditsLabel(credits),
-  creditPrice: (price: string) => `1 credit = ${price} + GST`,
+  creditPrice: (price: string, gstPercent: number) =>
+    gstPercent > 0 ? `1 credit = ${price} + GST` : `1 credit = ${price}`,
   chosen: 'Selected',
   choose: 'Choose',
   planFailed: 'That choice could not be saved. Try again.',

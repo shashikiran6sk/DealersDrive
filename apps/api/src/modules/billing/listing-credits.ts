@@ -3,8 +3,9 @@ import type { Listing } from '@prisma/client';
 
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import type { Tx } from '../../platform/db/prisma.js';
-import { LEDGER_NOTES } from './billing.messages.js';
-import { moveCredits, type CreditActor } from './credits.js';
+import { DomainError } from '../../platform/errors.js';
+import { INSUFFICIENT_CREDITS_SALES, LEDGER_NOTES } from './billing.messages.js';
+import { lockDealerCredits, moveCredits, type CreditActor } from './credits.js';
 
 export async function creditCosts(config: PlatformConfigService): Promise<CreditCosts> {
   const [listing, photoshoot] = await Promise.all([
@@ -28,6 +29,14 @@ export async function holdForSubmission(
   const required = submissionCost(plan, await creditCosts(config));
   const change = required - listing.creditsHeld;
   if (change === 0) return;
+  if (actor.type === 'SALES' && change > 0) {
+    const { available } = await lockDealerCredits(tx, listing.dealerId);
+    if (available < change) {
+      throw new DomainError('INSUFFICIENT_CREDITS', INSUFFICIENT_CREDITS_SALES(change, available), {
+        extra: { required: change, available },
+      });
+    }
+  }
   await moveCredits(tx, {
     dealerId: listing.dealerId,
     reason: listing.creditsHeld === 0 ? 'HOLD_SUBMIT' : 'HOLD_ADJUST',

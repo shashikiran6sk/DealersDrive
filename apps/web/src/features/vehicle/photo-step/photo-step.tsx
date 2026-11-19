@@ -119,6 +119,7 @@ export function PhotoStep({
         selected={photos.plan}
         disabled={!photos.canEdit || busy !== null || bulkUploading}
         creditPrice={billing?.enabled ? billing.creditPriceLabel : null}
+        gstPercent={billing?.gstPercent ?? 0}
         onChoose={choose}
       />
 

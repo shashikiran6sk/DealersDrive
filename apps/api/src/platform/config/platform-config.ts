@@ -32,7 +32,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     type: 'number',
     value: 10,
   },
-  { key: 'billing.gstPercent', label: 'GST percent', type: 'number', value: 18 },
+  {
+    key: 'billing.gstPercent',
+    label: 'GST percent charged on credit packs (0 while Dealers-Drive is not GST-registered)',
+    type: 'number',
+    value: 0,
+  },
   {
     key: 'billing.listingCredits',
     label: 'Credits a car costs to submit for review',

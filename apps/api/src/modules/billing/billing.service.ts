@@ -300,11 +300,12 @@ export function createBillingService({ prisma, config, gateway, audit }: Billing
     },
 
     async summary(dealerId: string, permissions?: readonly string[]): Promise<BillingSummary> {
-      const [enabled, costs, balance, packs] = await Promise.all([
+      const [enabled, costs, balance, packs, gstPercent] = await Promise.all([
         listingCreditsEnabled(config),
         creditCosts(config),
         balanceOf(dealerId),
         packDefinitions(),
+        config.number('billing.gstPercent'),
       ]);
       const single = packs[0];
       return {
@@ -318,6 +319,7 @@ export function createBillingService({ prisma, config, gateway, audit }: Billing
         creditPriceLabel: single
           ? formatRupees(Math.round(single.pricePaise / single.credits))
           : null,
+        gstPercent,
         canPurchase: gateway.driver !== 'none' && canDealer(permissions, 'billing:purchase'),
       };
     },

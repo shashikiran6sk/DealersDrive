@@ -14,6 +14,7 @@ export function mockBilling(overrides: Partial<BillingSummary> = {}): BillingSum
     available: 5,
     costs: { DEALER: 1, DEALERS_DRIVE: 2, UNPLANNED: 1 },
     creditPriceLabel: '₹500',
+    gstPercent: 0,
     canPurchase: true,
     ...overrides,
   };

@@ -3,6 +3,9 @@ import { creditsLabel } from '@dealers-drive/contracts';
 export const INSUFFICIENT_CREDITS = (required: number, available: number): string =>
   `Submitting this car needs ${creditsLabel(required)}. You have ${creditsLabel(available)} available.`;
 
+export const INSUFFICIENT_CREDITS_SALES = (required: number, available: number): string =>
+  `This dealership doesn't have enough credits for this car — it needs ${creditsLabel(required)} and has ${creditsLabel(available)} available. Ask the dealership's owner to buy credits from Billing in their dealer console, or ask a Dealers-Drive super admin to add credits.`;
+
 export const CREDITS_WOULD_GO_NEGATIVE = (available: number): string =>
   `That would take the dealership below zero — it has ${creditsLabel(available)} available.`;
 
@@ -40,7 +43,9 @@ export const ORDER_DESCRIPTION = (credits: number): string =>
   `${creditsLabel(credits)} for Dealers-Drive listings`;
 
 export const TAX_NOTE = (gstPercent: number): string =>
-  `Prices are before ${String(gstPercent)}% GST, which is added at checkout.`;
+  gstPercent > 0
+    ? `Prices are before ${String(gstPercent)}% GST, which is added at checkout.`
+    : 'Prices are final — no GST is charged.';
 
 export const SAVINGS_LABEL = (percent: number): string => `Save ${String(percent)}%`;
 

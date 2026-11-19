@@ -25,10 +25,20 @@ third:
 | `billing.listingCredits`    | `1`                                | every submission                       |
 | `billing.photoshootCredits` | `1`                                | added when the plan is `DEALERS_DRIVE` |
 | `billing.creditPacks`       | `1=50000`, `5=225000`, `10=400000` | `credits=pricePaise`, before GST       |
-| `billing.gstPercent`        | `18`                               | added to every order                   |
+| `billing.gstPercent`        | `0`                                | added to every order                   |
+| `billing.welcomeCredits`    | `5`                                | granted once, on first activation      |
 
 With the defaults a car the dealer photographs is one credit (₹500) and a
-Dealers-Drive photoshoot is two (₹1,000), before GST. The difference is the
+Dealers-Drive photoshoot is two (₹1,000).
+
+GST defaults to **0** because Dealers-Drive is not GST-registered, and a business
+that is not registered may not collect GST — the dealer would pay 18% more that
+could neither be remitted nor claimed back. At 0 every surface drops GST rather
+than showing "+ 0% GST": the packs show the price alone (`gstPercent` is on the
+packs response and on the billing summary for that), the photo-plan cards read
+"1 credit = ₹500", and the tax note says no GST is charged. Registering later is
+one setting: `billing.gstPercent` to 18, and orders from then on carry the tax.
+Tax invoices (F053) belong with that change, not before it. The difference is the
 cost of the visit: both plans pay for review and StudioCar processing; only the
 photoshoot sends a person to the yard. A listing with no plan — every one
 submitted before plans existed, and every one a Sales Representative submits —
@@ -84,6 +94,12 @@ turns grants off from then on.
 ## `apps/api/src/modules/billing/listing-credits.ts`
 
 ### `export async function holdForSubmission(tx, config, listing, plan, actor)`
+
+A Sales Representative short of credits gets their own sentence — the dealership
+has too few, its owner can buy them, a super admin can add them — instead of the
+dealer's "You have …", which reads as if the rep were the one paying and offers a
+Buy credits link the rep cannot use. It is checked under the same dealer-row lock
+`moveCredits` then takes, so the two cannot disagree.
 
 Called by the submission gate inside the submit transaction, after the listing is
 locked and before `transition()`. It moves the hold to exactly the current cost,

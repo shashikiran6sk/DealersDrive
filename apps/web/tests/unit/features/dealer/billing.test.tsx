@@ -10,6 +10,7 @@ import CreditsPolicyPage, {
   generateMetadata as creditsPolicyMetadata,
 } from '@/app/(public)/credits-and-refunds/page';
 import { CREDITS_POLICY, CreditLedger, CreditOrders, CreditPacks } from '@/features/dealer/billing';
+import { PhotoPlanChoice } from '@/features/vehicle/photo-step';
 
 const PACKS = {
   data: [
@@ -46,6 +47,27 @@ describe('credit packs', () => {
   it('says so when no gateway is configured', () => {
     render(<CreditPacks packs={{ ...PACKS, purchasable: false }} canPurchase />);
     expect(screen.getByText(/not switched on yet/)).toBeInTheDocument();
+  });
+
+  it('shows no GST at all while none is charged', () => {
+    render(
+      <CreditPacks
+        packs={{
+          ...PACKS,
+          data: PACKS.data.map((pack) => ({
+            ...pack,
+            totalPaise: pack.pricePaise,
+            totalLabel: pack.priceLabel,
+          })),
+          gstPercent: 0,
+          taxNote: 'Prices are final — no GST is charged.',
+        }}
+        canPurchase
+      />,
+    );
+    expect(screen.getByText('₹2,250')).toBeInTheDocument();
+    expect(screen.queryByText(/incl\. GST/)).not.toBeInTheDocument();
+    expect(screen.getByText('Prices are final — no GST is charged.')).toBeInTheDocument();
   });
 
   it('says before payment that a pack is one-off, never expires and is not refundable', () => {
@@ -124,5 +146,36 @@ describe('the credits and refunds policy', () => {
     expect(screen.getByText(/Bought credits are not refundable/)).toBeInTheDocument();
     expect(creditsPolicyMetadata().alternates?.canonical).toMatch(/\/credits-and-refunds$/);
     vi.unstubAllEnvs();
+  });
+});
+
+describe('the credit price on the photo-plan cards', () => {
+  const options = [
+    {
+      plan: 'DEALER' as const,
+      title: 'Upload the photos yourself',
+      body: 'Body',
+      note: null,
+      available: true,
+      credits: 1,
+    },
+  ];
+
+  it('adds GST only when GST is charged', () => {
+    const { rerender } = render(
+      <PhotoPlanChoice options={options} selected={null} creditPrice="₹500" onChoose={() => {}} />,
+    );
+    expect(screen.getByText('1 credit = ₹500')).toBeInTheDocument();
+
+    rerender(
+      <PhotoPlanChoice
+        options={options}
+        selected={null}
+        creditPrice="₹500"
+        gstPercent={18}
+        onChoose={() => {}}
+      />,
+    );
+    expect(screen.getByText('1 credit = ₹500 + GST')).toBeInTheDocument();
   });
 });

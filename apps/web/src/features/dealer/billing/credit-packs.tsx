@@ -131,9 +131,11 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
             </div>
             <span className="text-[13px] ink-muted">{pack.perCreditLabel}</span>
             <span className="text-[18px] font-semibold tnum">{pack.priceLabel}</span>
-            <span className="text-[12px] ink-subtle tnum">
-              {BILLING_TEXT.inclGst(pack.totalLabel)}
-            </span>
+            {packs.gstPercent > 0 ? (
+              <span className="text-[12px] ink-subtle tnum">
+                {BILLING_TEXT.inclGst(pack.totalLabel)}
+              </span>
+            ) : null}
             <Button
               variant="primary"
               className="mt-auto"

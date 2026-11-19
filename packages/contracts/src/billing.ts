@@ -20,7 +20,8 @@ import type { PhotoPlan } from './dealer-photos.js';
  *
  * and what a credit costs is `billing.creditPacks`. With the defaults, a car
  * the dealer photographs is one credit (₹500) and a Dealers-Drive photoshoot
- * is two (₹1,000), both before GST.
+ * is two (₹1,000), plus GST at `billing.gstPercent` — 0, and so no GST at all,
+ * while Dealers-Drive is not GST-registered.
  *
  * A dealership gets `billing.welcomeCredits` (default 5) once, free, when it
  * is first approved. Credits never expire, and bought credits are not refunded.
@@ -132,6 +133,8 @@ export const BillingSummary = z.object({
   }),
   /** The cheapest single credit, for "1 credit = ₹500" lines. */
   creditPriceLabel: z.string().nullable(),
+  /** GST added at checkout; 0 while Dealers-Drive is not GST-registered, and then no GST is shown. */
+  gstPercent: z.number().default(0),
   canPurchase: z.boolean(),
 });
 export type BillingSummary = z.infer<typeof BillingSummary>;

@@ -98,6 +98,7 @@ export function billing(overrides: Partial<BillingSummary> = {}): BillingSummary
     available: 0,
     costs: { DEALER: 1, DEALERS_DRIVE: 2, UNPLANNED: 1 },
     creditPriceLabel: '₹500',
+    gstPercent: 0,
     canPurchase: true,
     ...overrides,
   };
