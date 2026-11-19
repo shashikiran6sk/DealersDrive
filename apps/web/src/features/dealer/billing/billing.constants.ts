@@ -1,3 +1,5 @@
+import { CREDITS_POLICY_ROUTE } from './credits-policy.constants';
+
 export const RAZORPAY_CHECKOUT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
 
 export const BILLING_HREF = '/dealer/billing';
@@ -48,6 +50,13 @@ export const BILLING_TEXT = {
     amount: 'Amount',
     status: 'Status',
   },
+  purchaseTerms:
+    'One-time purchase, not a subscription. Credits never expire, and bought credits are not refundable.',
+  policyLink: 'Credits and refunds policy',
+  policyHref: CREDITS_POLICY_ROUTE,
+  missingCredits:
+    'Money taken but no credits? Contact Dealers-Drive support with the payment ID from your Razorpay receipt — we check it with Razorpay and add your credits.',
+  paymentId: (id: string) => `Payment ID: ${id}`,
   disabledTitle: 'Listing credits are not switched on',
   disabledBody:
     'Submitting a car for review is free for now. We will tell you before that changes.',

@@ -17,6 +17,7 @@ import type { Tx } from '../../platform/db/prisma.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
+import { grantWelcomeCredits } from '../billing/billing.facade.js';
 import { invalidateDealerVerification } from '../dealers/dealers.facade.js';
 import type { AdminDeps } from './admin.service.js';
 import {
@@ -82,8 +83,9 @@ export function activationState(
 export function createActivationOverrideService({
   prisma,
   audit,
+  config,
   dealers,
-}: Pick<AdminDeps, 'prisma' | 'audit' | 'dealers'>) {
+}: Pick<AdminDeps, 'prisma' | 'audit' | 'config' | 'dealers'>) {
   async function lockedDealer(tx: Tx, dealerId: string) {
     await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
     const dealer = await tx.dealer.findUnique({
@@ -148,6 +150,10 @@ export function createActivationOverrideService({
           },
         });
         const state = activationState(updated, dealer.documents, admin.email);
+        const creditsGranted = await grantWelcomeCredits(tx, config, dealerId, {
+          type: 'ADMIN',
+          id: admin.userId,
+        });
 
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -164,6 +170,7 @@ export function createActivationOverrideService({
             disclaimerVersion: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
             outstanding: state.outstanding,
             verificationStatus: dealer.verificationStatus,
+            creditsGranted,
           },
         });
         await enqueueOutbox(tx, {

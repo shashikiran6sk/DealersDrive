@@ -13,6 +13,12 @@ export interface ConfirmedPayment {
   status: string;
 }
 
+export interface OrderPayment {
+  paymentId: string;
+  status: string;
+  amountPaise: number;
+}
+
 export interface CheckoutSignature {
   gatewayOrderId: string;
   paymentId: string;
@@ -25,6 +31,7 @@ export interface PaymentGatewayPort {
   createOrder(input: GatewayOrderInput): Promise<{ gatewayOrderId: string }>;
   verifyCheckout(input: CheckoutSignature): boolean;
   confirmPayment(paymentId: string, amountPaise: number): Promise<ConfirmedPayment>;
+  orderPayments(gatewayOrderId: string, amountPaise: number): Promise<OrderPayment[]>;
   verifyWebhook(rawBody: Buffer, signature: string): boolean;
   simulate(gatewayOrderId: string): { paymentId: string; signature: string } | null;
 }

@@ -227,7 +227,9 @@ export const billingDocs: ModuleDocs = {
       operationId: 'getAdminDealerCredits',
       tag: DOC_TAGS.billing,
       summary: 'A dealership’s credits, ledger and orders',
-      description: 'The 50 newest ledger rows and orders. `canAdjust` is `admin:credit:grant`.',
+      description:
+        'The 50 newest ledger rows and orders, each order with its Razorpay order and payment ' +
+        'ids. `canAdjust` is `admin:credit:grant`; `canRecheck` is that and a payment gateway.',
       audience: 'admin',
       permission: 'admin:payment:read',
       params: 'IdParam',
@@ -253,6 +255,27 @@ export const billingDocs: ModuleDocs = {
       },
       responses: [{ status: 200, description: 'The credits after.', schema: 'AdminDealerCredits' }],
       errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/credits/orders/:orderId/recheck',
+      operationId: 'recheckDealerCreditOrder',
+      tag: DOC_TAGS.billing,
+      summary: 'Ask Razorpay about an order',
+      description:
+        'For "money left my account but I got no credits". Asks Razorpay for the payments on ' +
+        'the order; a captured one for the order’s amount is credited exactly as the webhook ' +
+        'would (an authorized one is captured first). `outcome` is `paid`, `already-paid`, ' +
+        '`unpaid` or `mismatch` (a different amount — nothing is credited). Audited as ' +
+        '`billing.order_rechecked`. The re-check job does the same for unpaid orders every ' +
+        'ten minutes, from 15 minutes to 72 hours after they were created.',
+      audience: 'admin',
+      permission: 'admin:credit:grant',
+      params: 'AdminCreditOrderParam',
+      responses: [
+        { status: 200, description: 'What Razorpay said.', schema: 'AdminCreditOrderRecheck' },
+      ],
+      errors: [400, 401, 403, 404, 503],
     },
   ],
 };

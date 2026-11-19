@@ -81,6 +81,7 @@ import {
   syncLegacyAdminColumns,
   type AdminPrincipal,
 } from '../auth/auth.facade.js';
+import { grantWelcomeCredits } from '../billing/billing.facade.js';
 import {
   documentKey,
   invalidateDealerVerification,
@@ -313,7 +314,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
   return {
     verification: createDealerVerificationService({ prisma, audit, storage }),
-    activation: createActivationOverrideService({ prisma, audit, dealers }),
+    activation: createActivationOverrideService({ prisma, audit, config, dealers }),
     portfolio: dealers.portfolio,
     yardVisits: createYardVisitService({ prisma, storage, audit }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
@@ -451,6 +452,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           joinedAt: dealer.createdAt.toISOString(),
           joinedLabel: formatDate(dealer.createdAt),
           creditBalance: dealer.creditBalance,
+          creditsHeld: dealer.creditsHeld,
           documentsVerified: allDocumentsVerified(dealer.documents, dealer.gstin),
           hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
@@ -703,7 +705,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
         });
 
-        const creditsGranted = 0;
+        const creditsGranted = await grantWelcomeCredits(tx, config, dealerId, {
+          type: 'ADMIN',
+          id: admin.userId,
+        });
 
         await audit.record(tx, {
           actorType: 'ADMIN',

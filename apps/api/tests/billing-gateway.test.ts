@@ -1,7 +1,7 @@
 import { createHash, createHmac } from 'node:crypto';
 
 import type request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   createAuthHarness,
@@ -17,8 +17,10 @@ import {
 import type {
   ConfirmedPayment,
   PaymentDriver,
+  OrderPayment,
   PaymentGatewayPort,
 } from '../src/platform/payments/payment.port.js';
+import type { Queue } from '../src/platform/jobs/queue.js';
 
 /**
  * The payment paths the fake gateway cannot reach on its own: no gateway at
@@ -26,9 +28,14 @@ import type {
  * and every webhook that should change nothing. The gateway here is the fake
  * one with a switchboard in front of it.
  */
-const script: { driver: PaymentDriver; confirm: ((amount: number) => ConfirmedPayment) | null } = {
+const script: {
+  driver: PaymentDriver;
+  confirm: ((amount: number) => ConfirmedPayment) | null;
+  payments: ((gatewayOrderId: string, amount: number) => OrderPayment[]) | null;
+} = {
   driver: 'fake',
   confirm: null,
+  payments: null,
 };
 
 function scriptedGateway(): PaymentGatewayPort {
@@ -46,6 +53,10 @@ function scriptedGateway(): PaymentGatewayPort {
       script.confirm
         ? Promise.resolve(script.confirm(amount))
         : fake.confirmPayment(paymentId, amount),
+    orderPayments: (orderId, amount) =>
+      script.payments
+        ? Promise.resolve(script.payments(orderId, amount))
+        : fake.orderPayments(orderId, amount),
     verifyWebhook: (body, signature) => fake.verifyWebhook(body, signature),
     simulate: (orderId) => fake.simulate(orderId),
   };
@@ -66,6 +77,7 @@ beforeAll(async () => {
 afterAll(async () => {
   script.driver = 'fake';
   script.confirm = null;
+  script.payments = null;
   await h.close();
 });
 
@@ -359,5 +371,185 @@ describe('reading credits', () => {
       .post('/v1/admin/dealers/00000000-0000-4000-8000-000000000000/credits')
       .send({ credits: 1, note: 'Nobody' })
       .expect(404);
+  });
+});
+
+describe('re-checking unpaid orders with Razorpay', () => {
+  const MINUTE = 60 * 1000;
+
+  async function aged(owner: Dealership, minutes: number) {
+    const order = await checkout(owner);
+    await h.prisma.creditOrder.update({
+      where: { id: order.orderId },
+      data: { createdAt: new Date(Date.now() - minutes * MINUTE) },
+    });
+    return order;
+  }
+
+  function paidOnly(gatewayOrderId: string, status = 'captured', difference = 0) {
+    script.payments = (asked, amount) =>
+      asked === gatewayOrderId
+        ? [{ paymentId: `pay_${gatewayOrderId}`, status, amountPaise: amount + difference }]
+        : [];
+  }
+
+  async function orderOf(id: string) {
+    return h.prisma.creditOrder.findUniqueOrThrow({ where: { id } });
+  }
+
+  afterEach(() => {
+    script.driver = 'fake';
+    script.confirm = null;
+    script.payments = null;
+  });
+
+  it('credits a paid order whose confirmation never arrived, once', async () => {
+    const owner = await fixtures.dealership();
+    const order = await aged(owner, 20);
+    paidOnly(order.gatewayOrderId);
+
+    await h.container.billing.recheckOpenOrders(new Date());
+    await h.container.billing.recheckOpenOrders(new Date(Date.now() + 2 * 60 * MINUTE));
+
+    expect(await orderOf(order.orderId)).toMatchObject({
+      status: 'PAID',
+      gatewayPaymentId: `pay_${order.gatewayOrderId}`,
+    });
+    const purchases = await h.prisma.creditTransaction.findMany({
+      where: { dealerId: owner.dealerId, reason: 'PURCHASE' },
+    });
+    expect(purchases).toHaveLength(1);
+  });
+
+  it('asks about an unpaid order at most hourly, and only between 15 minutes and 72 hours', async () => {
+    const owner = await fixtures.dealership();
+    const young = await aged(owner, 5);
+    const due = await aged(owner, 20);
+    const stale = await aged(owner, 73 * 60);
+    const asked: string[] = [];
+    script.payments = (gatewayOrderId) => {
+      asked.push(gatewayOrderId);
+      return [];
+    };
+
+    await h.container.billing.recheckOpenOrders(new Date());
+    await h.container.billing.recheckOpenOrders(new Date());
+    expect(asked.filter((id) => id === due.gatewayOrderId)).toHaveLength(1);
+    expect(asked).not.toContain(young.gatewayOrderId);
+    expect(asked).not.toContain(stale.gatewayOrderId);
+
+    await h.container.billing.recheckOpenOrders(new Date(Date.now() + 61 * MINUTE));
+    expect(asked.filter((id) => id === due.gatewayOrderId)).toHaveLength(2);
+    expect(await orderOf(due.orderId)).toMatchObject({ status: 'CREATED' });
+  });
+
+  it('captures an authorized payment, and refuses one for a different amount', async () => {
+    const owner = await fixtures.dealership();
+    const authorized = await aged(owner, 20);
+    paidOnly(authorized.gatewayOrderId, 'authorized');
+    script.confirm = (amount) => ({
+      captured: true,
+      gatewayOrderId: authorized.gatewayOrderId,
+      amountPaise: amount,
+      status: 'captured',
+    });
+    await h.container.billing.recheckOpenOrders(new Date());
+    expect(await orderOf(authorized.orderId)).toMatchObject({ status: 'PAID' });
+
+    const short = await aged(owner, 20);
+    paidOnly(short.gatewayOrderId, 'captured', -100);
+    await h.container.billing.recheckOpenOrders(new Date());
+    expect(await orderOf(short.orderId)).toMatchObject({ status: 'CREATED' });
+  });
+
+  it('keeps going past an order Razorpay could not answer for, and does nothing with no gateway', async () => {
+    const owner = await fixtures.dealership();
+    const broken = await aged(owner, 25);
+    const fine = await aged(owner, 20);
+    script.payments = (gatewayOrderId, amount) => {
+      if (gatewayOrderId === broken.gatewayOrderId) throw new Error('Razorpay is down');
+      return gatewayOrderId === fine.gatewayOrderId
+        ? [{ paymentId: 'pay_fine', status: 'captured', amountPaise: amount }]
+        : [];
+    };
+    await h.container.billing.recheckOpenOrders(new Date());
+    expect(await orderOf(fine.orderId)).toMatchObject({ status: 'PAID' });
+    expect(await orderOf(broken.orderId)).toMatchObject({ status: 'CREATED' });
+
+    script.driver = 'none';
+    expect(await h.container.billing.recheckOpenOrders(new Date())).toEqual({
+      checked: 0,
+      paid: 0,
+    });
+  });
+
+  it('runs every ten minutes on the job queue', async () => {
+    const registered: string[] = [];
+    const queue = {
+      work: (name: string) => {
+        registered.push(`work:${name}`);
+        return Promise.resolve();
+      },
+      schedule: (name: string, cron: string) => {
+        registered.push(`schedule:${name}:${cron}`);
+        return Promise.resolve();
+      },
+    } as unknown as Queue;
+    await h.container.billing.work(queue);
+    expect(registered).toEqual([
+      'work:billing.recheck-orders',
+      'schedule:billing.recheck-orders:*/10 * * * *',
+    ]);
+  });
+
+  it('lets a super admin ask Razorpay about one order, with the ids to match it by', async () => {
+    const owner = await fixtures.dealership();
+    const order = await checkout(owner);
+    const path = `/v1/admin/dealers/${owner.dealerId}/credits/orders/${order.orderId}/recheck`;
+
+    const view = await admin.get(`/v1/admin/dealers/${owner.dealerId}/credits`).expect(200);
+    expect(view.body.canRecheck).toBe(true);
+    expect(view.body.orders[0]).toMatchObject({
+      gatewayOrderId: order.gatewayOrderId,
+      gatewayPaymentId: null,
+    });
+
+    const unpaid = await admin.post(path).expect(200);
+    expect(unpaid.body).toMatchObject({ outcome: 'unpaid', credits: { balance: 0 } });
+
+    paidOnly(order.gatewayOrderId);
+    const paid = await admin.post(path).expect(200);
+    expect(paid.body.outcome).toBe('paid');
+    expect(paid.body.credits.orders[0]).toMatchObject({
+      status: 'PAID',
+      gatewayPaymentId: `pay_${order.gatewayOrderId}`,
+    });
+    expect((await admin.post(path).expect(200)).body.outcome).toBe('already-paid');
+
+    paidOnly('another-order', 'captured');
+    const mismatch = await checkout(owner);
+    paidOnly(mismatch.gatewayOrderId, 'captured', 500);
+    const different = await admin
+      .post(`/v1/admin/dealers/${owner.dealerId}/credits/orders/${mismatch.orderId}/recheck`)
+      .expect(200);
+    expect(different.body.outcome).toBe('mismatch');
+
+    const audits = await h.prisma.auditLog.findMany({
+      where: { dealerId: owner.dealerId, action: 'billing.order_rechecked' },
+    });
+    expect(audits).toHaveLength(4);
+
+    const moderator = await fixtures.staff('MODERATOR');
+    await moderator.post(path).expect(403);
+    await admin
+      .post(
+        `/v1/admin/dealers/${owner.dealerId}/credits/orders/00000000-0000-4000-8000-000000000000/recheck`,
+      )
+      .expect(404);
+
+    script.driver = 'none';
+    await admin.post(path).expect(503);
+    const off = await admin.get(`/v1/admin/dealers/${owner.dealerId}/credits`).expect(200);
+    expect(off.body.canRecheck).toBe(false);
   });
 });

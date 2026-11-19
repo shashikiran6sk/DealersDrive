@@ -98,6 +98,27 @@ server's order id, key id and amount — the browser never chooses a price. Wher
 the API runs the `fake` gateway the checkout carries a simulation and the panel
 offers a test payment instead of loading the script.
 
+The terms of a purchase — one-off, never expiring, not refundable — sit under the
+packs, before the dealer pays rather than after, with a link to the full policy
+and what to do if money left their account without credits arriving. A paid order
+in the dealer's payments shows its Razorpay payment id, the reference support
+asks for.
+
+## `apps/web/src/features/dealer/billing/credits-policy.constants.ts`
+
+### `CREDITS_POLICY`
+
+The credits, cancellations and refunds policy at `/credits-and-refunds`, which
+Razorpay requires a merchant's site to publish. It is rendered by the same
+`LegalDocument` as the Terms and Privacy pages, and shown under the same
+`legalPagesVisible()` switch, but it is deliberately **not** a third versioned
+legal document: the legal v1 sources are exactly two acceptance-bearing documents
+(`packages/contracts/src/legal-documents/README.md`), and this one asks no one to
+accept anything. It states what the product does — holds at submission, use on
+approval, return on rejection, no expiry, no refund of bought credits, correction
+of a payment that was taken but not credited. Its effective date is left empty, so
+the page reads "pending", until the owner approves the wording.
+
 ## `apps/web/src/components/dealer/console-nav/utils.ts`
 
 ### `consoleNavFor(permissions, billing)`

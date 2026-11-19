@@ -5,4 +5,5 @@ export {
   listingCreditsEnabled,
   settleListingCredits,
 } from './listing-credits.js';
+export { grantWelcomeCredits } from './welcome-credits.js';
 export { createBillingService, type BillingService } from './billing.service.js';

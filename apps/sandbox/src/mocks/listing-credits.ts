@@ -137,6 +137,8 @@ export const MOCK_ORDERS: CreditOrderRow[] = [
     createdAt: '2026-11-09T09:00:00.000Z',
     dateLabel: '09 Nov 2026',
     paidAt: '2026-11-09T09:01:00.000Z',
+    gatewayOrderId: 'order_PQ8sF3kx2LmN7a',
+    gatewayPaymentId: 'pay_PQ8sKq1zR4tYb9',
   },
   {
     id: '1c8b5f1f-7b4a-4c9b-8e66-3a2d4c9f8b21',
@@ -150,6 +152,23 @@ export const MOCK_ORDERS: CreditOrderRow[] = [
     createdAt: '2026-11-08T09:00:00.000Z',
     dateLabel: '08 Nov 2026',
     paidAt: null,
+    gatewayOrderId: 'order_PQ1aB2cD3eF4gH',
+    gatewayPaymentId: null,
+  },
+  {
+    id: '2d9c6a2a-8c5b-4dab-9f77-4b3e5d0a9c32',
+    credits: 10,
+    totalPaise: 472_000,
+    totalLabel: '₹4,720',
+    status: 'CREATED',
+    statusLabel: 'Awaiting payment',
+    statusTone: 'neutral',
+    failureReason: null,
+    createdAt: '2026-11-07T09:00:00.000Z',
+    dateLabel: '07 Nov 2026',
+    paidAt: null,
+    gatewayOrderId: 'order_PP9zY8xW7vU6tS',
+    gatewayPaymentId: null,
   },
 ];
 
@@ -161,4 +180,5 @@ export const MOCK_DEALER_CREDITS: AdminDealerCredits = {
   ledger: MOCK_LEDGER,
   orders: MOCK_ORDERS,
   canAdjust: true,
+  canRecheck: true,
 };

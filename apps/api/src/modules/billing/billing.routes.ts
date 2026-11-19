@@ -6,6 +6,7 @@ import { getBillingLedger } from './routes/get-billing-ledger.js';
 import { getBillingOrders } from './routes/get-billing-orders.js';
 import { getBillingPacks } from './routes/get-billing-packs.js';
 import { getBillingSummary } from './routes/get-billing-summary.js';
+import { postAdminDealerCreditOrderRecheck } from './routes/post-admin-dealer-credit-order-recheck.js';
 import { postAdminDealerCredits } from './routes/post-admin-dealer-credits.js';
 import { postBillingOrder } from './routes/post-billing-order.js';
 import { postBillingOrderVerify } from './routes/post-billing-order-verify.js';
@@ -23,7 +24,11 @@ const DEALER_ROUTES: BillingRoute[] = [
 
 const WEBHOOK_ROUTES: BillingRoute[] = [postWebhookRazorpay];
 
-const ADMIN_ROUTES: BillingRoute[] = [getAdminDealerCredits, postAdminDealerCredits];
+const ADMIN_ROUTES: BillingRoute[] = [
+  getAdminDealerCredits,
+  postAdminDealerCredits,
+  postAdminDealerCreditOrderRecheck,
+];
 
 function mount(routes: BillingRoute[], service: BillingService): Router {
   const router = Router();

@@ -37,6 +37,7 @@ interface Options {
   dealers?: number;
   pending?: number;
   gstPercent?: number;
+  welcomeCredits?: number;
   /** The row `POST /documents/:id/*` addresses, or null for a 404. */
   document?: Record<string, unknown> | null;
   /** The dealership's documents after the update — what `allVerified` reads. */
@@ -278,7 +279,12 @@ function setup(options: Options = {}) {
   } as unknown as PrismaClient;
 
   const config = {
-    number: () => Promise.resolve(options.gstPercent ?? 18),
+    number: (key: string) =>
+      Promise.resolve(
+        key === 'billing.welcomeCredits'
+          ? (options.welcomeCredits ?? 0)
+          : (options.gstPercent ?? 18),
+      ),
     all: () => Promise.resolve(options.configEntries ?? CONFIG_ROWS),
     set: (key: string, value: unknown, updatedBy: string | null) => {
       configWrites.push({ key, value, updatedBy });
@@ -810,6 +816,7 @@ describe('dealers', () => {
       city: 'Vellore',
       status: 'ACTIVE',
       creditBalance: 39,
+      creditsHeld: 2,
     });
     // The tabs read this rather than issuing a second request per status.
     expect(response.counts).toEqual({ ACTIVE: 4 });
@@ -1178,14 +1185,12 @@ describe('approveDealer', () => {
   });
 
   /*
-   * ── Reconstruction slice ────────────────────────────────────────────────
-   * The baseline seeds an onboarding bonus here through `moveCredits`, which
-   * needs the ledger (**F050**). `grantCredits` is therefore absent from
-   * `ApproveDealerInput` — `.strict()` names it in a 400 rather than accepting
-   * an approval that quietly granted nothing — and the response reads zero.
-   * ────────────────────────────────────────────────────────────────────────
+   * The welcome credits themselves are `billing.welcomeCredits`, granted
+   * through the ledger; tests/welcome-credits.test.ts and the approval and
+   * activation-override integration tests cover them against a real database.
+   * Here the setting is 0, so approval grants nothing and says so.
    */
-  it('grants nothing, and says so, until the ledger exists', async () => {
+  it('grants nothing, and says so, while the welcome setting is 0', async () => {
     const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     const response = await h.service.approveDealer(admin, DEALER, { note: 'Launch offer' });

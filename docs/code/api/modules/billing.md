@@ -61,6 +61,26 @@ The database repeats the rule: CHECK constraints on `dealers` and on every ledge
 row (`heldAfter <= balanceAfter`, both non-negative), and a partial unique index
 that lets an order be fulfilled once — `UNIQUE (orderId) WHERE reason = 'PURCHASE'`.
 
+## `apps/api/src/modules/billing/welcome-credits.ts`
+
+### `export async function grantWelcomeCredits(tx, config, dealerId, actor)`
+
+A dealership gets `billing.welcomeCredits` (default 5) free, once, when it is first
+activated — by approval or by manual override — in the activation's own
+transaction, so a failed activation grants nothing. It is a `WELCOME_GRANT` row,
+not `ADMIN_GRANT`, so free credits stay distinguishable from manual corrections in
+any report. "Once" is checked here and enforced by
+`credit_transactions_one_welcome_grant`, a partial unique index on `dealerId`;
+suspension and reinstatement never call this, and a second call returns 0.
+
+It runs whatever `feature.listingCredits` says, so a dealership approved before
+credits are switched on still has its five when they are. Dealerships approved
+before this existed were given theirs by `20261119090200_welcome_credits_backfill`
+— a ledger row on top of each one's newest row, mirrored onto `dealers`, skipping
+any that already has one — with the default of five written into the SQL, since a
+migration cannot read the admin's setting. Setting `billing.welcomeCredits` to 0
+turns grants off from then on.
+
 ## `apps/api/src/modules/billing/listing-credits.ts`
 
 ### `export async function holdForSubmission(tx, config, listing, plan, actor)`
@@ -112,6 +132,33 @@ once in `payment_webhook_events` by its event id; a redelivery is answered
 retry runs it again. `payment.captured` and `order.paid` fulfil when the amount
 matches; `payment.failed` marks an order that is still open — a later successful
 attempt on the same order (Razorpay allows retries) still fulfils it.
+
+### `function settleFromGateway(order, actor)`
+
+The one answer to "was this order paid?" when neither the browser nor the webhook
+said so — a dealer who closed the tab, a webhook that was never configured, or one
+Razorpay gave up retrying after 24 hours. It asks Razorpay for the order's payments
+and credits a captured one through the same `fulfil()` as checkout and webhook, so
+it can never credit twice; an authorized one is captured first, as `verify` does.
+A payment of a different amount is `mismatch` and credits nothing: that needs a
+person with the Razorpay dashboard, not a guess.
+
+### `async recheckOpenOrders(now)`
+
+The `billing.recheck-orders` job, every ten minutes on the worker. It takes open
+and failed orders between 15 minutes old (time for checkout to finish on its own)
+and 72 hours (past which a forgotten checkout is not worth asking about; the
+admin's button still works), each at most once an hour by `checkedAt`, 25 a run.
+An abandoned checkout therefore costs a few dozen Razorpay calls, not hundreds,
+and one order Razorpay cannot answer for does not stop the rest.
+
+### `async recheckOrder(admin, dealerId, orderId)`
+
+**Check with Razorpay** on the admin dealer page, for "money left my account but I
+got no credits". Super admin only, like every other change to credits. Audited as
+`billing.order_rechecked` with the outcome, whatever it was, so the record shows a
+complaint was looked into. Every order row now carries Razorpay's order and payment
+ids so the reference a dealer quotes can be found without the dashboard.
 
 ### `async adjust(admin, dealerId, input)`
 

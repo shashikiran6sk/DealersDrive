@@ -6,7 +6,10 @@ vi.mock('@/features/dealer/billing/billing-actions', () => ({
   verifyCreditOrderAction: vi.fn(),
 }));
 
-import { CreditLedger, CreditPacks } from '@/features/dealer/billing';
+import CreditsPolicyPage, {
+  generateMetadata as creditsPolicyMetadata,
+} from '@/app/(public)/credits-and-refunds/page';
+import { CREDITS_POLICY, CreditLedger, CreditOrders, CreditPacks } from '@/features/dealer/billing';
 
 const PACKS = {
   data: [
@@ -44,6 +47,16 @@ describe('credit packs', () => {
     render(<CreditPacks packs={{ ...PACKS, purchasable: false }} canPurchase />);
     expect(screen.getByText(/not switched on yet/)).toBeInTheDocument();
   });
+
+  it('says before payment that a pack is one-off, never expires and is not refundable', () => {
+    render(<CreditPacks packs={PACKS} canPurchase />);
+    expect(screen.getByText(/One-time purchase, not a subscription/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Credits and refunds policy' })).toHaveAttribute(
+      'href',
+      '/credits-and-refunds',
+    );
+    expect(screen.getByText(/Money taken but no credits\?/)).toBeInTheDocument();
+  });
 });
 
 describe('the credit ledger', () => {
@@ -72,5 +85,44 @@ describe('the credit ledger', () => {
     );
     expect(screen.getByText('1 held')).toBeInTheDocument();
     expect(screen.getByText('4')).toBeInTheDocument();
+  });
+});
+
+describe('payments a dealer can quote', () => {
+  it('shows the Razorpay payment id of a paid order', () => {
+    render(
+      <CreditOrders
+        orders={[
+          {
+            id: '22222222-2222-4222-8222-222222222222',
+            credits: 5,
+            totalPaise: 265_500,
+            totalLabel: '₹2,655',
+            status: 'PAID',
+            statusLabel: 'Paid',
+            statusTone: 'ok',
+            failureReason: null,
+            createdAt: '2026-11-09T09:00:00.000Z',
+            dateLabel: '09 Nov 2026',
+            paidAt: '2026-11-09T09:01:00.000Z',
+            gatewayOrderId: 'order_1',
+            gatewayPaymentId: 'pay_1',
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Payment ID: pay_1')).toBeInTheDocument();
+  });
+});
+
+describe('the credits and refunds policy', () => {
+  it('is published beside the terms, saying credits never expire and are not refundable', () => {
+    vi.stubEnv('APP_ENV', 'local');
+    render(CreditsPolicyPage());
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(CREDITS_POLICY.title);
+    expect(screen.getByText(/They do not expire/)).toBeInTheDocument();
+    expect(screen.getByText(/Bought credits are not refundable/)).toBeInTheDocument();
+    expect(creditsPolicyMetadata().alternates?.canonical).toMatch(/\/credits-and-refunds$/);
+    vi.unstubAllEnvs();
   });
 });

@@ -17,7 +17,13 @@ type Story = StoryObj<typeof meta>;
 
 export const SuperAdmin: Story = {};
 
-export const ReadOnly: Story = { args: { credits: { ...MOCK_DEALER_CREDITS, canAdjust: false } } };
+export const ReadOnly: Story = {
+  args: { credits: { ...MOCK_DEALER_CREDITS, canAdjust: false, canRecheck: false } },
+};
+
+export const NoPaymentGateway: Story = {
+  args: { credits: { ...MOCK_DEALER_CREDITS, canRecheck: false } },
+};
 
 export const FeatureOff: Story = {
   args: {

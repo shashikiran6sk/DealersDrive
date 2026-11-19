@@ -16,6 +16,14 @@ export const PAYMENTS_DISABLED =
 
 export const ORDER_NOT_FOUND = 'That order does not exist.';
 
+export const RECHECK_MESSAGES = {
+  paid: 'Razorpay confirmed the payment. The credits have been added.',
+  'already-paid': 'This order was already paid and credited. Nothing changed.',
+  unpaid: 'Razorpay has no completed payment for this order. Nothing changed.',
+  mismatch:
+    'Razorpay has a payment for a different amount than this order. Nothing was credited — check it in the Razorpay dashboard.',
+} as const;
+
 export const SIGNATURE_MISMATCH =
   'We could not confirm that payment with Razorpay. If money left your account, it will be credited or refunded automatically — contact support with the payment id.';
 

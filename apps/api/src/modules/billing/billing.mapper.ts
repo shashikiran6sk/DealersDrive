@@ -21,6 +21,7 @@ const REASON_TONES: Record<CreditReason, StatusTone> = {
   HOLD_ADJUST: 'warn',
   RELEASE_REJECT: 'ok',
   CONSUME_APPROVE: 'neutral',
+  WELCOME_GRANT: 'ok',
 };
 
 function signed(value: number): string {
@@ -64,5 +65,7 @@ export function toOrderRow(order: CreditOrder): CreditOrderRow {
     createdAt: order.createdAt.toISOString(),
     dateLabel: formatDate(order.createdAt),
     paidAt: order.paidAt?.toISOString() ?? null,
+    gatewayOrderId: order.gatewayOrderId,
+    gatewayPaymentId: order.gatewayPaymentId,
   };
 }

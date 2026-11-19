@@ -1817,6 +1817,7 @@ enum CreditReason {
   HOLD_ADJUST
   RELEASE_REJECT
   CONSUME_APPROVE
+  WELCOME_GRANT
 }
 
 /// The append-only credit ledger (**F050**, rule 4).
@@ -1875,6 +1876,8 @@ model CreditOrder {
   gatewayPaymentId String?           @unique
   status           CreditOrderStatus @default(CREATED)
   failureReason    String?
+  /// When the order was last asked about at Razorpay — by the re-check job or an admin.
+  checkedAt        DateTime?
   createdBy        String?           @db.Uuid
   paidAt           DateTime?
   createdAt        DateTime          @default(now())

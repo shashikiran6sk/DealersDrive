@@ -99,7 +99,15 @@ describe('the destinations it claims exist', () => {
       .filter((href) => href.startsWith('/'));
 
     expect(new Set(routes)).toEqual(
-      new Set(['/cars', '/dealers', '/login?as=dealer', '/contact', '/terms', '/privacy']),
+      new Set([
+        '/cars',
+        '/dealers',
+        '/login?as=dealer',
+        '/contact',
+        '/terms',
+        '/privacy',
+        '/credits-and-refunds',
+      ]),
     );
   });
 });

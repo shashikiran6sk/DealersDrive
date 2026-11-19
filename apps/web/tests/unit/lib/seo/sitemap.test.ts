@@ -46,6 +46,7 @@ describe('buildSitemap', () => {
       'https://www.dealers-drive.com/contact',
       'https://www.dealers-drive.com/terms',
       'https://www.dealers-drive.com/privacy',
+      'https://www.dealers-drive.com/credits-and-refunds',
       'https://www.dealers-drive.com/cars?district=vellore',
       'https://www.dealers-drive.com/dealers?district=vellore',
       'https://www.dealers-drive.com/dealers?district=kurnool',

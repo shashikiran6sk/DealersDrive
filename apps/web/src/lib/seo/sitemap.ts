@@ -56,7 +56,9 @@ export function buildSitemap(
 ): MetadataRoute.Sitemap {
   return [
     ...STATIC_SITEMAP_PATHS.map((path) => entry(path)),
-    ...(legalPagesVisible() ? ['/terms', '/privacy'].map((path) => entry(path)) : []),
+    ...(legalPagesVisible()
+      ? ['/terms', '/privacy', '/credits-and-refunds'].map((path) => entry(path))
+      : []),
     ...districtRows(locations),
     ...landingRows(landings),
     ...entityRows(pages.dealers, dealerPath),

@@ -1,8 +1,9 @@
 import type { AdminDealerCredits } from '@dealers-drive/contracts';
 
 import { Banner, StatCard } from '@/components/ui/primitives';
-import { CreditLedger, CreditOrders } from '@/features/dealer/billing';
+import { CreditLedger } from '@/features/dealer/billing';
 
+import { AdminCreditOrders } from './admin-credit-orders';
 import { CreditAdjustForm } from './credit-adjust-form';
 import { DEALER_CREDITS_TEXT } from './dealer-credits.constants';
 
@@ -27,7 +28,11 @@ export function DealerCredits({ dealerId, credits }: DealerCreditsProps) {
       <h3 className="text-[14px] font-semibold">{DEALER_CREDITS_TEXT.recent}</h3>
       <CreditLedger entries={credits.ledger} />
       <h3 className="text-[14px] font-semibold">{DEALER_CREDITS_TEXT.orders}</h3>
-      <CreditOrders orders={credits.orders} />
+      <AdminCreditOrders
+        dealerId={dealerId}
+        orders={credits.orders}
+        canRecheck={credits.canRecheck}
+      />
     </section>
   );
 }

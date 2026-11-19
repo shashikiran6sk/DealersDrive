@@ -27,6 +27,11 @@ export function CreditOrders({ orders }: { orders: readonly CreditOrderRow[] }) 
             {order.failureReason ? (
               <span className="block text-[12px] ink-muted">{order.failureReason}</span>
             ) : null}
+            {order.gatewayPaymentId ? (
+              <span className="block font-mono text-[11px] ink-subtle break-all">
+                {BILLING_TEXT.paymentId(order.gatewayPaymentId)}
+              </span>
+            ) : null}
           </td>
         </tr>
       ))}

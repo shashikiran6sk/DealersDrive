@@ -21,6 +21,9 @@ import type { PhotoPlan } from './dealer-photos.js';
  * and what a credit costs is `billing.creditPacks`. With the defaults, a car
  * the dealer photographs is one credit (₹500) and a Dealers-Drive photoshoot
  * is two (₹1,000), both before GST.
+ *
+ * A dealership gets `billing.welcomeCredits` (default 5) once, free, when it
+ * is first approved. Credits never expire, and bought credits are not refunded.
  */
 
 export const CREDIT_REASON_LABELS: Record<CreditReason, string> = {
@@ -31,6 +34,7 @@ export const CREDIT_REASON_LABELS: Record<CreditReason, string> = {
   HOLD_ADJUST: 'Hold changed with the photo plan',
   RELEASE_REJECT: 'Returned — listing not approved',
   CONSUME_APPROVE: 'Used — listing approved',
+  WELCOME_GRANT: 'Welcome credits',
 };
 
 export const CreditOrderStatus = z.enum(['CREATED', 'PAID', 'FAILED']);
@@ -246,6 +250,9 @@ export const CreditOrderRow = z.object({
   createdAt: z.string(),
   dateLabel: z.string(),
   paidAt: z.string().nullable(),
+  /** Razorpay's ids, so a payment reference a dealer quotes can be matched to an order. */
+  gatewayOrderId: z.string().default(''),
+  gatewayPaymentId: z.string().nullable().default(null),
 });
 export type CreditOrderRow = z.infer<typeof CreditOrderRow>;
 
@@ -277,8 +284,28 @@ export const AdminDealerCredits = z.object({
   ledger: z.array(CreditLedgerEntry),
   orders: z.array(CreditOrderRow),
   canAdjust: z.boolean(),
+  /** A super admin may ask Razorpay about an unpaid order (no gateway, no button). */
+  canRecheck: z.boolean().default(false),
 });
 export type AdminDealerCredits = z.infer<typeof AdminDealerCredits>;
+
+export const AdminCreditOrderParam = z.object({ id: Uuid, orderId: Uuid }).strict();
+export type AdminCreditOrderParam = z.infer<typeof AdminCreditOrderParam>;
+
+/**
+ * What asking Razorpay about an order found: `paid` credited it now,
+ * `already-paid` had been credited before, `unpaid` has no captured payment,
+ * `mismatch` was paid a different amount than the order and needs a person.
+ */
+export const CreditOrderRecheckOutcome = z.enum(['paid', 'already-paid', 'unpaid', 'mismatch']);
+export type CreditOrderRecheckOutcome = z.infer<typeof CreditOrderRecheckOutcome>;
+
+export const AdminCreditOrderRecheck = z.object({
+  outcome: CreditOrderRecheckOutcome,
+  message: z.string(),
+  credits: AdminDealerCredits,
+});
+export type AdminCreditOrderRecheck = z.infer<typeof AdminCreditOrderRecheck>;
 
 /** `5 credits`, `1 credit`. */
 export function creditsLabel(credits: number): string {

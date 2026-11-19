@@ -35,6 +35,10 @@ export function createFakePaymentGateway(): PaymentGatewayPort {
       });
     },
 
+    orderPayments() {
+      return Promise.resolve([]);
+    },
+
     verifyWebhook(rawBody, signature) {
       return sameHex(hmacHex(FAKE_WEBHOOK_SECRET, rawBody), signature);
     },
@@ -57,6 +61,7 @@ export function createDisabledPaymentGateway(): PaymentGatewayPort {
     createOrder: refuse,
     verifyCheckout: () => false,
     confirmPayment: refuse,
+    orderPayments: refuse,
     verifyWebhook: () => false,
     simulate: () => null,
   };

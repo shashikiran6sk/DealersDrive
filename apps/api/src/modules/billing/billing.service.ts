@@ -21,6 +21,7 @@ import {
   type PackDefinition,
   type VerifyCreditOrderInput,
 } from '@dealers-drive/contracts';
+import type { AdminCreditOrderRecheck, CreditOrderRecheckOutcome } from '@dealers-drive/contracts';
 import type { CreditOrder, PrismaClient } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
@@ -34,6 +35,7 @@ import {
   errorCode,
   isRecord,
 } from '../../platform/errors.js';
+import type { Queue } from '../../platform/jobs/queue.js';
 import type { PaymentGatewayPort } from '../../platform/payments/payment.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
@@ -46,6 +48,7 @@ import {
   PAYMENTS_DISABLED,
   PAYMENT_AMOUNT_MISMATCH,
   PAYMENT_NOT_CAPTURED,
+  RECHECK_MESSAGES,
   SAVINGS_LABEL,
   SIGNATURE_MISMATCH,
   TAX_NOTE,
@@ -76,6 +79,14 @@ export interface WebhookDelivery {
 export const ADMIN_LEDGER_LIMIT = 50;
 
 const ORDER_HISTORY_LIMIT = 50;
+
+export const RECHECK_CRON = '*/10 * * * *';
+export const RECHECK_AFTER_MS = 15 * 60 * 1000;
+export const RECHECK_WINDOW_MS = 72 * 60 * 60 * 1000;
+export const RECHECK_SPACING_MS = 60 * 60 * 1000;
+export const RECHECK_BATCH = 25;
+
+const SYSTEM_ACTOR: CreditActor = { type: 'SYSTEM', id: null };
 
 class SignatureMismatchError extends AppError {
   readonly status = 400;
@@ -222,7 +233,72 @@ export function createBillingService({ prisma, config, gateway, audit }: Billing
     return 'ignored:event';
   }
 
+  async function settleFromGateway(
+    order: CreditOrder,
+    actor: CreditActor,
+  ): Promise<CreditOrderRecheckOutcome> {
+    if (order.status === 'PAID') return 'already-paid';
+    const total = Number(order.totalPaise);
+    const payments = await gateway.orderPayments(order.gatewayOrderId, total);
+    const chosen =
+      payments.find((payment) => payment.status === 'captured') ??
+      payments.find((payment) => payment.status === 'authorized');
+    if (!chosen) return 'unpaid';
+    const settled =
+      chosen.status === 'captured'
+        ? { captured: true, amountPaise: chosen.amountPaise }
+        : await gateway.confirmPayment(chosen.paymentId, total);
+    if (!settled.captured) return 'unpaid';
+    if (settled.amountPaise !== total) {
+      logger.error(
+        { orderId: order.id, amount: settled.amountPaise, expected: total },
+        'billing.recheck_amount_mismatch',
+      );
+      return 'mismatch';
+    }
+    return (await fulfil(order, chosen.paymentId, actor)) ? 'paid' : 'already-paid';
+  }
+
+  async function recheckOpenOrders(now: Date): Promise<{ checked: number; paid: number }> {
+    if (gateway.driver === 'none') return { checked: 0, paid: 0 };
+    const due = await prisma.creditOrder.findMany({
+      where: {
+        status: { in: ['CREATED', 'FAILED'] },
+        createdAt: {
+          lt: new Date(now.getTime() - RECHECK_AFTER_MS),
+          gt: new Date(now.getTime() - RECHECK_WINDOW_MS),
+        },
+        OR: [
+          { checkedAt: null },
+          { checkedAt: { lt: new Date(now.getTime() - RECHECK_SPACING_MS) } },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
+      take: RECHECK_BATCH,
+    });
+    let paid = 0;
+    for (const order of due) {
+      await prisma.creditOrder.update({ where: { id: order.id }, data: { checkedAt: now } });
+      try {
+        if ((await settleFromGateway(order, SYSTEM_ACTOR)) === 'paid') paid += 1;
+      } catch (error) {
+        logger.warn({ err: error, orderId: order.id }, 'billing.recheck_failed');
+      }
+    }
+    if (due.length > 0) logger.info({ checked: due.length, paid }, 'billing.recheck_sweep');
+    return { checked: due.length, paid };
+  }
+
   return {
+    recheckOpenOrders,
+
+    async work(queue: Queue): Promise<void> {
+      await queue.work('billing.recheck-orders', async () => {
+        await recheckOpenOrders(new Date());
+      });
+      await queue.schedule('billing.recheck-orders', RECHECK_CRON);
+    },
+
     async summary(dealerId: string, permissions?: readonly string[]): Promise<BillingSummary> {
       const [enabled, costs, balance, packs] = await Promise.all([
         listingCreditsEnabled(config),
@@ -476,6 +552,36 @@ export function createBillingService({ prisma, config, gateway, audit }: Billing
         ledger: ledger.map(toLedgerEntry),
         orders: orders.map(toOrderRow),
         canAdjust: admin.permissions.includes('admin:credit:grant'),
+        canRecheck: admin.permissions.includes('admin:credit:grant') && gateway.driver !== 'none',
+      };
+    },
+
+    async recheckOrder(
+      admin: AdminPrincipal,
+      dealerId: string,
+      orderId: string,
+    ): Promise<AdminCreditOrderRecheck> {
+      const order = await prisma.creditOrder.findFirst({ where: { id: orderId, dealerId } });
+      if (!order) throw new NotFoundError(ORDER_NOT_FOUND, { code: 'ORDER_NOT_FOUND' });
+      if (gateway.driver === 'none') {
+        throw new ConfigurationError(PAYMENTS_DISABLED, { code: 'PAYMENTS_DISABLED' });
+      }
+      const outcome = await settleFromGateway(order, { type: 'ADMIN', id: admin.userId });
+      await prisma.creditOrder.update({ where: { id: order.id }, data: { checkedAt: new Date() } });
+      await audit.recordDetached({
+        actorType: 'ADMIN',
+        actorId: admin.userId,
+        dealerId,
+        action: 'billing.order_rechecked',
+        entityType: 'CreditOrder',
+        entityId: order.id,
+        before: { status: order.status },
+        after: { outcome, gatewayOrderId: order.gatewayOrderId },
+      });
+      return {
+        outcome,
+        message: RECHECK_MESSAGES[outcome],
+        credits: await this.adminCredits(admin, dealerId),
       };
     },
 

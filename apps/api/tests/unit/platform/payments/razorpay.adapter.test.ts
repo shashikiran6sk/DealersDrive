@@ -147,6 +147,31 @@ describe('the Razorpay adapter, less common answers', () => {
     });
   });
 
+  it('lists the payments on an order, skipping any it cannot read', async () => {
+    const fetch = vi.fn(async () =>
+      reply(200, {
+        items: [
+          { id: 'pay_1', status: 'failed', amount: 59_000 },
+          { id: 'pay_2', status: 'captured', amount: 59_000 },
+          { status: 'captured', amount: 59_000 },
+          { id: 'pay_3' },
+        ],
+      }),
+    );
+    const payments = await gateway(fetch).orderPayments('order_123', 59_000);
+
+    expect(payments).toEqual([
+      { paymentId: 'pay_1', status: 'failed', amountPaise: 59_000 },
+      { paymentId: 'pay_2', status: 'captured', amountPaise: 59_000 },
+      { paymentId: 'pay_3', status: 'unknown', amountPaise: 0 },
+    ]);
+    const [url] = fetch.mock.calls[0] as unknown as [string];
+    expect(url).toBe('https://api.example.test/v1/orders/order_123/payments');
+
+    const empty = vi.fn(async () => reply(200, { entity: 'collection' }));
+    expect(await gateway(empty).orderPayments('order_456', 1)).toEqual([]);
+  });
+
   it('never simulates a payment', () => {
     expect(gateway(vi.fn()).simulate('order_1')).toBeNull();
   });

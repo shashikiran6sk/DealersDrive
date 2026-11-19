@@ -5,6 +5,7 @@ import type {
   CreditOrderResult,
   CreditPacksResponse,
 } from '@dealers-drive/contracts';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -146,6 +147,13 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
         ))}
       </ul>
       <p className="text-[12px] ink-subtle">{packs.taxNote}</p>
+      <p className="text-[12px] ink-subtle">
+        {BILLING_TEXT.purchaseTerms}{' '}
+        <Link href={BILLING_TEXT.policyHref} className="underline underline-offset-2">
+          {BILLING_TEXT.policyLink}
+        </Link>
+      </p>
+      <p className="text-[12px] ink-subtle">{BILLING_TEXT.missingCredits}</p>
     </div>
   );
 }

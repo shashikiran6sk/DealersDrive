@@ -1,6 +1,10 @@
 'use server';
 
-import { AdminCreditAdjustmentInput, Uuid } from '@dealers-drive/contracts';
+import {
+  AdminCreditAdjustmentInput,
+  AdminCreditOrderRecheck,
+  Uuid,
+} from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import type { ActionResult } from '@/types';
@@ -27,6 +31,35 @@ export async function adjustDealerCreditsAction(
         error instanceof ApiError
           ? error.userMessage(DEALER_CREDITS_TEXT.failed)
           : DEALER_CREDITS_TEXT.failed,
+    };
+  }
+}
+
+export async function recheckCreditOrderAction(
+  dealerId: string,
+  orderId: string,
+): Promise<ActionResult> {
+  const dealer = Uuid.safeParse(dealerId);
+  const order = Uuid.safeParse(orderId);
+  if (!dealer.success || !order.success)
+    return { ok: false, message: DEALER_CREDITS_TEXT.recheckFailed };
+  try {
+    const answer = AdminCreditOrderRecheck.safeParse(
+      await apiSend(
+        'POST',
+        `/v1/admin/dealers/${encodeURIComponent(dealer.data)}/credits/orders/${encodeURIComponent(order.data)}/recheck`,
+      ),
+    );
+    if (!answer.success) return { ok: false, message: DEALER_CREDITS_TEXT.recheckFailed };
+    revalidatePath(`/admin/dealers/${dealer.data}`);
+    return { ok: answer.data.outcome !== 'mismatch', message: answer.data.message };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof ApiError
+          ? error.userMessage(DEALER_CREDITS_TEXT.recheckFailed)
+          : DEALER_CREDITS_TEXT.recheckFailed,
     };
   }
 }

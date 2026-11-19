@@ -389,6 +389,7 @@ export async function startWorker(container: Container): Promise<void> {
   await container.notifications.work();
   container.mediaProcessor.subscribe(container.bus);
   await container.mediaProcessor.work();
+  await container.billing.work(container.queue);
   container.outbox.start();
 
   logger.info(

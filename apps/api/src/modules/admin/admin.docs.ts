@@ -201,10 +201,10 @@ export const adminDocs: ModuleDocs = {
       description:
         'Sets the dealership ACTIVE, which is what makes its listings eligible to appear ' +
         'publicly at all (rule 6).\n\n' +
-        'The body is optional and carries only an internal `note`. The onboarding credit ' +
-        'bonus the baseline accepts here returns with the credit ledger — a movement has to ' +
-        'write a `CreditTransaction`, and until it can, the field is refused by name rather ' +
-        'than accepted and ignored. `creditsGranted` therefore reads `0`.',
+        'The body is optional and carries only an internal `note`. A first approval grants ' +
+        'the dealership `billing.welcomeCredits` (default 5) once, as a `WELCOME_GRANT` ledger ' +
+        'row in the same transaction; `creditsGranted` says how many. The amount is admin ' +
+        'configuration, never a field of this body.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',

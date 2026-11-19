@@ -184,6 +184,7 @@ export const CreditReason = z.enum([
   'HOLD_ADJUST',
   'RELEASE_REJECT',
   'CONSUME_APPROVE',
+  'WELCOME_GRANT',
 ]);
 export type CreditReason = z.infer<typeof CreditReason>;
 

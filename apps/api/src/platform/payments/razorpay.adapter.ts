@@ -2,7 +2,7 @@ import { isRecord } from '../errors.js';
 import { UpstreamUnavailableError } from '../errors.js';
 import { logger } from '../telemetry/logger.js';
 
-import type { ConfirmedPayment, PaymentGatewayPort } from './payment.port.js';
+import type { ConfirmedPayment, OrderPayment, PaymentGatewayPort } from './payment.port.js';
 import { checkoutPayload, hmacHex, sameHex } from './signature.js';
 
 export interface RazorpayCredentials {
@@ -109,6 +109,17 @@ export function createRazorpayGateway(credentials: RazorpayCredentials): Payment
       return confirmed(
         await call('POST', `${path}/capture`, { amount: amountPaise, currency: 'INR' }),
       );
+    },
+
+    async orderPayments(gatewayOrderId) {
+      const list = await call('GET', `/v1/orders/${encodeURIComponent(gatewayOrderId)}/payments`);
+      const items = isRecord(list) && Array.isArray(list.items) ? list.items : [];
+      return items.flatMap((item): OrderPayment[] => {
+        const paymentId = text(item, 'id');
+        return paymentId
+          ? [{ paymentId, status: text(item, 'status') ?? 'unknown', amountPaise: amount(item) }]
+          : [];
+      });
     },
 
     verifyWebhook(rawBody, signature) {

@@ -1,5 +1,7 @@
 export const DEALER_CREDITS_TEXT = {
   title: 'Listing credits',
+  listColumn: 'Credits',
+  listHeld: (held: number) => `+${String(held)} held`,
   off: 'Listing credits are switched off (feature.listingCredits); balances are kept but nothing is charged.',
   available: 'Available',
   held: 'Held',
@@ -15,4 +17,20 @@ export const DEALER_CREDITS_TEXT = {
   invalid: 'Enter a whole number of credits other than 0, and a note.',
   recent: 'Recent movements',
   orders: 'Payments',
+  ordersEmpty: 'No payments yet.',
+  ordersCaption: 'Payments, newest first, with the Razorpay ids to match a dealer’s reference',
+  columns: {
+    date: 'Date',
+    credits: 'Credits',
+    amount: 'Amount',
+    status: 'Status',
+    razorpay: 'Razorpay ids',
+  },
+  orderIdLabel: 'Order',
+  paymentIdLabel: 'Payment',
+  noPayment: 'No payment yet',
+  recheck: 'Check with Razorpay',
+  recheckLabel: (date: string, amount: string) =>
+    `Check the ${amount} payment of ${date} with Razorpay`,
+  recheckFailed: 'Razorpay could not be asked just now. Try again in a moment.',
 } as const;

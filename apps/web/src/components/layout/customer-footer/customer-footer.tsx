@@ -91,6 +91,13 @@ export function CustomerFooter({
               >
                 {FOOTER_TEXT.privacy}
               </a>
+              <span aria-hidden="true">|</span>
+              <a
+                href={FOOTER_TEXT.creditsPolicyHref}
+                className="inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                {FOOTER_TEXT.creditsPolicy}
+              </a>
             </nav>
           ) : null}
         </div>

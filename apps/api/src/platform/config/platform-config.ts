@@ -46,6 +46,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     value: 1,
   },
   {
+    key: 'billing.welcomeCredits',
+    label: 'Free credits a dealership gets once, when it is approved (0 for none)',
+    type: 'number',
+    value: 5,
+  },
+  {
     key: 'billing.creditPacks',
     label: 'Credit packs, as credits=price in paise before GST (50000 = ₹500)',
     type: 'string[]',
@@ -162,6 +168,8 @@ export const CONFIG_READERS: Record<string, string> = {
   'billing.listingCredits': 'listing submission — the credits it holds',
   'billing.photoshootCredits':
     'listing submission — added when the plan is a Dealers-Drive photoshoot',
+  'billing.welcomeCredits':
+    'dealership approval and manual activation — the free credits granted once',
   'billing.creditPacks': 'GET /v1/dealer/billing/packs and POST /v1/dealer/billing/orders',
   'feature.dealerPhotos': 'the vehicle wizard’s Photos step and listing submission',
   'feature.listingCredits': 'listing submission, and the dealer console’s Billing page',
@@ -190,6 +198,7 @@ export const CONFIG_READERS: Record<string, string> = {
 export const CONFIG_VALIDATORS: Record<string, (value: unknown) => string | null> = {
   'billing.listingCredits': wholeNumber(1, 100),
   'billing.photoshootCredits': wholeNumber(0, 100),
+  'billing.welcomeCredits': wholeNumber(0, 100),
   'billing.gstPercent': wholeNumber(0, 28),
   'billing.creditPacks': (value) => {
     if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string')) {

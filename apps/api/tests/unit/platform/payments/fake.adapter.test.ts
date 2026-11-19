@@ -26,6 +26,7 @@ describe('the fake gateway', () => {
         signature: simulated!.signature,
       }),
     ).toBe(false);
+    expect(await gateway.orderPayments(gatewayOrderId, 1)).toEqual([]);
   });
 
   it('is a gateway that sells nothing when none is configured', async () => {
@@ -33,5 +34,6 @@ describe('the fake gateway', () => {
     expect(none.driver).toBe('none');
     expect(none.simulate('order_1')).toBeNull();
     await expect(none.createOrder({ amountPaise: 1, receipt: 'r', notes: {} })).rejects.toThrow();
+    await expect(none.orderPayments('order_1', 1)).rejects.toThrow();
   });
 });

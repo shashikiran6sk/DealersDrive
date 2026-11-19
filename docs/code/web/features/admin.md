@@ -347,3 +347,14 @@ apart, which browsers stopped after the first without a permission prompt.
 Pre-selects the credit from the dealer's plan — `DEALER` photographs are credited
 to the dealer, a photoshoot to Dealers-Drive — so the reviewer confirms rather
 than chooses. Without a plan there is still no default, as before.
+
+## `apps/web/src/features/admin/dealer-credits/admin-credit-orders.tsx`
+
+### `AdminCreditOrders`
+
+The admin's own payments table, not the dealer's `CreditOrders` with options: the
+admin needs Razorpay's order and payment ids, which is what a dealer quotes when a
+payment went missing, and a button no dealer should see. Check with Razorpay
+(`RecheckOrderButton`) shows on an order that is not paid, and only when
+`canRecheck` — a super admin, with a payment gateway configured. Its answer is
+shown beside the order and the page revalidates, so a credited order turns Paid.

@@ -123,6 +123,8 @@ export const AdminDealerRow = z.object({
   joinedAt: z.string(),
   joinedLabel: z.string(),
   creditBalance: z.number().int(),
+  /** Held for this dealership's cars in review: part of the balance it cannot spend. */
+  creditsHeld: z.number().int().default(0),
   documentsVerified: z.boolean(),
   /**
    * Whether this dealership is waiting on a decision about its own words

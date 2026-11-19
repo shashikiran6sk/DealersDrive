@@ -13,6 +13,8 @@ export const FOOTER_TEXT = {
   legalLabel: 'Legal policies',
   terms: 'Terms & Conditions',
   privacy: 'Privacy Policy',
+  creditsPolicy: 'Credits & refunds',
+  creditsPolicyHref: '/credits-and-refunds',
   brand: 'Dealers-Drive',
   trust:
     'The Dealer Verified badge follows a business and representative review. Dealers are responsible for their listings, prices and vehicle documentation.',

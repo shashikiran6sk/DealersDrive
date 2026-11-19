@@ -21,6 +21,14 @@ Reads the payment and captures it if it is only `authorized`. Capturing here, as
 well as relying on the dashboard's auto-capture setting, means a misconfigured
 account cannot leave a dealer's money authorized and then refunded after five days.
 
+### `async orderPayments(gatewayOrderId)`
+
+`GET /v1/orders/:id/payments` — every attempt on the order, failed ones included,
+as Razorpay allows a buyer to retry inside one order. It is what the re-check
+asks when our side never heard how a checkout ended. The fake gateway answers an
+empty list: it has no payments of its own, and claiming the simulated checkout
+was paid would credit every abandoned order in development.
+
 ### outages
 
 Every network failure or non-2xx is a `503 PAYMENTS_UNAVAILABLE` whose message

@@ -11,3 +11,13 @@ export async function adjustDealerCreditsAction(
   }
   return { ok: true, message: 'Credits updated.' };
 }
+
+export async function recheckCreditOrderAction(
+  _dealerId: string,
+  orderId: string,
+): Promise<ActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  return orderId.startsWith('2d9c')
+    ? { ok: true, message: 'Razorpay confirmed the payment. The credits have been added.' }
+    : { ok: true, message: 'Razorpay has no completed payment for this order. Nothing changed.' };
+}

@@ -70,7 +70,7 @@ describe('an authorized manual activation', () => {
       activationMethod: 'MANUAL_OVERRIDE',
       activationOverrideReason: JUSTIFICATION,
       verificationStatus: 'NOT_VERIFIED',
-      creditBalance: 0,
+      creditBalance: 5,
     });
     expect(stored.activationOverrideAt).toBeInstanceOf(Date);
     expect(stored.documents.every((doc) => doc.status === 'REQUIRED')).toBe(true);
@@ -83,6 +83,7 @@ describe('an authorized manual activation', () => {
       disclaimerVersion: MANUAL_ACTIVATION_DISCLAIMER_VERSION,
       justification: JUSTIFICATION,
       outstanding: ['PERSONAL_IDENTITY', 'BUSINESS_IDENTITY'],
+      creditsGranted: 5,
     });
     expect(audit.after).not.toHaveProperty('gstNotRequiredReview');
     expect(

@@ -5,7 +5,7 @@ import type { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
 import { env } from '../src/config/env.js';
-import { buildContainer, type ContainerOverrides } from '../src/container.js';
+import { buildContainer, type Container, type ContainerOverrides } from '../src/container.js';
 import type {
   AuthorizationRequest,
   OAuthClaims,
@@ -99,6 +99,8 @@ export interface AuthHarness {
    * churn it needs.
    */
   server: Server;
+  /** The container behind the app, for a test that drives a service directly — a job, say. */
+  container: Container;
   prisma: PrismaClient;
   google: FakeGoogle;
   agent(): request.Agent;
@@ -221,6 +223,7 @@ export async function createAuthHarness(
   return {
     app,
     server,
+    container,
     prisma: container.prisma,
     google,
     mailer,
