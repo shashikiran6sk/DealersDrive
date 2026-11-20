@@ -26,7 +26,6 @@ export const BILLING_TEXT = {
   ownerOnly: 'Only the dealership owner can buy credits.',
   gatewayOff:
     'Online payment is not switched on yet. Contact Dealers-Drive support to add credits to your account.',
-  paid: (message: string) => message,
   pending: 'Payment received. Your credits will appear in a moment — refresh this page shortly.',
   failed: 'The payment could not be completed. You have not been charged.',
   dismissed: 'Payment cancelled. You have not been charged.',
@@ -57,6 +56,25 @@ export const BILLING_TEXT = {
   missingCredits:
     'Money taken but no credits? Contact Dealers-Drive support with the payment ID from your Razorpay receipt — we check it with Razorpay and add your credits.',
   paymentId: (id: string) => `Payment ID: ${id}`,
+  result: {
+    paidTitle: 'Payment successful',
+    paidBody: (added: string, available: string) =>
+      `${added} added to your account. You now have ${available} available.`,
+    pendingTitle: 'Payment received',
+    pendingBody:
+      'Razorpay is still confirming it. Your credits will appear on the Billing page within a few minutes — you do not need to pay again.',
+    unconfirmedTitle: 'We could not confirm your payment',
+    failedTitle: 'Payment not completed',
+    failedBody:
+      'The payment did not go through, and you have not been charged. You can try again with another bank, card or UPI app.',
+    amount: 'Amount paid',
+    paymentId: 'Payment ID',
+    quoteId: 'Quote this payment ID if you contact Dealers-Drive support.',
+    addVehicle: 'Add a vehicle',
+    done: 'Done',
+    tryAgain: 'Try again',
+    close: 'Close',
+  },
   disabledTitle: 'Listing credits are not switched on',
   disabledBody:
     'Submitting a car for review is free for now. We will tell you before that changes.',

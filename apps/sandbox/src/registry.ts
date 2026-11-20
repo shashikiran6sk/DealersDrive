@@ -3820,6 +3820,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'dealer-creditpacks',
   },
   {
+    id: 'purchase-result',
+    name: 'PurchaseResult',
+    source: 'apps/web/src/features/dealer/billing/purchase-result.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'The window CreditPacks opens once Razorpay Checkout closes: Payment successful (credits added, new balance, amount, payment ID, Add a vehicle on the billing page), Payment received (Razorpay still confirming — do not pay again), We could not confirm your payment (the reason and the ID to quote), or Payment not completed (not charged, Try again). A plain cancel stays a banner. The page refreshes, and the submit checklist is handed back, only when the window is closed.',
+    aliases: ['PaymentResult', 'PaymentSuccess', 'PaymentFailed', 'CheckoutResult'],
+    features: ['Listing credits'],
+    props: ['outcome', 'onClose', 'onRetry', 'returnFocus', 'offerAddVehicle'],
+    states: ['paid', 'paid inside the submit checklist', 'pending', 'unconfirmed', 'failed'],
+    reusable: false,
+    storyId: 'dealer-purchaseresult',
+  },
+  {
     id: 'submitted-photos-panel',
     name: 'SubmittedPhotosPanel',
     source: 'apps/web/src/features/admin/listing-review/submitted-photos-panel.tsx',

@@ -104,6 +104,26 @@ and what to do if money left their account without credits arriving. A paid orde
 in the dealer's payments shows its Razorpay payment id, the reference support
 asks for.
 
+## `apps/web/src/features/dealer/billing/purchase-result.tsx`
+
+### `PurchaseResult`
+
+What happened, said once and where the dealer is looking. The result used to be
+a banner above the packs: Razorpay's own window shows a tick and closes, and the
+banner that replaced it read the same as the one from the previous purchase, so
+a dealer could not tell a new payment had landed. Four outcomes get a window —
+paid, received but not yet captured, paid but not confirmed (the API's reason),
+and not completed after a failed attempt — each with the payment ID where there
+is one, because that is what support asks for. A plain cancel stays a banner: the
+dealer chose it, and a window would only make them close something else.
+
+`CreditPacks` refreshes the page, and calls `onPurchased`, when the window is
+closed rather than when the payment is verified. Inside the submit checklist the
+refresh is what makes the checklist ready, which unmounts the Buy credits dialog
+— and the result window with it — before the dealer had read it. "Add a vehicle"
+is offered only on the billing page (`offerAddVehicle={!onPurchased}`); in the
+checklist the dealer is already adding one.
+
 ## `apps/web/src/features/dealer/billing/razorpay.ts`
 
 ### `openCheckout(checkout)`

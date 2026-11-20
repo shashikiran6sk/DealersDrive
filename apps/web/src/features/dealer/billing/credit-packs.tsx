@@ -7,7 +7,7 @@ import type {
 } from '@dealers-drive/contracts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Banner, StatusTag } from '@/components/ui/primitives';
@@ -18,6 +18,8 @@ import {
   verifyCreditOrderAction,
 } from '@/features/dealer/billing/billing-actions';
 import { BILLING_TEXT } from './billing.constants';
+import { PurchaseResult } from './purchase-result';
+import type { PurchaseOutcome } from './purchase-result.types';
 import { openCheckout } from './razorpay';
 
 export interface CreditPacksProps {
@@ -35,17 +37,40 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
   const [notice, setNotice] = useState<Notice>(null);
   const [simulated, setSimulated] = useState<CreditCheckout | null>(null);
 
-  async function settle(orderId: string, payment: Parameters<typeof verifyCreditOrderAction>[1]) {
+  const packsRef = useRef<HTMLUListElement>(null);
+  const [outcome, setOutcome] = useState<PurchaseOutcome | null>(null);
+  const [purchased, setPurchased] = useState<CreditOrderResult | null>(null);
+
+  async function settle(
+    orderId: string,
+    amountLabel: string,
+    payment: Parameters<typeof verifyCreditOrderAction>[1],
+  ) {
     const verified = await verifyCreditOrderAction(orderId, payment);
+    const paymentId = payment.razorpayPaymentId;
     if (!verified.ok) {
-      setNotice({ tone: 'err', message: verified.message });
+      setOutcome({ kind: 'unconfirmed', message: verified.message, paymentId });
     } else if (verified.value.status === 'PAID') {
-      setNotice({ tone: 'ok', message: BILLING_TEXT.paid(verified.value.message) });
-      onPurchased?.(verified.value);
+      setPurchased(verified.value);
+      setOutcome({
+        kind: 'paid',
+        credits: verified.value.credits,
+        available: verified.value.available,
+        amountLabel,
+        paymentId,
+      });
     } else {
-      setNotice({ tone: 'warn', message: BILLING_TEXT.pending });
+      setOutcome({ kind: 'pending', amountLabel, paymentId });
     }
+  }
+
+  function closeResult(): void {
+    setOutcome(null);
     router.refresh();
+    if (purchased) {
+      setPurchased(null);
+      onPurchased?.(purchased);
+    }
   }
 
   async function buy(packId: string): Promise<void> {
@@ -61,13 +86,14 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
         setSimulated(order.value);
         return;
       }
-      const outcome = await openCheckout(order.value);
-      if (outcome.kind === 'paid') await settle(order.value.orderId, outcome.payment);
-      else
-        setNotice({
-          tone: 'warn',
-          message: outcome.kind === 'dismissed' ? BILLING_TEXT.dismissed : BILLING_TEXT.failed,
-        });
+      const checkout = await openCheckout(order.value);
+      if (checkout.kind === 'paid') {
+        await settle(order.value.orderId, order.value.totalLabel, checkout.payment);
+      } else if (checkout.kind === 'failed') {
+        setOutcome({ kind: 'failed', packId });
+      } else {
+        setNotice({ tone: 'warn', message: BILLING_TEXT.dismissed });
+      }
     } catch {
       setNotice({ tone: 'err', message: BILLING_TEXT.scriptFailed });
     } finally {
@@ -75,10 +101,15 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
     }
   }
 
+  function retry(packId: string): void {
+    setOutcome(null);
+    void buy(packId);
+  }
+
   async function confirmSimulated(checkout: CreditCheckout): Promise<void> {
     if (!checkout.simulation) return;
     setBusy(checkout.orderId);
-    await settle(checkout.orderId, {
+    await settle(checkout.orderId, checkout.totalLabel, {
       razorpayOrderId: checkout.gatewayOrderId,
       razorpayPaymentId: checkout.simulation.paymentId,
       razorpaySignature: checkout.simulation.signature,
@@ -89,6 +120,13 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>
+      <PurchaseResult
+        outcome={outcome}
+        onClose={closeResult}
+        onRetry={retry}
+        returnFocus={() => packsRef.current?.focus()}
+        offerAddVehicle={!onPurchased}
+      />
       {notice ? <Banner tone={notice.tone}>{notice.message}</Banner> : null}
       {!packs.purchasable ? <Banner tone="warn">{BILLING_TEXT.gatewayOff}</Banner> : null}
       {packs.purchasable && !canPurchase ? (
@@ -117,7 +155,7 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
           {BILLING_TEXT.simulatedBody} {simulated.totalLabel}
         </Banner>
       ) : null}
-      <ul className="grid gap-3 sm:grid-cols-3">
+      <ul ref={packsRef} tabIndex={-1} className="grid gap-3 outline-none sm:grid-cols-3">
         {packs.data.map((pack) => (
           <li key={pack.id} className="card flex flex-col gap-2 p-[16px]">
             <div className="flex items-center justify-between gap-2">
