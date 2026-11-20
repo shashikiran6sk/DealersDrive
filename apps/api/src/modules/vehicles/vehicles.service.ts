@@ -3,8 +3,10 @@ import {
   LIFECYCLE_ACTION_PERMISSION,
   isListingDeletable,
   isListingEditable,
+  existingVehicleSpelling,
   isVehicleMake,
   parseRegistration,
+  vehicleTextKey,
   vehicleIssues,
   type AdminUpdateVehicleInput,
   type CreateVehicleInput,
@@ -57,7 +59,13 @@ import {
   VEHICLE_NOT_EDITABLE,
   VEHICLE_NOT_FOUND,
 } from './vehicles.messages.js';
-import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.repository.js';
+import type {
+  ScopedField,
+  ValueScope,
+  VehicleRow,
+  VehicleWrite,
+  VehiclesRepository,
+} from './vehicles.repository.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { OPEN_GATE, type SubmissionGate } from './submission-gate.js';
@@ -94,6 +102,18 @@ export interface DraftPhotoCleanup {
 }
 
 export const SUGGESTION_LIMIT = 8;
+
+export const SCOPED_SUGGESTION_LIMIT = 100;
+
+function distinctSpellings(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((value) => {
+    const key = vehicleTextKey(value);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export type DirectLifecycleAction = Exclude<ListingLifecycleAction, 'requestReactivation'>;
 
@@ -205,6 +225,11 @@ export function createVehiclesService({
     return (await repo.existingSpelling(field, value)) ?? value;
   }
 
+  async function adopted(field: ScopedField, value: string, scope: ValueScope): Promise<string> {
+    const known = await repo.scopedValues(field, scope, SCOPED_SUGGESTION_LIMIT);
+    return existingVehicleSpelling(value, known) ?? value;
+  }
+
   function offListMake(input: UpdateVehicleInput): boolean {
     return typeof input.make === 'string' && !isVehicleMake(input.make);
   }
@@ -233,10 +258,21 @@ export function createVehiclesService({
       data.rtoCode = rtoCodeOf(input.registrationNumber);
     }
     if (input.make !== undefined) data.make = input.make;
+    const make = input.make ?? null;
     if (input.model !== undefined) {
-      data.model = input.model && (await spelled('model', input.model));
+      data.model =
+        input.model &&
+        (make
+          ? await adopted('model', input.model, { make })
+          : await spelled('model', input.model));
     }
-    if (input.variant !== undefined) data.variant = input.variant;
+    if (input.variant !== undefined) {
+      const model = typeof data.model === 'string' ? data.model : null;
+      data.variant =
+        input.variant && make && model
+          ? await adopted('variant', input.variant, { make, model })
+          : input.variant;
+    }
     if (input.manufacturingYear !== undefined) data.manufacturingYear = input.manufacturingYear;
     if (input.registrationYear !== undefined) data.registrationYear = input.registrationYear;
     if (input.fuelType !== undefined) data.fuelType = input.fuelType;
@@ -749,7 +785,23 @@ export function createVehiclesService({
       return toDealerVehicle(requested.vehicle, requested.permissions);
     },
 
-    async suggestions(query: VehicleSuggestQuery): Promise<VehicleSuggestions> {
+    async suggestions(query: VehicleSuggestQuery, dealerId?: string): Promise<VehicleSuggestions> {
+      if (query.field !== 'make' && query.make) {
+        const scope: ValueScope = {
+          make: query.make,
+          ...(query.model ? { model: query.model } : {}),
+          ...(dealerId ? { dealerId } : {}),
+        };
+        const known = distinctSpellings(
+          await repo.scopedValues(query.field, scope, SCOPED_SUGGESTION_LIMIT),
+        );
+        const key = query.q ? vehicleTextKey(query.q) : '';
+        return {
+          field: query.field,
+          values: key ? known.filter((value) => vehicleTextKey(value).includes(key)) : known,
+        };
+      }
+      if (query.field === 'variant' || !query.q) return { field: query.field, values: [] };
       return {
         field: query.field,
         values: await repo.suggestions(query.field, query.q, SUGGESTION_LIMIT),

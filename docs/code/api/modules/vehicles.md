@@ -47,6 +47,31 @@ What the wizard offers while a dealer types a make or model: values already in
 use, never a closed list. It is the cheapest guard against fragmentation that
 does not also refuse a genuinely new model.
 
+### `async scopedValues(field, scope, limit)`
+
+The models in use under a make, or the variants under a make and model, most
+used first — what the wizard's model and variant lists are built from, and what
+a typed value is snapped to on write.
+
+Only cars whose listing has been published at least once (`publishedAt` set)
+count, plus the asking dealership's own. A moderator has looked at a published
+car, so a typo in someone's abandoned draft is never offered to everybody else,
+and another dealership's unlisted stock is never visible in a competitor's
+dropdown. `groupBy` with a count orders by popularity, so the spelling most
+dealers use is the first one offered and the one adopted.
+
+The make is compared exactly, the model case-insensitively. Every make reaching
+here has been through `canonicalVehicleMake` in the contract, and an exact
+comparison lets PostgreSQL use the `(make, model)` index, which `ILIKE` would
+not.
+
+Sales (`GET /v1/sales/dealers/:id/vehicles/suggestions`) and the moderator's
+listing editor (`GET /v1/admin/listings/:id/vehicle/suggestions`) reach the same
+`suggestions` through their own modules, with the dealership they act for as
+`dealerId`. The dealer route alone was not enough: an admin session is refused
+under `/v1/dealer`, so before these existed Sales and moderators were offered
+nothing at all.
+
 ### `async heldRegistration(dealerId, registrationNumber, exceptVehicleId?)`
 
 The read in front of the partial unique index
@@ -68,6 +93,15 @@ plate out for everybody would be a squatting problem the index created.
 
 The dealer's side of a vehicle (**F063**'s API): create a draft from a plate,
 read it, save wizard steps into it, discard it.
+
+### `async function adopted(field, value, scope)`
+
+A model typed alongside its make, or a variant alongside its make and model,
+adopts the spelling already in use under that parent when the two share a
+`vehicleTextKey` — `I-20`, `i 20` and `I20` all become the listed `i20`. It is
+the server's copy of what `VehicleOptionSelect` does in the browser, so the
+guard holds for any client. Without a make in the same write it falls back to
+`existingSpelling`, the older, case-only, unscoped rule.
 
 **Every write and its audit row are one transaction.** `vehicle.created`,
 `vehicle.updated` (with the names of the fields that changed, never their

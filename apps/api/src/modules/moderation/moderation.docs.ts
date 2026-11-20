@@ -14,6 +14,21 @@ export const moderationDocs: ModuleDocs = {
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
+      method: 'get',
+      path: '/v1/admin/listings/:id/vehicle/suggestions',
+      operationId: 'suggestListingVehicleValues',
+      tag: DOC_TAGS.moderation,
+      summary: 'Models or variants in use, for the listing editor',
+      description:
+        'The dealer’s own `GET /v1/dealer/vehicles/suggestions`, answered as the listing’s dealership would see it, so the moderator’s editor offers the same make → model → variant lists the dealer had.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      query: 'VehicleSuggestQuery',
+      responses: [{ status: 200, description: 'Suggestions.', schema: 'VehicleSuggestions' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
       method: 'patch',
       path: '/v1/admin/listings/:id/vehicle',
       operationId: 'updateAdminListingVehicle',

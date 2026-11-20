@@ -5,6 +5,7 @@ export interface VehicleMakeSelectProps {
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
+  onValueChange?: (make: string) => void;
   'aria-invalid'?: 'true';
   'aria-describedby'?: string;
 }

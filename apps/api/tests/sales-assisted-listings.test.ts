@@ -325,6 +325,30 @@ describe('scope', () => {
     await otherSales.post(`/v1/sales/dealers/${dealerId}/vehicles/${vehicleId}/submit`).expect(404);
   });
 
+  it('offers the models in use as the assisted dealership would see them', async () => {
+    const dealerId = await assistedDealer();
+    const vehicleId = await draft(dealerId);
+    const model = `Assisted ${String(Date.now())}`;
+    await sales
+      .patch(`/v1/sales/dealers/${dealerId}/vehicles/${vehicleId}`)
+      .send({ make: 'Hyundai', model })
+      .expect(200);
+    const path = `/v1/sales/dealers/${dealerId}/vehicles/suggestions?field=model&make=Hyundai`;
+
+    const own = await sales.get(path).expect(200);
+    expect(own.body.values).toContain(model);
+
+    const elsewhere = await assistedDealer();
+    const other = await sales
+      .get(`/v1/sales/dealers/${elsewhere}/vehicles/suggestions?field=model&make=Hyundai`)
+      .expect(200);
+    expect(other.body.values).not.toContain(model);
+
+    await otherSales.get(path).expect(404);
+    await moderator.get(path).expect(403);
+    await sales.get(`/v1/sales/dealers/${dealerId}/vehicles/suggestions?field=variant`).expect(400);
+  });
+
   it('never shows the dealer’s own inventory to Sales', async () => {
     const dealerId = await assistedDealer();
     const ownVehicle = await h.prisma.vehicle.create({

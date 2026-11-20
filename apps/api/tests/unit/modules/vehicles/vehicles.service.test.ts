@@ -85,6 +85,7 @@ function setup(
     createdByMember: vi.fn(async () => [row()]),
     existingSpelling: vi.fn(async () => null),
     suggestions: vi.fn(async () => ['Creta']),
+    scopedValues: vi.fn(async (): Promise<string[]> => []),
     inventory: vi.fn(async () => [row()]),
     statusCounts: vi.fn(async () => [{ status: 'DRAFT' as const, count: 1 }]),
     ...repoOverrides,
@@ -267,6 +268,69 @@ describe('suggestions', () => {
       values: ['Creta'],
     });
     expect(repo.suggestions).toHaveBeenCalledWith('model', 'Cr', 8);
+  });
+
+  it('lists every model in use under a make, with the dealership’s own drafts', async () => {
+    const { service, repo } = setup({
+      scopedValues: vi.fn(async () => ['Creta', 'i20', 'I-20', 'Venue']),
+    });
+    await expect(
+      service.suggestions({ field: 'model', make: 'Hyundai' }, ACTOR.dealerId),
+    ).resolves.toEqual({ field: 'model', values: ['Creta', 'i20', 'Venue'] });
+    expect(repo.scopedValues).toHaveBeenCalledWith(
+      'model',
+      { make: 'Hyundai', dealerId: ACTOR.dealerId },
+      100,
+    );
+    expect(repo.suggestions).not.toHaveBeenCalled();
+  });
+
+  it('filters a scoped list by what was typed, ignoring case and punctuation', async () => {
+    const { service } = setup({
+      scopedValues: vi.fn(async () => ['Swift', 'Swift Dzire', 'Baleno']),
+    });
+    await expect(
+      service.suggestions({ field: 'model', make: 'Maruti Suzuki', q: 'dzi' }),
+    ).resolves.toEqual({ field: 'model', values: ['Swift Dzire'] });
+  });
+
+  it('scopes variants to the make and the model', async () => {
+    const { service, repo } = setup({ scopedValues: vi.fn(async () => ['SX(O)', 'S']) });
+    await service.suggestions(
+      { field: 'variant', make: 'Hyundai', model: 'Creta' },
+      ACTOR.dealerId,
+    );
+    expect(repo.scopedValues).toHaveBeenCalledWith(
+      'variant',
+      { make: 'Hyundai', model: 'Creta', dealerId: ACTOR.dealerId },
+      100,
+    );
+  });
+});
+
+describe('a typed model or variant adopts the spelling in use under its make', () => {
+  it('snaps "i-20" to "i20" and "sx o" to "SX(O)"', async () => {
+    const scopedValues = vi.fn(async (field: string) => (field === 'model' ? ['i20'] : ['SX(O)']));
+    const { service, repo } = setup({ scopedValues });
+    await service.update(ACTOR, ID, { make: 'Hyundai', model: 'i-20', variant: 'sx o' });
+    expect(repo.updateOwned).toHaveBeenCalledWith(
+      ACTOR.dealerId,
+      ID,
+      expect.objectContaining({ make: 'Hyundai', model: 'i20', variant: 'SX(O)' }),
+      expect.anything(),
+    );
+    expect(scopedValues).toHaveBeenCalledWith('variant', { make: 'Hyundai', model: 'i20' }, 100);
+  });
+
+  it('keeps a genuinely new model as typed', async () => {
+    const { service, repo } = setup({ scopedValues: vi.fn(async () => ['Creta']) });
+    await service.update(ACTOR, ID, { make: 'Hyundai', model: 'Alcazar' });
+    expect(repo.updateOwned).toHaveBeenCalledWith(
+      ACTOR.dealerId,
+      ID,
+      expect.objectContaining({ model: 'Alcazar' }),
+      expect.anything(),
+    );
   });
 });
 

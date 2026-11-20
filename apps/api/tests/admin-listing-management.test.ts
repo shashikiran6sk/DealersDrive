@@ -356,6 +356,21 @@ describe('authorization and public dealer details', () => {
       await agent.post(`/v1/admin/listings/${c.listingId}/mark-sold`).expect(expected);
     }
   });
+  it('offers the editor the models in use, to moderators only', async () => {
+    const c = await candidate('PENDING_REVIEW');
+    const path = `/v1/admin/listings/${c.listingId}/vehicle/suggestions?field=model&make=Hyundai`;
+    const response = await moderator.get(path).expect(200);
+    expect(response.body).toMatchObject({ field: 'model' });
+    expect(response.body.values).toContain(c.detail.vehicle.model);
+
+    await support.get(path).expect(403);
+    await sales.get(path).expect(403);
+    await owner.agent.get(path).expect(401);
+    await admin
+      .get(`/v1/admin/listings/${randomUUID()}/vehicle/suggestions?field=model&make=Hyundai`)
+      .expect(404);
+  });
+
   it('returns useful errors for malformed and absent ids', async () => {
     await admin
       .patch('/v1/admin/listings/not-an-id/vehicle')

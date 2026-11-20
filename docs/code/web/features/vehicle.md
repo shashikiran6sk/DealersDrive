@@ -59,6 +59,17 @@ A vehicle that does not exist yet can only be on the Registration step, which is
 why the new-vehicle page renders the wizard with `vehicle={null}` and the form
 posts to `createVehicleAction`.
 
+## `apps/web/src/features/vehicle/vehicle-wizard/identity-fields.tsx`
+
+### `export function IdentityFields({ errors, initial }: IdentityFieldsProps)`
+
+Make, model and variant as one cascade: the model list is scoped to the make and
+the variant list to the model. Changing the make clears model and variant, and
+changing the model clears the variant, because a `Creta` variant under `Tata`
+is a contradiction the form should not post. Each child is remounted by `key`
+rather than reset by effect, so returning to the saved make brings the saved
+model back.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/review-step.tsx`
 
 ### `export function ReviewStep({ vehicle }: { vehicle: DealerVehicle })`
