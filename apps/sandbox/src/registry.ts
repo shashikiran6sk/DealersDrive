@@ -3780,11 +3780,17 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'The Review step’s “before you submit” list: photographs ready, and credits needed versus available (net of what a resubmission already holds), with an inline Buy credits dialog (CreditPacks). The same needs disable Submit with a reason.',
-    aliases: ['ChecklistItem', 'SubmitChecklist', 'BuyCreditsDialog'],
+      'The Review step’s “before you submit” list: photographs ready, and credits needed versus available (net of what a resubmission already holds), with Buy credits opening the packs (CreditPacks) inline in the checklist — not in a dialog, which Razorpay Checkout’s own window would close, taking the purchase result with it. The panel stays open until the dealer closes it or presses Done on the result. The same needs disable Submit with a reason.',
+    aliases: ['ChecklistItem', 'SubmitChecklist', 'BuyCreditsPanel', 'BuyCreditsDialog'],
     features: ['Dealer photographs', 'Listing credits'],
     props: ['needs', 'photos', 'billing', 'packs', 'photosHref'],
-    states: ['ready', 'photos missing', 'short of credits', 'resubmission already paid'],
+    states: [
+      'ready',
+      'photos missing',
+      'short of credits',
+      'buying credits',
+      'resubmission already paid',
+    ],
     reusable: false,
     storyId: 'vehicle-submissionchecklist',
   },
@@ -3795,7 +3801,7 @@ export const registry: RegistryEntry[] = [
     category: 'Console',
     ownership: 'Feature-shared',
     purpose:
-      'Credit packs with per-credit price, saving and GST-inclusive total, and the purchase: server order → Razorpay Checkout → server verify, or a simulated payment where the API runs the fake gateway. Also the billing page’s CreditBalance (available / held / total and what a car costs), CreditLedger and CreditOrders tables, reused on the admin dealer page.',
+      'Credit packs with per-credit price, saving and GST-inclusive total — three cards across where their container is 32rem or wider, one row per pack where it is narrower (a container query, so the checklist and a phone get rows) — and the purchase: server order → Razorpay Checkout → server verify, or a simulated payment where the API runs the fake gateway. Also the billing page’s CreditBalance (available / held / total and what a car costs), CreditLedger and CreditOrders tables, reused on the admin dealer page.',
     aliases: [
       'BuyCredits',
       'RazorpayCheckout',
@@ -3813,6 +3819,7 @@ export const registry: RegistryEntry[] = [
       'simulated payment',
       'manager cannot buy',
       'no gateway',
+      'narrow container',
       'paid',
       'failed',
     ],

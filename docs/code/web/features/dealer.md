@@ -104,6 +104,13 @@ and what to do if money left their account without credits arriving. A paid orde
 in the dealer's payments shows its Razorpay payment id, the reference support
 asks for.
 
+The packs lay out by the width of their **container**, not the screen
+(`@container`, `@lg` = 32rem): three cards across on the billing page, one row
+per pack — credits and saving, price, Buy — in the submit checklist's panel and
+on a phone. A viewport breakpoint put three cards into the 280px a dialog had,
+where "5 credits · Save 10%" overlapped and the third card ran off the edge.
+`.card` is a column flex box, so the row layout says `flex-row` explicitly.
+
 ## `apps/web/src/features/dealer/billing/purchase-result.tsx`
 
 ### `PurchaseResult`

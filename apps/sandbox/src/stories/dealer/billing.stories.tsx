@@ -17,6 +17,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Packs: Story = {};
 
+export const Narrow: Story = {
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 420 }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
+
 export const ManagerCannotBuy: Story = { args: { canPurchase: false } };
 
 export const NoGateway: Story = { args: { packs: { ...MOCK_PACKS, purchasable: false } } };

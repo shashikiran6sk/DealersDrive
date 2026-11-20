@@ -85,6 +85,25 @@ reports the vehicle complete (`listing.canSubmit`). It is a separate form from
 the step forms, posting to `submitVehicleAction`, which sends no body — what is
 submitted is what is stored.
 
+## `apps/web/src/features/vehicle/vehicle-wizard/submission-checklist.tsx`
+
+### `SubmissionChecklist`
+
+**Buy credits opens the packs inline, inside the checklist, not in a dialog.**
+It was a Radix dialog until a test-mode payment showed what that does: Razorpay
+Checkout opens its own window in an iframe on top of the page, focus moves into
+it, and Radix closes a modal dialog when focus leaves it. The dialog — with
+`CreditPacks` and the purchase result inside it — was gone before the dealer had
+paid, so the payment was verified (the checklist did update) but nothing said so.
+Inline, `CreditPacks` stays mounted under Checkout exactly as it does on the
+billing page.
+
+The panel is shown while `buying` is true, not while credits are short. A
+successful verify revalidates, the page re-renders with enough credits, and the
+"Buy credits" button rightly disappears — tying the panel to the same condition
+would unmount the result window the dealer was reading. `buying` ends on Close,
+or on `onPurchased`, which `CreditPacks` calls when the result window is closed.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/wizard-footer.tsx`
 
 ### `export function WizardFooter(...)`

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { userEvent, within } from 'storybook/test';
 
 import { SubmissionChecklist } from '@/features/vehicle/vehicle-wizard/submission-checklist';
 
@@ -45,3 +46,17 @@ export const ShortOfCredits: Story = {
 };
 
 export const ResubmissionAlreadyPaid: Story = { args: { needs: { ...READY, creditsNeeded: 0 } } };
+
+export const BuyingCredits: Story = {
+  args: ShortOfCredits.args,
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 480 }}>
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Buy credits' }));
+  },
+};

@@ -10,7 +10,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
 import { CreditPacks } from '@/features/dealer/billing';
 
 import { ChecklistItem as Item } from './checklist-item';
@@ -65,26 +64,36 @@ export function SubmissionChecklist({
                   creditsLabel(needs.creditsNeeded),
                   creditsLabel(needs.creditsAvailable),
                 )}
-            {!needs.creditsReady && packs ? (
-              <Dialog
-                open={buying}
-                onOpenChange={setBuying}
-                title={CHECKLIST_TEXT.buyTitle}
-                description={CHECKLIST_TEXT.buyDescription}
-                trigger={
-                  <Button size="sm" variant="primary">
-                    {CHECKLIST_TEXT.buyCredits}
-                  </Button>
-                }
-              >
-                <CreditPacks
-                  packs={packs}
-                  canPurchase={billing?.canPurchase ?? false}
-                  onPurchased={() => setBuying(false)}
-                />
-              </Dialog>
+            {!needs.creditsReady && packs && !buying ? (
+              <Button size="sm" variant="primary" onClick={() => setBuying(true)}>
+                {CHECKLIST_TEXT.buyCredits}
+              </Button>
             ) : null}
           </Item>
+        ) : null}
+        {needs.creditsShown && buying && packs ? (
+          <li
+            id="buy-credits-panel"
+            aria-labelledby="buy-credits-title"
+            className="mt-1 rounded-[10px] border border-(--color-divider) bg-(--color-bg) p-[12px]"
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h4 id="buy-credits-title" className="text-[14px]">
+                  {CHECKLIST_TEXT.buyTitle}
+                </h4>
+                <p className="text-[12px] ink-muted">{CHECKLIST_TEXT.buyDescription}</p>
+              </div>
+              <Button size="sm" variant="secondary" onClick={() => setBuying(false)}>
+                {CHECKLIST_TEXT.buyClose}
+              </Button>
+            </div>
+            <CreditPacks
+              packs={packs}
+              canPurchase={billing?.canPurchase ?? false}
+              onPurchased={() => setBuying(false)}
+            />
+          </li>
         ) : null}
       </ul>
       {needs.creditsShown ? (

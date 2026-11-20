@@ -162,6 +162,7 @@ export const CHECKLIST_TEXT = {
   buyCredits: 'Buy credits',
   buyTitle: 'Buy listing credits',
   buyDescription: 'Credits are held when you submit and used only if the car goes live.',
+  buyClose: 'Close',
   heldNote:
     'Credits are held while our team reviews the car, used if it goes live and returned if it does not.',
   blockedPhotos: 'Finish the Photos step to submit.',

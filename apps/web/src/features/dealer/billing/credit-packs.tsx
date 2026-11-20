@@ -119,7 +119,7 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div className={cn('@container flex flex-col gap-3', className)}>
       <PurchaseResult
         outcome={outcome}
         onClose={closeResult}
@@ -155,28 +155,41 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
           {BILLING_TEXT.simulatedBody} {simulated.totalLabel}
         </Banner>
       ) : null}
-      <ul ref={packsRef} tabIndex={-1} className="grid gap-3 outline-none sm:grid-cols-3">
+      <ul
+        ref={packsRef}
+        tabIndex={-1}
+        className="grid gap-2 outline-none @lg:grid-cols-3 @lg:gap-3"
+      >
         {packs.data.map((pack) => (
-          <li key={pack.id} className="card flex flex-col gap-2 p-[16px]">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[22px] font-semibold tnum">
-                {pack.credits}{' '}
-                <span className="text-[13px] font-normal ink-muted">
-                  {BILLING_TEXT.creditsUnit(pack.credits)}
+          <li
+            key={pack.id}
+            className="card flex flex-row items-center gap-3 p-[12px] @lg:flex-col @lg:items-stretch @lg:gap-2 @lg:p-[16px]"
+          >
+            <div className="min-w-0 flex-1 @lg:flex-none">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 @lg:justify-between">
+                <span className="text-[18px] font-semibold tnum @lg:text-[22px]">
+                  {pack.credits}{' '}
+                  <span className="text-[13px] font-normal ink-muted">
+                    {BILLING_TEXT.creditsUnit(pack.credits)}
+                  </span>
                 </span>
-              </span>
-              {pack.savingsLabel ? <StatusTag tone="ok">{pack.savingsLabel}</StatusTag> : null}
+                {pack.savingsLabel ? <StatusTag tone="ok">{pack.savingsLabel}</StatusTag> : null}
+              </div>
+              <span className="text-[12px] ink-muted @lg:text-[13px]">{pack.perCreditLabel}</span>
             </div>
-            <span className="text-[13px] ink-muted">{pack.perCreditLabel}</span>
-            <span className="text-[18px] font-semibold tnum">{pack.priceLabel}</span>
-            {packs.gstPercent > 0 ? (
-              <span className="text-[12px] ink-subtle tnum">
-                {BILLING_TEXT.inclGst(pack.totalLabel)}
+            <div className="flex flex-col items-end @lg:items-start">
+              <span className="text-[16px] font-semibold tnum @lg:text-[18px]">
+                {pack.priceLabel}
               </span>
-            ) : null}
+              {packs.gstPercent > 0 ? (
+                <span className="text-[12px] ink-subtle tnum">
+                  {BILLING_TEXT.inclGst(pack.totalLabel)}
+                </span>
+              ) : null}
+            </div>
             <Button
               variant="primary"
-              className="mt-auto"
+              className="flex-none @lg:mt-auto"
               disabled={!packs.purchasable || !canPurchase || busy !== null}
               loading={busy === pack.id}
               onClick={() => void buy(pack.id)}
