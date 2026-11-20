@@ -5,6 +5,7 @@ import { deleteDealerDocument } from './routes/delete-dealer-document.js';
 import { getDashboard } from './routes/get-dashboard.js';
 import { getDealer } from './routes/get-dealer.js';
 import { getDealerVehicle } from './routes/get-dealer-vehicle.js';
+import { getDealerVehicleSuggestions } from './routes/get-dealer-vehicle-suggestions.js';
 import { getDealerVehicles } from './routes/get-dealer-vehicles.js';
 import { patchDealerVehicle } from './routes/patch-dealer-vehicle.js';
 import { postDealerVehicle } from './routes/post-dealer-vehicle.js';
@@ -40,6 +41,7 @@ const ROUTES: SalesRoute[] = [
   postDealerSubmit,
   getDealerVehicles,
   postDealerVehicle,
+  getDealerVehicleSuggestions,
   getDealerVehicle,
   patchDealerVehicle,
   postDealerVehicleSubmit,

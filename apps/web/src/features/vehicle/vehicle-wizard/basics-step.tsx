@@ -10,51 +10,30 @@ import {
 } from '@dealers-drive/contracts';
 
 import { invalidProps } from '@/components/forms/field';
-import { SuggestInput } from '@/components/forms/suggest-input';
-import { VehicleMakeSelect } from '@/components/forms/vehicle-make-select';
 import { Input, Select } from '@/components/ui/input';
 
+import { IdentityFields } from './identity-fields';
 import { StepField } from './step-field';
 import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
 import type { StepProps } from './vehicle-wizard.types';
 import { formValue } from './utils';
 
-export function BasicsStep({ vehicle, errors, values }: StepProps) {
+export function BasicsStep({
+  vehicle,
+  errors,
+  values,
+  suggestionsPath,
+}: StepProps & { suggestionsPath?: string }) {
   const value = (field: string) => formValue(values, vehicle, field);
   const maxYear = maxVehicleYear();
 
   return (
     <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] max-md:[grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
-      <StepField name="make" errors={errors} hint={VEHICLE_WIZARD_TEXT.makeHint}>
-        <VehicleMakeSelect
-          id="make"
-          defaultValue={value('make')}
-          placeholder={VEHICLE_WIZARD_TEXT.makePlaceholder}
-          required
-          {...invalidProps('make', errors.make)}
-        />
-      </StepField>
-      <StepField name="model" errors={errors}>
-        <SuggestInput
-          id="model"
-          field="model"
-          defaultValue={value('model')}
-          placeholder={VEHICLE_WIZARD_TEXT.modelPlaceholder}
-          maxLength={VEHICLE_LIMITS.textMax}
-          required
-          {...invalidProps('model', errors.model)}
-        />
-      </StepField>
-      <StepField name="variant" errors={errors} hint={VEHICLE_WIZARD_TEXT.variantHint}>
-        <Input
-          id="variant"
-          name="variant"
-          defaultValue={value('variant')}
-          placeholder={VEHICLE_WIZARD_TEXT.variantPlaceholder}
-          maxLength={VEHICLE_LIMITS.textMax}
-          {...invalidProps('variant', errors.variant)}
-        />
-      </StepField>
+      <IdentityFields
+        errors={errors}
+        suggestionsPath={suggestionsPath}
+        initial={{ make: value('make'), model: value('model'), variant: value('variant') }}
+      />
       <StepField name="manufacturingYear" errors={errors}>
         <Input
           id="manufacturingYear"

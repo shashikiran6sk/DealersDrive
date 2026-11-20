@@ -19,7 +19,7 @@ import { SubmissionChecklist } from './submission-checklist';
 import { submissionBlocker, submissionNeeds } from './submission';
 import { SubmittedPanel } from './submitted-panel';
 import { STEP_HEADINGS, STEP_LABELS, VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
-import { editPath, stepBefore, stepsFor } from './utils';
+import { editPath, stepBefore, stepsFor, suggestionsPathFor } from './utils';
 import type { WizardScope, WizardState, WizardStep } from './vehicle-wizard.types';
 import { DEALER_SCOPE, WizardScopeContext } from './wizard-scope';
 import { WizardFooter } from './wizard-footer';
@@ -196,7 +196,12 @@ function WizardBody({
               <RegistrationStep vehicle={vehicle} errors={errors} values={values} />
             ) : null}
             {step === 'basics' ? (
-              <BasicsStep vehicle={vehicle} errors={errors} values={values} />
+              <BasicsStep
+                vehicle={vehicle}
+                errors={errors}
+                values={values}
+                suggestionsPath={suggestionsPathFor(scope)}
+              />
             ) : null}
             {step === 'details' ? (
               <DetailsStep vehicle={vehicle} errors={errors} values={values} />

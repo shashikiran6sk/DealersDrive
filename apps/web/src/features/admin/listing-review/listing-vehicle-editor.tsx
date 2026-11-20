@@ -4,6 +4,7 @@ import type { AdminListingDetail } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
+import { VEHICLE_SUGGESTIONS_PATH } from '@/components/forms/vehicle-option-select';
 import { Button } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import { updateListingVehicleAction } from '@/features/admin/listing-actions';
@@ -80,7 +81,10 @@ export function ListingVehicleEditor({ detail }: { detail: AdminListingDetail })
         <form onSubmit={save} className="flex flex-col gap-5">
           <fieldset disabled={pending} className="flex min-w-0 flex-col gap-5">
             <RegistrationStep {...props} />
-            <BasicsStep {...props} />
+            <BasicsStep
+              {...props}
+              suggestionsPath={VEHICLE_SUGGESTIONS_PATH.admin(detail.listing.id)}
+            />
             <DetailsStep {...props} />
             <PricingStep {...props} />
           </fieldset>

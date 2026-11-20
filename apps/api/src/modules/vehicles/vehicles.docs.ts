@@ -69,13 +69,17 @@ export const vehiclesDocs: ModuleDocs = {
       path: '/v1/dealer/vehicles/suggestions',
       operationId: 'suggestVehicleValues',
       tag: DOC_TAGS.vehicles,
-      summary: 'Makes or models already in use',
+      summary: 'Makes, models or variants already in use',
       description:
-        'Distinct values other vehicles already carry, matched by prefix and case-insensitively, ' +
-        'at most eight. It is the suggest-existing guard rail D1 asked for and R46 made ' +
-        'universal: offering `Maruti Suzuki` as a dealer types `mar` is what stops the ' +
-        'marketplace fragmenting into three spellings of one brand. It is a suggestion, never a ' +
-        'closed list.',
+        'The suggest-existing guard rail D1 asked for and R46 made universal. It is a ' +
+        'suggestion, never a closed list.\n\n' +
+        '**Scoped** — `field=model&make=Hyundai`, or `field=variant&make=Hyundai&model=Creta`: ' +
+        'every value already in use under that make (and model), most used first, at most 100, ' +
+        'one per spelling (`i20` and `I-20` are one entry). Only cars that have passed ' +
+        'moderation at least once count, plus your own dealership’s, so another dealer’s ' +
+        'unreviewed draft never appears. `q` optionally filters the list by substring.\n\n' +
+        '**Unscoped** — `field` and `q`: distinct values matched by prefix across the ' +
+        'marketplace, at most eight. A variant is only ever suggested scoped.',
       audience: 'dealer',
       permission: 'vehicle:read',
       query: 'VehicleSuggestQuery',

@@ -32,6 +32,28 @@ export interface VehicleCreate {
 
 export type SpelledField = 'make' | 'model';
 
+export type ScopedField = 'model' | 'variant';
+
+export interface ValueScope {
+  make: string;
+  model?: string;
+  dealerId?: string;
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+function scopeWhere(field: ScopedField, scope: ValueScope): Prisma.VehicleWhereInput {
+  const vetted: Prisma.VehicleWhereInput = { listing: { is: { publishedAt: { not: null } } } };
+  return {
+    make: scope.make,
+    ...(field === 'variant' ? { model: { equals: scope.model ?? '', mode: 'insensitive' } } : {}),
+    [field]: { not: null },
+    ...(scope.dealerId ? { OR: [{ dealerId: scope.dealerId }, vetted] } : vetted),
+  };
+}
+
 export interface InventoryFilter {
   status?: ListingStatus;
   q?: string;
@@ -176,6 +198,28 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       return rows
         .map((row): unknown => row[field])
         .filter((value): value is string => typeof value === 'string');
+    },
+
+    async scopedValues(field: ScopedField, scope: ValueScope, limit: number): Promise<string[]> {
+      const where = scopeWhere(field, scope);
+      if (field === 'model') {
+        const rows = await prisma.vehicle.groupBy({
+          by: ['model'],
+          where,
+          _count: { model: true },
+          orderBy: [{ _count: { model: 'desc' } }, { model: 'asc' }],
+          take: limit,
+        });
+        return rows.map((row) => row.model).filter(isText);
+      }
+      const rows = await prisma.vehicle.groupBy({
+        by: ['variant'],
+        where,
+        _count: { variant: true },
+        orderBy: [{ _count: { variant: 'desc' } }, { variant: 'asc' }],
+        take: limit,
+      });
+      return rows.map((row) => row.variant).filter(isText);
     },
   };
 }

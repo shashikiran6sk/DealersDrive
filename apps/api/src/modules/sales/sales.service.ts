@@ -5,6 +5,8 @@ import {
   normaliseLocality,
   type CreateAssistedDealerInput,
   type CreateVehicleInput,
+  type VehicleSuggestQuery,
+  type VehicleSuggestions,
   type SelectableDocCategory,
   type DocumentCommitInput,
   type DocumentPresignInput,
@@ -860,6 +862,15 @@ export function createSalesService({
         canCreate: open,
         data: await vehicles.assistedList(assistedActor(principal, dealerId)),
       };
+    },
+
+    async vehicleSuggestions(
+      principal: AdminPrincipal,
+      dealerId: string,
+      query: VehicleSuggestQuery,
+    ): Promise<VehicleSuggestions> {
+      await requireAssisted(principal, dealerId);
+      return vehicles.suggestions(query, dealerId);
     },
 
     async createVehicle(principal: AdminPrincipal, dealerId: string, input: CreateVehicleInput) {

@@ -170,7 +170,7 @@ describe('the service', () => {
       },
       prisma: {} as never,
       audit: { record: vi.fn(), recordDetached: vi.fn() },
-      vehicles: { adminUpdate: vi.fn() },
+      vehicles: { adminUpdate: vi.fn(), suggestions: vi.fn() },
       images: { images: vi.fn(), minimum: vi.fn() },
     });
     const response = await service.listings({ limit: 1 });
@@ -196,6 +196,7 @@ describe('the router', () => {
       'GET /listings/:id',
       'POST /listings/:id/mark-sold',
       'POST /listings/:id/reserve',
+      'GET /listings/:id/vehicle/suggestions',
       'PATCH /listings/:id/vehicle',
       'PUT /listings/:id/checks/:key',
       'PUT /listings/:id/photography',
@@ -211,6 +212,7 @@ describe('the router', () => {
   it.each([
     'GET /listings',
     'GET /listings/:id',
+    'GET /listings/:id/vehicle/suggestions',
     'PUT /listings/:id/checks/:key',
     'PUT /listings/:id/photography',
     'POST /listings/:id/request-changes',
@@ -240,5 +242,45 @@ describe('the router', () => {
     expect(validatedSources(routeFor(router, 'PUT /listings/:id/checks/:key') as never)).toEqual(
       expect.arrayContaining(['params', 'body']),
     );
+  });
+});
+
+describe('vehicle suggestions for the listing editor', () => {
+  function serviceWith(listing: { dealerId: string } | null) {
+    const suggestions = vi.fn(async () => ({ field: 'model' as const, values: ['Creta'] }));
+    const findUnique = vi.fn(async () => listing);
+    const service = createModerationService({
+      repo: {
+        queue: vi.fn(),
+        statusCounts: vi.fn(),
+        pendingReactivations: vi.fn(),
+        detail: vi.fn(),
+        history: vi.fn(),
+        reactivations: vi.fn(),
+        reactivation: vi.fn(),
+        reactivationCounts: vi.fn(),
+      },
+      prisma: { listing: { findUnique } } as never,
+      audit: { record: vi.fn(), recordDetached: vi.fn() },
+      vehicles: { adminUpdate: vi.fn(), suggestions },
+      images: { images: vi.fn(), minimum: vi.fn() },
+    });
+    return { service, suggestions, findUnique };
+  }
+
+  it('lists what is in use, as the listing’s own dealership would see it', async () => {
+    const { service, suggestions } = serviceWith({ dealerId: 'dealer-9' });
+    await expect(
+      service.vehicleSuggestions('listing-1', { field: 'model', make: 'Hyundai' }),
+    ).resolves.toEqual({ field: 'model', values: ['Creta'] });
+    expect(suggestions).toHaveBeenCalledWith({ field: 'model', make: 'Hyundai' }, 'dealer-9');
+  });
+
+  it('is a 404 for a listing that does not exist', async () => {
+    const { service, suggestions } = serviceWith(null);
+    await expect(
+      service.vehicleSuggestions('missing', { field: 'model', make: 'Hyundai' }),
+    ).rejects.toMatchObject({ status: 404 });
+    expect(suggestions).not.toHaveBeenCalled();
   });
 });
