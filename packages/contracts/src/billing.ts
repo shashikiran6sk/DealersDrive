@@ -38,19 +38,21 @@ export const CREDIT_REASON_LABELS: Record<CreditReason, string> = {
   WELCOME_GRANT: 'Welcome credits',
 };
 
-export const CreditOrderStatus = z.enum(['CREATED', 'PAID', 'FAILED']);
+export const CreditOrderStatus = z.enum(['CREATED', 'PAID', 'FAILED', 'EXPIRED']);
 export type CreditOrderStatus = z.infer<typeof CreditOrderStatus>;
 
 export const CREDIT_ORDER_STATUS_LABELS: Record<CreditOrderStatus, string> = {
   CREATED: 'Awaiting payment',
   PAID: 'Paid',
   FAILED: 'Failed',
+  EXPIRED: 'Not completed',
 };
 
 export const CREDIT_ORDER_STATUS_TONES: Record<CreditOrderStatus, StatusTone> = {
   CREATED: 'neutral',
   PAID: 'ok',
   FAILED: 'err',
+  EXPIRED: 'neutral',
 };
 
 /** The two configurable credit costs a submission is priced from. */

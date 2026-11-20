@@ -27,6 +27,8 @@ export const RECHECK_MESSAGES = {
     'Razorpay has a payment for a different amount than this order. Nothing was credited — check it in the Razorpay dashboard.',
 } as const;
 
+export const CHECKOUT_NOT_COMPLETED = 'Checkout was not completed.';
+
 export const SIGNATURE_MISMATCH =
   'We could not confirm that payment with Razorpay. If money left your account, it will be credited or refunded automatically — contact support with the payment id.';
 

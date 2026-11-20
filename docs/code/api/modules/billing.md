@@ -168,6 +168,22 @@ admin's button still works), each at most once an hour by `checkedAt`, 25 a run.
 An abandoned checkout therefore costs a few dozen Razorpay calls, not hundreds,
 and one order Razorpay cannot answer for does not stop the rest.
 
+An order still `CREATED` past 72 hours gets one last check in the same sweep (its
+own batch of 25, same hourly spacing). If Razorpay has no payment it becomes
+`EXPIRED` — "Not completed", with the reason "Checkout was not completed." —
+because otherwise every closed checkout sat on the dealer's Billing page as
+"Awaiting payment" for ever, which reads as money owed or a payment stuck. Only
+`CREATED` moves, by a conditional `updateMany`, so a payment that lands between
+the check and the update is not overwritten. `FAILED` stays `FAILED`: Razorpay
+said why, and that is more useful than "not completed". An order Razorpay could
+not answer for, or one paid for a different amount, stays `CREATED` and is asked
+again next hour: neither is evidence the dealer walked away.
+
+`EXPIRED` is not final. `fulfil()` refuses only `PAID`, so a late
+`payment.captured` webhook or the admin's **Check with Razorpay** still credits
+it. `payment.failed` moves only `CREATED`, so it never turns a not-completed
+order into a failed one.
+
 ### `async recheckOrder(admin, dealerId, orderId)`
 
 **Check with Razorpay** on the admin dealer page, for "money left my account but I

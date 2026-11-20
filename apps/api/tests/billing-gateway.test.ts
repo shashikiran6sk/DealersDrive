@@ -436,10 +436,11 @@ describe('re-checking unpaid orders with Razorpay', () => {
     await h.container.billing.recheckOpenOrders(new Date());
     expect(asked.filter((id) => id === due.gatewayOrderId)).toHaveLength(1);
     expect(asked).not.toContain(young.gatewayOrderId);
-    expect(asked).not.toContain(stale.gatewayOrderId);
+    expect(asked.filter((id) => id === stale.gatewayOrderId)).toHaveLength(1);
 
     await h.container.billing.recheckOpenOrders(new Date(Date.now() + 61 * MINUTE));
     expect(asked.filter((id) => id === due.gatewayOrderId)).toHaveLength(2);
+    expect(asked.filter((id) => id === stale.gatewayOrderId)).toHaveLength(1);
     expect(await orderOf(due.orderId)).toMatchObject({ status: 'CREATED' });
   });
 
@@ -480,7 +481,83 @@ describe('re-checking unpaid orders with Razorpay', () => {
     expect(await h.container.billing.recheckOpenOrders(new Date())).toEqual({
       checked: 0,
       paid: 0,
+      expired: 0,
     });
+  });
+
+  it('marks a checkout unpaid after 72 hours as not completed, after one last check', async () => {
+    const owner = await fixtures.dealership();
+    const abandoned = await aged(owner, 73 * 60);
+    const latePaid = await aged(owner, 80 * 60);
+    const unreachable = await aged(owner, 75 * 60);
+    const short = await aged(owner, 74 * 60);
+    const failed = await aged(owner, 76 * 60);
+    await h.prisma.creditOrder.update({
+      where: { id: failed.orderId },
+      data: { status: 'FAILED', failureReason: 'Card declined.' },
+    });
+    script.payments = (gatewayOrderId, amount) => {
+      if (gatewayOrderId === unreachable.gatewayOrderId) throw new Error('Razorpay is down');
+      if (gatewayOrderId === latePaid.gatewayOrderId)
+        return [{ paymentId: 'pay_late', status: 'captured', amountPaise: amount }];
+      if (gatewayOrderId === short.gatewayOrderId)
+        return [{ paymentId: 'pay_short', status: 'captured', amountPaise: amount - 100 }];
+      return [];
+    };
+
+    expect(await h.container.billing.recheckOpenOrders(new Date())).toEqual({
+      checked: 4,
+      paid: 1,
+      expired: 1,
+    });
+    expect(await orderOf(abandoned.orderId)).toMatchObject({
+      status: 'EXPIRED',
+      failureReason: 'Checkout was not completed.',
+    });
+    expect(await orderOf(latePaid.orderId)).toMatchObject({ status: 'PAID' });
+    expect(await orderOf(unreachable.orderId)).toMatchObject({ status: 'CREATED' });
+    expect(await orderOf(short.orderId)).toMatchObject({ status: 'CREATED' });
+    expect(await orderOf(failed.orderId)).toMatchObject({ status: 'FAILED' });
+
+    const orders = await owner.agent.get('/v1/dealer/billing/orders').expect(200);
+    expect(
+      orders.body.data.find((row: { id: string }) => row.id === abandoned.orderId),
+    ).toMatchObject({ statusLabel: 'Not completed', statusTone: 'neutral' });
+
+    script.payments = () => [];
+    await h.container.billing.recheckOpenOrders(new Date(Date.now() + 61 * MINUTE));
+    expect(await orderOf(unreachable.orderId)).toMatchObject({ status: 'EXPIRED' });
+  });
+
+  it('still credits a not-completed order if the payment turns up later', async () => {
+    const owner = await fixtures.dealership();
+    const order = await aged(owner, 73 * 60);
+    script.payments = () => [];
+    await h.container.billing.recheckOpenOrders(new Date());
+    expect(await orderOf(order.orderId)).toMatchObject({ status: 'EXPIRED' });
+
+    paidOnly(order.gatewayOrderId);
+    const path = `/v1/admin/dealers/${owner.dealerId}/credits/orders/${order.orderId}/recheck`;
+    expect((await admin.post(path).expect(200)).body.outcome).toBe('paid');
+    expect(await orderOf(order.orderId)).toMatchObject({ status: 'PAID', failureReason: null });
+
+    const another = await aged(owner, 73 * 60);
+    script.payments = () => [];
+    await h.container.billing.recheckOpenOrders(new Date());
+    const captured = {
+      event: 'payment.captured',
+      payload: {
+        payment: {
+          entity: {
+            id: 'pay_late_webhook',
+            order_id: another.gatewayOrderId,
+            amount: another.totalPaise,
+          },
+        },
+      },
+    };
+    expect((await webhook(captured).expect(200)).body).toEqual({ outcome: 'fulfilled' });
+    expect(await orderOf(another.orderId)).toMatchObject({ status: 'PAID' });
   });
 
   it('runs every ten minutes on the job queue', async () => {

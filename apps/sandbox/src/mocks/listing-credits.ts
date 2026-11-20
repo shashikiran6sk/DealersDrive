@@ -171,6 +171,21 @@ export const MOCK_ORDERS: CreditOrderRow[] = [
     gatewayOrderId: 'order_PP9zY8xW7vU6tS',
     gatewayPaymentId: null,
   },
+  {
+    id: '6b1e4f3c-2a7d-4e9b-8c05-1f2a3b4c5d6e',
+    credits: 5,
+    totalPaise: 250_000,
+    totalLabel: '₹2,500',
+    status: 'EXPIRED',
+    statusLabel: 'Not completed',
+    statusTone: 'neutral',
+    failureReason: 'Checkout was not completed.',
+    createdAt: '2026-11-01T09:00:00.000Z',
+    dateLabel: '01 Nov 2026',
+    paidAt: null,
+    gatewayOrderId: 'order_PN3kL2mN1oP0qR',
+    gatewayPaymentId: null,
+  },
 ];
 
 export const MOCK_DEALER_CREDITS: AdminDealerCredits = {

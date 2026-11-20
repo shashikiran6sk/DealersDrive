@@ -123,7 +123,9 @@ export const billingDocs: ModuleDocs = {
       operationId: 'getCreditOrders',
       tag: DOC_TAGS.billing,
       summary: 'The dealership’s credit purchases',
-      description: 'The 50 most recent orders, paid, failed or awaiting payment.',
+      description:
+        'The 50 most recent orders: paid, failed, awaiting payment, or `EXPIRED` (shown as ' +
+        '“Not completed”) — a checkout still unpaid after 72 hours and a last check with Razorpay.',
       audience: 'dealer',
       permission: 'billing:read',
       responses: [

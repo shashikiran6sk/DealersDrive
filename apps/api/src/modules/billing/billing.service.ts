@@ -48,6 +48,7 @@ import {
   PAYMENTS_DISABLED,
   PAYMENT_AMOUNT_MISMATCH,
   PAYMENT_NOT_CAPTURED,
+  CHECKOUT_NOT_COMPLETED,
   RECHECK_MESSAGES,
   SAVINGS_LABEL,
   SIGNATURE_MISMATCH,
@@ -259,34 +260,63 @@ export function createBillingService({ prisma, config, gateway, audit }: Billing
     return (await fulfil(order, chosen.paymentId, actor)) ? 'paid' : 'already-paid';
   }
 
-  async function recheckOpenOrders(now: Date): Promise<{ checked: number; paid: number }> {
-    if (gateway.driver === 'none') return { checked: 0, paid: 0 };
+  function dueForCheck(now: Date) {
+    return {
+      OR: [
+        { checkedAt: null },
+        { checkedAt: { lt: new Date(now.getTime() - RECHECK_SPACING_MS) } },
+      ],
+    };
+  }
+
+  async function checkOrder(
+    order: CreditOrder,
+    now: Date,
+  ): Promise<CreditOrderRecheckOutcome | null> {
+    await prisma.creditOrder.update({ where: { id: order.id }, data: { checkedAt: now } });
+    try {
+      return await settleFromGateway(order, SYSTEM_ACTOR);
+    } catch (error) {
+      logger.warn({ err: error, orderId: order.id }, 'billing.recheck_failed');
+      return null;
+    }
+  }
+
+  async function recheckOpenOrders(
+    now: Date,
+  ): Promise<{ checked: number; paid: number; expired: number }> {
+    if (gateway.driver === 'none') return { checked: 0, paid: 0, expired: 0 };
+    const windowStart = new Date(now.getTime() - RECHECK_WINDOW_MS);
     const due = await prisma.creditOrder.findMany({
       where: {
         status: { in: ['CREATED', 'FAILED'] },
-        createdAt: {
-          lt: new Date(now.getTime() - RECHECK_AFTER_MS),
-          gt: new Date(now.getTime() - RECHECK_WINDOW_MS),
-        },
-        OR: [
-          { checkedAt: null },
-          { checkedAt: { lt: new Date(now.getTime() - RECHECK_SPACING_MS) } },
-        ],
+        createdAt: { lt: new Date(now.getTime() - RECHECK_AFTER_MS), gt: windowStart },
+        ...dueForCheck(now),
       },
       orderBy: { createdAt: 'asc' },
       take: RECHECK_BATCH,
     });
+    const lapsed = await prisma.creditOrder.findMany({
+      where: { status: 'CREATED', createdAt: { lte: windowStart }, ...dueForCheck(now) },
+      orderBy: { createdAt: 'asc' },
+      take: RECHECK_BATCH,
+    });
     let paid = 0;
-    for (const order of due) {
-      await prisma.creditOrder.update({ where: { id: order.id }, data: { checkedAt: now } });
-      try {
-        if ((await settleFromGateway(order, SYSTEM_ACTOR)) === 'paid') paid += 1;
-      } catch (error) {
-        logger.warn({ err: error, orderId: order.id }, 'billing.recheck_failed');
+    let expired = 0;
+    for (const order of [...due, ...lapsed]) {
+      const outcome = await checkOrder(order, now);
+      if (outcome === 'paid') paid += 1;
+      if (outcome === 'unpaid' && order.createdAt <= windowStart) {
+        const moved = await prisma.creditOrder.updateMany({
+          where: { id: order.id, status: 'CREATED' },
+          data: { status: 'EXPIRED', failureReason: CHECKOUT_NOT_COMPLETED },
+        });
+        expired += moved.count;
       }
     }
-    if (due.length > 0) logger.info({ checked: due.length, paid }, 'billing.recheck_sweep');
-    return { checked: due.length, paid };
+    const checked = due.length + lapsed.length;
+    if (checked > 0) logger.info({ checked, paid, expired }, 'billing.recheck_sweep');
+    return { checked, paid, expired };
   }
 
   return {

@@ -1858,6 +1858,7 @@ enum CreditOrderStatus {
   CREATED
   PAID
   FAILED
+  EXPIRED
 }
 
 /// A credit-pack purchase (**F051/F052**). The amount is computed by the
