@@ -104,6 +104,19 @@ and what to do if money left their account without credits arriving. A paid orde
 in the dealer's payments shows its Razorpay payment id, the reference support
 asks for.
 
+## `apps/web/src/features/dealer/billing/razorpay.ts`
+
+### `openCheckout(checkout)`
+
+Resolves once, with what finally happened in the Checkout window. A
+`payment.failed` event is **not** an outcome: Razorpay keeps the window open
+after a declined attempt and offers a retry, so resolving there stopped the
+page listening, and a retry that then succeeded was never verified — the page
+said "you have not been charged" while the dealer had paid, and the credits
+waited for the webhook or the re-check job. A failed attempt is only remembered;
+the promise resolves on the success handler (`paid`), or on the window closing
+(`failed` if any attempt failed, `dismissed` if none was made).
+
 ## `apps/web/src/features/dealer/billing/credits-policy.constants.ts`
 
 ### `CREDITS_POLICY`

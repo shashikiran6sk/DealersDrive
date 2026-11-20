@@ -30,6 +30,7 @@ export type CheckoutOutcome =
 export async function openCheckout(checkout: CreditCheckout): Promise<CheckoutOutcome> {
   const Razorpay = await loadRazorpay();
   return new Promise((resolve) => {
+    let attemptFailed = false;
     const instance = new Razorpay({
       key: checkout.keyId,
       order_id: checkout.gatewayOrderId,
@@ -52,9 +53,11 @@ export async function openCheckout(checkout: CreditCheckout): Promise<CheckoutOu
             razorpaySignature: response.razorpay_signature,
           },
         }),
-      modal: { ondismiss: () => resolve({ kind: 'dismissed' }) },
+      modal: { ondismiss: () => resolve({ kind: attemptFailed ? 'failed' : 'dismissed' }) },
     });
-    instance.on('payment.failed', () => resolve({ kind: 'failed' }));
+    instance.on('payment.failed', () => {
+      attemptFailed = true;
+    });
     instance.open();
   });
 }
