@@ -112,6 +112,17 @@ Called by `transition()` on `approve` (consume) and `reject` (release). It settl
 `listing.creditsHeld` — what _this listing_ holds — rather than the configured
 cost, which is what makes the rollout safe for listings submitted before credits.
 
+## `apps/api/src/modules/billing/billing.mapper.ts`
+
+### `toLedgerEntry(row)` · `toOrderRow(order)`
+
+`dateLabel` is `formatDateTime` — the date **and time in IST** — not
+`formatDate`, which prints the UTC calendar day. A payment at 00:20 on 21 Nov in
+India is 18:50 UTC on 20 Nov, and the dealer saw it dated the 20th, which did not
+match their bank or their Razorpay receipt. The time is there for the same
+reason: "money taken but no credits" is settled by matching a payment to an
+order, and a receipt carries a time. The ISO `createdAt` beside it stays UTC.
+
 ## `apps/api/src/modules/billing/billing.service.ts`
 
 ### `async createOrder(actor, input)`

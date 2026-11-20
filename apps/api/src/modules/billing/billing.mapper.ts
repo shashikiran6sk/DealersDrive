@@ -2,7 +2,7 @@ import {
   CREDIT_ORDER_STATUS_LABELS,
   CREDIT_ORDER_STATUS_TONES,
   CREDIT_REASON_LABELS,
-  formatDate,
+  formatDateTime,
   formatRupees,
   type CreditLedgerEntry,
   type CreditOrderRow,
@@ -48,7 +48,7 @@ export function toLedgerEntry(row: CreditTransaction): CreditLedgerEntry {
     orderId: row.orderId,
     note: row.note,
     createdAt: row.createdAt.toISOString(),
-    dateLabel: formatDate(row.createdAt),
+    dateLabel: formatDateTime(row.createdAt),
   };
 }
 
@@ -63,7 +63,7 @@ export function toOrderRow(order: CreditOrder): CreditOrderRow {
     statusTone: CREDIT_ORDER_STATUS_TONES[order.status],
     failureReason: order.failureReason,
     createdAt: order.createdAt.toISOString(),
-    dateLabel: formatDate(order.createdAt),
+    dateLabel: formatDateTime(order.createdAt),
     paidAt: order.paidAt?.toISOString() ?? null,
     gatewayOrderId: order.gatewayOrderId,
     gatewayPaymentId: order.gatewayPaymentId,
