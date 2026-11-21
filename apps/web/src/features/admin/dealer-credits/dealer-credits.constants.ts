@@ -29,6 +29,7 @@ export const DEALER_CREDITS_TEXT = {
   orderIdLabel: 'Order',
   paymentIdLabel: 'Payment',
   noPayment: 'No payment yet',
+  orderSummary: (credits: string, amount: string) => `${credits} · ${amount}`,
   recheck: 'Check with Razorpay',
   recheckLabel: (date: string, amount: string) =>
     `Check the ${amount} payment of ${date} with Razorpay`,

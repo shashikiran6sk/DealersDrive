@@ -354,16 +354,6 @@ export const AdminDealerDetail = z.object({
   portfolio: z.array(DealerPortfolioPhoto),
   /** How many internal yard visits are on record; the evidence is fetched separately. */
   yardVisitCount: z.number().int().min(0),
-  recentLedger: z.array(
-    z.object({
-      id: Uuid,
-      delta: z.number().int(),
-      deltaLabel: z.string(),
-      label: z.string(),
-      dateLabel: z.string(),
-      balanceAfter: z.number().int(),
-    }),
-  ),
   actions: z.object({
     canApprove: z.boolean(),
     /**

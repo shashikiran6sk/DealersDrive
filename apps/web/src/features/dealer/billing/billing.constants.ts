@@ -56,6 +56,8 @@ export const BILLING_TEXT = {
   missingCredits:
     'Money taken but no credits? Contact Dealers-Drive support with the payment ID from your Razorpay receipt — we check it with Razorpay and add your credits.',
   paymentId: (id: string) => `Payment ID: ${id}`,
+  availableAfter: (count: number) => `${String(count)} available after`,
+  orderSummary: (credits: string, amount: string) => `${credits} · ${amount}`,
   result: {
     paidTitle: 'Payment successful',
     paidBody: (added: string, available: string) =>

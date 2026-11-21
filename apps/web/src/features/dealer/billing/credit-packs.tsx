@@ -163,7 +163,7 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
         {packs.data.map((pack) => (
           <li
             key={pack.id}
-            className="card flex flex-row items-center gap-3 p-[12px] @lg:flex-col @lg:items-stretch @lg:gap-2 @lg:p-[16px]"
+            className="card flex flex-row flex-wrap items-center gap-x-3 gap-y-1 p-[12px] @xs:flex-nowrap @lg:flex-col @lg:items-stretch @lg:gap-2 @lg:p-[16px]"
           >
             <div className="min-w-0 flex-1 @lg:flex-none">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 @lg:justify-between">
@@ -177,7 +177,7 @@ export function CreditPacks({ packs, canPurchase, onPurchased, className }: Cred
               </div>
               <span className="text-[12px] ink-muted @lg:text-[13px]">{pack.perCreditLabel}</span>
             </div>
-            <div className="flex flex-col items-end @lg:items-start">
+            <div className="order-last flex basis-full flex-row items-baseline gap-2 @xs:order-none @xs:basis-auto @xs:flex-col @xs:items-end @xs:gap-0 @lg:items-start">
               <span className="text-[16px] font-semibold tnum @lg:text-[18px]">
                 {pack.priceLabel}
               </span>

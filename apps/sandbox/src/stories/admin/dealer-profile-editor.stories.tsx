@@ -39,7 +39,6 @@ const BASE: AdminDealerDetail = {
   allDocumentsVerified: false,
   profileChange: null,
   ...ISSUE_299_FIELDS,
-  recentLedger: [],
   onboarding: {
     source: 'SELF',
     sourceLabel: 'Self-onboarded',

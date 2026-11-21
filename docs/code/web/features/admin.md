@@ -358,3 +358,9 @@ payment went missing, and a button no dealer should see. Check with Razorpay
 (`RecheckOrderButton`) shows on an order that is not paid, and only when
 `canRecheck` — a super admin, with a payment gateway configured. Its answer is
 shown beside the order and the page revalidates, so a credited order turns Paid.
+
+Below `md` each payment is a card — amount and status, then both Razorpay IDs,
+then **Check with Razorpay** — instead of the table, whose status, IDs and
+button were off the right edge on a phone, where a dealer's "money taken but no
+credits" call is likely to be taken. Other admin tables keep the sideways scroll;
+this one holds the one action a support call needs.

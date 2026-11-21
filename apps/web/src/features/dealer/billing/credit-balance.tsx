@@ -8,8 +8,13 @@ import { BILLING_TEXT } from './billing.constants';
 export function CreditBalance({ summary }: { summary: BillingSummary }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard inverse label={BILLING_TEXT.available} value={String(summary.available)} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <StatCard
+          inverse
+          className="col-span-2 sm:col-span-1"
+          label={BILLING_TEXT.available}
+          value={String(summary.available)}
+        />
         <StatCard
           label={BILLING_TEXT.held}
           value={String(summary.held)}

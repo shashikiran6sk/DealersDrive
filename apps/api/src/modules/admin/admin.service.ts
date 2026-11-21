@@ -476,14 +476,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const active = 0;
       const pending = 0;
-      const ledger: {
-        id: string;
-        delta: number;
-        label: string;
-        createdAt: Date;
-        balanceAfter: number;
-      }[] = [];
-
       const owner = dealer.members[0];
       const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
@@ -607,14 +599,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           : null,
         portfolio,
         yardVisitCount,
-        recentLedger: ledger.map((row) => ({
-          id: row.id,
-          delta: row.delta,
-          deltaLabel: row.delta > 0 ? `+${row.delta}` : row.delta === 0 ? '0' : `−${-row.delta}`,
-          label: row.label,
-          dateLabel: formatDate(row.createdAt),
-          balanceAfter: row.balanceAfter,
-        })),
         actions: {
           canApprove:
             dealer.status === 'PENDING_APPROVAL' &&

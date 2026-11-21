@@ -3801,7 +3801,7 @@ export const registry: RegistryEntry[] = [
     category: 'Console',
     ownership: 'Feature-shared',
     purpose:
-      'Credit packs with per-credit price, saving and GST-inclusive total — three cards across where their container is 32rem or wider, one row per pack where it is narrower (a container query, so the checklist and a phone get rows) — and the purchase: server order → Razorpay Checkout → server verify, or a simulated payment where the API runs the fake gateway. Also the billing page’s CreditBalance (available / held / total and what a car costs), CreditLedger and CreditOrders tables, reused on the admin dealer page.',
+      'Credit packs with per-credit price, saving and GST-inclusive total — three cards across where their container is 32rem or wider, one row per pack where it is narrower (a container query, so the checklist and a phone get rows) — and the purchase: server order → Razorpay Checkout → server verify, or a simulated payment where the API runs the fake gateway. Also the billing page’s CreditBalance (available / held / total and what a car costs), CreditLedger and CreditOrders tables (a card list below md, as the inventory), reused on the admin dealer page.',
     aliases: [
       'BuyCredits',
       'RazorpayCheckout',
@@ -3863,7 +3863,7 @@ export const registry: RegistryEntry[] = [
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
-      'A dealership’s credits on the admin dealer page: available, held and total, the recent ledger, the payments (AdminCreditOrders) with each order’s Razorpay order and payment ids so a dealer’s reference can be matched, and for a super admin the add/remove form (CreditAdjustForm) with a note the dealer sees and, on an unpaid order, Check with Razorpay (RecheckOrderButton), which credits it if Razorpay says it was paid.',
+      'A dealership’s credits on the admin dealer page: available, held and total, the recent ledger, the payments (AdminCreditOrders; a card per payment below md) with each order’s Razorpay order and payment ids so a dealer’s reference can be matched, and for a super admin the add/remove form (CreditAdjustForm) with a note the dealer sees and, on an unpaid order, Check with Razorpay (RecheckOrderButton), which credits it if Razorpay says it was paid.',
     aliases: [
       'CreditAdjustForm',
       'GrantCredits',

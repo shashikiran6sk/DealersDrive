@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/features/dealer/billing/billing-actions', () => ({
@@ -105,8 +105,14 @@ describe('the credit ledger', () => {
         ]}
       />,
     );
-    expect(screen.getByText('1 held')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
+    const table = within(screen.getByRole('table'));
+    expect(table.getByText('1 held')).toBeInTheDocument();
+    expect(table.getByText('4')).toBeInTheDocument();
+
+    const phone = within(screen.getByRole('list', { name: 'Credit history' }));
+    expect(phone.getByText('Held for a listing in review')).toBeInTheDocument();
+    expect(phone.getByText('1 held')).toBeInTheDocument();
+    expect(phone.getByText('11 Nov 2026 · 4 available after')).toBeInTheDocument();
   });
 });
 
@@ -133,7 +139,12 @@ describe('payments a dealer can quote', () => {
         ]}
       />,
     );
-    expect(screen.getByText('Payment ID: pay_1')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Payment ID: pay_1')).toBeInTheDocument();
+
+    const phone = within(screen.getByRole('list', { name: 'Payments' }));
+    expect(phone.getByText('5 credits · ₹2,655')).toBeInTheDocument();
+    expect(phone.getByText('Paid')).toBeInTheDocument();
+    expect(phone.getByText('Payment ID: pay_1')).toBeInTheDocument();
   });
 });
 

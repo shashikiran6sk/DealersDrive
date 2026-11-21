@@ -111,6 +111,22 @@ on a phone. A viewport breakpoint put three cards into the 280px a dialog had,
 where "5 credits · Save 10%" overlapped and the third card ran off the edge.
 `.card` is a column flex box, so the row layout says `flex-row` explicitly.
 
+## `apps/web/src/features/dealer/billing/credit-ledger.tsx` · `credit-orders.tsx`
+
+Below `md` the credit history and the payments are a list of cards, not the
+table, as the inventory is. Both are read on a phone by a dealer checking a
+payment, and the table scrolled sideways with the column that answers the
+question — the payment's status and its Razorpay ID — off the right edge at
+360px. A card leads with what happened (the movement, or "5 credits · ₹2,250")
+and its status tag, then the IST time and the ID. Both views are rendered and
+CSS shows one, so tests scope to `table` or to the list by its name.
+
+## `apps/web/src/features/dealer/billing/credit-balance.tsx`
+
+On a phone "Credits available" takes the full width and the other two sit
+beneath it: three tiles across 328px wrapped "Held for cars in review" over
+three lines and left the three numbers at three different heights.
+
 ## `apps/web/src/features/dealer/billing/purchase-result.tsx`
 
 ### `PurchaseResult`

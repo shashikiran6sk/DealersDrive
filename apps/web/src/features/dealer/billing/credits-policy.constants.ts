@@ -8,7 +8,7 @@ export const CREDITS_POLICY: LegalDocument & { effectiveDate: string } = {
   route: CREDITS_POLICY_ROUTE,
   description:
     'How listing credits are bought, used and returned on Dealers-Drive, and when a payment is refunded.',
-  effectiveDate: '',
+  effectiveDate: '2026-11-24',
   sections: [
     {
       id: 'what-credits-are',

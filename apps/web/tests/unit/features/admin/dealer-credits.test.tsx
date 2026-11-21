@@ -1,5 +1,5 @@
 import type { AdminDealerCredits, CreditOrderRow } from '@dealers-drive/contracts';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DealerCredits } from '@/features/admin/dealer-credits';
@@ -71,15 +71,26 @@ beforeEach(() => {
 describe('a dealership’s payments in the admin console', () => {
   it('shows each order’s Razorpay ids, so a dealer’s reference can be matched', () => {
     render(<DealerCredits dealerId={DEALER} credits={credits()} />);
-    expect(screen.getByText(/order_paid/)).toBeInTheDocument();
-    expect(screen.getByText(/pay_paid/)).toBeInTheDocument();
-    expect(screen.getByText(/order_open/)).toBeInTheDocument();
-    expect(screen.getByText(/No payment yet/)).toBeInTheDocument();
+    const payments = within(screen.getByRole('region', { name: /^Payments, newest first/ }));
+    const phone = within(screen.getByRole('list', { name: /^Payments, newest first/ }));
+    for (const view of [payments, phone]) {
+      expect(view.getByText(/order_paid/)).toBeInTheDocument();
+      expect(view.getByText(/pay_paid/)).toBeInTheDocument();
+      expect(view.getByText(/order_open/)).toBeInTheDocument();
+      expect(view.getByText(/No payment yet/)).toBeInTheDocument();
+    }
   });
 
   it('offers Check with Razorpay on an unpaid order only, and shows what Razorpay said', async () => {
     render(<DealerCredits dealerId={DEALER} credits={credits()} />);
-    const buttons = screen.getAllByRole('button', { name: /with Razorpay/ });
+    expect(
+      within(screen.getByRole('list', { name: /^Payments, newest first/ })).getAllByRole('button', {
+        name: /with Razorpay/,
+      }),
+    ).toHaveLength(1);
+    const buttons = within(
+      screen.getByRole('region', { name: /^Payments, newest first/ }),
+    ).getAllByRole('button', { name: /with Razorpay/ });
     expect(buttons).toHaveLength(1);
     expect(buttons[0]).toHaveAccessibleName(
       'Check the ₹2,655 payment of 10 Nov 2026 with Razorpay',

@@ -100,6 +100,13 @@ lets the operator email break while preserving the review link and Sign out.
 On narrow screens the review badge occupies its own row, giving the email
 and Sign out the remaining two columns. The server metrics request and Admin authorization remain authoritative.
 
+## `apps/web/src/app/(admin)/admin/dealers/[id]/page.tsx`
+
+The dealer page has no "Recent credit movements" panel. It predated billing and
+read a list the API always returned empty, so it said "No movements yet" under a
+credits panel showing real ones. The credits panel (`DealerCredits`) is the
+ledger; `recentLedger` went from the admin dealer response with it.
+
 ## `apps/web/src/app/(admin)/admin/dealers/page.tsx`
 
 Dealer status tabs have a page-width bound and local horizontal scrolling.
