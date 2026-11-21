@@ -102,6 +102,7 @@ export function toDealerListing(
     canSubmit: complete && isListingSubmittable(listing.status) && may('listing:submit'),
     canDelete: isListingDeletable(listing.status) && may('vehicle:delete'),
     photoPlan: listing.photoPlan,
+    creditsHeld: listing.creditsHeld,
     actions: lifecycleActionsOf(listing.status, {
       reactivationPending: reactivation?.status === 'PENDING',
     }).filter((action) => may(LIFECYCLE_ACTION_PERMISSION[action])),

@@ -1,3 +1,4 @@
+import { parseCreditPacks } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
@@ -31,7 +32,36 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     type: 'number',
     value: 10,
   },
-  { key: 'billing.gstPercent', label: 'GST percent', type: 'number', value: 18 },
+  {
+    key: 'billing.gstPercent',
+    label: 'GST percent charged on credit packs (0 while Dealers-Drive is not GST-registered)',
+    type: 'number',
+    value: 0,
+  },
+  {
+    key: 'billing.listingCredits',
+    label: 'Credits a car costs to submit for review',
+    type: 'number',
+    value: 1,
+  },
+  {
+    key: 'billing.photoshootCredits',
+    label: 'Extra credits when Dealers-Drive photographs the car',
+    type: 'number',
+    value: 1,
+  },
+  {
+    key: 'billing.welcomeCredits',
+    label: 'Free credits a dealership gets once, when it is approved (0 for none)',
+    type: 'number',
+    value: 5,
+  },
+  {
+    key: 'billing.creditPacks',
+    label: 'Credit packs, as credits=price in paise before GST (50000 = ₹500)',
+    type: 'string[]',
+    value: ['1=50000', '5=225000', '10=400000'],
+  },
 
   { key: 'rcLookup.cacheDays', label: 'RC spec cache (days)', type: 'number', value: 30 },
   {
@@ -87,6 +117,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     value: false,
   },
   {
+    key: 'feature.listingCredits',
+    label: 'Submitting a car for review needs listing credits (Razorpay)',
+    type: 'boolean',
+    value: false,
+  },
+  {
     key: 'feature.enquiryAutoReply',
     label: 'Automatic enquiry acknowledgement',
     type: 'boolean',
@@ -134,7 +170,14 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
 
 export const CONFIG_READERS: Record<string, string> = {
   'billing.gstPercent': "the admin console's revenue figure",
+  'billing.listingCredits': 'listing submission — the credits it holds',
+  'billing.photoshootCredits':
+    'listing submission — added when the plan is a Dealers-Drive photoshoot',
+  'billing.welcomeCredits':
+    'dealership approval and manual activation — the free credits granted once',
+  'billing.creditPacks': 'GET /v1/dealer/billing/packs and POST /v1/dealer/billing/orders',
   'feature.dealerPhotos': 'the vehicle wizard’s Photos step and listing submission',
+  'feature.listingCredits': 'listing submission, and the dealer console’s Billing page',
   'listing.minPhotos': 'GET /v1/config/public',
   'listing.durationDays': 'GET /v1/config/public',
   'enquiry.rateLimitPerHour': 'GET /v1/config/public',
@@ -156,6 +199,27 @@ export const CONFIG_READERS: Record<string, string> = {
   'support.dealerPhone': 'GET /v1/config/public — the Contact & support page',
   'support.whatsapp': 'GET /v1/config/public — the Contact & support page',
 };
+
+export const CONFIG_VALIDATORS: Record<string, (value: unknown) => string | null> = {
+  'billing.listingCredits': wholeNumber(1, 100),
+  'billing.photoshootCredits': wholeNumber(0, 100),
+  'billing.welcomeCredits': wholeNumber(0, 100),
+  'billing.gstPercent': wholeNumber(0, 28),
+  'billing.creditPacks': (value) => {
+    if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string')) {
+      return 'Enter the packs as a list of credits=price entries.';
+    }
+    const parsed = parseCreditPacks(value);
+    return parsed.ok ? null : parsed.problems.join(' ');
+  },
+};
+
+function wholeNumber(min: number, max: number): (value: unknown) => string | null {
+  return (value) =>
+    typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
+      ? null
+      : `Enter a whole number from ${String(min)} to ${String(max)}.`;
+}
 
 export interface PlatformConfigService {
   number(key: string): Promise<number>;

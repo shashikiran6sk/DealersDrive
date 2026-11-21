@@ -1,6 +1,11 @@
 'use client';
 
-import type { DealerVehicle, DealerVehiclePhotos } from '@dealers-drive/contracts';
+import type {
+  BillingSummary,
+  CreditPacksResponse,
+  DealerVehicle,
+  DealerVehiclePhotos,
+} from '@dealers-drive/contracts';
 
 import { ButtonLink } from '@/components/ui/button';
 import { Banner, Stepper } from '@/components/ui/primitives';
@@ -37,6 +42,8 @@ export interface VehicleWizardProps {
   mayPublish?: boolean;
   salesDealerId?: string;
   photos?: DealerVehiclePhotos | null;
+  billing?: BillingSummary | null;
+  packs?: CreditPacksResponse | null;
 }
 
 function lockedBody(status: DealerVehicle['listing']['status']): string {
@@ -54,6 +61,8 @@ export function VehicleWizard({
   mayPublish = true,
   salesDealerId,
   photos = null,
+  billing = null,
+  packs = null,
 }: VehicleWizardProps) {
   const scope: WizardScope = salesDealerId
     ? { kind: 'sales', dealerId: salesDealerId }
@@ -69,6 +78,8 @@ export function VehicleWizard({
         mayPublish={mayPublish}
         scope={scope}
         photos={scope.kind === 'dealer' ? photos : null}
+        billing={scope.kind === 'dealer' ? billing : null}
+        packs={scope.kind === 'dealer' ? packs : null}
       />
     </WizardScopeContext.Provider>
   );
@@ -83,6 +94,8 @@ function WizardBody({
   mayPublish,
   scope,
   photos,
+  billing,
+  packs,
 }: Required<Omit<VehicleWizardProps, 'salesDealerId'>> & { scope: WizardScope }) {
   const [state, onSubmit, pending] = useNavigationSafeFormAction(
     vehicle ? saveVehicleStepAction : createVehicleAction,
@@ -96,7 +109,7 @@ function WizardBody({
   const shown: WizardStep = locked || (step === 'photos' && !photoStep) ? 'review' : step;
   const current = steps.indexOf(shown);
   const listing = vehicle?.listing;
-  const needs = vehicle ? submissionNeeds(photos) : null;
+  const needs = vehicle ? submissionNeeds(vehicle, photos, billing) : null;
 
   if (submitted && listing?.status === 'PENDING_REVIEW') {
     return (
@@ -158,6 +171,7 @@ function WizardBody({
           <PhotoStep
             vehicleId={vehicle.id}
             photos={photos}
+            billing={billing}
             backHref={editPath(vehicle.id, 'pricing', '', scope)}
             nextHref={editPath(vehicle.id, 'review', '', scope)}
           />
@@ -168,6 +182,8 @@ function WizardBody({
               <SubmissionChecklist
                 needs={needs}
                 photos={photos}
+                billing={billing}
+                packs={packs}
                 photosHref={editPath(vehicle.id, 'photos', '', scope)}
               />
             ) : null}

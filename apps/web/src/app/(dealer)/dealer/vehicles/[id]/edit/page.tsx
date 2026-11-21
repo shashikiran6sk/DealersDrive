@@ -1,4 +1,10 @@
-import { DealerVehicle, DealerVehiclePhotos, canDealer } from '@dealers-drive/contracts';
+import {
+  BillingSummary,
+  CreditPacksResponse,
+  DealerVehicle,
+  DealerVehiclePhotos,
+  canDealer,
+} from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -40,7 +46,14 @@ export default async function EditVehiclePage({
   }
 
   const path = `/v1/dealer/vehicles/${encodeURIComponent(id)}`;
-  const photos = await optional(apiGetParsed(DealerVehiclePhotos, `${path}/photos`, FRESH));
+  const [photos, billing] = await Promise.all([
+    optional(apiGetParsed(DealerVehiclePhotos, `${path}/photos`, FRESH)),
+    optional(apiGetParsed(BillingSummary, '/v1/dealer/billing/summary', FRESH)),
+  ]);
+  const packs =
+    billing?.enabled && canDealer(session?.permissions, 'billing:read')
+      ? await optional(apiGetParsed(CreditPacksResponse, '/v1/dealer/billing/packs', FRESH))
+      : null;
   const known = isWizardStep(query.step) && (query.step !== 'photos' || photos?.enabled === true);
   const step = known && isWizardStep(query.step) ? query.step : 'basics';
 
@@ -60,6 +73,8 @@ export default async function EditVehiclePage({
         submitted={query.submitted === '1'}
         mayPublish={canDealer(session?.permissions, 'listing:submit')}
         photos={photos}
+        billing={billing}
+        packs={packs}
       />
     </div>
   );

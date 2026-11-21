@@ -56,6 +56,7 @@ import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import {
   CONFIG_READERS,
+  CONFIG_VALIDATORS,
   type ConfigDefinition,
   type PlatformConfigService,
 } from '../../platform/config/platform-config.js';
@@ -80,6 +81,7 @@ import {
   syncLegacyAdminColumns,
   type AdminPrincipal,
 } from '../auth/auth.facade.js';
+import { grantWelcomeCredits } from '../billing/billing.facade.js';
 import {
   documentKey,
   invalidateDealerVerification,
@@ -312,7 +314,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
   return {
     verification: createDealerVerificationService({ prisma, audit, storage }),
-    activation: createActivationOverrideService({ prisma, audit, dealers }),
+    activation: createActivationOverrideService({ prisma, audit, config, dealers }),
     portfolio: dealers.portfolio,
     yardVisits: createYardVisitService({ prisma, storage, audit }),
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
@@ -450,6 +452,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           joinedAt: dealer.createdAt.toISOString(),
           joinedLabel: formatDate(dealer.createdAt),
           creditBalance: dealer.creditBalance,
+          creditsHeld: dealer.creditsHeld,
           documentsVerified: allDocumentsVerified(dealer.documents, dealer.gstin),
           hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
@@ -473,14 +476,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const active = 0;
       const pending = 0;
-      const ledger: {
-        id: string;
-        delta: number;
-        label: string;
-        createdAt: Date;
-        balanceAfter: number;
-      }[] = [];
-
       const owner = dealer.members[0];
       const allVerified = allDocumentsVerified(dealer.documents, dealer.gstin);
       const application = await dealers.completeness(dealerId);
@@ -604,14 +599,6 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           : null,
         portfolio,
         yardVisitCount,
-        recentLedger: ledger.map((row) => ({
-          id: row.id,
-          delta: row.delta,
-          deltaLabel: row.delta > 0 ? `+${row.delta}` : row.delta === 0 ? '0' : `−${-row.delta}`,
-          label: row.label,
-          dateLabel: formatDate(row.createdAt),
-          balanceAfter: row.balanceAfter,
-        })),
         actions: {
           canApprove:
             dealer.status === 'PENDING_APPROVAL' &&
@@ -702,7 +689,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
         });
 
-        const creditsGranted = 0;
+        const creditsGranted = await grantWelcomeCredits(tx, config, dealerId, {
+          type: 'ADMIN',
+          id: admin.userId,
+        });
 
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -1488,6 +1478,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           `${key} is a ${before.type}, and this value is not one.`,
         );
       }
+
+      const invalid = CONFIG_VALIDATORS[key]?.(value);
+      if (invalid) throw new DomainError('CONFIG_VALUE_INVALID', `${key}: ${invalid}`);
 
       await config.set(key, value, admin.userId);
 

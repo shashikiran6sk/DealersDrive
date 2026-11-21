@@ -85,6 +85,25 @@ reports the vehicle complete (`listing.canSubmit`). It is a separate form from
 the step forms, posting to `submitVehicleAction`, which sends no body — what is
 submitted is what is stored.
 
+## `apps/web/src/features/vehicle/vehicle-wizard/submission-checklist.tsx`
+
+### `SubmissionChecklist`
+
+**Buy credits opens the packs inline, inside the checklist, not in a dialog.**
+It was a Radix dialog until a test-mode payment showed what that does: Razorpay
+Checkout opens its own window in an iframe on top of the page, focus moves into
+it, and Radix closes a modal dialog when focus leaves it. The dialog — with
+`CreditPacks` and the purchase result inside it — was gone before the dealer had
+paid, so the payment was verified (the checklist did update) but nothing said so.
+Inline, `CreditPacks` stays mounted under Checkout exactly as it does on the
+billing page.
+
+The panel is shown while `buying` is true, not while credits are short. A
+successful verify revalidates, the page re-renders with enough credits, and the
+"Buy credits" button rightly disappears — tying the panel to the same condition
+would unmount the result window the dealer was reading. `buying` ends on Close,
+or on `onPurchased`, which `CreditPacks` calls when the result window is closed.
+
 ## `apps/web/src/features/vehicle/vehicle-wizard/wizard-footer.tsx`
 
 ### `export function WizardFooter(...)`
@@ -186,13 +205,15 @@ phones number photos. A wrong guess only changes the order of the admin's files.
 
 ## `apps/web/src/features/vehicle/vehicle-wizard/submission.ts`
 
-### `export function submissionNeeds(vehicle, photos)`
+### `export function submissionNeeds(vehicle, photos, billing)`
 
 The Review step's checklist and the Submit button's disabled reason come from one
-computation, so they cannot disagree. The API enforces the same rule; this only
+computation, so they cannot disagree. Credits needed are net of what the listing
+already holds (`DealerListing.creditsHeld`), so a resubmission after a request for
+changes is not asked to pay twice. The API enforces the same rules; this only
 saves the dealer a round trip.
 
 ## `apps/web/src/app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`
 
-The photos read is optional: a failure — or an API a release behind the web app —
-renders the wizard as it was, never an error page.
+The photos, billing summary and packs are optional reads: a failure — or an API a
+release behind the web app — renders the wizard as it was, never an error page.

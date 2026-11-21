@@ -118,7 +118,7 @@ describe('reading a value', () => {
     const config = createPlatformConfig(fakes().prisma, createMemoryCache());
 
     expect(await config.number('listing.minPhotos')).toBe(6);
-    expect(await config.number('billing.gstPercent')).toBe(18);
+    expect(await config.number('billing.gstPercent')).toBe(0);
     expect(await config.boolean('photoRequests.enabled')).toBe(false);
   });
 

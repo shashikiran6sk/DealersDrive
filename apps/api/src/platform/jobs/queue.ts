@@ -31,6 +31,7 @@ export const JOB_NAMES = [
   'counters.reconcile',
   'cache.sweep-counters',
   'rc.sweep-lookups',
+  'billing.recheck-orders',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];

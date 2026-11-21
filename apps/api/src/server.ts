@@ -7,6 +7,7 @@ import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { notFound } from './middleware/not-found.js';
+import { captureRawBody } from './middleware/raw-body.js';
 import { requestContext } from './middleware/request-context.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { requestMetrics } from './middleware/request-metrics.js';
@@ -32,7 +33,7 @@ export function createApp(container: Container): Express {
     }),
   );
 
-  app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '1mb', verify: captureRawBody }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cookieParser());
 

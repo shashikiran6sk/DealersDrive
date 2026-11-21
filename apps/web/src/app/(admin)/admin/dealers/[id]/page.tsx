@@ -1,5 +1,6 @@
 import { DealerVerificationReviewPanel } from '@/features/admin/dealer-verification';
 import {
+  AdminDealerCredits,
   DealerVerificationReview,
   YardVisitsResponse,
   type AdminDealerDetail,
@@ -12,6 +13,7 @@ import { notFound } from 'next/navigation';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
+import { DealerCredits } from '@/features/admin/dealer-credits';
 import { DealerPortfolioSummary } from '@/features/admin/dealer-portfolio-summary';
 import { CustomerContactApproval } from '@/features/admin/customer-contact-approval';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
@@ -21,7 +23,6 @@ import { OnboardingProvenance } from '@/features/admin/onboarding-provenance';
 import { ProfileChangeReview } from '@/features/admin/profile-change-review';
 import { YardVisitsPanel } from '@/features/admin/yard-visits';
 import { ApiError, apiGet, apiGetParsed } from '@/lib/api';
-import { cn } from '@/lib/cn';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +58,9 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
     : null;
 
   const yardVisits = await yardVisitsFor(id);
+  const credits = await apiGetParsed(AdminDealerCredits, `/v1/admin/dealers/${id}/credits`, {
+    revalidate: false,
+  }).catch(() => null);
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-4 p-5">
@@ -150,39 +154,9 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
 
       <DealerAdminActions dealer={dealer} />
 
-      <YardVisitsPanel dealerId={dealer.id} visits={yardVisits} />
+      {credits ? <DealerCredits dealerId={dealer.id} credits={credits} /> : null}
 
-      <section className="card gap-0 p-4">
-        <h2 className="mb-2 text-[19px]">Recent credit movements</h2>
-        {dealer.recentLedger.length === 0 ? (
-          <p className="py-3 text-[13px] ink-muted">No movements yet.</p>
-        ) : (
-          dealer.recentLedger.map((row) => (
-            <div
-              key={row.id}
-              className="flex items-center gap-3 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
-            >
-              <span
-                className={cn(
-                  'w-[38px] flex-none font-mono tnum',
-                  row.delta > 0
-                    ? 'text-(--color-ok)'
-                    : row.delta < 0
-                      ? 'text-(--color-err)'
-                      : 'ink-subtle',
-                )}
-              >
-                {row.deltaLabel}
-              </span>
-              <span className="min-w-0 flex-1">{row.label}</span>
-              <span className="whitespace-nowrap text-[11px] ink-faint tnum">{row.dateLabel}</span>
-              <span className="whitespace-nowrap text-[12px] ink-muted tnum">
-                bal {row.balanceAfter}
-              </span>
-            </div>
-          ))
-        )}
-      </section>
+      <YardVisitsPanel dealerId={dealer.id} visits={yardVisits} />
     </div>
   );
 }

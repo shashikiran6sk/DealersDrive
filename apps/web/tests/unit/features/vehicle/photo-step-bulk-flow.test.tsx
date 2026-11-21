@@ -81,6 +81,7 @@ function renderStep(uploaded = 0) {
   return render(
     <PhotoStep
       vehicleId={VEHICLE_ID}
+      billing={null}
       photos={photos({ plan: 'DEALER' }, uploaded)}
       backHref="/back"
       nextHref="/review"
@@ -182,6 +183,7 @@ describe('uploading every photo at once', () => {
     render(
       <PhotoStep
         vehicleId={VEHICLE_ID}
+        billing={null}
         photos={photos({ plan: 'DEALER', unsorted: existing }, 10)}
         backHref="/back"
         nextHref="/review"
@@ -198,6 +200,7 @@ describe('uploading every photo at once', () => {
     render(
       <PhotoStep
         vehicleId={VEHICLE_ID}
+        billing={null}
         photos={photos({ plan: 'DEALER', unsorted: unsortedPhotos(12) }, 4)}
         backHref="/back"
         nextHref="/review"

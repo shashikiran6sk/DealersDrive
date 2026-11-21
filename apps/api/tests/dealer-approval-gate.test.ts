@@ -255,6 +255,7 @@ describe('BUG-002 — complete application, capability and history regression', 
     });
     expect(stored.status).toBe('ACTIVE');
     expect(stored.approvedAt).toBeInstanceOf(Date);
+    expect(stored.creditBalance).toBe(5);
     expect(stored.documents).toHaveLength(2);
     expect(stored.documents.every((doc) => doc.status === 'VERIFIED' && doc.reviewedBy)).toBe(true);
     expect(
@@ -267,7 +268,7 @@ describe('BUG-002 — complete application, capability and history regression', 
     expect(audit[0]).toMatchObject({
       actorType: 'ADMIN',
       before: { status: 'PENDING_APPROVAL' },
-      after: { status: 'ACTIVE', creditsGranted: 0 },
+      after: { status: 'ACTIVE', creditsGranted: 5 },
     });
     expect(audit[0]?.actorId).toBe(stored.documents[0]?.reviewedBy);
     expect(audit[0]?.createdAt).toBeInstanceOf(Date);

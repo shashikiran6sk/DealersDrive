@@ -88,3 +88,97 @@ to debug.
 ### `function mapApiFields(errors: Record<string, string>): Record<string, string>`
 
 `validate()` has already stripped the `body.` prefix; the shape is the same.
+
+## `apps/web/src/features/dealer/billing/credit-packs.tsx`
+
+The purchase runs order → Razorpay Checkout → verify. The order and verify are
+Server Actions, so the API session cookie never reaches the browser; Checkout's
+script is loaded on first use from `checkout.razorpay.com` and opened with the
+server's order id, key id and amount — the browser never chooses a price. Where
+the API runs the `fake` gateway the checkout carries a simulation and the panel
+offers a test payment instead of loading the script.
+
+The terms of a purchase — one-off, never expiring, not refundable — sit under the
+packs, before the dealer pays rather than after, with a link to the full policy
+and what to do if money left their account without credits arriving. A paid order
+in the dealer's payments shows its Razorpay payment id, the reference support
+asks for.
+
+The packs lay out by the width of their **container**, not the screen
+(`@container`, `@lg` = 32rem): three cards across on the billing page, one row
+per pack — credits and saving, price, Buy — in the submit checklist's panel and
+on a phone. A viewport breakpoint put three cards into the 280px a dialog had,
+where "5 credits · Save 10%" overlapped and the third card ran off the edge.
+`.card` is a column flex box, so the row layout says `flex-row` explicitly.
+
+## `apps/web/src/features/dealer/billing/credit-ledger.tsx` · `credit-orders.tsx`
+
+Below `md` the credit history and the payments are a list of cards, not the
+table, as the inventory is. Both are read on a phone by a dealer checking a
+payment, and the table scrolled sideways with the column that answers the
+question — the payment's status and its Razorpay ID — off the right edge at
+360px. A card leads with what happened (the movement, or "5 credits · ₹2,250")
+and its status tag, then the IST time and the ID. Both views are rendered and
+CSS shows one, so tests scope to `table` or to the list by its name.
+
+## `apps/web/src/features/dealer/billing/credit-balance.tsx`
+
+On a phone "Credits available" takes the full width and the other two sit
+beneath it: three tiles across 328px wrapped "Held for cars in review" over
+three lines and left the three numbers at three different heights.
+
+## `apps/web/src/features/dealer/billing/purchase-result.tsx`
+
+### `PurchaseResult`
+
+What happened, said once and where the dealer is looking. The result used to be
+a banner above the packs: Razorpay's own window shows a tick and closes, and the
+banner that replaced it read the same as the one from the previous purchase, so
+a dealer could not tell a new payment had landed. Four outcomes get a window —
+paid, received but not yet captured, paid but not confirmed (the API's reason),
+and not completed after a failed attempt — each with the payment ID where there
+is one, because that is what support asks for. A plain cancel stays a banner: the
+dealer chose it, and a window would only make them close something else.
+
+`CreditPacks` refreshes the page, and calls `onPurchased`, when the window is
+closed rather than when the payment is verified. Inside the submit checklist the
+refresh is what makes the checklist ready, which unmounts the Buy credits dialog
+— and the result window with it — before the dealer had read it. "Add a vehicle"
+is offered only on the billing page (`offerAddVehicle={!onPurchased}`); in the
+checklist the dealer is already adding one.
+
+## `apps/web/src/features/dealer/billing/razorpay.ts`
+
+### `openCheckout(checkout)`
+
+Resolves once, with what finally happened in the Checkout window. A
+`payment.failed` event is **not** an outcome: Razorpay keeps the window open
+after a declined attempt and offers a retry, so resolving there stopped the
+page listening, and a retry that then succeeded was never verified — the page
+said "you have not been charged" while the dealer had paid, and the credits
+waited for the webhook or the re-check job. A failed attempt is only remembered;
+the promise resolves on the success handler (`paid`), or on the window closing
+(`failed` if any attempt failed, `dismissed` if none was made).
+
+## `apps/web/src/features/dealer/billing/credits-policy.constants.ts`
+
+### `CREDITS_POLICY`
+
+The credits, cancellations and refunds policy at `/credits-and-refunds`, which
+Razorpay requires a merchant's site to publish. It is rendered by the same
+`LegalDocument` as the Terms and Privacy pages, and shown under the same
+`legalPagesVisible()` switch, but it is deliberately **not** a third versioned
+legal document: the legal v1 sources are exactly two acceptance-bearing documents
+(`packages/contracts/src/legal-documents/README.md`), and this one asks no one to
+accept anything. It states what the product does — holds at submission, use on
+approval, return on rejection, no expiry, no refund of bought credits, correction
+of a payment that was taken but not credited. Its effective date is left empty, so
+the page reads "pending", until the owner approves the wording.
+
+## `apps/web/src/components/dealer/console-nav/utils.ts`
+
+### `consoleNavFor(permissions, billing)`
+
+The Billing item has existed since the nav was drawn, hidden as not yet built. It
+appears now only when listing credits are on and the member may read billing; the
+layout's read of the summary is optional, so the console renders without it.

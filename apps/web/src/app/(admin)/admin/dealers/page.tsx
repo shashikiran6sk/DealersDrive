@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState, StatusTag } from '@/components/ui/primitives';
 import { NumericCell, Table, type TableColumn } from '@/components/ui/table';
+import { DEALER_CREDITS_TEXT } from '@/features/admin/dealer-credits';
 import { apiGet, qs } from '@/lib/api';
 import { cn } from '@/lib/cn';
 
@@ -30,7 +31,7 @@ const COLUMNS: TableColumn[] = [
   { key: 'status', label: 'Status' },
   { key: 'vehicles', label: 'Vehicles' },
   { key: 'active', label: 'Active' },
-  { key: 'credits', label: 'Credits' },
+  { key: 'credits', label: DEALER_CREDITS_TEXT.listColumn },
   { key: 'joined', label: 'Joined' },
   { key: 'actions', label: 'Actions', align: 'right' },
 ];
@@ -151,7 +152,14 @@ export default async function AdminDealersPage({
               </td>
               <NumericCell>{dealer.vehicleCount}</NumericCell>
               <NumericCell>{dealer.activeCount}</NumericCell>
-              <NumericCell>{dealer.creditBalance}</NumericCell>
+              <NumericCell>
+                <div>{dealer.creditBalance - dealer.creditsHeld}</div>
+                {dealer.creditsHeld > 0 ? (
+                  <div className="text-[11px] ink-subtle">
+                    {DEALER_CREDITS_TEXT.listHeld(dealer.creditsHeld)}
+                  </div>
+                ) : null}
+              </NumericCell>
               <NumericCell className="whitespace-nowrap">{dealer.joinedLabel}</NumericCell>
               <td className="whitespace-nowrap text-right">
                 <Link
