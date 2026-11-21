@@ -52,3 +52,8 @@ output "ssm_parameters_to_populate" {
   description = "Created empty. Set each one with `aws ssm put-parameter --overwrite` before the first deploy."
   value       = [for name in local.api_secret_names : "${local.ssm_prefix}/${name}"]
 }
+
+output "payment_parameters_to_populate" {
+  description = "The Razorpay parameters. Set all three before payments_driver is switched to razorpay; under none they are never read."
+  value       = [for name in local.payment_secret_names : "${local.ssm_prefix}/${name}"]
+}

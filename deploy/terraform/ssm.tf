@@ -39,6 +39,18 @@ locals {
     "MSG91_AUTH_KEY",
   ]
 
+  # F051. Razorpay's key id, key secret and webhook secret. Declared always, so
+  # the values can be written before payments are switched on; read by the
+  # tasks only when var.payments_driver is `razorpay` (see api_secrets in
+  # ecs.tf). Under `none` they are never fetched, so a placeholder here cannot
+  # stop a task booting — until the switch, which is the point at which a
+  # placeholder should.
+  payment_secret_names = [
+    "RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET",
+  ]
+
   # The migrator needs the database and nothing else. Giving it the OAuth
   # credentials and the object-storage keys would widen the blast radius of a
   # compromised migration for no benefit.
@@ -46,7 +58,7 @@ locals {
 }
 
 resource "aws_ssm_parameter" "api" {
-  for_each = toset(local.api_secret_names)
+  for_each = toset(concat(local.api_secret_names, local.payment_secret_names))
 
   name  = "${local.ssm_prefix}/${each.value}"
   type  = "SecureString"
