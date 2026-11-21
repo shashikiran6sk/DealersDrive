@@ -46,3 +46,8 @@ alarm_email = "ops@dealers-drive.in"
 
 # Ten server errors in five minutes is not noise in production.
 api_5xx_alarm_threshold = 10
+
+# Listing credits (F051). `none` until all three RAZORPAY_* parameters hold real
+# values — see README "Then, when payments go live". Switching to `razorpay`
+# with a placeholder still in Parameter Store stops the API at boot.
+payments_driver = "none"

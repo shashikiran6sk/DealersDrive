@@ -283,6 +283,31 @@ variable "msg91_widget_id" {
   default     = ""
 }
 
+variable "payments_driver" {
+  description = <<-EOT
+    Who takes payment for listing credits (**F051**). `none` until Razorpay is
+    ready; `razorpay` to sell credit packs.
+
+    `none` is safe to deploy: packs are listed, buying answers 503, the unpaid-
+    order re-check does nothing, and admins can still add credits by hand. It
+    is also the only value that does not read the three RAZORPAY_* parameters,
+    so it boots before they have values.
+
+    Switch to `razorpay` only after all three RAZORPAY_* parameters hold real
+    values. `env.ts` refuses to boot with `razorpay` if any is missing, and a
+    key id that is still the placeholder fails its `rzp_(test|live)_…` check —
+    loudly, at deploy. `fake` is refused here because `env.ts` refuses it in
+    production: it marks any checkout paid.
+  EOT
+  type        = string
+  default     = "none"
+
+  validation {
+    condition     = contains(["none", "razorpay"], var.payments_driver)
+    error_message = "payments_driver must be none or razorpay."
+  }
+}
+
 variable "msg91_widget_token" {
   description = "`configuration.tokenAuth` for the MSG91 OTP widget (**R39**). See msg91_widget_id."
   type        = string

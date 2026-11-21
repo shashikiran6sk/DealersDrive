@@ -43,3 +43,8 @@ alarm_email = ""
 # Higher than production: dev is where a broken build is *supposed* to be found,
 # and a handful of 5xx during a bad deploy is the system working.
 api_5xx_alarm_threshold = 50
+
+# Listing credits (F051). `none` until all three RAZORPAY_* parameters hold real
+# values — see README "Then, when payments go live". Switching to `razorpay`
+# with a placeholder still in Parameter Store stops the API at boot.
+payments_driver = "none"
