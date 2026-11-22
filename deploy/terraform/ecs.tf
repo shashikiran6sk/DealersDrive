@@ -104,6 +104,10 @@ locals {
     { name = "PHONE_OTP_DRIVER", value = var.phone_otp_driver },
     { name = "MSG91_WIDGET_ID", value = var.msg91_widget_id },
     { name = "MSG91_WIDGET_TOKEN", value = var.msg91_widget_token },
+    # F051. `none` until the RAZORPAY_* parameters hold real values; see the
+    # payments_driver variable. The worker inherits it with the rest of this
+    # list, which it needs: the unpaid-order re-check runs there.
+    { name = "PAYMENTS_DRIVER", value = var.payments_driver },
     { name = "JOBS_ENABLED", value = "true" },
 
     # **R40 — the API is a pure API now.**
@@ -119,8 +123,15 @@ locals {
     { name = "DOCS_ENABLED", value = var.environment == "production" ? "false" : "true" },
   ]
 
+  # The Razorpay parameters exist in every environment but are read only once
+  # payments are switched on (ssm.tf).
+  api_secret_names_read = concat(
+    local.api_secret_names,
+    var.payments_driver == "razorpay" ? local.payment_secret_names : [],
+  )
+
   api_secrets = [
-    for name in local.api_secret_names : {
+    for name in local.api_secret_names_read : {
       name      = name
       valueFrom = aws_ssm_parameter.api[name].arn
     }

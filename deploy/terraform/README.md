@@ -105,6 +105,40 @@ A parameter left at `PLACEHOLDER` fails loudly at the first deploy rather than
 quietly at runtime: `apps/api/src/config/env.ts` refuses to boot in production
 when a required secret is missing or is still a local default.
 
+### Then, when payments go live
+
+Listing credits are sold through Razorpay (**F051**). `apply` creates three more
+parameters — `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` —
+but the tasks read them only once `payments_driver` is `razorpay`. Under the
+default `none` they are never fetched, so their placeholders cannot stop a
+deploy, and the API runs with buying switched off.
+
+Going live is two steps, in this order:
+
+```sh
+terraform output -json payment_parameters_to_populate
+
+# Keys from the Razorpay dashboard (live mode → API keys). The webhook secret is
+# the one typed into the live-mode webhook for
+# https://www.dealers-drive.com/v1/webhooks/razorpay — a different string from
+# the test-mode one.
+aws ssm put-parameter --type SecureString --overwrite \
+  --name /dealers-drive/production/RAZORPAY_KEY_ID --value 'rzp_live_…'
+aws ssm put-parameter --type SecureString --overwrite \
+  --name /dealers-drive/production/RAZORPAY_KEY_SECRET --value '…'
+aws ssm put-parameter --type SecureString --overwrite \
+  --name /dealers-drive/production/RAZORPAY_WEBHOOK_SECRET --value '…'
+```
+
+Then set `payments_driver = "razorpay"` in `envs/production.tfvars` and
+`apply`. The API and the worker both get it (the worker runs the unpaid-order
+re-check). Swap the order and `env.ts` refuses to boot: a key id still at the
+placeholder fails its `rzp_(test|live)_…` check, which is the deploy failing
+loudly rather than a checkout failing quietly.
+
+Switching back to `none` is the off switch: purchases stop, nothing already
+bought is touched.
+
 ### Then: wire up GitHub
 
 ```sh
