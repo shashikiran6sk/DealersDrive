@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Dealers-Drive Car Promo'
+  short_description: 'Create two car promos from Dealers-Drive URLs'
+  default_prompt: 'Use $dealers-drive-car-promo to create the approved vertical and horizontal videos for this car URL.'
+policy:
+  allow_implicit_invocation: true

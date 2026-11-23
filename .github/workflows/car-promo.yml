@@ -1,0 +1,40 @@
+name: Car promo skill
+
+on:
+  pull_request:
+    paths:
+      - '.agents/skills/dealers-drive-car-promo/**'
+      - 'marketing/dealers-drive-vehicle-series/**'
+      - 'apps/web/public/brand/*.svg'
+      - 'apps/web/src/lib/fonts/manrope-variable.woff2'
+      - '.github/workflows/car-promo.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: marketing/dealers-drive-vehicle-series
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: marketing/dealers-drive-vehicle-series/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: node node_modules/ffmpeg-static/install.js
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run test:smoke
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: car-promo-fixture-proof
+          path: marketing/dealers-drive-vehicle-series/runs/ci-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
