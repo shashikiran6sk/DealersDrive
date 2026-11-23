@@ -10,5 +10,6 @@ to its parent.
 ## Sections
 
 - [api](api/README.md)
+- [reels](reels/README.md)
 - [sandbox](sandbox/README.md)
 - [web](web/README.md)
